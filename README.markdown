@@ -1,6 +1,6 @@
 [Rock ChMS](http://rockchms.org/) - Rock Church Management System
 =================================================================
-The [Spark Development Network](http://www.sparkdevelopmentnetwork.com/) is developing an enterprise level,
+The [Spark Development Network](http://www.sparkdevelopmentnetwork.com/) is developing a first-class,
 open source Church Management System (ChMS) called *Rock ChMS*.  It's an ASP.NET 4.5 C# web application that
 uses Entity Framework 6.0, jQuery, Bootstrap, and a whole bunch of other openly available libraries.  We're
 planning the first release for January 2014.
