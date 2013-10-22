@@ -19,12 +19,15 @@
         </Grid.RowDefinitions>
         <StackPanel VerticalAlignment="Center"
                     HorizontalAlignment="Center">
+            <Label Style="{StaticResource labelStyleLegend}"
+                   Content="Generate for" />
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="20" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
+                
                 <RadioButton Grid.Column="0"
                              Name="radAllPersons"
                              Content="All individuals with transactions"
@@ -32,6 +35,7 @@
                              Checked="radAllPersons_Checked"
                              GroupName="radSelect" />
                 <StackPanel Grid.Column="2">
+                    
                     <RadioButton Name="radSingle"
                                  Content="Single individual"
                                  Checked="radSingle_Checked"
@@ -59,11 +63,12 @@
                               Margin="0,10,0,0"
                               IsEnabled="False"
                               ScrollViewer.VerticalScrollBarVisibility="Visible"
-                              ScrollViewer.HorizontalScrollBarVisibility="Hidden">
+                              ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                              SelectionChanged="grdPersons_SelectionChanged">
                         <DataGrid.ItemContainerStyle>
                             <Style TargetType="{x:Type DataGridRow}">
                                 <EventSetter Event="Control.MouseDoubleClick"
-                                             Handler="grdItems_RowSelect" />
+                                             Handler="grdItems_RowDoubleClick" />
                             </Style>
                         </DataGrid.ItemContainerStyle>
 
@@ -97,7 +102,13 @@
                     </DataGrid>
                 </StackPanel>
             </Grid>
+            <Label Name="lblWarning"
+                   Style="{StaticResource labelStyleAlert}"
+                   Content="Please select a person when 'Single individual' is checked."
+                   Visibility="Hidden">
+            </Label>
         </StackPanel>
+        
         <Button x:Name="btnNext"
                 Grid.Row="1"
                 HorizontalAlignment="Right"

@@ -32,7 +32,7 @@ namespace Rock.Apps.StatementGenerator
         private RockRestClient _rockRestClient;
 
         /// <summary>
-        /// The _last typed search term
+        /// The _lastTypedSearchTerm to assist in reducing unneccessary searches if the person is still typing
         /// </summary>
         private string _lastTypedSearchTerm;
 
@@ -49,13 +49,41 @@ namespace Rock.Apps.StatementGenerator
         }
 
         /// <summary>
+        /// Handles the RowDoubleClick event of the grdItems control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="MouseButtonEventArgs"/> instance containing the event data.</param>
+        protected void grdItems_RowDoubleClick( object sender, MouseButtonEventArgs e )
+        {
+            btnNext_Click( sender, e );
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnNext control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnNext_Click( object sender, RoutedEventArgs e )
         {
-
+            if ( radAllPersons.IsChecked ?? false)
+            {
+                ReportOptions.Current.PersonId = null;
+            }
+            else
+            {
+                if ( grdPersons.SelectedValue != null )
+                {
+                    ReportOptions.Current.PersonId = (int)grdPersons.SelectedValue.GetPropertyValue( "Id" );
+                }
+                else
+                {
+                    lblWarning.Visibility = Visibility.Visible;
+                    return;
+                }
+            }
+            
+            SelectAccountsPage nextPage = new SelectAccountsPage();
+            this.NavigationService.Navigate( nextPage );
         }
 
         /// <summary>
@@ -84,16 +112,6 @@ namespace Rock.Apps.StatementGenerator
                 txtPersonSearch.IsEnabled = false;
                 grdPersons.IsEnabled = false;
             }
-        }
-
-        /// <summary>
-        /// Handles the RowSelect event of the grdItems control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="MouseButtonEventArgs"/> instance containing the event data.</param>
-        protected void grdItems_RowSelect( object sender, MouseButtonEventArgs e )
-        {
-            //
         }
 
         /// <summary>
@@ -180,6 +198,22 @@ namespace Rock.Apps.StatementGenerator
             }
 
             e.Result = personResults;
+        }
+
+        /// <summary>
+        /// Handles the SelectionChanged event of the grdPersons control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="SelectionChangedEventArgs"/> instance containing the event data.</param>
+        private void grdPersons_SelectionChanged( object sender, SelectionChangedEventArgs e )
+        {
+            if ( lblWarning.Visibility == Visibility.Visible )
+            {
+                if ( grdPersons.SelectedValue != null )
+                {
+                    lblWarning.Visibility = Visibility.Hidden;
+                }
+            }
         }
     }
 }

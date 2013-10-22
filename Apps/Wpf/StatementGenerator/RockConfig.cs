@@ -91,6 +91,16 @@ namespace Rock.Apps.StatementGenerator
         }
 
         /// <summary>
+        /// Gets or sets the layout file.
+        /// </summary>
+        /// <value>
+        /// The layout file.
+        /// </value>
+        [XmlElement]
+        [DataMember]
+        public string LayoutFile { get; set; }
+
+        /// <summary>
         /// Saves this instance.
         /// </summary>
         public void Save()

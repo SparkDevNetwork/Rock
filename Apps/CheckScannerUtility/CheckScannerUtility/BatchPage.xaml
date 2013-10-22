@@ -245,7 +245,7 @@
                 </StackPanel>
                 <Border x:Name="bdrBatchDetailEdit"
                         Style="{StaticResource borderStyleWell}"
-                        Visibility="Collapsed"
+                        Visibility="Visible"
                         Grid.Row="0"
                         Grid.Column="0">
                     <Grid>
