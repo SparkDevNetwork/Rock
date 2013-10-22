@@ -1,22 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Xml;
-using System.Xml.XPath;
 using Rock.Net;
 
 namespace Rock.Apps.StatementGenerator
@@ -65,7 +55,7 @@ namespace Rock.Apps.StatementGenerator
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnNext_Click( object sender, RoutedEventArgs e )
         {
-            if ( radAllPersons.IsChecked ?? false)
+            if ( radAllPersons.IsChecked ?? false )
             {
                 ReportOptions.Current.PersonId = null;
             }
@@ -81,7 +71,7 @@ namespace Rock.Apps.StatementGenerator
                     return;
                 }
             }
-            
+
             SelectAccountsPage nextPage = new SelectAccountsPage();
             this.NavigationService.Navigate( nextPage );
         }
@@ -123,7 +113,7 @@ namespace Rock.Apps.StatementGenerator
         {
             var searchTerm = txtPersonSearch.Text.Trim();
             _lastTypedSearchTerm = searchTerm;
-            
+
             BackgroundWorker searchBackgroundWorker = new BackgroundWorker();
             searchBackgroundWorker.DoWork += bw_DoWork;
             searchBackgroundWorker.RunWorkerCompleted += bw_RunWorkerCompleted;
@@ -143,10 +133,10 @@ namespace Rock.Apps.StatementGenerator
 
                 _rockRestClient = new RockRestClient( rockConfig.RockBaseUrl );
                 _rockRestClient.Login( rockConfig.Username, rockConfig.Password );
-                
+
                 throw e.Error;
             }
-            
+
             if ( !e.Cancelled )
             {
                 grdPersons.DataContext = e.Result as List<object>;
@@ -162,9 +152,9 @@ namespace Rock.Apps.StatementGenerator
         {
             List<object> personResults = new List<object>();
 
-            // sleep a few ms to make sure they are done typing, then only fire off the query if this bw was launched with the most recent search term
-            // this helps reduce the chance that the webclient will get overloaded with multiple requested
-            
+            //// sleep a few ms to make sure they are done typing, then only fire off the query if this bw was launched with the most recent search term
+            //// this helps reduce the chance that the webclient will get overloaded with multiple requested
+
             System.Threading.Thread.Sleep( 50 );
             string searchValue = e.Argument as string;
 
@@ -176,9 +166,8 @@ namespace Rock.Apps.StatementGenerator
 
             if ( searchValue.Length > 2 )
             {
-                //api/People/Search/{name}/{includeHtml}
                 string uriFormat = "api/People/Search?name={0}&includeHtml=true";
-                var searchResult = _rockRestClient.GetXml( string.Format( uriFormat, HttpUtility.UrlEncode(searchValue) ), 10000 );
+                var searchResult = _rockRestClient.GetXml( string.Format( uriFormat, HttpUtility.UrlEncode( searchValue ) ), 10000 );
                 if ( searchResult != null )
                 {
                     XmlDocument doc = new XmlDocument();

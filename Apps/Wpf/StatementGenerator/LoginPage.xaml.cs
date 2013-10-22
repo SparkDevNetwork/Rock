@@ -21,8 +21,17 @@ namespace Rock.Apps.StatementGenerator
         /// Initializes a new instance of the <see cref="LoginPage"/> class.
         /// </summary>
         public LoginPage()
+            : this(false)
+        {
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LoginPage"/> class.
+        /// </summary>
+        public LoginPage(bool forceRockURLVisible)
         {
             InitializeComponent();
+            ForceRockURLVisible = forceRockURLVisible;
         }
 
         /// <summary>
@@ -84,7 +93,7 @@ namespace Rock.Apps.StatementGenerator
             HideLoginWarning( null, null );
             RockConfig rockConfig = RockConfig.Load();
 
-            bool promptForUrl = ( string.IsNullOrWhiteSpace( rockConfig.RockBaseUrl ) );
+            bool promptForUrl = string.IsNullOrWhiteSpace( rockConfig.RockBaseUrl ) || ForceRockURLVisible;
 
             lblRockUrl.Visibility = promptForUrl ? Visibility.Visible : Visibility.Collapsed;
             txtRockUrl.Visibility = promptForUrl ? Visibility.Visible : Visibility.Collapsed;
@@ -93,6 +102,14 @@ namespace Rock.Apps.StatementGenerator
             txtUsername.Text = rockConfig.Username;
             txtPassword.Password = rockConfig.Password;
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [force rock URL visible].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [force rock URL visible]; otherwise, <c>false</c>.
+        /// </value>
+        private bool ForceRockURLVisible { get; set; }
 
         /// <summary>
         /// Hides the login warning.

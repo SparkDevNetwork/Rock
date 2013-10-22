@@ -1,8 +1,8 @@
 ﻿<Page x:Class="Rock.Apps.StatementGenerator.SelectLayoutPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       mc:Ignorable="d"
       d:DesignHeight="600"
       d:DesignWidth="800"
@@ -17,7 +17,8 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="48" />
         </Grid.RowDefinitions>
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
             <Label Style="{StaticResource labelStyleLegend}"
                    Content="Report Layout" />
             <ScrollViewer Height="200"
@@ -28,15 +29,15 @@
                          Width="320">
                 </ListBox>
             </ScrollViewer>
-            
+
         </StackPanel>
-        <Button x:Name="btnImport" 
+        <Button x:Name="btnImport"
                 Grid.Row="1"
                 HorizontalAlignment="Left"
                 Style="{StaticResource buttonStyle}"
                 Margin="8,8,8,8"
                 Content="Import..."
-                Click="btnImport_Click"/>
+                Click="btnImport_Click" />
         <Button x:Name="btnNext"
                 Grid.Row="1"
                 HorizontalAlignment="Right"
