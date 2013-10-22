@@ -26,6 +26,8 @@ namespace Rock.Apps.StatementGenerator
         public SelectDateRangePage()
         {
             InitializeComponent();
+            
+            //dpStartDate.SelectedDate = new DateTime( DateTime.Now.Year, DateTime.Now.Month, 1 );
         }
 
         /// <summary>

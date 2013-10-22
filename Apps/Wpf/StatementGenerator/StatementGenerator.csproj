@@ -41,7 +41,7 @@
   <ItemGroup>
     <Reference Include="ceTe.DynamicPDF.40, Version=7.0.2.40, Culture=neutral, PublicKeyToken=09b5ce0d5c0a9d8b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Program Files (x86)\ceTe Software\DynamicPDF v7.0.2 for .NET\bin\ceTe.DynamicPDF.40.dll</HintPath>
+      <HintPath>..\..\..\libs\DynamicPDF v7.0.2 for .NET\ceTe.DynamicPDF.40.dll</HintPath>
     </Reference>
     <Reference Include="DotLiquid, Version=1.7.0.0, Culture=neutral, PublicKeyToken=82e46016ecf9f07c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

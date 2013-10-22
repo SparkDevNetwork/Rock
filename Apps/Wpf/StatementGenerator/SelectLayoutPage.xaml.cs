@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Xml;
 using ceTe.DynamicPDF.ReportWriter;
 using Microsoft.Win32;
 using Path = System.IO.Path;
@@ -29,14 +30,23 @@ namespace Rock.Apps.StatementGenerator
         /// </summary>
         public SelectLayoutPage()
         {
+            InitializeComponent();
+
+            PopulateLayoutRadioButtonsFromDisk();
+        }
+
+        /// <summary>
+        /// Populates the layout radio buttons from disk.
+        /// </summary>
+        private void PopulateLayoutRadioButtonsFromDisk()
+        {
             List<RadioButton> radioButtonList = new List<RadioButton>();
             var rockConfig = RockConfig.Load();
-            InitializeComponent();
-            List<string> filenameList = Directory.GetFiles( "", "*.dplx" ).ToList();
+            List<string> filenameList = Directory.GetFiles( ".", "*.dplx" ).ToList();
             foreach ( var fileName in filenameList )
             {
                 DplxFile dplxFile = new DplxFile( fileName );
-                DocumentLayout documentLayout = new DocumentLayout(dplxFile);
+                DocumentLayout documentLayout = new DocumentLayout( dplxFile );
                 RadioButton radLayout = new RadioButton();
                 if ( !string.IsNullOrWhiteSpace( documentLayout.Title ) )
                 {
@@ -60,7 +70,8 @@ namespace Rock.Apps.StatementGenerator
                 }
             }
 
-            foreach (var item in radioButtonList.OrderBy(a=> a.Content))
+            lstLayouts.Items.Clear();
+            foreach ( var item in radioButtonList.OrderBy( a => a.Content ) )
             {
                 lstLayouts.Items.Add( item );
             }
@@ -75,40 +86,72 @@ namespace Rock.Apps.StatementGenerator
         {
             string appPath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
             string appDirectory = Path.GetDirectoryName( appPath );
-            
-            
+
+
             OpenFileDialog dlg = new OpenFileDialog();
             dlg.DefaultExt = ".dplx";
             dlg.Filter = "Report Files (.dplx)|*.dplx";
+            dlg.Multiselect = true;
 
             if ( dlg.ShowDialog() == true )
             {
                 foreach ( var fileName in dlg.FileNames )
                 {
-                    FileInfo sourceFileInfo = new FileInfo(fileName);
-                    FileInfo destFileInfo = new FileInfo(Path.Combine(appDirectory, sourceFileInfo.Name));
+                    FileInfo sourceLayoutFileInfo = new FileInfo( fileName );
+                    FileInfo destLayoutFileInfo = new FileInfo( Path.Combine( appDirectory, sourceLayoutFileInfo.Name ) );
 
-                    if ( sourceFileInfo.FullName == destFileInfo.FullName )
+                    if ( sourceLayoutFileInfo.FullName == destLayoutFileInfo.FullName )
                     {
                         // warn and skip if the are selecting the already imported file.
                         MessageBox.Show( "This is already the imported file.", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation );
                         continue;
                     }
 
-                    if ( destFileInfo.Exists )
+                    if ( destLayoutFileInfo.Exists )
                     {
-                        if ( MessageBox.Show( "That file already has been imported. Do you want to overwrite it?", "Confirm", MessageBoxButton.OKCancel, MessageBoxImage.Question ) != MessageBoxResult.OK )
+                        if ( MessageBox.Show( "That layout file already has been imported. Do you want to overwrite it?", "Confirm", MessageBoxButton.OKCancel, MessageBoxImage.Question ) != MessageBoxResult.OK )
                         {
                             // skip this one if they chose not to overwrite
                             continue;
                         }
                     }
 
-                    File.Copy( sourceFileInfo.FullName, destFileInfo.FullName, true );
-                    DocumentLayout doc = new DocumentLayout( sourceFileInfo.FullName );
+                    File.Copy( sourceLayoutFileInfo.FullName, destLayoutFileInfo.FullName, true );
 
-                    var imgLogo = doc.GetReportElementById( "imgLogo" );
+                    XmlDocument doc = new XmlDocument();
+                    doc.Load( sourceLayoutFileInfo.FullName );
+
+                    // find all the image references in the imported layout file and copy them to the import destination
+                    var imageNodes = doc.GetElementsByTagName( "image" );
+                    foreach ( var imageNode in imageNodes.OfType<XmlNode>() )
+                    {
+                        string imagePath = imageNode.Attributes["path"].Value;
+                        if ( !string.IsNullOrWhiteSpace( imagePath ) )
+                        {
+                            if ( string.IsNullOrWhiteSpace( Path.GetDirectoryName( imagePath ) ) )
+                            {
+                                imagePath = Path.Combine( sourceLayoutFileInfo.DirectoryName, imagePath );
+                                FileInfo sourceImageFileInfo = new FileInfo( imagePath );
+                                if ( sourceImageFileInfo.Exists )
+                                {
+                                    FileInfo destImageFileInfo = new FileInfo( Path.Combine( destLayoutFileInfo.DirectoryName, sourceImageFileInfo.Name ) );
+                                    if ( destImageFileInfo.Exists )
+                                    {
+                                        if ( MessageBox.Show( "Image file '" + destImageFileInfo.Name + "' already has been imported. Do you want to overwrite it?", "Confirm", MessageBoxButton.OKCancel, MessageBoxImage.Question ) != MessageBoxResult.OK )
+                                        {
+                                            // skip this imagefile if they chose not to overwrite
+                                            continue;
+                                        }
+                                    }
+
+                                    File.Copy( sourceImageFileInfo.FullName, destImageFileInfo.FullName, true );
+                                }
+                            }
+                        }
+                    }
                 }
+
+                PopulateLayoutRadioButtonsFromDisk();
             }
         }
 
