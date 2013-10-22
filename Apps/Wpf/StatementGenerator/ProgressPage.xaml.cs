@@ -58,15 +58,7 @@ namespace Rock.Apps.StatementGenerator
         /// <exception cref="System.NotImplementedException"></exception>
         protected void bw_DoWork( object sender, DoWorkEventArgs e )
         {
-            ReportOptions reportOptions = new ReportOptions
-            {
-                // TODO - Get actual options from UI
-                StartDate = new DateTime( 2012, 10, 1 ),
-                EndDate = new DateTime( 2013, 10, 1 ),
-                LayoutFile = new DplxFile( "rock-report.dplx" )
-            };
-
-            ContributionReport contributionReport = new ContributionReport( reportOptions );
+            ContributionReport contributionReport = new ContributionReport( ReportOptions.Current );
             contributionReport.OnProgress += contributionReport_OnProgress;
 
             var doc = contributionReport.RunReport();

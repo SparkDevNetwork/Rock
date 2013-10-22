@@ -17,6 +17,26 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="48" />
         </Grid.RowDefinitions>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Label Style="{StaticResource labelStyleLegend}"
+                   Content="Report Layout" />
+            <ScrollViewer Height="200"
+                          HorizontalScrollBarVisibility="Hidden"
+                          VerticalScrollBarVisibility="Visible">
+                <ListBox Name="lstLayouts"
+                         Margin="16,8,0,0"
+                         Width="320">
+                </ListBox>
+            </ScrollViewer>
+            
+        </StackPanel>
+        <Button x:Name="btnImport" 
+                Grid.Row="1"
+                HorizontalAlignment="Left"
+                Style="{StaticResource buttonStyle}"
+                Margin="8,8,8,8"
+                Content="Import..."
+                Click="btnImport_Click"/>
         <Button x:Name="btnNext"
                 Grid.Row="1"
                 HorizontalAlignment="Right"

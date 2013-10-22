@@ -178,11 +178,9 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <None Include="rock-standard.dplx" />
     <Resource Include="resources\fontawesome-webfont.ttf" />
     <Resource Include="resources\OpenSans-Regular.ttf" />
-    <None Include="rock-report.dplx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

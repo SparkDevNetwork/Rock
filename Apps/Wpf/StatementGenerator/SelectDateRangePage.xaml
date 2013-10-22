@@ -17,6 +17,35 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="48" />
         </Grid.RowDefinitions>
+        <StackPanel VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+            <Label Style="{StaticResource labelStyleLegend}"
+                   Content="Date Range" />
+            <StackPanel Orientation="Horizontal">
+                <StackPanel>
+                    <Label Content="Start Date"
+                           Style="{StaticResource labelStyle}" />
+                    <DatePicker Grid.Row="3"
+                                Grid.Column="0"
+                                x:Name="dpStartDate"
+                                Style="{StaticResource datePickerStyle}" />
+                </StackPanel>
+                <StackPanel>
+                    <Label Content="End Date"
+                           Style="{StaticResource labelStyle}" />
+                    <DatePicker Grid.Row="3"
+                                Grid.Column="0"
+                                x:Name="dpEndDate"
+                                Style="{StaticResource datePickerStyle}" />
+                </StackPanel>
+
+            </StackPanel>
+            <Label Name="lblWarning"
+                   Style="{StaticResource labelStyleAlert}"
+                   Content="Please select a Date Range"
+                   Visibility="Hidden">
+            </Label>
+        </StackPanel>
         <Button x:Name="btnNext"
                 Grid.Row="1"
                 HorizontalAlignment="Right"

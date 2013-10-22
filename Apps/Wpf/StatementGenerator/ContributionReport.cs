@@ -29,7 +29,7 @@ namespace Rock.Apps.StatementGenerator
         /// <value>
         /// The end date.
         /// </value>
-        public DateTime EndDate { get; set; }
+        public DateTime? EndDate { get; set; }
 
         /// <summary>
         /// Gets or sets the account ids.
@@ -54,6 +54,20 @@ namespace Rock.Apps.StatementGenerator
         /// The layout file.
         /// </value>
         public DplxFile LayoutFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the current report options
+        /// </summary>
+        /// <value>
+        /// The current report options.
+        /// </value>
+        public static ReportOptions Current {
+            get
+            {
+                return _current;
+            }
+        }
+        private static ReportOptions _current = new ReportOptions();
     }
 
     /// <summary>

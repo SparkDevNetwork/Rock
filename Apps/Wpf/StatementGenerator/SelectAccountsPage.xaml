@@ -17,6 +17,45 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="48" />
         </Grid.RowDefinitions>
+        
+        <StackPanel VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+            
+            <Label Content="Select Accounts"
+                   Style="{StaticResource labelStyleLegend}" />
+            <ScrollViewer Height="200"
+                          HorizontalScrollBarVisibility="Hidden"
+                          VerticalScrollBarVisibility="Visible">
+                <ListBox Name="lstAccounts"
+                         Margin="16,8,0,0"
+                         Width="320">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <CheckBox Content="{Binding Name}" IsChecked="{Binding IsChecked}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </ScrollViewer>
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center">
+                <Button Content="Select all"
+                        Name="btnSelectAll"
+                        Style="{StaticResource buttonStyleMini}"
+                        Margin="4"
+                        Click="btnSelectAll_Click" />
+                <Button Content="Select none"
+                        Name="btnSelectNone"
+                        Style="{StaticResource buttonStyleMini}"
+                        Margin="4"
+                        Click="btnSelectNone_Click"/>
+            </StackPanel>
+            <Label Name="lblWarning"
+                   Style="{StaticResource labelStyleAlert}"
+                   Content="Please select at least one account."
+                   Visibility="Hidden">
+            </Label>
+        </StackPanel>
+
         <Button x:Name="btnNext"
                 Grid.Row="1"
                 HorizontalAlignment="Right"
