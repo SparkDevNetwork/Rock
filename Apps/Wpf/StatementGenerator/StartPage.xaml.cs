@@ -46,7 +46,8 @@ namespace Rock.Apps.StatementGenerator
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void mnuOptions_Click( object sender, RoutedEventArgs e )
         {
-
+            OptionsPage optionsPage = new OptionsPage();
+            this.NavigationService.Navigate( optionsPage );
         }
     }
 }

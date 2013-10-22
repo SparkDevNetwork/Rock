@@ -74,9 +74,9 @@ namespace Rock.Apps.StatementGenerator
                     return string.Empty;
                 }
             }
+
             set
             {
-
                 try
                 {
                     byte[] clearTextPasswordBytes = Encoding.Unicode.GetBytes( value );
@@ -87,7 +87,6 @@ namespace Rock.Apps.StatementGenerator
                     PasswordEncrypted = new byte[] { 0 };
                 }
             }
-
         }
 
         /// <summary>

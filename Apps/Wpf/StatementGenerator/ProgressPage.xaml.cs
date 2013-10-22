@@ -1,9 +1,9 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using ceTe.DynamicPDF.ReportWriter;
+using Microsoft.Win32;
 
 namespace Rock.Apps.StatementGenerator
 {
@@ -16,6 +16,11 @@ namespace Rock.Apps.StatementGenerator
         {
             InitializeComponent();
         }
+
+        /// <summary>
+        /// The _PDF output
+        /// </summary>
+        private byte[] _pdfOutput;
 
         /// <summary>
         /// Handles the Loaded event of the Page control.
@@ -46,8 +51,17 @@ namespace Rock.Apps.StatementGenerator
                 lblReportProgress.Content = "Error: " + e.Error.Message;
                 throw e.Error;
             }
-            
-            lblReportProgress.Content = "Done";
+
+            if ( e.Result != null )
+            {
+                _pdfOutput = e.Result as byte[];
+                lblReportProgress.Content = "Complete";
+            }
+            else
+            {
+                _pdfOutput = null;
+                lblReportProgress.Content = "No contributions found";
+            }
         }
 
         /// <summary>
@@ -63,12 +77,17 @@ namespace Rock.Apps.StatementGenerator
 
             var doc = contributionReport.RunReport();
 
-            string fileName = "Statement_" + Guid.NewGuid().ToString( "N" ) + ".pdf";
+            if ( doc != null )
+            {
+                MemoryStream ms = new MemoryStream();
+                doc.Draw( ms );
 
-            ShowProgress( 0, 0, "Generating PDF..." );
-            doc.Draw( fileName );
-
-            Process.Start( fileName );
+                e.Result = ms.GetBuffer();
+            }
+            else
+            {
+                e.Result = null;
+            }
         }
 
         /// <summary>
@@ -100,6 +119,25 @@ namespace Rock.Apps.StatementGenerator
                     lblReportProgress.Content = progressMessage;
                 }
             } );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSaveAs control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnSaveAs_Click( object sender, RoutedEventArgs e )
+        {
+            SaveFileDialog dlg = new SaveFileDialog();
+            dlg.OverwritePrompt = true;
+            dlg.DefaultExt = ".pdf";
+            dlg.Filter = "Pdf Files (.pdf)|*.pdf";
+
+            if ( dlg.ShowDialog() == true )
+            {
+                File.WriteAllBytes( dlg.FileName, _pdfOutput );
+                Process.Start( dlg.FileName );
+            }
         }
     }
 }

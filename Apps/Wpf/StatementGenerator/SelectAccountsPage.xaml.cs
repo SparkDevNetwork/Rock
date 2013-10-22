@@ -1,18 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Rock.Net;
 
 namespace Rock.Apps.StatementGenerator
@@ -39,7 +28,7 @@ namespace Rock.Apps.StatementGenerator
             /// The unique identifier.
             /// </value>
             public int Id { get; set; }
-            
+
             /// <summary>
             /// Gets or sets the name.
             /// </summary>
@@ -47,14 +36,14 @@ namespace Rock.Apps.StatementGenerator
             /// The name.
             /// </value>
             public string Name { get; set; }
-            
+
             /// <summary>
             /// Gets or sets a value indicating whether [is checked].
             /// </summary>
             /// <value>
             ///   <c>true</c> if [is checked]; otherwise, <c>false</c>.
             /// </value>
-            public bool IsChecked {get; set;}
+            public bool IsChecked { get; set; }
         }
 
         /// <summary>
@@ -71,7 +60,7 @@ namespace Rock.Apps.StatementGenerator
 
             var accounts = _rockRestClient.GetData<List<Rock.Model.FinancialAccount>>( "api/FinancialAccounts", "IsActive eq true" );
 
-            lstAccounts.ItemsSource = accounts.Select(a => new NameIdIsChecked { Id = a.Id, Name = a.Name, IsChecked = true });
+            lstAccounts.ItemsSource = accounts.Select( a => new NameIdIsChecked { Id = a.Id, Name = a.Name, IsChecked = true } );
 
             lblWarning.Visibility = Visibility.Hidden;
         }

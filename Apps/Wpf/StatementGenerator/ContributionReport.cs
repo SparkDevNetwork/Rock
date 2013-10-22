@@ -61,7 +61,8 @@ namespace Rock.Apps.StatementGenerator
         /// <value>
         /// The current report options.
         /// </value>
-        public static ReportOptions Current {
+        public static ReportOptions Current
+        {
             get
             {
                 return _current;
@@ -127,6 +128,11 @@ namespace Rock.Apps.StatementGenerator
         private Rock.Net.RestParameters.ContributionStatementOptions _contributionStatementOptionsREST = null;
 
         /// <summary>
+        /// The _person group address data table
+        /// </summary>
+        private DataTable _personGroupAddressDataTable = null;
+
+        /// <summary>
         /// Creates the document.
         /// </summary>
         /// <param name="financialTransactionQry">The financial transaction qry.</param>
@@ -134,7 +140,7 @@ namespace Rock.Apps.StatementGenerator
         public Document RunReport()
         {
             UpdateProgress( "Connecting..." );
-            
+
             // Login and setup options for REST calls
             RockConfig rockConfig = RockConfig.Load();
 
@@ -183,8 +189,22 @@ namespace Rock.Apps.StatementGenerator
 
             _accountSummaryQuery = report.GetQueryById( "AccountSummaryQuery" );
 
-            Document doc = report.Run();
-            return doc;
+            UpdateProgress( "Getting Data..." );
+
+            // get outer query data from Rock database via REST now vs in mainQuery_OpeningRecordSet to make sure we have data
+            DataSet personGroupAddressDataSet = _rockRestClient.PostDataWithResult<Rock.Net.RestParameters.ContributionStatementOptions, DataSet>( "api/FinancialTransactions/GetContributionPersonGroupAddress", _contributionStatementOptionsREST );
+            _personGroupAddressDataTable = personGroupAddressDataSet.Tables[0];
+            RecordCount = _personGroupAddressDataTable.Rows.Count;
+
+            if ( RecordCount > 0 )
+            {
+                Document doc = report.Run();
+                return doc;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -224,15 +244,7 @@ namespace Rock.Apps.StatementGenerator
         /// <exception cref="System.NotImplementedException"></exception>
         protected void mainQuery_OpeningRecordSet( object sender, OpeningRecordSetEventArgs e )
         {
-            UpdateProgress( "Getting Data..." );
-
-            // get outer query data from Rock database via REST
-            DataSet personGroupAddressDataSet = _rockRestClient.PostDataWithResult<Rock.Net.RestParameters.ContributionStatementOptions, DataSet>( "api/FinancialTransactions/GetContributionPersonGroupAddress", _contributionStatementOptionsREST );
-
-            DataTable personGroupAddressDataTable = personGroupAddressDataSet.Tables[0];
-            RecordCount = personGroupAddressDataTable.Rows.Count;
-            e.RecordSet = new DataTableRecordSet( personGroupAddressDataTable );
-
+            e.RecordSet = new DataTableRecordSet( _personGroupAddressDataTable );
             SubReport innerReport = e.LayoutWriter.DocumentLayout.GetReportElementById( "InnerReport" ) as SubReport;
 
             if ( innerReport == null )
@@ -265,8 +277,12 @@ namespace Rock.Apps.StatementGenerator
             RecordIndex++;
             UpdateProgress( "Processing..." );
 
-            int? personId = e.LayoutWriter.RecordSets.Current["PersonId"].ToString().AsInteger( false );
-            int groupId = e.LayoutWriter.RecordSets.Current["GroupId"].ToString().AsInteger() ?? 0;
+            int? personId = null;
+            int groupId = 0;
+
+            personId = e.LayoutWriter.RecordSets.Current["PersonId"].ToString().AsInteger( false );
+            groupId = e.LayoutWriter.RecordSets.Current["GroupId"].ToString().AsInteger() ?? 0;
+
             string uriParam;
 
             if ( personId.HasValue )
@@ -282,14 +298,14 @@ namespace Rock.Apps.StatementGenerator
             DataTable transactionsDataTable = transactionsDataSet.Tables[0];
 
             e.RecordSet = new DataTableRecordSet( transactionsDataTable );
-            
+
             if ( _accountSummaryQuery == null )
             {
                 // not required.  Just don't do anything if it isn't there
             }
             else
             {
-                _accountSummaryQuery.OpeningRecordSet += delegate(object s, OpeningRecordSetEventArgs ee)
+                _accountSummaryQuery.OpeningRecordSet += delegate( object s, OpeningRecordSetEventArgs ee )
                 {
                     // create a recordset for the _accountSummaryQuery which is the GroupBy summary of AccountName, Amount
                     var summaryTable = transactionsDataTable.AsEnumerable().GroupBy( g => g["AccountName"] ).Select( a => new
@@ -297,7 +313,7 @@ namespace Rock.Apps.StatementGenerator
                             AccountName = a.Key.ToString(),
                             Amount = a.Sum( x => decimal.Parse( x["Amount"].ToString() ) )
                         } ).OrderBy( o => o.AccountName );
-                    
+
                     ee.RecordSet = new EnumerableRecordSet( summaryTable );
                 };
             }

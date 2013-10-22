@@ -1,17 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Rock.Apps.StatementGenerator
 {
@@ -26,8 +14,6 @@ namespace Rock.Apps.StatementGenerator
         public SelectDateRangePage()
         {
             InitializeComponent();
-            
-            //dpStartDate.SelectedDate = new DateTime( DateTime.Now.Year, DateTime.Now.Month, 1 );
         }
 
         /// <summary>
@@ -43,8 +29,8 @@ namespace Rock.Apps.StatementGenerator
                 lblWarning.Visibility = Visibility.Visible;
                 return;
             }
-            
-            if ( !dpStartDate.SelectedDate.HasValue)
+
+            if ( !dpStartDate.SelectedDate.HasValue )
             {
                 lblWarning.Content = "Please select a start date";
                 lblWarning.Visibility = Visibility.Visible;
