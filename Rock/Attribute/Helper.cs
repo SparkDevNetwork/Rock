@@ -285,7 +285,7 @@ namespace Rock.Attribute
 
                 while ( groupType != null )
                 {
-                    groupTypeIds.Add( groupType.Id );
+                    groupTypeIds.Insert(0, groupType.Id );
 
                     // Check for inherited group type id's
                     groupType = groupType.InheritedGroupType ?? groupTypeService.Get( groupType.InheritedGroupTypeId ?? 0 );
@@ -298,6 +298,16 @@ namespace Rock.Attribute
 
             Rock.Model.AttributeService attributeService = new Rock.Model.AttributeService();
             Rock.Model.AttributeValueService attributeValueService = new Rock.Model.AttributeValueService();
+
+            var attributeGroups = new Dictionary<int, List<Rock.Web.Cache.AttributeCache>>();
+            if ( groupTypeIds.Any() )
+            {
+                groupTypeIds.ForEach( g => attributeGroups.Add( g, new List<Rock.Web.Cache.AttributeCache>() ) );
+            }
+            else
+            {
+                attributeGroups.Add( 0, new List<Rock.Web.Cache.AttributeCache>() );
+            }
 
             // Get all the attributes that apply to this entity type and this entity's properties match any attribute qualifiers
             int? entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityType ).Id;
@@ -312,7 +322,7 @@ namespace Rock.Attribute
                     int groupTypeIdValue = int.MinValue;
                     if ( int.TryParse( attribute.EntityTypeQualifierValue, out groupTypeIdValue ) && groupTypeIds.Contains( groupTypeIdValue ) )
                     {
-                        attributes.Add( Rock.Web.Cache.AttributeCache.Read( attribute ) );
+                        attributeGroups[groupTypeIdValue].Add( Rock.Web.Cache.AttributeCache.Read( attribute ) );
                     }
                 }
                     
@@ -321,7 +331,15 @@ namespace Rock.Attribute
                     ( string.IsNullOrEmpty( attribute.EntityTypeQualifierValue ) ||
                     properties[attribute.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ).ToString() == attribute.EntityTypeQualifierValue ) ) )
                 {
-                    attributes.Add( Rock.Web.Cache.AttributeCache.Read( attribute ) );
+                    attributeGroups[0].Add( Rock.Web.Cache.AttributeCache.Read( attribute ) );
+                }
+            }
+
+            foreach ( var attributeGroup in attributeGroups )
+            {
+                foreach ( var attribute in attributeGroup.Value )
+                {
+                    attributes.Add( attribute );
                 }
             }
 
@@ -329,7 +347,7 @@ namespace Rock.Attribute
 
             if ( attributes.Any() )
             {
-                foreach ( var attribute in attributes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+                foreach ( var attribute in attributes )
                 {
                     // Add a placeholder for this item's value for each attribute
                     attributeValues.Add( attribute.Key, new List<Rock.Model.AttributeValue>() );

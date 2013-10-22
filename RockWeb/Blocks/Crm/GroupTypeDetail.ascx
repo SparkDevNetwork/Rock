@@ -15,7 +15,9 @@
 
             <div class="banner">
                 <h1>
-                    <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
+                    <asp:Literal ID="lReadOnlyTitle" runat="server" />
+                </h1>
+                <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
             </div>
 
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
@@ -107,10 +109,26 @@
 
                 <div class="row">
                     <div class="col-md-4">
+                        <Rock:RockControlWrapper ID="rcGroupTypeAttributesInherited" runat="server" Label="Inherited Group Type Attributes" ValidationGroup="GroupTypeDetail" 
+                            Help="Inherited Attributes for this group type.">
+                            <Rock:Grid ID="gGroupTypeAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Attribute">
+                                <Columns>
+                                    <asp:TemplateField>
+                                        <ItemTemplate>
+                                            <span class='text-muted'>
+                                                <%# Eval("Name") %><br/>
+                                                <small>(Inherited from <a href='<%# Eval("Url") %>' target='_blank'><%# Eval("GroupType") %></a>)</small>
+                                            </span>
+                                        </ItemTemplate>
+                                    </asp:TemplateField>
+                                </Columns>
+                            </Rock:Grid>
+                        </Rock:RockControlWrapper>
                         <Rock:RockControlWrapper ID="rcGroupTypeAttributes" runat="server" Label="Group Type Attributes" ValidationGroup="GroupTypeDetail" 
                             Help="Attributes for this group type. Every group of this type will have the same value that is set here.">
                             <Rock:Grid ID="gGroupTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Attribute">
                                 <Columns>
+                                    <Rock:ReorderField />
                                     <asp:BoundField DataField="Name" />
                                     <Rock:EditField OnClick="gGroupTypeAttributes_Edit" />
                                     <Rock:DeleteField OnClick="gGroupTypeAttributes_Delete" />
@@ -119,10 +137,26 @@
                         </Rock:RockControlWrapper>
                     </div>
                     <div class="col-md-4">
+                        <Rock:RockControlWrapper ID="rcGroupAttributesInherited" runat="server" Label="Inherited Group Attributes" ValidationGroup="GroupTypeDetail" 
+                            Help="Inherited Attributes for groups of this type.">
+                            <Rock:Grid ID="gGroupAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Attribute">
+                                <Columns>
+                                    <asp:TemplateField>
+                                        <ItemTemplate>
+                                            <span class='text-muted'>
+                                                <%# Eval("Name") %><br/>
+                                                <small>(Inherited from <a href='<%# Eval("Url") %>' target='_blank'><%# Eval("GroupType") %></a>)</small>
+                                            </span>
+                                        </ItemTemplate>
+                                    </asp:TemplateField>
+                                </Columns>
+                            </Rock:Grid>
+                        </Rock:RockControlWrapper>
                         <Rock:RockControlWrapper ID="rcGroupAttributes" runat="server" Label="Group Attributes" ValidationGroup="GroupTypeDetail" 
                             Help="Attributes for groups of this type. Each group can have different values (i.e. Meeting Time) that are set on the group detail.">
                             <Rock:Grid ID="gGroupAttributes" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Attribute">
                                 <Columns>
+                                    <Rock:ReorderField />
                                     <asp:BoundField DataField="Name" />
                                     <Rock:EditField OnClick="gGroupAttributes_Edit" />
                                     <Rock:DeleteField OnClick="gGroupAttributes_Delete" />
@@ -131,10 +165,26 @@
                         </Rock:RockControlWrapper>
                     </div>
                     <div class="col-md-4">
+                        <Rock:RockControlWrapper ID="rcGroupMemberAttributesInherited" runat="server" Label="Inherited Group Member Attributes" ValidationGroup="GroupTypeDetail" 
+                            Help="Inherited Attributes for members in a group of this type.">
+                            <Rock:Grid ID="gGroupMemberAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Attribute">
+                                <Columns>
+                                    <asp:TemplateField>
+                                        <ItemTemplate>
+                                            <span class='text-muted'>
+                                                <%# Eval("Name") %><br/>
+                                                <small>(Inherited from <a href='<%# Eval("Url") %>' target='_blank'><%# Eval("GroupType") %></a>)</small>
+                                            </span>
+                                        </ItemTemplate>
+                                    </asp:TemplateField>
+                                </Columns>
+                            </Rock:Grid>
+                        </Rock:RockControlWrapper>
                         <Rock:RockControlWrapper ID="rcGroupMemberAttributes" runat="server" Label="Group Member Attributes" ValidationGroup="GroupTypeDetail" 
                             Help="Attributes for members in a group of this type. Each member can have different values (i.e. Hours Serving) that are set on the member detail.">
                             <Rock:Grid ID="gGroupMemberAttributes" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Attribute">
                                 <Columns>
+                                    <Rock:ReorderField />
                                     <asp:BoundField DataField="Name" />
                                     <Rock:EditField OnClick="gGroupMemberAttributes_Edit" />
                                     <Rock:DeleteField OnClick="gGroupMemberAttributes_Delete" />
