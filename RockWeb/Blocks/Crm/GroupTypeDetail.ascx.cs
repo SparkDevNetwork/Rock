@@ -64,6 +64,24 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
+        /// Gets or sets the group type inherited attributes.
+        /// </summary>
+        /// <value>
+        /// The group type inherited attributes.
+        /// </value>
+        private List<InheritedAttribute> GroupTypeAttributesInheritedState
+        {
+            get
+            {
+                return ViewState["GroupTypeAttributesInheritedState"] as List<InheritedAttribute>;
+            }
+            set
+            {
+                ViewState["GroupTypeAttributesInheritedState"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the state of the group type attributes.
         /// </summary>
         /// <value>
@@ -83,6 +101,24 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
+        /// Gets or sets the group inherited attributes.
+        /// </summary>
+        /// <value>
+        /// The group inherited attributes.
+        /// </value>
+        private List<InheritedAttribute> GroupAttributesInheritedState
+        {
+            get
+            {
+                return ViewState["GroupAttributesInheritedState"] as List<InheritedAttribute>;
+            }
+            set
+            {
+                ViewState["GroupAttributesInheritedState"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the state of the group attributes.
         /// </summary>
         /// <value>
@@ -98,6 +134,24 @@ namespace RockWeb.Blocks.Crm
             set
             {
                 ViewState["GroupAttributesState"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the group member inherited attributes.
+        /// </summary>
+        /// <value>
+        /// The group member inherited attributes.
+        /// </value>
+        private List<InheritedAttribute> GroupMemberAttributesInheritedState
+        {
+            get
+            {
+                return ViewState["GroupMemberAttributesInheritedState"] as List<InheritedAttribute>;
+            }
+            set
+            {
+                ViewState["GroupMemberAttributesInheritedState"] = value;
             }
         }
 
@@ -144,26 +198,38 @@ namespace RockWeb.Blocks.Crm
             gLocationTypes.GridRebind += gLocationTypes_GridRebind;
             gLocationTypes.EmptyDataText = Server.HtmlEncode( None.Text );
 
+            gGroupTypeAttributesInherited.Actions.ShowAdd = false;
+            gGroupTypeAttributesInherited.EmptyDataText = Server.HtmlEncode( None.Text );
+            gGroupTypeAttributesInherited.GridRebind += gGroupTypeAttributesInherited_GridRebind;
+
             gGroupTypeAttributes.DataKeyNames = new string[] { "Guid" };
             gGroupTypeAttributes.Actions.ShowAdd = true;
             gGroupTypeAttributes.Actions.AddClick += gGroupTypeAttributes_Add;
             gGroupTypeAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
-            gGroupTypeAttributes.RowDataBound += gAttributes_RowDataBound;
             gGroupTypeAttributes.GridRebind += gGroupTypeAttributes_GridRebind;
+            gGroupTypeAttributes.GridReorder += gGroupTypeAttributes_GridReorder;
+
+            gGroupAttributesInherited.Actions.ShowAdd = false;
+            gGroupAttributesInherited.EmptyDataText = Server.HtmlEncode( None.Text );
+            gGroupAttributesInherited.GridRebind += gGroupAttributesInherited_GridRebind;
 
             gGroupAttributes.DataKeyNames = new string[] { "Guid" };
             gGroupAttributes.Actions.ShowAdd = true;
             gGroupAttributes.Actions.AddClick += gGroupAttributes_Add;
             gGroupAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
-            gGroupAttributes.RowDataBound += gAttributes_RowDataBound;
             gGroupAttributes.GridRebind += gGroupAttributes_GridRebind;
+            gGroupAttributes.GridReorder += gGroupAttributes_GridReorder;
+
+            gGroupMemberAttributesInherited.Actions.ShowAdd = false;
+            gGroupMemberAttributesInherited.EmptyDataText = Server.HtmlEncode( None.Text );
+            gGroupMemberAttributesInherited.GridRebind += gGroupMemberAttributesInherited_GridRebind;
 
             gGroupMemberAttributes.DataKeyNames = new string[] { "Guid" };
             gGroupMemberAttributes.Actions.ShowAdd = true;
             gGroupMemberAttributes.Actions.AddClick += gGroupMemberAttributes_Add;
             gGroupMemberAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
-            gGroupMemberAttributes.RowDataBound += gAttributes_RowDataBound;
             gGroupMemberAttributes.GridRebind += gGroupMemberAttributes_GridRebind;
+            gGroupMemberAttributes.GridReorder += gGroupMemberAttributes_GridReorder;
         }
 
         /// <summary>
@@ -190,6 +256,33 @@ namespace RockWeb.Blocks.Crm
             {
                 ShowDialog();
             }
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            // Persist any changes that might have been made to objects in list
+            if ( GroupTypeAttributesState != null )
+            {
+                GroupTypeAttributesState.SaveViewState();
+            }
+
+            if ( GroupAttributesState != null )
+            {
+                GroupAttributesState.SaveViewState();
+            }
+
+            if ( GroupMemberAttributesState != null )
+            {
+                GroupMemberAttributesState.SaveViewState();
+            }
+
+            return base.SaveViewState();
         }
 
         #endregion
@@ -525,41 +618,7 @@ namespace RockWeb.Blocks.Crm
             {
                 var groupTypeService = new GroupTypeService();
                 var attributeService = new AttributeService();
-                RebuildAttributeLists( gtpInheritedGroupType.SelectedValueAsInt(), groupTypeService, attributeService, true );
-            }
-
-            BindGroupTypeAttributesGrid();
-            BindGroupAttributesGrid();
-            BindGroupMemberAttributesGrid();
-        }
-
-        /// <summary>
-        /// Handles the RowDataBound event of the attribute grids.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewRowEventArgs"/> instance containing the event data.</param>
-        void gAttributes_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
-        {
-            if ( e.Row.DataItem != null )
-            {
-                Attribute attribute = e.Row.DataItem as Attribute;
-                if ( attribute != null )
-                {
-                    if ( !string.IsNullOrEmpty( attribute.EntityTypeQualifierValue ) &&
-                        attribute.EntityTypeQualifierValue != PageParameter( "GroupTypeId" ) )
-                    {
-
-                        // Inherited Attribute
-                        e.Row.Cells[0].Text = string.Format(
-                            "<span class='muted'>{0} <span class='inherited'>(Inherited from <a href='{1}' target='_blank'>{2}</a>)</span></span>",
-                            attribute.Name,
-                            Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ),
-                            attribute.Description );   // TODO, once a GroupTypeCache object exists, the name could be retrieved from the cache object instead of using the description property to hold it (we don't want to do a db qry on every row)
-
-                        e.Row.Cells[1].Controls.Clear();  // Edit
-                        e.Row.Cells[2].Controls.Clear();  // Delete
-                    }
-                }
+                BindInheritedAttributes( gtpInheritedGroupType.SelectedValueAsInt(), groupTypeService, attributeService );
             }
         }
 
@@ -672,9 +731,15 @@ namespace RockWeb.Blocks.Crm
 
         private void ShowEditDetails( GroupType groupType)
         {
+            hlType.Visible = false;
             if ( groupType.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( GroupType.FriendlyTypeName ).FormatAsHtmlTitle();
+                if ( groupType.GroupTypePurposeValue != null )
+                {
+                    hlType.Text = groupType.GroupTypePurposeValue.Name;
+                    hlType.Visible = true;
+                }
             }
             else
             {
@@ -741,51 +806,42 @@ namespace RockWeb.Blocks.Crm
                 gtpInheritedGroupType.SelectedGroupTypeId = groupType.InheritedGroupTypeId;
 
                 string qualifierValue = groupType.Id.ToString();
-                
-                var qryGroupTypeAttributes = attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
-                    .Where( a =>
-                        a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase ) &&
-                        a.EntityTypeQualifierValue.Equals( qualifierValue ) );
-                
-                var qryGroupAttributes = attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
-                    .Where( a =>
-                        a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                        a.EntityTypeQualifierValue.Equals( qualifierValue ) );
-
-                var qryGroupMemberAttributes = attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
-                    .Where( a =>
-                        a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                        a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
                 GroupTypeAttributesState = new ViewStateList<Attribute>();
-                GroupTypeAttributesState.AddAll( qryGroupTypeAttributes
+                GroupTypeAttributesState.AddAll( attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
+                    .Where( a =>
+                        a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Name )
                     .ToList() );
+                BindGroupTypeAttributesGrid();
 
                 GroupAttributesState = new ViewStateList<Attribute>();
-                GroupAttributesState.AddAll( qryGroupAttributes
+                GroupAttributesState.AddAll( attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
+                    .Where( a =>
+                        a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Name )
                     .ToList() );
+                BindGroupAttributesGrid();
 
                 GroupMemberAttributesState = new ViewStateList<Attribute>();
-                GroupMemberAttributesState.AddAll( qryGroupMemberAttributes
+                GroupMemberAttributesState.AddAll( attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
+                    .Where( a =>
+                        a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Name )
                     .ToList() );
-
+                BindGroupMemberAttributesGrid();
+                
                 if ( groupType.InheritedGroupTypeId.HasValue )
                 {
-                    RebuildAttributeLists( groupType.InheritedGroupTypeId, groupTypeService, attributeService, false );
+                    BindInheritedAttributes( groupType.InheritedGroupTypeId, groupTypeService, attributeService );
                 }
-
-                BindGroupTypeAttributesGrid();
-                BindGroupAttributesGrid();
-                BindGroupMemberAttributesGrid();
             }
-            
-
         }
 
         /// <summary>
@@ -798,6 +854,15 @@ namespace RockWeb.Blocks.Crm
 
             hfGroupTypeId.SetValue( groupType.Id );
             lReadOnlyTitle.Text = groupType.Name.FormatAsHtmlTitle();
+            if ( groupType.GroupTypePurposeValue != null )
+            {
+                hlType.Text = groupType.GroupTypePurposeValue.Name;
+                hlType.Visible = true;
+            }
+            else
+            {
+                hlType.Visible = false;
+            }
 
             lGroupTypeDescription.Text = groupType.Description;
 
@@ -870,102 +935,54 @@ namespace RockWeb.Blocks.Crm
             hfActiveDialog.Value = string.Empty;
         }
 
-        private void RebuildAttributeLists( int? inheritedGroupTypeId, GroupTypeService groupTypeService, AttributeService attributeService,
-            bool clearList )
+        private void BindInheritedAttributes( int? inheritedGroupTypeId, GroupTypeService groupTypeService, AttributeService attributeService )
         {
-            string qualifierValue = PageParameter( "GroupTypeId" );
-
-            if ( clearList )
-            {
-                var attributes = new List<Attribute>();
-                foreach ( var attribute in GroupTypeAttributesState )
-                {
-                    if ( string.IsNullOrWhiteSpace( attribute.EntityTypeQualifierValue ) ||
-                        attribute.EntityTypeQualifierValue == qualifierValue )
-                    {
-                        attributes.Add( attribute );
-                    }
-                }
-                GroupTypeAttributesState.Clear();
-                GroupTypeAttributesState.AddAll( attributes );
-
-                attributes = new List<Attribute>();
-                foreach ( var attribute in GroupAttributesState )
-                {
-                    if ( string.IsNullOrWhiteSpace( attribute.EntityTypeQualifierValue ) ||
-                        attribute.EntityTypeQualifierValue == qualifierValue )
-                    {
-                        attributes.Add( attribute );
-                    }
-                }
-                GroupAttributesState.Clear();
-                GroupAttributesState.AddAll( attributes );
-
-                attributes = new List<Attribute>();
-                foreach ( var attribute in GroupMemberAttributesState )
-                {
-                    if ( string.IsNullOrWhiteSpace( attribute.EntityTypeQualifierValue ) ||
-                        attribute.EntityTypeQualifierValue == qualifierValue )
-                    {
-                        attributes.Add( attribute );
-                    }
-                }
-                GroupMemberAttributesState.Clear();
-                GroupMemberAttributesState.AddAll( attributes );
-            }
+            GroupTypeAttributesInheritedState = new List<InheritedAttribute>();
+            GroupAttributesInheritedState = new List<InheritedAttribute>();
+            GroupMemberAttributesInheritedState = new List<InheritedAttribute>();
 
             while ( inheritedGroupTypeId.HasValue )
             {
                 var inheritedGroupType = groupTypeService.Get( inheritedGroupTypeId.Value );
                 if ( inheritedGroupType != null )
                 {
-                    qualifierValue = inheritedGroupType.Id.ToString();
+                    string qualifierValue = inheritedGroupType.Id.ToString();
 
-                    var qryGroupTypeAttributes = attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
+                    foreach ( var attribute in attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
                         .Where( a =>
                             a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase ) &&
-                            a.EntityTypeQualifierValue.Equals( qualifierValue ) );
+                            a.EntityTypeQualifierValue.Equals( qualifierValue ) )
+                        .OrderBy( a => a.Order )
+                        .ThenBy( a => a.Name )
+                        .ToList() )
+                    {
+                        GroupTypeAttributesInheritedState.Add( new InheritedAttribute(attribute.Name,
+                            Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ), inheritedGroupType.Name ) );
+                    }
 
-                    var qryGroupAttributes = attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
+                    foreach ( var attribute in attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
                         .Where( a =>
                             a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                            a.EntityTypeQualifierValue.Equals( qualifierValue ) );
+                            a.EntityTypeQualifierValue.Equals( qualifierValue ) )
+                        .OrderBy( a => a.Order )
+                        .ThenBy( a => a.Name )
+                        .ToList() )
+                    {
+                        GroupAttributesInheritedState.Add( new InheritedAttribute( attribute.Name,
+                            Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ), inheritedGroupType.Name ) );
+                    }
 
-                    var qryGroupMemberAttributes = attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
+                    foreach ( var attribute in attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
                         .Where( a =>
                             a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                            a.EntityTypeQualifierValue.Equals( qualifierValue ) );
-
-                    // TODO: Should probably add GroupTypeCache object so that it can be used during the 
-                    // databind of the attribute grids, instead of having to do this hack of putting 
-                    // the inherited group type name into the description property of the attribute 
-                    // (which is currently how the databound method gets the inherited attributes group type)
-                    qryGroupTypeAttributes
-                        .ToList()
-                        .ForEach( a => a.Description = inheritedGroupType.Name );
-
-                    qryGroupAttributes
-                        .ToList()
-                        .ForEach( a => a.Description = inheritedGroupType.Name );
-
-                    qryGroupMemberAttributes
-                        .ToList()
-                        .ForEach( a => a.Description = inheritedGroupType.Name );
-
-                    GroupTypeAttributesState.InsertAll( qryGroupTypeAttributes
+                            a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                         .OrderBy( a => a.Order )
                         .ThenBy( a => a.Name )
-                        .ToList() );
-
-                    GroupAttributesState.InsertAll( qryGroupAttributes
-                        .OrderBy( a => a.Order )
-                        .ThenBy( a => a.Name )
-                        .ToList() );
-
-                    GroupMemberAttributesState.InsertAll( qryGroupMemberAttributes
-                        .OrderBy( a => a.Order )
-                        .ThenBy( a => a.Name )
-                        .ToList() );
+                        .ToList() )
+                    {
+                        GroupMemberAttributesInheritedState.Add( new InheritedAttribute( attribute.Name,
+                            Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ), inheritedGroupType.Name ) );
+                    }
 
                     inheritedGroupTypeId = inheritedGroupType.InheritedGroupTypeId;
                 }
@@ -973,9 +990,30 @@ namespace RockWeb.Blocks.Crm
                 {
                     inheritedGroupTypeId = null;
                 }
-
             }
 
+            BindGroupTypeAttributesInheritedGrid();
+            BindGroupAttributesInheritedGrid();
+            BindGroupMemberAttributesInheritedGrid();
+        }
+
+        private void SetAttributeListOrder( ViewStateList<Attribute> attributeList )
+        {
+            int order = 0;
+            attributeList.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList().ForEach( a => a.Order = order++ );
+        }
+
+        public virtual void ReorderAttributeList( ViewStateList<Attribute> attributeList, int oldIndex, int newIndex )
+        {
+            var movedItem = attributeList.Where( a => a.Order == oldIndex).FirstOrDefault();
+            if ( movedItem != null )
+            {
+                foreach ( var otherItem in attributeList.Where( a => a.Order != oldIndex && a.Order >= newIndex ) )
+                {
+                    otherItem.Order = otherItem.Order + 1;
+                }
+                movedItem.Order = newIndex;
+            }
         }
 
         #endregion
@@ -1180,6 +1218,17 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
+        /// Handles the GridReorder event of the gGroupTypeAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gGroupTypeAttributes_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            ReorderAttributeList( GroupTypeAttributesState, e.OldIndex, e.NewIndex );
+            BindGroupTypeAttributesGrid();
+        }        
+        
+        /// <summary>
         /// Handles the Delete event of the gGroupTypeAttributes control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -1193,6 +1242,15 @@ namespace RockWeb.Blocks.Crm
             BindGroupTypeAttributesGrid();
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gGroupTypeAttributesInherited control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gGroupTypeAttributesInherited_GridRebind( object sender, EventArgs e )
+        {
+            BindGroupTypeAttributesInheritedGrid();
+        }
         /// <summary>
         /// Handles the GridRebind event of the gGroupTypeAttributes control.
         /// </summary>
@@ -1219,20 +1277,38 @@ namespace RockWeb.Blocks.Crm
                 return;
             }
 
-            GroupTypeAttributesState.RemoveEntity( attribute.Guid );
+            if ( GroupTypeAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
+            {
+                GroupTypeAttributesState.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                attribute.Order = GroupTypeAttributesState.Any() ? GroupTypeAttributesState.Max( a => a.Order ) + 1 : 0;
+            }
+
             GroupTypeAttributesState.Add( attribute );
 
             BindGroupTypeAttributesGrid();
             HideDialog();
         }
 
+        /// <summary>
+        /// Binds the group type attributes inherited grid.
+        /// </summary>
+        private void BindGroupTypeAttributesInheritedGrid()
+        {
+            gGroupTypeAttributesInherited.DataSource = GroupTypeAttributesInheritedState;
+            gGroupTypeAttributesInherited.DataBind();
+            rcGroupTypeAttributesInherited.Visible = GroupTypeAttributesInheritedState.Any();
+        }
 
         /// <summary>
         /// Binds the group type attributes grid.
         /// </summary>
         private void BindGroupTypeAttributesGrid()
         {
-            gGroupTypeAttributes.DataSource = GroupTypeAttributesState.ToList();
+            SetAttributeListOrder( GroupTypeAttributesState );
+            gGroupTypeAttributes.DataSource = GroupTypeAttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             gGroupTypeAttributes.DataBind();
         }
 
@@ -1287,6 +1363,17 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
+        /// Handles the GridReorder event of the gGroupAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gGroupAttributes_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            ReorderAttributeList( GroupAttributesState, e.OldIndex, e.NewIndex );
+            BindGroupAttributesGrid();
+        }
+
+        /// <summary>
         /// Handles the Delete event of the gGroupAttributes control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -1300,6 +1387,16 @@ namespace RockWeb.Blocks.Crm
             BindGroupAttributesGrid();
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gGroupAttributesInherited control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gGroupAttributesInherited_GridRebind( object sender, EventArgs e )
+        {
+            BindGroupAttributesInheritedGrid();
+        }
+        
         /// <summary>
         /// Handles the GridRebind event of the gGroupAttributes control.
         /// </summary>
@@ -1327,6 +1424,7 @@ namespace RockWeb.Blocks.Crm
             }
 
             GroupAttributesState.RemoveEntity( attribute.Guid );
+            attribute.Order = GroupAttributesState.Any() ? GroupAttributesState.Max( a => a.Order ) + 1 : 0;
             GroupAttributesState.Add( attribute );
 
             BindGroupAttributesGrid();
@@ -1334,11 +1432,22 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
+        /// Binds the group attributes inherited grid.
+        /// </summary>
+        private void BindGroupAttributesInheritedGrid()
+        {
+            gGroupAttributesInherited.DataSource = GroupAttributesInheritedState;
+            gGroupAttributesInherited.DataBind();
+            rcGroupAttributesInherited.Visible = GroupAttributesInheritedState.Any();
+        }
+
+        /// <summary>
         /// Binds the group type attributes grid.
         /// </summary>
         private void BindGroupAttributesGrid()
         {
-            gGroupAttributes.DataSource = GroupAttributesState.ToList();
+            SetAttributeListOrder( GroupAttributesState );
+            gGroupAttributes.DataSource = GroupAttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             gGroupAttributes.DataBind();
         }
 
@@ -1393,6 +1502,17 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
+        /// Handles the GridReorder event of the gGroupMemberAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gGroupMemberAttributes_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            ReorderAttributeList( GroupMemberAttributesState, e.OldIndex, e.NewIndex );
+            BindGroupMemberAttributesGrid();
+        }
+
+        /// <summary>
         /// Handles the Delete event of the gGroupMemberAttributes control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -1406,6 +1526,16 @@ namespace RockWeb.Blocks.Crm
             BindGroupMemberAttributesGrid();
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gGroupMemberAttributesInherited control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gGroupMemberAttributesInherited_GridRebind( object sender, EventArgs e )
+        {
+            BindGroupMemberAttributesInheritedGrid();
+        }
+        
         /// <summary>
         /// Handles the GridRebind event of the gGroupMemberAttributes control.
         /// </summary>
@@ -1433,6 +1563,7 @@ namespace RockWeb.Blocks.Crm
             }
 
             GroupMemberAttributesState.RemoveEntity( attribute.Guid );
+            attribute.Order = GroupMemberAttributesState.Any() ? GroupMemberAttributesState.Max( a => a.Order ) + 1 : 0;
             GroupMemberAttributesState.Add( attribute );
 
             BindGroupMemberAttributesGrid();
@@ -1440,16 +1571,72 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
+        /// Binds the group member attributes inherited grid.
+        /// </summary>
+        private void BindGroupMemberAttributesInheritedGrid()
+        {
+            gGroupMemberAttributesInherited.DataSource = GroupMemberAttributesInheritedState;
+            gGroupMemberAttributesInherited.DataBind();
+            rcGroupMemberAttributesInherited.Visible = GroupMemberAttributesInheritedState.Any();
+        }
+
+        /// <summary>
         /// Binds the group type attributes grid.
         /// </summary>
         private void BindGroupMemberAttributesGrid()
         {
-            gGroupMemberAttributes.DataSource = GroupMemberAttributesState.ToList();
+            SetAttributeListOrder( GroupMemberAttributesState );
+            gGroupMemberAttributes.DataSource = GroupMemberAttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             gGroupMemberAttributes.DataBind();
         }
 
         #endregion
 
+        /// <summary>
+        /// Helper class for inherited attributes
+        /// </summary>
+        [Serializable]
+        protected class InheritedAttribute
+        {
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the URL.
+            /// </summary>
+            /// <value>
+            /// The URL.
+            /// </value>
+            public string Url { get; set; }
+
+            /// <summary>
+            /// Gets or sets the type of the group.
+            /// </summary>
+            /// <value>
+            /// The type of the group.
+            /// </value>
+            public string GroupType { get; set; }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="InheritedAttribute"/> class.
+            /// </summary>
+            /// <param name="name">The name.</param>
+            /// <param name="url">The URL.</param>
+            /// <param name="groupType">Type of the group.</param>
+            public InheritedAttribute( string name, string url, string groupType )
+            {
+                Name = name;
+                Url = url;
+                GroupType = groupType;
+            }
+        }
 
     }
+
+
 }
