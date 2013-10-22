@@ -107,7 +107,15 @@ namespace Rock.Rest.Controllers
             Service service = new Service();
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             parameters.Add( "startDate", options.StartDate );
-            parameters.Add( "endDate", options.EndDate );
+            if ( options.EndDate.HasValue )
+            {
+                parameters.Add( "endDate", options.EndDate.Value );
+            }
+            else
+            {
+                parameters.Add( "endDate", DateTime.MaxValue );
+            }
+
             if ( options.AccountIds != null )
             {
                 parameters.Add( "accountIds", options.AccountIds.AsDelimited( "," ) );
@@ -169,7 +177,7 @@ namespace Rock.Rest.Controllers
 
             qry = qry
                 .Where( a => a.TransactionDateTime >= options.StartDate )
-                .Where( a => a.TransactionDateTime < options.EndDate )
+                .Where( a => a.TransactionDateTime < ( options.EndDate ?? DateTime.MaxValue ) )
                 .OrderBy( a => a.TransactionDateTime );
 
             if ( personId.HasValue )
@@ -177,7 +185,7 @@ namespace Rock.Rest.Controllers
                 // get transactions for a specific person
                 qry = qry.Where( a => a.AuthorizedPersonId == personId.Value );
             }
-            else 
+            else
             {
                 // get transactions for all the persons in the specified group that have specified that group as their GivingGroup
                 GroupMemberService groupMemberService = new GroupMemberService();
@@ -191,7 +199,7 @@ namespace Rock.Rest.Controllers
                 qry = qry.Where( a => options.AccountIds.Contains( a.TransactionDetails.FirstOrDefault().AccountId ) );
             }
 
-            var selectQry = qry.Select( a => new 
+            var selectQry = qry.Select( a => new
             {
                 a.TransactionDateTime,
                 CurrencyTypeValueName = a.CurrencyTypeValue.Name,
