@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using Rock.Wpf;
 
 namespace Rock.Apps.StatementGenerator
 {

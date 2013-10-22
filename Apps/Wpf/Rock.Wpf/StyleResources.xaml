@@ -180,6 +180,13 @@
                 Value="#515151"></Setter>
     </Style>
 
+    <Style x:Key="labelStyleIconPrimary"
+           BasedOn="{StaticResource labelStyleIcon}"
+           TargetType="{x:Type Label}">
+        <Setter Property="Label.Foreground"
+                Value="White"></Setter>
+    </Style>
+
     <!-- Label style: Button Text-->
     <Style x:Key="labelStyleButtonText"
            TargetType="{x:Type Label}">
@@ -193,6 +200,13 @@
                 Value="Normal"></Setter>
         <Setter Property="Label.Foreground"
                 Value="#515151"></Setter>
+    </Style>
+
+    <Style x:Key="labelStyleButtonTextPrimary"
+           BasedOn="{StaticResource labelStyleButtonText}"
+           TargetType="{x:Type Label}">
+        <Setter Property="Label.Foreground"
+                Value="White"></Setter>
     </Style>
 
     <!-- Textblock Style: Grid Data  -->

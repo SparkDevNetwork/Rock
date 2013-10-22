@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.Windows;
+using Rock.Wpf;
 
 namespace Rock.Apps.CheckScannerUtility
 {
