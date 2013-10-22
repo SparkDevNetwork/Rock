@@ -1,4 +1,4 @@
-﻿<Window x:Class="Rock.Apps.CheckScannerUtility.ErrorMessageWindow"
+﻿<Window x:Class="Rock.Wpf.ErrorMessageWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Oops..."
@@ -9,8 +9,10 @@
         FontFamily="./resources/#Open Sans"
         FontSize="14"
         Background="#efefef"
-        WindowStartupLocation="CenterScreen"
-        >
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <ResourceDictionary Source="StyleResources.xaml" />
+    </Window.Resources>
     <StackPanel Margin="8">
         <Label Style="{StaticResource labelStyleLegend}">Ah Man... An Error Occurred...</Label>
         <Label Style="{StaticResource labelStyle}">An error has occurred while processing your request.</Label>
@@ -24,7 +26,7 @@
                  Height="90"
                  IsReadOnly="True"
                  FontSize="12"
-                 TextWrapping="Wrap"/>
+                 TextWrapping="Wrap" />
         <Button Name="OK"
                 Margin="8"
                 Style="{StaticResource buttonStyle}"

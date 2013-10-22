@@ -5,7 +5,7 @@
 //
 using System.Windows;
 
-namespace Rock.Apps.StatementGenerator
+namespace Rock.Wpf
 {
     /// <summary>
     /// Interaction logic for ErrorMessageWindow.xaml

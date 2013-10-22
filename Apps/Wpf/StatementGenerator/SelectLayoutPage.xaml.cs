@@ -7,6 +7,7 @@ using System.Windows.Documents;
 using System.Xml;
 using ceTe.DynamicPDF.ReportWriter;
 using Microsoft.Win32;
+using Rock.Wpf;
 using Path = System.IO.Path;
 
 namespace Rock.Apps.StatementGenerator

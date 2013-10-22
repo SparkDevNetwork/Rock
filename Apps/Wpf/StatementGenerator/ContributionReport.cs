@@ -151,8 +151,8 @@ namespace Rock.Apps.StatementGenerator
             {
                 StartDate = Options.StartDate,
                 EndDate = Options.EndDate,
-                AccountIds = null,
-                PersonId = null,
+                AccountIds = Options.AccountIds,
+                PersonId = Options.PersonId,
                 OrderByZipCode = true
             };
 

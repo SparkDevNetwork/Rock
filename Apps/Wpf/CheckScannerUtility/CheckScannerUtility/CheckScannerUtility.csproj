@@ -112,9 +112,6 @@
     <Compile Include="BatchItemDetailPage.xaml.cs">
       <DependentUpon>BatchItemDetailPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ErrorMessageWindow.xaml.cs">
-      <DependentUpon>ErrorMessageWindow.xaml</DependentUpon>
-    </Compile>
     <Compile Include="OptionsPage.xaml.cs">
       <DependentUpon>OptionsPage.xaml</DependentUpon>
     </Compile>
@@ -130,10 +127,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="BatchPage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ErrorMessageWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -214,6 +207,10 @@
     <ProjectReference Include="..\..\..\..\Rock\Rock.csproj">
       <Project>{8f8c2a79-24f4-4157-8b99-45f75fa85799}</Project>
       <Name>Rock</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Rock.Wpf\Rock.Wpf.csproj">
+      <Project>{90440596-fa0a-45e7-8872-3da47786f6a7}</Project>
+      <Name>Rock.Wpf</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

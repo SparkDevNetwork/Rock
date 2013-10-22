@@ -8,6 +8,7 @@ using System.Net;
 using System.Windows;
 using System.Windows.Controls;
 using Rock.Net;
+using Rock.Wpf;
 
 namespace Rock.Apps.StatementGenerator
 {

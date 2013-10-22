@@ -73,9 +73,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ErrorMessageWindow.xaml.cs">
-      <DependentUpon>ErrorMessageWindow.xaml</DependentUpon>
-    </Compile>
     <Compile Include="LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
     </Compile>
@@ -104,11 +101,6 @@
     <Compile Include="StartPage.xaml.cs">
       <DependentUpon>StartPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="WpfHelper.cs" />
-    <Page Include="ErrorMessageWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="images\rock-logo.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -192,6 +184,10 @@
       <Project>{8f8c2a79-24f4-4157-8b99-45f75fa85799}</Project>
       <Name>Rock</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rock.Wpf\Rock.Wpf.csproj">
+      <Project>{90440596-fa0a-45e7-8872-3da47786f6a7}</Project>
+      <Name>Rock.Wpf</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="rock-logo.jpg">
@@ -199,13 +195,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="images\header-texture.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="images\light-texture.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="resources\favicon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="images\header-texture.png" />
+    <Resource Include="images\light-texture.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

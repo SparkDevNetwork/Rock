@@ -21,6 +21,7 @@ using System.Windows.Media.Imaging;
 using Rock.Constants;
 using Rock.Model;
 using Rock.Net;
+using Rock.Wpf;
 
 namespace Rock.Apps.CheckScannerUtility
 {
@@ -342,7 +343,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             if ( ScannedCheckList.Where( a => !a.Uploaded ).Count() > 0 )
             {
-                FadeIn( lblUploadProgress );
+                WpfHelper.FadeIn( lblUploadProgress );
 
                 // use a backgroundworker to do the work so that we can have an updatable progressbar in the UI
                 BackgroundWorker bwUploadScannedChecks = new BackgroundWorker();
@@ -352,47 +353,6 @@ namespace Rock.Apps.CheckScannerUtility
                 bwUploadScannedChecks.WorkerReportsProgress = true;
                 bwUploadScannedChecks.RunWorkerAsync();
             }
-        }
-
-        /// <summary>
-        /// Toggles the fade.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="speed">The speed.</param>
-        public void FadeIn( Control control, int speed = 0 )
-        {
-            control.Opacity = 0;
-            control.Visibility = Visibility.Visible;
-            Storyboard storyboard = new Storyboard();
-            TimeSpan duration = new TimeSpan( 0, 0, 0, 0, (int)speed );
-            DoubleAnimation fadeInAnimation = new DoubleAnimation { From = 0.0, To = 1.0, Duration = new Duration( duration ) };
-            Storyboard.SetTargetName( fadeInAnimation, control.Name );
-            Storyboard.SetTargetProperty( fadeInAnimation, new PropertyPath( "Opacity", 1 ) );
-            storyboard.Children.Add( fadeInAnimation );
-            storyboard.Begin( control );
-        }
-
-        /// <summary>
-        /// Fades the out.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="speed">The speed.</param>
-        public void FadeOut( Control control, int speed = 2000 )
-        {
-            Storyboard storyboard = new Storyboard();
-            TimeSpan duration = new TimeSpan( 0, 0, 0, 0, (int)speed );
-            DoubleAnimation fadeOutAnimation = new DoubleAnimation { From = 1.0, To = 0.0, Duration = new Duration( duration ) };
-            Storyboard.SetTargetName( fadeOutAnimation, control.Name );
-            Storyboard.SetTargetProperty( fadeOutAnimation, new PropertyPath( "Opacity", 0 ) );
-            storyboard.Children.Add( fadeOutAnimation );
-
-            EventHandler handleCompleted = new EventHandler( (sender, e) => 
-            {
-                control.Visibility = Visibility.Collapsed;
-            } );
-
-            storyboard.Completed += handleCompleted;
-            storyboard.Begin( control );
         }
         
         /// <summary>
@@ -405,12 +365,12 @@ namespace Rock.Apps.CheckScannerUtility
             if ( e.Error == null )
             {
                 lblUploadProgress.Content = "Uploading Scanned Checks: Complete";
-                FadeOut( lblUploadProgress );
+                WpfHelper.FadeOut( lblUploadProgress );
                 UpdateBatchUI( grdBatches.SelectedValue as FinancialBatch );
             }
             else
             {
-                FadeOut( lblUploadProgress );
+                WpfHelper.FadeOut( lblUploadProgress );
                 MessageBox.Show( string.Format( "Upload Error: {0}", e.Error.Message ) );
             }
         }
@@ -541,7 +501,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             bdrBatchDetailReadOnly.Visibility = Visibility.Visible;
             bdrBatchDetailEdit.Visibility = Visibility.Collapsed;
-            FadeOut( lblUploadProgress, 0 );
+            WpfHelper.FadeOut( lblUploadProgress, 0 );
             ConnectToScanner();
             LoadComboBoxes();
             LoadFinancialBatchesGrid();
