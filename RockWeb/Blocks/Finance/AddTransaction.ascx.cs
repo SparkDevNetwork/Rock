@@ -1401,7 +1401,7 @@ achieve our mission.  We are so grateful for your commitment.
                     var mm = curr.getMonth()+1;
                     var yy = curr.getFullYear();
                     $dateInput.val(mm+'/'+dd+'/'+yy);
-                    $dateInput.data('kendoDatePicker').value(mm+'/'+dd+'/'+yy);
+                    $dateInput.data('datePicker').value(mm+'/'+dd+'/'+yy);
                 }}
             }};
             
