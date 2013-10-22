@@ -55,7 +55,7 @@
         </asp:Panel>
 
         <div class="actions">
-            <asp:LinkButton ID="btnPrevious" runat="server" Text="Previous" CssClass="btn" OnClick="btnPrevious_Click" Visible="false" CausesValidation="false" />
+            <asp:LinkButton ID="btnPrevious" runat="server" Text="Previous" CssClass="btn btn-default" OnClick="btnPrevious_Click" Visible="false" CausesValidation="false" />
             <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnNext_Click" />
         </div>
 
