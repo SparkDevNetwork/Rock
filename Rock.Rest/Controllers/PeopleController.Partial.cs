@@ -83,8 +83,6 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         public IQueryable<PersonSearchResult> Search( string name, bool includeHtml)
         {
-            System.Diagnostics.Debug.WriteLine( "Search Term: " + name );
-            
             int count = 20;
             bool lastFirst;
             IOrderedQueryable<Person> sortedPersonQry = new PersonService().Queryable().QueryByName( name, out lastFirst );
