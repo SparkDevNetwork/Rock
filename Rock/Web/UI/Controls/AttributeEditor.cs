@@ -444,7 +444,7 @@ namespace Rock.Web.UI.Controls
             _cvKey.ServerValidate += cvKey_ServerValidate;
             _cvKey.Display = ValidatorDisplay.Dynamic;
             _cvKey.CssClass = "validation-error help-inline";
-            _cvKey.ErrorMessage = "There is already an existing property with the key value you entered.  Please select a different key value";
+            _cvKey.ErrorMessage = "There is already an existing property with the key value you entered.  Please select a different key value.";
             Controls.Add( _cvKey );
 
             _tbDescription.ID = string.Format("tbDescription_{0}", this.ID);
@@ -506,7 +506,7 @@ namespace Rock.Web.UI.Controls
             _cbShowInGrid.ID = string.Format( "cbShowInGrid_{0}", this.ID );
             _cbShowInGrid.Label = "Show in Grid";
             _cbShowInGrid.Text = "Yes";
-            _cbShowInGrid.Help = "When items are displayed in a grid, should this attribute be included as a column on the grid?"; 
+            _cbShowInGrid.Help = "If selected, this attribute will be included in a grid.";
             Controls.Add( _cbShowInGrid );
 
             _btnSave = new LinkButton { ID = string.Format( "btnSave_{0}", this.ID ) };
