@@ -25,12 +25,9 @@
                 ckEditorId = this.ckEditorId,
                 approvalId = this.approvalId;
 
-            $('#html-content-edit-' + blockId + ' .date-picker').kendoDatePicker({
-                open: function () {
-                    setTimeout(function () {
-                        $('.k-calendar-container').parent('.k-animation-container').css({ zindex: 200000 });
-                    }, 1);
-                }
+            $('#html-content-edit-' + blockId + ' .date-picker').datepicker({
+                autoclose: true,
+                todayBtn: true
             });
 
             $('#html-content-version-' + blockId).click(function () {
