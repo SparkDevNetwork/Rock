@@ -11,8 +11,8 @@
                     <Rock:ReorderField />
                     <asp:BoundField DataField="Name" HeaderText="Name" />
                     <asp:BoundField DataField="Description" HeaderText="Description" />
-                    <asp:BoundField DataField="MinCount" HeaderText="Minumum Allowed" />
-                    <asp:BoundField DataField="MaxCount" HeaderText="Maximum Allowed" />
+                    <asp:BoundField DataField="MinCount" HeaderText="Minumum" />
+                    <asp:BoundField DataField="MaxCount" HeaderText="Maximum" />
                     <Rock:BoolField DataField="IsSystem" HeaderText="System" />
                     <Rock:DeleteField OnClick="gGroupRoles_Delete" />
                 </Columns>

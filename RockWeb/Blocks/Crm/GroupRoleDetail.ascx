@@ -30,9 +30,11 @@
 
         <div class="row">
             <div class="col-md-6">
-                <Rock:DataTextBox ID="tbMinCount" runat="server" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="MinCount" Label="Minimum Allowed" Help="The minumum number of group members in a group that should have this role" ValidationGroup="GroupRoleDetail" />
-                <Rock:DataTextBox ID="tbMaxCount" runat="server" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="MaxCount" Label="Maximum Allowed" Help="The maximum number of group members in a group that are allowed to have this role" ValidationGroup="GroupRoleDetail" />
-            </div>
+                <Rock:NumberRangeEditor ID="nreMembersAllowed" runat="server" NumberType="Integer" Label="Number Allowed in Group" 
+                    Help="The minimum and/or maximum number of members allowed with this role in each group" ValidationGroup="GroupRoleDetail" />
+                <asp:CustomValidator ID="cvAllowed" runat="server" Display="None" OnServerValidate="cvAllowed_ServerValidate" 
+                    ValidationGroup="GroupRoleDetail" ErrorMessage="The Number Allowed in Group should have a minimum number allowed that is less than the maximum number allowed." />
+             </div>
             <div class="col-md-6">
                 <asp:PlaceHolder ID="phAttributes" runat="server" />
             </div>
