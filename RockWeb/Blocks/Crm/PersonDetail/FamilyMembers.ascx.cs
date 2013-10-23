@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     {
                         var members = group.Members
                             .Where( m => m.PersonId != Person.Id )
-                            .OrderBy( m => m.GroupRole.SortOrder )
+                            .OrderBy( m => m.GroupRole.Order )
                             .ToList();
 
                         var orderedMembers = new List<GroupMember>();
@@ -237,7 +237,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if (!families.Any())
             {
-                var role = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) );
+                var role = new GroupTypeRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) );
                 if ( role != null && role.GroupTypeId.HasValue )
                 {
                     var groupMember = new GroupMember();

@@ -338,7 +338,7 @@ namespace Rock.Data
         /// <value>
         /// the Group Roles.
         /// </value>
-        public DbSet<GroupRole> GroupRoles { get; set; }
+        public DbSet<GroupTypeRole> GroupRoles { get; set; }
 
         /// <summary>
         /// Gets or sets the Group Types.

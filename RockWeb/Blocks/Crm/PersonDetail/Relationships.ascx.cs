@@ -173,7 +173,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                         if ( group == null && bool.Parse( GetAttributeValue( "CreateGroup" ) ) )
                         {
-                            var role = new GroupRoleService().Get( ownerRoleGuid );
+                            var role = new GroupTypeRoleService().Get( ownerRoleGuid );
                             if ( role != null && role.GroupTypeId.HasValue )
                             {
                                 var groupMember = new GroupMember();
@@ -229,7 +229,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             Guid roleGuid = Guid.Empty;
             if ( Guid.TryParse( GetAttributeValue( "GroupType/RoleFilter" ), out roleGuid ) )
             {
-                grpRole.GroupTypeId = new GroupRoleService().Queryable()
+                grpRole.GroupTypeId = new GroupTypeRoleService().Queryable()
                     .Where( r => r.Guid == roleGuid )
                     .Select( r => r.GroupTypeId )
                     .FirstOrDefault();

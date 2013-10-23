@@ -20,8 +20,6 @@
 
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
 
-
-
             <div id="pnlEditDetails" runat="server">
 
                 <fieldset>

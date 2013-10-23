@@ -758,11 +758,11 @@
     </Compile>
     <Compile Include="Model\TransactionSearchValue.cs" />
     <Compile Include="Model\Group.cs" />
-    <Compile Include="Model\CodeGenerated\GroupRoleService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupTypeRoleService.cs" />
     <Compile Include="Model\CodeGenerated\GroupService.cs" />
     <Compile Include="Model\GroupService.Partial.cs" />
-    <Compile Include="Model\GroupRole.cs" />
-    <Compile Include="Model\GroupRoleService.Partial.cs" />
+    <Compile Include="Model\GroupTypeRole.cs" />
+    <Compile Include="Model\GroupTypeRoleService.Partial.cs" />
     <Compile Include="Model\GroupType.cs" />
     <Compile Include="Model\CodeGenerated\GroupTypeService.cs" />
     <Compile Include="Model\GroupTypeService.Partial.cs" />
