@@ -2,31 +2,31 @@
 -- from http://www.sql-server-helper.com/functions/comma-delimited-to-table
 --
 -- drop/create the function
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ufn_csv_to_table]') and [type] = 'TF')
-BEGIN
-    DROP FUNCTION [dbo].[ufn_csv_to_table];
-END
-GO
+if exists (select * from sys.objects where object_id = OBJECT_ID(N'[dbo].[ufn_csv_to_table]') and [type] = 'TF')
+begin
+    drop function [dbo].[ufn_csv_to_table];
+end
+go
 
-CREATE FUNCTION [dbo].[ufn_csv_to_table] ( @input VARCHAR(max) )
-RETURNS @outputTable TABLE ( [id] int )
-AS
-BEGIN
-    DECLARE @numericString VARCHAR(10)
+create function [dbo].[ufn_csv_to_table] ( @input varchar(max) )
+returns @outputTable table ( [id] int )
+as
+begin
+    declare @numericstring varchar(10)
 
-    WHILE LEN(@input) > 0
-    BEGIN
-        SET @numericString      = LEFT(@input, 
+    while LEN(@input) > 0
+    begin
+        set @numericString      = LEFT(@input, 
                                 ISNULL(NULLIF(CHARINDEX(',', @input) - 1, -1),
                                 LEN(@input)))
-        SET @input = SUBSTRING(@input,
+        set @input = SUBSTRING(@input,
                                      ISNULL(NULLIF(CHARINDEX(',', @input), 0),
                                      LEN(@input)) + 1, LEN(@input))
 
-        INSERT INTO @OutputTable ( [id] )
-        VALUES ( CAST(@numericString AS INT) )
-    END
+        insert into @OutputTable ( [id] )
+        values ( CAST(@numericString as int) )
+    end
     
-    RETURN
-END
-GO
+    return
+end
+go
