@@ -3,10 +3,10 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
 using System;
 using System.Linq;
 using System.Web.UI;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -176,8 +176,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
         public void SetDimmed( bool dimmed )
         {
-            pnlGroupRoles.Disabled = dimmed;
-            gGroupRoles.Enabled = !dimmed;
+            pnlContent.Visible = !dimmed;
         }
 
         #endregion
