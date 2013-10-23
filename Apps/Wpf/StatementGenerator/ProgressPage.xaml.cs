@@ -80,6 +80,7 @@ namespace Rock.Apps.StatementGenerator
 
             if ( doc != null )
             {
+                ShowProgress(0,0, "Rendering PDF..." );   
                 MemoryStream ms = new MemoryStream();
                 doc.Draw( ms );
 
