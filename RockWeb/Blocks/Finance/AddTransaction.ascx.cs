@@ -789,7 +789,7 @@ achieve our mission.  We are so grateful for your commitment.
                             // Create Family Role
                             var groupMember = new GroupMember();
                             groupMember.Person = person;
-                            groupMember.GroupRole = new GroupRoleService().Get(new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) );
+                            groupMember.GroupRole = new GroupTypeRoleService().Get(new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) );
 
                             // Create Family
                             var group = new Group();

@@ -727,11 +727,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
             groupMember.PersonId = person.Id;
             if ( person.Age >= 18 )
             {
-                groupMember.GroupRoleId = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ).Id;
+                groupMember.GroupRoleId = new GroupTypeRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ).Id;
             }
             else
             {
-                groupMember.GroupRoleId = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) ).Id;
+                groupMember.GroupRoleId = new GroupTypeRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) ).Id;
             }
 
             Rock.Data.RockTransactionScope.WrapTransaction( () =>
@@ -751,7 +751,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void AddVisitorGroupMemberRoles( CheckInFamily family, int personId )
         {
             GroupMemberService groupMemberService = new GroupMemberService();
-            GroupRoleService groupRoleService = new GroupRoleService();
+            GroupTypeRoleService groupRoleService = new GroupTypeRoleService();
             int ownerRoleId = groupRoleService.Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ).Id;
             int canCheckInId = groupRoleService.Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ).Id;
             foreach ( var familyMember in family.People )
@@ -765,7 +765,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                 if ( group == null )
                 {
-                    var role = new GroupRoleService().Get( ownerRoleId );
+                    var role = new GroupTypeRoleService().Get( ownerRoleId );
                     if ( role != null && role.GroupTypeId.HasValue )
                     {
                         var groupMember = new GroupMember().Clone( false );

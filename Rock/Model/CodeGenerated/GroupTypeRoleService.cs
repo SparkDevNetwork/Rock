@@ -20,29 +20,29 @@ namespace Rock.Model
     /// <summary>
     /// GroupRole Service class
     /// </summary>
-    public partial class GroupRoleService : Service<GroupRole>
+    public partial class GroupTypeRoleService : Service<GroupTypeRole>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupRoleService"/> class
+        /// Initializes a new instance of the <see cref="GroupTypeRoleService"/> class
         /// </summary>
-        public GroupRoleService()
+        public GroupTypeRoleService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupRoleService"/> class
+        /// Initializes a new instance of the <see cref="GroupTypeRoleService"/> class
         /// </summary>
         /// <param name="repository">The repository.</param>
-        public GroupRoleService(IRepository<GroupRole> repository) : base(repository)
+        public GroupTypeRoleService(IRepository<GroupTypeRole> repository) : base(repository)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupRoleService"/> class
+        /// Initializes a new instance of the <see cref="GroupTypeRoleService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public GroupRoleService(RockContext context) : base(context)
+        public GroupTypeRoleService(RockContext context) : base(context)
         {
         }
 
@@ -54,19 +54,19 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( GroupRole item, out string errorMessage )
+        public bool CanDelete( GroupTypeRole item, out string errorMessage )
         {
             errorMessage = string.Empty;
  
             if ( new Service<GroupMember>().Queryable().Any( a => a.GroupRoleId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupRole.FriendlyTypeName, GroupMember.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupTypeRole.FriendlyTypeName, GroupMember.FriendlyTypeName );
                 return false;
             }  
  
             if ( new Service<GroupType>().Queryable().Any( a => a.DefaultGroupRoleId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupRole.FriendlyTypeName, GroupType.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupTypeRole.FriendlyTypeName, GroupType.FriendlyTypeName );
                 return false;
             }  
             return true;
@@ -84,20 +84,20 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static GroupRole Clone( this GroupRole source, bool deepCopy )
+        public static GroupTypeRole Clone( this GroupTypeRole source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as GroupRole;
+                return source.Clone() as GroupTypeRole;
             }
             else
             {
-                var target = new GroupRole();
+                var target = new GroupTypeRole();
                 target.IsSystem = source.IsSystem;
                 target.GroupTypeId = source.GroupTypeId;
                 target.Name = source.Name;
                 target.Description = source.Description;
-                target.SortOrder = source.SortOrder;
+                target.Order = source.Order;
                 target.MaxCount = source.MaxCount;
                 target.MinCount = source.MinCount;
                 target.IsLeader = source.IsLeader;

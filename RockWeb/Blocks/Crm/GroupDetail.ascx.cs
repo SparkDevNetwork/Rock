@@ -534,7 +534,7 @@ namespace RockWeb.Blocks.Crm
 
                 if ( roleBelowMimumumMembership && roleId > 0 )
                 {
-                    GroupRole role = new GroupRoleService().Get( roleId );
+                    GroupTypeRole role = new GroupTypeRoleService().Get( roleId );
 
                     if(role.MinCount != null)
                     {

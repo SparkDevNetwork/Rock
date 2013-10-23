@@ -15,12 +15,12 @@ namespace Rock.Model
 {
     /// <summary>
     /// Represents a role that a <see cref="Rock.Model.GroupMember"/> can have in a <see cref="Rock.Model.Group"/>.  In RockChMS each member of a group has one 
-    /// or more <see cref="Rock.Model.GroupRole">GroupRoles</see> assigned to them (for instance the leader of a group can have both a leader and member role). Examples
+    /// or more <see cref="Rock.Model.GroupTypeRole">GroupRoles</see> assigned to them (for instance the leader of a group can have both a leader and member role). Examples
     /// of roles include leader, member, team leader, coach, host, etc.
     /// </summary>
-    [Table( "GroupRole" )]
+    [Table( "GroupTypeRole" )]
     [DataContract]
-    public partial class GroupRole : Model<GroupRole>
+    public partial class GroupTypeRole : Model<GroupTypeRole>, IOrdered
     {
 
         #region Entity Properties
@@ -71,7 +71,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the sort order of the GroupRole.
         /// </value>
         [DataMember( IsRequired = true )]
-        public int? SortOrder { get; set; }
+        public int Order { get; set; }
 
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace Rock.Model
     /// <summary>
     /// Group Role Configuration class.
     /// </summary>
-    public partial class GroupRoleConfiguration : EntityTypeConfiguration<GroupRole>
+    public partial class GroupRoleConfiguration : EntityTypeConfiguration<GroupTypeRole>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupRoleConfiguration"/> class.

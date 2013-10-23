@@ -633,9 +633,9 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void LoadDropDowns(int? groupTypeId)
         {
-            GroupRoleService groupRoleService = new GroupRoleService();
-            List<GroupRole> groupRoles = groupRoleService.Queryable().Where(a => a.GroupTypeId == groupTypeId).OrderBy( a => a.Name ).ToList();
-            groupRoles.Insert( 0, new GroupRole { Id = None.Id, Name = None.Text } );
+            GroupTypeRoleService groupRoleService = new GroupTypeRoleService();
+            List<GroupTypeRole> groupRoles = groupRoleService.Queryable().Where(a => a.GroupTypeId == groupTypeId).OrderBy( a => a.Name ).ToList();
+            groupRoles.Insert( 0, new GroupTypeRole { Id = None.Id, Name = None.Text } );
             ddlDefaultGroupRole.DataSource = groupRoles;
             ddlDefaultGroupRole.DataBind();
 

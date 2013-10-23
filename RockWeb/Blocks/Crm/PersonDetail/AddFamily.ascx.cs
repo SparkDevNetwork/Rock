@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             cpCampus.Campuses = campusi;
             cpCampus.Visible = campusi.Any();
 
-            var childRole = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) );
+            var childRole = new GroupTypeRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) );
             if ( childRole != null )
             {
                 _childRoleId = childRole.Id;
