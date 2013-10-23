@@ -30,6 +30,7 @@ namespace Rock.Apps.StatementGenerator
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void Page_Loaded( object sender, RoutedEventArgs e )
         {
+            btnSaveAs.Visibility = Visibility.Hidden;
             lblReportProgress.Visibility = System.Windows.Visibility.Hidden;
             lblReportProgress.Content = "Progress - Creating Statements";
             WpfHelper.FadeIn( lblReportProgress, 2000 );
@@ -57,6 +58,7 @@ namespace Rock.Apps.StatementGenerator
             {
                 _pdfOutput = e.Result as byte[];
                 lblReportProgress.Content = "Complete";
+                btnSaveAs.Visibility = Visibility.Visible;
             }
             else
             {
@@ -73,6 +75,7 @@ namespace Rock.Apps.StatementGenerator
         /// <exception cref="System.NotImplementedException"></exception>
         protected void bw_DoWork( object sender, DoWorkEventArgs e )
         {
+            
             ContributionReport contributionReport = new ContributionReport( ReportOptions.Current );
             contributionReport.OnProgress += contributionReport_OnProgress;
 
