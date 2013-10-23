@@ -273,6 +273,10 @@
     <Compile Include="Migrations\201310112336543_GivingGroup.Designer.cs">
       <DependentUpon>201310112336543_GivingGroup.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201310230524455_ContributionStatements.cs" />
+    <Compile Include="Migrations\201310230524455_ContributionStatements.Designer.cs">
+      <DependentUpon>201310230524455_ContributionStatements.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -281,6 +285,7 @@
     <Compile Include="Model\LayoutService.Partial.cs" />
     <Compile Include="Model\Layout.cs" />
     <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
+    <Compile Include="Net\RestParameters\ContributionStatementOptions.cs" />
     <Compile Include="PersonProfile\Badge\Baptized.cs" />
     <Compile Include="PersonProfile\Badge\NextSteps.cs">
       <SubType>Code</SubType>
@@ -1152,6 +1157,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201310112336543_GivingGroup.resx">
       <DependentUpon>201310112336543_GivingGroup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310230524455_ContributionStatements.resx">
+      <DependentUpon>201310230524455_ContributionStatements.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
