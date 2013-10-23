@@ -164,8 +164,6 @@ namespace Rock.Reporting.DataTransform.Person
             Expression hasValue = Expression.Property( property, "HasValue");
             Expression value = Expression.Constant( selection == "1" );
             return Expression.Equal( hasValue, value);
-
-            return null;
         }
 
         #endregion

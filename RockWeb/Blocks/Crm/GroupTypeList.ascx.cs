@@ -138,6 +138,7 @@ namespace RockWeb.Blocks.Crm
                     a.Id,
                     a.Name,
                     a.Description,
+                    Purpose = a.GroupTypePurposeValue.Name,
                     GroupsCount = a.Groups.Count(),
                     a.IsSystem
                 } );

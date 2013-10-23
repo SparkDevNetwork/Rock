@@ -100,6 +100,7 @@ namespace Rock.Web.UI.Controls
                 DeleteField deleteField = cell.ContainingField as DeleteField;
                 ParentGrid = deleteField.ParentGrid;
                 LinkButton lbDelete = new LinkButton();
+                lbDelete.CausesValidation = false;
                 lbDelete.CssClass = "btn btn-danger btn-sm";
                 lbDelete.ToolTip = "Delete";
 

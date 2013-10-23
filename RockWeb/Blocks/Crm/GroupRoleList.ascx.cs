@@ -20,7 +20,7 @@ namespace RockWeb.Blocks.Crm
     /// 
     /// </summary>
     [LinkedPage("Detail Page")]
-    public partial class GroupRoleList : RockBlock
+    public partial class GroupRoleList : RockBlock, IDimmableBlock
     {
         #region Control Methods
 
@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Crm
             gGroupRoles.Actions.ShowAdd = true;
             gGroupRoles.Actions.AddClick += gGroupRoles_Add;
             gGroupRoles.GridRebind += gGroupRoles_GridRebind;
+            gGroupRoles.GridReorder += gGroupRoles_GridReorder;
 
             // Block Security and special attributes (RockPage takes care of "View")
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
@@ -67,7 +68,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gGroupRoles_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "groupRoleId", 0 );
+            NavigateToLinkedPage( "DetailPage", "roleId", 0, "groupTypeId", hfGroupTypeId.ValueAsInt() );
         }
 
         /// <summary>
@@ -77,7 +78,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gGroupRoles_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "groupRoleId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "roleId", (int)e.RowKeyValue );
         }
 
         /// <summary>
@@ -89,8 +90,8 @@ namespace RockWeb.Blocks.Crm
         {
             RockTransactionScope.WrapTransaction( () =>
             {
-                GroupRoleService groupRoleService = new GroupRoleService();
-                GroupRole groupRole = groupRoleService.Get( (int)e.RowKeyValue );
+                GroupTypeRoleService groupRoleService = new GroupTypeRoleService();
+                GroupTypeRole groupRole = groupRoleService.Get( (int)e.RowKeyValue );
 
                 if ( groupRole != null )
                 {
@@ -107,6 +108,19 @@ namespace RockWeb.Blocks.Crm
             } );
 
             BindGrid();
+        }
+
+        void gGroupRoles_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            int groupTypeId = hfGroupTypeId.ValueAsInt();
+
+            using ( new UnitOfWorkScope() )
+            {
+                var groupRoleService = new GroupTypeRoleService();
+                var groupRoles = groupRoleService.Queryable().Where( r => r.GroupTypeId == groupTypeId ).OrderBy( r => r.Order );
+                groupRoleService.Reorder( groupRoles.ToList(), e.OldIndex, e.NewIndex, CurrentPersonId );
+                BindGrid();
+            }
         }
 
         /// <summary>
@@ -128,28 +142,42 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void BindGrid()
         {
-            GroupRoleService groupRoleService = new GroupRoleService();
-            SortProperty sortProperty = gGroupRoles.SortProperty;
-            var qry = groupRoleService.Queryable().Select( a =>
-                new
-                {
-                    a.Id,
-                    a.Name,
-                    a.Description,
-                    GroupTypeName = a.GroupType.Name,
-                    a.IsSystem
-                } );
+            pnlGroupRoles.Visible = false;
 
-            if ( sortProperty != null )
+            int groupTypeId = PageParameter( "groupTypeId" ).AsInteger() ?? 0;
+            if ( groupTypeId == 0 )
             {
-                gGroupRoles.DataSource = qry.Sort( sortProperty ).ToList();
-            }
-            else
-            {
-                gGroupRoles.DataSource = qry.OrderBy( p => p.Name ).ToList();
+                return;
             }
 
-            gGroupRoles.DataBind();
+            hfGroupTypeId.SetValue( groupTypeId );
+
+            pnlGroupRoles.Visible = true;
+
+            using ( new UnitOfWorkScope() )
+            {
+                var groupType = new GroupTypeService().Get( groupTypeId );
+
+                gGroupRoles.DataSource = new GroupTypeRoleService().Queryable()
+                    .Where( a => a.GroupTypeId == groupTypeId )
+                    .OrderBy( a => a.Order )
+                    .ToList();
+                gGroupRoles.DataBind();
+            }
+        }
+
+        #endregion
+
+        #region IDimmableBlock
+
+        /// <summary>
+        /// Sets the dimmed.
+        /// </summary>
+        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
+        public void SetDimmed( bool dimmed )
+        {
+            pnlGroupRoles.Disabled = dimmed;
+            gGroupRoles.Enabled = !dimmed;
         }
 
         #endregion

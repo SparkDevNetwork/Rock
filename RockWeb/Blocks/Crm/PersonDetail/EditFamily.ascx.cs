@@ -30,7 +30,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private Group _family = null;
         private bool _canEdit = false;
         private DefinedTypeCache addressTypes;
-        private List<GroupRole> familyRoles = new List<GroupRole>();
+        private List<GroupTypeRole> familyRoles = new List<GroupTypeRole>();
         protected string basePersonUrl;
 
         private List<FamilyMember> FamilyMembers
@@ -98,7 +98,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
                 else
                 {
-                    familyRoles = _family.GroupType.Roles.OrderBy( r => r.SortOrder ).ToList();
+                    familyRoles = _family.GroupType.Roles.OrderBy( r => r.Order ).ToList();
                     rblNewPersonRole.DataSource = familyRoles;
                     rblNewPersonRole.DataBind();
                 }
@@ -357,7 +357,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                             var existingFamilyRoles = new GroupMemberService().Queryable("GroupRole")
                                 .Where( m => m.PersonId == person.Id && familyRoleIds.Contains( m.GroupRoleId ) )
-                                .OrderBy( m => m.GroupRole.SortOrder)
+                                .OrderBy( m => m.GroupRole.Order)
                                 .ToList();
 
                             var existingRole = existingFamilyRoles.Select( m => m.GroupRole).FirstOrDefault();

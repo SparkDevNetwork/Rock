@@ -163,7 +163,7 @@ namespace RockWeb.Blocks.Crm
             Group group = new GroupService().Get( groupId );
             if ( group != null )
             {
-                ddlGroupRole.DataSource = group.GroupType.Roles.OrderBy( a => a.SortOrder ).ToList();
+                ddlGroupRole.DataSource = group.GroupType.Roles.OrderBy( a => a.Order ).ToList();
                 ddlGroupRole.DataBind();
             }
 
@@ -369,7 +369,7 @@ namespace RockWeb.Blocks.Crm
             ClearErrorMessage();
 
             int groupMemberId = int.Parse( hfGroupMemberId.Value );
-            GroupRole role = new GroupRoleService().Get( ddlGroupRole.SelectedValueAsInt() ?? 0 );
+            GroupTypeRole role = new GroupTypeRoleService().Get( ddlGroupRole.SelectedValueAsInt() ?? 0 );
             int memberCountInRole = GetGroupMembersInRoleCount();
             bool roleMembershipBelowMinimum = false;
             bool roleMembershipAboveMax = false;

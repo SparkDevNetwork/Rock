@@ -17,8 +17,8 @@ namespace Rock.Model
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.GroupType"/> entities by the Id of their <see cref="Rock.Model.GroupRole."/>.
         /// </summary>
-        /// <param name="defaultGroupRoleId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupRole"/> to search by.</param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.GroupType">GroupTypes</see> that use the provided <see cref="Rock.Model.GroupRole"/> as the 
+        /// <param name="defaultGroupRoleId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupTypeRole"/> to search by.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.GroupType">GroupTypes</see> that use the provided <see cref="Rock.Model.GroupTypeRole"/> as the 
         /// default GroupRole for their member Groups.</returns>
         public IEnumerable<GroupType> GetByDefaultGroupRoleId( int? defaultGroupRoleId )
         {

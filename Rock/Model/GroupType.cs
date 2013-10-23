@@ -93,10 +93,10 @@ namespace Rock.Model
         public string GroupMemberTerm { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.GroupRole"/> that a <see cref="Rock.Model.GroupMember"/> of a <see cref="Rock.Model.Group"/> belonging to this GroupType is given by default.
+        /// Gets or sets the Id of the <see cref="Rock.Model.GroupTypeRole"/> that a <see cref="Rock.Model.GroupMember"/> of a <see cref="Rock.Model.Group"/> belonging to this GroupType is given by default.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupRole"/> that a <see cref="Rock.Model.GroupMember"/> of a <see cref="Rock.Model.Group"/> belonging to this GroupType is given by default.
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupTypeRole"/> that a <see cref="Rock.Model.GroupMember"/> of a <see cref="Rock.Model.Group"/> belonging to this GroupType is given by default.
         /// </value>
         [DataMember]
         public int? DefaultGroupRoleId { get; set; }
@@ -179,7 +179,7 @@ namespace Rock.Model
         /// The available options are:
         /// AttendanceRule.None -> A <see cref="Rock.Model.Person"/> does not have to previously belong to the <see cref="Rock.Model.Group"/> that they are checking into, and they will not be automatically added.
         /// AttendanceRule.AddOnCheckin -> If a <see cref="Rock.Model.Person"/> does not belong to the <see cref="Rock.Model.Group"/> that they are checking into, they will be automatically added with the default
-        /// <see cref="Rock.Model.GroupRole"/> upon check in.
+        /// <see cref="Rock.Model.GroupTypeRole"/> upon check in.
         /// </example>
         [DataMember]
         public AttendanceRule AttendanceRule { get; set; }
@@ -298,12 +298,12 @@ namespace Rock.Model
         /// A collection containing the <see cref="Rock.Model.GroupRole">GroupRoles that are associated with this GroupType.
         /// </value>
         [DataMember]
-        public virtual ICollection<GroupRole> Roles
+        public virtual ICollection<GroupTypeRole> Roles
         {
-            get { return _roles ?? ( _roles = new Collection<GroupRole>() ); }
+            get { return _roles ?? ( _roles = new Collection<GroupTypeRole>() ); }
             set { _roles = value; }
         }
-        private ICollection<GroupRole> _roles;
+        private ICollection<GroupTypeRole> _roles;
 
         /// <summary>
         /// Gets or sets a collection of the <see cref="Rock.Model.GroupTypeLocationType">GroupTypeLocationTypes</see> that are associated with this GroupType.
@@ -321,14 +321,14 @@ namespace Rock.Model
 
 
         /// <summary>
-        /// Gets or sets the default <see cref="Rock.Model.GroupRole"/> for <see cref="Rock.Model.GroupMember">GroupMembers</see> who belong to a 
+        /// Gets or sets the default <see cref="Rock.Model.GroupTypeRole"/> for <see cref="Rock.Model.GroupMember">GroupMembers</see> who belong to a 
         /// <see cref="Rock.Model.Group"/> of this GroupType.
         /// </summary>
         /// <value>
-        /// The default <see cref="Rock.Model.GroupRole"/> for <see cref="Rock.Model.GroupMember">GroupMembers</see> who belong to a <see cref="Rock.Model.Group"/>
+        /// The default <see cref="Rock.Model.GroupTypeRole"/> for <see cref="Rock.Model.GroupMember">GroupMembers</see> who belong to a <see cref="Rock.Model.Group"/>
         /// of this GroupType.
         /// </value>
-        public virtual GroupRole DefaultGroupRole { get; set; }
+        public virtual GroupTypeRole DefaultGroupRole { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.BinaryFile"/> that is used as the small icon representing this GroupType. This is only used when the GroupType uses

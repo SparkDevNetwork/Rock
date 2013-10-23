@@ -277,6 +277,10 @@
     <Compile Include="Migrations\201310230524455_ContributionStatements.Designer.cs">
       <DependentUpon>201310230524455_ContributionStatements.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201310231253281_GroupTypeRole.cs" />
+    <Compile Include="Migrations\201310231253281_GroupTypeRole.Designer.cs">
+      <DependentUpon>201310231253281_GroupTypeRole.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -530,6 +534,7 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\RockControlWrapper.cs" />
     <Compile Include="Web\UI\Controls\HighlightLabel.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BirthdayPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LocationItemPicker.cs" />
@@ -762,11 +767,11 @@
     </Compile>
     <Compile Include="Model\TransactionSearchValue.cs" />
     <Compile Include="Model\Group.cs" />
-    <Compile Include="Model\CodeGenerated\GroupRoleService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupTypeRoleService.cs" />
     <Compile Include="Model\CodeGenerated\GroupService.cs" />
     <Compile Include="Model\GroupService.Partial.cs" />
-    <Compile Include="Model\GroupRole.cs" />
-    <Compile Include="Model\GroupRoleService.Partial.cs" />
+    <Compile Include="Model\GroupTypeRole.cs" />
+    <Compile Include="Model\GroupTypeRoleService.Partial.cs" />
     <Compile Include="Model\GroupType.cs" />
     <Compile Include="Model\CodeGenerated\GroupTypeService.cs" />
     <Compile Include="Model\GroupTypeService.Partial.cs" />
@@ -1159,6 +1164,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201310230524455_ContributionStatements.resx">
       <DependentUpon>201310230524455_ContributionStatements.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310231253281_GroupTypeRole.resx">
+      <DependentUpon>201310231253281_GroupTypeRole.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

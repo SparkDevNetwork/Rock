@@ -867,7 +867,7 @@ namespace Rock.Model
 
                 if ( knownRelationshipGroup != null )
                 {
-                    int? canCheckInRoleId = new GroupRoleService().Queryable()
+                    int? canCheckInRoleId = new GroupTypeRoleService().Queryable()
                         .Where( r =>
                             r.Guid.Equals( new Guid( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) )
                         .Select( r => r.Id )
