@@ -2,6 +2,14 @@
 
 <asp:UpdatePanel ID="upGroupType" runat="server">
     <ContentTemplate>
+        <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
+            <Rock:RockDropDownList ID="ddlPurpose" runat="server" Label="Purpose"></Rock:RockDropDownList>
+            <Rock:RockDropDownList ID="ddlIsSystem" runat="server" Label="System Group Type">
+                <asp:ListItem Value="" Text=" " />
+                <asp:ListItem Value="Yes" Text="Yes" />
+                <asp:ListItem Value="No" Text="No" />
+            </Rock:RockDropDownList>
+        </Rock:GridFilter>
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
         <Rock:Grid ID="gGroupType" runat="server" AllowSorting="true" OnRowSelected="gGroupType_Edit">
             <Columns>
