@@ -281,6 +281,10 @@
     <Compile Include="Migrations\201310231253281_GroupTypeRole.Designer.cs">
       <DependentUpon>201310231253281_GroupTypeRole.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201310231644243_GroupTypeRefactor.cs" />
+    <Compile Include="Migrations\201310231644243_GroupTypeRefactor.Designer.cs">
+      <DependentUpon>201310231644243_GroupTypeRefactor.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -1167,6 +1171,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201310231253281_GroupTypeRole.resx">
       <DependentUpon>201310231253281_GroupTypeRole.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310231644243_GroupTypeRefactor.resx">
+      <DependentUpon>201310231644243_GroupTypeRefactor.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
