@@ -34,24 +34,28 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnLoad( e );
 
-            string groupTypeId = PageParameter( "groupTypeId" );
-            string roleId = PageParameter( "roleId" );
-            if ( !string.IsNullOrWhiteSpace( roleId ) )
+            if ( !Page.IsPostBack )
             {
-                if (string.IsNullOrWhiteSpace(groupTypeId))
+                string groupTypeId = PageParameter( "groupTypeId" );
+                string roleId = PageParameter( "roleId" );
+                if ( !string.IsNullOrWhiteSpace( roleId ) )
                 {
-                    ShowDetail( "roleId", int.Parse( roleId ) );
+                    if ( string.IsNullOrWhiteSpace( groupTypeId ) )
+                    {
+                        ShowDetail( "roleId", int.Parse( roleId ) );
+                    }
+                    else
+                    {
+                        ShowDetail( "roleId", int.Parse( roleId ), int.Parse( groupTypeId ) );
+                    }
                 }
+
                 else
                 {
-                    ShowDetail( "roleId", int.Parse( roleId ), int.Parse( groupTypeId ) );
+                    upDetail.Visible = false;
                 }
             }
 
-            else
-            {
-                upDetail.Visible = false;
-            }
         }
 
         /// <summary>
@@ -125,17 +129,24 @@ namespace RockWeb.Blocks.Crm
                 role.Name = tbName.Text;
                 role.Description = tbDescription.Text;
 
-                role.MinCount = tbMinCount.Text.AsInteger();
-                role.MaxCount = tbMaxCount.Text.AsInteger();
-
-                // validate Min/Max count comparison
-                if ( role.MinCount != null && role.MaxCount != null )
+                var lowerValue = nreMembersAllowed.LowerValue;
+                if ( lowerValue.HasValue )
                 {
-                    if ( role.MinCount > role.MaxCount )
-                    {
-                        tbMinCount.ShowErrorMessage( "Min Count cannot be larger than Max Count" );
-                        return;
-                    }
+                    role.MinCount = Convert.ToInt32( lowerValue.Value );
+                }
+                else
+                {
+                    role.MinCount = null;
+                }
+
+                var upperValue = nreMembersAllowed.UpperValue;
+                if (upperValue.HasValue)
+                {
+                    role.MaxCount = Convert.ToInt32( upperValue.Value );
+                }
+                else
+                {
+                    role.MaxCount = null;
                 }
 
                 if ( !role.IsValid )
@@ -158,7 +169,9 @@ namespace RockWeb.Blocks.Crm
                     Rock.Attribute.Helper.SaveAttributeValues( role, CurrentPersonId );
                 } );
 
-                NavigateToParentPage();
+                Dictionary<string, string> qryString = new Dictionary<string, string>();
+                qryString["groupTypeId"] = role.GroupTypeId.ToString();
+                NavigateToParentPage( qryString );
             }
         }
 
@@ -201,7 +214,7 @@ namespace RockWeb.Blocks.Crm
         {
             ShowDetail( itemKey, itemKeyValue, null );
         }
-        
+
         /// <summary>
         /// Shows the detail.
         /// </summary>
@@ -214,43 +227,57 @@ namespace RockWeb.Blocks.Crm
                 return;
             }
 
-            GroupTypeRole groupRole = null;
+            GroupTypeRole groupTypeRole = null;
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                groupRole = new GroupTypeRoleService().Get( itemKeyValue );
+                groupTypeRole = new GroupTypeRoleService().Get( itemKeyValue );
             }
             else
             {
                 if ( groupTypeId.HasValue )
                 {
-                    groupRole = new GroupTypeRole { Id = 0 };
-                    groupRole.GroupTypeId = groupTypeId.Value;
+                    groupTypeRole = new GroupTypeRole { Id = 0 };
+                    groupTypeRole.GroupTypeId = groupTypeId.Value;
                 }
             }
 
-            if ( groupRole == null )
+            if ( groupTypeRole == null )
             {
                 return;
             }
 
-            hfGroupTypeId.Value = groupRole.GroupTypeId.ToString();
-            hfRoleId.Value = groupRole.Id.ToString();
+            hfGroupTypeId.Value = groupTypeRole.GroupTypeId.ToString();
+            hfRoleId.Value = groupTypeRole.Id.ToString();
 
-            if ( groupRole.Id.Equals( 0 ) )
+            if ( groupTypeRole.Id.Equals( 0 ) )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( GroupTypeRole.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
-                lReadOnlyTitle.Text = groupRole.Name.FormatAsHtmlTitle();
+                lReadOnlyTitle.Text = groupTypeRole.Name.FormatAsHtmlTitle();
             }
 
-            tbName.Text = groupRole.Name;
-            tbDescription.Text = groupRole.Description;
-            tbSortOrder.Text = groupRole.Order != null ? groupRole.Order.ToString() : string.Empty;
-            tbMaxCount.Text = groupRole.MaxCount != null ? groupRole.MaxCount.ToString() : string.Empty;
-            tbMinCount.Text = groupRole.MinCount != null ? groupRole.MinCount.ToString() : string.Empty;
+            tbName.Text = groupTypeRole.Name;
+            tbDescription.Text = groupTypeRole.Description;
+            if ( groupTypeRole.MinCount.HasValue )
+            {
+                nreMembersAllowed.LowerValue = Convert.ToDecimal( groupTypeRole.MinCount.Value );
+            }
+            else
+            {
+                nreMembersAllowed.LowerValue = null;
+            }
+
+            if ( groupTypeRole.MaxCount.HasValue )
+            {
+                nreMembersAllowed.UpperValue = Convert.ToDecimal( groupTypeRole.MaxCount.Value );
+            }
+            else
+            {
+                nreMembersAllowed.UpperValue = null;
+            }
 
             // render UI based on Authorized and IsSystem
 
@@ -268,7 +295,7 @@ namespace RockWeb.Blocks.Crm
             }
 
             bool readOnly = false;
-            if ( groupRole.IsSystem )
+            if ( groupTypeRole.IsSystem )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.System( GroupTypeRole.FriendlyTypeName );
@@ -279,5 +306,19 @@ namespace RockWeb.Blocks.Crm
 
         #endregion
 
+        protected void cvAllowed_ServerValidate( object source, System.Web.UI.WebControls.ServerValidateEventArgs args )
+        {
+            var lowerValue = nreMembersAllowed.LowerValue;
+            var upperValue = nreMembersAllowed.UpperValue;
+
+            if ( lowerValue.HasValue && upperValue.HasValue && upperValue.Value < lowerValue.Value )
+            {
+                args.IsValid = false;
+            }
+            else
+            {
+                args.IsValid = true;
+            }
+        }
     }
 }
