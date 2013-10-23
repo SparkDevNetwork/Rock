@@ -170,15 +170,22 @@ namespace Rock.Rest.Controllers
         [HttpPost]
         public DataSet GetContributionTransactions( int groupId, int? personId, [FromBody]Rock.Net.RestParameters.ContributionStatementOptions options )
         {
-            // get data from Rock database
-            FinancialTransactionService financialTransactionService = new FinancialTransactionService();
+            var user = CurrentUser();
+            if ( user == null )
+            {
+                // unable to determine user
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
 
-            var qry = Get();
-
-            qry = qry
+            if ( !new FinancialTransaction().IsAuthorized( "View", user.Person ) )
+            {
+                // user can't view FinancialTransactions
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+            
+            var qry = Get()
                 .Where( a => a.TransactionDateTime >= options.StartDate )
-                .Where( a => a.TransactionDateTime < ( options.EndDate ?? DateTime.MaxValue ) )
-                .OrderBy( a => a.TransactionDateTime );
+                .Where( a => a.TransactionDateTime < ( options.EndDate ?? DateTime.MaxValue ) );
 
             if ( personId.HasValue )
             {
@@ -204,10 +211,9 @@ namespace Rock.Rest.Controllers
                 a.TransactionDateTime,
                 CurrencyTypeValueName = a.CurrencyTypeValue.Name,
                 a.Summary,
-                AccountId = a.TransactionDetails.FirstOrDefault().Account.Id,
-                AccountName = a.TransactionDetails.FirstOrDefault().Account.Name,
+                Account = a.TransactionDetails.FirstOrDefault().Account,
                 a.Amount
-            } );
+            } ).OrderBy( a => a.TransactionDateTime );
 
             DataTable dataTable = new DataTable( "contribution_transactions" );
             dataTable.Columns.Add( "TransactionDateTime" );
@@ -217,19 +223,24 @@ namespace Rock.Rest.Controllers
             dataTable.Columns.Add( "AccountName" );
             dataTable.Columns.Add( "Amount" );
 
-            foreach ( var fieldItems in selectQry.ToList() )
+            var list = selectQry.ToList();
+
+            dataTable.BeginLoadData();
+            foreach ( var fieldItems in list )
             {
                 var itemArray = new object[] {
                     fieldItems.TransactionDateTime,
                     fieldItems.CurrencyTypeValueName,
                     fieldItems.Summary,
-                    fieldItems.AccountId,
-                    fieldItems.AccountName,
+                    fieldItems.Account.Id,
+                    fieldItems.Account.Name,
                     fieldItems.Amount
                 };
 
                 dataTable.Rows.Add( itemArray );
             }
+
+            dataTable.EndLoadData();
 
             DataSet dataSet = new DataSet();
             dataSet.Tables.Add( dataTable );
