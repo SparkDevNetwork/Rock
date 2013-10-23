@@ -132,6 +132,9 @@ namespace Rock.Apps.StatementGenerator
         /// </summary>
         private DataTable _personGroupAddressDataTable = null;
 
+        // the _transactionsDataTable for the current person/group 
+        private DataTable _transactionsDataTable = null;
+
         /// <summary>
         /// Creates the document.
         /// </summary>
@@ -188,6 +191,25 @@ namespace Rock.Apps.StatementGenerator
             orgInfoQuery.OpeningRecordSet += orgInfoQuery_OpeningRecordSet;
 
             _accountSummaryQuery = report.GetQueryById( "AccountSummaryQuery" );
+
+            if ( _accountSummaryQuery == null )
+            {
+                // not required.  Just don't do anything if it isn't there
+            }
+            else
+            {
+                _accountSummaryQuery.OpeningRecordSet += delegate( object s, OpeningRecordSetEventArgs ee )
+                {
+                    // create a recordset for the _accountSummaryQuery which is the GroupBy summary of AccountName, Amount
+                    var summaryTable = _transactionsDataTable.AsEnumerable().GroupBy( g => g["AccountId"] ).Select( a => new
+                    {
+                        AccountName = a.Key.ToString(),
+                        Amount = a.Sum( x => decimal.Parse( x["Amount"].ToString() ) )
+                    } ).OrderBy( o => o.AccountName );
+
+                    ee.RecordSet = new EnumerableRecordSet( summaryTable );
+                };
+            }
 
             UpdateProgress( "Getting Data..." );
 
@@ -295,28 +317,9 @@ namespace Rock.Apps.StatementGenerator
             }
 
             DataSet transactionsDataSet = _rockRestClient.PostDataWithResult<Rock.Net.RestParameters.ContributionStatementOptions, DataSet>( uriParam, _contributionStatementOptionsREST );
-            DataTable transactionsDataTable = transactionsDataSet.Tables[0];
+            _transactionsDataTable = transactionsDataSet.Tables[0];
 
-            e.RecordSet = new DataTableRecordSet( transactionsDataTable );
-
-            if ( _accountSummaryQuery == null )
-            {
-                // not required.  Just don't do anything if it isn't there
-            }
-            else
-            {
-                _accountSummaryQuery.OpeningRecordSet += delegate( object s, OpeningRecordSetEventArgs ee )
-                {
-                    // create a recordset for the _accountSummaryQuery which is the GroupBy summary of AccountName, Amount
-                    var summaryTable = transactionsDataTable.AsEnumerable().GroupBy( g => g["AccountName"] ).Select( a => new
-                        {
-                            AccountName = a.Key.ToString(),
-                            Amount = a.Sum( x => decimal.Parse( x["Amount"].ToString() ) )
-                        } ).OrderBy( o => o.AccountName );
-
-                    ee.RecordSet = new EnumerableRecordSet( summaryTable );
-                };
-            }
+            e.RecordSet = new DataTableRecordSet( _transactionsDataTable );
         }
 
         /// <summary>
