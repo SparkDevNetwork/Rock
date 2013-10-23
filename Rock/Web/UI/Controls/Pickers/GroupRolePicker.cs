@@ -103,6 +103,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets an optional validation group to use.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get { return ViewState["ValidationGroup"] as string; }
+            set { ViewState["ValidationGroup"] = value; }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -185,7 +197,7 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( !GroupTypeId.HasValue )
                     {
-                        var groupRole = new Rock.Model.GroupRoleService().Get( groupRoleId );
+                        var groupRole = new Rock.Model.GroupTypeRoleService().Get( groupRoleId );
                         if ( groupRole != null &&
                             groupRole.GroupTypeId.HasValue &&
                             _ddlGroupType.SelectedValue != groupRole.GroupTypeId.ToString() )
@@ -292,7 +304,7 @@ namespace Rock.Web.UI.Controls
                     _ddlGroupRole.Items.Add( new ListItem( string.Empty, Rock.Constants.None.IdValue ) );
                 }
 
-                var groupRoleService = new Rock.Model.GroupRoleService();
+                var groupRoleService = new Rock.Model.GroupTypeRoleService();
                 var groupRoles = groupRoleService.Queryable().Where( r => r.GroupTypeId == groupTypeId.Value ).OrderBy( a => a.Name ).ToList();
                 groupRoles.ForEach( r =>
                     _ddlGroupRole.Items.Add( new ListItem( r.Name, r.Id.ToString().ToUpper() ) )

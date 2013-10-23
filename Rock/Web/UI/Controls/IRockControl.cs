@@ -47,6 +47,14 @@ namespace Rock.Web.UI.Controls
         string RequiredErrorMessage { get; set; }
 
         /// <summary>
+        /// Gets or sets the validation group.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        string ValidationGroup { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
