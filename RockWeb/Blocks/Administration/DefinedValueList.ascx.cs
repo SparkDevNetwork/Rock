@@ -169,6 +169,7 @@ namespace RockWeb.Blocks.Administration
 
                 definedValueService.Save( definedValue, CurrentPersonId );
                 Rock.Attribute.Helper.SaveAttributeValues( definedValue, CurrentPersonId );
+                Rock.Web.Cache.DefinedTypeCache.Flush( definedValue.DefinedTypeId );
             } );
                         
             BindDefinedValuesGrid();

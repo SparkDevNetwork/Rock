@@ -7813,11 +7813,6 @@ body {
 .attended input[type="text"].note {
   width: 65%;
 }
-.attended .k-datepicker {
-  margin-bottom: 10px;
-  display: block;
-  width: 100%;
-}
 .attended .help-inline {
   color: #9d0f12;
 }

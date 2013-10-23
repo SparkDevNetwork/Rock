@@ -1,7 +1,8 @@
 declare
   @authorizedPersonId int = 1,
   @transactionCounter int = 0,
-  @maxTransactionCount int = 200000, -- 4000 families giving 50 times a year
+  @maxTransactionCount int = 3*50, 
+  @maxPersonIdForTransactions int = 113,  --(select max(id) from Person),
   @transactionDateTime datetime,
   @transactionAmount decimal(18,2),
   @transactionNote nvarchar(max),
@@ -27,7 +28,7 @@ while @transactionCounter < @maxTransactionCount
     begin
         set @transactionAmount = ROUND(rand() * 5000, 2);
         set @transactionNote = 'Random Note ' + convert(nvarchar(max), rand());
-        set @authorizedPersonId = (select top 1 Id from Person where Id >= rand() * (select max(id) from Person));
+        set @authorizedPersonId = (select top 1 Id from Person where Id >= rand() * @maxPersonIdForTransactions);
 
         INSERT INTO [dbo].[FinancialTransaction]
                    ([AuthorizedPersonId]
