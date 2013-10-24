@@ -203,7 +203,7 @@ namespace Rock.Apps.StatementGenerator
                     // create a recordset for the _accountSummaryQuery which is the GroupBy summary of AccountName, Amount
                     var summaryTable = _transactionsDataTable.AsEnumerable().GroupBy( g => g["AccountId"] ).Select( a => new
                     {
-                        AccountName = a.Key.ToString(),
+                        AccountName = a.Max(x => x["AccountName"].ToString()),
                         Amount = a.Sum( x => decimal.Parse( x["Amount"].ToString() ) )
                     } ).OrderBy( o => o.AccountName );
 
