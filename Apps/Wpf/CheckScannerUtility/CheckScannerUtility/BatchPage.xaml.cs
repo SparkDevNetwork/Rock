@@ -416,6 +416,7 @@ namespace Rock.Apps.CheckScannerUtility
                 BinaryFile binaryFileFront = new BinaryFile();
                 binaryFileFront.Guid = Guid.NewGuid();
                 binaryFileFront.FileName = string.Format( "{0}_{1}_{2}_front.png", scannedCheckInfo.RoutingNumber, scannedCheckInfo.MaskedAccountNumber, scannedCheckInfo.CheckNumber );
+                binaryFileFront.Data = new BinaryFileData();
                 binaryFileFront.Data.Content = scannedCheckInfo.FrontImagePngBytes;
                 binaryFileFront.BinaryFileTypeId = binaryFileTypeContribution.Id;
                 binaryFileFront.IsSystem = false;
@@ -430,6 +431,7 @@ namespace Rock.Apps.CheckScannerUtility
                     binaryFileBack = new BinaryFile();
                     binaryFileBack.Guid = Guid.NewGuid();
                     binaryFileBack.FileName = string.Format( "{0}_{1}_{2}_back.png", scannedCheckInfo.RoutingNumber, scannedCheckInfo.MaskedAccountNumber, scannedCheckInfo.CheckNumber );
+                    binaryFileBack.Data = new BinaryFileData();
                     binaryFileBack.Data.Content = scannedCheckInfo.BackImagePngBytes;
                     binaryFileBack.BinaryFileTypeId = binaryFileTypeContribution.Id;
                     binaryFileBack.IsSystem = false;
@@ -450,7 +452,7 @@ namespace Rock.Apps.CheckScannerUtility
                 financialTransactionScannedCheck.CurrencyTypeValueId = currencyTypeValueCheck.Id;
                 financialTransactionScannedCheck.CreditCardTypeValueId = null;
                 financialTransactionScannedCheck.SourceTypeValueId = null;
-                financialTransactionScannedCheck.AuthorizedPersonId = null;
+                financialTransactionScannedCheck.AuthorizedPersonId = this.LoggedInPerson.Id;
                 financialTransactionScannedCheck.TransactionTypeValueId = transactionTypeValueContribution.Id;
 
                 // Rock server will encrypt CheckMicrPlainText to this since we can't have the DataEncryptionKey in a RestClient
