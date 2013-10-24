@@ -158,43 +158,6 @@ namespace RockWeb.Blocks.Crm
         #region Edit Events
 
         /// <summary>
-        /// Handles the Click event of the btnCancel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
-        {
-            if ( hfGroupId.Value.Equals( "0" ) )
-            {
-                if ( this.CurrentPage.Layout.FileName.Equals( "TwoColumnLeft" ) )
-                {
-                    // Cancelling on Add.  Return to tree view with parent category selected
-                    var qryParams = new Dictionary<string, string>();
-
-                    string parentGroupId = PageParameter( "parentGroupId" );
-                    if ( !string.IsNullOrWhiteSpace( parentGroupId ) )
-                    {
-                        qryParams["groupId"] = parentGroupId;
-                    }
-
-                    NavigateToPage( this.CurrentPage.Guid, qryParams );
-                }
-                else
-                {
-                    // Cancelling on Add.  Return to Grid
-                    NavigateToParentPage();
-                }
-            }
-            else
-            {
-                // Cancelling on Edit.  Return to Details
-                GroupService groupService = new GroupService();
-                Group group = groupService.Get( int.Parse( hfGroupId.Value ) );
-                ShowReadonlyDetails( group );
-            }
-        }
-
-        /// <summary>
         /// Handles the Click event of the btnEdit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -261,18 +224,6 @@ namespace RockWeb.Blocks.Crm
             }
 
             NavigateToPage( this.CurrentPage.Guid, qryParams );
-        }
-
-        /// <summary>
-        /// Sets the edit mode.
-        /// </summary>
-        /// <param name="editable">if set to <c>true</c> [editable].</param>
-        private void SetEditMode( bool editable )
-        {
-            pnlEditDetails.Visible = editable;
-            fieldsetViewDetails.Visible = !editable;
-
-            this.DimOtherBlocks( editable );
         }
 
         /// <summary>
@@ -426,36 +377,46 @@ namespace RockWeb.Blocks.Crm
             NavigateToPage( this.CurrentPage.Guid, qryParams );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            if ( hfGroupId.Value.Equals( "0" ) )
+            {
+                if ( this.CurrentPage.Layout.FileName.Equals( "TwoColumnLeft" ) )
+                {
+                    // Cancelling on Add.  Return to tree view with parent category selected
+                    var qryParams = new Dictionary<string, string>();
+
+                    string parentGroupId = PageParameter( "parentGroupId" );
+                    if ( !string.IsNullOrWhiteSpace( parentGroupId ) )
+                    {
+                        qryParams["groupId"] = parentGroupId;
+                    }
+
+                    NavigateToPage( this.CurrentPage.Guid, qryParams );
+                }
+                else
+                {
+                    // Cancelling on Add.  Return to Grid
+                    NavigateToParentPage();
+                }
+            }
+            else
+            {
+                // Cancelling on Edit.  Return to Details
+                GroupService groupService = new GroupService();
+                Group group = groupService.Get( int.Parse( hfGroupId.Value ) );
+                ShowReadonlyDetails( group );
+            }
+        }
+
         #endregion
 
-        #region Internal Methods
-
-        /// <summary>
-        /// Gets the number of active members in a group role.
-        /// </summary>
-        /// <param name="groupId">The group id.</param>
-        /// <param name="roleId">The role id.</param>
-        /// <returns></returns>
-        private int GetGroupRoleMemberCount( int groupId, int roleId )
-        {
-            return new GroupMemberService().Queryable()
-                        .Where( m => m.GroupId == groupId )
-                        .Where( m => m.GroupRoleId == roleId )
-                        .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
-                        .Count();
-        }
-
-        /// <summary>
-        /// Loads the drop downs.
-        /// </summary>
-        private void LoadDropDowns()
-        {
-            CampusService campusService = new CampusService();
-            List<Campus> campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
-            campuses.Insert( 0, new Campus { Id = None.Id, Name = None.Text } );
-            ddlCampus.DataSource = campuses;
-            ddlCampus.DataBind();
-        }
+        #region Control Events
 
         /// <summary>
         /// Handles the SelectedIndexChanged event of the ddlParentGroup control.
@@ -504,6 +465,10 @@ namespace RockWeb.Blocks.Crm
             ddlGroupType.DataBind();
         }
 
+        #endregion
+
+        #region Internal Methods
+
         /// <summary>
         /// Shows the detail.
         /// </summary>
@@ -522,16 +487,20 @@ namespace RockWeb.Blocks.Crm
         public void ShowDetail( string itemKey, int itemKeyValue, int? parentGroupId )
         {
             pnlDetails.Visible = false;
+
             if ( !itemKey.Equals( "groupId" ) )
             {
                 return;
             }
+
+            bool editAllowed = true;
 
             Group group = null;
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 group = new GroupService().Get( itemKeyValue );
+                editAllowed = group.IsAuthorized( "Edit", CurrentPerson );
             }
             else
             {
@@ -550,7 +519,7 @@ namespace RockWeb.Blocks.Crm
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( "Edit" ) )
+            if ( !editAllowed || !IsUserAuthorized( "Edit" ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );
@@ -558,40 +527,34 @@ namespace RockWeb.Blocks.Crm
 
             if ( group.IsSystem )
             {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Group.FriendlyTypeName );
+                nbEditModeMessage.Text = EditModeMessage.System( GroupType.FriendlyTypeName );
             }
 
-            bool roleBelowMimumumMembership = false;
-
-            if ( bool.TryParse( PageParameter( "roleBelowMin" ), out roleBelowMimumumMembership ) )
+            if ( group.GroupType != null && group.GroupType.Roles != null && group.GroupType.Roles.Any() )
             {
-                int roleId = 0;
-
-                int.TryParse( PageParameter( "roleId" ), out roleId );
-
-                if ( roleBelowMimumumMembership && roleId > 0 )
+                foreach ( var role in group.GroupType.Roles )
                 {
-                    GroupTypeRole role = new GroupTypeRoleService().Get( roleId );
-
-                    if(role.MinCount != null)
+                    int curCount = 0;
+                    if ( group.Members != null )
                     {
-                        int groupRoleMemberCount = GetGroupRoleMemberCount( itemKeyValue, roleId );
+                        curCount = group.Members
+                            .Where( m => m.GroupRoleId == role.Id && m.GroupMemberStatus == GroupMemberStatus.Active )
+                            .Count();
+                    }
 
-                        string minumumMemberText =  string.Format( "The {0} role is currently below it's minimum active membership requirement of {1} {2}.", 
-                                                        role.Name,
-                                                        role.MinCount,
-                                                        role.MinCount == 1 ? "member" : "members"
-                                                        );
-
-                        if ( nbEditModeMessage.Text.Length > 0 )
-                        {
-                            nbEditModeMessage.Text = nbEditModeMessage.Text + " <br> " + minumumMemberText;
-                        }
-                        else
-                        {
-                            nbEditModeMessage.Text = "INFO: " + minumumMemberText;
-                        }
+                    if ( role.MinCount.HasValue && role.MinCount.Value > curCount )
+                    {
+                        nbEditModeMessage.Text += nbEditModeMessage.Text.Length > 0 ? "<br/>" : "";
+                        nbEditModeMessage.Text += string.Format( "The {0} role is currently below its minimum requirement of {1:N0} active {2}.",
+                            role.Name, role.MinCount, 
+                            role.MinCount == 1 ? group.GroupType.GroupMemberTerm : group.GroupType.GroupMemberTerm.Pluralize() );
+                    }
+                    if ( role.MaxCount.HasValue && role.MaxCount.Value < curCount )
+                    {
+                        nbEditModeMessage.Text += nbEditModeMessage.Text.Length > 0 ? "<br/>" : "";
+                        nbEditModeMessage.Text += string.Format( "The {0} role is currently above its maximum limit of {1:N0} active {2}.",
+                            role.Name, role.MaxCount, 
+                            role.MaxCount == 1 ? group.GroupType.GroupMemberTerm : group.GroupType.GroupMemberTerm.Pluralize() );
                     }
                 }
             }
@@ -605,7 +568,7 @@ namespace RockWeb.Blocks.Crm
             else
             {
                 btnEdit.Visible = true;
-                btnDelete.Visible = true;
+                btnDelete.Visible = !group.IsSystem;
                 if ( group.Id > 0 )
                 {
                     ShowReadonlyDetails( group );
@@ -615,6 +578,7 @@ namespace RockWeb.Blocks.Crm
                     ShowEditDetails( group );
                 }
             }
+
         }
 
         /// <summary>
@@ -777,6 +741,45 @@ namespace RockWeb.Blocks.Crm
 
             group.LoadAttributes();
             Rock.Attribute.Helper.AddDisplayControls( group, phGroupAttributesReadOnly );
+        }
+
+        /// <summary>
+        /// Sets the edit mode.
+        /// </summary>
+        /// <param name="editable">if set to <c>true</c> [editable].</param>
+        private void SetEditMode( bool editable )
+        {
+            pnlEditDetails.Visible = editable;
+            fieldsetViewDetails.Visible = !editable;
+
+            this.DimOtherBlocks( editable );
+        }
+
+        /// <summary>
+        /// Loads the drop downs.
+        /// </summary>
+        private void LoadDropDowns()
+        {
+            CampusService campusService = new CampusService();
+            List<Campus> campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
+            campuses.Insert( 0, new Campus { Id = None.Id, Name = None.Text } );
+            ddlCampus.DataSource = campuses;
+            ddlCampus.DataBind();
+        }
+
+        /// <summary>
+        /// Gets the number of active members in a group role.
+        /// </summary>
+        /// <param name="groupId">The group id.</param>
+        /// <param name="roleId">The role id.</param>
+        /// <returns></returns>
+        private int GetGroupRoleMemberCount( int groupId, int roleId )
+        {
+            return new GroupMemberService().Queryable()
+                        .Where( m => m.GroupId == groupId )
+                        .Where( m => m.GroupRoleId == roleId )
+                        .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
+                        .Count();
         }
 
         private void ShowDialog( string dialog )

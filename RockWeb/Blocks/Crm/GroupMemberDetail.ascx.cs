@@ -346,7 +346,6 @@ namespace RockWeb.Blocks.Crm
             int groupMemberId = int.Parse( hfGroupMemberId.Value );
             GroupTypeRole role = new GroupTypeRoleService().Get( ddlGroupRole.SelectedValueAsInt() ?? 0 );
             int memberCountInRole = GetGroupMembersInRoleCount();
-            bool roleMembershipBelowMinimum = false;
             bool roleMembershipAboveMax = false;
 
             GroupMemberService groupMemberService = new GroupMemberService();
@@ -383,8 +382,9 @@ namespace RockWeb.Blocks.Crm
             {
                 //load existing group member
                 groupMember = groupMemberService.Get( groupMemberId );
-
             }
+
+            string action = "add";
 
             //if adding new active group member
             if ( groupMemberId.Equals( 0 ) && ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>() == GroupMemberStatus.Active )
@@ -394,42 +394,18 @@ namespace RockWeb.Blocks.Crm
                 {
                     roleMembershipAboveMax = true;
                 }
-                //check that min count has been reached
-                if ( role.MinCount != null && ( memberCountInRole + 1 ) < role.MinCount )
-                {
-                    roleMembershipBelowMinimum = true;
-                }
             }
+
             //if existing group member changing role or status
             else if ( groupMemberId > 0 && ( groupMember.GroupRoleId != role.Id || groupMember.GroupMemberStatus != ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>() )
                     && ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>() == GroupMemberStatus.Active )
             {
+                action = "change";
+
                 // verify that active count has not exceeded the max
                 if ( role.MaxCount != null && ( memberCountInRole + 1 ) > role.MaxCount )
                 {
                     roleMembershipAboveMax = true;
-                }
-                //check that min count has been reached
-                if ( role.MinCount != null && ( memberCountInRole + 1 ) < role.MinCount )
-                {
-                    roleMembershipBelowMinimum = true;
-                }
-            }
-            // if existing member is going inactive
-            else if ( groupMemberId > 0 && groupMember.GroupMemberStatus == GroupMemberStatus.Active && ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>() != GroupMemberStatus.Active )
-            {
-                //check that min count has been reached
-                if ( role.MinCount != null && ( memberCountInRole - 1 ) < role.MinCount )
-                {
-                    roleMembershipBelowMinimum = true;
-                }
-            }
-            else
-            {
-                //check that min count has been reached
-                if ( role.MinCount != null && memberCountInRole < role.MinCount )
-                {
-                    roleMembershipBelowMinimum = true;
                 }
             }
 
@@ -438,8 +414,9 @@ namespace RockWeb.Blocks.Crm
             {
                 var person = new PersonService().Get( (int)ppGroupMemberPerson.PersonId );
 
-                nbErrorMessage.Title = string.Format( "Can not add {0} to {1} role.", person.FullName, role.Name );
-                nbErrorMessage.Text = string.Format( "<br /> {0} role is at it's maximum capacity of {1} active members.", role.Name, role.MaxCount.ToString() );
+                nbErrorMessage.Title = string.Format( "Can not {0} {1} to {2} role.", action, person.FullName, role.Name );
+                nbErrorMessage.Text = string.Format( "<br />The {0} role is already at its maximum limit of {1:N0} active {2}.", role.Name, role.MaxCount,
+                    role.MaxCount == 1 ? role.GroupType.GroupMemberTerm : role.GroupType.GroupMemberTerm.Pluralize() );
                 return;
             }
 
@@ -472,15 +449,6 @@ namespace RockWeb.Blocks.Crm
                 Rock.Attribute.Helper.SaveAttributeValues( groupMember, CurrentPersonId );
             } );
 
-            Dictionary<string, string> qryString = new Dictionary<string, string>();
-            qryString["groupId"] = hfGroupId.Value;
-
-            if ( roleMembershipBelowMinimum )
-            {
-                qryString["roleBelowMin"] = roleMembershipBelowMinimum.ToString();
-                qryString["roleId"] = role.Id.ToString();
-            }
-
             Group group = new GroupService().Get( groupMember.GroupId );
             if ( group.IsSecurityRole )
             {
@@ -488,6 +456,8 @@ namespace RockWeb.Blocks.Crm
                 Rock.Security.Authorization.Flush();
             }
 
+            Dictionary<string, string> qryString = new Dictionary<string, string>();
+            qryString["groupId"] = hfGroupId.Value;
             NavigateToParentPage( qryString );
         }
 

@@ -129,24 +129,18 @@ namespace RockWeb.Blocks.Crm
                 role.Name = tbName.Text;
                 role.Description = tbDescription.Text;
 
-                var lowerValue = nreMembersAllowed.LowerValue;
-                if ( lowerValue.HasValue )
+                int result;
+
+                role.MinCount = null;
+                if (int.TryParse(nbMinimumRequired.Text, out result))
                 {
-                    role.MinCount = Convert.ToInt32( lowerValue.Value );
-                }
-                else
-                {
-                    role.MinCount = null;
+                    role.MinCount = result;
                 }
 
-                var upperValue = nreMembersAllowed.UpperValue;
-                if (upperValue.HasValue)
+                role.MaxCount = null;
+                if ( int.TryParse( nbMaximumAllowed.Text, out result ) )
                 {
-                    role.MaxCount = Convert.ToInt32( upperValue.Value );
-                }
-                else
-                {
-                    role.MaxCount = null;
+                    role.MaxCount = result;
                 }
 
                 if ( !role.IsValid )
@@ -238,7 +232,9 @@ namespace RockWeb.Blocks.Crm
                 if ( groupTypeId.HasValue )
                 {
                     groupTypeRole = new GroupTypeRole { Id = 0 };
-                    groupTypeRole.GroupTypeId = groupTypeId.Value;
+                    var groupType = new GroupTypeService().Get( groupTypeId.Value );
+                    groupTypeRole.GroupType = groupType;
+                    groupTypeRole.GroupTypeId = groupType.Id;
                 }
             }
 
@@ -261,23 +257,14 @@ namespace RockWeb.Blocks.Crm
 
             tbName.Text = groupTypeRole.Name;
             tbDescription.Text = groupTypeRole.Description;
-            if ( groupTypeRole.MinCount.HasValue )
-            {
-                nreMembersAllowed.LowerValue = Convert.ToDecimal( groupTypeRole.MinCount.Value );
-            }
-            else
-            {
-                nreMembersAllowed.LowerValue = null;
-            }
 
-            if ( groupTypeRole.MaxCount.HasValue )
-            {
-                nreMembersAllowed.UpperValue = Convert.ToDecimal( groupTypeRole.MaxCount.Value );
-            }
-            else
-            {
-                nreMembersAllowed.UpperValue = null;
-            }
+            nbMinimumRequired.Text = groupTypeRole.MinCount.HasValue ? groupTypeRole.MinCount.ToString() : "";
+            nbMinimumRequired.Help = string.Format( "The minimum number of {0} in this {1} that are required to have this role.", 
+                groupTypeRole.GroupType.GroupMemberTerm.Pluralize(), groupTypeRole.GroupType.GroupTerm );
+
+            nbMaximumAllowed.Text = groupTypeRole.MaxCount.HasValue ? groupTypeRole.MaxCount.ToString() : "";
+            nbMinimumRequired.Help = string.Format( "The maximum number of {0} in this {1} that are allowed to have this role.",
+                groupTypeRole.GroupType.GroupMemberTerm.Pluralize(), groupTypeRole.GroupType.GroupTerm );
 
             // render UI based on Authorized and IsSystem
 
@@ -308,8 +295,19 @@ namespace RockWeb.Blocks.Crm
 
         protected void cvAllowed_ServerValidate( object source, System.Web.UI.WebControls.ServerValidateEventArgs args )
         {
-            var lowerValue = nreMembersAllowed.LowerValue;
-            var upperValue = nreMembersAllowed.UpperValue;
+            int? lowerValue = null;
+            int value = int.MinValue;
+            if ( int.TryParse( nbMinimumRequired.Text, out value ) )
+            {
+                lowerValue = value;
+            }
+
+            int? upperValue = null;
+            value = int.MinValue;
+            if ( int.TryParse( nbMaximumAllowed.Text, out value ) )
+            {
+                upperValue = value;
+            }
 
             if ( lowerValue.HasValue && upperValue.HasValue && upperValue.Value < lowerValue.Value )
             {

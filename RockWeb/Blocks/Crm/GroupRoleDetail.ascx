@@ -30,10 +30,10 @@
 
         <div class="row">
             <div class="col-md-6">
-                <Rock:NumberRangeEditor ID="nreMembersAllowed" runat="server" NumberType="Integer" Label="Number Allowed in Group" 
-                    Help="The minimum and/or maximum number of members allowed with this role in each group" ValidationGroup="GroupRoleDetail" />
+                <Rock:NumberBox ID="nbMinimumRequired" runat="server" NumberType="Integer" Label="Minimum Required" />
+                <Rock:NumberBox ID="nbMaximumAllowed" runat="server" NumberType="Integer" Label="Maximum Allowed" />
                 <asp:CustomValidator ID="cvAllowed" runat="server" Display="None" OnServerValidate="cvAllowed_ServerValidate" 
-                    ValidationGroup="GroupRoleDetail" ErrorMessage="The Number Allowed in Group should have a minimum number allowed that is less than the maximum number allowed." />
+                    ValidationGroup="GroupRoleDetail" ErrorMessage="The Minimum Required should be less than Maximum Allowed." />
              </div>
             <div class="col-md-6">
                 <asp:PlaceHolder ID="phAttributes" runat="server" />

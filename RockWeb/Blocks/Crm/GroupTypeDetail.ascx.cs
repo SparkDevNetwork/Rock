@@ -663,34 +663,6 @@ namespace RockWeb.Blocks.Crm
         #region Internal Methods
 
         /// <summary>
-        /// Loads the drop downs.
-        /// </summary>
-        private void LoadDropDowns(int? groupTypeId)
-        {
-            GroupTypeRoleService groupRoleService = new GroupTypeRoleService();
-            List<GroupTypeRole> groupRoles = groupRoleService.Queryable().Where(a => a.GroupTypeId == groupTypeId).OrderBy( a => a.Name ).ToList();
-            groupRoles.Insert( 0, new GroupTypeRole { Id = None.Id, Name = None.Text } );
-            ddlDefaultGroupRole.DataSource = groupRoles;
-            ddlDefaultGroupRole.DataBind();
-
-            ddlAttendanceRule.BindToEnum( typeof( Rock.Model.AttendanceRule ) );
-            ddlAttendancePrintTo.BindToEnum( typeof( Rock.Model.PrintTo ) );
-            ddlLocationSelectionMode.BindToEnum( typeof( Rock.Model.LocationPickerMode ) );
-            gtpInheritedGroupType.GroupTypes = new GroupTypeService().Queryable()
-                .Where( g => g.Id != groupTypeId)
-                .ToList();
-
-            var groupTypePurposeList = new DefinedValueService().GetByDefinedTypeGuid(new Guid(Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE)).OrderBy(a => a.Name).ToList();
-            
-            ddlGroupTypePurpose.Items.Clear();
-            ddlGroupTypePurpose.Items.Add( Rock.Constants.None.ListItem );
-            foreach ( var item in groupTypePurposeList )
-            {
-                ddlGroupTypePurpose.Items.Add(new ListItem(item.Name, item.Id.ToString()));
-            }
-        }
-
-        /// <summary>
         /// Shows the edit.
         /// </summary>
         /// <param name="itemKey">The item key.</param>
@@ -915,6 +887,34 @@ namespace RockWeb.Blocks.Crm
             fieldsetViewDetails.Visible = !editable;
 
             this.DimOtherBlocks( editable );
+        }
+
+        /// <summary>
+        /// Loads the drop downs.
+        /// </summary>
+        private void LoadDropDowns( int? groupTypeId )
+        {
+            GroupTypeRoleService groupRoleService = new GroupTypeRoleService();
+            List<GroupTypeRole> groupRoles = groupRoleService.Queryable().Where( a => a.GroupTypeId == groupTypeId ).OrderBy( a => a.Name ).ToList();
+            groupRoles.Insert( 0, new GroupTypeRole { Id = None.Id, Name = None.Text } );
+            ddlDefaultGroupRole.DataSource = groupRoles;
+            ddlDefaultGroupRole.DataBind();
+
+            ddlAttendanceRule.BindToEnum( typeof( Rock.Model.AttendanceRule ) );
+            ddlAttendancePrintTo.BindToEnum( typeof( Rock.Model.PrintTo ) );
+            ddlLocationSelectionMode.BindToEnum( typeof( Rock.Model.LocationPickerMode ) );
+            gtpInheritedGroupType.GroupTypes = new GroupTypeService().Queryable()
+                .Where( g => g.Id != groupTypeId )
+                .ToList();
+
+            var groupTypePurposeList = new DefinedValueService().GetByDefinedTypeGuid( new Guid( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE ) ).OrderBy( a => a.Name ).ToList();
+
+            ddlGroupTypePurpose.Items.Clear();
+            ddlGroupTypePurpose.Items.Add( Rock.Constants.None.ListItem );
+            foreach ( var item in groupTypePurposeList )
+            {
+                ddlGroupTypePurpose.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
+            }
         }
 
         private void ShowDialog( string dialog )
