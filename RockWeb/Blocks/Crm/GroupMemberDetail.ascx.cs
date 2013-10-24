@@ -25,15 +25,6 @@ namespace RockWeb.Blocks.Crm
         #region Control Methods
 
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-        }
-
-        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -58,7 +49,7 @@ namespace RockWeb.Blocks.Crm
                 }
                 else
                 {
-                    pnlDetails.Visible = false;
+                    upDetail.Visible = false;
                 }
             }
 
@@ -105,45 +96,174 @@ namespace RockWeb.Blocks.Crm
         #region Edit Events
 
         /// <summary>
-        /// Clears the error message title and text.
+        /// Handles the Click event of the btnSave control.
         /// </summary>
-        private void ClearErrorMessage()
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnSave_Click( object sender, EventArgs e )
         {
-            nbErrorMessage.Title = String.Empty;
-            nbErrorMessage.Text = String.Empty;
-        }
+            ClearErrorMessage();
 
-        /// <summary>
-        /// Gets the number of active group members who are in the selected role
-        /// </summary>
-        /// <returns>Group Member Count</returns>
-        private int GetGroupMembersInRoleCount()
-        {
-            int groupId = hfGroupId.Value.AsInteger() ?? 0;
-            int roleId = ddlGroupRole.SelectedValueAsInt() ?? 0;
-
-            return new GroupMemberService().Queryable()
-                        .Where( m => m.GroupId == groupId )
-                        .Where( m => m.GroupRoleId == roleId )
-                        .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
-                        .Count();
-        }
-
-        /// <summary>
-        /// Loads the drop downs.
-        /// </summary>
-        private void LoadDropDowns()
-        {
-            int groupId = hfGroupId.ValueAsInt();
-            Group group = new GroupService().Get( groupId );
-            if ( group != null )
+            if ( Page.IsValid )
             {
-                ddlGroupRole.DataSource = group.GroupType.Roles.OrderBy( a => a.Order ).ToList();
-                ddlGroupRole.DataBind();
+                GroupMemberService groupMemberService = new GroupMemberService();
+                GroupMember groupMember;
+
+                int groupMemberId = int.Parse( hfGroupMemberId.Value );
+
+                GroupTypeRole role = new GroupTypeRoleService().Get( ddlGroupRole.SelectedValueAsInt() ?? 0 );
+
+                // if adding a new group member 
+                if ( groupMemberId.Equals( 0 ) )
+                {
+
+                    groupMember = new GroupMember { Id = 0 };
+                    groupMember.GroupId = hfGroupId.ValueAsInt();
+
+                    //check to see if the person is alread a member of the gorup/role
+                    var existingGroupMember = groupMemberService.GetByGroupIdAndPersonIdAndGroupRoleId(
+                        hfGroupId.ValueAsInt(), ppGroupMemberPerson.SelectedValue ?? 0, ddlGroupRole.SelectedValueAsId() ?? 0 );
+
+                    if ( existingGroupMember != null )
+                    {
+                        //if so, don't add and show error message
+                        var person = new PersonService().Get( (int)ppGroupMemberPerson.PersonId );
+
+                        nbErrorMessage.Title = "Person already added";
+                        nbErrorMessage.Text = string.Format( "{0} already belongs to the {1} role for this {2}, and cannot be added again with the same role. <a href=\"/page/{3}?groupMemberId={4}\">Click here</a> to view existing membership.",
+                            person.FullName,
+                            ddlGroupRole.SelectedItem.Text,
+                            role.GroupType.GroupTerm,
+                            CurrentPage.Id,
+                            existingGroupMember.Id
+                            );
+                        return;
+
+                    }
+                }
+                else
+                {
+                    //load existing group member
+                    groupMember = groupMemberService.Get( groupMemberId );
+                }
+
+                int memberCountInRole = new GroupMemberService().Queryable()
+                    .Where( m =>
+                        m.GroupId == groupMember.GroupId &&
+                        m.GroupRoleId == role.Id &&
+                        m.GroupMemberStatus == GroupMemberStatus.Active )
+                    .Count();
+
+                bool roleMembershipAboveMax = false;
+                string action = "add";
+
+                //if adding new active group member
+                if ( groupMemberId.Equals( 0 ) && rblStatus.SelectedValueAsEnum<GroupMemberStatus>() == GroupMemberStatus.Active )
+                {
+                    // verify that active count has not exceeded the max
+                    if ( role.MaxCount != null && ( memberCountInRole + 1 ) > role.MaxCount )
+                    {
+                        roleMembershipAboveMax = true;
+                    }
+                }
+
+                //if existing group member changing role or status
+                else if ( groupMemberId > 0 && ( groupMember.GroupRoleId != role.Id || groupMember.GroupMemberStatus != rblStatus.SelectedValueAsEnum<GroupMemberStatus>() )
+                        && rblStatus.SelectedValueAsEnum<GroupMemberStatus>() == GroupMemberStatus.Active )
+                {
+                    action = "change";
+
+                    // verify that active count has not exceeded the max
+                    if ( role.MaxCount != null && ( memberCountInRole + 1 ) > role.MaxCount )
+                    {
+                        roleMembershipAboveMax = true;
+                    }
+                }
+
+                //show error if above max.. do not proceed
+                if ( roleMembershipAboveMax )
+                {
+                    var person = new PersonService().Get( (int)ppGroupMemberPerson.PersonId );
+
+                    nbErrorMessage.Title = string.Format("Maximum {0} Exceeded", role.Name.Pluralize() );
+                    nbErrorMessage.Text = string.Format( "<br />The number of {0} for this {1} is at or above its maximum allowed limit of {2:N0} active {3}.", 
+                        role.Name.Pluralize(), role.GroupType.GroupTerm, role.MaxCount,
+                        role.MaxCount == 1 ? role.GroupType.GroupMemberTerm : role.GroupType.GroupMemberTerm.Pluralize() );
+
+                    return;
+                }
+
+                groupMember.PersonId = ppGroupMemberPerson.PersonId.Value;
+                groupMember.GroupRoleId = role.Id;
+                groupMember.GroupMemberStatus = rblStatus.SelectedValueAsEnum<GroupMemberStatus>();
+
+                groupMember.LoadAttributes();
+
+                Rock.Attribute.Helper.GetEditValues( phAttributes, groupMember );
+
+                if ( !Page.IsValid )
+                {
+                    return;
+                }
+
+                if ( !groupMember.IsValid )
+                {
+                    return;
+                }
+
+                RockTransactionScope.WrapTransaction( () =>
+                {
+                    if ( groupMember.Id.Equals( 0 ) )
+                    {
+                        groupMemberService.Add( groupMember, CurrentPersonId );
+                    }
+
+                    groupMemberService.Save( groupMember, CurrentPersonId );
+                    Rock.Attribute.Helper.SaveAttributeValues( groupMember, CurrentPersonId );
+                } );
+
+                Group group = new GroupService().Get( groupMember.GroupId );
+                if ( group.IsSecurityRole )
+                {
+                    // new person added to SecurityRole, Flush
+                    Rock.Security.Authorization.Flush();
+                }
             }
 
-            ddlGroupMemberStatus.BindToEnum( typeof( GroupMemberStatus ) );
+            Dictionary<string, string> qryString = new Dictionary<string, string>();
+            qryString["groupId"] = hfGroupId.Value;
+            NavigateToParentPage( qryString );
         }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            if ( hfGroupMemberId.Value.Equals( "0" ) )
+            {
+                // Cancelling on Add.  
+                Dictionary<string, string> qryString = new Dictionary<string, string>();
+                qryString["groupId"] = hfGroupId.Value;
+                NavigateToParentPage( qryString );
+            }
+            else
+            {
+                // Cancelling on Edit.  Return to Details
+                GroupMemberService groupMemberService = new GroupMemberService();
+                GroupMember groupMember = groupMemberService.Get( int.Parse( hfGroupMemberId.Value ) );
+
+                Dictionary<string, string> qryString = new Dictionary<string, string>();
+                qryString["groupId"] = groupMember.GroupId.ToString();
+                NavigateToParentPage( qryString );
+            }
+        }
+
+        #endregion
+
+        #region Internal Methods
 
         /// <summary>
         /// Shows the detail.
@@ -163,7 +283,6 @@ namespace RockWeb.Blocks.Crm
         /// <param name="groupId">The group id.</param>
         public void ShowDetail( string itemKey, int itemKeyValue, int? groupId )
         {
-            pnlDetails.Visible = false;
             if ( !itemKey.Equals( "groupMemberId" ) )
             {
                 return;
@@ -179,7 +298,7 @@ namespace RockWeb.Blocks.Crm
             else
             {
                 // only create a new one if parent was specified
-                if ( groupId != null )
+                if ( groupId.HasValue )
                 {
                     groupMember = new GroupMember { Id = 0 };
                     groupMember.GroupId = groupId.Value;
@@ -194,82 +313,11 @@ namespace RockWeb.Blocks.Crm
                 return;
             }
 
-            pnlDetails.Visible = true;
             hfGroupId.Value = groupMember.GroupId.ToString();
             hfGroupMemberId.Value = groupMember.Id.ToString();
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
-
-            nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( "Edit" ) )
-            {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );
-            }
-
-            if ( groupMember.IsSystem )
-            {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Group.FriendlyTypeName );
-            }
-
-            if ( readOnly )
-            {
-                btnEdit.Visible = false;
-                ShowReadonlyDetails( groupMember );
-            }
-            else
-            {
-                btnEdit.Visible = true;
-                if ( groupMember.Id > 0 )
-                {
-                    ShowReadonlyDetails( groupMember );
-                }
-                else
-                {
-                    ShowEditDetails( groupMember );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Shows the edit details.
-        /// </summary>
-        /// <param name="groupMember">The group member.</param>
-        private void ShowEditDetails( GroupMember groupMember )
-        {
-            if ( groupMember.Id.Equals( 0 ) )
-            {
-                lActionTitle.Text = ActionTitle.Add( "Group Member to " + groupMember.Group.Name ).FormatAsHtmlTitle();
-            }
-            else
-            {
-                lActionTitle.Text = ActionTitle.Edit( "Group Member for " + groupMember.Group.Name ).FormatAsHtmlTitle();
-            }
-
-            SetEditMode( true );
-
-            LoadDropDowns();
-
-            ppGroupMemberPerson.SetValue(groupMember.Person);
-            ddlGroupRole.SetValue( groupMember.GroupRoleId );
-            ddlGroupMemberStatus.SetValue( (int) groupMember.GroupMemberStatus );
-
-            phAttributes.Controls.Clear();
-            groupMember.LoadAttributes();
-            Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, true );
-        }
-
-        /// <summary>
-        /// Shows the readonly details.
-        /// </summary>
-        /// <param name="groupMember">The group member.</param>
-        private void ShowReadonlyDetails( GroupMember groupMember )
-        {
-            SetEditMode( false );
-            
-            ClearErrorMessage();
 
             string groupIconHtml = string.Empty;
             var group = groupMember.Group;
@@ -290,198 +338,83 @@ namespace RockWeb.Blocks.Crm
                     groupIconHtml = string.Format( imageUrlFormat, group.GroupType.IconSmallFileId );
                 }
             }
-
-            hfGroupId.SetValue( group.Id );
-            hfGroupMemberId.SetValue( groupMember.Id );
-
             lGroupIconHtml.Text = groupIconHtml;
-            lReadOnlyTitle.Text = groupMember.Person.FullName.FormatAsHtmlTitle();
 
-            lblMainDetails.Text = new DescriptionList()
-                .Add("Group Member", groupMember.Person)
-                .Add("Member's Role", groupMember.GroupRole.Name)
-                .Add( "Member's Status", groupMember.GroupMemberStatus.ConvertToString() )
-                .Add("Group Name", group.Name)
-                .Add("Group Description", group.Description)
-                
-                .Html;
-
-            groupMember.LoadAttributes();
-            Rock.Attribute.Helper.AddDisplayControls( groupMember, phGroupMemberAttributesReadOnly );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnEdit control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnEdit_Click( object sender, EventArgs e )
-        {
-            GroupMemberService groupMemberService = new GroupMemberService();
-            GroupMember groupMember = groupMemberService.Get( int.Parse( hfGroupMemberId.Value ) );
-            ShowEditDetails( groupMember );
-        }
-
-        /// <summary>
-        /// Sets the edit mode.
-        /// </summary>
-        /// <param name="editable">if set to <c>true</c> [editable].</param>
-        private void SetEditMode( bool editable )
-        {
-            pnlEditDetails.Visible = editable;
-            fieldsetViewDetails.Visible = !editable;
-
-            this.DimOtherBlocks( editable );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnSave control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnSave_Click( object sender, EventArgs e )
-        {
-            ClearErrorMessage();
-
-            int groupMemberId = int.Parse( hfGroupMemberId.Value );
-            GroupTypeRole role = new GroupTypeRoleService().Get( ddlGroupRole.SelectedValueAsInt() ?? 0 );
-            int memberCountInRole = GetGroupMembersInRoleCount();
-            bool roleMembershipAboveMax = false;
-
-            GroupMemberService groupMemberService = new GroupMemberService();
-            GroupMember groupMember;
-
-            // if adding a new group member 
-            if ( groupMemberId.Equals( 0 ) )
+            if ( groupMember.Id.Equals( 0 ) )
             {
-
-                groupMember = new GroupMember { Id = 0 };
-                groupMember.GroupId = hfGroupId.ValueAsInt();
-
-                //check to see if the person is alread a member of the gorup/role
-                var existingGroupMember = groupMemberService.GetByGroupIdAndPersonIdAndGroupRoleId(
-                    hfGroupId.ValueAsInt(), ppGroupMemberPerson.SelectedValue ?? 0, ddlGroupRole.SelectedValueAsId() ?? 0);
-                
-                if (existingGroupMember != null)
-                {
-                    //if so, don't add and show error message
-                    var person = new PersonService().Get( (int)ppGroupMemberPerson.PersonId );
-
-                    nbErrorMessage.Title = string.Format( "Can not add {0} to {1} role.", person.FullName, role.Name );
-                    nbErrorMessage.Text = string.Format("<br /> {0} is already a member of the {1} role for this group, and can not be added. <a href=\"/page/{2}?groupMemberId={3}\">Click here</a> to view existing membership.", 
-                        person.FullName, 
-                        ddlGroupRole.SelectedItem.Text,
-                        CurrentPage.Id,
-                        existingGroupMember.Id
-                        );
-                    return;
-
-                }
+                lReadOnlyTitle.Text = ActionTitle.Add( groupMember.Group.GroupType.GroupTerm + " " + groupMember.Group.GroupType.GroupMemberTerm ).FormatAsHtmlTitle();
             }
             else
             {
-                //load existing group member
-                groupMember = groupMemberService.Get( groupMemberId );
-            }
-
-            string action = "add";
-
-            //if adding new active group member
-            if ( groupMemberId.Equals( 0 ) && ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>() == GroupMemberStatus.Active )
+                lReadOnlyTitle.Text = groupMember.Person.FullName.FormatAsHtmlTitle();
+            } 
+            
+            nbEditModeMessage.Text = string.Empty;
+            if ( !IsUserAuthorized( "Edit" ) )
             {
-                // verify that active count has not exceeded the max
-                if ( role.MaxCount != null && ( memberCountInRole + 1 ) > role.MaxCount )
-                {
-                    roleMembershipAboveMax = true;
-                }
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );
             }
 
-            //if existing group member changing role or status
-            else if ( groupMemberId > 0 && ( groupMember.GroupRoleId != role.Id || groupMember.GroupMemberStatus != ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>() )
-                    && ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>() == GroupMemberStatus.Active )
+            if ( groupMember.IsSystem )
             {
-                action = "change";
-
-                // verify that active count has not exceeded the max
-                if ( role.MaxCount != null && ( memberCountInRole + 1 ) > role.MaxCount )
-                {
-                    roleMembershipAboveMax = true;
-                }
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Group.FriendlyTypeName );
             }
 
-            //show error if above max.. do not proceed
-            if ( roleMembershipAboveMax )
-            {
-                var person = new PersonService().Get( (int)ppGroupMemberPerson.PersonId );
+            btnSave.Visible = !readOnly;
 
-                nbErrorMessage.Title = string.Format( "Can not {0} {1} to {2} role.", action, person.FullName, role.Name );
-                nbErrorMessage.Text = string.Format( "<br />The {0} role is already at its maximum limit of {1:N0} active {2}.", role.Name, role.MaxCount,
-                    role.MaxCount == 1 ? role.GroupType.GroupMemberTerm : role.GroupType.GroupMemberTerm.Pluralize() );
-                return;
-            }
+            LoadDropDowns();
 
-            groupMember.PersonId = ppGroupMemberPerson.PersonId.Value;
-            groupMember.GroupRoleId = role.Id;
-            groupMember.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
+            ppGroupMemberPerson.SetValue(groupMember.Person);
+            ppGroupMemberPerson.Enabled = !readOnly;
+
+            ddlGroupRole.SetValue( groupMember.GroupRoleId );
+            ddlGroupRole.Enabled = !readOnly;
+
+            rblStatus.SetValue( (int)groupMember.GroupMemberStatus );
+            rblStatus.Enabled = !readOnly;
 
             groupMember.LoadAttributes();
+            phAttributes.Controls.Clear();
 
-            Rock.Attribute.Helper.GetEditValues( phAttributes, groupMember );
-
-            if ( !Page.IsValid )
+            Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, true );
+            if ( readOnly )
             {
-                return;
-            }
-
-            if ( !groupMember.IsValid )
-            {
-                return;
-            }
-
-            RockTransactionScope.WrapTransaction( () =>
-            {
-                if ( groupMember.Id.Equals( 0 ) )
-                {
-                    groupMemberService.Add( groupMember, CurrentPersonId );
-                }
-
-                groupMemberService.Save( groupMember, CurrentPersonId );
-                Rock.Attribute.Helper.SaveAttributeValues( groupMember, CurrentPersonId );
-            } );
-
-            Group group = new GroupService().Get( groupMember.GroupId );
-            if ( group.IsSecurityRole )
-            {
-                // new person added to SecurityRole, Flush
-                Rock.Security.Authorization.Flush();
-            }
-
-            Dictionary<string, string> qryString = new Dictionary<string, string>();
-            qryString["groupId"] = hfGroupId.Value;
-            NavigateToParentPage( qryString );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnCancel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
-        {
-            if ( hfGroupMemberId.Value.Equals( "0" ) )
-            {
-                // Cancelling on Add.  Return to Grid
-                Dictionary<string, string> qryString = new Dictionary<string, string>();
-                qryString["groupId"] = hfGroupId.Value;
-                NavigateToParentPage( qryString );
+                Rock.Attribute.Helper.AddDisplayControls( groupMember, phAttributesReadOnly );
+                phAttributesReadOnly.Visible = true;
+                phAttributes.Visible = false;
             }
             else
             {
-                // Cancelling on Edit.  Return to Details
-                GroupMemberService groupMemberService = new GroupMemberService();
-                GroupMember groupMember = groupMemberService.Get( int.Parse( hfGroupMemberId.Value ) );
-                ShowReadonlyDetails( groupMember );
+                phAttributesReadOnly.Visible = false;
+                phAttributes.Visible = true;
             }
+        }
+
+        /// <summary>
+        /// Clears the error message title and text.
+        /// </summary>
+        private void ClearErrorMessage()
+        {
+            nbErrorMessage.Title = String.Empty;
+            nbErrorMessage.Text = String.Empty;
+        }
+
+        /// <summary>
+        /// Loads the drop downs.
+        /// </summary>
+        private void LoadDropDowns()
+        {
+            int groupId = hfGroupId.ValueAsInt();
+            Group group = new GroupService().Get( groupId );
+            if ( group != null )
+            {
+                ddlGroupRole.DataSource = group.GroupType.Roles.OrderBy( a => a.Order ).ToList();
+                ddlGroupRole.DataBind();
+            }
+
+            rblStatus.BindToEnum( typeof( GroupMemberStatus ) );
         }
 
         #endregion
