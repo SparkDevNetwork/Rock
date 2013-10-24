@@ -144,6 +144,7 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
+    <Compile Include="Attribute\InheritedAttribute.cs" />
     <Compile Include="Attribute\TimeFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerRangeFieldAttribute.cs" />
     <Compile Include="Attribute\DateRangeFieldAttribute.cs" />
@@ -284,6 +285,10 @@
     <Compile Include="Migrations\201310231644243_GroupTypeRefactor.cs" />
     <Compile Include="Migrations\201310231644243_GroupTypeRefactor.Designer.cs">
       <DependentUpon>201310231644243_GroupTypeRefactor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201310241348152_GroupTerms.cs" />
+    <Compile Include="Migrations\201310241348152_GroupTerms.Designer.cs">
+      <DependentUpon>201310241348152_GroupTerms.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
@@ -1174,6 +1179,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201310231644243_GroupTypeRefactor.resx">
       <DependentUpon>201310231644243_GroupTypeRefactor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310241348152_GroupTerms.resx">
+      <DependentUpon>201310241348152_GroupTerms.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

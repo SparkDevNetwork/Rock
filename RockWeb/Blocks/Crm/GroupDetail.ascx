@@ -26,38 +26,53 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" />
+                            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" ValidationGroup="GroupDetail" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
+                            <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" ValidationGroup="GroupDetail" />
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" ValidationGroup="GroupDetail" />
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" />
-                            <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" Label="Group Type" />
-                            <Rock:DataDropDownList ID="ddlCampus" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" Label="Campus" />
-                            <Rock:RockCheckBox ID="cbIsSecurityRole" runat="server" Text="Security Role" />
+                            <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" ValidationGroup="GroupDetail" />
+                            <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" Label="Group Type" ValidationGroup="GroupDetail" />
+                            <Rock:DataDropDownList ID="ddlCampus" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" Label="Campus" ValidationGroup="GroupDetail" />
+                            <Rock:RockCheckBox ID="cbIsSecurityRole" runat="server" Text="Security Role" ValidationGroup="GroupDetail" />
                         </div>
                         <div class="col-md-6">
-                            <div class="control-label">Group Member Attributes</div>
-                            <p>
-                                Group member attributes allow for providing different values for each group member.
-                            </p>
-                            <Rock:Grid ID="gGroupMemberAttributes" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false">
-                                <Columns>
-                                    <asp:BoundField DataField="Name" />
-                                    <Rock:EditField OnClick="gGroupMemberAttributes_Edit" />
-                                    <Rock:DeleteField OnClick="gGroupMemberAttributes_Delete" />
-                                </Columns>
-                            </Rock:Grid>
+                            <Rock:RockControlWrapper ID="rcGroupMemberAttributesInherited" runat="server" Label="Inherited Group Member Attributes" ValidationGroup="GroupDetail" 
+                                Help="Inherited Attributes for members in this group.">
+                                <Rock:Grid ID="gGroupMemberAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Attribute">
+                                    <Columns>
+                                        <asp:TemplateField>
+                                            <ItemTemplate>
+                                                <span class='text-muted'>
+                                                    <%# Eval("Name") %><br/>
+                                                    <small>(Inherited from <a href='<%# Eval("Url") %>' target='_blank'><%# Eval("GroupType") %></a> Group Type)</small>
+                                                </span>
+                                            </ItemTemplate>
+                                        </asp:TemplateField>
+                                    </Columns>
+                                </Rock:Grid>
+                            </Rock:RockControlWrapper>
+                            <Rock:RockControlWrapper ID="rcGroupMemberAttributes" runat="server" Label="Group Member Attributes" ValidationGroup="GroupDetail" 
+                                Help="Attributes for members in this group. Each member can have different values (i.e. Hours Serving) that are set on the member detail.">
+                                <Rock:Grid ID="gGroupMemberAttributes" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Attribute">
+                                    <Columns>
+                                        <Rock:ReorderField />
+                                        <asp:BoundField DataField="Name" />
+                                        <Rock:EditField OnClick="gGroupMemberAttributes_Edit" />
+                                        <Rock:DeleteField OnClick="gGroupMemberAttributes_Delete" />
+                                    </Columns>
+                                </Rock:Grid>
+                            </Rock:RockControlWrapper>
                         </div>
                     </div>
 
@@ -71,7 +86,7 @@
                 </fieldset>
 
                 <div class="actions">
-                    <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary btn-sm" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary btn-sm" OnClick="btnSave_Click" ValidationGroup="GroupDetail" />
                     <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn  btn-sm" CausesValidation="false" OnClick="btnCancel_Click" />
                 </div>
 
@@ -94,18 +109,21 @@
                     <asp:PlaceHolder ID="phGroupAttributesReadOnly" runat="server" EnableViewState="false"></asp:PlaceHolder>
                 </div>
                 <div class="actions">
-                    <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-sm" OnClick="btnEdit_Click" />
+                    <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-sm" OnClick="btnEdit_Click" CausesValidation="false" />
                     <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
-                    <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-action btn-sm" OnClick="btnDelete_Click" />
+                    <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-action btn-sm" OnClick="btnDelete_Click" CausesValidation="false" />
                 </div>
 
             </fieldset>
         </asp:Panel>
 
-        <asp:Panel ID="pnlGroupMemberAttribute" runat="server" Visible="false">
-            <Rock:AttributeEditor ID="edtGroupMemberAttributes" runat="server" OnSaveClick="btnSaveGroupMemberAttribute_Click" OnCancelClick="btnCancelGroupMemberAttribute_Click" />
-        </asp:Panel>
+        <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
+        <Rock:ModalDialog ID="dlgGroupMemberAttribute" runat="server" OnSaveClick="dlgGroupMemberAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="GroupMemberAttribute">
+            <Content>
+                <Rock:AttributeEditor ID="edtGroupMemberAttributes" runat="server" ShowActions="false" ValidationGroup="GroupMemberAttribute" />
+            </Content>
+        </Rock:ModalDialog>
 
     </ContentTemplate>
 </asp:UpdatePanel>

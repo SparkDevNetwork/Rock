@@ -74,6 +74,7 @@ namespace Rock.Model
         /// <remarks>
         /// Examples of GroupTerms include: group, community, class, family, etc.
         /// </remarks>
+        [Required]
         [MaxLength( 100 )]
         [DataMember]
         public string GroupTerm { get; set; }
@@ -88,6 +89,7 @@ namespace Rock.Model
         /// <example>
         /// Examples of GroupMemberTerms include: member, attendee, team member, student, etc.
         /// </example>
+        [Required]
         [MaxLength( 100 )]
         [DataMember]
         public string GroupMemberTerm { get; set; }

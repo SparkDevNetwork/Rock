@@ -254,7 +254,6 @@ namespace Rock.Attribute
         /// <param name="entity">The item.</param>
         public static void LoadAttributes( Rock.Attribute.IHasAttributes entity )
         {
-            var attributes = new List<Rock.Web.Cache.AttributeCache>();
             Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
 
             Type entityType = entity.GetType();
@@ -299,15 +298,17 @@ namespace Rock.Attribute
             Rock.Model.AttributeService attributeService = new Rock.Model.AttributeService();
             Rock.Model.AttributeValueService attributeValueService = new Rock.Model.AttributeValueService();
 
-            var attributeGroups = new Dictionary<int, List<Rock.Web.Cache.AttributeCache>>();
+            var inheritedAttributes = new Dictionary<int, List<Rock.Web.Cache.AttributeCache>>();
             if ( groupTypeIds.Any() )
             {
-                groupTypeIds.ForEach( g => attributeGroups.Add( g, new List<Rock.Web.Cache.AttributeCache>() ) );
+                groupTypeIds.ForEach( g => inheritedAttributes.Add( g, new List<Rock.Web.Cache.AttributeCache>() ) );
             }
             else
             {
-                attributeGroups.Add( 0, new List<Rock.Web.Cache.AttributeCache>() );
+                inheritedAttributes.Add( 0, new List<Rock.Web.Cache.AttributeCache>() );
             }
+
+            var attributes = new List<Rock.Web.Cache.AttributeCache>();
 
             // Get all the attributes that apply to this entity type and this entity's properties match any attribute qualifiers
             int? entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityType ).Id;
@@ -322,7 +323,7 @@ namespace Rock.Attribute
                     int groupTypeIdValue = int.MinValue;
                     if ( int.TryParse( attribute.EntityTypeQualifierValue, out groupTypeIdValue ) && groupTypeIds.Contains( groupTypeIdValue ) )
                     {
-                        attributeGroups[groupTypeIdValue].Add( Rock.Web.Cache.AttributeCache.Read( attribute ) );
+                        inheritedAttributes[groupTypeIdValue].Add( Rock.Web.Cache.AttributeCache.Read( attribute ) );
                     }
                 }
                     
@@ -331,30 +332,36 @@ namespace Rock.Attribute
                     ( string.IsNullOrEmpty( attribute.EntityTypeQualifierValue ) ||
                     properties[attribute.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ).ToString() == attribute.EntityTypeQualifierValue ) ) )
                 {
-                    attributeGroups[0].Add( Rock.Web.Cache.AttributeCache.Read( attribute ) );
+                    attributes.Add( Rock.Web.Cache.AttributeCache.Read( attribute ) );
                 }
             }
 
-            foreach ( var attributeGroup in attributeGroups )
+            var allAttributes = new List<Rock.Web.Cache.AttributeCache>();
+
+            foreach ( var attributeGroup in inheritedAttributes )
             {
                 foreach ( var attribute in attributeGroup.Value )
                 {
-                    attributes.Add( attribute );
+                    allAttributes.Add( attribute );
                 }
+            }
+            foreach ( var attribute in attributes )
+            {
+                allAttributes.Add( attribute );
             }
 
             var attributeValues = new Dictionary<string, List<Rock.Model.AttributeValue>>();
 
-            if ( attributes.Any() )
+            if ( allAttributes.Any() )
             {
-                foreach ( var attribute in attributes )
+                foreach ( var attribute in allAttributes )
                 {
                     // Add a placeholder for this item's value for each attribute
                     attributeValues.Add( attribute.Key, new List<Rock.Model.AttributeValue>() );
                 }
 
                 // Read this item's value(s) for each attribute 
-                List<int> attributeIds = attributes.Select( a => a.Id ).ToList();
+                List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
                 foreach ( var attributeValue in attributeValueService.Queryable( "Attribute" )
                     .Where( v => v.EntityId == entity.Id && attributeIds.Contains( v.AttributeId ) ) )
                 {
@@ -362,7 +369,7 @@ namespace Rock.Attribute
                 }
 
                 // Look for any attributes that don't have a value and create a default value entry
-                foreach ( var attribute in attributes )
+                foreach ( var attribute in allAttributes )
                 {
                     if ( attributeValues[attribute.Key].Count == 0 )
                     {
@@ -396,7 +403,7 @@ namespace Rock.Attribute
             }
 
             entity.Attributes = new Dictionary<string, Web.Cache.AttributeCache>();
-            attributes.ForEach( a => entity.Attributes.Add( a.Key, a ) );
+            allAttributes.ForEach( a => entity.Attributes.Add( a.Key, a ) );
 
             entity.AttributeValues = attributeValues;
         }
@@ -613,22 +620,24 @@ namespace Rock.Attribute
         /// <summary>
         /// Adds edit controls for each of the item's attributes
         /// </summary>
-        /// <param name="item"></param>
-        /// <param name="parentControl"></param>
-        /// <param name="setValue"></param>
-        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue )
+        /// <param name="item">The item.</param>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="setValue">if set to <c>true</c> [set value].</param>
+        /// <param name="validationGroup">The validation group.</param>
+        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup = "" )
         {
-            AddEditControls( item, parentControl, setValue, new List<string>() );
+            AddEditControls( item, parentControl, setValue, validationGroup, new List<string>() );
         }
 
         /// <summary>
         /// Adds edit controls for each of the item's attributes
         /// </summary>
-        /// <param name="item"></param>
-        /// <param name="parentControl"></param>
-        /// <param name="setValue"></param>
+        /// <param name="item">The item.</param>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="setValue">if set to <c>true</c> [set value].</param>
+        /// <param name="validationGroup">The validation group.</param>
         /// <param name="exclude">List of attribute names not to render</param>
-        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, List<string> exclude )
+        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude )
         {
             if ( item.Attributes != null )
             {
@@ -637,7 +646,7 @@ namespace Rock.Attribute
                     AddEditControls(
                         attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty,
                         attributeCategory.Attributes.Select( a => a.Key ).ToList(),
-                        item, parentControl, setValue, exclude );
+                        item, parentControl, validationGroup, setValue, exclude );
                 }
             }
         }
@@ -651,7 +660,7 @@ namespace Rock.Attribute
         /// <param name="parentControl">The parent control.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="exclude">The exclude.</param>
-        private static void AddEditControls( string category, List<string> attributeKeys, IHasAttributes item, Control parentControl, bool setValue, List<string> exclude )
+        private static void AddEditControls( string category, List<string> attributeKeys, IHasAttributes item, Control parentControl, string validationGroup, bool setValue, List<string> exclude )
         {
             HtmlGenericControl fieldSet = new HtmlGenericControl( "fieldset" );
             parentControl.Controls.Add( fieldSet );
@@ -672,7 +681,7 @@ namespace Rock.Attribute
                 if ( !exclude.Contains( attribute.Name ) )
                 {
                     // Add the control for editing the attribute value
-                    attribute.AddControl( fieldSet.Controls, item.AttributeValues[attribute.Key][0].Value, setValue, true );
+                    attribute.AddControl( fieldSet.Controls, item.AttributeValues[attribute.Key][0].Value, validationGroup, setValue, true );
                 }
             }
         }

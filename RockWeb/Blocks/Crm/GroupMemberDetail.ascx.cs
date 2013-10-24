@@ -114,31 +114,6 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
-        /// Finds an exsiting member of a group by groupId, roleId and personId
-        /// if a existing member is found it returns the groupMemberId
-        /// </summary>
-        /// <returns>nullable groupMemberId </returns>
-        private int? FindExistingGroupMemberRole()
-        {
-            int groupId = int.Parse( hfGroupId.Value );
-            int personId = 0;
-            int roleId = int.Parse( ddlGroupRole.SelectedValue );
-
-            if ( ppGroupMemberPerson.PersonId != null )
-            {
-                personId = (int)ppGroupMemberPerson.PersonId;
-            }
-
-            var service = new GroupMemberService();
-
-            return service.Queryable()
-                    .Where( m => m.GroupId == groupId )
-                    .Where( m => m.PersonId == personId )
-                    .Where( m => m.GroupRoleId == roleId )
-                    .Select( m => m.Id ).FirstOrDefault();
-        }
-
-        /// <summary>
         /// Gets the number of active group members who are in the selected role
         /// </summary>
         /// <returns>Group Member Count</returns>
@@ -375,8 +350,6 @@ namespace RockWeb.Blocks.Crm
             bool roleMembershipAboveMax = false;
 
             GroupMemberService groupMemberService = new GroupMemberService();
-
-
             GroupMember groupMember;
 
             // if adding a new group member 
@@ -386,12 +359,13 @@ namespace RockWeb.Blocks.Crm
                 groupMember = new GroupMember { Id = 0 };
                 groupMember.GroupId = hfGroupId.ValueAsInt();
 
-                //check to see if the person is a member fo the gorup/role
-                int? existingGroupMemberId = FindExistingGroupMemberRole();
-
-                //if so, don't add and show error message
-                if ( existingGroupMemberId != null && existingGroupMemberId > 0 )
+                //check to see if the person is alread a member of the gorup/role
+                var existingGroupMember = groupMemberService.GetByGroupIdAndPersonIdAndGroupRoleId(
+                    hfGroupId.ValueAsInt(), ppGroupMemberPerson.SelectedValue ?? 0, ddlGroupRole.SelectedValueAsId() ?? 0);
+                
+                if (existingGroupMember != null)
                 {
+                    //if so, don't add and show error message
                     var person = new PersonService().Get( (int)ppGroupMemberPerson.PersonId );
 
                     nbErrorMessage.Title = string.Format( "Can not add {0} to {1} role.", person.FullName, role.Name );
@@ -399,7 +373,7 @@ namespace RockWeb.Blocks.Crm
                         person.FullName, 
                         ddlGroupRole.SelectedItem.Text,
                         CurrentPage.Id,
-                        existingGroupMemberId
+                        existingGroupMember.Id
                         );
                     return;
 

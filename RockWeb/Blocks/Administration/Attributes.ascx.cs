@@ -673,7 +673,7 @@ namespace RockWeb.Blocks.Administration
 
                 var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
                 var attributeValue = new AttributeValueService().GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
-                attribute.AddControl( fsEditControl.Controls, attributeValue != null ? attributeValue.Value : null, setValues, true );
+                attribute.AddControl( fsEditControl.Controls, attributeValue != null ? attributeValue.Value : null, string.Empty, setValues, true );
 
                 hfIdValues.Value = attribute.Id.ToString();
 
