@@ -125,7 +125,8 @@
                                  KeyDown="HideLoginWarning" />
                     <Label Name="lblLoginWarning"
                            Style="{StaticResource labelStyleAlert}"
-                           Content="Invalid Login">
+                           Content="Invalid Login"
+                           MaxHeight="55">
                     </Label>
                 </StackPanel>
                 <Border Grid.Row="2"
