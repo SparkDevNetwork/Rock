@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -75,7 +76,6 @@ namespace Rock.Apps.StatementGenerator
         /// <exception cref="System.NotImplementedException"></exception>
         protected void bw_DoWork( object sender, DoWorkEventArgs e )
         {
-            
             ContributionReport contributionReport = new ContributionReport( ReportOptions.Current );
             contributionReport.OnProgress += contributionReport_OnProgress;
 
@@ -83,11 +83,9 @@ namespace Rock.Apps.StatementGenerator
 
             if ( doc != null )
             {
-                ShowProgress(0,0, "Rendering PDF..." );   
-                MemoryStream ms = new MemoryStream();
-                doc.Draw( ms );
-
-                e.Result = ms.GetBuffer();
+                ShowProgress( 0, 0, "Rendering PDF..." );
+                byte[] pdfData = doc.Draw();
+                e.Result = pdfData;
             }
             else
             {
@@ -106,6 +104,11 @@ namespace Rock.Apps.StatementGenerator
         }
 
         /// <summary>
+        /// The _start progress date time
+        /// </summary>
+        private DateTime _startProgressDateTime = DateTime.MinValue;
+
+        /// <summary>
         /// Shows the progress.
         /// </summary>
         /// <param name="position">The position.</param>
@@ -115,9 +118,22 @@ namespace Rock.Apps.StatementGenerator
         {
             Dispatcher.Invoke( () =>
             {
+                if ( position <= 1 )
+                {
+                    _startProgressDateTime = DateTime.Now;
+                }
+
                 if ( max > 0 )
                 {
                     lblReportProgress.Content = string.Format( "{0}/{1} - {2}", position, max, progressMessage );
+                    
+                    // put the current statements/second in the tooltip
+                    var duration = DateTime.Now - _startProgressDateTime;
+                    if ( duration.TotalSeconds > 10 )
+                    {
+                        double rate = position / duration.TotalSeconds;
+                        lblReportProgress.ToolTip = string.Format( "{0} per second", rate );
+                    }
                 }
                 else
                 {

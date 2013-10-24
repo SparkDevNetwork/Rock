@@ -216,12 +216,12 @@ namespace Rock.Rest.Controllers
             } ).OrderBy( a => a.TransactionDateTime );
 
             DataTable dataTable = new DataTable( "contribution_transactions" );
-            dataTable.Columns.Add( "TransactionDateTime" );
+            dataTable.Columns.Add( "TransactionDateTime", typeof(DateTime) );
             dataTable.Columns.Add( "CurrencyTypeValueName" );
             dataTable.Columns.Add( "Summary" );
-            dataTable.Columns.Add( "AccountId" );
+            dataTable.Columns.Add( "AccountId", typeof(int) );
             dataTable.Columns.Add( "AccountName" );
-            dataTable.Columns.Add( "Amount" );
+            dataTable.Columns.Add( "Amount", typeof(decimal) );
 
             var list = selectQry.ToList();
 
