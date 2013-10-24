@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Data.Entity;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -299,7 +300,7 @@ namespace RockWeb.Blocks.Finance
                 queryable = queryable.OrderBy( t => t.TransactionDateTime );
             }
 
-            rGridTransactions.DataSource = queryable.ToList();
+            rGridTransactions.DataSource = queryable.AsNoTracking().ToList();
             rGridTransactions.DataBind();
         }
 
