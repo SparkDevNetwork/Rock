@@ -206,7 +206,7 @@ namespace RockWeb.Blocks.Crm
                 }
                 else
                 {
-                    nbRoleWarning.Title = string.Format("{0} Not Supported", lHeading.Text);
+                    nbRoleWarning.Title = string.Format("Not Configured", lHeading.Text);
                     nbRoleWarning.Text = string.Format( "{0} cannot be added to this {1} because the '{2}' group type does not have any roles defined.",
                         group.GroupType.GroupMemberTerm.Pluralize(), group.GroupType.GroupTerm, group.GroupType.Name );
                     nbRoleWarning.Visible = true;

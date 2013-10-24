@@ -18,6 +18,7 @@
 
             </div>
 
+            <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
 
             <div id="pnlEditDetails" runat="server">
@@ -96,8 +97,6 @@
 
                 <p class="description">
                     <asp:Literal ID="lGroupDescription" runat="server"></asp:Literal></p>
-
-                <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                 <div class="row">
                     <asp:Literal ID="lblMainDetails" runat="server" />
