@@ -5,8 +5,10 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Net;
 using System.Windows;
+using System.Windows.Input;
 using Rock.Model;
 using Rock.Net;
 
@@ -21,8 +23,17 @@ namespace Rock.Apps.CheckScannerUtility
         /// Initializes a new instance of the <see cref="LoginPage"/> class.
         /// </summary>
         public LoginPage()
+            : this( false )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LoginPage"/> class.
+        /// </summary>
+        public LoginPage( bool forceRockURLVisible )
         {
             InitializeComponent();
+            ForceRockURLVisible = forceRockURLVisible;
         }
 
         /// <summary>
@@ -32,21 +43,56 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnLogin_Click( object sender, RoutedEventArgs e )
         {
-            BatchPage batchPage = new BatchPage();
-            try
+            txtUsername.Text = txtUsername.Text.Trim();
+            txtRockUrl.Text = txtRockUrl.Text.Trim();
+            RockRestClient rockRestClient = new RockRestClient( txtRockUrl.Text );
+
+            string userName = txtUsername.Text;
+            string password = txtPassword.Password;
+
+            // start a background thread to Login since this could take a little while and we want a Wait cursor
+            BackgroundWorker bw = new BackgroundWorker();
+            bw.DoWork += delegate( object s, DoWorkEventArgs ee )
             {
-                txtUsername.Text = txtUsername.Text.Trim();
-                txtRockUrl.Text = txtRockUrl.Text.Trim();
-                RockRestClient rockRestClient = new RockRestClient( txtRockUrl.Text );
-                rockRestClient.Login( txtUsername.Text, txtPassword.Password );
-                Person person = rockRestClient.GetData<Person>( string.Format( "api/People/GetByUserName/{0}", txtUsername.Text ) );
-                batchPage.LoggedInPerson = person;
-            }
-            catch ( Exception ex )
+                ee.Result = null;
+                rockRestClient.Login( userName, password );
+            };
+
+            // when the Background Worker is done with the Login, run this
+            bw.RunWorkerCompleted += delegate( object s, RunWorkerCompletedEventArgs ee )
             {
-                if ( ex is WebException )
+                this.Cursor = null;
+                btnLogin.IsEnabled = true;
+                try
                 {
-                    WebException wex = ex as WebException;
+                    if ( ee.Error != null )
+                    {
+                        throw ee.Error;
+                    }
+
+                    Person person = rockRestClient.GetData<Person>( string.Format( "api/People/GetByUserName/{0}", userName ) );
+                    RockConfig rockConfig = RockConfig.Load();
+                    rockConfig.RockBaseUrl = txtRockUrl.Text;
+                    rockConfig.Username = txtUsername.Text;
+                    rockConfig.Password = txtPassword.Password;
+                    rockConfig.Save();
+
+                    BatchPage batchPage = new BatchPage();
+                    batchPage.LoggedInPerson = person;
+
+                    if ( this.NavigationService.CanGoBack )
+                    {
+                        // if we got here from some other Page, go back
+                        this.NavigationService.GoBack();
+                    }
+                    else
+                    {
+                        this.NavigationService.Navigate( batchPage );
+                    }
+                }
+                catch ( WebException wex )
+                {
+                    // show WebException on the form, but any others should end up in the ExceptionDialog
                     HttpWebResponse response = wex.Response as HttpWebResponse;
                     if ( response != null )
                     {
@@ -57,22 +103,25 @@ namespace Rock.Apps.CheckScannerUtility
                             return;
                         }
                     }
+
+                    string message = wex.Message;
+                    if ( wex.InnerException != null )
+                    {
+                        message += "\n" + wex.InnerException.Message;
+                    }
+
+                    lblRockUrl.Visibility = Visibility.Visible;
+                    txtRockUrl.Visibility = Visibility.Visible;
+                    lblLoginWarning.Content = message;
+                    lblLoginWarning.Visibility = Visibility.Visible;
+                    return;
                 }
+            };
 
-                lblRockUrl.Visibility = Visibility.Visible;
-                txtRockUrl.Visibility = Visibility.Visible;
-                lblLoginWarning.Content = ex.Message;
-                lblLoginWarning.Visibility = Visibility.Visible;
-                return;
-            }
-
-            RockConfig rockConfig = RockConfig.Load();
-            rockConfig.RockBaseUrl = txtRockUrl.Text;
-            rockConfig.Username = txtUsername.Text;
-            rockConfig.Password = txtPassword.Password;
-            rockConfig.Save();
-            
-            this.NavigationService.Navigate( batchPage);
+            // set the cursor to Wait, disable the login button, and start the login background process
+            this.Cursor = Cursors.Wait;
+            btnLogin.IsEnabled = false;
+            bw.RunWorkerAsync();
         }
 
         /// <summary>
@@ -85,15 +134,23 @@ namespace Rock.Apps.CheckScannerUtility
             HideLoginWarning( null, null );
             RockConfig rockConfig = RockConfig.Load();
 
-            bool promptForUrl = ( string.IsNullOrWhiteSpace( rockConfig.RockBaseUrl ) );
+            bool promptForUrl = string.IsNullOrWhiteSpace( rockConfig.RockBaseUrl ) || ForceRockURLVisible;
 
             lblRockUrl.Visibility = promptForUrl ? Visibility.Visible : Visibility.Collapsed;
             txtRockUrl.Visibility = promptForUrl ? Visibility.Visible : Visibility.Collapsed;
-            
+
             txtRockUrl.Text = rockConfig.RockBaseUrl;
             txtUsername.Text = rockConfig.Username;
             txtPassword.Password = rockConfig.Password;
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [force rock URL visible].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [force rock URL visible]; otherwise, <c>false</c>.
+        /// </value>
+        private bool ForceRockURLVisible { get; set; }
 
         /// <summary>
         /// Hides the login warning.

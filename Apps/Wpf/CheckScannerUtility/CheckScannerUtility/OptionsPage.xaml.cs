@@ -4,9 +4,11 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Net;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Rock.Model;
 using Rock.Net;
 
 namespace Rock.Apps.CheckScannerUtility
@@ -14,7 +16,7 @@ namespace Rock.Apps.CheckScannerUtility
     /// <summary>
     /// Interaction logic for OptionsPage.xaml
     /// </summary>
-    public partial class OptionsPage : Page
+    public partial class OptionsPage : System.Windows.Controls.Page
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="OptionsPage"/> class.
@@ -38,9 +40,9 @@ namespace Rock.Apps.CheckScannerUtility
         private void ShowDetail()
         {
             LoadDropDowns();
-            
+
             lblAlert.Visibility = Visibility.Collapsed;
-            
+
             var rockConfig = RockConfig.Load();
 
             txtRockUrl.Text = rockConfig.RockBaseUrl;
@@ -93,7 +95,6 @@ namespace Rock.Apps.CheckScannerUtility
                     break;
             }
 
-
             if ( cboMagTekCommPort.Items.Count > 0 )
             {
                 cboMagTekCommPort.SelectedItem = string.Format( "COM{0}", rockConfig.MICRImageComPort );
@@ -131,6 +132,27 @@ namespace Rock.Apps.CheckScannerUtility
                 txtRockUrl.Text = txtRockUrl.Text.Trim();
                 RockRestClient client = new RockRestClient( txtRockUrl.Text );
                 client.Login( rockConfig.Username, rockConfig.Password );
+                BatchPage.LoggedInPerson = client.GetData<Person>( string.Format( "api/People/GetByUserName/{0}", rockConfig.Username ) );
+            }
+            catch ( WebException wex )
+            {
+                HttpWebResponse response = wex.Response as HttpWebResponse;
+                if ( response != null )
+                {
+                    if ( response.StatusCode == HttpStatusCode.Unauthorized )
+                    {
+                        // valid URL but invalid login, so navigate back to the LoginPage
+                        rockConfig.RockBaseUrl = txtRockUrl.Text;
+                        rockConfig.Save();
+                        LoginPage loginPage = new LoginPage( true );
+                        this.NavigationService.Navigate( loginPage );
+                        return;
+                    }
+                }
+
+                lblAlert.Content = wex.Message;
+                lblAlert.Visibility = Visibility.Visible;
+                return;
             }
             catch ( Exception ex )
             {
@@ -149,7 +171,7 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 rockConfig.ScannerInterfaceType = RockConfig.InterfaceType.RangerApi;
             }
-            
+
             string imageOption = cboImageOption.SelectedValue as string;
 
             switch ( imageOption )
@@ -166,8 +188,8 @@ namespace Rock.Apps.CheckScannerUtility
             }
 
             string comPortName = cboMagTekCommPort.SelectedItem as string;
-            
-            if (!string.IsNullOrWhiteSpace(comPortName))
+
+            if ( !string.IsNullOrWhiteSpace( comPortName ) )
             {
                 rockConfig.MICRImageComPort = short.Parse( comPortName.Replace( "COM", string.Empty ) );
             }
@@ -204,8 +226,8 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="SelectionChangedEventArgs"/> instance containing the event data.</param>
         private void cboScannerInterfaceType_SelectionChanged( object sender, SelectionChangedEventArgs e )
         {
-            bool magTekSelected = cboScannerInterfaceType.SelectedItem.Equals( "MagTek" );
-            
+            bool magTekSelected = cboScannerInterfaceType.SelectedItem != null && cboScannerInterfaceType.SelectedItem.Equals( "MagTek" );
+
             // show COM port option only for Mag Tek
             lblMagTekCommPort.Visibility = magTekSelected ? Visibility.Visible : Visibility.Collapsed;
             cboMagTekCommPort.Visibility = magTekSelected ? Visibility.Visible : Visibility.Collapsed;
