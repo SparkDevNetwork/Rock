@@ -144,59 +144,74 @@ namespace RockWeb.Blocks.Crm
 
             using ( new UnitOfWorkScope() )
             {
-
                 var group = new GroupService().Get( groupId );
 
-                // Remove attribute columns
-                foreach ( var column in gGroupMembers.Columns.OfType<AttributeField>().ToList() )
-                {
-                    gGroupMembers.Columns.Remove( column );
-                }
+                lHeading.Text = string.Format("{0} {1}", group.GroupType.GroupTerm, group.GroupType.GroupMemberTerm.Pluralize());
 
-                // Add attribute columns
-                int entityTypeId = new GroupMember().TypeId;
-                string groupQualifier = group.Id.ToString();
-                string groupTypeQualifier = group.GroupTypeId.ToString();
-                foreach ( var attribute in new AttributeService().Queryable()
-                    .Where( a =>
-                        a.EntityTypeId == entityTypeId &&
-                        a.IsGridColumn &&
-                        ( a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase ) && a.EntityTypeQualifierValue.Equals( groupQualifier ) ||
-                         a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) && a.EntityTypeQualifierValue.Equals( groupTypeQualifier ) )
-                         )
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Name ) )
+                if ( group.GroupType.Roles.Any() )
                 {
-                    string dataFieldExpression = attribute.Key;
-                    bool columnExists = gGroupMembers.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
-                    if ( !columnExists )
+                    nbRoleWarning.Visible = false;
+                    gGroupMembers.Visible = true;
+
+                    // Remove attribute columns
+                    foreach ( var column in gGroupMembers.Columns.OfType<AttributeField>().ToList() )
                     {
-                        AttributeField boundField = new AttributeField();
-                        boundField.DataField = dataFieldExpression;
-                        boundField.HeaderText = attribute.Name;
-                        boundField.SortExpression = string.Empty;
-                        int insertPos = gGroupMembers.Columns.IndexOf( gGroupMembers.Columns.OfType<DeleteField>().First() );
-                        gGroupMembers.Columns.Insert( insertPos, boundField );
+                        gGroupMembers.Columns.Remove( column );
                     }
 
-                }
+                    // Add attribute columns
+                    int entityTypeId = new GroupMember().TypeId;
+                    string groupQualifier = group.Id.ToString();
+                    string groupTypeQualifier = group.GroupTypeId.ToString();
+                    foreach ( var attribute in new AttributeService().Queryable()
+                        .Where( a =>
+                            a.EntityTypeId == entityTypeId &&
+                            a.IsGridColumn &&
+                            ( a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase ) && a.EntityTypeQualifierValue.Equals( groupQualifier ) ||
+                             a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) && a.EntityTypeQualifierValue.Equals( groupTypeQualifier ) )
+                             )
+                        .OrderBy( a => a.Order )
+                        .ThenBy( a => a.Name ) )
+                    {
+                        string dataFieldExpression = attribute.Key;
+                        bool columnExists = gGroupMembers.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
+                        if ( !columnExists )
+                        {
+                            AttributeField boundField = new AttributeField();
+                            boundField.DataField = dataFieldExpression;
+                            boundField.HeaderText = attribute.Name;
+                            boundField.SortExpression = string.Empty;
+                            int insertPos = gGroupMembers.Columns.IndexOf( gGroupMembers.Columns.OfType<DeleteField>().First() );
+                            gGroupMembers.Columns.Insert( insertPos, boundField );
+                        }
 
-                GroupMemberService groupMemberService = new GroupMemberService();
-                var qry = groupMemberService.Queryable( "Person,GroupRole" )
-                    .Where( m => m.GroupId == groupId );
+                    }
 
-                SortProperty sortProperty = gGroupMembers.SortProperty;
+                    GroupMemberService groupMemberService = new GroupMemberService();
+                    var qry = groupMemberService.Queryable( "Person,GroupRole" )
+                        .Where( m => m.GroupId == groupId );
 
-                if ( sortProperty != null )
-                {
-                    gGroupMembers.DataSource = qry.Sort( sortProperty ).ToList();
+                    SortProperty sortProperty = gGroupMembers.SortProperty;
+
+                    if ( sortProperty != null )
+                    {
+                        gGroupMembers.DataSource = qry.Sort( sortProperty ).ToList();
+                    }
+                    else
+                    {
+                        gGroupMembers.DataSource = qry.OrderBy( a => a.Person.LastName ).ThenBy( a => a.Person.FirstName ).ToList();
+                    }
+
+                    gGroupMembers.DataBind();
                 }
                 else
                 {
-                    gGroupMembers.DataSource = qry.OrderBy( a => a.Person.LastName ).ThenBy( a => a.Person.FirstName ).ToList();
+                    nbRoleWarning.Title = string.Format("{0} Not Supported", lHeading.Text);
+                    nbRoleWarning.Text = string.Format( "{0} cannot be added to this {1} because the '{2}' group type does not have any roles defined.",
+                        group.GroupType.GroupMemberTerm.Pluralize(), group.GroupType.GroupTerm, group.GroupType.Name );
+                    nbRoleWarning.Visible = true;
+                    gGroupMembers.Visible = false;
                 }
-
-                gGroupMembers.DataBind();
             }
 
         }
@@ -222,8 +237,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
         public void SetDimmed( bool dimmed )
         {
-            pnlGroupMembers.Disabled = dimmed;
-            gGroupMembers.Enabled = !dimmed;
+            pnlContent.Visible = !dimmed;
         }
 
         #endregion

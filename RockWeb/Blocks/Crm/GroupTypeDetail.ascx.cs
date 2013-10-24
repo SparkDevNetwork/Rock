@@ -9,7 +9,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -713,7 +715,7 @@ namespace RockWeb.Blocks.Crm
             }
             else
             {
-                groupType = new GroupType { Id = 0, ShowInGroupList = true };
+                groupType = new GroupType { Id = 0, ShowInGroupList = true, GroupTerm = "Group", GroupMemberTerm = "Member" };
                 groupType.ChildGroupTypes = new List<GroupType>();
                 groupType.LocationTypes = new List<GroupTypeLocationType>();
             }
@@ -1624,51 +1626,5 @@ namespace RockWeb.Blocks.Crm
 
         #endregion
 
-        /// <summary>
-        /// Helper class for inherited attributes
-        /// </summary>
-        [Serializable]
-        protected class InheritedAttribute
-        {
-            /// <summary>
-            /// Gets or sets the name.
-            /// </summary>
-            /// <value>
-            /// The name.
-            /// </value>
-            public string Name { get; set; }
-
-            /// <summary>
-            /// Gets or sets the URL.
-            /// </summary>
-            /// <value>
-            /// The URL.
-            /// </value>
-            public string Url { get; set; }
-
-            /// <summary>
-            /// Gets or sets the type of the group.
-            /// </summary>
-            /// <value>
-            /// The type of the group.
-            /// </value>
-            public string GroupType { get; set; }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="InheritedAttribute"/> class.
-            /// </summary>
-            /// <param name="name">The name.</param>
-            /// <param name="url">The URL.</param>
-            /// <param name="groupType">Type of the group.</param>
-            public InheritedAttribute( string name, string url, string groupType )
-            {
-                Name = name;
-                Url = url;
-                GroupType = groupType;
-            }
-        }
-
     }
-
-
 }

@@ -672,7 +672,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var attribute = AttributeCache.Read( attributeId );
             Person.LoadAttributes();
             var attributeValue = Person.GetAttributeValue( attribute.Key );
-            attribute.AddControl( fsNotes.Controls, attributeValue, true, true );
+            attribute.AddControl( fsNotes.Controls, attributeValue, string.Empty, true, true );
             hfAttributeId.Value = attribute.Id.ToString();
             mpeAddNote.Show();
         }

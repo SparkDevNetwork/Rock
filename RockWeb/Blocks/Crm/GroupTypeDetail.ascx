@@ -42,11 +42,11 @@
                     <div class="col-md-6">
                         <fieldset>
                             <legend>Behavior</legend>
-                            <Rock:DataTextBox ID="tbGroupTerm" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="GroupTerm" ValidationGroup="GroupTypeDetail" />
-                            <Rock:DataTextBox ID="tbGroupMemberTerm" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="GroupMemberTerm" ValidationGroup="GroupTypeDetail" />
+                            <Rock:DataTextBox ID="tbGroupTerm" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="GroupTerm" Required="true" ValidationGroup="GroupTypeDetail" />
+                            <Rock:DataTextBox ID="tbGroupMemberTerm" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="GroupMemberTerm" Required="true" ValidationGroup="GroupTypeDetail" />
                             <Rock:RockDropDownList ID="ddlGroupTypePurpose" runat="server" Label="Purpose" Help="Define a specific purpose for this group type" ValidationGroup="GroupTypeDetail" />
                             <Rock:RockDropDownList ID="ddlDefaultGroupRole" runat="server" DataTextField="Name" DataValueField="Id" Label="Default Group Role" ValidationGroup="GroupTypeDetail" />
-                            <Rock:RockControlWrapper ID="rcGroupTypes" runat="server" Label="Child Group Types" ValidationGroup="GroupTypeDetail" 
+                            <Rock:RockControlWrapper ID="rcGroupTypes" runat="server" Label="Child Group Types" ValidationGroup="GroupTypeDetail"
                                 Help="This defines what types of child groups can be added to groups of this type. This is used to define the group hierarchy. To allow an unlimited hierarchy add this type as an allowed child group type.">
                                 <Rock:Grid ID="gChildGroupTypes" runat="server" DisplayType="Light" ShowHeader="false" RowItemText="Group Type">
                                     <Columns>
@@ -75,7 +75,7 @@
                             <legend>Locations</legend>
                             <Rock:RockCheckBox ID="cbAllowMultipleLocations" runat="server" Label="Multiple Locations" Text="Allow" ValidationGroup="GroupTypeDetail" />
                             <Rock:RockDropDownList ID="ddlLocationSelectionMode" runat="server" Label="Location Selection Mode" Help="The selection mode to use when adding locations to groups of this type" ValidationGroup="GroupTypeDetail" />
-                            <Rock:RockControlWrapper ID="rcLocationTypes" runat="server" Label="Location Types" ValidationGroup="GroupTypeDetail" 
+                            <Rock:RockControlWrapper ID="rcLocationTypes" runat="server" Label="Location Types" ValidationGroup="GroupTypeDetail"
                                 Help="Groups can have one or more location types attached to them.  For instance you may want to have a meeting location and an assignment target location.">
                                 <Rock:Grid ID="gLocationTypes" runat="server" DisplayType="Light" ShowHeader="false" RowItemText="Location">
                                     <Columns>
@@ -109,14 +109,14 @@
 
                 <div class="row">
                     <div class="col-md-4">
-                        <Rock:RockControlWrapper ID="rcGroupTypeAttributesInherited" runat="server" Label="Inherited Group Type Attributes" ValidationGroup="GroupTypeDetail" 
+                        <Rock:RockControlWrapper ID="rcGroupTypeAttributesInherited" runat="server" Label="Inherited Group Type Attributes" ValidationGroup="GroupTypeDetail"
                             Help="Inherited Attributes for this group type.">
                             <Rock:Grid ID="gGroupTypeAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Attribute">
                                 <Columns>
                                     <asp:TemplateField>
                                         <ItemTemplate>
                                             <span class='text-muted'>
-                                                <%# Eval("Name") %><br/>
+                                                <%# Eval("Name") %><br />
                                                 <small>(Inherited from <a href='<%# Eval("Url") %>' target='_blank'><%# Eval("GroupType") %></a>)</small>
                                             </span>
                                         </ItemTemplate>
@@ -124,7 +124,7 @@
                                 </Columns>
                             </Rock:Grid>
                         </Rock:RockControlWrapper>
-                        <Rock:RockControlWrapper ID="rcGroupTypeAttributes" runat="server" Label="Group Type Attributes" ValidationGroup="GroupTypeDetail" 
+                        <Rock:RockControlWrapper ID="rcGroupTypeAttributes" runat="server" Label="Group Type Attributes" ValidationGroup="GroupTypeDetail"
                             Help="Attributes for this group type. Every group of this type will have the same value that is set here.">
                             <Rock:Grid ID="gGroupTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Attribute">
                                 <Columns>
@@ -137,14 +137,14 @@
                         </Rock:RockControlWrapper>
                     </div>
                     <div class="col-md-4">
-                        <Rock:RockControlWrapper ID="rcGroupAttributesInherited" runat="server" Label="Inherited Group Attributes" ValidationGroup="GroupTypeDetail" 
+                        <Rock:RockControlWrapper ID="rcGroupAttributesInherited" runat="server" Label="Inherited Group Attributes" ValidationGroup="GroupTypeDetail"
                             Help="Inherited Attributes for groups of this type.">
                             <Rock:Grid ID="gGroupAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Attribute">
                                 <Columns>
                                     <asp:TemplateField>
                                         <ItemTemplate>
                                             <span class='text-muted'>
-                                                <%# Eval("Name") %><br/>
+                                                <%# Eval("Name") %><br />
                                                 <small>(Inherited from <a href='<%# Eval("Url") %>' target='_blank'><%# Eval("GroupType") %></a>)</small>
                                             </span>
                                         </ItemTemplate>
@@ -152,7 +152,7 @@
                                 </Columns>
                             </Rock:Grid>
                         </Rock:RockControlWrapper>
-                        <Rock:RockControlWrapper ID="rcGroupAttributes" runat="server" Label="Group Attributes" ValidationGroup="GroupTypeDetail" 
+                        <Rock:RockControlWrapper ID="rcGroupAttributes" runat="server" Label="Group Attributes" ValidationGroup="GroupTypeDetail"
                             Help="Attributes for groups of this type. Each group can have different values (i.e. Meeting Time) that are set on the group detail.">
                             <Rock:Grid ID="gGroupAttributes" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Attribute">
                                 <Columns>
@@ -165,14 +165,14 @@
                         </Rock:RockControlWrapper>
                     </div>
                     <div class="col-md-4">
-                        <Rock:RockControlWrapper ID="rcGroupMemberAttributesInherited" runat="server" Label="Inherited Group Member Attributes" ValidationGroup="GroupTypeDetail" 
+                        <Rock:RockControlWrapper ID="rcGroupMemberAttributesInherited" runat="server" Label="Inherited Group Member Attributes" ValidationGroup="GroupTypeDetail"
                             Help="Inherited Attributes for members in a group of this type.">
                             <Rock:Grid ID="gGroupMemberAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Attribute">
                                 <Columns>
                                     <asp:TemplateField>
                                         <ItemTemplate>
                                             <span class='text-muted'>
-                                                <%# Eval("Name") %><br/>
+                                                <%# Eval("Name") %><br />
                                                 <small>(Inherited from <a href='<%# Eval("Url") %>' target='_blank'><%# Eval("GroupType") %></a>)</small>
                                             </span>
                                         </ItemTemplate>
@@ -180,7 +180,7 @@
                                 </Columns>
                             </Rock:Grid>
                         </Rock:RockControlWrapper>
-                        <Rock:RockControlWrapper ID="rcGroupMemberAttributes" runat="server" Label="Group Member Attributes" ValidationGroup="GroupTypeDetail" 
+                        <Rock:RockControlWrapper ID="rcGroupMemberAttributes" runat="server" Label="Group Member Attributes" ValidationGroup="GroupTypeDetail"
                             Help="Attributes for members in a group of this type. Each member can have different values (i.e. Hours Serving) that are set on the member detail.">
                             <Rock:Grid ID="gGroupMemberAttributes" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Attribute">
                                 <Columns>
@@ -204,7 +204,8 @@
             <fieldset id="fieldsetViewDetails" runat="server">
 
                 <p class="description">
-                    <asp:Literal ID="lGroupTypeDescription" runat="server"></asp:Literal></p>
+                    <asp:Literal ID="lGroupTypeDescription" runat="server"></asp:Literal>
+                </p>
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
@@ -226,35 +227,35 @@
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
-        <Rock:ModalDialog ID="dlgChildGroupType" runat="server" OnSaveClick="dlgChildGroupType_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ChildGroupType" >
+        <Rock:ModalDialog ID="dlgChildGroupType" runat="server" OnSaveClick="dlgChildGroupType_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ChildGroupType">
             <Content>
                 <Rock:RockDropDownList ID="ddlChildGroupType" runat="server" DataTextField="Name" DataValueField="Id" Label="Child Group Type" ValidationGroup="ChildGroupType" />
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:ModalDialog ID="dlgLocationType" runat="server" OnSaveClick="dlgLocationType_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="LocationType" >
+        <Rock:ModalDialog ID="dlgLocationType" runat="server" OnSaveClick="dlgLocationType_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="LocationType">
             <Content>
                 <Rock:RockDropDownList ID="ddlLocationType" runat="server" DataTextField="Name" DataValueField="Id" Label="Location Type" ValidationGroup="LocationType" />
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:ModalDialog ID="dlgGroupTypeAttribute" runat="server" OnSaveClick="dlgGroupTypeAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="GroupTypeAttribute" >
+        <Rock:ModalDialog ID="dlgGroupTypeAttribute" runat="server" OnSaveClick="dlgGroupTypeAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="GroupTypeAttribute">
             <Content>
                 <Rock:AttributeEditor ID="edtGroupTypeAttributes" runat="server" ShowActions="false" ValidationGroup="GroupTypeAttribute" />
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:ModalDialog ID="dlgGroupAttribute" runat="server" OnSaveClick="dlgGroupAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="GroupAttribute" >
+        <Rock:ModalDialog ID="dlgGroupAttribute" runat="server" OnSaveClick="dlgGroupAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="GroupAttribute">
             <Content>
                 <Rock:AttributeEditor ID="edtGroupAttributes" runat="server" ShowActions="false" ValidationGroup="GroupAttribute" />
             </Content>
-          </Rock:ModalDialog>
+        </Rock:ModalDialog>
 
-        <Rock:ModalDialog ID="dlgGroupMemberAttribute" runat="server" OnSaveClick="dlgGroupMemberAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="GroupMemberAttribute" >
+        <Rock:ModalDialog ID="dlgGroupMemberAttribute" runat="server" OnSaveClick="dlgGroupMemberAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="GroupMemberAttribute">
             <Content>
                 <Rock:AttributeEditor ID="edtGroupMemberAttributes" runat="server" ShowActions="false" ValidationGroup="GroupMemberAttribute" />
             </Content>
-          </Rock:ModalDialog>
+        </Rock:ModalDialog>
 
     </ContentTemplate>
 </asp:UpdatePanel>
