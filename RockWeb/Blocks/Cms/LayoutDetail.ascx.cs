@@ -138,11 +138,10 @@ namespace RockWeb.Blocks.Crm
                     layoutService.Save( layout, CurrentPersonId );
                 } );
 
-                Dictionary<string, string> qryString = new Dictionary<string, string>();
-                qryString["siteId"] = hfSiteId.Value;
-
                 LayoutCache.Flush( layout.Id );
 
+                Dictionary<string, string> qryString = new Dictionary<string, string>();
+                qryString["siteId"] = hfSiteId.Value;
                 NavigateToParentPage( qryString );
             }
         }

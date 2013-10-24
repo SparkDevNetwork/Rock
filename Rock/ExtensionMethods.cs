@@ -894,23 +894,23 @@ namespace Rock
 
         #endregion
 
-        #region DropDownList/ListControl Extensions
+        #region ListControl Extensions
 
         /// <summary>
         /// Try's to set the selected value, if the value does not exist, will set the first item in the list
         /// </summary>
-        /// <param name="ddl">The DDL.</param>
+        /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
-        public static void SetValue( this DropDownList ddl, string value )
+        public static void SetValue( this ListControl listControl, string value )
         {
             try
             {
-                ddl.SelectedValue = value;
+                listControl.SelectedValue = value;
             }
             catch
             {
-                if ( ddl.Items.Count > 0 )
-                    ddl.SelectedIndex = 0;
+                if ( listControl.Items.Count > 0 )
+                    listControl.SelectedIndex = 0;
             }
 
         }
@@ -918,22 +918,22 @@ namespace Rock
         /// <summary>
         /// Sets the read only value.
         /// </summary>
-        /// <param name="ddl">The DDL.</param>
+        /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
-        public static void SetReadOnlyValue( this DropDownList ddl, string value )
+        public static void SetReadOnlyValue( this ListControl listControl, string value )
         {
-            ddl.Items.Clear();
-            ddl.Items.Add( value );
+            listControl.Items.Clear();
+            listControl.Items.Add( value );
         }
 
         /// <summary>
         /// Try's to set the selected value, if the value does not exist, will set the first item in the list
         /// </summary>
-        /// <param name="ddl">The DDL.</param>
+        /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
-        public static void SetValue( this DropDownList ddl, int? value )
+        public static void SetValue( this ListControl listControl, int? value )
         {
-            ddl.SetValue( value == null ? "0" : value.ToString() );
+            listControl.SetValue( value == null ? "0" : value.ToString() );
         }
 
         /// <summary>
