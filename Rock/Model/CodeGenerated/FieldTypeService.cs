@@ -93,17 +93,26 @@ namespace Rock.Model
             else
             {
                 var target = new FieldType();
-                target.IsSystem = source.IsSystem;
-                target.Name = source.Name;
-                target.Description = source.Description;
-                target.Assembly = source.Assembly;
-                target.Class = source.Class;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another FieldType object to this FieldType object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this FieldType target, FieldType source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.Assembly = source.Assembly;
+            target.Class = source.Class;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

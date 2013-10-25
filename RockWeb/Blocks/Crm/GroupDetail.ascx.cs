@@ -735,12 +735,20 @@ namespace RockWeb.Blocks.Crm
 
             lblMainDetails.Text = descriptionList.Html;
 
+            var attributes = new List<Rock.Web.Cache.AttributeCache>();
+
+            // Get the attributes inherited from group type
             GroupType groupType = new GroupTypeService().Get( group.GroupTypeId );
             groupType.LoadAttributes();
-            Rock.Attribute.Helper.AddDisplayControls( groupType, phGroupTypeAttributesReadOnly );
+            attributes = groupType.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
 
+            // Combine with the group attributes
             group.LoadAttributes();
-            Rock.Attribute.Helper.AddDisplayControls( group, phGroupAttributesReadOnly );
+            attributes.AddRange( group.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ) );
+
+            // And only show those attributes that have the GridColumn flag set to true
+            var attributeCategories = Helper.GetAttributeCategories( attributes, true );
+            Rock.Attribute.Helper.AddDisplayControls( group, attributeCategories, phAttributes );
         }
 
         /// <summary>

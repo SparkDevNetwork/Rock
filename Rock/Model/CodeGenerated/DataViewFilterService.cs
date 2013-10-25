@@ -87,16 +87,25 @@ namespace Rock.Model
             else
             {
                 var target = new DataViewFilter();
-                target.ExpressionType = source.ExpressionType;
-                target.ParentId = source.ParentId;
-                target.EntityTypeId = source.EntityTypeId;
-                target.Selection = source.Selection;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another DataViewFilter object to this DataViewFilter object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this DataViewFilter target, DataViewFilter source )
+        {
+            target.ExpressionType = source.ExpressionType;
+            target.ParentId = source.ParentId;
+            target.EntityTypeId = source.EntityTypeId;
+            target.Selection = source.Selection;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

@@ -81,18 +81,27 @@ namespace Rock.Model
             else
             {
                 var target = new ServiceLog();
-                target.LogDateTime = source.LogDateTime;
-                target.Input = source.Input;
-                target.Type = source.Type;
-                target.Name = source.Name;
-                target.Result = source.Result;
-                target.Success = source.Success;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another ServiceLog object to this ServiceLog object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this ServiceLog target, ServiceLog source )
+        {
+            target.LogDateTime = source.LogDateTime;
+            target.Input = source.Input;
+            target.Type = source.Type;
+            target.Name = source.Name;
+            target.Result = source.Result;
+            target.Success = source.Success;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

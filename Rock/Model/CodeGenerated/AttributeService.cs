@@ -81,25 +81,34 @@ namespace Rock.Model
             else
             {
                 var target = new Attribute();
-                target.IsSystem = source.IsSystem;
-                target.FieldTypeId = source.FieldTypeId;
-                target.EntityTypeId = source.EntityTypeId;
-                target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
-                target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
-                target.Key = source.Key;
-                target.Name = source.Name;
-                target.Description = source.Description;
-                target.Order = source.Order;
-                target.IsGridColumn = source.IsGridColumn;
-                target.DefaultValue = source.DefaultValue;
-                target.IsMultiValue = source.IsMultiValue;
-                target.IsRequired = source.IsRequired;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another Attribute object to this Attribute object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this Attribute target, Attribute source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.FieldTypeId = source.FieldTypeId;
+            target.EntityTypeId = source.EntityTypeId;
+            target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
+            target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+            target.Key = source.Key;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.Order = source.Order;
+            target.IsGridColumn = source.IsGridColumn;
+            target.DefaultValue = source.DefaultValue;
+            target.IsMultiValue = source.IsMultiValue;
+            target.IsRequired = source.IsRequired;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

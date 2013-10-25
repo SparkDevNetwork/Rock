@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace Rock.Web
@@ -74,32 +75,38 @@ namespace Rock.Web
         {
             get
             {
-                string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
-
-                string result = @"<div class='col-md-6'><dl>";
-
-                foreach ( var pair in _termDescriptionList )
+                if ( _termDescriptionList.Any() )
                 {
-                    string displayValue = pair.Value;
-                    if ( string.IsNullOrWhiteSpace( displayValue ) )
+                    string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
+
+                    string result = @"<div class='col-md-6'><dl>";
+
+                    foreach ( var pair in _termDescriptionList )
                     {
-                        displayValue = Rock.Constants.None.TextHtml;
-                    }
+                        string displayValue = pair.Value;
+                        if ( string.IsNullOrWhiteSpace( displayValue ) )
+                        {
+                            displayValue = Rock.Constants.None.TextHtml;
+                        }
 
 
-                    if ( pair.Key == ColumnBreak )
-                    {
-                        result += @"</dl></div><div class='col-md-6'><dl>";
+                        if ( pair.Key == ColumnBreak )
+                        {
+                            result += @"</dl></div><div class='col-md-6'><dl>";
+                        }
+                        else
+                        {
+                            result += string.Format( descriptionFormat, pair.Key, displayValue );
+                        }
                     }
-                    else
-                    {
-                        result += string.Format( descriptionFormat, pair.Key, displayValue );
-                    }
+
+                    result += @"</dl></div>";
+
+                    return result;
                 }
 
-                result += @"</dl></div>";
+                return string.Empty;
 
-                return result;
             }
         }
 

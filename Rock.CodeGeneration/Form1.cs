@@ -257,17 +257,28 @@ namespace Rock.CodeGeneration
             else
             {{
                 var target = new {0}();
+                target.CopyPropertiesFrom( source );
+                return target;
+            }}
+        }}
+", type.Name );
+
+            sb.AppendFormat( @"
+        /// <summary>
+        /// Copies the properties from another {0} object to this {0} object
+        /// </summary>
+        /// <param name=""target"">The target.</param>
+        /// <param name=""source"">The source.</param>
+        public static void CopyPropertiesFrom( this {0} target, {0} source )
+        {{
 ", type.Name);
 
             foreach ( var property in properties )
             {
-                sb.AppendFormat( "                target.{0} = source.{0};" + Environment.NewLine, property.Key );
+                sb.AppendFormat( "            target.{0} = source.{0};" + Environment.NewLine, property.Key );
             }
-            
+
             sb.Append( @"
-            
-                return target;
-            }
         }
     }
 " );

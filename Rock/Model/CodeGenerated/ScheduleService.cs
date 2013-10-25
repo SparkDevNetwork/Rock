@@ -81,18 +81,27 @@ namespace Rock.Model
             else
             {
                 var target = new Schedule();
-                target.Name = source.Name;
-                target.Description = source.Description;
-                target.iCalendarContent = source.iCalendarContent;
-                target.CheckInStartOffsetMinutes = source.CheckInStartOffsetMinutes;
-                target.CheckInEndOffsetMinutes = source.CheckInEndOffsetMinutes;
-                target.CategoryId = source.CategoryId;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another Schedule object to this Schedule object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this Schedule target, Schedule source )
+        {
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.iCalendarContent = source.iCalendarContent;
+            target.CheckInStartOffsetMinutes = source.CheckInStartOffsetMinutes;
+            target.CheckInEndOffsetMinutes = source.CheckInEndOffsetMinutes;
+            target.CategoryId = source.CategoryId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }
