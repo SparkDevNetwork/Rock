@@ -23,7 +23,6 @@ namespace Rock.Reporting.DataTransform.Person
     [ExportMetadata( "ComponentName", "Person In Group Filter" )]
     public class InGroupFilter : DataFilterComponent
     {
-
         #region Properties
 
         /// <summary>
@@ -59,7 +58,7 @@ namespace Rock.Reporting.DataTransform.Person
         /// <returns></returns>
         /// <value>
         /// The title.
-        ///   </value>
+        /// </value>
         public override string GetTitle( Type entityType )
         {
             return "In Group";
@@ -76,7 +75,8 @@ namespace Rock.Reporting.DataTransform.Person
         /// </value>
         public override string GetClientFormatSelection( Type entityType )
         {
-            return "#TODO#";// "$('input:first', $content).is(':checked') ? 'Has Picture' : 'Doesn\\'t Have Picture'";
+            return "'In group: ' + $('.group-picker', $content).find('.selected-names').text() +  " +
+                "', with role: ' +  $('.group-role-picker', $content).find(':selected').text()";
         }
 
         /// <summary>
@@ -87,7 +87,24 @@ namespace Rock.Reporting.DataTransform.Person
         /// <returns></returns>
         public override string FormatSelection( Type entityType, string selection )
         {
-            return "#TODO##";
+            string result = "Group Member";
+            string[] selectionValues = selection.Split( '|' );
+            if ( selectionValues.Length >= 2 )
+            {
+                var group = new GroupService().Get( selectionValues[0].AsInteger() ?? 0 );
+                var groupTypeRole = new GroupTypeRoleService().Get( selectionValues[1].AsInteger() ?? 0 );
+
+                if ( group != null )
+                {
+                    result = string.Format( "In group: {0}", group.Name );
+                    if ( groupTypeRole != null )
+                    {
+                        result += string.Format( ", with role: {0}", groupTypeRole.Name );
+                    }
+                }
+            }
+
+            return result;
         }
 
         private GroupPicker gp = null;
@@ -100,10 +117,15 @@ namespace Rock.Reporting.DataTransform.Person
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
             gp = new GroupPicker();
-            gp.ID = "groupFilterGroupPicker";
+            gp.ID = filterControl.ID + "_0";
+            gp.Label = "Group";
             gp.SelectItem += gp_SelectItem;
+            filterControl.Controls.Add( gp );
+
             grp = new GroupRolePicker();
-            grp.ID = "groupFilterGroupRolePicker";
+            grp.Label = "with Group Role";
+            grp.ID = filterControl.ID + "_1";
+            filterControl.Controls.Add( grp );
 
             return new Control[2] { gp, grp };
         }
@@ -115,7 +137,18 @@ namespace Rock.Reporting.DataTransform.Person
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gp_SelectItem( object sender, EventArgs e )
         {
-            grp.GroupTypeId = gp.SelectedValueAsId();
+            int groupId = gp.SelectedValueAsId() ?? 0;
+            var groupService = new GroupService();
+            var group = groupService.Get( groupId );
+            if ( group != null )
+            {
+                grp.GroupTypeId = group.GroupTypeId;
+                grp.Visible = true;
+            }
+            else
+            {
+                grp.Visible = false;
+            }
         }
 
         /// <summary>
@@ -127,7 +160,7 @@ namespace Rock.Reporting.DataTransform.Person
         /// <param name="controls">The controls.</param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
-            //controls[0].RenderControl( writer );
+            controls[0].RenderControl( writer );
             controls[1].RenderControl( writer );
         }
 
@@ -141,7 +174,7 @@ namespace Rock.Reporting.DataTransform.Person
         {
             var value1 = ( controls[0] as GroupPicker ).SelectedValueAsId().ToString();
             var value2 = ( controls[1] as GroupRolePicker ).GroupRoleId.ToString();
-            return value1 + "," + value2;
+            return value1 + "|" + value2;
         }
 
         /// <summary>
@@ -152,8 +185,13 @@ namespace Rock.Reporting.DataTransform.Person
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
-            ( controls[0] as GroupPicker ).SetValue( selection.SplitDelimitedValues()[0].AsInteger() );
-            ( controls[1] as GroupRolePicker ).GroupRoleId = selection.SplitDelimitedValues()[1].AsInteger();
+            string[] selectionValues = selection.Split( '|' );
+            if ( selectionValues.Length >= 2 )
+            {
+                ( controls[0] as GroupPicker ).SetValue( selectionValues[0].AsInteger() );
+                ( controls[1] as GroupRolePicker ).GroupRoleId = selectionValues[1].AsInteger();
+                gp_SelectItem( this, new EventArgs() );
+            }
         }
 
         /// <summary>
@@ -166,60 +204,31 @@ namespace Rock.Reporting.DataTransform.Person
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, object serviceInstance, Expression parameterExpression, string selection )
         {
-            //MemberExpression property = Expression.Property( parameterExpression, "PhotoId" );
-            //Expression hasValue = Expression.Property( property, "HasValue" );
-            //Expression value = Expression.Constant( selection == "1" );
-            //Expression result = Expression.Equal( hasValue, value );
-
-            selection = "1,1";
-
-            GroupMemberService groupMemberService = new GroupMemberService();
-            int groupId = selection.SplitDelimitedValues()[0].AsInteger() ?? 0;
-            var groupMemberServiceQry = groupMemberService.Queryable().Where( xx => xx.GroupId == groupId );
-
-            MethodCallExpression methodCallExpression = new Rock.Data.Service<Rock.Model.Person>().Queryable()
-                .Where( p => groupMemberServiceQry.Any(xx => xx.PersonId == p.Id))
-                .Expression as MethodCallExpression;
-
-            Expression<Func<LambdaExpression>> executionLambda = Expression.Lambda<Func<LambdaExpression>>( methodCallExpression.Arguments[1] );
-            Expression extractedExpression = ( executionLambda.Compile().Invoke() as Expression<Func<Rock.Model.Person, bool>> ).Body;
-            extractedExpression = new ParameterRebinder( parameterExpression as ParameterExpression ).Visit( extractedExpression );
-
-            return extractedExpression;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public class ParameterRebinder : ExpressionVisitor
-        {
-            private ParameterExpression _parameterExpression;
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="ParameterRebinder"/> class.
-            /// </summary>
-            /// <param name="parameterExpression">The parameter expression.</param>
-            public ParameterRebinder( ParameterExpression parameterExpression )
+            string[] selectionValues = selection.Split( '|' );
+            if ( selectionValues.Length >= 2 )
             {
-                this._parameterExpression = parameterExpression;
-            }
+                GroupMemberService groupMemberService = new GroupMemberService();
+                int groupId = selectionValues[0].AsInteger() ?? 0;
 
-            /// <summary>
-            /// Visits the parameter.
-            /// </summary>
-            /// <param name="p">The p.</param>
-            /// <returns></returns>
-            protected override Expression VisitParameter( ParameterExpression p )
-            {
-                if ( p.Name != "xx" )
+                var groupMemberServiceQry = groupMemberService.Queryable().Where( xx => xx.GroupId == groupId );
+
+                int groupRoleId = selectionValues[1].AsInteger() ?? 0;
+                if ( groupRoleId > 0 )
                 {
-                    p = _parameterExpression;
+                    groupMemberServiceQry = groupMemberServiceQry.Where( xx => xx.GroupRoleId == groupRoleId );
                 }
-                return base.VisitParameter( p );
+
+                var qry = new Rock.Data.Service<Rock.Model.Person>().Queryable()
+                    .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id ) );
+
+                Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
+
+                return extractedFilterExpression;
             }
+
+            return null;
         }
 
         #endregion
-
     }
 }

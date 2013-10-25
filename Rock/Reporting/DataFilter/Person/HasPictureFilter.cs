@@ -6,6 +6,7 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -86,10 +87,10 @@ namespace Rock.Reporting.DataTransform.Person
         public override string FormatSelection( Type entityType, string selection )
         {
             bool hasPicture = true;
-            if (!Boolean.TryParse(selection, out hasPicture))
+            if ( !Boolean.TryParse( selection, out hasPicture ) )
                 hasPicture = true;
 
-            if (hasPicture)
+            if ( hasPicture )
             {
                 return "Has Picture";
             }
@@ -160,13 +161,12 @@ namespace Rock.Reporting.DataTransform.Person
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, object serviceInstance, Expression parameterExpression, string selection )
         {
-            MemberExpression property = Expression.Property( parameterExpression, "PhotoId" );
-            Expression hasValue = Expression.Property( property, "HasValue");
-            Expression value = Expression.Constant( selection == "1" );
-            return Expression.Equal( hasValue, value);
+            var qry = new Rock.Data.Service<Rock.Model.Person>().Queryable()
+                .Where( p => p.PhotoId.HasValue == ( selection == "1" ) );
+
+            return FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
         }
 
         #endregion
-
     }
 }
