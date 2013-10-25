@@ -122,7 +122,6 @@ namespace Rock.Model
         [DataMember]
         public int? RegistrationPageId { get; set; }
 
-        [DataMember]
         /// <summary>
         /// Gets or sets the registration page route unique identifier.
         /// If this has a value (and the PageRoute can be found) use this instead of the RegistrationPageId
@@ -130,6 +129,7 @@ namespace Rock.Model
         /// <value>
         /// The registration page route unique identifier.
         /// </value>
+        [DataMember]
         public int? RegistrationPageRouteId { get; set; }
 
         /// <summary>

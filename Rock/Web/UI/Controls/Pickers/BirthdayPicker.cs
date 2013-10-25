@@ -152,7 +152,7 @@ namespace Rock.Web.UI.Controls
         private DropDownList yearDropDownList;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MonthDayYearPicker"/> class.
+        /// Initializes a new instance of the <see cref="BirthdayPicker"/> class.
         /// </summary>
         public BirthdayPicker()
             : base()

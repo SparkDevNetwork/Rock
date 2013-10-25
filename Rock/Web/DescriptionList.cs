@@ -42,6 +42,7 @@ namespace Rock.Web
         /// <param name="term">The term.</param>
         /// <param name="dateTime">The date time.</param>
         /// <param name="format">The format.</param>
+        /// <param name="showIfBlank">if set to <c>true</c> [show if blank].</param>
         /// <returns></returns>
         public DescriptionList Add( string term, DateTime? dateTime, string format = "g", bool showIfBlank = false )
         {

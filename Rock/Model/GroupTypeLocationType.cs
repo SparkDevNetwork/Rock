@@ -34,7 +34,7 @@ namespace Rock.Model
         /// supported by a <see cref="Rock.Model.GroupType"/>. This property is required and is part of the key.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of a LocationType <see cref="Rock.Model.DefinedValue">  that is supported by a <see cref="Rock.Model.GroupType"/>.
+        /// A <see cref="System.Int32"/> representing the Id of a LocationType <see cref="Rock.Model.DefinedValue"/>  that is supported by a <see cref="Rock.Model.GroupType"/>.
         /// </value>
         [Key]
         [Column( Order = 1 )]

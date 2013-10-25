@@ -36,8 +36,19 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public enum LocationPickerMode
         {
+            /// <summary>
+            /// The named location
+            /// </summary>
             NamedLocation,
+
+            /// <summary>
+            /// The address
+            /// </summary>
             Address,
+
+            /// <summary>
+            /// The lat long
+            /// </summary>
             LatLong
         }
 
@@ -205,8 +216,6 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Handles the CheckedChanged event of the _radMode control.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void HandleModePostback()
         {
             // Note:  We have to manually wire up the PostBacks since these controls are injected into all three of the pickers and that messes up the normal postback stuff

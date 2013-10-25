@@ -279,6 +279,7 @@ namespace Rock.Net
         /// Posts the data with result.
         /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <typeparam name="R"></typeparam>
         /// <param name="postPath">The post path.</param>
         /// <param name="data">The data.</param>
         /// <returns></returns>

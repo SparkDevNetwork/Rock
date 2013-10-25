@@ -294,10 +294,10 @@ namespace Rock.Model
         private ICollection<GroupType> _parentGroupTypes;
 
         /// <summary>
-        /// Gets or sets a collection containing the <see cref="Rock.Model.GroupRole">GroupRoles</see> that this GroupType utilizes.
+        /// Gets or sets a collection containing the <see cref="Rock.Model.GroupTypeRole">GroupRoles</see> that this GroupType utilizes.
         /// </summary>
         /// <value>
-        /// A collection containing the <see cref="Rock.Model.GroupRole">GroupRoles that are associated with this GroupType.
+        /// A collection containing the <see cref="Rock.Model.GroupTypeRole"/>GroupRoles that are associated with this GroupType.
         /// </value>
         [DataMember]
         public virtual ICollection<GroupTypeRole> Roles
