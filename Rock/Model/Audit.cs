@@ -14,7 +14,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents an Audit Log entry that is created when an add/update/delete is performed against an <see cref="Rock.Data.Entity"/> of an
+    /// Represents an Audit Log entry that is created when an add/update/delete is performed against an <see cref="Rock.Data.IEntity"/> of an
     /// auditable <see cref="Rock.Model.EntityType"/>.
     /// </summary>
     [NotAudited]

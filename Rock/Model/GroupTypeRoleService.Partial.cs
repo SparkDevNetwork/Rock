@@ -20,7 +20,7 @@ namespace Rock.Model
         /// Returns an enumerable collection of <see cref="Rock.Model.GroupTypeRole">GroupRoles</see> by SortOrder.
         /// </summary>
         /// <param name="sortOrder">A <see cref="System.Int32"/> representing the SortOrder to search by. This value can be null.</param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.GroupRoles"/> with a SortOrder that matches the provided value.</returns>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.GroupTypeRole"/> with a SortOrder that matches the provided value.</returns>
         public IEnumerable<GroupTypeRole> GetBySortOrder( int? sortOrder )
         {
             return Repository.Find( t => ( t.Order == sortOrder || ( sortOrder == null && t.Order == null ) ) );

@@ -1054,6 +1054,7 @@ namespace Rock
         /// Converts to the enum value to it's string value
         /// </summary>
         /// <param name="eff">The eff.</param>
+        /// <param name="SplitCase">if set to <c>true</c> [split case].</param>
         /// <returns></returns>
         public static String ConvertToString( this Enum eff, bool SplitCase = true )
         {

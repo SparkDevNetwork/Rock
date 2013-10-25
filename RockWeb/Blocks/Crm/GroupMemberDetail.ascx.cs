@@ -155,7 +155,6 @@ namespace RockWeb.Blocks.Crm
                     .Count();
 
                 bool roleMembershipAboveMax = false;
-                string action = "add";
 
                 //if adding new active group member
                 if ( groupMemberId.Equals( 0 ) && rblStatus.SelectedValueAsEnum<GroupMemberStatus>() == GroupMemberStatus.Active )
@@ -171,8 +170,6 @@ namespace RockWeb.Blocks.Crm
                 else if ( groupMemberId > 0 && ( groupMember.GroupRoleId != role.Id || groupMember.GroupMemberStatus != rblStatus.SelectedValueAsEnum<GroupMemberStatus>() )
                         && rblStatus.SelectedValueAsEnum<GroupMemberStatus>() == GroupMemberStatus.Active )
                 {
-                    action = "change";
-
                     // verify that active count has not exceeded the max
                     if ( role.MaxCount != null && ( memberCountInRole + 1 ) > role.MaxCount )
                     {

@@ -666,6 +666,7 @@ namespace Rock.Attribute
         /// <param name="attributeKeys">The attribute keys.</param>
         /// <param name="item">The item.</param>
         /// <param name="parentControl">The parent control.</param>
+        /// <param name="validationGroup">The validation group.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="exclude">The exclude.</param>
         private static void AddEditControls( string category, List<string> attributeKeys, IHasAttributes item, Control parentControl, string validationGroup, bool setValue, List<string> exclude )

@@ -188,15 +188,27 @@ namespace Rock.Reporting.DataTransform.Person
             return extractedExpression;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public class ParameterRebinder : ExpressionVisitor
         {
             private ParameterExpression _parameterExpression;
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="ParameterRebinder"/> class.
+            /// </summary>
+            /// <param name="parameterExpression">The parameter expression.</param>
             public ParameterRebinder( ParameterExpression parameterExpression )
             {
                 this._parameterExpression = parameterExpression;
             }
 
+            /// <summary>
+            /// Visits the parameter.
+            /// </summary>
+            /// <param name="p">The p.</param>
+            /// <returns></returns>
             protected override Expression VisitParameter( ParameterExpression p )
             {
                 if ( p.Name != "xx" )

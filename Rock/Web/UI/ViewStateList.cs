@@ -159,6 +159,9 @@ namespace Rock.Web.UI
             SerializeList( new List<T>() );
         }
 
+        /// <summary>
+        /// Saves the state of the view.
+        /// </summary>
         public void SaveViewState()
         {
             var list = GetList().ToList();

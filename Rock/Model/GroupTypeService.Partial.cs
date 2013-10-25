@@ -15,7 +15,7 @@ namespace Rock.Model
     {
 
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.GroupType"/> entities by the Id of their <see cref="Rock.Model.GroupRole."/>.
+        /// Returns an enumerable collection of <see cref="Rock.Model.GroupType"/> entities by the Id of their <see cref="Rock.Model.GroupTypeRole"/>.
         /// </summary>
         /// <param name="defaultGroupRoleId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupTypeRole"/> to search by.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.GroupType">GroupTypes</see> that use the provided <see cref="Rock.Model.GroupTypeRole"/> as the 
@@ -26,7 +26,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Verifies if the specified <see cref="Rock.MOdel.GroupType"/> can be deleted, and if so deletes it.
+        /// Verifies if the specified <see cref="Rock.Model.GroupType"/> can be deleted, and if so deletes it.
         /// </summary>
         /// <param name="item">The <see cref="Rock.Model.GroupType"/> to delete.</param>
         /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who is attempting to delete the
