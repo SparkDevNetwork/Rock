@@ -88,7 +88,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 string rowItemText = this.ViewState["RowItemText"] as string;
-                if (!string.IsNullOrWhiteSpace(rowItemText))
+                if ( !string.IsNullOrWhiteSpace( rowItemText ) )
                 {
                     return rowItemText;
                 }
@@ -189,7 +189,7 @@ namespace Rock.Web.UI.Controls
             set
             {
                 this.ViewState["DisplayType"] = value;
-                
+
                 if ( DisplayType == GridDisplayType.Light )
                 {
                     this.AllowPaging = false;
@@ -246,15 +246,15 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string PersonIdField
         {
-            get 
+            get
             {
                 string personIdField = ViewState["PersonIdField"] as string;
-                if (string.IsNullOrWhiteSpace(personIdField))
+                if ( string.IsNullOrWhiteSpace( personIdField ) )
                 {
                     personIdField = null;
                 }
 
-                return personIdField; 
+                return personIdField;
             }
 
             set
@@ -398,7 +398,7 @@ namespace Rock.Web.UI.Controls
         {
             OnGridRebind( e );
 
-            if ( !string.IsNullOrWhiteSpace(PersonIdField) )
+            if ( !string.IsNullOrWhiteSpace( PersonIdField ) )
             {
                 // Set Sender
                 var rockPage = Page as RockPage;
@@ -462,12 +462,12 @@ namespace Rock.Web.UI.Controls
                         Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
 
                         PropertyInfo idProp = oType.GetProperty( this.PersonIdField );
-                        if (idProp != null)
+                        if ( idProp != null )
                         {
                             foreach ( var item in data )
                             {
                                 var recipient = new Rock.Model.CommunicationRecipient();
-                                recipient.PersonId =  (int)idProp.GetValue( item, null );
+                                recipient.PersonId = (int)idProp.GetValue( item, null );
 
                                 foreach ( string mergeField in CommunicateMergeFields )
                                 {
@@ -570,7 +570,7 @@ namespace Rock.Web.UI.Controls
                 {
                     for ( int i = 0; i < data.Columns.Count; i++ )
                     {
-                        worksheet.Cells[rowCounter, i+1].Value = row[i].ToString();
+                        worksheet.Cells[rowCounter, i + 1].Value = row[i].ToString();
 
                         // format background color for alternating rows
                         if ( rowCounter % 2 == 1 )
@@ -756,7 +756,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
         protected override void OnDataBound( EventArgs e )
         {
-            
+
 
             base.OnDataBound( e );
 
@@ -903,9 +903,9 @@ namespace Rock.Web.UI.Controls
                 if ( this.AllowPaging && this.BottomPagerRow != null )
                 {
                     this.BottomPagerRow.Visible = true;
-                    
+
                     // add paging style
-                    if (this.BottomPagerRow.Cells.Count > 0)
+                    if ( this.BottomPagerRow.Cells.Count > 0 )
                     {
                         this.BottomPagerRow.Cells[0].CssClass = "grid-paging";
                     }
@@ -965,8 +965,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">A <see cref="T:System.Web.UI.WebControls.GridViewCommandEventArgs" /> that contains event data.</param>
         protected override void OnRowCommand( GridViewCommandEventArgs e )
         {
-        	base.OnRowCommand( e );
-        	
+            base.OnRowCommand( e );
+
             if ( e.CommandName == "RowSelected" )
             {
                 int rowIndex = Int32.Parse( e.CommandArgument.ToString() );
@@ -993,15 +993,20 @@ namespace Rock.Web.UI.Controls
 
             foreach ( var property in modelType.GetProperties() )
             {
-                if ( property.Name != "Id" )
+                // limit to non-virtual methods to prevent lazy loading issues
+                var getMethod = property.GetGetMethod();
+                if ( !getMethod.IsVirtual )
                 {
-                    if ( property.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() > 0 )
+                    if ( property.Name != "Id" )
                     {
-                        displayColumns.Add( property.Name, GetGridField( property ) );
-                    }
-                    else if ( displayColumns.Count == 0 && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
-                    {
-                        allColumns.Add( property.Name, GetGridField( property ) );
+                        if ( property.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() > 0 )
+                        {
+                            displayColumns.Add( property.Name, GetGridField( property ) );
+                        }
+                        else if ( displayColumns.Count == 0 && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
+                        {
+                            allColumns.Add( property.Name, GetGridField( property ) );
+                        }
                     }
                 }
             }
@@ -1352,11 +1357,11 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The direction string.
         /// </value>
-        public string DirectionString 
-        { 
+        public string DirectionString
+        {
             get
             {
-                if (Direction == SortDirection.Descending)
+                if ( Direction == SortDirection.Descending )
                 {
                     return "DESC";
                 }
@@ -1404,7 +1409,7 @@ namespace Rock.Web.UI.Controls
         HtmlGenericContainer[] PageLinkListItem = new HtmlGenericContainer[12];
         LinkButton[] PageLink = new LinkButton[12];
 
-       Literal itemCountDisplay;
+        Literal itemCountDisplay;
 
         HtmlGenericContainer[] ItemLinkListItem = new HtmlGenericContainer[4];
         LinkButton[] ItemLink = new LinkButton[4];
@@ -1421,8 +1426,8 @@ namespace Rock.Web.UI.Controls
         public void InstantiateIn( Control container )
         {
             HtmlGenericControl ulSizeOptions = new HtmlGenericControl( "ul" );
-            ulSizeOptions.AddCssClass("grid-pagesize pagination pagination-sm");
-            container.Controls.Add(ulSizeOptions);
+            ulSizeOptions.AddCssClass( "grid-pagesize pagination pagination-sm" );
+            container.Controls.Add( ulSizeOptions );
 
             for ( int i = 0; i < ItemLinkListItem.Length; i++ )
             {
@@ -1440,26 +1445,26 @@ namespace Rock.Web.UI.Controls
             ItemLink[3].Text = "All";
 
             // itemCount
-            HtmlGenericControl divItemCount = new HtmlGenericControl("div");
-            divItemCount.Attributes.Add("class", "grid-itemcount");
-            container.Controls.Add(divItemCount);
+            HtmlGenericControl divItemCount = new HtmlGenericControl( "div" );
+            divItemCount.Attributes.Add( "class", "grid-itemcount" );
+            container.Controls.Add( divItemCount );
 
             itemCountDisplay = new Literal();
-            divItemCount.Controls.Add(itemCountDisplay);
+            divItemCount.Controls.Add( itemCountDisplay );
 
             // Pagination
-            NavigationPanel = new HtmlGenericControl("ul");
-            NavigationPanel.AddCssClass("grid-pager pagination pagination-sm");
-            container.Controls.Add(NavigationPanel);
+            NavigationPanel = new HtmlGenericControl( "ul" );
+            NavigationPanel.AddCssClass( "grid-pager pagination pagination-sm" );
+            container.Controls.Add( NavigationPanel );
 
-            for (var i = 0; i < PageLinkListItem.Length; i++)
+            for ( var i = 0; i < PageLinkListItem.Length; i++ )
             {
-                PageLinkListItem[i] = new HtmlGenericContainer("li");
-                NavigationPanel.Controls.Add(PageLinkListItem[i]);
+                PageLinkListItem[i] = new HtmlGenericContainer( "li" );
+                NavigationPanel.Controls.Add( PageLinkListItem[i] );
 
                 PageLink[i] = new LinkButton();
-                PageLinkListItem[i].Controls.Add(PageLink[i]);
-                PageLink[i].Click += new EventHandler(lbPage_Click);
+                PageLinkListItem[i].Controls.Add( PageLink[i] );
+                PageLink[i].Click += new EventHandler( lbPage_Click );
             }
 
             PageLink[0].Text = "&laquo;";
@@ -1474,7 +1479,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="pageSize">The number of items on each page</param>
         /// <param name="itemCount">The item count.</param>
         /// <param name="rowItemText">The row item text.</param>
-        public void SetNavigation( int pageCount, int pageIndex, int pageSize, int itemCount, string rowItemText  )
+        public void SetNavigation( int pageCount, int pageIndex, int pageSize, int itemCount, string rowItemText )
         {
             // Set navigation controls
             if ( NavigationPanel != null )
