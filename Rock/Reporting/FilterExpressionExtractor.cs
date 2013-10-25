@@ -13,19 +13,19 @@ namespace Rock.Reporting
     public static class FilterExpressionExtractor
     {
         /// <summary>
-        /// Helper that can extract the "Where" clause Expression from an IQueryable
+        /// Helps rewrite the expression by replacing the parameter expression in the qry with another parameterExpression
         /// </summary>
-        private class FilterExpressionVisitor : ExpressionVisitor
+        private class ParameterExpressionVisitor : ExpressionVisitor
         {
             private ParameterExpression _parameterExpression;
             private string _parameterName;
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="FilterExpressionVisitor"/> class.
+            /// Initializes a new instance of the <see cref="ParameterExpressionVisitor"/> class.
             /// </summary>
             /// <param name="parameterExpression">The parameter expression.</param>
             /// <param name="parameterName">Name of the parameter.</param>
-            public FilterExpressionVisitor( Expression parameterExpression, string parameterName )
+            public ParameterExpressionVisitor( Expression parameterExpression, string parameterName )
             {
                 this._parameterExpression = parameterExpression as ParameterExpression;
                 this._parameterName = parameterName;
@@ -48,7 +48,7 @@ namespace Rock.Reporting
         }
 
         /// <summary>
-        /// Extracts the specified node.
+        /// Extracts the "Where" clause Expression from an IQueryable
         /// </summary>
         /// <param name="qry">The qry.</param>
         /// <param name="parameterExpression">The original parameter expression.</param>
@@ -60,7 +60,7 @@ namespace Rock.Reporting
             Expression<Func<LambdaExpression>> executionLambda = Expression.Lambda<Func<LambdaExpression>>( methodCallExpression.Arguments[1] );
             Expression extractedExpression = ( executionLambda.Compile().Invoke() as Expression<Func<T, bool>> ).Body;
 
-            var filterExpressionVisitor = new FilterExpressionVisitor( parameterExpression, parameterName );
+            var filterExpressionVisitor = new ParameterExpressionVisitor( parameterExpression, parameterName );
 
             return filterExpressionVisitor.Visit( extractedExpression );
         }
