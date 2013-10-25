@@ -81,27 +81,36 @@ namespace Rock.Model
             else
             {
                 var target = new Site();
-                target.IsSystem = source.IsSystem;
-                target.Name = source.Name;
-                target.Description = source.Description;
-                target.Theme = source.Theme;
-                target.DefaultPageId = source.DefaultPageId;
-                target.DefaultPageRouteId = source.DefaultPageRouteId;
-                target.LoginPageId = source.LoginPageId;
-                target.LoginPageRouteId = source.LoginPageRouteId;
-                target.RegistrationPageId = source.RegistrationPageId;
-                target.RegistrationPageRouteId = source.RegistrationPageRouteId;
-                target.FaviconUrl = source.FaviconUrl;
-                target.AppleTouchIconUrl = source.AppleTouchIconUrl;
-                target.FacebookAppId = source.FacebookAppId;
-                target.FacebookAppSecret = source.FacebookAppSecret;
-                target.ErrorPage = source.ErrorPage;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another Site object to this Site object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this Site target, Site source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.Theme = source.Theme;
+            target.DefaultPageId = source.DefaultPageId;
+            target.DefaultPageRouteId = source.DefaultPageRouteId;
+            target.LoginPageId = source.LoginPageId;
+            target.LoginPageRouteId = source.LoginPageRouteId;
+            target.RegistrationPageId = source.RegistrationPageId;
+            target.RegistrationPageRouteId = source.RegistrationPageRouteId;
+            target.FaviconUrl = source.FaviconUrl;
+            target.AppleTouchIconUrl = source.AppleTouchIconUrl;
+            target.FacebookAppId = source.FacebookAppId;
+            target.FacebookAppSecret = source.FacebookAppSecret;
+            target.ErrorPage = source.ErrorPage;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

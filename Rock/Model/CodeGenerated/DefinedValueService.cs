@@ -175,17 +175,26 @@ namespace Rock.Model
             else
             {
                 var target = new DefinedValue();
-                target.IsSystem = source.IsSystem;
-                target.DefinedTypeId = source.DefinedTypeId;
-                target.Order = source.Order;
-                target.Name = source.Name;
-                target.Description = source.Description;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another DefinedValue object to this DefinedValue object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this DefinedValue target, DefinedValue source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.DefinedTypeId = source.DefinedTypeId;
+            target.Order = source.Order;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

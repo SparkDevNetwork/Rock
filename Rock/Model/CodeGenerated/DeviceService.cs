@@ -99,20 +99,29 @@ namespace Rock.Model
             else
             {
                 var target = new Device();
-                target.Name = source.Name;
-                target.Description = source.Description;
-                target.DeviceTypeValueId = source.DeviceTypeValueId;
-                target.LocationId = source.LocationId;
-                target.IPAddress = source.IPAddress;
-                target.PrinterDeviceId = source.PrinterDeviceId;
-                target.PrintFrom = source.PrintFrom;
-                target.PrintToOverride = source.PrintToOverride;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another Device object to this Device object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this Device target, Device source )
+        {
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.DeviceTypeValueId = source.DeviceTypeValueId;
+            target.LocationId = source.LocationId;
+            target.IPAddress = source.IPAddress;
+            target.PrinterDeviceId = source.PrinterDeviceId;
+            target.PrintFrom = source.PrintFrom;
+            target.PrintToOverride = source.PrintToOverride;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

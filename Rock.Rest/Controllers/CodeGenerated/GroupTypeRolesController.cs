@@ -15,10 +15,10 @@ using Rock.Model;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// GroupRoles REST API
+    /// GroupTypeRoles REST API
     /// </summary>
-    public partial class GroupRolesController : Rock.Rest.ApiController<Rock.Model.GroupTypeRole>
+    public partial class GroupTypeRolesController : Rock.Rest.ApiController<Rock.Model.GroupTypeRole>
     {
-        public GroupRolesController() : base( new Rock.Model.GroupTypeRoleService() ) { } 
+        public GroupTypeRolesController() : base( new Rock.Model.GroupTypeRoleService() ) { } 
     }
 }

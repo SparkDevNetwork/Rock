@@ -81,20 +81,29 @@ namespace Rock.Model
             else
             {
                 var target = new Auth();
-                target.EntityTypeId = source.EntityTypeId;
-                target.EntityId = source.EntityId;
-                target.Order = source.Order;
-                target.Action = source.Action;
-                target.AllowOrDeny = source.AllowOrDeny;
-                target.SpecialRole = source.SpecialRole;
-                target.PersonId = source.PersonId;
-                target.GroupId = source.GroupId;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another Auth object to this Auth object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this Auth target, Auth source )
+        {
+            target.EntityTypeId = source.EntityTypeId;
+            target.EntityId = source.EntityId;
+            target.Order = source.Order;
+            target.Action = source.Action;
+            target.AllowOrDeny = source.AllowOrDeny;
+            target.SpecialRole = source.SpecialRole;
+            target.PersonId = source.PersonId;
+            target.GroupId = source.GroupId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

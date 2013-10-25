@@ -81,29 +81,38 @@ namespace Rock.Model
             else
             {
                 var target = new UserLogin();
-                target.ServiceType = source.ServiceType;
-                target.ServiceName = source.ServiceName;
-                target.UserName = source.UserName;
-                target.Password = source.Password;
-                target.IsConfirmed = source.IsConfirmed;
-                target.LastActivityDateTime = source.LastActivityDateTime;
-                target.LastLoginDateTime = source.LastLoginDateTime;
-                target.LastPasswordChangedDateTime = source.LastPasswordChangedDateTime;
-                target.CreationDateTime = source.CreationDateTime;
-                target.IsOnLine = source.IsOnLine;
-                target.IsLockedOut = source.IsLockedOut;
-                target.LastLockedOutDateTime = source.LastLockedOutDateTime;
-                target.FailedPasswordAttemptCount = source.FailedPasswordAttemptCount;
-                target.FailedPasswordAttemptWindowStartDateTime = source.FailedPasswordAttemptWindowStartDateTime;
-                target.LastPasswordExpirationWarningDateTime = source.LastPasswordExpirationWarningDateTime;
-                target.ApiKey = source.ApiKey;
-                target.PersonId = source.PersonId;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another UserLogin object to this UserLogin object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this UserLogin target, UserLogin source )
+        {
+            target.ServiceType = source.ServiceType;
+            target.ServiceName = source.ServiceName;
+            target.UserName = source.UserName;
+            target.Password = source.Password;
+            target.IsConfirmed = source.IsConfirmed;
+            target.LastActivityDateTime = source.LastActivityDateTime;
+            target.LastLoginDateTime = source.LastLoginDateTime;
+            target.LastPasswordChangedDateTime = source.LastPasswordChangedDateTime;
+            target.CreationDateTime = source.CreationDateTime;
+            target.IsOnLine = source.IsOnLine;
+            target.IsLockedOut = source.IsLockedOut;
+            target.LastLockedOutDateTime = source.LastLockedOutDateTime;
+            target.FailedPasswordAttemptCount = source.FailedPasswordAttemptCount;
+            target.FailedPasswordAttemptWindowStartDateTime = source.FailedPasswordAttemptWindowStartDateTime;
+            target.LastPasswordExpirationWarningDateTime = source.LastPasswordExpirationWarningDateTime;
+            target.ApiKey = source.ApiKey;
+            target.PersonId = source.PersonId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

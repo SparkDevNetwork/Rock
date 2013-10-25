@@ -81,22 +81,31 @@ namespace Rock.Model
             else
             {
                 var target = new WorkflowType();
-                target.IsSystem = source.IsSystem;
-                target.IsActive = source.IsActive;
-                target.Name = source.Name;
-                target.Description = source.Description;
-                target.CategoryId = source.CategoryId;
-                target.Order = source.Order;
-                target.WorkTerm = source.WorkTerm;
-                target.ProcessingIntervalSeconds = source.ProcessingIntervalSeconds;
-                target.IsPersisted = source.IsPersisted;
-                target.LoggingLevel = source.LoggingLevel;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another WorkflowType object to this WorkflowType object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this WorkflowType target, WorkflowType source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.IsActive = source.IsActive;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.CategoryId = source.CategoryId;
+            target.Order = source.Order;
+            target.WorkTerm = source.WorkTerm;
+            target.ProcessingIntervalSeconds = source.ProcessingIntervalSeconds;
+            target.IsPersisted = source.IsPersisted;
+            target.LoggingLevel = source.LoggingLevel;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

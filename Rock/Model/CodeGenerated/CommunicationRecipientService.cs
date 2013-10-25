@@ -81,17 +81,26 @@ namespace Rock.Model
             else
             {
                 var target = new CommunicationRecipient();
-                target.PersonId = source.PersonId;
-                target.CommunicationId = source.CommunicationId;
-                target.Status = source.Status;
-                target.StatusNote = source.StatusNote;
-                target.AdditionalMergeValuesJson = source.AdditionalMergeValuesJson;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another CommunicationRecipient object to this CommunicationRecipient object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this CommunicationRecipient target, CommunicationRecipient source )
+        {
+            target.PersonId = source.PersonId;
+            target.CommunicationId = source.CommunicationId;
+            target.Status = source.Status;
+            target.StatusNote = source.StatusNote;
+            target.AdditionalMergeValuesJson = source.AdditionalMergeValuesJson;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

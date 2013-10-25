@@ -81,21 +81,30 @@ namespace Rock.Model
             else
             {
                 var target = new HtmlContent();
-                target.BlockId = source.BlockId;
-                target.EntityValue = source.EntityValue;
-                target.Version = source.Version;
-                target.Content = source.Content;
-                target.IsApproved = source.IsApproved;
-                target.ApprovedByPersonId = source.ApprovedByPersonId;
-                target.ApprovedDateTime = source.ApprovedDateTime;
-                target.StartDateTime = source.StartDateTime;
-                target.ExpireDateTime = source.ExpireDateTime;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another HtmlContent object to this HtmlContent object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this HtmlContent target, HtmlContent source )
+        {
+            target.BlockId = source.BlockId;
+            target.EntityValue = source.EntityValue;
+            target.Version = source.Version;
+            target.Content = source.Content;
+            target.IsApproved = source.IsApproved;
+            target.ApprovedByPersonId = source.ApprovedByPersonId;
+            target.ApprovedDateTime = source.ApprovedDateTime;
+            target.StartDateTime = source.StartDateTime;
+            target.ExpireDateTime = source.ExpireDateTime;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

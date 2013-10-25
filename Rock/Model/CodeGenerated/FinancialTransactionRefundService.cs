@@ -81,14 +81,23 @@ namespace Rock.Model
             else
             {
                 var target = new FinancialTransactionRefund();
-                target.RefundReasonValueId = source.RefundReasonValueId;
-                target.RefundReasonSummary = source.RefundReasonSummary;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another FinancialTransactionRefund object to this FinancialTransactionRefund object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this FinancialTransactionRefund target, FinancialTransactionRefund source )
+        {
+            target.RefundReasonValueId = source.RefundReasonValueId;
+            target.RefundReasonSummary = source.RefundReasonSummary;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

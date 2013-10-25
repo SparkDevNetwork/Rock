@@ -111,21 +111,30 @@ namespace Rock.Model
             else
             {
                 var target = new BinaryFile();
-                target.IsTemporary = source.IsTemporary;
-                target.IsSystem = source.IsSystem;
-                target.BinaryFileTypeId = source.BinaryFileTypeId;
-                target.Url = source.Url;
-                target.FileName = source.FileName;
-                target.MimeType = source.MimeType;
-                target.LastModifiedDateTime = source.LastModifiedDateTime;
-                target.Description = source.Description;
-                target.StorageEntityTypeId = source.StorageEntityTypeId;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another BinaryFile object to this BinaryFile object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this BinaryFile target, BinaryFile source )
+        {
+            target.IsTemporary = source.IsTemporary;
+            target.IsSystem = source.IsSystem;
+            target.BinaryFileTypeId = source.BinaryFileTypeId;
+            target.Url = source.Url;
+            target.FileName = source.FileName;
+            target.MimeType = source.MimeType;
+            target.LastModifiedDateTime = source.LastModifiedDateTime;
+            target.Description = source.Description;
+            target.StorageEntityTypeId = source.StorageEntityTypeId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

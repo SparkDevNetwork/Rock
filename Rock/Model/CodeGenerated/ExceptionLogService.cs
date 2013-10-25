@@ -81,28 +81,37 @@ namespace Rock.Model
             else
             {
                 var target = new ExceptionLog();
-                target.ParentId = source.ParentId;
-                target.SiteId = source.SiteId;
-                target.PageId = source.PageId;
-                target.ExceptionDateTime = source.ExceptionDateTime;
-                target.CreatedByPersonId = source.CreatedByPersonId;
-                target.HasInnerException = source.HasInnerException;
-                target.StatusCode = source.StatusCode;
-                target.ExceptionType = source.ExceptionType;
-                target.Description = source.Description;
-                target.Source = source.Source;
-                target.StackTrace = source.StackTrace;
-                target.PageUrl = source.PageUrl;
-                target.ServerVariables = source.ServerVariables;
-                target.QueryString = source.QueryString;
-                target.Form = source.Form;
-                target.Cookies = source.Cookies;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another ExceptionLog object to this ExceptionLog object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this ExceptionLog target, ExceptionLog source )
+        {
+            target.ParentId = source.ParentId;
+            target.SiteId = source.SiteId;
+            target.PageId = source.PageId;
+            target.ExceptionDateTime = source.ExceptionDateTime;
+            target.CreatedByPersonId = source.CreatedByPersonId;
+            target.HasInnerException = source.HasInnerException;
+            target.StatusCode = source.StatusCode;
+            target.ExceptionType = source.ExceptionType;
+            target.Description = source.Description;
+            target.Source = source.Source;
+            target.StackTrace = source.StackTrace;
+            target.PageUrl = source.PageUrl;
+            target.ServerVariables = source.ServerVariables;
+            target.QueryString = source.QueryString;
+            target.Form = source.Form;
+            target.Cookies = source.Cookies;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

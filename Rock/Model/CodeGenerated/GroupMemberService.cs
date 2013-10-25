@@ -81,17 +81,26 @@ namespace Rock.Model
             else
             {
                 var target = new GroupMember();
-                target.IsSystem = source.IsSystem;
-                target.GroupId = source.GroupId;
-                target.PersonId = source.PersonId;
-                target.GroupRoleId = source.GroupRoleId;
-                target.GroupMemberStatus = source.GroupMemberStatus;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another GroupMember object to this GroupMember object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this GroupMember target, GroupMember source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.GroupId = source.GroupId;
+            target.PersonId = source.PersonId;
+            target.GroupRoleId = source.GroupRoleId;
+            target.GroupMemberStatus = source.GroupMemberStatus;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

@@ -18,7 +18,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// GroupRole Service class
+    /// GroupTypeRole Service class
     /// </summary>
     public partial class GroupTypeRoleService : Service<GroupTypeRole>
     {
@@ -76,10 +76,10 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class GroupRoleExtensionMethods
+    public static partial class GroupTypeRoleExtensionMethods
     {
         /// <summary>
-        /// Clones this GroupRole object to a new GroupRole object
+        /// Clones this GroupTypeRole object to a new GroupTypeRole object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
@@ -93,20 +93,29 @@ namespace Rock.Model
             else
             {
                 var target = new GroupTypeRole();
-                target.IsSystem = source.IsSystem;
-                target.GroupTypeId = source.GroupTypeId;
-                target.Name = source.Name;
-                target.Description = source.Description;
-                target.Order = source.Order;
-                target.MaxCount = source.MaxCount;
-                target.MinCount = source.MinCount;
-                target.IsLeader = source.IsLeader;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another GroupTypeRole object to this GroupTypeRole object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this GroupTypeRole target, GroupTypeRole source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.GroupTypeId = source.GroupTypeId;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.Order = source.Order;
+            target.MaxCount = source.MaxCount;
+            target.MinCount = source.MinCount;
+            target.IsLeader = source.IsLeader;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

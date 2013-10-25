@@ -81,18 +81,27 @@ namespace Rock.Model
             else
             {
                 var target = new MarketingCampaign();
-                target.Title = source.Title;
-                target.ContactPersonId = source.ContactPersonId;
-                target.ContactEmail = source.ContactEmail;
-                target.ContactPhoneNumber = source.ContactPhoneNumber;
-                target.ContactFullName = source.ContactFullName;
-                target.EventGroupId = source.EventGroupId;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another MarketingCampaign object to this MarketingCampaign object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this MarketingCampaign target, MarketingCampaign source )
+        {
+            target.Title = source.Title;
+            target.ContactPersonId = source.ContactPersonId;
+            target.ContactEmail = source.ContactEmail;
+            target.ContactPhoneNumber = source.ContactPhoneNumber;
+            target.ContactFullName = source.ContactFullName;
+            target.EventGroupId = source.EventGroupId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

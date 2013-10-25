@@ -81,15 +81,24 @@ namespace Rock.Model
             else
             {
                 var target = new FinancialTransactionImage();
-                target.TransactionId = source.TransactionId;
-                target.BinaryFileId = source.BinaryFileId;
-                target.TransactionImageTypeValueId = source.TransactionImageTypeValueId;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another FinancialTransactionImage object to this FinancialTransactionImage object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this FinancialTransactionImage target, FinancialTransactionImage source )
+        {
+            target.TransactionId = source.TransactionId;
+            target.BinaryFileId = source.BinaryFileId;
+            target.TransactionImageTypeValueId = source.TransactionImageTypeValueId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

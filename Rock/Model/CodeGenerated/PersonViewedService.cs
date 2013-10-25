@@ -81,17 +81,26 @@ namespace Rock.Model
             else
             {
                 var target = new PersonViewed();
-                target.ViewerPersonId = source.ViewerPersonId;
-                target.TargetPersonId = source.TargetPersonId;
-                target.ViewDateTime = source.ViewDateTime;
-                target.IpAddress = source.IpAddress;
-                target.Source = source.Source;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another PersonViewed object to this PersonViewed object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this PersonViewed target, PersonViewed source )
+        {
+            target.ViewerPersonId = source.ViewerPersonId;
+            target.TargetPersonId = source.TargetPersonId;
+            target.ViewDateTime = source.ViewDateTime;
+            target.IpAddress = source.IpAddress;
+            target.Source = source.Source;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

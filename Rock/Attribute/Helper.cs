@@ -412,23 +412,31 @@ namespace Rock.Attribute
         /// Gets the attribute categories.
         /// </summary>
         /// <param name="entity">The entity.</param>
+        /// <param name="onlyIncludeGridColumns">if set to <c>true</c> will only include those attributes with the option to display in grid set to true</param>
         /// <param name="allowMultiple">if set to <c>true</c> returns the attribute in each of it's categories, if false, only returns attribut in first category.</param>
         /// <returns></returns>
-        public static List<AttributeCategory> GetAttributeCategories( IHasAttributes entity, bool allowMultiple = false )
+        public static List<AttributeCategory> GetAttributeCategories( IHasAttributes entity, bool onlyIncludeGridColumns = false, bool allowMultiple = false )
         {
-            var attributes = entity.Attributes.Select( a => a.Value ).ToList();
-            return GetAttributeCategories( attributes, allowMultiple );
+            var attributes = entity.Attributes.Select( a => a.Value ).OrderBy( t => t.Order).ThenBy(t => t.Name).ToList();
+            return GetAttributeCategories( attributes, onlyIncludeGridColumns, allowMultiple );
         }
 
         /// <summary>
         /// Gets attributes grouped by category
         /// </summary>
         /// <param name="attributes">The attributes.</param>
+        /// <param name="onlyIncludeGridColumns">if set to <c>true</c> will only include those attributes with the option to display in grid set to true</param>
         /// <param name="allowMultiple">if set to <c>true</c> returns the attribute in each of it's categories, if false, only returns attribut in first category.</param>
         /// <returns></returns>
-        public static List<AttributeCategory> GetAttributeCategories( List<Rock.Web.Cache.AttributeCache> attributes, bool allowMultiple = false )
+        public static List<AttributeCategory> GetAttributeCategories( List<Rock.Web.Cache.AttributeCache> attributes, bool onlyIncludeGridColumns = false, bool allowMultiple = false )
         {
             var attributeCategories = new List<AttributeCategory>();
+
+            if ( onlyIncludeGridColumns )
+            {
+                attributes = attributes.Where( a => a.IsGridColumn ).ToList();
+            }
+
             foreach ( var attribute in attributes )
             {
                 if ( attribute.Categories.Any() )
@@ -692,7 +700,6 @@ namespace Rock.Attribute
         /// <param name="item">The item.</param>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="exclude">The exclude.</param>
-        /// <returns></returns>
         public static void AddDisplayControls( IHasAttributes item, Control parentControl, List<string> exclude = null )
         {
             exclude = exclude ?? new List<string>();
@@ -700,37 +707,56 @@ namespace Rock.Attribute
 
             if ( item.Attributes != null )
             {
-                foreach ( var attributeCategory in GetAttributeCategories( item ) )
+                AddDisplayControls(item, GetAttributeCategories(item), parentControl, exclude);
+            }
+        }
+
+        /// <summary>
+        /// Adds the display controls.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="attributeCategories">The attribute categories.</param>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="exclude">The exclude.</param>
+        public static void AddDisplayControls( IHasAttributes item, List<AttributeCategory> attributeCategories, Control parentControl, List<string> exclude = null )
+        {
+            foreach ( var attributeCategory in attributeCategories )
+            {
+                HtmlGenericControl header = new HtmlGenericControl( "h4" );
+
+                string categoryName = attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty;
+
+                header.InnerText = string.IsNullOrWhiteSpace( categoryName ) ? item.GetType().GetFriendlyTypeName() + " Attributes" : categoryName.Trim();
+                parentControl.Controls.Add( header );
+
+                HtmlGenericControl dl = new HtmlGenericControl( "dl" );
+                parentControl.Controls.Add( dl );
+
+                foreach ( var attribute in attributeCategory.Attributes )
                 {
-                    HtmlGenericControl header = new HtmlGenericControl( "h4" );
-
-                    string categoryName = attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty;
-
-                    header.InnerText = string.IsNullOrWhiteSpace( categoryName ) ? item.GetType().GetFriendlyTypeName() + " Attributes" : categoryName.Trim();
-                    parentControl.Controls.Add( header );
-
-                    HtmlGenericControl dl = new HtmlGenericControl( "dl" );
-                    parentControl.Controls.Add( dl );
-
-                    foreach ( var attribute in attributeCategory.Attributes )
+                    if ( exclude == null || !exclude.Contains( attribute.Name ) )
                     {
-                        if ( !exclude.Contains( attribute.Name ) )
+                        HtmlGenericControl dt = new HtmlGenericControl( "dt" );
+                        dt.InnerText = attribute.Name;
+                        dl.Controls.Add( dt );
+
+                        HtmlGenericControl dd = new HtmlGenericControl( "dd" );
+
+                        string value = attribute.DefaultValue;
+                        if (item.AttributeValues.ContainsKey(attribute.Key) && item.AttributeValues[attribute.Key].Any())
                         {
-                            HtmlGenericControl dt = new HtmlGenericControl( "dt" );
-                            dt.InnerText = attribute.Name;
-                            dl.Controls.Add( dt );
-
-                            HtmlGenericControl dd = new HtmlGenericControl( "dd" );
-                            string value = item.AttributeValues[attribute.Key][0].Value;
-                            string controlHtml = attribute.FieldType.Field.FormatValue( parentControl, value, attribute.QualifierValues, false );
-                            if ( string.IsNullOrWhiteSpace( controlHtml ) )
-                            {
-                                controlHtml = None.TextHtml;
-                            }
-
-                            dd.InnerHtml = controlHtml;
-                            dl.Controls.Add( dd );
+                            value = item.AttributeValues[attribute.Key][0].Value;
                         }
+
+                        string controlHtml = attribute.FieldType.Field.FormatValue( parentControl, value, attribute.QualifierValues, false );
+                        
+                        if ( string.IsNullOrWhiteSpace( controlHtml ) )
+                        {
+                            controlHtml = None.TextHtml;
+                        }
+
+                        dd.InnerHtml = controlHtml;
+                        dl.Controls.Add( dd );
                     }
                 }
             }
