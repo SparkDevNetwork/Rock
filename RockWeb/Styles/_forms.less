@@ -5,6 +5,7 @@
     2. Data Lists
     3. Input Sizing
     4. Control Specific Styles
+    5. Validation
 
 */
 
@@ -42,12 +43,6 @@ dl { // todo this is needed? 9/27/13
     dd {
         margin-left: 0;
     }
-}
-
-/* form styles - not enough yet for it's own file */  // todo needed 9/27/13
-fieldset .actions {
-    margin-top: 36px;
-    .clearfix();
 }
 
 // 3. Input Sizing
@@ -93,6 +88,16 @@ fieldset .actions {
         margin-right: 12px;
         float: left;
     }
+
+    & > span {
+        float: left;
+        margin: 8px 12px 0 0
+    }
+
+    & > label {
+        float: left;
+        margin-top: 12px;
+    }
 }
 
 // 4. Control Specific Styling
@@ -107,10 +112,20 @@ fieldset .actions {
     color: lighten(@text-color, 35%);
 }
 
-.date-range-picker,
+/*.date-range-picker,
 .number-range-editor {
     span.to {
         float: left;
         margin: 8px 12px 0 0;
     }
+}*/
+
+
+// 5. validation
+// -------------------------
+
+.validation-error {
+    color: @brand-danger;
+    font-weight: @font-weight-light;
+    float: left;
 }

@@ -10,6 +10,7 @@ using System.Web.UI;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web;
 using Rock.Web.UI;
@@ -86,8 +87,17 @@ namespace RockWeb.Blocks.Finance.Administration
                 decimal.TryParse( tbControlAmount.Text, out fcontrolamt );
                 financialBatch.ControlAmount = fcontrolamt;
 
-                financialBatchService.Save( financialBatch, CurrentPersonId );
-                hfBatchId.SetValue( financialBatch.Id );
+                if ( !financialBatch.IsValid )
+                {
+                    // Controls will render the error messages                    
+                    return;
+                }
+
+                RockTransactionScope.WrapTransaction( () =>
+                {
+                    financialBatchService.Save( financialBatch, CurrentPersonId );
+                    hfBatchId.SetValue( financialBatch.Id );
+                } );
             }
 
             var savedFinancialBatch = new FinancialBatchService().Get( hfBatchId.ValueAsInt() );
@@ -128,6 +138,7 @@ namespace RockWeb.Blocks.Finance.Administration
         private void SetEditMode( bool editable )
         {
             pnlEditDetails.Visible = editable;
+            valSummaryBatch.Enabled = editable;
             fieldsetViewDetails.Visible = !editable;
         }
 
@@ -164,11 +175,11 @@ namespace RockWeb.Blocks.Finance.Administration
         {
             if ( financialBatch.Id > 0 )
             {
-                lActionTitle.Text = ActionTitle.Edit( FinancialBatch.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Edit( FinancialBatch.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( FinancialBatch.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Add( FinancialBatch.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             SetEditMode( true );

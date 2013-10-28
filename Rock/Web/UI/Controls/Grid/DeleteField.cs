@@ -100,6 +100,7 @@ namespace Rock.Web.UI.Controls
                 DeleteField deleteField = cell.ContainingField as DeleteField;
                 ParentGrid = deleteField.ParentGrid;
                 LinkButton lbDelete = new LinkButton();
+                lbDelete.CausesValidation = false;
                 lbDelete.CssClass = "btn btn-danger btn-sm";
                 lbDelete.ToolTip = "Delete";
 
@@ -110,6 +111,10 @@ namespace Rock.Web.UI.Controls
                 lbDelete.Click += lbDelete_Click;
                 lbDelete.DataBinding += lbDelete_DataBinding;
                 lbDelete.PreRender += lbDelete_PreRender;
+
+                // make sure delete button is registered for async postback (needed just in case the grid was created at runtime)
+                var sm = ScriptManager.GetCurrent( this.ParentGrid.Page );
+                sm.RegisterAsyncPostBackControl( lbDelete );
 
                 cell.Controls.Add( lbDelete );
             }

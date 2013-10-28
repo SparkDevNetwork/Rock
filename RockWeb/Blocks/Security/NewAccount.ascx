@@ -50,9 +50,9 @@
 
     <asp:PlaceHolder ID="phUserInfo" runat="server" Visible="true">
 
-        <div class="row-fluid">
+        <div class="row">
 
-            <div class="span6">
+            <div class="col-md-6">
 
                <fieldset>
                     <legend>New Account</legend>
@@ -69,44 +69,19 @@
 
             </div>
 
-            <div class="span6">
+            <div class="col-md-6">
 
                 <fieldset>
                     <legend>Your Information</legend> 
                     <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" ></Rock:RockTextBox>
                     <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="true" ></Rock:RockTextBox>
                     <Rock:RockTextBox ID="tbEmail" runat="server" Label="Email" Required="true" ></Rock:RockTextBox>
-                    <Rock:RockDropDownList ID="ddlGender" runat="server" Label="Gender" CssClass="input-small">
+                    <Rock:RockDropDownList ID="ddlGender" runat="server" Label="Gender">
                         <asp:ListItem Text="" Value="U"></asp:ListItem>
                         <asp:ListItem Text="Male" Value="M"></asp:ListItem>
                         <asp:ListItem Text="Female" Value="F"></asp:ListItem>
                     </Rock:RockDropDownList>
-                    <div class="control-group">
-                        <asp:Label runat="server" AssociatedControlID="ddlBirthMonth" Text="Birthdate"></asp:Label>
-                        <div class="controls">
-                            <asp:DropDownList ID="ddlBirthMonth" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlBirthMonth_IndexChanged" class="input-small">
-                                <asp:ListItem Text="Month" Value="0"></asp:ListItem>
-                                <asp:ListItem Text="January" Value="1"></asp:ListItem>
-                                <asp:ListItem Text="February" Value="2"></asp:ListItem>
-                                <asp:ListItem Text="March" Value="3"></asp:ListItem>
-                                <asp:ListItem Text="April" Value="4"></asp:ListItem>
-                                <asp:ListItem Text="May" Value="5"></asp:ListItem>
-                                <asp:ListItem Text="June" Value="6"></asp:ListItem>
-                                <asp:ListItem Text="July" Value="7"></asp:ListItem>
-                                <asp:ListItem Text="August" Value="8"></asp:ListItem>
-                                <asp:ListItem Text="September" Value="9"></asp:ListItem>
-                                <asp:ListItem Text="October" Value="10"></asp:ListItem>
-                                <asp:ListItem Text="November" Value="11"></asp:ListItem>
-                                <asp:ListItem Text="December" Value="12"></asp:ListItem>
-                            </asp:DropDownList> &nbsp;
-                            <asp:DropDownList ID="ddlBirthDay" runat="server" class="input-small">
-                                <asp:ListItem Text="Day" Value="0"></asp:ListItem>
-                            </asp:DropDownList> &nbsp;
-                            <asp:DropDownList ID="ddlBirthYear" runat="server" class="input-small">
-                                <asp:ListItem Text="Year" Value="0"></asp:ListItem>
-                            </asp:DropDownList>
-                        </div>
-                    </div>
+                    <Rock:BirthdayPicker ID="bdpBirthDay" runat="server" Label="Birthday" />
                </fieldset>
 
             </div>
@@ -147,7 +122,7 @@
         </div>
 
         <div class="actions">
-            <asp:Button ID="btnDuplicatesPrev" runat="server" Text="Previous" CssClass="btn" OnClick="btnDuplicatesPrev_Click" />
+            <asp:Button ID="btnDuplicatesPrev" runat="server" Text="Previous" CssClass="btn btn-default" OnClick="btnDuplicatesPrev_Click" />
             <asp:Button ID="btnDuplicatesNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnDuplicatesNext_Click" />
         </div>
 
@@ -162,7 +137,7 @@
         </div>
 
         <div class="actions">
-            <asp:Button ID="btnSendPrev" runat="server" Text="Previous" CssClass="btn" OnClick="btnSendPrev_Click" />
+            <asp:Button ID="btnSendPrev" runat="server" Text="Previous" CssClass="btn btn-default" OnClick="btnSendPrev_Click" />
             <asp:Button ID="btnSendYes" runat="server" Text="Yes, send it" CssClass="btn btn-primary" OnClick="btnSendYes_Click" />
             <asp:Button ID="btnSendLogin" runat="server" Text="No, just let me login" CssClass="btn btn-primary" OnClick="btnSendLogin_Click" />
         </div>

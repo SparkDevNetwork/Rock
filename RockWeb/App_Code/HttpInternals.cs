@@ -103,6 +103,21 @@ internal static class HttpInternals
     {
         if ( !shuttingDown )
         {
+            FileInfo fileInfo = new FileInfo( e.FullPath );
+            
+            string[] dirIgnoreFilter = new string[] { "Apps\\Wpf" };
+            string solutionFolder = HostingEnvironment.ApplicationPhysicalPath.Remove(HostingEnvironment.ApplicationPhysicalPath.Length - "\\RockWeb".Length);
+            string fileRelativePath = fileInfo.Directory.FullName.Replace( solutionFolder, string.Empty );
+
+            foreach ( string dir in dirIgnoreFilter )
+            {
+                if ( fileRelativePath.Contains( dir ) )
+                {
+                    // a file within an ignored folder changed
+                    return;
+                }
+            }
+            
             // send debug info to debug window
             System.Diagnostics.Debug.WriteLine( string.Format( "Initiate shutdown due to .cs source file change: {0}", e.FullPath ) );            
             shuttingDown = true;
@@ -119,8 +134,8 @@ internal static class HttpInternals
     {
         FileInfo fileInfo = new FileInfo( e.FullPath );
 
-        string[] extensionIgnoreFilter = new string[] { ".csv", ".nupkg" };
-        string[] dirIgnoreFilter = new string[] { "Cache", "Logs", "App_Data" };
+        string[] extensionIgnoreFilter = new string[] { ".csv", ".nupkg", ".css", ".less" };
+        string[] dirIgnoreFilter = new string[] { "Cache", "Logs", "App_Data", "Styles", "Assets" };
 
         if ( fileInfo.Attributes.HasFlag( FileAttributes.Directory ) )
         {
@@ -131,10 +146,16 @@ internal static class HttpInternals
             }
         }
 
-        if ( dirIgnoreFilter.Contains( fileInfo.Directory.Name ) )
+        string solutionFolder = HostingEnvironment.ApplicationPhysicalPath.Remove( HostingEnvironment.ApplicationPhysicalPath.Length - "\\RockWeb".Length );
+        string fileRelativePath = fileInfo.Directory.FullName.Replace( solutionFolder, string.Empty );
+
+        foreach ( string dir in dirIgnoreFilter )
         {
-            // a file within an ignored folder changed
-            return;
+            if ( fileRelativePath.Contains( dir ) )
+            {
+                // a file within an ignored folder (or a child of an ignored folder) changed
+                return;
+            }
         }
 
         if ( !extensionIgnoreFilter.Contains( fileInfo.Extension ) )

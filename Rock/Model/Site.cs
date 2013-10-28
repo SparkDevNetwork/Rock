@@ -85,7 +85,53 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? DefaultPageRouteId { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the Id of the Site's login <see cref="Rock.Model.Page"/>
+        /// </summary>
+        /// <remarks>
+        /// This is the <see cref="Rock.Model.Page"/> that is loaded when the user is not logged in and they browse to a page or block that requires authentication.
+        /// </remarks>
+        /// <value>
+        /// An <see cref="System.Int32"/> containing the Id of the Site's login <see cref="Rock.Model.Page"/>. If the site doesn't have a login <see cref="Rock.Model.Page"/>
+        /// this value will be null.
+        /// </value>
+        [DataMember]
+        public int? LoginPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the login page route unique identifier.
+        /// If this has a value (and the PageRoute can be found) use this instead of the LoginPageId
+        /// </summary>
+        /// <value>
+        /// The login page route unique identifier.
+        /// </value>
+        [DataMember]
+        public int? LoginPageRouteId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the Site's registration <see cref="Rock.Model.Page"/>
+        /// </summary>
+        /// <remarks>
+        /// This is the <see cref="Rock.Model.Page"/> that is loaded when the user requests to register for a <see cref="Rock.Model.Group"/>.
+        /// </remarks>
+        /// <value>
+        /// An <see cref="System.Int32"/> containing the Id of the Site's registration <see cref="Rock.Model.Page"/>. If the site doesn't have a registration <see cref="Rock.Model.Page"/>
+        /// this value will be null.
+        /// </value>
+        [DataMember]
+        public int? RegistrationPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration page route unique identifier.
+        /// If this has a value (and the PageRoute can be found) use this instead of the RegistrationPageId
+        /// </summary>
+        /// <value>
+        /// The registration page route unique identifier.
+        /// </value>
+        [DataMember]
+        public int? RegistrationPageRouteId { get; set; }
+
         /// <summary>
         /// Gets or sets the path to the Site's Favicon.
         /// </summary>
@@ -134,26 +180,6 @@ namespace Rock.Model
         public string FacebookAppSecret { get; set; }
         
         /// <summary>
-        /// Gets or sets the path to the URL of the Login Page
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> containing the path to the Login Page.
-        /// </value>
-        [MaxLength( 260 )]
-        [DataMember]
-        public string LoginPageReference { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the path to the URL of the Registration Page.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> containing the path to the registration page.
-        /// </value>
-        [MaxLength( 260 )]
-        [DataMember]
-        public string RegistrationPageReference { get; set; }
-        
-        /// <summary>
         /// Gets or sets the path to the error page.
         /// </summary>
         /// <value>
@@ -198,6 +224,38 @@ namespace Rock.Model
         public virtual PageRoute DefaultPageRoute { get; set; }
 
         /// <summary>
+        /// Gets or sets the login <see cref="Rock.Model.Page"/> page for the site.
+        /// </summary>
+        /// <value>
+        /// The login <see cref="Rock.Model.Page"/> for the site. 
+        /// </value>
+        public virtual Page LoginPage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the login <see cref="Rock.Model.PageRoute"/> page route for this site. If this value is null, the LoginPage will be used
+        /// </summary>
+        /// <value>
+        /// The login page route.
+        /// </value>
+        public virtual PageRoute LoginPageRoute { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration <see cref="Rock.Model.Page"/> page for the site.
+        /// </summary>
+        /// <value>
+        /// The registration <see cref="Rock.Model.Page"/> for the site. 
+        /// </value>
+        public virtual Page RegistrationPage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration <see cref="Rock.Model.PageRoute"/> page route for this site. If this value is null, the RegistrationPage will be used
+        /// </summary>
+        /// <value>
+        /// The registration page route.
+        /// </value>
+        public virtual PageRoute RegistrationPageRoute { get; set; }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> containing the Name of the site that that represents this instance.
         /// </summary>
         /// <returns>
@@ -221,6 +279,10 @@ namespace Rock.Model
         {
             this.HasRequired( p => p.DefaultPage ).WithMany().HasForeignKey( p => p.DefaultPageId ).WillCascadeOnDelete(false);
             this.HasOptional( p => p.DefaultPageRoute ).WithMany().HasForeignKey( p => p.DefaultPageRouteId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.LoginPage ).WithMany().HasForeignKey( p => p.LoginPageId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.LoginPageRoute ).WithMany().HasForeignKey( p => p.LoginPageRouteId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.RegistrationPage ).WithMany().HasForeignKey( p => p.RegistrationPageId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.RegistrationPageRoute ).WithMany().HasForeignKey( p => p.RegistrationPageRouteId ).WillCascadeOnDelete( false );
         }
     }
 }

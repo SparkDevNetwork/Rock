@@ -311,7 +311,7 @@ namespace RockWeb.Blocks.Administration
             phProperties.Controls.Clear();
             LoadEditControls();
 
-            lProperties.Text = _container.Dictionary[serviceId].Key + " Properties";
+            lProperties.Text = (_container.Dictionary[serviceId].Key + " Properties").FormatAsHtmlTitle();
 
             SetEditMode( true );
         }
@@ -334,7 +334,7 @@ namespace RockWeb.Blocks.Administration
             int serviceId = ( int )ViewState["serviceId"];
             Rock.Attribute.IHasAttributes component = _container.Dictionary[serviceId].Value;
 
-            Rock.Attribute.Helper.AddEditControls( component, phProperties, true, new List<string>() { "Order" }  );
+            Rock.Attribute.Helper.AddEditControls( component, phProperties, true, string.Empty, new List<string>() { "Order" }  );
         }
 
         private void DisplayError( string message )

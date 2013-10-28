@@ -3,12 +3,16 @@
     and optimized for our styling strategy.
 
     !!!!    PLEASE ADD YOUR INITIALS NEXT TO YOUR CHANGES SO I CAN GET CLARIFICATION IF NEEDED 
-            ALSO PLEASE NOTE WHERE IT'S USED...
+            ALSO PLEASE NOTE WHERE IT'S USED AND THE DATE IT WAS ADDED
     !!!!
 
     */
 
-
+/* NA: I'd like to propose se use dashed lines to denote zones when you enter zone editing mode */
+.zone-instance.outline {
+    border: 1px dashed #909090;
+    border-radius: 3px;
+}
 
 /* NA: Used to style a checkboxlist grouping -- based somewhat off the textarea of the rock-boot.less */
 .checkboxlist-group {
@@ -384,3 +388,65 @@ small
     .table .color-field + th {
         border-left-width: 0px;
     }
+
+/* text between input elements in dataview filters - DT */
+span.data-view-filter-label {
+    display: inline-block; 
+    height:34px; 
+    margin: 8px 12px 0 0;
+}
+
+/* RockTree css - JO */
+ul.rock-tree,
+ul.rock-tree ul {
+	list-style-type: none;
+	margin: 10px 0px;
+	padding: 0px;
+}
+
+ul.rock-tree ul {
+	margin: 0px 0px 0px 25px;
+}
+
+.rock-tree li {
+	margin: 0px;
+}
+
+.rock-tree span,
+.rock-tree a {
+	margin: 1px;
+	display: inline-block;
+}
+
+.rock-tree .rock-tree-name:hover,
+.rock-tree span:hover,
+.rock-tree span:hover a {
+	background: #59849C;
+    color: #fff;
+}
+
+.rock-tree .selected,
+.rock-tree .selected a {
+	background: #779cb1;
+    color: #fff
+}
+
+.rock-tree .rock-tree-name {
+	padding: 2px 6px;
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+.rock-tree .rock-tree-loading {
+  margin-left: 10px;
+  color: #777 !important;
+  font-size: 12px;
+}
+
+.rock-tree .rock-tree-loading i {
+  margin-right: 5px;
+}
+
+.rock-tree-leaf {
+    padding-left: 12px;
+}

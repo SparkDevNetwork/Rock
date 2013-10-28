@@ -81,16 +81,25 @@ namespace Rock.Model
             else
             {
                 var target = new AttributeQualifier();
-                target.IsSystem = source.IsSystem;
-                target.AttributeId = source.AttributeId;
-                target.Key = source.Key;
-                target.Value = source.Value;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another AttributeQualifier object to this AttributeQualifier object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this AttributeQualifier target, AttributeQualifier source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.AttributeId = source.AttributeId;
+            target.Key = source.Key;
+            target.Value = source.Value;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

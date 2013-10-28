@@ -1,4 +1,4 @@
- //
+//
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
@@ -6,6 +6,7 @@
 using System;
 using System.ComponentModel;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
@@ -119,6 +120,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets an optional validation group to use.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get { return ViewState["ValidationGroup"] as string; }
+            set { ViewState["ValidationGroup"] = value; }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -154,8 +167,8 @@ namespace Rock.Web.UI.Controls
 
         private HiddenField _hfPersonId;
         private HiddenField _hfPersonName;
-        private LinkButton _btnSelect;
-        private LinkButton _btnSelectNone;
+        private HtmlAnchor _btnSelect;
+        private HtmlAnchor _btnSelectNone;
 
         #endregion
 
@@ -322,32 +335,22 @@ namespace Rock.Web.UI.Controls
             _hfPersonName.ClientIDMode = System.Web.UI.ClientIDMode.Static;
             _hfPersonName.ID = string.Format( "hfPersonName_{0}", this.ID );
 
-            _btnSelect = new LinkButton();
+            _btnSelect = new HtmlAnchor();
             _btnSelect.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-            _btnSelect.CssClass = "btn btn-xs btn-primary";
+            _btnSelect.Attributes["class"] = "btn btn-xs btn-primary";
             _btnSelect.ID = string.Format( "btnSelect_{0}", this.ID );
-            _btnSelect.Text = "Select";
+            _btnSelect.InnerText = "Select";
             _btnSelect.CausesValidation = false;
+            _btnSelect.ServerClick += btnSelect_Click;
 
-            // we only need the postback on Select if SelectPerson is assigned
-            if ( SelectPerson != null )
-            {
-                _btnSelect.Click += btnSelect_Click;
-            }
-
-            _btnSelectNone = new LinkButton();
+            _btnSelectNone = new HtmlAnchor();
             _btnSelectNone.ClientIDMode = ClientIDMode.Static;
-            _btnSelectNone.CssClass = "picker-select-none";
+            _btnSelectNone.Attributes["class"] = "picker-select-none";
             _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
-            _btnSelectNone.Text = "<i class='icon-remove'></i>";
+            _btnSelectNone.InnerHtml = "<i class='icon-remove'></i>";
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
-
-            // we only need the postback on SelectNone if SelectPerson is assigned
-            if ( SelectPerson != null )
-            {
-                _btnSelectNone.Click += btnSelect_Click;
-            }
+            _btnSelectNone.ServerClick += btnSelect_Click;
 
             Controls.Add( _hfPersonId );
             Controls.Add( _hfPersonName );
@@ -418,19 +421,24 @@ namespace Rock.Web.UI.Controls
                 string controlHtmlFormatEnd = @"
             <a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>
             </div>
-        </div>
-    </div>
+         </div>
+     </div>
 ";
 
                 writer.Write( string.Format( controlHtmlFormatEnd, this.ID, this.PersonName ) );
             }
             else
             {
-                string controlHtmlFormatDisabled = @"
-        <i class='icon-file-alt'></i>
-        <span id='selectedItemLabel_{0}'>{1}</span>
-";
-                writer.Write( controlHtmlFormatDisabled, this.ID, this.PersonName );
+                // this picker is not enabled (readonly), so just render a readonly version
+                writer.AddAttribute( "class", "picker picker-select" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                LinkButton linkButton = new LinkButton();
+                linkButton.CssClass = "picker-label";
+                linkButton.Text = string.Format( "<i class='{1}'></i><span>{0}</span>", this.PersonName, "icon-user" );
+                linkButton.Enabled = false;
+                linkButton.RenderControl( writer );
+                writer.WriteLine();
+                writer.RenderEndTag();
             }
         }
 

@@ -23,7 +23,7 @@ namespace Rock.Model
         /// Returns an enumerable collection of <see cref="Rock.Model.GroupLocation">GroupLocations</see> by their LocationId.
         /// </summary>
         /// <param name="locationId">A <see cref="System.Int32"/> representing the Id of a <see cref="Rock.Model.Location"/> to search by.</param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.GroupLocations"/> which are associated with the provided <see cref="Rock.Model.Location"/> </returns>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.GroupLocation"/> which are associated with the provided <see cref="Rock.Model.Location"/> </returns>
         public IEnumerable<GroupLocation> GetByLocation( int locationId )
         {
             return Repository.Find( g => g.LocationId == locationId );

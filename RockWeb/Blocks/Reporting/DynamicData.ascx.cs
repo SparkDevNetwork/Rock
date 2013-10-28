@@ -212,7 +212,7 @@ namespace RockWeb.Blocks.Reporting
                             xmlContent.Visible = true;
 
                             xmlContent.DocumentContent = xDocument.ToString();
-                            xmlContent.TransformSource = Server.MapPath( "~/Themes/" + CurrentPage.Layout.Site.Theme + "/Assets/Xslt/" + xsltFile );
+                            xmlContent.TransformSource = Server.MapPath( ResolveRockUrl( "~~/Assets/Xslt/" + xsltFile) );
                         }
                         else
                         {

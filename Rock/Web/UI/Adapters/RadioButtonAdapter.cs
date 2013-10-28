@@ -74,6 +74,21 @@ namespace Rock.Web.UI.Adapters
                     writer.AddAttribute( key, rb.InputAttributes[key] );
                 }
 
+                if ( rb.AutoPostBack )
+                {
+                    PostBackOptions postBackOption = new PostBackOptions( rb, string.Empty );
+                    if ( rb.CausesValidation && this.Page.GetValidators( rb.ValidationGroup ).Count > 0 )
+                    {
+                        postBackOption.PerformValidation = true;
+                        postBackOption.ValidationGroup = rb.ValidationGroup;
+                    }
+                    if ( this.Page.Form != null )
+                    {
+                        postBackOption.AutoPostBack = true;
+                    }
+                    writer.AddAttribute( HtmlTextWriterAttribute.Onclick, Page.ClientScript.GetPostBackEventReference( postBackOption, true ) );
+                }
+
                 writer.RenderBeginTag( HtmlTextWriterTag.Input );
                 writer.RenderEndTag();
 

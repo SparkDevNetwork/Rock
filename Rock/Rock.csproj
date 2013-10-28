@@ -61,11 +61,11 @@
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.6.0.0-beta1\lib\net45\EntityFramework.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.0.1\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.6.0.0-beta1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.0.1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="EPPlus">
       <HintPath>..\libs\EPPlus\EPPlus.dll</HintPath>
@@ -79,6 +79,10 @@
       <HintPath>..\packages\HtmlAgilityPack.1.4.6\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.SqlServer.Types, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.SqlServer.Types.10.50.1600.1\lib\Net20\Microsoft.SqlServer.Types.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
@@ -95,7 +99,9 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
-    <Reference Include="System.Data" />
+    <Reference Include="System.Data">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data.Entity.Design" />
     <Reference Include="System.Data.Services" />
@@ -138,6 +144,7 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
+    <Compile Include="Attribute\InheritedAttribute.cs" />
     <Compile Include="Attribute\TimeFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerRangeFieldAttribute.cs" />
     <Compile Include="Attribute\DateRangeFieldAttribute.cs" />
@@ -251,6 +258,38 @@
     <Compile Include="Migrations\201310021237541_FixSystemData.Designer.cs">
       <DependentUpon>201310021237541_FixSystemData.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201310091510427_CreditCardTypes.cs" />
+    <Compile Include="Migrations\201310091510427_CreditCardTypes.Designer.cs">
+      <DependentUpon>201310091510427_CreditCardTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201310091945298_LayoutBlocks.cs" />
+    <Compile Include="Migrations\201310091945298_LayoutBlocks.Designer.cs">
+      <DependentUpon>201310091945298_LayoutBlocks.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201310092101235_SitePageReferences.cs" />
+    <Compile Include="Migrations\201310092101235_SitePageReferences.Designer.cs">
+      <DependentUpon>201310092101235_SitePageReferences.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201310112336543_GivingGroup.cs" />
+    <Compile Include="Migrations\201310112336543_GivingGroup.Designer.cs">
+      <DependentUpon>201310112336543_GivingGroup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201310230524455_ContributionStatements.cs" />
+    <Compile Include="Migrations\201310230524455_ContributionStatements.Designer.cs">
+      <DependentUpon>201310230524455_ContributionStatements.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201310231253281_GroupTypeRole.cs" />
+    <Compile Include="Migrations\201310231253281_GroupTypeRole.Designer.cs">
+      <DependentUpon>201310231253281_GroupTypeRole.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201310231644243_GroupTypeRefactor.cs" />
+    <Compile Include="Migrations\201310231644243_GroupTypeRefactor.Designer.cs">
+      <DependentUpon>201310231644243_GroupTypeRefactor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201310241348152_GroupTerms.cs" />
+    <Compile Include="Migrations\201310241348152_GroupTerms.Designer.cs">
+      <DependentUpon>201310241348152_GroupTerms.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -259,6 +298,13 @@
     <Compile Include="Model\LayoutService.Partial.cs" />
     <Compile Include="Model\Layout.cs" />
     <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
+    <Compile Include="Net\RestParameters\ContributionStatementOptions.cs" />
+    <Compile Include="PersonProfile\Badge\Baptized.cs" />
+    <Compile Include="PersonProfile\Badge\NextSteps.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Reporting\DataFilter\Person\InGroupFilter.cs" />
+    <Compile Include="Reporting\FilterExpressionExtractor.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
@@ -282,7 +328,6 @@
     </Compile>
     <Compile Include="PersonProfile\BadgeComponent.cs" />
     <Compile Include="PersonProfile\BadgeContainer.cs" />
-    <Compile Include="PersonProfile\Badge\NextSteps.cs" />
     <Compile Include="PersonProfile\Badge\FamilyAttendance.cs" />
     <Compile Include="PersonProfile\Badge\eraAttendance.cs" />
     <Compile Include="PersonProfile\Badge\DiscScore.cs">
@@ -500,7 +545,11 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\RockControlWrapper.cs" />
     <Compile Include="Web\UI\Controls\HighlightLabel.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\BirthdayPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\LocationItemPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\LocationAddressPicker.cs" />
     <Compile Include="Web\UI\Controls\RockControlHelper.cs" />
     <Compile Include="Web\UI\Controls\TermDescription.cs" />
     <Compile Include="Web\UI\Controls\Grid\DefinedValueField.cs" />
@@ -729,11 +778,11 @@
     </Compile>
     <Compile Include="Model\TransactionSearchValue.cs" />
     <Compile Include="Model\Group.cs" />
-    <Compile Include="Model\CodeGenerated\GroupRoleService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupTypeRoleService.cs" />
     <Compile Include="Model\CodeGenerated\GroupService.cs" />
     <Compile Include="Model\GroupService.Partial.cs" />
-    <Compile Include="Model\GroupRole.cs" />
-    <Compile Include="Model\GroupRoleService.Partial.cs" />
+    <Compile Include="Model\GroupTypeRole.cs" />
+    <Compile Include="Model\GroupTypeRoleService.Partial.cs" />
     <Compile Include="Model\GroupType.cs" />
     <Compile Include="Model\CodeGenerated\GroupTypeService.cs" />
     <Compile Include="Model\GroupTypeService.Partial.cs" />
@@ -1111,6 +1160,30 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201310021237541_FixSystemData.resx">
       <DependentUpon>201310021237541_FixSystemData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310091510427_CreditCardTypes.resx">
+      <DependentUpon>201310091510427_CreditCardTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310091945298_LayoutBlocks.resx">
+      <DependentUpon>201310091945298_LayoutBlocks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310092101235_SitePageReferences.resx">
+      <DependentUpon>201310092101235_SitePageReferences.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310112336543_GivingGroup.resx">
+      <DependentUpon>201310112336543_GivingGroup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310230524455_ContributionStatements.resx">
+      <DependentUpon>201310230524455_ContributionStatements.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310231253281_GroupTypeRole.resx">
+      <DependentUpon>201310231253281_GroupTypeRole.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310231644243_GroupTypeRefactor.resx">
+      <DependentUpon>201310231644243_GroupTypeRefactor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310241348152_GroupTerms.resx">
+      <DependentUpon>201310241348152_GroupTerms.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

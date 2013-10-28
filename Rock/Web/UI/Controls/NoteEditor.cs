@@ -238,6 +238,23 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             string script = @"
+    $('.note-editor').on({
+        mouseenter:
+            function () {
+                var actionsDiv = $('.actions', this);
+                if (actionsDiv.length > 0) {
+                    $(actionsDiv).stop(true, true).fadeIn(""slow"");
+                }
+            },
+        mouseleave:
+            function () {
+                var actionsDiv = $('.actions', this);
+                if (actionsDiv.length > 0) {
+                    $(actionsDiv).stop(true, true).fadeOut(""slow"");
+                }
+            }
+    });
+
     $('a.edit-note').click(function (e) {
         e.preventDefault();
         $(this).parent().parent().parent().children().slideToggle('slow');
@@ -334,6 +351,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "note-editor" );
+            writer.AddAttribute( "rel", this.NoteId.ToStringSafe() );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // Edit Mode HTML...
@@ -370,7 +389,7 @@ namespace Rock.Web.UI.Controls
 
             if ( ShowSecurityButton )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs security pull-right" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-security btn-xs security pull-right" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Type, "button" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Button );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "icon-lock" );
@@ -427,6 +446,9 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
                 writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                _lbDeleteNote.RenderControl(writer);
+
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
@@ -434,7 +456,8 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();  // A
-                _lbDeleteNote.RenderControl( writer );
+
+                
                 writer.RenderEndTag();  // actions
             }
 

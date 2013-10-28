@@ -81,15 +81,24 @@ namespace Rock.Model
             else
             {
                 var target = new MarketingCampaignAudience();
-                target.MarketingCampaignId = source.MarketingCampaignId;
-                target.AudienceTypeValueId = source.AudienceTypeValueId;
-                target.IsPrimary = source.IsPrimary;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another MarketingCampaignAudience object to this MarketingCampaignAudience object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this MarketingCampaignAudience target, MarketingCampaignAudience source )
+        {
+            target.MarketingCampaignId = source.MarketingCampaignId;
+            target.AudienceTypeValueId = source.AudienceTypeValueId;
+            target.IsPrimary = source.IsPrimary;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

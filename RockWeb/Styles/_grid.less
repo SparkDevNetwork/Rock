@@ -79,6 +79,13 @@ td[align=center] {
             float: left;
         }
     }
+
+     // adjust the background color of pickers in the filters
+    .picker .picker-label {
+        background-color: @accent-light-color;
+        color: @accent-light-text-color;
+        border-color: darken(@accent-light-color, 10%)
+    }
 }
 
 .grid-filter +  div .grid-table {

@@ -142,14 +142,18 @@ namespace RockWeb.Blocks.Prayer
             //    prayerComments = prayerComments.Where( a => a.IsApproved == true );
             //}
 
-            // Filter by EnteredDate
-            if ( dtDateRangeStartDate.SelectedDate != null )
+            // Filter by Date Range
+            if ( pDateRange.LowerValue.HasValue )
             {
-                prayerComments = prayerComments.Where( a => a.CreationDateTime >= dtDateRangeStartDate.SelectedDate );
+                DateTime startDate = pDateRange.LowerValue.Value.Date;
+                prayerComments = prayerComments.Where( a => a.CreationDateTime >= startDate );
             }
-            if ( dtDateRangeEndDate.SelectedDate != null )
+
+            if ( pDateRange.UpperValue.HasValue )
             {
-                prayerComments = prayerComments.Where( a => a.CreationDateTime <= dtDateRangeEndDate.SelectedDate );
+                // Add one day in order to include everything up to the end of the selected datetime.
+                var endDate = pDateRange.UpperValue.Value.AddDays( 1 );
+                prayerComments = prayerComments.Where( a => a.CreationDateTime < endDate );
             }
 
             // Sort by the given property otherwise sort by the EnteredDate
@@ -287,11 +291,20 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         private void BindFilter()
         {
-            dtDateRangeStartDate.Text = rFilter.GetUserPreference( FilterSetting.FromDate );
-            dtDateRangeEndDate.Text = rFilter.GetUserPreference( FilterSetting.ToDate );
+            string fromDate = rFilter.GetUserPreference( FilterSetting.FromDate );
+            if ( !string.IsNullOrWhiteSpace( fromDate ) )
+            {
+                pDateRange.LowerValue = DateTime.Parse( fromDate );
+            }
+
+            string toDate = rFilter.GetUserPreference( FilterSetting.ToDate );
+            if ( !string.IsNullOrWhiteSpace( toDate ) )
+            {
+                pDateRange.UpperValue = DateTime.Parse( toDate );
+            }
 
             // Set the Approval Status radio options.
-            var item = rblApprovedFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.ApprovalStatus ) );
+            var item = ddlApprovedFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.ApprovalStatus ) );
             if ( item != null )
             {
                 item.Selected = true;
@@ -305,13 +318,13 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e"></param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( FilterSetting.FromDate, dtDateRangeStartDate.Text );
-            rFilter.SaveUserPreference( FilterSetting.ToDate, dtDateRangeEndDate.Text );
+            rFilter.SaveUserPreference( FilterSetting.FromDate, pDateRange.LowerValue.HasValue ? pDateRange.LowerValue.Value.ToString( "d" ) : string.Empty );
+            rFilter.SaveUserPreference( FilterSetting.ToDate, pDateRange.UpperValue.HasValue ? pDateRange.UpperValue.Value.ToString( "d" ) : string.Empty );
 
             // only save settings that are not the default "all" preference...
-            if ( rblApprovedFilter.SelectedValue != "all" )
+            if ( ddlApprovedFilter.SelectedValue != "all" )
             {
-                rFilter.SaveUserPreference( FilterSetting.ApprovalStatus, rblApprovedFilter.SelectedValue );
+                rFilter.SaveUserPreference( FilterSetting.ApprovalStatus, ddlApprovedFilter.SelectedValue );
             }
 
             BindCommentsGrid();

@@ -244,6 +244,7 @@ namespace RockWeb.Blocks.Cms
                 configControls.Add( lbEdit );
                 HtmlGenericControl iEdit = new HtmlGenericControl( "i" );
                 lbEdit.Controls.Add( iEdit );
+                lbEdit.CausesValidation = false;
                 iEdit.Attributes.Add( "class", "icon-edit" );
 
                 ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( lbEdit );

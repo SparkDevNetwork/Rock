@@ -81,16 +81,25 @@ namespace Rock.Model
             else
             {
                 var target = new FinancialPersonSavedAccount();
-                target.PersonId = source.PersonId;
-                target.FinancialTransactionId = source.FinancialTransactionId;
-                target.Name = source.Name;
-                target.MaskedAccountNumber = source.MaskedAccountNumber;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another FinancialPersonSavedAccount object to this FinancialPersonSavedAccount object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this FinancialPersonSavedAccount target, FinancialPersonSavedAccount source )
+        {
+            target.PersonId = source.PersonId;
+            target.FinancialTransactionId = source.FinancialTransactionId;
+            target.Name = source.Name;
+            target.MaskedAccountNumber = source.MaskedAccountNumber;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

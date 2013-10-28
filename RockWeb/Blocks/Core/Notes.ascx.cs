@@ -63,33 +63,30 @@ namespace RockWeb.Blocks.Core
 
             string script = @"
     $('a.add-note').click(function () {
-        $(this).parent().siblings('.panel-body').children('.note-entry').slideToggle(""slow"");
+        $(this).closest('.panel-note').find('.note-entry').slideToggle(""slow"");
     });
     
     $('a.add-note-cancel').click(function () {
-        $(this).parent().siblings('.note').children('textarea').val('');
-        $(this).parent().parent().slideToggle(""slow"");
-    });
-
-    $('.panel-notes article').on({
-        mouseenter:
-            function () {
-                var actionsDiv = $('.actions', this);
-                if (actionsDiv.length > 0) {
-                    $(actionsDiv).stop(true, true).fadeIn(""slow"");
-                }
-            },
-        mouseleave:
-            function () {
-                var actionsDiv = $('.actions', this);
-                if (actionsDiv.length > 0) {
-                    $(actionsDiv).stop(true, true).fadeOut(""slow"");
-                }
-            }
+        $(this).closest('.panel-body').children('textarea').val('');
+        $(this).closest('.note-entry').slideToggle(""slow"");
     });
 ";
-            ScriptManager.RegisterStartupScript( Page, Page.GetType(), "add-note", script, true );
+            // if a note was given, scroll down to that note...
+            string noteId = PageParameter( "noteId" );
+            if ( !string.IsNullOrWhiteSpace( noteId ) )
+            {
+                script += string.Format( @"
+                    $('html, body').animate( {{scrollTop: $("".note-editor[rel='{0}']"").offset().top }},
+                        'slow',
+                        'swing',
+                        function() {{ 
+                            $("".note-editor[rel='{0}'] > article"").css( ""boxShadow"", ""1px 1px 8px 1px #888888"" );
+                        }}
+                    );",
+                noteId );
+            }
 
+            ScriptManager.RegisterStartupScript( Page, Page.GetType(), "add-note", script, true );
         }
 
         /// <summary>
@@ -99,32 +96,35 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         void btnAddNote_Click( object sender, EventArgs e )
         {
-            var service = new NoteService();
-
-            var note = new Note();
-            note.IsSystem = false;
-            note.NoteTypeId = noteType.Id;
-            note.EntityId = contextEntity.Id;
-            note.CreationDateTime = DateTime.Now;
-            note.Caption = cbPrivate.Checked ? "You - Personal Note" : CurrentPerson.FullName;
-            note.IsAlert = cbAlert.Checked;
-            note.Text = tbNewNote.Text;
-
-            if ( noteType.Sources != null )
+            if ( !string.IsNullOrWhiteSpace( tbNewNote.Text ) )
             {
-                var source = noteType.Sources.DefinedValues.FirstOrDefault();
-                if ( source != null )
+                var service = new NoteService();
+
+                var note = new Note();
+                note.IsSystem = false;
+                note.NoteTypeId = noteType.Id;
+                note.EntityId = contextEntity.Id;
+                note.CreationDateTime = DateTime.Now;
+                note.Caption = cbPrivate.Checked ? "You - Personal Note" : CurrentPerson.FullName;
+                note.IsAlert = cbAlert.Checked;
+                note.Text = tbNewNote.Text;
+
+                if ( noteType.Sources != null )
                 {
-                    note.SourceTypeValueId = source.Id;
+                    var source = noteType.Sources.DefinedValues.FirstOrDefault();
+                    if ( source != null )
+                    {
+                        note.SourceTypeValueId = source.Id;
+                    }
                 }
-            }
 
-            service.Add( note, CurrentPersonId );
-            service.Save( note, CurrentPersonId );
+                service.Add( note, CurrentPersonId );
+                service.Save( note, CurrentPersonId );
 
-            if ( cbPrivate.Checked )
-            {
-                note.MakePrivate( "View", CurrentPerson, CurrentPersonId );
+                if ( cbPrivate.Checked )
+                {
+                    note.MakePrivate( "View", CurrentPerson, CurrentPersonId );
+                }
             }
 
             ShowNotes();

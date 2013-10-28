@@ -134,7 +134,7 @@ namespace Rock.Web.UI.Controls
                 attribute.Name = string.Empty;
                 attribute.Description = string.Empty;
 
-                attribute.AddControl(Controls, string.Empty, false, true);
+                attribute.AddControl(Controls, string.Empty, string.Empty, false, true);
 
                 // Set name and description back
                 attribute.Name = name;

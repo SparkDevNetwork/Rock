@@ -291,7 +291,7 @@ namespace RockWeb.Blocks.Cms
 
         private Template GetTemplate()
         {
-            string liquidFolder = System.Web.HttpContext.Current.Server.MapPath( string.Format( "~/{0}/Assets/Liquid", CurrentTheme ) );
+            string liquidFolder = System.Web.HttpContext.Current.Server.MapPath( ResolveRockUrl( "~~/Assets/Liquid" ) );
             Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
             Template.FileSystem = new DotLiquid.FileSystems.LocalFileSystem( liquidFolder );
 

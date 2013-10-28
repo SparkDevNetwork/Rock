@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                     else
                     {
-                        attribute.AddControl( fsAttributes.Controls, attributeValue, setValues, true );
+                        attribute.AddControl( fsAttributes.Controls, attributeValue, string.Empty, setValues, true );
                     }
                 }
             }

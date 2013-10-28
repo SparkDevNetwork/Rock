@@ -86,6 +86,7 @@ namespace RockWeb.Blocks.Utility
             {
                 hfInitialItemId.Value = itemId;
                 hfInitialEntityIsCategory.Value = (selectedEntityType == "category").ToString();
+                hfSelectedCategoryId.Value = itemId;
                 List<string> parentIdList = new List<string>();
 
                 Category category = null;

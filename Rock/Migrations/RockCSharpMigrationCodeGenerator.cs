@@ -99,6 +99,7 @@ namespace Rock.Migrations
                 }
             }
 
+            /* Worked in EF6 Beta, but not in Release
             StorageEntityContainerMapping storageMapping = objectContext.MetadataWorkspace.GetItems<StorageEntityContainerMapping>( DataSpace.CSSpace ).OrderBy( a => a.GetType().Name ).FirstOrDefault();
 
             // add any tables that just be assocation tables, and not a DbSet<>
@@ -124,6 +125,7 @@ namespace Rock.Migrations
                     }
                 }
             }
+             */ 
         }
 
         /// <summary>

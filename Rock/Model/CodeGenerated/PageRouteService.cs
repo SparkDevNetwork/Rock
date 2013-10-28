@@ -57,12 +57,12 @@ namespace Rock.Model
         public bool CanDelete( PageRoute item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<Site>().Queryable().Any( a => a.DefaultPageRouteId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", PageRoute.FriendlyTypeName, Site.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring Site,DefaultPageRouteId 
+            
+            // ignoring Site,LoginPageRouteId 
+            
+            // ignoring Site,RegistrationPageRouteId 
             return true;
         }
     }
@@ -87,15 +87,24 @@ namespace Rock.Model
             else
             {
                 var target = new PageRoute();
-                target.IsSystem = source.IsSystem;
-                target.PageId = source.PageId;
-                target.Route = source.Route;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another PageRoute object to this PageRoute object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this PageRoute target, PageRoute source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.PageId = source.PageId;
+            target.Route = source.Route;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

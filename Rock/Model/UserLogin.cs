@@ -271,10 +271,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a <see cref="System.Collections.Generic.Dictionary"/> of this UserLogin object.
+        /// Creates a <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of this UserLogin object.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.Collections.Generic.Dictionary"/> of this UserLogin object.
+        /// A <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of this UserLogin object.
         /// </returns>
         public override System.Collections.Generic.Dictionary<string, object> ToDictionary()
         {

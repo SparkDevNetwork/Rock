@@ -69,6 +69,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, MarketingCampaign.FriendlyTypeName );
                 return false;
             }  
+ 
+            if ( new Service<Person>().Queryable().Any( a => a.GivingGroupId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Person.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -93,21 +99,30 @@ namespace Rock.Model
             else
             {
                 var target = new Group();
-                target.IsSystem = source.IsSystem;
-                target.ParentGroupId = source.ParentGroupId;
-                target.GroupTypeId = source.GroupTypeId;
-                target.CampusId = source.CampusId;
-                target.Name = source.Name;
-                target.Description = source.Description;
-                target.IsSecurityRole = source.IsSecurityRole;
-                target.IsActive = source.IsActive;
-                target.Order = source.Order;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another Group object to this Group object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this Group target, Group source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.ParentGroupId = source.ParentGroupId;
+            target.GroupTypeId = source.GroupTypeId;
+            target.CampusId = source.CampusId;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.IsSecurityRole = source.IsSecurityRole;
+            target.IsActive = source.IsActive;
+            target.Order = source.Order;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

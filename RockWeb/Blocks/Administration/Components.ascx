@@ -27,7 +27,7 @@
                     <HeaderStyle CssClass="span1" />
                     <ItemStyle HorizontalAlign="Center"/>
                     <ItemTemplate>
-                        <a id="aSecure" runat="server" class="btn btn-mini" height="500px"><i class="icon-lock"></i></a>
+                        <a id="aSecure" runat="server" class="btn btn-sm btn-security" height="500px"><i class="icon-lock"></i></a>
                     </ItemTemplate>
                 </asp:TemplateField>
             </Columns>
@@ -35,20 +35,23 @@
 
     </asp:Panel>
 
-    <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="admin-details">
-        
-        <asp:ValidationSummary runat="server" CssClass="alert alert-danger" />
+    <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="panel panel-default">
+        <div class="panel-body">
+            <asp:ValidationSummary runat="server" CssClass="alert alert-danger" />
 
-        <fieldset>
-            <legend><asp:Literal ID="lProperties" runat="server"></asp:Literal></legend>
-            <asp:PlaceHolder ID="phProperties" runat="server"></asp:PlaceHolder>
-        </fieldset>
+            <div class="banner">
+                <h1><asp:Literal ID="lProperties" runat="server"></asp:Literal></h1>
+            </div>
 
-        <div class="actions">
-            <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" onclick="btnSave_Click" />
-            <asp:LinkButton id="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
-        </div>
+            <fieldset>
+                <asp:PlaceHolder ID="phProperties" runat="server"></asp:PlaceHolder>
+            </fieldset>
 
+            <div class="actions">
+                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" onclick="btnSave_Click" />
+                <asp:LinkButton id="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default" CausesValidation="false" OnClick="btnCancel_Click" />
+            </div>
+            </div>
     </asp:Panel>
 
 </ContentTemplate>

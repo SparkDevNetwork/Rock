@@ -8,18 +8,18 @@
 
         <Rock:NotificationBox ID="nbNotice" runat="server" Visible="false" />
 
-        <div class="row-fluid">
-            <div class="span4 form-horizontal">
+        <div class="row">
+            <div class="col-md-4 form-horizontal">
                 <fieldset>
                     <Rock:RockTextBox ID="tbFamilyName" runat="server" Label="Family Name" Required="true" CssClass="input-meduim" AutoPostBack="true" OnTextChanged="tbFamilyName_TextChanged" />
                 </fieldset>
             </div>
-            <div class="span4 form-horizontal">
+            <div class="col-md-4 form-horizontal">
                 <fieldset>
                     <Rock:CampusPicker ID="cpCampus" runat="server" Required="true" AutoPostBack="true" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" />
                 </fieldset>
             </div>
-            <div class="span4 form-horizontal">
+            <div class="col-md-4 form-horizontal">
                 <fieldset>
                     <Rock:RockDropDownList ID="ddlRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" /><br />
                     <Rock:RockDropDownList ID="ddlReason" runat="server" Label="Reason" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="ddlReason_SelectedIndexChanged"></Rock:RockDropDownList>
@@ -53,12 +53,12 @@
         </div>
 
         <p>
-            <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn" OnClick="lbAddPerson_Click"><i class="icon-user"></i> Add Person</asp:LinkButton>
+            <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-default" OnClick="lbAddPerson_Click"><i class="icon-user"></i> Add Person</asp:LinkButton>
         </p>
 
         <h4>Addresses</h4>
         <p>
-            <asp:LinkButton ID="lbMoved" runat="server" CssClass="btn" OnClick="lbMoved_Click"><i class="icon-truck icon-flip-horizontal"></i> Family Moved</asp:LinkButton>
+            <asp:LinkButton ID="lbMoved" runat="server" CssClass="btn btn-default" OnClick="lbMoved_Click"><i class="icon-truck icon-flip-horizontal"></i> Family Moved</asp:LinkButton>
         </p>
 
         <Rock:Grid ID="gLocations" runat="server" AllowSorting="true" AllowPaging="false" DisplayType="Light">
@@ -136,12 +136,12 @@
 
         <div class="actions">
             <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
+            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default" CausesValidation="false" OnClick="btnCancel_Click" />
         </div>
 
         <Rock:ConfirmPageUnload ID="confirmExit" runat="server" ConfirmationMessage="Changes have been made to this family that have not yet been saved." Enabled="false" />
 
-        <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Person" Content-Height="380">
+        <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Person" Content-Height="380" ValidationGroup="modalAddPersonValidationGroup">
             <Content>
 
                 <asp:HiddenField ID="hfActiveTab" runat="server" Value="Existing" />
@@ -164,32 +164,32 @@
                     </div>
 
                     <div id="divNewPerson" runat="server" class="tab-pane">
-                        <div class="row-fluid">
-                            <div class="span4">
+                        <div class="row">
+                            <div class="col-md-4">
                                 <fieldset>
                                     <Rock:RockTextBox ID="tbNewPersonFirstName" runat="server" Label="First Name" ValidationGroup="modalAddPersonValidationGroup" />
                                 </fieldset>
                             </div>
-                            <div class="span4">
+                            <div class="col-md-4">
                                 <fieldset>
                                     <Rock:RockTextBox ID="tbNewPersonLastName" runat="server" Label="Last Name" ValidationGroup="modalAddPersonValidationGroup" />
                                 </fieldset>
                             </div>
                         </div>
-                        <div class="row-fluid">
-                            <div class="span4">
+                        <div class="row">
+                            <div class="col-md-4">
                                 <fieldset>
                                     <Rock:RockDropDownList ID="ddlNewPersonGender" runat="server" Label="Gender" />
                                 </fieldset>
                             </div>
-                            <div class="span4">
+                            <div class="col-md-4">
                                 <fieldset>
                                     <Rock:DatePicker ID="dpNewPersonBirthDate" runat="server" Label="Birthdate" />
                                 </fieldset>
                             </div>
                         </div>
-                        <div class="row-fluid">
-                            <div class="span4">
+                        <div class="row">
+                            <div class="col-md-4">
                                 <fieldset>
                                     <Rock:RockRadioButtonList ID="rblNewPersonRole" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Role" />
                                 </fieldset>
@@ -206,7 +206,7 @@
                             enableRequiredField('<%=tbNewPersonLastName.ClientID%>_rfv', false);
                         });
 
-                        $('a[data-toggle="pill"]').on('shown', function (e) {
+                        $('a[data-toggle="pill"]').on('shown.bs.tab', function (e) {
                             var tabHref = $(e.target).attr("href");
                             if (tabHref == '#<%=divExistingPerson.ClientID%>') {
                                 $('#<%=hfActiveTab.ClientID%>').val('Existing');

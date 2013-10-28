@@ -108,6 +108,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets an optional validation group to use.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get { return ViewState["ValidationGroup"] as string; }
+            set { ViewState["ValidationGroup"] = value; }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -269,12 +281,13 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _aFileName );
             _aFileName.ID = "fn";
             _aFileName.Target = "_blank";
+            _aFileName.AddCssClass("file-link");
 
             _aRemove = new HtmlAnchor();
             Controls.Add( _aRemove );
             _aRemove.ID = "rmv";
             _aRemove.HRef = "#";
-            _aRemove.InnerText = "Remove";
+            _aRemove.InnerHtml = "<i class='icon-remove'></i>";
             _aRemove.Attributes["class"] = "remove-file";
 
             _fileUpload = new FileUpload();
@@ -290,13 +303,10 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                // make a named div so we have an area to limit the drag/drop to
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fileupload-drop-zone" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
                 RockControlHelper.RenderControl( this, writer );
 
-                writer.RenderEndTag();
+                
+                
             }
         }
 
@@ -307,35 +317,53 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            writer.AddAttribute("class", "fileupload-group");
+            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+
+
             if ( BinaryFileId != null )
             {
                 _aFileName.HRef = string.Format( "{0}GetFile.ashx?id={1}", ResolveUrl( "~" ), BinaryFileId );
                 _aFileName.InnerText = new BinaryFileService().Queryable().Where( f => f.Id == BinaryFileId ).Select( f => f.FileName ).FirstOrDefault();
-                _aFileName.Style[HtmlTextWriterStyle.Display] = "inline";
+                _aFileName.AddCssClass("file-exists");
                 _aRemove.Style[HtmlTextWriterStyle.Display] = "inline";
             }
             else
             {
                 _aFileName.HRef = string.Empty;
                 _aFileName.InnerText = string.Empty;
-                _aFileName.Style[HtmlTextWriterStyle.Display] = "none";
+                _aFileName.RemoveCssClass("file-exists");
                 _aRemove.Style[HtmlTextWriterStyle.Display] = "none";
             }
 
+            writer.AddAttribute("class", "fileupload-thumbnail");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _hfBinaryFileId.RenderControl( writer );
             _hfBinaryFileTypeGuid.RenderControl( writer );
             _aFileName.RenderControl( writer );
-            writer.Write( " " );
-            _aRemove.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            _fileUpload.Attributes["name"] = string.Format( "{0}[]", this.ID );
-            _fileUpload.RenderControl( writer );
+            writer.AddAttribute("class", "fileupload-remove");
+            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+            _aRemove.RenderControl(writer);
+            writer.RenderEndTag();
+
+
+            // render drop zone
+            writer.AddAttribute(HtmlTextWriterAttribute.Class, "fileupload-dropzone");
+            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+
+            writer.RenderBeginTag(HtmlTextWriterTag.Span);
+            writer.Write("drop / click to upload");
+            writer.RenderEndTag();
+
+            _fileUpload.Attributes["name"] = string.Format("{0}[]", this.ID);
+            _fileUpload.RenderControl(writer);
             writer.RenderEndTag();
 
             RegisterStartupScript();
+
+            writer.RenderEndTag();
         }
 
         /// <summary>
@@ -381,6 +409,7 @@ Rock.controls.fileUploader.initialize({{
             set
             {
                 base.Enabled = value;
+                EnsureChildControls();
                 _fileUpload.Visible = value;
                 _aRemove.Visible = value;
             }

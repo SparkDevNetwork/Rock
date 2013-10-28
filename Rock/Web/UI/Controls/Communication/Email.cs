@@ -196,10 +196,10 @@ namespace Rock.Web.UI.Controls.Communication
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row-fluid" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             tbFromName.RenderControl( writer );
             tbFromAddress.RenderControl( writer );
@@ -207,7 +207,7 @@ namespace Rock.Web.UI.Controls.Communication
             tbSubject.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             fuAttachments.RenderControl( writer );
             hfAttachments.RenderControl( writer );
@@ -247,10 +247,10 @@ namespace Rock.Web.UI.Controls.Communication
 
             writer.RenderEndTag();  // row-fluid div
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row-fluid" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span12" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-12" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             htmlMessage.RenderControl( writer );
             tbTextMessage.RenderControl( writer );

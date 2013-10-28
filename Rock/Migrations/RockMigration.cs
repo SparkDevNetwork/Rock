@@ -187,7 +187,7 @@ namespace Rock.Migrations
             Sql( string.Format( @"
 
                 DECLARE @SiteId int
-                SET @LayoutId = (SELECT [Id] FROM [Site] WHERE [SiteID] = '{0}')
+                SET @SiteId = (SELECT [Id] FROM [Site] WHERE [Guid] = '{0}')
                         
                 INSERT INTO [Layout] (
                     [IsSystem],[SiteId],[FileName],[Name],[Description],[Guid])
