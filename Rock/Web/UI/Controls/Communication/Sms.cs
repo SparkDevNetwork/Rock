@@ -23,7 +23,7 @@ namespace Rock.Web.UI.Controls.Communication
     {
         #region UI Controls
 
-        private RockTextBox tbFromPhone;
+        private RockDropDownList ddlFrom;
         private RockTextBox tbTextMessage;
 
         #endregion
@@ -35,7 +35,9 @@ namespace Rock.Web.UI.Controls.Communication
         /// </summary>
         public Sms()
         {
-            tbFromPhone = new RockTextBox();
+            ddlFrom = new RockDropDownList();
+            ddlFrom.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ) );
+
             tbTextMessage = new RockTextBox();
         }
 
@@ -54,14 +56,14 @@ namespace Rock.Web.UI.Controls.Communication
             get
             {
                 var data = new Dictionary<string, string>();
-                data.Add( "FromPhone", tbFromPhone.Text );
+                data.Add( "FromValue", ddlFrom.SelectedValue );
                 data.Add( "Subject", tbTextMessage.Text );
                 return data;
             }
 
             set
             {
-                tbFromPhone.Text = GetDataValue( value, "FromPhone" );
+                ddlFrom.SelectedValue = GetDataValue( value, "FromValue" );
                 tbTextMessage.Text = GetDataValue( value, "Subject" );
             }
         }
@@ -78,9 +80,9 @@ namespace Rock.Web.UI.Controls.Communication
             base.CreateChildControls();
             Controls.Clear();
 
-            tbFromPhone.ID = string.Format( "tbFromName_{0}", this.ID );
-            tbFromPhone.Label = "From Phone Number";
-            Controls.Add( tbFromPhone );
+            ddlFrom.ID = string.Format( "ddlFrom_{0}", this.ID );
+            ddlFrom.Label = "From";
+            Controls.Add( ddlFrom );
 
             tbTextMessage.ID = string.Format( "tbTextMessage_{0}", this.ID );
             tbTextMessage.Label = "Message";
@@ -104,7 +106,7 @@ namespace Rock.Web.UI.Controls.Communication
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            tbFromPhone.RenderControl( writer );
+            ddlFrom.RenderControl( writer );
             tbTextMessage.RenderControl( writer );
         }
 
