@@ -876,6 +876,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Creates a new child table.
+        /// </summary>
+        /// <returns>
+        /// Always returns a new <see cref="T:System.Web.UI.WebControls.Table" /> that represents the child table.
+        /// </returns>
+        protected override Table CreateChildTable()
+        {
+            _table = base.CreateChildTable();
+            return _table;
+        }
+
+        /// <summary>
         /// Creates the control hierarchy used to render the <see cref="T:System.Web.UI.WebControls.GridView"/> control using the specified data source.
         /// </summary>
         /// <param name="dataSource">An <see cref="T:System.Collections.IEnumerable"/> that contains the data source for the <see cref="T:System.Web.UI.WebControls.GridView"/> control.</param>
