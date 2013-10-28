@@ -17,11 +17,11 @@ namespace Rock.Model
     public partial class CommunicationRecipientService 
     {
         /// <summary>
-        /// Gets the specified communication id.
+        /// Returns a queryable collection of <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> by <see cref="Rock.Model.Communication"/> and <see cref="Rock.Model.CommunicationRecipientStatus"/>
         /// </summary>
-        /// <param name="communicationId">The communication id.</param>
-        /// <param name="status">The status.</param>
-        /// <returns></returns>
+        /// <param name="communicationId">A <see cref="System.Int32"/> representing the CommunicationId of the <see cref="Rock.Model.Communication"/> to search by.</param>
+        /// <param name="status">A <see cref="Rock.Model.CommunicationRecipientStatus"/> Enum value representing the status of the communication submission.</param>
+        /// <returns>A queryable collection of <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> for the specified <see cref="Rock.Model.Communication"/> and <see cref="Rock.Model.CommunicationRecipientStatus"/></returns>
         public IQueryable<Rock.Model.CommunicationRecipient> Get( int communicationId, CommunicationRecipientStatus status )
         {
             return Repository.AsQueryable()
@@ -31,10 +31,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the by communication id.
+        /// Gets a queryable collection of <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> by <see cref="Rock.Model.Communication"/>.
         /// </summary>
-        /// <param name="communicationId">The communication id.</param>
-        /// <returns></returns>
+        /// <param name="communicationId">A <see cref="System.Int32"/> representing the CommunicationId of a  <see cref="Rock.Model.Communication"/> to search by.</param>
+        /// <returns><A queryable collection of <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> for the specified <see cref="Rock.Model.Communication"/>.</returns>
         public IQueryable<Rock.Model.CommunicationRecipient> GetByCommunicationId( int communicationId )
         {
             return Repository.AsQueryable()
