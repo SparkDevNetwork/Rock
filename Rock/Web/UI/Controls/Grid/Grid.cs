@@ -35,7 +35,7 @@ namespace Rock.Web.UI.Controls
         private Table _table;
         private GridViewRow _actionRow;
         private GridActions _gridActions;
-        private Dictionary<int, string> _dataBoundColumns = new Dictionary<int, string>();
+        private Dictionary<int, string> _rowSelectedColumns = new Dictionary<int, string>();
 
         #region Properties
 
@@ -751,13 +751,30 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.DataBinding" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnDataBinding( EventArgs e )
+        {
+            // Get the css class for any column that does not implement the INotRowSelectedField
+            _rowSelectedColumns = new Dictionary<int, string>();
+            for ( int i = 0; i < this.Columns.Count; i++ )
+            {
+                if ( !( this.Columns[i] is INotRowSelectedField ) )
+                {
+                    _rowSelectedColumns.Add( i, this.Columns[i].ItemStyle.CssClass );
+                }
+            }
+
+            base.OnDataBinding( e );
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.WebControls.BaseDataBoundControl.DataBound"/> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
         protected override void OnDataBound( EventArgs e )
         {
-
-
             base.OnDataBound( e );
 
             // Get ItemCount
@@ -848,40 +865,14 @@ namespace Rock.Web.UI.Controls
             {
                 string clickUrl = Page.ClientScript.GetPostBackClientHyperlink( this, "RowSelected$" + e.Row.RowIndex );
 
-                for ( int i = 0; i < e.Row.Cells.Count; i++ )
+                foreach ( var col in _rowSelectedColumns)
                 {
-                    if ( _dataBoundColumns.ContainsKey( i ) )
-                    {
-                        var cell = e.Row.Cells[i];
-                        cell.AddCssClass( _dataBoundColumns[i] );
-                        cell.AddCssClass( "grid-select-cell" );
-                        cell.Attributes["onclick"] = clickUrl;
-                    }
+                    var cell = e.Row.Cells[col.Key];
+                    cell.AddCssClass( col.Value );
+                    cell.AddCssClass( "grid-select-cell" );
+                    cell.Attributes["onclick"] = clickUrl;
                 }
             }
-        }
-
-        /// <summary>
-        /// Creates a new child table.
-        /// </summary>
-        /// <returns>
-        /// Always returns a new <see cref="T:System.Web.UI.WebControls.Table"/> that represents the child table.
-        /// </returns>
-        protected override Table CreateChildTable()
-        {
-            _table = base.CreateChildTable();
-
-            _dataBoundColumns = new Dictionary<int, string>();
-            for ( int i = 0; i < this.Columns.Count; i++ )
-            {
-                BoundField column = this.Columns[i] as BoundField;
-                if ( column != null && !( column is INotRowSelectedField ) )
-                {
-                    _dataBoundColumns.Add( i, column.ItemStyle.CssClass );
-                }
-            }
-
-            return _table;
         }
 
         /// <summary>
@@ -1436,6 +1427,7 @@ namespace Rock.Web.UI.Controls
 
                 ItemLink[i] = new LinkButton();
                 ItemLinkListItem[i].Controls.Add( ItemLink[i] );
+                ItemLink[i].CausesValidation = false;
                 ItemLink[i].Click += new EventHandler( lbItems_Click );
             }
 
