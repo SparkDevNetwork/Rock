@@ -7696,10 +7696,10 @@ body {
 .attended h1,
 .attended h2,
 .attended h3,
-.attended .grid-table thead tr,
 .attended .checkin-header {
   text-align: center;
   margin-top: 2%;
+  font-size: 1.75em;
 }
 .attended .checkin-body {
   text-align: center;
@@ -7725,14 +7725,13 @@ body {
 .attended .btn-primary:active[disabled] {
   background: #1b0e0e;
 }
-.attended .input {
+.attended .checkin-phone-entry {
   font-weight: 600;
-  font-size: 2em;
-  height: 1.5em;
   margin-top: 25%;
+  width: 100%;
 }
 .attended .nothing-eligible {
-  background: rgba(100, 100, 100, 0.1);
+  background: rgba(0, 0, 0, 0.25);
   font-size: 1.5em;
   border-radius: 6px;
   padding: 1em 1.7857em;
@@ -7786,7 +7785,7 @@ body {
   top: 0;
 }
 .attended.modal-foreground {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.9);
   width: 80%;
   height: 80%;
   -moz-border-radius: 10px;
@@ -7813,11 +7812,6 @@ body {
 }
 .attended input[type="text"].note {
   width: 65%;
-}
-.attended .k-datepicker {
-  margin-bottom: 10px;
-  display: block;
-  width: 100%;
 }
 .attended .help-inline {
   color: #1b0e0e;

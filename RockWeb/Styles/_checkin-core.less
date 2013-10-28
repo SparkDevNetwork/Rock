@@ -287,11 +287,11 @@ body {
 }
 
 .attended h1, .attended h2, .attended h3,
-.attended .grid-table thead tr,
 .attended .checkin-header
 {
     text-align: center;
     margin-top: 2%;
+	font-size: 1.75em;
 }
 
 .attended .checkin-body 
@@ -326,17 +326,16 @@ body {
     background: darken(@btn-primary-bg, 15%); 
 }
 
-.attended .input 
+.attended .checkin-phone-entry 
 {
     font-weight: @font-weight-semibold;
-    font-size: 2em;
-    height: 1.5em;
     margin-top: 25%;
+    width: 100%;
 }
 
 .attended .nothing-eligible
 {
-	background: rgba(100, 100, 100, .1);
+	background: rgba(0, 0, 0, .25);
     font-size: 1.5em;
     border-radius: 6px;    
     padding: 1em 1.7857em;   
@@ -362,7 +361,7 @@ body {
 
 .attended .selected-grid .grid-table 
 {
-    font-size: 1.25em;
+	font-size: 1.25em;
     background: rgba(0, 0, 0, .25);
     margin-bottom: 5%;
     -webkit-border-radius: 5px;
@@ -402,7 +401,7 @@ body {
 
 .attended.modal-foreground
 {
-    background: rgba(255,255,255,.8);
+    background: rgba(255,255,255,.9);
     width: 80%;
     height: 80%;
     -moz-border-radius: 10px;
@@ -441,13 +440,6 @@ body {
     width: 65%;
 }
 
-.attended .k-datepicker
-{
-    margin-bottom: 10px;
-    display: block;
-    width: 100%;
-}
-
 .attended .help-inline 
 {
     color: darken(@btn-primary-bg, 15%);
@@ -464,4 +456,9 @@ body {
 {
     width: 75%;
     margin: 0 auto;
+}
+
+.attended.modal-foreground .checkin-body .row
+{
+    margin-bottom: 10px;
 }

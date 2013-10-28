@@ -27,13 +27,21 @@ namespace Rock.Rest.Controllers
         public void AddRoutes( System.Web.Routing.RouteCollection routes )
         {
             routes.MapHttpRoute(
+                name: "PeopleSearchParam",
+                routeTemplate: "api/People/Search",
+                defaults: new
+                {
+                    controller = "People",
+                    action = "Search"
+                } );
+            
+            routes.MapHttpRoute(
                 name: "PeopleSearch",
                 routeTemplate: "api/People/Search/{name}/{includeHtml}",
                 defaults: new
                 {
                     controller = "People",
-                    action = "Search",
-                    includeHtml = RouteParameter.Optional
+                    action = "Search"
                 } );
 
             routes.MapHttpRoute(
@@ -62,7 +70,18 @@ namespace Rock.Rest.Controllers
         /// <param name="name">The name.</param>
         /// <returns></returns>
         [HttpGet]
-        public IQueryable<PersonSearchResult> Search( string name, bool includeHtml = true)
+        public IQueryable<PersonSearchResult> Search( string name)
+        {
+            return Search( name, false );
+        }
+
+        /// <summary>
+        /// Searches the specified name.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        [HttpGet]
+        public IQueryable<PersonSearchResult> Search( string name, bool includeHtml)
         {
             int count = 20;
             bool lastFirst;
@@ -73,7 +92,7 @@ namespace Rock.Rest.Controllers
 
             var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
             string imageUrlFormat = string.Format( "<image src='{0}' />", Path.Combine( appPath, "GetImage.ashx?id={0}&width=25&height=25" ) );
-            string imageNoPhoto = string.Format("<image src='{0}' />", Path.Combine( appPath, "/Assets/images/person-no-photo.jpg" ));
+            string imageNoPhoto = string.Format("<image src='{0}' />", Path.Combine(appPath, "/Assets/images/person-no-photo.svg"));
             string itemDetailFormat = @"
 <div class='picker-select-item-details clearfix' style='display: none;'>
 	{0}
@@ -190,7 +209,7 @@ namespace Rock.Rest.Controllers
 
                 searchResult.Add( personSearchResult );
             }
-
+            
             return searchResult.AsQueryable();
         }
 
@@ -229,7 +248,7 @@ namespace Rock.Rest.Controllers
             {
                 var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
                 string imageUrlFormat = Path.Combine( appPath, "GetImage.ashx?id={0}&width=37&height=37" );
-                string imageNoPhoto = Path.Combine( appPath, "Assets/images/person-no-photo.jpg" );
+                string imageNoPhoto = Path.Combine(appPath, "Assets/images/person-no-photo.svg");
                 html.AppendFormat( "<header><img src='{0}'/> <div>{1}<small>{2}</small></div></header>",
                     person.PhotoId.HasValue ? string.Format( imageUrlFormat, person.PhotoId.Value ) : imageNoPhoto,
                     person.FullName,

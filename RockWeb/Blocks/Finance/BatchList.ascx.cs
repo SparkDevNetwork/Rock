@@ -162,14 +162,6 @@ namespace RockWeb.Blocks.Finance.Administration
         /// </summary>
         private void BindFilter()
         {
-            DateTime fromDate;
-            if ( !DateTime.TryParse( rFBFilter.GetUserPreference( "From Date" ), out fromDate ) )
-            {
-                fromDate = DateTime.Today;
-                rFBFilter.SaveUserPreference( "From Date", fromDate.ToShortDateString() );
-            }
-            dtBatchDate.Text = fromDate.ToShortDateString();
-
             string titleFilter = rFBFilter.GetUserPreference( "Title" );
             txtTitle.Text = !string.IsNullOrWhiteSpace( titleFilter ) ? titleFilter : string.Empty;
 

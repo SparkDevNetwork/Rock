@@ -1,6 +1,21 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true"  %>
+﻿<%@ Master Language="C#" AutoEventWireup="true" %>
 <%@ Import Namespace="System.Web.Optimization" %>
 <!DOCTYPE html>
+
+<script runat="server">
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
+    {
+        base.OnInit( e );
+        
+        //
+    }    
+    
+</script>
 
 <html>
 <head runat="server">
@@ -18,7 +33,6 @@
     <asp:ContentPlaceHolder ID="css" runat="server" />
 
 	<!-- Included CSS Files -->
-	<link rel="stylesheet" href="<%# ResolveUrl("~/Styles/Kendo/kendo.common.min.css") %>"/>
 	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/GrayFabric/Styles/theme.css") %>"/>
     <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/GrayFabric/Styles/flexslider.css") %>"/>
 	<link rel="stylesheet" href="<%# ResolveUrl("~/Styles/developer.css") %>"/>

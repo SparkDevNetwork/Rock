@@ -81,20 +81,29 @@ namespace Rock.Model
             else
             {
                 var target = new Workflow();
-                target.WorkflowTypeId = source.WorkflowTypeId;
-                target.Name = source.Name;
-                target.Description = source.Description;
-                target.Status = source.Status;
-                target.IsProcessing = source.IsProcessing;
-                target.ActivatedDateTime = source.ActivatedDateTime;
-                target.LastProcessedDateTime = source.LastProcessedDateTime;
-                target.CompletedDateTime = source.CompletedDateTime;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another Workflow object to this Workflow object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this Workflow target, Workflow source )
+        {
+            target.WorkflowTypeId = source.WorkflowTypeId;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.Status = source.Status;
+            target.IsProcessing = source.IsProcessing;
+            target.ActivatedDateTime = source.ActivatedDateTime;
+            target.LastProcessedDateTime = source.LastProcessedDateTime;
+            target.CompletedDateTime = source.CompletedDateTime;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

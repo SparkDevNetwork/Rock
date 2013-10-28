@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Model;
 using Rock.Data;
@@ -16,6 +17,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Site = Rock.Model.Site;
 using Rock.Constants;
+using Rock.Web;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -25,6 +27,17 @@ namespace RockWeb.Blocks.Administration
     public partial class SiteDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", Rock.Model.Site.FriendlyTypeName );
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -54,13 +67,45 @@ namespace RockWeb.Blocks.Administration
         #region Edit Events
 
         /// <summary>
-        /// Handles the Click event of the btnCancel control.
+        /// Handles the Click event of the btnEdit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
+        protected void btnEdit_Click( object sender, EventArgs e )
         {
+            var site = new SiteService().Get( int.Parse( hfSiteId.Value ) );
+            ShowEditDetails( site );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnDelete_Click( object sender, EventArgs e )
+        {
+            RockTransactionScope.WrapTransaction( () =>
+            {
+                SiteService siteService = new SiteService();
+                Site site = siteService.Get( int.Parse( hfSiteId.Value ) );
+                if ( site != null )
+                {
+                    string errorMessage;
+                    if ( !siteService.CanDelete( site, out errorMessage ) )
+                    {
+                        mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
+
+                    siteService.Delete( site, CurrentPersonId );
+                    siteService.Save( site, CurrentPersonId );
+
+                    SiteCache.Flush( site.Id );
+                }
+            } );
+
             NavigateToParentPage();
+
         }
 
         /// <summary>
@@ -70,9 +115,10 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            Site site;
+
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                Site site;
                 SiteService siteService = new SiteService();
                 SiteDomainService siteDomainService = new SiteDomainService();
                 bool newSite = false;
@@ -95,7 +141,11 @@ namespace RockWeb.Blocks.Administration
                 site.Theme = ddlTheme.Text;
                 site.DefaultPageId = ppDefaultPage.PageId ?? 0;
                 site.DefaultPageRouteId = ppDefaultPage.PageRouteId;
-                site.LoginPageReference = tbLoginPageReference.Text;
+                site.LoginPageId = ppLoginPage.PageId;
+                site.LoginPageRouteId = ppLoginPage.PageRouteId;
+                site.RegistrationPageId = ppRegistrationPage.PageId;
+                site.RegistrationPageRouteId = ppRegistrationPage.PageRouteId;
+                site.ErrorPage = tbErrorPage.Text;
 
                 var currentDomains = tbSiteDomains.Text.SplitDelimitedValues().ToList<string>();
                 site.SiteDomains = site.SiteDomains ?? new List<SiteDomain>();
@@ -123,8 +173,6 @@ namespace RockWeb.Blocks.Administration
                 site.AppleTouchIconUrl = tbAppleTouchIconUrl.Text;
                 site.FacebookAppId = tbFacebookAppId.Text;
                 site.FacebookAppSecret = tbFacebookAppSecret.Text;
-                site.RegistrationPageReference = tbRegistrationPageReference.Text;
-                site.ErrorPage = tbErrorPage.Text;
 
                 if ( !site.IsValid )
                 {
@@ -145,7 +193,30 @@ namespace RockWeb.Blocks.Administration
                 SiteCache.Flush( site.Id );
             }
 
-            NavigateToParentPage();
+            var qryParams = new Dictionary<string, string>();
+            qryParams["siteId"] = site.Id.ToString();
+
+            NavigateToPage( this.CurrentPage.Guid, qryParams );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            if ( hfSiteId.Value.Equals( "0" ) )
+            {
+                // Cancelling on Add return to site list
+                NavigateToParentPage();
+            }
+            else
+            {
+                // Cancelling on edit, return to details
+                var site = new SiteService().Get( int.Parse( hfSiteId.Value ) );
+                ShowReadonlyDetails( site );
+            }
         }
 
         #endregion
@@ -158,7 +229,7 @@ namespace RockWeb.Blocks.Administration
         private void LoadDropDowns()
         {
             ddlTheme.Items.Clear();
-            DirectoryInfo di = new DirectoryInfo( this.Page.Request.MapPath( this.CurrentTheme ) );
+            DirectoryInfo di = new DirectoryInfo( this.Page.Request.MapPath( ResolveRockUrl("~~") ) );
             foreach ( var themeDir in di.Parent.EnumerateDirectories().OrderBy( a => a.Name ) )
             {
                 ddlTheme.Items.Add( new ListItem( themeDir.Name, themeDir.Name ) );
@@ -171,54 +242,34 @@ namespace RockWeb.Blocks.Administration
         /// <param name="siteId">The site id.</param>
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
+            pnlDetails.Visible = false;
+
             if ( !itemKey.Equals( "siteId" ) )
             {
                 return;
             }
 
-            pnlDetails.Visible = true;
             Site site = null;
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 site = new SiteService().Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( Rock.Model.Site.FriendlyTypeName );
             }
             else
             {
                 site = new Site { Id = 0 };
                 site.SiteDomains = new List<SiteDomain>();
                 site.Theme = CurrentPage.Layout.Site.Theme;
-                lActionTitle.Text = ActionTitle.Add( Rock.Model.Site.FriendlyTypeName );
             }
 
-            LoadDropDowns();
+            if ( site == null )
+            {
+                return;
+            }
 
+            pnlDetails.Visible = true;
             hfSiteId.Value = site.Id.ToString();
 
-            tbSiteName.Text = site.Name;
-            tbDescription.Text = site.Description;
-            ddlTheme.SetValue( site.Theme );
-            if ( site.DefaultPageRoute != null )
-            {
-                ppDefaultPage.SetValue( site.DefaultPageRoute );
-            }
-            else
-            {
-                ppDefaultPage.SetValue( site.DefaultPage );
-            }
-
-            tbLoginPageReference.Text = site.LoginPageReference;
-
-            tbSiteDomains.Text = string.Join( "\n", site.SiteDomains.Select( dom => dom.Domain ).ToArray() );
-            tbFaviconUrl.Text = site.FaviconUrl;
-            tbAppleTouchIconUrl.Text = site.AppleTouchIconUrl;
-            tbFacebookAppId.Text = site.FacebookAppId;
-            tbFacebookAppSecret.Text = site.FacebookAppSecret;
-            tbRegistrationPageReference.Text = site.RegistrationPageReference;
-            tbErrorPage.Text = site.ErrorPage;
-
-            // render UI based on Authorized and IsSystem
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
@@ -230,30 +281,125 @@ namespace RockWeb.Blocks.Administration
 
             if ( site.IsSystem )
             {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Rock.Model.Site.FriendlyTypeName );
+                nbEditModeMessage.Text = EditModeMessage.System( Rock.Model.Site.FriendlyTypeName );
             }
 
             if ( readOnly )
             {
-                lActionTitle.Text = ActionTitle.View( Rock.Model.Site.FriendlyTypeName );
-                btnCancel.Text = "Close";
+                btnEdit.Visible = false;
+                btnDelete.Visible = false;
+                ShowReadonlyDetails( site );
+            }
+            else
+            {
+                btnEdit.Visible = true;
+                btnDelete.Visible = !site.IsSystem;
+                if ( site.Id > 0 )
+                {
+                    ShowReadonlyDetails( site );
+                }
+                else
+                {
+                    ShowEditDetails( site );
+                }
             }
 
-            tbSiteName.ReadOnly = readOnly;
-            tbDescription.ReadOnly = readOnly;
-            ddlTheme.Enabled = !readOnly;
-            tbLoginPageReference.ReadOnly = readOnly;
-            ppDefaultPage.Enabled = !readOnly;
-            tbSiteDomains.ReadOnly = readOnly;
-            tbFaviconUrl.ReadOnly = readOnly;
-            tbAppleTouchIconUrl.ReadOnly = readOnly;
-            tbFacebookAppId.ReadOnly = readOnly;
-            tbFacebookAppSecret.ReadOnly = readOnly;
-            tbRegistrationPageReference.ReadOnly = readOnly;
-            tbErrorPage.ReadOnly = readOnly;
+        }
 
-            btnSave.Visible = !readOnly;
+        /// <summary>
+        /// Shows the edit details.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        private void ShowEditDetails( Rock.Model.Site site )
+        {
+            if ( site.Id == 0 )
+            {
+                lReadOnlyTitle.Text = ActionTitle.Add(Rock.Model.Site.FriendlyTypeName).FormatAsHtmlTitle();
+            }
+            else
+            {
+                lReadOnlyTitle.Text = site.Name.FormatAsHtmlTitle();
+            }
+
+            SetEditMode( true );
+
+            LoadDropDowns();
+
+            tbSiteName.ReadOnly = site.IsSystem;
+            tbSiteName.Text = site.Name;
+
+            tbDescription.ReadOnly = site.IsSystem;
+            tbDescription.Text = site.Description;
+
+            ddlTheme.Enabled = !site.IsSystem;
+            ddlTheme.SetValue( site.Theme );
+
+            if ( site.DefaultPageRoute != null )
+            {
+                ppDefaultPage.SetValue( site.DefaultPageRoute );
+            }
+            else
+            {
+                ppDefaultPage.SetValue( site.DefaultPage );
+            }
+
+            if ( site.LoginPageRoute != null )
+            {
+                ppLoginPage.SetValue( site.LoginPageRoute );
+            }
+            else
+            {
+                ppLoginPage.SetValue( site.LoginPage );
+            }
+
+            if ( site.RegistrationPageRoute != null )
+            {
+                ppRegistrationPage.SetValue( site.RegistrationPageRoute );
+            }
+            else
+            {
+                ppRegistrationPage.SetValue( site.RegistrationPage );
+            }
+
+            tbErrorPage.Text = site.ErrorPage;
+
+            tbSiteDomains.Text = string.Join( "\n", site.SiteDomains.Select( dom => dom.Domain ).ToArray() );
+            tbFaviconUrl.Text = site.FaviconUrl;
+            tbAppleTouchIconUrl.Text = site.AppleTouchIconUrl;
+            tbFacebookAppId.Text = site.FacebookAppId;
+            tbFacebookAppSecret.Text = site.FacebookAppSecret;
+        }
+
+        /// <summary>
+        /// Shows the readonly details.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        private void ShowReadonlyDetails( Rock.Model.Site site )
+        {
+            SetEditMode( false );
+
+            hfSiteId.SetValue( site.Id );
+            lReadOnlyTitle.Text = site.Name.FormatAsHtmlTitle();
+
+            lSiteDescription.Text = site.Description;
+
+            DescriptionList descriptionList = new DescriptionList();
+            descriptionList.Add( "Domain(s)", site.SiteDomains.Select( d=> d.Domain ).ToList().AsDelimited(", "));
+            descriptionList.Add( "Theme", site.Theme );
+            descriptionList.Add( "Default Page", site.DefaultPageRoute );
+            lblMainDetails.Text = descriptionList.Html;
+        }
+
+        /// <summary>
+        /// Sets the edit mode.
+        /// </summary>
+        /// <param name="editable">if set to <c>true</c> [editable].</param>
+        private void SetEditMode( bool editable )
+        {
+            pnlEditDetails.Visible = editable;
+            fieldsetViewDetails.Visible = !editable;
+
+            this.DimOtherBlocks( editable );
         }
 
         #endregion

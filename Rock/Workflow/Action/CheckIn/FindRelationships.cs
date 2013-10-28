@@ -42,7 +42,7 @@ namespace Rock.Workflow.Action.CheckIn
             {
                 roles = new List<int>();
 
-                foreach ( var role in new GroupRoleService().Queryable()
+                foreach ( var role in new GroupTypeRoleService().Queryable()
                     .Where( r => r.GroupType.Guid.Equals( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ) ) ) )
                 {
                     role.LoadAttributes();

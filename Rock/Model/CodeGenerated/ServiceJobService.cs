@@ -81,27 +81,36 @@ namespace Rock.Model
             else
             {
                 var target = new ServiceJob();
-                target.IsSystem = source.IsSystem;
-                target.IsActive = source.IsActive;
-                target.Name = source.Name;
-                target.Description = source.Description;
-                target.Assembly = source.Assembly;
-                target.Class = source.Class;
-                target.CronExpression = source.CronExpression;
-                target.LastSuccessfulRunDateTime = source.LastSuccessfulRunDateTime;
-                target.LastRunDateTime = source.LastRunDateTime;
-                target.LastRunDurationSeconds = source.LastRunDurationSeconds;
-                target.LastStatus = source.LastStatus;
-                target.LastStatusMessage = source.LastStatusMessage;
-                target.LastRunSchedulerName = source.LastRunSchedulerName;
-                target.NotificationEmails = source.NotificationEmails;
-                target.NotificationStatus = source.NotificationStatus;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another ServiceJob object to this ServiceJob object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this ServiceJob target, ServiceJob source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.IsActive = source.IsActive;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.Assembly = source.Assembly;
+            target.Class = source.Class;
+            target.CronExpression = source.CronExpression;
+            target.LastSuccessfulRunDateTime = source.LastSuccessfulRunDateTime;
+            target.LastRunDateTime = source.LastRunDateTime;
+            target.LastRunDurationSeconds = source.LastRunDurationSeconds;
+            target.LastStatus = source.LastStatus;
+            target.LastStatusMessage = source.LastStatusMessage;
+            target.LastRunSchedulerName = source.LastRunSchedulerName;
+            target.NotificationEmails = source.NotificationEmails;
+            target.NotificationStatus = source.NotificationStatus;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

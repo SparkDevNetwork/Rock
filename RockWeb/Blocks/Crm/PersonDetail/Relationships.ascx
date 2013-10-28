@@ -2,7 +2,7 @@
 <asp:UpdatePanel ID="upEditFamily" runat="server">
     <ContentTemplate>
 
-        <section class="panel panel-default">
+        <section class="panel panel-persondetails">
 
             <div class="panel-heading clearfix">
                 <h3 class="panel-title pull-left">
@@ -10,7 +10,7 @@
                     <asp:Literal ID="lGroupName" runat="server"></asp:Literal></h3>
                 <asp:PlaceHolder ID="phEditActions" runat="server">
                     <div class="actions pull-right">
-                        <asp:LinkButton ID="lbAdd" runat="server" CssClass="edit" Text="Add Relationship" OnClick="lbAdd_Click"><i class="icon-plus"></i></asp:LinkButton>
+                        <asp:LinkButton ID="lbAdd" runat="server" CssClass="edit" Text="Add Relationship" OnClick="lbAdd_Click" CausesValidation="false"><i class="icon-plus"></i></asp:LinkButton>
                     </div>
                 </asp:PlaceHolder>
             </div>
@@ -42,7 +42,7 @@
 
                     <div id="divExistingPerson" runat="server">
                         <fieldset>
-                            <Rock:GroupRolePicker ID="grpRole" runat="server" Label="Relationship Type" Required="true" />
+                            <Rock:GroupRolePicker ID="grpRole" runat="server" Label="Relationship Type"  />
                             <Rock:PersonPicker2 ID="ppPerson" runat="server" />
                         </fieldset>
                     </div>

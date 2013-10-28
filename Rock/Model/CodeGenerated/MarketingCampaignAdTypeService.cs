@@ -87,15 +87,24 @@ namespace Rock.Model
             else
             {
                 var target = new MarketingCampaignAdType();
-                target.IsSystem = source.IsSystem;
-                target.Name = source.Name;
-                target.DateRangeType = source.DateRangeType;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another MarketingCampaignAdType object to this MarketingCampaignAdType object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this MarketingCampaignAdType target, MarketingCampaignAdType source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.Name = source.Name;
+            target.DateRangeType = source.DateRangeType;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

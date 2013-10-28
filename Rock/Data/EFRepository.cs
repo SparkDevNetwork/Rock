@@ -436,13 +436,17 @@ namespace Rock.Data
 
                         if ( modifiedProperties.Count > 0 )
                         {
-                            audit.DateTime = DateTime.Now;
-                            audit.PersonId = PersonId;
-                            audit.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read(rockEntity.TypeName).Id;
-                            audit.EntityId = rockEntity.Id;
-                            audit.Title = rockEntity.ToString().Truncate( 195 );
-                            audit.Properties = modifiedProperties.AsDelimited( ";" );
-                            audits.Add( audit );
+                            var entityType = Rock.Web.Cache.EntityTypeCache.Read( rockEntity.TypeName, false );
+                            if ( entityType != null )
+                            {
+                                audit.DateTime = DateTime.Now;
+                                audit.PersonId = PersonId;
+                                audit.EntityTypeId = entityType.Id;
+                                audit.EntityId = rockEntity.Id;
+                                audit.Title = rockEntity.ToString().Truncate( 195 );
+                                audit.Properties = modifiedProperties.AsDelimited( ";" );
+                                audits.Add( audit );
+                            }
                         }
                     }
                 }

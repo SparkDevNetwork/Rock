@@ -3,53 +3,53 @@
 <asp:UpdatePanel ID="upExcpetionDetail" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlSummary" runat="server" Visible="false">
-            <fieldset>
-                <legend>Summary</legend>
+            
+            <div class="banner"><h1><asp:Literal id="lPageTitle" runat="server"></asp:Literal></h1></div>
 
-                <div class="row-fluid">
-                    <div class="span6">
-                        <div class="row-fluid">
-                            <div class="span2">
-                                <!-- Site -->
-                            </div>
-                            <div class="span10">
-                                <Rock:RockLiteral Label="Site" ID="lblSite" runat="server" />
-                            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="row">
+                        <div class="col-md-2">
+                            <!-- Site -->
                         </div>
-                        <div class="row-fluid">
-                            <div class="span2">
-                                Page
-                            </div>
-                            <div class="span4">
-                                <Rock:RockLiteral ID="lblPage" runat="server" />
-                            </div>
-                            <div class="span6">
-                                <asp:HyperLink ID="hlPageLink" runat="server" CssClass="btn btn-mini" Target="_blank"><i class="icon-arrow-right"></i></asp:HyperLink>
-                            </div>
+                        <div class="col-md-10">
+                            <Rock:RockLiteral Label="Site" ID="lblSite" runat="server" />
                         </div>
                     </div>
-                    <div class="span6">
-                        <div class="span2">User</div>
-                        <div class="span10">
-                            <Rock:RockLiteral ID="lblUser" runat="server" />
+                    <div class="row">
+                        <div class="col-md-2">
+                            Page
+                        </div>
+                        <div class="col-md-4">
+                            <Rock:RockLiteral ID="lblPage" runat="server" />
+                        </div>
+                        <div class="col-md-6">
+                            <asp:HyperLink ID="hlPageLink" runat="server" CssClass="btn btn-mini" Target="_blank"><i class="icon-arrow-right"></i></asp:HyperLink>
                         </div>
                     </div>
                 </div>
-                <div id="divQueryString" runat="server">
-                    Query String
-                    <div id="divQueryStringList">
-                        <asp:Literal ID="litQueryStringList" runat="server" />
+                <div class="col-md-6">
+                    <div class="col-md-2">User</div>
+                    <div class="col-md-10">
+                        <Rock:RockLiteral ID="lblUser" runat="server" />
                     </div>
                 </div>
-                <div class="row-fluid">
-                    <div class="span2">
-                        <Rock:RockCheckBox ID="cbShowCookies" runat="server" TextAlign="Right" />
-                    </div>
-                    <div class="span2">
-                        <Rock:RockCheckBox ID="cbShowServerVariables" runat="server" TextAlign="Left" />
-                    </div>
+            </div>
+            <div id="divQueryString" runat="server">
+                Query String
+                <div id="divQueryStringList">
+                    <asp:Literal ID="litQueryStringList" runat="server" />
                 </div>
-            </fieldset>
+            </div>
+            <div class="row">
+                <div class="col-md-2">
+                    <Rock:RockCheckBox ID="cbShowCookies" runat="server" TextAlign="Right" />
+                </div>
+                <div class="col-md-2">
+                    <Rock:RockCheckBox ID="cbShowServerVariables" runat="server" TextAlign="Left" />
+                </div>
+            </div>
+
 
             <div id="pnlCookies" style="display: none;">
                 <fieldset>
@@ -67,16 +67,14 @@
             <div id="pnlExceptionDetails">
                 <fieldset>
                     <legend>Details</legend>
-                    <div class="row-fluid">
-                        <asp:Table ID="tblExceptionDetails" runat="server" CssClass="table table-bordered table-striped table-hover">
-                            <asp:TableHeaderRow ID="thRowExceptionDetails"  runat="server">
-                                <asp:TableHeaderCell ID="thExceptionType" runat="server" CssClass="span2" Text="Exception Type" />
-                                <asp:TableHeaderCell ID="thExceptionSource" runat="server" CssClass="span2" Text=" Source" />
-                                <asp:TableHeaderCell ID="thExceptionDescription" runat="server" CssClass="span6" Text="Description" />
-                                <asp:TableHeaderCell ID="thExceptionViewStackTrace" runat="server" CssClass="span2">&nbsp;</asp:TableHeaderCell>
-                            </asp:TableHeaderRow>
-                        </asp:Table>
-                    </div>
+                    <asp:Table ID="tblExceptionDetails" runat="server" CssClass="table table-bordered table-striped table-hover">
+                        <asp:TableHeaderRow ID="thRowExceptionDetails"  runat="server">
+                            <asp:TableHeaderCell ID="thExceptionType" runat="server" Text="Exception Type" />
+                            <asp:TableHeaderCell ID="thExceptionSource" runat="server" Text=" Source" />
+                            <asp:TableHeaderCell ID="thExceptionDescription" runat="server" Text="Description" />
+                            <asp:TableHeaderCell ID="thExceptionViewStackTrace" runat="server">&nbsp;</asp:TableHeaderCell>
+                        </asp:TableHeaderRow>
+                    </asp:Table>
                 </fieldset>
             </div>
         </asp:Panel>

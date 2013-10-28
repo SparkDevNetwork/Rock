@@ -630,7 +630,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
 
             // exclude checkin labels 
             List<string> checkinLabelAttributeNames = GetCheckinLabelAttributes( fakeGroupType ).Select( a => a.Value.Name ).ToList();
-            Rock.Attribute.Helper.AddEditControls( fakeGroupType, _phGroupTypeAttributes, true, checkinLabelAttributeNames );
+            Rock.Attribute.Helper.AddEditControls( fakeGroupType, _phGroupTypeAttributes, true, string.Empty, checkinLabelAttributeNames );
         }
 
         /// <summary>

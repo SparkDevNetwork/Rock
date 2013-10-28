@@ -18,8 +18,8 @@ namespace Rock.Model
         /// Returns a queryable collection of <see cref="Rock.Model.Note">Notes</see> for the specified <see cref="Rock.Model.NoteType"/> and entity.
         /// </summary>
         /// <param name="noteTypeId">A <see cref="System.Int32" /> representing the Id of the <see cref="Rock.Model.NoteType"/>.</param>
-        /// <param name="entityId">TA <see cref="Sytem.Int32"/> representing the Id of the entity that the note belongs to.</param>
-        /// <returns>A queryable collection of <see cref="Rock.Model.Note">Notes</see> for the specified <see cref="System.Mode.NoteType"/> and entity. </returns>
+        /// <param name="entityId">TA <see cref="System.Int32"/> representing the Id of the entity that the note belongs to.</param>
+        /// <returns>A queryable collection of <see cref="Rock.Model.Note">Notes</see> for the specified <see cref="Rock.Model.NoteType"/> and entity. </returns>
         public IQueryable<Note> Get( int noteTypeId, int entityId )
         {
             return Repository.AsQueryable()

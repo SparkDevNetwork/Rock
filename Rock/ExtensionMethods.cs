@@ -262,8 +262,18 @@ namespace Rock
         /// <returns></returns>
         public static string Pluralize( this string str )
         {
-            var pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService( new System.Globalization.CultureInfo( "en-US" ) );
-            return pluralizationService.Pluralize( str );
+            // Pluralization services handles most words, but there are some exceptions (i.e. campus)
+            switch ( str )
+            {
+                case "Campus":
+                case "campus":
+                    return str + "es";
+                case "CAMPUS":
+                    return str + "ES";
+                default:
+                    var pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService( new System.Globalization.CultureInfo( "en-US" ) );
+                    return pluralizationService.Pluralize( str );
+            }
         }
 
         /// <summary>
@@ -763,25 +773,6 @@ namespace Rock
         }
 
         /// <summary>
-        /// Rocks the page.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <returns></returns>
-        public static Rock.Web.UI.RockPage RockPage( this System.Web.UI.Control control )
-        {
-            System.Web.UI.Control parentControl = control.Parent;
-            while ( parentControl != null )
-            {
-                if ( parentControl is Rock.Web.UI.RockPage )
-                {
-                    return (Rock.Web.UI.RockPage)parentControl;
-                }
-                parentControl = parentControl.Parent;
-            }
-            return null;
-        }
-
-        /// <summary>
         /// Parents the update panel.
         /// </summary>
         /// <param name="control">The control.</param>
@@ -903,23 +894,23 @@ namespace Rock
 
         #endregion
 
-        #region DropDownList/ListControl Extensions
+        #region ListControl Extensions
 
         /// <summary>
         /// Try's to set the selected value, if the value does not exist, will set the first item in the list
         /// </summary>
-        /// <param name="ddl">The DDL.</param>
+        /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
-        public static void SetValue( this DropDownList ddl, string value )
+        public static void SetValue( this ListControl listControl, string value )
         {
             try
             {
-                ddl.SelectedValue = value;
+                listControl.SelectedValue = value;
             }
             catch
             {
-                if ( ddl.Items.Count > 0 )
-                    ddl.SelectedIndex = 0;
+                if ( listControl.Items.Count > 0 )
+                    listControl.SelectedIndex = 0;
             }
 
         }
@@ -927,22 +918,22 @@ namespace Rock
         /// <summary>
         /// Sets the read only value.
         /// </summary>
-        /// <param name="ddl">The DDL.</param>
+        /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
-        public static void SetReadOnlyValue( this DropDownList ddl, string value )
+        public static void SetReadOnlyValue( this ListControl listControl, string value )
         {
-            ddl.Items.Clear();
-            ddl.Items.Add( value );
+            listControl.Items.Clear();
+            listControl.Items.Add( value );
         }
 
         /// <summary>
         /// Try's to set the selected value, if the value does not exist, will set the first item in the list
         /// </summary>
-        /// <param name="ddl">The DDL.</param>
+        /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
-        public static void SetValue( this DropDownList ddl, int? value )
+        public static void SetValue( this ListControl listControl, int? value )
         {
-            ddl.SetValue( value == null ? "0" : value.ToString() );
+            listControl.SetValue( value == null ? "0" : value.ToString() );
         }
 
         /// <summary>
@@ -1063,10 +1054,18 @@ namespace Rock
         /// Converts to the enum value to it's string value
         /// </summary>
         /// <param name="eff">The eff.</param>
+        /// <param name="SplitCase">if set to <c>true</c> [split case].</param>
         /// <returns></returns>
-        public static String ConvertToString( this Enum eff )
+        public static String ConvertToString( this Enum eff, bool SplitCase = true )
         {
-            return Enum.GetName( eff.GetType(), eff ).SplitCase();
+            if ( SplitCase )
+            {
+                return Enum.GetName( eff.GetType(), eff ).SplitCase();
+            }
+            else
+            {
+                return Enum.GetName( eff.GetType(), eff );
+            }
         }
 
         /// <summary>

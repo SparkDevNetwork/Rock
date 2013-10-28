@@ -223,17 +223,6 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Gets the full url path to the current theme folder
-        /// </summary>
-        public string CurrentTheme
-        {
-            get
-            {
-                return ResolveUrl( string.Format( "~/Themes/{0}", CurrentPage.Layout.Site.Theme ) );
-            }
-        }
-
-        /// <summary>
         /// Gets the root url path
         /// </summary>
         public string AppPath
@@ -331,9 +320,9 @@ namespace Rock.Web.UI
             // Add library and UI bundles during init, that way theme developers will only
             // need to worry about registering any custom scripts or script bundles they need
             _scriptManager.Scripts.Add( new ScriptReference { Name = "WebFormsBundle" } );
-            _scriptManager.Scripts.Add( new ScriptReference( "~/bundles/RockLibs" ) );
-            _scriptManager.Scripts.Add( new ScriptReference( "~/bundles/RockUi" ) );
-            _scriptManager.Scripts.Add( new ScriptReference( "~/bundles/RockValidation" ) );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockLibs" ) );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockUi" ) );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockValidation" ) );
 
             // Recurse the page controls to find the rock page title and zone controls
             Page.Trace.Warn( "Recursing layout to find zones" );
@@ -430,22 +419,21 @@ namespace Rock.Web.UI
                     if ( user == null )
                     {
                         Page.Trace.Warn( "Redirecting to login page" );
-                        if (!string.IsNullOrWhiteSpace(CurrentPage.Layout.Site.LoginPageReference))
-                        {
-                            // if the QueryString already has a returnUrl, use that, otherwise redirect to RawUrl
-                            string returnUrl = Request.QueryString["returnUrl"] ?? Server.UrlEncode(Request.RawUrl);
-                            
-                            string loginPageRequestPath = ResolveUrl( CurrentPage.Layout.Site.LoginPageReference );
 
-                            if ( loginPageRequestPath.Equals( Request.Path ) )
+                        var site = CurrentPage.Layout.Site;
+                        if ( site.LoginPageId.HasValue )
+                        {
+                            var pageReference = new PageReference( site.LoginPageId.Value );
+                            if ( site.LoginPageRouteId.HasValue )
                             {
-                                // The LoginPage security isn't set to Allow All, so throw exception to prevent recursive loop
-                                throw new Exception( string.Format("Page security for Site.LoginPageReference {0} is invalid", CurrentPage.Layout.Site.LoginPageReference));
+                                pageReference.RouteId = site.LoginPageRouteId.Value;
                             }
-                            else
-                            {
-                                Response.Redirect( loginPageRequestPath + "?returnurl=" + returnUrl );
-                            }
+
+                            var parms = new Dictionary<string, string>();
+                            parms.Add( "returnurl", Request.QueryString["returnUrl"] ?? Server.UrlEncode(Request.RawUrl) );
+                            pageReference.Parameters = parms;
+
+                            Response.Redirect( pageReference.BuildUrl() );
                         }
                         else
                         {
@@ -857,6 +845,7 @@ namespace Rock.Web.UI
             }
         }
 
+        
         #endregion
 
         #region Public Methods
@@ -944,6 +933,23 @@ namespace Rock.Web.UI
             }
         }
 
+        /// <summary>
+        /// Resolves a rock URL.  Similiar to the System.Web.Control.ResolveUrl method except that you can prefix 
+        /// a url with '~~' to indicate a virtual path to Rock's current theme root folder
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns></returns>
+        public string ResolveRockUrl( string url )
+        {
+            string themeUrl = url;
+            if ( url.StartsWith( "~~" ) )
+            {
+                themeUrl = "~/Themes/" + CurrentPage.Layout.Site.Theme + ( url.Length > 2 ? url.Substring( 2 ) : string.Empty );
+            }
+
+            return ResolveUrl( themeUrl );
+        }
+
         #endregion
 
         #region Cms Admin Content
@@ -969,7 +975,7 @@ namespace Rock.Web.UI
         private void AddConfigElements()
         {
             // Add the page admin script
-            AddScriptLink( Page, "~/bundles/RockAdmin" );
+            AddScriptLink( Page, "~/Scripts/Bundles/RockAdmin" );
 
             AddBlockMove();
             // Add Zone Wrappers

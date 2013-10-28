@@ -367,7 +367,7 @@ namespace RockWeb.Blocks.Administration
                         }
                         else
                         {
-                            lValue.Text = string.Format( "<span class='muted'>{0}</span>", fieldType.Field.FormatValue( lValue, attribute.DefaultValue, attribute.QualifierValues, true ) );
+                            lValue.Text = string.Format( "<span class='text-muted'>{0}</span>", fieldType.Field.FormatValue( lValue, attribute.DefaultValue, attribute.QualifierValues, true ) );
                         }
                     }
                 }
@@ -608,6 +608,8 @@ namespace RockWeb.Blocks.Administration
 
             if ( attributeModel == null )
             {
+                lAttributeTitle.Text = ("Add Attribute").FormatAsHtmlTitle();
+
                 attributeModel = new Rock.Model.Attribute();
 
                 if ( !_configuredType )
@@ -627,6 +629,7 @@ namespace RockWeb.Blocks.Administration
             else
             {
                 edtAttribute.ActionTitle = Rock.Constants.ActionTitle.Edit( Rock.Model.Attribute.FriendlyTypeName );
+                lAttributeTitle.Text = ("Edit " + attributeModel.Name).FormatAsHtmlTitle();
             }
 
             Type type = null;
@@ -670,7 +673,7 @@ namespace RockWeb.Blocks.Administration
 
                 var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
                 var attributeValue = new AttributeValueService().GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
-                attribute.AddControl( fsEditControl.Controls, attributeValue.Value, setValues, true );
+                attribute.AddControl( fsEditControl.Controls, attributeValue != null ? attributeValue.Value : null, string.Empty, setValues, true );
 
                 hfIdValues.Value = attribute.Id.ToString();
 

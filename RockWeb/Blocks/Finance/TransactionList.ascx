@@ -3,6 +3,8 @@
 <asp:UpdatePanel ID="upTransactions" runat="server">
     <ContentTemplate>
 
+        <h4>Transactions</h4>
+
         <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error alert" />
         <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
@@ -25,9 +27,9 @@
                 <asp:BoundField DataField="TransactionDateTime" HeaderText="Date" SortExpression="TransactionDateTime" />                
                 <asp:BoundField DataField="Summary" HeaderText="Description" SortExpression="Summary" />
                 <asp:BoundField DataField="Amount" HeaderText="Amount" DataFormatString="{0:C}" SortExpression="Amount" />
-                <asp:BoundField DataField="CurrencyTypeValue" HeaderText="Currency Type" SortExpression="CurrencyTypeValue" />
-                <asp:BoundField DataField="CreditCardTypeValue" HeaderText="Credit Card Type" SortExpression="CreditCardTypeValue" />
-                <asp:BoundField DataField="SourceTypeValue" HeaderText="Source Type" SortExpression="SourceTypeValue" />
+                <Rock:DefinedValueField DataField="CurrencyTypeValueId" HeaderText="Currency Type" SortExpression="CurrencyTypeValue.Name" />
+                <Rock:DefinedValueField DataField="CreditCardTypeValueId" HeaderText="Credit Card Type" SortExpression="CreditCardTypeValue.Name" />
+                <Rock:DefinedValueField DataField="SourceTypeValueId" HeaderText="Source Type" SortExpression="SourceTypeValue.Name" />
                 <Rock:DeleteField OnClick="rGridTransactions_Delete" Visible="false"/>
             </Columns>
         </Rock:Grid>

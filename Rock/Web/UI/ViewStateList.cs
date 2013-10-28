@@ -54,8 +54,8 @@ namespace Rock.Web.UI
         /// <param name="list">The list.</param>
         private void SerializeList( List<T> list )
         {
-            internalListJson = JsonConvert.SerializeObject( 
-                list, 
+            internalListJson = JsonConvert.SerializeObject(
+                list,
                 Formatting.None,
                 new JsonSerializerSettings()
                 {
@@ -157,6 +157,15 @@ namespace Rock.Web.UI
         public void Clear()
         {
             SerializeList( new List<T>() );
+        }
+
+        /// <summary>
+        /// Saves the state of the view.
+        /// </summary>
+        public void SaveViewState()
+        {
+            var list = GetList().ToList();
+            SerializeList( list );
         }
     }
 }

@@ -82,6 +82,15 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the validation group.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup { get; set; }
+
+
+        /// <summary>
         /// The content of the popup.
         /// </summary>
         [
@@ -160,14 +169,14 @@ namespace Rock.Web.UI.Controls
             _footerPanel.Controls.Add( _serverSaveLink );
             _serverSaveLink.ID = "serverSaveLink";
             _serverSaveLink.Attributes.Add( "class", "btn btn-primary" );
-            _serverSaveLink.ValidationGroup = this.ID + "ValidationGroup";
+            _serverSaveLink.ValidationGroup = this.ValidationGroup;
             _serverSaveLink.ServerClick += SaveLink_ServerClick;
 
             _saveLink = new HtmlAnchor();
             _footerPanel.Controls.Add( _saveLink );
             _saveLink.ID = "saveLink";
             _saveLink.Attributes.Add( "class", "btn btn-primary modaldialog-save-button" );
-            _saveLink.ValidationGroup = this.ID + "ValidationGroup";
+            _saveLink.ValidationGroup = this.ValidationGroup;
 
             this.PopupControlID = _dialogPanel.ID;
             this.CancelControlID = _cancelLink.ID;

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
@@ -125,6 +126,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets an optional validation group to use.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get { return ViewState["ValidationGroup"] as string; }
+            set { ViewState["ValidationGroup"] = value; }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -162,8 +175,8 @@ namespace Rock.Web.UI.Controls
         private HiddenField _hfInitialItemParentIds;
         private HiddenField _hfItemName;
         private HiddenField _hfItemRestUrlExtraParams;
-        private LinkButton _btnSelect;
-        private LinkButton _btnSelectNone;
+        private HtmlAnchor _btnSelect;
+        private HtmlAnchor _btnSelectNone;
 
         #endregion
 
@@ -379,6 +392,22 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string DefaultText { get; set; }
 
+        /// <summary>
+        /// Gets or sets the mode panel.
+        /// </summary>
+        /// <value>
+        /// The mode panel.
+        /// </value>
+        public Panel ModePanel { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show drop down].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show drop down]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowDropDown { get; set; }
+
         #endregion
 
         #region Constructors
@@ -404,7 +433,6 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            RegisterJavaScript();
             var sm = ScriptManager.GetCurrent( this.Page );
             EnsureChildControls();
 
@@ -416,12 +444,30 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            RegisterJavaScript();
+            base.OnLoad( e );
+        }
+
+        /// <summary>
         /// Registers the java script.
         /// </summary>
         protected virtual void RegisterJavaScript()
         {
-            const string treeViewScriptFormat = "Rock.controls.itemPicker.initialize({{ controlId: '{0}', restUrl: '{1}', allowMultiSelect: {2}, defaultText: '{3}' }});";
-            string treeViewScript = string.Format( treeViewScriptFormat, this.ID, this.ResolveUrl( ItemRestUrl ), this.AllowMultiSelect.ToString().ToLower(), this.DefaultText );
+            const string treeViewScriptFormat = 
+@"Rock.controls.itemPicker.initialize({{ 
+    controlId: '{0}',
+    restUrl: '{1}',
+    allowMultiSelect: {2},
+    defaultText: '{3}',
+    restParams: '{4}',
+    expandedIds: [{5}]
+}});";
+            string treeViewScript = string.Format( treeViewScriptFormat, this.ID, this.ResolveUrl( ItemRestUrl ), this.AllowMultiSelect.ToString().ToLower(), this.DefaultText, this.ItemRestUrlExtraParams, this.InitialItemParentIds );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "item_picker-treeviewscript_" + this.ID, treeViewScript, true );
         }
 
@@ -447,31 +493,36 @@ namespace Rock.Web.UI.Controls
             _hfItemRestUrlExtraParams.ClientIDMode = ClientIDMode.Static;
             _hfItemRestUrlExtraParams.ID = string.Format( "hfItemRestUrlExtraParams_{0}", this.ID );
 
-            _btnSelect = new LinkButton();
+            if ( ModePanel != null )
+            {
+                this.Controls.Add( ModePanel );
+            }
+
+            _btnSelect = new HtmlAnchor();
             _btnSelect.ClientIDMode = ClientIDMode.Static;
-            _btnSelect.CssClass = "btn btn-xs btn-primary";
+            _btnSelect.Attributes["class"] = "btn btn-xs btn-primary picker-btn";
             _btnSelect.ID = string.Format( "btnSelect_{0}", this.ID );
-            _btnSelect.Text = "Select";
+            _btnSelect.InnerText = "Select";
             _btnSelect.CausesValidation = false;
 
             // we only need the postback on Select if SelectItem is assigned or if this is PagePicker
             if ( SelectItem != null || (this is PagePicker) )
             {
-                _btnSelect.Click += btnSelect_Click;
+                _btnSelect.ServerClick += btnSelect_Click;
             }
 
-            _btnSelectNone = new LinkButton();
+            _btnSelectNone = new HtmlAnchor();
             _btnSelectNone.ClientIDMode = ClientIDMode.Static;
-            _btnSelectNone.CssClass = "picker-select-none";
+            _btnSelectNone.Attributes["class"] = "picker-select-none";
             _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
-            _btnSelectNone.Text = "<i class='icon-remove'></i>";
+            _btnSelectNone.InnerHtml = "<i class='icon-remove'></i>";
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
 
             // we only need the postback on SelectNone if SelectItem is assigned or if this is PagePicker
             if ( SelectItem != null || ( this is PagePicker ) )
             {
-                _btnSelectNone.Click += btnSelect_Click;
+                _btnSelectNone.ServerClick += btnSelect_Click;
             }
 
             Controls.Add( _hfItemId );
@@ -517,7 +568,7 @@ namespace Rock.Web.UI.Controls
                 writer.Write( @"
                     <a class='picker-label' href='#'>
                         <i class='{2}'></i>
-                        <span id='selectedItemLabel_{0}'>{1}</span>
+                        <span id='selectedItemLabel_{0}' class='selected-names'>{1}</span>
                         <b class='caret pull-right'></b>
                     </a>", this.ID, this.ItemName, this.IconCssClass );
                 writer.WriteLine();
@@ -526,7 +577,18 @@ namespace Rock.Web.UI.Controls
 
                 // picker menu
                 writer.AddAttribute( "class", "picker-menu dropdown-menu" );
+                if ( ShowDropDown )
+                {
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "block" );
+                }
+                
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                // mode panel
+                if ( ModePanel != null )
+                {
+                    ModePanel.RenderControl( writer );
+                }
 
                 // treeview
                 writer.Write( @"
@@ -549,7 +611,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "picker-actions" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _btnSelect.RenderControl( writer );
-                writer.Write( "<a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>", this.ID );
+                writer.Write( "<a class='btn btn-xs picker-cancel' id='btnCancel_{0}'>Cancel</a>", this.ID );
                 writer.WriteLine();
                 writer.RenderEndTag();
                 
@@ -562,7 +624,15 @@ namespace Rock.Web.UI.Controls
             else
             {
                 // this picker is not enabled (readonly), so just render a readonly version
-                writer.Write( @"<i class='icon-file-alt'></i><span id='selectedItemLabel_{0}'>{1}</span>", this.ID, this.ItemName );
+                writer.AddAttribute( "class", "picker picker-select" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                LinkButton linkButton = new LinkButton();
+                linkButton.CssClass = "picker-label";
+                linkButton.Text = string.Format( "<i class='{1}'></i><span>{0}</span>", this.ItemName, this.IconCssClass );
+                linkButton.Enabled = false;
+                linkButton.RenderControl( writer );
+                writer.WriteLine();
+                writer.RenderEndTag();
             }
         }
         
@@ -635,7 +705,8 @@ namespace Rock.Web.UI.Controls
 
             foreach ( string keyVal in ItemIds )
             {
-                int id = int.MinValue;
+                int id;
+
                 if ( int.TryParse( keyVal, out id ) )
                 {
                     ids.Add( id );

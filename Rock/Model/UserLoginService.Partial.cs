@@ -239,7 +239,7 @@ namespace Rock.Model
         /// Gets a <see cref="Rock.Security.AuthenticationComponent"/> by the name of the authentication service.
         /// </summary>
         /// <param name="serviceName">A <see cref="System.String"/> containing the service name.</param>
-        /// <returns>The <see cref="Rock.Security.AuthenticationCompeont"/> associated with the service.</returns>
+        /// <returns>The <see cref="Rock.Security.AuthenticationComponent"/> associated with the service.</returns>
         private AuthenticationComponent GetComponent( string serviceName )
         {
             foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
@@ -261,7 +261,7 @@ namespace Rock.Model
         #region Static Methods
 
         /// <summary>
-        /// Returns the <see cref="Rcok.Model.UserLogin"/> of the user who is currently logged in.
+        /// Returns the <see cref="Rock.Model.UserLogin"/> of the user who is currently logged in.
         /// </summary>
         /// <returns>The <see cref="Rock.Model.UserLogin"/> of the user who is currently logged in</returns>
         public static UserLogin GetCurrentUser()

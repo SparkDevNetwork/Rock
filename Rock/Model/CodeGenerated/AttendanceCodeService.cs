@@ -87,14 +87,23 @@ namespace Rock.Model
             else
             {
                 var target = new AttendanceCode();
-                target.IssueDateTime = source.IssueDateTime;
-                target.Code = source.Code;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another AttendanceCode object to this AttendanceCode object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this AttendanceCode target, AttendanceCode source )
+        {
+            target.IssueDateTime = source.IssueDateTime;
+            target.Code = source.Code;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

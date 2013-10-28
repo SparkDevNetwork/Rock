@@ -161,6 +161,16 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
+        /// Handles the CheckedChanged event of the toggleShowPreview control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void toggleShowPreview_CheckedChanged( object sender, EventArgs e )
+        {
+            toggleShowPreview.Help = "you just set it to : " + ( ( toggleShowPreview.Checked ) ? "on" : "off" );
+        }
+
+        /// <summary>
         /// Handles the SelectedIndexChanged event of the binaryFileTypePicker control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -171,18 +181,18 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
-        /// Handles the Click event of the btnToggleLabels control.
+        /// Handles the CheckedChanged event of the tglLabels control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnToggleLabels_Click( object sender, EventArgs e )
+        protected void tglLabels_CheckedChanged( object sender, EventArgs e )
         {
-            foreach ( var control in pnlDetails.Controls )
+            foreach ( var control in pnlDetails.ControlsOfTypeRecursive<WebControl>() )
             {
                 if ( control is IRockControl )
                 {
                     IRockControl rockControl = control as IRockControl;
-                    if ( string.IsNullOrWhiteSpace( rockControl.Label ) )
+                    if ( tglLabels.Checked )
                     {
                         rockControl.Label = string.Format( "Rock:{0}", rockControl.GetType().Name );
                     }
@@ -191,13 +201,21 @@ namespace RockWeb.Blocks.Examples
                         rockControl.Label = string.Empty;
                     }
                 }
-                else if ( control is HtmlGenericControl )
+            }
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the tglEnabled control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tglEnabled_CheckedChanged( object sender, EventArgs e )
+        {
+            foreach ( var control in pnlDetails.ControlsOfTypeRecursive<WebControl>() )
+            {
+                if ( control is IRockControl )
                 {
-                    HtmlGenericControl hg = ( control as HtmlGenericControl );
-                    if ( hg.TagName.Equals( "h4", StringComparison.OrdinalIgnoreCase ) )
-                    {
-                        hg.Visible = !hg.Visible;
-                    }
+                    control.Enabled = tglEnabled.Checked;
                 }
             }
         }
@@ -296,10 +314,25 @@ namespace RockWeb.Blocks.Examples
         {
             var dateTime = monthDayPicker.SelectedDate;
         }
-        
+
+        /// <summary>
+        /// Handles the SelectedBirthdayChanged event of the birthdayPicker control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void birthdayPicker_SelectedBirthdayChanged( object sender, EventArgs e )
+        {
+            var dateTime = birthdayPicker.SelectedDate;
+        }
+
+        /// <summary>
+        /// Handles the SaveSchedule event of the scheduleBuilder control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void scheduleBuilder_SaveSchedule( object sender, EventArgs e )
         {
             string debug = scheduleBuilder.iCalendarContent;
         }
-}
+    }
 }

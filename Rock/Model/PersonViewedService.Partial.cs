@@ -27,7 +27,7 @@ namespace Rock.Model
         }
         
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.PesonViewed"/> entities by the Id of the Viewer <see cref="Rock.Model.Person"/>.
+        /// Returns an enumerable collection of <see cref="Rock.Model.PersonViewed"/> entities by the Id of the Viewer <see cref="Rock.Model.Person"/>.
         /// </summary>
         /// <param name="viewerPersonId">A <see cref="System.Int32"/> representing the Id of the Viewer <see cref="Rock.Model.Person"/></param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.PersonViewed"/> entities where the Id of the viewer <see cref="Rock.Model.Person"/> matches the provided value.</returns>

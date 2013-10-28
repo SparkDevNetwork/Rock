@@ -89,6 +89,18 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
+        /// Gets or sets a value indicating whether the save/cancel actions should be displayed.  If control is used in a modal dialog, the dialog will have save/cancel functionality
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show actions]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowActions
+        {
+            get { return ViewState["ShowActions"] as bool? ?? true; }
+            set { ViewState["ShowActions"] = value; }
+        }      
+        
+        /// <summary>
         /// Gets or sets the action title.
         /// </summary>
         /// <value>
@@ -271,6 +283,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets an optional validation group to use.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get { return ViewState["ValidationGroup"] as string; }
+            set { ViewState["ValidationGroup"] = value; }
+        }
+        
+        /// <summary>
         /// Gets or sets a value indicating whether [show in grid].
         /// </summary>
         /// <value>
@@ -281,6 +305,7 @@ namespace Rock.Web.UI.Controls
             get { return _cbShowInGrid.Checked; }
             set { _cbShowInGrid.Checked = value; }
         }
+
 
         #endregion
 
@@ -430,7 +455,7 @@ namespace Rock.Web.UI.Controls
             _tbName.SourceTypeName = "Rock.Model.Attribute, Rock";
             _tbName.PropertyName = "Name";
             _tbName.Required = true;
-            Controls.Add( _tbName );
+            Controls.Add(_tbName);
 
             _tbKey.ID = string.Format( "tbKey_{0}", this.ID );
             _tbKey.SourceTypeName = "Rock.Model.Attribute, Rock";
@@ -444,8 +469,15 @@ namespace Rock.Web.UI.Controls
             _cvKey.ServerValidate += cvKey_ServerValidate;
             _cvKey.Display = ValidatorDisplay.Dynamic;
             _cvKey.CssClass = "validation-error help-inline";
-            _cvKey.ErrorMessage = "There is already an existing property with the key value you entered.  Please select a different key value";
+            _cvKey.ErrorMessage = "There is already an existing property with the key value you entered.  Please select a different key value.";
             Controls.Add( _cvKey );
+
+            _tbDescription.ID = string.Format("tbDescription_{0}", this.ID);
+            _tbDescription.TextMode = TextBoxMode.MultiLine;
+            _tbDescription.Rows = 3;
+            _tbDescription.SourceTypeName = "Rock.Model.Attribute, Rock";
+            _tbDescription.PropertyName = "Description";
+            Controls.Add(_tbDescription);
 
             _cpCategories.Label = "Categories";
             _cpCategories.ID = string.Format( "cpCategories_{0}", this.ID );
@@ -453,13 +485,6 @@ namespace Rock.Web.UI.Controls
             _cpCategories.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
             _cpCategories.EntityTypeQualifierColumn = "EntityTypeId";
             Controls.Add( _cpCategories );
-
-            _tbDescription.ID = string.Format( "tbDescription_{0}", this.ID );
-            _tbDescription.TextMode = TextBoxMode.MultiLine;
-            _tbDescription.Rows = 3;
-            _tbDescription.SourceTypeName = "Rock.Model.Attribute, Rock";
-            _tbDescription.PropertyName = "Description";
-            Controls.Add( _tbDescription );
 
             _ddlFieldType.ID = string.Format( "ddlFieldType_{0}", this.ID );
             _ddlFieldType.Label = "Field Type";
@@ -483,6 +508,7 @@ namespace Rock.Web.UI.Controls
                 _defaultValueControl = field.EditControl( Qualifiers, string.Format( "defaultValue_{0}_{1}", FieldTypeId.Value, this.ID ) );
                 if ( _defaultValueControl != null )
                 {
+                    field.SetEditValue(_defaultValueControl, Qualifiers, DefaultValue );
                     if ( _defaultValueControl is IRockControl )
                     {
                         ( (IRockControl)_defaultValueControl ).Required = false;
@@ -505,7 +531,7 @@ namespace Rock.Web.UI.Controls
             _cbShowInGrid.ID = string.Format( "cbShowInGrid_{0}", this.ID );
             _cbShowInGrid.Label = "Show in Grid";
             _cbShowInGrid.Text = "Yes";
-            _cbShowInGrid.Help = "When items are displayed in a grid, should this attribute be included as a column on the grid?"; 
+            _cbShowInGrid.Help = "If selected, this attribute will be included in a grid.";
             Controls.Add( _cbShowInGrid );
 
             _btnSave = new LinkButton { ID = string.Format( "btnSave_{0}", this.ID ) };
@@ -534,27 +560,68 @@ namespace Rock.Web.UI.Controls
             _lAttributeActionTitle.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row-fluid" );
+            // row 1
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _tbName.ValidationGroup = ValidationGroup;
             _tbName.Attributes["onblur"] = string.Format( "populateAttributeKey('{0}','{1}')", _tbName.ClientID, _tbKey.ClientID );
             _tbName.RenderControl( writer );
-            _tbKey.RenderControl( writer );
-            _cvKey.RenderControl( writer );
 
-            if ( this.AttributeEntityTypeId.HasValue )
+            writer.RenderEndTag();
+            writer.RenderEndTag();
+
+            // row 2
+            writer.AddAttribute(HtmlTextWriterAttribute.Class, "row");
+            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+
+            writer.AddAttribute(HtmlTextWriterAttribute.Class, "col-md-12");
+            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+
+            _tbDescription.ValidationGroup = ValidationGroup;
+            _tbDescription.RenderControl(writer);
+
+            writer.RenderEndTag();
+            writer.RenderEndTag();
+
+            // row 3
+            writer.AddAttribute(HtmlTextWriterAttribute.Class, "row");
+            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+
+            // row 3 col 1
+            writer.AddAttribute(HtmlTextWriterAttribute.Class, "col-md-6");
+            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+
+
+            if (this.AttributeEntityTypeId.HasValue)
             {
                 _cpCategories.EntityTypeQualifierValue = this.AttributeEntityTypeId.Value.ToString();
             }
-            _cpCategories.RenderControl( writer );
+            _cpCategories.RenderControl(writer);
 
-            _tbDescription.RenderControl( writer );
+            _tbKey.ValidationGroup = ValidationGroup;
+            _tbKey.RenderControl( writer );
+
+            _cvKey.ValidationGroup = ValidationGroup;
+            _cvKey.RenderControl( writer );
+
+            _cbMultiValue.ValidationGroup = ValidationGroup;
+            _cbMultiValue.RenderControl( writer );
+
+            _cbRequired.ValidationGroup = ValidationGroup;
+            _cbRequired.RenderControl( writer );
+
+            _cbShowInGrid.ValidationGroup = ValidationGroup;
+            _cbShowInGrid.RenderControl( writer );
+            
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
+            // row 3 col 2
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _ddlFieldType.ValidationGroup = ValidationGroup;
             _ddlFieldType.SetValue( FieldTypeId );
             _ddlFieldType.RenderControl( writer );
 
@@ -572,6 +639,7 @@ namespace Rock.Web.UI.Controls
                         var rockControl = _qualifierControls[i] as IRockControl;
                         if ( rockControl != null )
                         {
+                            rockControl.ValidationGroup = ValidationGroup;
                             rockControl.Label = configValue.Value.Name;
                             RockControlHelper.RenderControl( rockControl, writer );
                         }
@@ -589,8 +657,9 @@ namespace Rock.Web.UI.Controls
                     var rockControl = _defaultValueControl as IRockControl;
                     if ( rockControl != null )
                     {
+                        rockControl.ValidationGroup = ValidationGroup;
                         rockControl.Label = "Default Value";
-                        RockControlHelper.RenderControl( rockControl, writer );
+                        _defaultValueControl.RenderControl( writer );
                     }
                     else
                     {
@@ -599,23 +668,24 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            _cbMultiValue.RenderControl( writer );
-            _cbRequired.RenderControl( writer );
-            _cbShowInGrid.RenderControl( writer );
             writer.RenderEndTag();
             
-            // row-fluid </div>
+            // row </div>
             writer.RenderEndTag();
 
             // </fieldset>
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            _btnSave.RenderControl( writer );
-            writer.Write( Environment.NewLine );
-            _btnCancel.RenderControl( writer );
-            writer.RenderEndTag();
+            if ( ShowActions )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _btnSave.ValidationGroup = ValidationGroup;
+                _btnSave.RenderControl( writer );
+                writer.Write( Environment.NewLine );
+                _btnCancel.RenderControl( writer );
+                writer.RenderEndTag();
+            }
 
             RegisterClientScript();
         }
@@ -677,7 +747,7 @@ function validateKey(sender, args) {{
         #endregion
 
         #region Control Events
-
+        
         /// <summary>
         /// Handles the ServerValidate event of the cvKey control.
         /// </summary>

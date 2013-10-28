@@ -68,6 +68,7 @@ namespace Rock.Model
         /// A <see cref="System.Data.Entity.Spatial.DbGeography"/> object that represents the geolocation of the Location.
         /// </value>
         [DataMember]
+        [Newtonsoft.Json.JsonIgnore]
         public DbGeography GeoPoint { get; set; }
 
         /// <summary>
@@ -82,6 +83,7 @@ namespace Rock.Model
         /// A <see cref="System.Data.Entity.Spatial.DbGeography"/> object representing the parameter of a location.
         /// </value>
         [DataMember]
+        [Newtonsoft.Json.JsonIgnore]
         public DbGeography GeoFence { get; set; }
 
         /// <summary>

@@ -108,7 +108,7 @@ namespace Rock.Web.UI.Controls
             {
                 HtmlGenericControl aSecure = new HtmlGenericControl( "a" );
                 cell.Controls.Add( aSecure );
-                aSecure.Attributes.Add("class", "btn btn-default btn-sm");
+                aSecure.Attributes.Add("class", "btn btn-security btn-sm");
 
                 // height attribute is used by the modal that pops up when the button is clicked
                 aSecure.Attributes.Add( "height", "500px" );

@@ -99,16 +99,25 @@ namespace Rock.Model
             else
             {
                 var target = new Campus();
-                target.IsSystem = source.IsSystem;
-                target.Name = source.Name;
-                target.ShortCode = source.ShortCode;
-                target.LocationId = source.LocationId;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another Campus object to this Campus object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this Campus target, Campus source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.Name = source.Name;
+            target.ShortCode = source.ShortCode;
+            target.LocationId = source.LocationId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

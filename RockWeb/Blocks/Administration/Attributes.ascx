@@ -57,17 +57,20 @@
 
         </asp:Panel>
 
-        <asp:Panel ID="pnlDetails" runat="server" Visible="false">
+        <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="panel panel-default">
+            <div class="panel-body">
 
-            <asp:ValidationSummary ID="valSummaryTop" runat="server"  
-                HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+                <div class="banner"><h1><asp:Literal ID="lAttributeTitle" runat="server"></asp:Literal></h1></div>
 
-            <Rock:RockDropDownList ID="ddlAttrEntityType" runat="server" Label="Entity Type" />
-            <Rock:RockTextBox ID="tbAttrQualifierField" runat="server" Label="Qualifier Field" />
-            <Rock:RockTextBox ID="tbAttrQualifierValue" runat="server" Label="Qualifier Value" />
+                <asp:ValidationSummary ID="valSummaryTop" runat="server"  
+                    HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
 
-            <Rock:AttributeEditor ID="edtAttribute" runat="server" OnSaveClick="btnSave_Click" OnCancelClick="btnCancel_Click" />
+                <Rock:RockDropDownList ID="ddlAttrEntityType" runat="server" Label="Entity Type" />
+                <Rock:RockTextBox ID="tbAttrQualifierField" runat="server" Label="Qualifier Field" />
+                <Rock:RockTextBox ID="tbAttrQualifierValue" runat="server" Label="Qualifier Value" />
 
+                <Rock:AttributeEditor ID="edtAttribute" runat="server" OnSaveClick="btnSave_Click" OnCancelClick="btnCancel_Click" />
+            </div>
         </asp:Panel>
 
         <Rock:ModalDialog ID="modalDetails" runat="server" Title="Attribute">

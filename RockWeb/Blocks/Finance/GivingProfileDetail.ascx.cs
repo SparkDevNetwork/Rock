@@ -496,7 +496,7 @@ Thank you for your generosity! You just gave a total of {{ TotalContribution }} 
                         familyMember.IsSystem = false;
                         familyMember.GroupId = familyGroup.Id;
                         familyMember.PersonId = person.Id;
-                        familyMember.GroupRoleId = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ).Id;
+                        familyMember.GroupRoleId = new GroupTypeRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ).Id;
                         groupMemberService.Add( familyMember, person.Id );
                         groupMemberService.Save( familyMember, person.Id );
                     }

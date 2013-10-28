@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Constants;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -74,8 +75,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            base.OnInit( e );
             ItemRestUrlExtraParams = string.Empty;
+            base.OnInit( e );
 
             this.IconCssClass = "icon-file";
 
@@ -116,7 +117,14 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return this.ItemId.AsInteger();
+                if ( this.ItemId == None.IdValue )
+                {
+                    return null;
+                }
+                else
+                {
+                    return this.ItemId.AsInteger( false );
+                }
             }
         }
         
@@ -131,7 +139,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _hfPageRouteId.Value.AsInteger();
+                return _hfPageRouteId.Value.AsInteger(false);
             }
             
             set

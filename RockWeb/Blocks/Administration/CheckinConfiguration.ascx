@@ -26,7 +26,7 @@
 
             <div class="actions">
                 <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
+                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default" CausesValidation="false" OnClick="btnCancel_Click" />
             </div>
 
             <Rock:ConfirmPageUnload ID="confirmExit" runat="server" ConfirmationMessage="Changes have been made to this check-in configuration that have not yet been saved." Enabled="false" />
@@ -39,19 +39,16 @@
 
             <div class="actions">
                 <asp:LinkButton ID="btnAddCheckinLabel" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddCheckinLabel_Click"></asp:LinkButton>
-                <asp:LinkButton ID="btnCancelAddCheckinLabel" runat="server" Text="Cancel" CssClass="btn" OnClick="btnCancelAddCheckinLabel_Click"></asp:LinkButton>
+                <asp:LinkButton ID="btnCancelAddCheckinLabel" runat="server" Text="Cancel" CssClass="btn btn-default" OnClick="btnCancelAddCheckinLabel_Click"></asp:LinkButton>
             </div>
         </asp:Panel>
 
-        <asp:Panel ID="pnlLocationPicker" runat="server" Visible="false">
-            <asp:HiddenField ID="hfAddLocationGroupGuid" runat="server" />
-            <Rock:RockDropDownList ID="ddlLocation" runat="server" Label="Select Check-in Location" />
-
-            <div class="actions">
-                <asp:LinkButton ID="btnAddLocation" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddLocation_Click"></asp:LinkButton>
-                <asp:LinkButton ID="btnCancelAddLocation" runat="server" Text="Cancel" CssClass="btn" OnClick="btnCancelAddLocation_Click"></asp:LinkButton>
-            </div>
-        </asp:Panel>
+        <Rock:ModalDialog ID="mdLocationPicker" runat="server" SaveButtonText="Save" OnSaveClick="btnAddLocation_Click" Title="Select Check-in Location">
+            <Content ID="mdLocationPickerContent">
+                <asp:HiddenField ID="hfAddLocationGroupGuid" runat="server" />
+                <Rock:LocationPicker ID="locationPicker" runat="server" PickerMode="NamedLocation" AllowModeSelection="false" Label="Check-in Location" />
+            </Content>
+        </Rock:ModalDialog>
 
         <script>
 

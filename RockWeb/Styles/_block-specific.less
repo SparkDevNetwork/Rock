@@ -7,6 +7,8 @@
     4. Notes - block to display, add, edit, delete notes
     5. Add Family - block to add families to the database
     6. Contributions - block add a contribution transaction
+    7. Data Views - block for creating data views
+    8. Schedule Builder - block for building schedules
 
 */
 
@@ -84,8 +86,13 @@ span.cke_skin_kama
 
 // 4. Notes 
 // -------------------------
+.panel-note {
 
-.panel-notes {
+    .panel-variant(@accent-color ; @accent-text-color; @accent-color; @accent-color;);
+
+    .panel-body {
+        background-color: @body-bg;
+    }
 
     .panel-heading {
         h3 {
@@ -182,6 +189,11 @@ span.cke_skin_kama
                 margin-right: 4px;
             }
         }
+    }
+    
+    .options .checkbox {
+        float: left;
+        margin: 0 15px 0 5px;
     } 
 
     .panel-footer {
@@ -201,4 +213,110 @@ span.cke_skin_kama
 
 .contribution-payment .tab-content {
     margin-top: 12px;
+}
+
+
+// 7. Data Views
+// -------------------------
+
+/* data views */
+.filter-toogle {
+
+    & > span {
+        float: left;
+        padding-top: 6px;
+    }
+
+    .controls {
+        float: left;
+
+        .switch {
+	        margin: 0 6px;
+        }
+    }
+} 
+
+.filter-item-select {
+
+    span {
+        float: left;
+        padding: 8px 6px 0 0;
+    }
+
+    select {
+        float: left;
+        width: 250px;
+    }
+
+}
+
+// 8. Schedule Builder
+// -------------------------
+
+.recurrence-pattern-type {
+    margin-top: 12px;
+    padding-left: 30px;
+}
+
+.recurrence-pattern-specific-date {
+    .clearfix();
+    
+    .input-group {
+        float: left;
+    }
+
+    .actions {
+        float: left;
+        margin-left: 12px;
+        padding-top: 5px;
+    }
+}
+
+.recurrence-pattern-daily {
+
+    .form-control-group {
+        min-height: 30px;
+    }
+}
+
+.recurrence-pattern-weekly {
+
+    .week-days {
+        margin-top: 12px;
+        .clearfix();
+
+        .checkbox {
+            float: left;
+            margin: 0 12px;
+        }
+    }
+}
+
+.recurrence-pattern-monthly {
+
+    .form-control-group {
+        min-height: 40px;
+        display: block;    
+    }
+}
+
+.continue-until {
+
+    .form-control-group {
+        min-height: 40px;
+    }
+}
+
+.exclusions {
+
+    .add-exclusion {
+        .form-control-group {
+            float: left;
+        }
+
+        .actions {
+            float: left;
+            margin-top: 5px;
+        }
+    }
 }

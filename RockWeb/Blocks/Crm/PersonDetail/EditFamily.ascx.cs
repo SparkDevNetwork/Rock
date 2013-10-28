@@ -30,7 +30,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private Group _family = null;
         private bool _canEdit = false;
         private DefinedTypeCache addressTypes;
-        private List<GroupRole> familyRoles = new List<GroupRole>();
+        private List<GroupTypeRole> familyRoles = new List<GroupTypeRole>();
         protected string basePersonUrl;
 
         private List<FamilyMember> FamilyMembers
@@ -43,6 +43,33 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             get { return ViewState["FamilyAddresses"] as List<FamilyAddress>; }
             set { ViewState["FamilyAddresses"] = value; }
+        }
+
+        private string DefaultState
+        {
+            get
+            {
+                string state = ViewState["DefaultState"] as string;
+                if ( state == null )
+                {
+                    string orgLocGuid = GlobalAttributesCache.Read().GetValue( "OrganizationAddress" );
+                    if ( !string.IsNullOrWhiteSpace( orgLocGuid ) )
+                    {
+                        Guid locGuid = Guid.Empty;
+                        if ( Guid.TryParse( orgLocGuid, out locGuid ) )
+                        {
+                            var location = new Rock.Model.LocationService().Get( locGuid );
+                            if ( location != null )
+                            {
+                                state = location.State;
+                                ViewState["DefaultState"] = state;
+                            }
+                        }
+                    }
+                }
+
+                return state;
+            }
         }
 
         /// <summary>
@@ -71,7 +98,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
                 else
                 {
-                    familyRoles = _family.GroupType.Roles.OrderBy( r => r.SortOrder ).ToList();
+                    familyRoles = _family.GroupType.Roles.OrderBy( r => r.Order ).ToList();
                     rblNewPersonRole.DataSource = familyRoles;
                     rblNewPersonRole.DataBind();
                 }
@@ -330,7 +357,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                             var existingFamilyRoles = new GroupMemberService().Queryable("GroupRole")
                                 .Where( m => m.PersonId == person.Id && familyRoleIds.Contains( m.GroupRoleId ) )
-                                .OrderBy( m => m.GroupRole.SortOrder)
+                                .OrderBy( m => m.GroupRole.Order)
                                 .ToList();
 
                             var existingRole = existingFamilyRoles.Select( m => m.GroupRole).FirstOrDefault();
@@ -397,7 +424,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                 }
 
-                FamilyAddresses.Add( new FamilyAddress { LocationTypeId = homeLocType.Id, LocationTypeName = homeLocType.Name, LocationIsDirty=true } );
+                FamilyAddresses.Add( new FamilyAddress { LocationTypeId = homeLocType.Id, LocationTypeName = homeLocType.Name, LocationIsDirty=true, State = DefaultState } );
 
                 gLocations.EditIndex = FamilyAddresses.Count - 1;
 
@@ -419,11 +446,20 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 if ( ( e.Row.RowState & DataControlRowState.Edit ) == DataControlRowState.Edit )
                 {
                     FamilyAddress familyAddress = e.Row.DataItem as FamilyAddress;
-                    var ddlLocType = e.Row.FindControl( "ddlLocType" ) as DropDownList;
-                    if ( familyAddress != null && ddlLocType != null )
+                    if ( familyAddress != null )
                     {
-                        ddlLocType.BindToDefinedType( addressTypes );
-                        ddlLocType.SelectedValue = familyAddress.LocationTypeId.ToString();
+                        var ddlLocType = e.Row.FindControl( "ddlLocType" ) as DropDownList;
+                        if ( ddlLocType != null )
+                        {
+                            ddlLocType.BindToDefinedType( addressTypes );
+                            ddlLocType.SelectedValue = familyAddress.LocationTypeId.ToString();
+                        }
+
+                        var ddlState = e.Row.FindControl( "ddlState" ) as StateDropDownList;
+                        if ( ddlState != null )
+                        {
+                            ddlState.SelectedValue = familyAddress.State;
+                        }
                     }
                 }
             }
@@ -447,7 +483,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gLocations_Add( object sender, EventArgs e )
         {
-            FamilyAddresses.Add( new FamilyAddress() );
+            FamilyAddresses.Add( new FamilyAddress { State = DefaultState } );
             gLocations.EditIndex = FamilyAddresses.Count - 1;
 
             BindLocations();
@@ -587,6 +623,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             role = familyRoles.FirstOrDefault();
                         }
 
+                        bool isChild = role != null && role.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) );
+
                         // People added to family (new or from other family)
                         if ( !familyMember.ExistingFamilyMember )
                         {
@@ -600,6 +638,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 groupMember.Person.LastName = familyMember.LastName;
                                 groupMember.Person.Gender = familyMember.Gender;
                                 groupMember.Person.BirthDate = familyMember.BirthDate;
+                                if ( !isChild )
+                                {
+                                    groupMember.Person.GivingGroupId = _family.Id;
+                                }
                             }
                             else
                             {
@@ -641,6 +683,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     familyService.Add( newFamily, CurrentPersonId );
                                     familyService.Save( newFamily, CurrentPersonId );
 
+                                    // If person's previous giving group was this family, set it to their new family id
+                                    if ( groupMember.Person.GivingGroupId.HasValue && groupMember.Person.GivingGroupId == _family.Id )
+                                    {
+                                        groupMember.Person.GivingGroupId = newFamily.Id;
+                                    }
+
                                     groupMember.Group = newFamily;
                                     familyMemberService.Save( groupMember, CurrentPersonId );
 
@@ -663,6 +711,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         // Remove anyone that was moved from another family
                         if ( familyMember.RemoveFromOtherFamilies )
                         {
+
                             var otherFamilies = familyMemberService.Queryable()
                                 .Where( m =>
                                     m.PersonId == familyMember.Id &&
@@ -673,6 +722,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             foreach ( var otherFamilyMember in otherFamilies )
                             {
                                 var fm = familyMemberService.Get( otherFamilyMember.Id );
+
+                                // If the person's giving group id was the family they are being removed from, update it to this new family's id
+                                if ( fm.Person.GivingGroupId == fm.GroupId )
+                                {
+                                    var person = personService.Get(fm.PersonId);
+                                    person.GivingGroupId = _family.Id;
+                                    personService.Save(person, CurrentPersonId);
+                                }
+
                                 familyMemberService.Delete( fm, CurrentPersonId );
                                 familyMemberService.Save( fm, CurrentPersonId );
 
@@ -978,6 +1036,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             Id = -1; // Adding
             LocationIsDirty = true;
+
+            string orgLocGuid = GlobalAttributesCache.Read().GetValue( "OrganizationAddress" );
+
         }
     }
 }

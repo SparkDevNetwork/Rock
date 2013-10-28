@@ -501,9 +501,16 @@ namespace RockWeb.Blocks.CheckIn.Attended
             else
             {
                 selectedLocation = locationList.Where( l => l.Selected ).FirstOrDefault();
-            }            
+            }
 
-            Session["location"] = selectedLocation.Location.Id;
+            if ( selectedLocation != null )
+            {
+                Session["location"] = selectedLocation.Location.Id;
+            }
+            else
+            {
+                Session["location"] = null;
+            }
             lvLocation.DataBind();
             Session["locationList"] = locationList;
             pnlSelectLocation.Update();
@@ -515,7 +522,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="person">The person.</param>
         protected void BindSchedules( CheckInPerson person )
         {
-            int locationId = (int)Session["location"];
+            int locationId = 0;
+            if ( Session["location"] != null )
+            {
+                locationId = (int)Session["location"];
+            }
             var locationList = (List<CheckInLocation>)Session["locationList"];
             var selectedGroupType = new CheckInGroupType();
             var selectedGroup = new CheckInGroup();
@@ -661,7 +672,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var attribute = AttributeCache.Read( attributeId );
             Person.LoadAttributes();
             var attributeValue = Person.GetAttributeValue( attribute.Key );
-            attribute.AddControl( fsNotes.Controls, attributeValue, true, true );
+            attribute.AddControl( fsNotes.Controls, attributeValue, string.Empty, true, true );
             hfAttributeId.Value = attribute.Id.ToString();
             mpeAddNote.Show();
         }

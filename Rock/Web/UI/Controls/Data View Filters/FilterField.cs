@@ -56,7 +56,7 @@ namespace Rock.Web.UI.Controls
             string script = @"
 // activity animation
 $('.filter-item > header').click(function () {
-    $(this).siblings('.widget-content').slideToggle();
+    $(this).siblings('.panel-body').slideToggle();
     $(this).children('div.pull-left').children('div').slideToggle();
 
     $expanded = $(this).children('input.filter-expanded');
@@ -305,7 +305,7 @@ $('.filter-item-select').click(function (event) {
                 if ( component != null )
                 {
                     clientFormatString =
-                       string.Format( "if ($(this).children('i').attr('class') == 'icon-chevron-up') {{ var $article = $(this).parents('article:first'); var $content = $article.children('div.widget-content'); $article.find('div.filter-item-description:first').html({0}); }}", component.GetClientFormatSelection( FilteredEntityType ) );
+                       string.Format( "if ($(this).find('.filter-view-state').children('i').attr('class') == 'icon-chevron-up') {{ var $article = $(this).parents('article:first'); var $content = $article.children('div.panel-body'); $article.find('div.filter-item-description:first').html({0}); }}", component.GetClientFormatSelection( FilteredEntityType ) );
                 }
             }
 
@@ -314,10 +314,14 @@ $('.filter-item-select').click(function (event) {
                 hfExpanded.Value = "True";
             }
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget filter-item" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget filter-item" );
             writer.RenderBeginTag( "article" );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "clearfix" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix" );
+            if ( !string.IsNullOrEmpty( clientFormatString ) )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Onclick, clientFormatString );
+            }
             writer.RenderBeginTag( "header" );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-expanded" );
@@ -341,7 +345,11 @@ $('.filter-item-select').click(function (event) {
                 writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
             }
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.RenderBeginTag(HtmlTextWriterTag.Span);
             writer.Write( "Filter Type " );
+            writer.RenderEndTag();
+
             ddlFilterType.RenderControl( writer );
             writer.RenderEndTag();
 
@@ -350,10 +358,7 @@ $('.filter-item-select').click(function (event) {
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            if (!string.IsNullOrEmpty(clientFormatString))
-            {
-                writer.AddAttribute( HtmlTextWriterAttribute.Onclick, clientFormatString);
-            }
+            
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs filter-view-state" );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "icon-chevron-up" : "icon-chevron-down" );
@@ -366,7 +371,7 @@ $('.filter-item-select').click(function (event) {
 
             writer.RenderEndTag();
 
-            writer.AddAttribute( "class", "widget-content" );
+            writer.AddAttribute( "class", "panel-body" );
             if ( !Expanded )
             {
                 writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );

@@ -549,38 +549,50 @@ INNER JOIN Device D
 WHERE C.Name = 'Main Campus'
 
 
+DECLARE @tGroupLocationGuids TABLE ( [Guid] uniqueidentifier );
+INSERT INTO @tGroupLocationGuids
+SELECT '95363486-2A66-4916-8DFF-7A4C67200A4A'
+UNION ALL SELECT '9FEC12C8-1131-4881-8EB5-3A40FFC1D4C8'
+UNION ALL SELECT '36B7B587-44B1-44DE-9BD5-64D1BF73C25E'
+UNION ALL SELECT 'D3DA525C-65DC-4DDF-BCE9-2697753736AC'
+UNION ALL SELECT 'FEFDEE04-65BF-4F38-9203-0872BFE17D7C'
+UNION ALL SELECT 'F281B5AF-250F-4329-BCEC-3F00B3B4761C'
+UNION ALL SELECT '1F1F3271-8E18-4AB7-8F1B-D7C32AB0E328'
+UNION ALL SELECT '2F421E6E-D5C4-4910-80F6-E76EF7CBBB2E'
+UNION ALL SELECT '5E8B611A-F84A-45E1-8CB7-2584FC66F3C3'
+
 ---------------------------------------------------------------------------
 -- Add Groups to Locations
 ---------------------------------------------------------------------------
-DELETE [GroupLocation]
+DELETE [GroupLocation] where [Guid] in (select * from @tGroupLocationGuids)
 
   INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailing, IsLocation, Guid)
-   SELECT @NurseryGroupId, L.Id, 0,0,NEWID() FROM Location L WHERE L.Name = 'Bunnies Room'
+   SELECT @NurseryGroupId, L.Id, 0,0,'95363486-2A66-4916-8DFF-7A4C67200A4A' FROM Location L WHERE L.Name = 'Bunnies Room'
 
   INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailing, IsLocation, Guid)
-   SELECT @CrawlersWalkersGroupId, L.Id, 0,0,NEWID() FROM Location L WHERE L.Name = 'Kittens Room'
+   SELECT @CrawlersWalkersGroupId, L.Id, 0,0,'9FEC12C8-1131-4881-8EB5-3A40FFC1D4C8' FROM Location L WHERE L.Name = 'Kittens Room'
    
   INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailing, IsLocation, Guid)
-   SELECT @PreschoolGroupId, L.Id, 0,0,NEWID() FROM Location L WHERE L.Name = 'Puppies Room'
+   SELECT @PreschoolGroupId, L.Id, 0,0,'36B7B587-44B1-44DE-9BD5-64D1BF73C25E' FROM Location L WHERE L.Name = 'Puppies Room'
    
   INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailing, IsLocation, Guid)
-   SELECT @GradeK1GroupId, L.Id, 0,0,NEWID() FROM Location L WHERE L.Name = 'Bears Room'
+   SELECT @GradeK1GroupId, L.Id, 0,0,'D3DA525C-65DC-4DDF-BCE9-2697753736AC' FROM Location L WHERE L.Name = 'Bears Room'
 
   INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailing, IsLocation, Guid)
-   SELECT @Grade23GroupId, L.Id, 0,0,NEWID() FROM Location L WHERE L.Name = 'Bobcats Room'
+   SELECT @Grade23GroupId, L.Id, 0,0,'FEFDEE04-65BF-4F38-9203-0872BFE17D7C' FROM Location L WHERE L.Name = 'Bobcats Room'
    
   INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailing, IsLocation, Guid)
-   SELECT @Grade46GroupId, L.Id, 0,0,NEWID() FROM Location L WHERE L.Name = 'Outpost Room'  
+   SELECT @Grade46GroupId, L.Id, 0,0,'F281B5AF-250F-4329-BCEC-3F00B3B4761C' FROM Location L WHERE L.Name = 'Outpost Room'  
 
   INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailing, IsLocation, Guid)
-   SELECT @JHGroupId, L.Id, 0,0,NEWID() FROM Location L WHERE L.Name = 'the Warehouse' 
+   SELECT @JHGroupId, L.Id, 0,0,'1F1F3271-8E18-4AB7-8F1B-D7C32AB0E328' FROM Location L WHERE L.Name = 'the Warehouse' 
    
   INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailing, IsLocation, Guid)
-   SELECT @HSGroupId, L.Id, 0,0,NEWID() FROM Location L WHERE L.Name = 'the Garage' 
+   SELECT @HSGroupId, L.Id, 0,0,'2F421E6E-D5C4-4910-80F6-E76EF7CBBB2E' FROM Location L WHERE L.Name = 'the Garage' 
    
   -- Add Test group to each location
   INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailing, IsLocation, Guid)
-   SELECT @TestGroupId, L.Id, 0,0,NEWID() FROM Location L WHERE L.ParentLocationId = @BuildingLocationId
+   SELECT @TestGroupId, L.Id, 0,0,'5E8B611A-F84A-45E1-8CB7-2584FC66F3C3' FROM Location L WHERE L.ParentLocationId = @BuildingLocationId
 
 ---------------------------------------------------------------------------
 -- Add Group Locations to Schedules

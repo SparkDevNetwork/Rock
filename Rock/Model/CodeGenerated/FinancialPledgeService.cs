@@ -81,18 +81,27 @@ namespace Rock.Model
             else
             {
                 var target = new FinancialPledge();
-                target.PersonId = source.PersonId;
-                target.AccountId = source.AccountId;
-                target.TotalAmount = source.TotalAmount;
-                target.PledgeFrequencyValueId = source.PledgeFrequencyValueId;
-                target.StartDate = source.StartDate;
-                target.EndDate = source.EndDate;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another FinancialPledge object to this FinancialPledge object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this FinancialPledge target, FinancialPledge source )
+        {
+            target.PersonId = source.PersonId;
+            target.AccountId = source.AccountId;
+            target.TotalAmount = source.TotalAmount;
+            target.PledgeFrequencyValueId = source.PledgeFrequencyValueId;
+            target.StartDate = source.StartDate;
+            target.EndDate = source.EndDate;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

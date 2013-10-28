@@ -76,7 +76,7 @@ namespace Rock.Financial
         /// <summary>
         /// Gets the account number.
         /// </summary>
-        public virtual string AccountNumber { get { return string.Empty; } }
+        public virtual string MaskedNumber { get { return string.Empty; } }
 
         /// <summary>
         /// Gets the currency type value.

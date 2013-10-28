@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace Rock.Web
@@ -23,30 +24,15 @@ namespace Rock.Web
         /// </summary>
         /// <param name="term">The term.</param>
         /// <param name="description">The description.</param>
+        /// <param name="showIfBlank">if set to <c>true</c> [show if blank].</param>
         /// <returns></returns>
-        public DescriptionList Add( string term, string description )
+        public DescriptionList Add( string term, object description, bool showIfBlank = false )
         {
-            _termDescriptionList.Add( term, description );
-            return this;
-        }
-
-        /// <summary>
-        /// Adds the specified term.
-        /// </summary>
-        /// <param name="term">The term.</param>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        public DescriptionList Add( string term, Rock.Model.Person person )
-        {
-            if ( person != null )
+            string value = description != null ? description.ToString() : string.Empty;
+            if ( !string.IsNullOrWhiteSpace( value ) || showIfBlank )
             {
-                _termDescriptionList.Add( term, person.FullName );
+                _termDescriptionList.Add( term, value );
             }
-            else
-            {
-                _termDescriptionList.Add( term, null );
-            }
-            
             return this;
         }
 
@@ -56,39 +42,18 @@ namespace Rock.Web
         /// <param name="term">The term.</param>
         /// <param name="dateTime">The date time.</param>
         /// <param name="format">The format.</param>
+        /// <param name="showIfBlank">if set to <c>true</c> [show if blank].</param>
         /// <returns></returns>
-        public DescriptionList Add( string term, DateTime? dateTime, string format = "g" )
+        public DescriptionList Add( string term, DateTime? dateTime, string format = "g", bool showIfBlank = false )
         {
             if ( dateTime != null )
             {
-                _termDescriptionList.Add( term, dateTime.Value.ToString(format) );
+                return Add(term, dateTime.Value.ToString(format), showIfBlank);
             }
             else
             {
-                _termDescriptionList.Add( term, null );
+                return Add( term, null, showIfBlank );
             }
-
-            return this;
-        }
-
-        /// <summary>
-        /// Adds the specified term.
-        /// </summary>
-        /// <param name="term">The term.</param>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public DescriptionList Add( string term, int? value )
-        {
-            if ( value != null )
-            {
-                _termDescriptionList.Add( term, value.ToString() );
-            }
-            else
-            {
-                _termDescriptionList.Add( term, null );
-            }
-
-            return this;
         }
 
         /// <summary>
@@ -111,32 +76,38 @@ namespace Rock.Web
         {
             get
             {
-                string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
-
-                string result = @"<div class='col-md-6'><dl>";
-
-                foreach ( var pair in _termDescriptionList )
+                if ( _termDescriptionList.Any() )
                 {
-                    string displayValue = pair.Value;
-                    if ( string.IsNullOrWhiteSpace( displayValue ) )
+                    string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
+
+                    string result = @"<div class='col-md-6'><dl>";
+
+                    foreach ( var pair in _termDescriptionList )
                     {
-                        displayValue = Rock.Constants.None.TextHtml;
-                    }
+                        string displayValue = pair.Value;
+                        if ( string.IsNullOrWhiteSpace( displayValue ) )
+                        {
+                            displayValue = Rock.Constants.None.TextHtml;
+                        }
 
 
-                    if ( pair.Key == ColumnBreak )
-                    {
-                        result += @"</dl></div><div class='col-md-6'><dl>";
+                        if ( pair.Key == ColumnBreak )
+                        {
+                            result += @"</dl></div><div class='col-md-6'><dl>";
+                        }
+                        else
+                        {
+                            result += string.Format( descriptionFormat, pair.Key, displayValue );
+                        }
                     }
-                    else
-                    {
-                        result += string.Format( descriptionFormat, pair.Key, displayValue );
-                    }
+
+                    result += @"</dl></div>";
+
+                    return result;
                 }
 
-                result += @"</dl></div>";
+                return string.Empty;
 
-                return result;
             }
         }
 

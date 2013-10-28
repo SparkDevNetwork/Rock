@@ -292,19 +292,11 @@ namespace Rock.Web.Cache
         /// Adds the control.
         /// </summary>
         /// <param name="controls">The controls.</param>
-        public void AddControl( ControlCollection controls )
-        {
-            AddControl( controls, string.Empty, false, false );
-        }
-
-        /// <summary>
-        /// Adds the control.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
         /// <param name="value">The value.</param>
+        /// <param name="validationGroup">The validation group.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="setId">if set to <c>true</c> [set id].</param>
-        public void AddControl( ControlCollection controls, string value, bool setValue, bool setId)
+        public void AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId)
         {
             Control attributeControl = this.FieldType.Field.EditControl( QualifierValues, setId ? string.Format( "attribute_field_{0}", this.Id ) : string.Empty );
             if ( setId )
@@ -321,6 +313,7 @@ namespace Rock.Web.Cache
                 rockControl.Label = this.Name;
                 rockControl.Help = this.Description;
                 rockControl.Required = this.IsRequired;
+                rockControl.ValidationGroup = validationGroup;
             }
             else
             {

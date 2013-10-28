@@ -397,11 +397,11 @@ $(document).ready(function() {
         {
             if ( dataView.Id > 0 )
             {
-                lActionTitle.Text = ActionTitle.Edit( DataView.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Edit( DataView.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( DataView.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Add( DataView.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             SetEditMode( true );
@@ -432,33 +432,36 @@ $(document).ready(function() {
         {
             SetEditMode( false );
             hfDataViewId.SetValue( dataView.Id );
-            lReadOnlyTitle.Text = dataView.Name;
+            lReadOnlyTitle.Text = dataView.Name.FormatAsHtmlTitle();
 
-            DescriptionList descriptionList = new DescriptionList();
+            lDescription.Text = dataView.Description;
+
+            DescriptionList descriptionListMain = new DescriptionList();
 
             if ( dataView.EntityType != null )
             {
-                descriptionList.Add( "Applies To", dataView.EntityType.FriendlyName );
+                descriptionListMain.Add( "Applies To", dataView.EntityType.FriendlyName );
             }
 
             if ( dataView.Category != null )
             {
-                descriptionList.Add( "Category", dataView.Category.Name );
-            }
-
-            descriptionList.Add( "Description", dataView.Description );
-
-            if ( dataView.DataViewFilter != null && dataView.EntityTypeId.HasValue )
-            {
-                descriptionList.Add( "Filter", dataView.DataViewFilter.ToString( EntityTypeCache.Read( dataView.EntityTypeId.Value ).GetEntityType() ) );
+                descriptionListMain.Add( "Category", dataView.Category.Name );
             }
 
             if ( dataView.TransformEntityType != null )
             {
-                descriptionList.Add( "Post-filter Transformation", dataView.TransformEntityType.FriendlyName );
+                descriptionListMain.Add( "Post-filter Transformation", dataView.TransformEntityType.FriendlyName );
             }
 
-            lblMainDetails.Text = descriptionList.Html;
+            lblMainDetails.Text = descriptionListMain.Html;
+
+            DescriptionList descriptionListFilters = new DescriptionList();
+
+            if (dataView.DataViewFilter != null && dataView.EntityTypeId.HasValue)
+            {
+                descriptionListFilters.Add("Filter", dataView.DataViewFilter.ToString(EntityTypeCache.Read(dataView.EntityTypeId.Value).GetEntityType()));
+            }
+            lFilters.Text = descriptionListFilters.Html;
 
             ShowReport( dataView );
         }
@@ -722,7 +725,13 @@ $(document).ready(function() {
         {
             var dataViewFilter = new DataViewFilter();
             dataViewFilter.ExpressionType = FilterExpressionType.GroupAll;
+
             BindDataTransformations();
+
+            var emptyFilter = new DataViewFilter();
+            emptyFilter.ExpressionType = FilterExpressionType.Filter;
+            dataViewFilter.ChildFilters.Add( emptyFilter );
+
             CreateFilterControl( ddlEntityType.SelectedValueAsInt(), dataViewFilter, false );
         }
 

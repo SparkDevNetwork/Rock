@@ -635,7 +635,7 @@ achieve our mission.  We are so grateful for your commitment.
                         savedAccount.PersonId = transaction.AuthorizedPersonId.Value;
                         savedAccount.FinancialTransactionId = transaction.Id;
                         savedAccount.Name = txtSaveAccount.Text;
-                        savedAccount.MaskedAccountNumber = paymentInfo.AccountNumber;
+                        savedAccount.MaskedAccountNumber = paymentInfo.MaskedNumber;
 
                         var savedAccountService = new FinancialPersonSavedAccountService();
                         savedAccountService.Add( savedAccount, CurrentPersonId );
@@ -789,7 +789,7 @@ achieve our mission.  We are so grateful for your commitment.
                             // Create Family Role
                             var groupMember = new GroupMember();
                             groupMember.Person = person;
-                            groupMember.GroupRole = new GroupRoleService().Get(new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) );
+                            groupMember.GroupRole = new GroupTypeRoleService().Get(new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) );
 
                             // Create Family
                             var group = new Group();
@@ -1010,7 +1010,7 @@ achieve our mission.  We are so grateful for your commitment.
             tdTotal.Description = paymentInfo.Amount.ToString( "C" );
 
             tdPaymentMethod.Description = paymentInfo.CurrencyTypeValue.Description;
-            tdAccountNumber.Description = paymentInfo.AccountNumber;
+            tdAccountNumber.Description = paymentInfo.MaskedNumber;
             tdWhen.Description = schedule != null ? schedule.ToString() : "Today";
 
             return true;
@@ -1401,7 +1401,7 @@ achieve our mission.  We are so grateful for your commitment.
                     var mm = curr.getMonth()+1;
                     var yy = curr.getFullYear();
                     $dateInput.val(mm+'/'+dd+'/'+yy);
-                    $dateInput.data('kendoDatePicker').value(mm+'/'+dd+'/'+yy);
+                    $dateInput.data('datePicker').value(mm+'/'+dd+'/'+yy);
                 }}
             }};
             
