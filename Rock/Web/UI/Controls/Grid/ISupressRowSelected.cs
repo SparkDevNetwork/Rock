@@ -8,8 +8,8 @@ using System;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// By default any BoundField will participate in the RowSelected event of the grid.  A custom BoundField can implement
-    /// this interface to prevent the RowSelected event from being fired when this field (column) is clicked on
+    /// By default all columns in the grid will fire the OnRowSelected event when a user clicks on a cell in that column. A Grid Field can implement
+    /// this interface to prevent the OnRowSelected event from being fired when this field (column) is clicked
     /// </summary>
     public interface INotRowSelectedField
     {
