@@ -7547,6 +7547,10 @@ h1 {
 }
 body {
   background: #85b11c url('../Assets/Images/background.jpg') top right no-repeat fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
 }
 @media all and (-webkit-min-device-pixel-ratio: 1.5) {
   body {
@@ -7653,6 +7657,13 @@ body {
   font-weight: 300;
   padding-top: 28px;
 }
+/* bootbox modal styles */
+.bootbox .modal-content {
+  background-color: #85b11c;
+}
+.bootbox .modal-footer {
+  border-top-color: #b8e350;
+}
 .checkin-search-body {
   margin-right: auto !important;
   margin-left: auto !important;
@@ -7687,12 +7698,6 @@ input.checkin-phone-entry {
   color: #ffffff;
 }
 /***********************  DEVELOPER ADDITIONS BELOW  ***********************/
-body {
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;
-  background-size: cover;
-}
 .attended h1,
 .attended h2,
 .attended h3,
