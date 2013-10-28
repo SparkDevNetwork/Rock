@@ -107,7 +107,15 @@ namespace Rock.Model
         public Location GetByGeoLocation( DbGeography value )
         {
             // get the first address that has a GeoPoint or GeoFence that matches the value
-            return Queryable().Where( a => a.GeoPoint == value || a.GeoFence == value ).FirstOrDefault();
+            var result = Queryable().Where( a => a.GeoPoint != null ).Where( a => a.GeoPoint.SpatialEquals(value)).FirstOrDefault();
+            
+            if ( result == null )
+            {
+                result = Queryable().Where( a => a.GeoFence != null ).Where( a => a.GeoFence.SpatialEquals( value ) ).FirstOrDefault();
+            }
+
+            return result;
+            
         }
 
         /// <summary>

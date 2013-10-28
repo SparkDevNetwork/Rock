@@ -113,7 +113,14 @@ namespace Rock.Web.UI.Controls
                         }
                     case LocationPickerMode.LatLong:
                         {
-                            return new LocationService().GetByGeoLocation( _locationGeoPicker.SelectedValue );
+                            if ( _locationGeoPicker.SelectedValue != null )
+                            {
+                                return new LocationService().GetByGeoLocation( _locationGeoPicker.SelectedValue );
+                            }
+                            else
+                            {
+                                return null;
+                            }
                         }
                     default:
                         {
@@ -127,7 +134,14 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 _locationAddressPicker.SetValue( value );
                 _locationItemPicker.SetValue( value );
-                _locationGeoPicker.SetValue( value.GeoPoint ?? value.GeoFence );
+                if ( value != null )
+                {
+                    _locationGeoPicker.SetValue( value.GeoPoint ?? value.GeoFence );
+                }
+                else
+                {
+                    _locationGeoPicker.SetValue( null );
+                }
             }
         }
 
