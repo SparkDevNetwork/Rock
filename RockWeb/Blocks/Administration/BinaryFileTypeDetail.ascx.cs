@@ -11,6 +11,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock;
 using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Administration
@@ -101,12 +102,12 @@ namespace RockWeb.Blocks.Administration
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 binaryFileType = new BinaryFileTypeService().Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( BinaryFileType.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Edit( BinaryFileType.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
                 binaryFileType = new BinaryFileType { Id = 0 };
-                lActionTitle.Text = ActionTitle.Add( BinaryFileType.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Add( BinaryFileType.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             BinaryFileAttributesState = new ViewStateList<Attribute>();

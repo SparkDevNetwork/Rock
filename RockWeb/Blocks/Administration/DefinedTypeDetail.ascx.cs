@@ -164,11 +164,11 @@ namespace RockWeb.Blocks.Administration
         {
             if ( definedType.Id > 0 )
             {
-                lActionTitle.Text = ActionTitle.Edit( DefinedType.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Edit( DefinedType.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( DefinedType.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Add( DefinedType.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             SetEditMode( true );

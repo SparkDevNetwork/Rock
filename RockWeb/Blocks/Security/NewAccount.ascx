@@ -21,14 +21,14 @@
                         if (getData) {
                             if (availabilityMessageRow.is(':visible')) {
                                 usernameUnavailable.html('This username is available.');
-                                usernameUnavailable.addClass('success');
-                                usernameUnavailable.removeClass('warning');
+                                usernameUnavailable.addClass('alert-success');
+                                usernameUnavailable.removeClass('alert-warning');
                             }
                         } else {
                             availabilityMessageRow.show();
                             usernameUnavailable.html('This username is already taken!');
-                            usernameUnavailable.addClass('warning');
-                            usernameUnavailable.removeClass('success');
+                            usernameUnavailable.addClass('alert-warning');
+                            usernameUnavailable.removeClass('alert-success');
                         }
                     },
                     error: function (xhr, status, error) {
