@@ -75,8 +75,19 @@ namespace Rock.Reporting.DataTransform.Person
         /// </value>
         public override string GetClientFormatSelection( Type entityType )
         {
-            return "'In group: ' + $('.group-picker', $content).find('.selected-names').text() +  " +
-                "', with role: ' +  $('.group-role-picker', $content).find(':selected').text()";
+            return @"
+function() {
+  var groupName = $('.group-picker', $content).find('.selected-names').text();
+  var checkedRoles = $('.rock-check-box-list', $content).find(':checked').closest('label');
+  var result = 'In group: ' + groupName;
+  if (checkedRoles.length > 0) {
+     var roleCommaList = checkedRoles.map(function() { return $(this).text() }).get().join(',');
+     result = result + ', with role(s): ' + roleCommaList;
+  }
+
+  return result;
+}
+";
         }
 
         /// <summary>
@@ -92,14 +103,17 @@ namespace Rock.Reporting.DataTransform.Person
             if ( selectionValues.Length >= 2 )
             {
                 var group = new GroupService().Get( selectionValues[0].AsInteger() ?? 0 );
-                var groupTypeRole = new GroupTypeRoleService().Get( selectionValues[1].AsInteger() ?? 0 );
+
+                var groupTypeRoleIdList = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsInteger() ).ToList();
+
+                var groupTypeRoles = new GroupTypeRoleService().Queryable().Where( a => groupTypeRoleIdList.Contains( a.Id ) ).ToList();
 
                 if ( group != null )
                 {
                     result = string.Format( "In group: {0}", group.Name );
-                    if ( groupTypeRole != null )
+                    if ( groupTypeRoles.Count() > 0 )
                     {
-                        result += string.Format( ", with role: {0}", groupTypeRole.Name );
+                        result += string.Format( ", with role(s): {0}", groupTypeRoles.Select(a => a.Name).ToList().AsDelimited(",") );
                     }
                 }
             }
@@ -107,8 +121,15 @@ namespace Rock.Reporting.DataTransform.Person
             return result;
         }
 
+        /// <summary>
+        /// The GroupPicker
+        /// </summary>
         private GroupPicker gp = null;
-        private GroupRolePicker grp = null;
+        
+        /// <summary>
+        /// The GroupTypeRole CheckBoxList
+        /// </summary>
+        private RockCheckBoxList cblRole = null;
 
         /// <summary>
         /// Creates the child controls.
@@ -122,12 +143,12 @@ namespace Rock.Reporting.DataTransform.Person
             gp.SelectItem += gp_SelectItem;
             filterControl.Controls.Add( gp );
 
-            grp = new GroupRolePicker();
-            grp.Label = "with Group Role";
-            grp.ID = filterControl.ID + "_1";
-            filterControl.Controls.Add( grp );
+            cblRole = new RockCheckBoxList();
+            cblRole.Label = "with Group Role(s)";
+            cblRole.ID = filterControl.ID + "_1";
+            filterControl.Controls.Add( cblRole );
 
-            return new Control[2] { gp, grp };
+            return new Control[2] { gp, cblRole };
         }
 
         /// <summary>
@@ -142,12 +163,19 @@ namespace Rock.Reporting.DataTransform.Person
             var group = groupService.Get( groupId );
             if ( group != null )
             {
-                grp.GroupTypeId = group.GroupTypeId;
-                grp.Visible = true;
+                var groupTypeRoleService = new GroupTypeRoleService();
+                var list = groupTypeRoleService.Queryable().Where( a => a.GroupTypeId == group.GroupTypeId ).OrderBy( a => a.Order ).ToList();
+                cblRole.Items.Clear();
+                foreach ( var item in list )
+                {
+                    cblRole.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
+                }
+                
+                cblRole.Visible = list.Count > 0;
             }
             else
             {
-                grp.Visible = false;
+                cblRole.Visible = false;
             }
         }
 
@@ -173,7 +201,7 @@ namespace Rock.Reporting.DataTransform.Person
         public override string GetSelection( Type entityType, Control[] controls )
         {
             var value1 = ( controls[0] as GroupPicker ).SelectedValueAsId().ToString();
-            var value2 = ( controls[1] as GroupRolePicker ).GroupRoleId.ToString();
+            var value2 = ( controls[1] as RockCheckBoxList ).SelectedValuesAsInt.AsDelimited( "," );
             return value1 + "|" + value2;
         }
 
@@ -189,8 +217,16 @@ namespace Rock.Reporting.DataTransform.Person
             if ( selectionValues.Length >= 2 )
             {
                 ( controls[0] as GroupPicker ).SetValue( selectionValues[0].AsInteger() );
-                ( controls[1] as GroupRolePicker ).GroupRoleId = selectionValues[1].AsInteger();
+
                 gp_SelectItem( this, new EventArgs() );
+                
+                string[] selectedRoleIds = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+                RockCheckBoxList cblRole = ( controls[1] as RockCheckBoxList );
+
+                foreach ( var item in cblRole.Items.OfType<ListItem>() )
+                {
+                    item.Selected = selectedRoleIds.Contains( item.Value );
+                }
             }
         }
 
@@ -212,10 +248,10 @@ namespace Rock.Reporting.DataTransform.Person
 
                 var groupMemberServiceQry = groupMemberService.Queryable().Where( xx => xx.GroupId == groupId );
 
-                int groupRoleId = selectionValues[1].AsInteger() ?? 0;
-                if ( groupRoleId > 0 )
+                var groupRoleIds = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( n => int.Parse( n ) ).ToList();
+                if ( groupRoleIds.Count() > 0 )
                 {
-                    groupMemberServiceQry = groupMemberServiceQry.Where( xx => xx.GroupRoleId == groupRoleId );
+                    groupMemberServiceQry = groupMemberServiceQry.Where( xx => groupRoleIds.Contains(xx.GroupRoleId) );
                 }
 
                 var qry = new Rock.Data.Service<Rock.Model.Person>().Queryable()
