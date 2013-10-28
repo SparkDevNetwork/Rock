@@ -14,7 +14,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Attribute POCO Entity.
+    /// Represents an attribute or configuration setting in RockChMS
     /// </summary>
     [Table( "Attribute" )]
     [DataContract]
@@ -24,68 +24,70 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the System.
+        /// Gets or sets a flag indicating if this Attribute is part of the RockChMS core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// System.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this Attribute is part of the RockChMS core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
-        /// Gets or sets the Field Type Id.
+        /// Gets or sets the FieldTypeId of the <see cref="Rock.Model.FieldType"/> that is used to select/set the <see cref="Rock.Model.AttributeValue"/> for this Attribute setting.
+        /// The FieldType can also be used to enforce formatting of the attribute setting. This property is required.
         /// </summary>
         /// <value>
-        /// Field Type Id.
+        /// A <see cref="System.Int32"/> representing the FieldTyepId of the <see cref="Rock.Model.FieldType"/> that is used to select/set the <see cref="Rock.Model.AttributeValue"/>
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int FieldTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the entity type id.
+        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that this Attribute is used to configure. This property will not be populated if the Attribute is a Global (system) Attribute.
         /// </summary>
         /// <value>
-        /// The entity type id.
+        /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that this Attribute is used to configure. This property will be null if the Attribute is a Global (system)
+        /// Attribute.
         /// </value>
         [DataMember]
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the entity.
+        /// Gets or sets the <see cref="Rock.Model.EntityType"/> that this Attribute is used to configure. This property will not be populated if the Attribute is a Global (system) Attribute.
         /// </summary>
         /// <value>
-        /// The type of the entity.
+        /// The <see cref="Rock.Model.EntityType"/> that this Attribute is used to configure. This property will be null if the Attribute is a Global (system) Attribute.
         /// </value>
         [DataMember]
         public virtual Model.EntityType EntityType { get; set; }
 
         /// <summary>
-        /// Gets or sets the Entity Qualifier Column.
+        /// Gets or sets the entity type qualifier column that contains the value (see <see cref="EntityTypeQualifierValue"/>) that is used narrow the scope of the Attribute to a subset or specific instance of an EntityType.
         /// </summary>
         /// <value>
-        /// Entity Qualifier Column.
+        /// A <see cref="System.String"/> representing the name of the Qualifier Column/Property that contains the <see cref="EntityTypeQualifierValue"/> that is used to narrow the scope of the Attribute.
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
         public string EntityTypeQualifierColumn { get; set; }
         
         /// <summary>
-        /// Gets or sets the Entity Qualifier Value.
+        /// Gets or sets the entity type qualifier value that is used to narrow the scope of the Attribute to a subset or specific instance of an EntityType.
         /// </summary>
         /// <value>
-        /// Entity Qualifier Value.
+        /// A <see cref="System.String"/> that represents the value that is used to narrow the scope of the Attribute.
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
         public string EntityTypeQualifierValue { get; set; }
         
         /// <summary>
-        /// Gets or sets the Key.
+        /// Gets sets the Key value  that is used to reference and call the Attribute. This property is required.
         /// </summary>
         /// <value>
-        /// Key.
+        /// A <see cref="System.String"/> that represents the Key value that is used to reference and call the Attribute.
         /// </value>
         [Required]
         [MaxLength( 50 )]
@@ -93,10 +95,10 @@ namespace Rock.Model
         public string Key { get; set; }
         
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the Name of the Attribute. This property is required.
         /// </summary>
         /// <value>
-        /// Name.
+        /// A <see cref="System.String"/> that represents the name of the Attribute.
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -104,58 +106,58 @@ namespace Rock.Model
         public string Name { get; set; }
         
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the description of the Attribute.
         /// </summary>
         /// <value>
-        /// Description.
+        /// A <see cref="System.String"/> that represents the description of the Attribute.
         /// </value>
         [DataMember]
         public string Description { get; set; }
         
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the display order of the attribute.
         /// </summary>
         /// <value>
-        /// Order.
+        /// A <see cref="System.Int32"/> representing the display order of the Attribute.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int Order { get; set; }
         
         /// <summary>
-        /// Gets or sets the Grid Column.
+        /// Gets or sets a flag indicating if this Attribute is a Grid Column?
         /// </summary>
         /// <value>
-        /// Grid Column.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this Attribute is a grid column; otherwise <c>false</c>
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsGridColumn { get; set; }
         
         /// <summary>
-        /// Gets or sets the Default Value.
+        /// Gets or sets the Attribute's default value.
         /// </summary>
         /// <value>
-        /// Default Value.
+        /// A <see cref="System.String"/> representing the Attribute's default value.
         /// </value>
         [DataMember]
         public string DefaultValue { get; set; }
         
         /// <summary>
-        /// Gets or sets the Multi Value.
+        /// Gets or sets a flag indicating if the Attribute supports multiple values.
         /// </summary>
         /// <value>
-        /// Multi Value.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if the attribute supports multiple values; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsMultiValue { get; set; }
         
         /// <summary>
-        /// Gets or sets the Required.
+        /// Gets or sets a flag indicating if a value is required.
         /// </summary>
         /// <value>
-        /// Required.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if a value is required, otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -166,10 +168,10 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the Attribute Qualifiers.
+        /// Gets or sets a collection containing the <see cref="Rock.Model.AttributeQualifer">AttributeQualifiers</see> for this Attribute.
         /// </summary>
         /// <value>
-        /// Collection of Attribute Qualifiers.
+        /// Collection of <see cref="Rock.Model.AttributeQualifiers"/> for this attribute.
         /// </value>
         [DataMember]
         public virtual ICollection<AttributeQualifier> AttributeQualifiers
@@ -180,19 +182,19 @@ namespace Rock.Model
         private ICollection<AttributeQualifier> _attributeQualifiers;
        
         /// <summary>
-        /// Gets or sets the Field Type.
+        /// Gets or sets the <see cref="Rock.Model.FieldType"/> that is used to get/capture the value of the Attribute
         /// </summary>
         /// <value>
-        /// A <see cref="FieldType"/> object.
+        /// The <see cref="Rock.Model.FieldType"/> that is used to get/capture the value of the Attribute.
         /// </value>
         [DataMember]
         public virtual FieldType FieldType { get; set; }
 
         /// <summary>
-        /// Gets or sets the categories.
+        /// Gets or sets the collection of <see cref="Rock.Model.Category">Categories</see> that this Attribute is associated with.
         /// </summary>
         /// <value>
-        /// The categories.
+        /// A collection of <see cref="Rock.Model.Category">Categories</see> that this Attribute is associated with.
         /// </value>
         [DataMember]
         public virtual ICollection<Category> Categories

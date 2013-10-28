@@ -27,28 +27,32 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the person id.
+        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who is being sent the <see cref="Rock.Model.Communication"/>.
         /// </summary>
         /// <value>
-        /// The person id.
+        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who is being sent the <see cref="Rock.Model.Communication"/>.
         /// </value>
         [DataMember]
         public int PersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets the communication id.
+        /// Gets or sets the the CommunicationId of the <see cref="Rock.Model.Communication"/>.
         /// </summary>
         /// <value>
-        /// The communication id.
+        /// A <see cref="System.Int32"/> representing the CommunicationId of the <see cref="Rock.Model.Communication"/>.
         /// </value>
         [DataMember]
         public int CommunicationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the status.
+        /// Gets or sets the status of the Communication submission to the recipient.
         /// </summary>
         /// <value>
-        /// The status.
+        /// A <see cref="Rock.Model.CommunicationRecipientStatus"/> Enum representing the status of <see cref="Rock.Model.Communication"/> submission to the recipient.
+        /// This property will be  <c>CommunicationRecipientStatus.Pending</c> when RockChMS is waiting to send the <see cref="Rock.Model.Communication"/> to the recipient;
+        /// <c>CommunicationRecipientStatus.Success</c> when RockChMS has successfully sent the <see cref="Rock.Model.Communication"/> to the recipient;
+        /// <c>CommunicationRecipientStatus.Failed</c> when the attempt to send the <see cref="Rock.Model.Communication"/> failed.
+        /// <c>CommunicaitonRecipientStatus.Cancelled</c> when the attempt to send the <see cref="Rock.Model.Communication"/> was canceled.
         /// </value>
         [DataMember]
         public CommunicationRecipientStatus Status { get; set; }
@@ -57,16 +61,16 @@ namespace Rock.Model
         /// Gets or sets the status note.
         /// </summary>
         /// <value>
-        /// The status note.
+        /// A <see cref="System.String"/> representing the status note.
         /// </value>
         [DataMember]
         public string StatusNote { get; set; }
 
         /// <summary>
-        /// Gets or sets the additional merge values json.
+        /// Gets or sets the AdditionalMergeValues as a Json string.
         /// </summary>
         /// <value>
-        /// The additional merge values json.
+        /// A Json formatted <see cref="System.String"/> containing the AdditionalMergeValues for the communication recipient. 
         /// </value>
         [DataMember]
         public string AdditionalMergeValuesJson
@@ -94,28 +98,28 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the person.
+        /// Gets or sets the <see cref="Rock.Model.Person"/> who is receiving the <see cref="Rock.Model.Communication"/>.
         /// </summary>
         /// <value>
-        /// The person.
+        /// The <see cref="Rock.Model.Person"/> who is receiving the <see cref="Rock.Model.Communication./>
         /// </value>
         [DataMember]
         public virtual Person Person { get; set; }
 
         /// <summary>
-        /// Gets or sets the communication.
+        /// Gets or sets the <see cref="Rock.Model.Communication"/>.
         /// </summary>
         /// <value>
-        /// The communication.
+        /// The <see cref="Rock.Model.Communication"/>
         /// </value>
         [DataMember]
         public virtual Communication Communication { get; set; }
 
         /// <summary>
-        /// Gets or sets the additional merge values.
+        /// Gets or sets a dictionary containing the Additional Merge values for this communication
         /// </summary>
         /// <value>
-        /// The additional merge values.
+        ///  A <see cref="System.Collection.Generic.Dictionary(String,String)"/> of <see cref="System.String"/> objects containing additional merge values for the <see cref="Rock.Model.Communication"/>
         /// </value>
         [DataMember]
         public virtual Dictionary<string, string> AdditionalMergeValues

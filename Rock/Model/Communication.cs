@@ -20,7 +20,7 @@ using Rock.Communication;
 namespace Rock.Model
 {
     /// <summary>
-    /// Communication POCO Entity.
+    /// Represents a communication in RockChMS (i.e. email, SMS message, etc.).
     /// </summary>
     [Table( "Communication" )]
     [DataContract]
@@ -30,82 +30,84 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the sender person id.
+        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who is the sender of the Communication
         /// </summary>
         /// <value>
-        /// The sender person id.
+        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person/> who is the sender of the Communcation.
         /// </value>
         [DataMember]
         public int? SenderPersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets the subject.
+        /// Gets or sets the Subject of the Communication
         /// </summary>
         /// <value>
-        /// The subject.
+        /// A <see cref="System.String"/> that represents the Subject of the communication.
         /// </value>
         [MaxLength( 100 )]
         public string Subject { get; set; }
 
         /// <summary>
-        /// Gets or sets the future send date time.
+        /// Gets or sets the future send date for the communication. This allows a user to schedule when a communication is sent 
+        /// and the communication will not be sent until that date and time.
         /// </summary>
         /// <value>
-        /// The future send date time.
+        /// A <see cref="System.DateTime"/> value that represents the FutureSendDate for the communication.  If no future send date is provided, this value will be null.
         /// </value>
         [DataMember]
         public DateTime? FutureSendDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the status.
+        /// Gets or sets the status of the Communication.
         /// </summary>
         /// <value>
-        /// The status.
+        /// A <see cref="Rock.Model.CommunicationStatus"/> enum value that represents the status of the Communication.
         /// </value>
         [DataMember]
         public CommunicationStatus Status { get; set; }
 
         /// <summary>
-        /// Gets or sets the reviewer person id.
+        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who is the reviewer of the Communication.
         /// </summary>
         /// <value>
-        /// The reviewer person id.
+        /// A <see cref="System.Int32" /> representing the PersonId of the <see cref="Rock.Model.Person"/> who is the reviewer of the Communication. If there is not reviewer
+        /// on this communication, this property will be null.
         /// </value>
         [DataMember]
         public int? ReviewerPersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets the reviewed date time.
+        /// Gets or sets the date and time stamp of when the Communication was reviewed.
         /// </summary>
         /// <value>
-        /// The reviewed date time.
+        /// A <see cref="System.DateTime"/> representing the date and time that the Communication was reviewed.
         /// </value>
         [DataMember]
         public DateTime? ReviewedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the reviewer note.
+        /// Gets or sets the note that was entered by the reviewer.
         /// </summary>
         /// <value>
-        /// The reviewer note.
+        /// A <see cref="System.String"/> representing a note that was entered by the reviewer.
         /// </value>
         [DataMember]
         public string ReviewerNote { get; set; }
 
         /// <summary>
-        /// Gets or sets the channel entity type id.
+        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the Communication Channel that is being used for this Communication.
         /// </summary>
         /// <value>
-        /// The channel entity type id.
+        /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the Communication Channel that is being used for this Communication. 
         /// </value>
         [DataMember]
         public int? ChannelEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the channel data json.
+        /// Gets or sets a Json formatted string containing the Channel specific data.
         /// </summary>
         /// <value>
-        /// The channel data json.
+        /// A Json formatted <see cref="System.String"/> that contains any Channel specific data.
         /// </value>
         public string ChannelDataJson
         {
@@ -128,10 +130,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets any additional merge fields.  
+        /// Gets or sets a Json string containing any additional merge fields for the Communication.
         /// </summary>
         /// <value>
-        /// The additional merge fields.
+        /// A Json formatted <see cref="System.String"/> that contains any additional merge fields for the Communication.
         /// </value>
         public string AdditionalMergeFieldsJson 
         {
@@ -158,16 +160,16 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the sender.
+        /// Gets or sets the <see cref="Rock.Model.Person"/> of the Communication's sender.
         /// </summary>
         /// <value>
-        /// The sender.
+        /// A <see cref="Rock.Model.Person"/> that represents the Communication's sender.
         /// </value>
         [DataMember]
         public virtual Person Sender { get; set; }
 
         /// <summary>
-        /// Gets or sets the reviewer.
+        /// Gets or sets the <see cref="Rock.Model.Person"/> of the Communication's reviewer.
         /// </summary>
         /// <value>
         /// The reviewer.
@@ -176,10 +178,10 @@ namespace Rock.Model
         public virtual Person Reviewer { get; set; }
 
         /// <summary>
-        /// Gets or sets the recipients.
+        /// Gets or sets a collection containing the <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> for the Communication.
         /// </summary>
         /// <value>
-        /// The recipients.
+        /// The <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> of the Communication.
         /// </value>
         [DataMember]
         public virtual ICollection<CommunicationRecipient> Recipients
@@ -190,19 +192,19 @@ namespace Rock.Model
         private ICollection<CommunicationRecipient> _recipients;
 
         /// <summary>
-        /// Gets or sets the communication channel.
+        /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the communications Channel that is being used by this Communication.
         /// </summary>
         /// <value>
-        /// The communication channel.
+        /// The <see cref="Rock.Model.EntityType"/> of the communications Channel that is being used by this Communication.
         /// </value>
         [DataMember]
         public virtual EntityType ChannelEntityType { get; set; }
 
         /// <summary>
-        /// Gets the channel component.
+        /// Gets the <see cref="Rock.Communication.ChannelComponent"/> for the communication channel that is being used.
         /// </summary>
         /// <value>
-        /// The channel component.
+        /// The <see cref="Rock.Model.ChannelComponent"/> for the communication channel that is being used.
         /// </value>
         public virtual ChannelComponent Channel
         {
@@ -236,7 +238,7 @@ namespace Rock.Model
         /// Gets or sets the data used by the selected communication channel.
         /// </summary>
         /// <value>
-        /// The channel data.
+        /// A <see cref="System.Collections.Generic.Dictionary(String,String)"/> of <see cref="Rock.Model.String"/> key value pairs that contain channel specific data.
         /// </value>
         [DataMember]
         public virtual Dictionary<string, string> ChannelData
@@ -252,7 +254,7 @@ namespace Rock.Model
         /// for the communication.
         /// </summary>
         /// <value>
-        /// The additional merge field list.
+        /// A <see cref="System.Collections.Generic.List(String)"/> of <see cref="Rock.Model.String"/> containing the additional merge field list.
         /// </value>
         [DataMember]
         public virtual List<string> AdditionalMergeFields
@@ -267,10 +269,10 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
-        /// Gets a channel data value.
+        /// Returns a channel data value.
         /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
+        /// <param name="key">A <see cref="System.String"/> containing the key associated with the value to retrieve. </param>
+        /// <returns>A <see cref="System.String"/> representing the value that is linked with the specified key.</returns>
         public string GetChannelDataValue( string key )
         {
             if ( ChannelData.ContainsKey( key ) )
@@ -284,10 +286,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Sets a channel data value.
+        /// Sets a channel data value. If the key exists, the value will be replaced with the new value, otherwise a new key value pair will be added to dictionary.
         /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="key">A <see cref="System.String"/> representing the key.</param>
+        /// <param name="value">A <see cref="System.String"/> representing the value.</param>
         public void SetChannelDataValue( string key, string value )
         {
             if ( ChannelData.ContainsKey( key ) )

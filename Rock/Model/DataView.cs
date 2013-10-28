@@ -29,20 +29,20 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the System.
+        /// Gets or sets a flag indicating if this DataView is part of the RockChMS core system/framework.
         /// </summary>
         /// <value>
-        /// System indicates whether or not the campus is part of the core framework/system.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if it is part of the RockChMS core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the Name of the DataView.
         /// </summary>
         /// <value>
-        /// Given Name.
+        /// A <see cref="System.String"/> representing the Name of the DataView.
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -50,19 +50,19 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the user defined description of the DataView
         /// </summary>
         /// <value>
-        /// Notes about the job..
+        /// A <see cref="System.String"/> representing the description of the DataView.
         /// </value>
         [DataMember]
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the category id.
+        /// Gets or sets the CategoryId of the <see cref="Rock.Model.Category"/> that this DataView belongs to. If there is no Category, this value will be null.
         /// </summary>
         /// <value>
-        /// The category id.
+        /// A <see cref="System.Int32"/> representing the CategoryId of the <see cref="Rock.Model.Category"/> that this DataView belongs to. If it is not part of a Category this value will be null.
         /// </value>
         [DataMember]
         public int? CategoryId { get; set; }
