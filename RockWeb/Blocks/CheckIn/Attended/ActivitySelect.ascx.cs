@@ -149,12 +149,14 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
             .People.Where( p => p.Person.Id == personId ).FirstOrDefault();
 
-            foreach ( RepeaterItem item in rSchedule.Items )
-            {
-                ( (LinkButton)item.FindControl( "lbSelectSchedule" ) ).RemoveCssClass( "active" );
-            }
-
-            ( (LinkButton)e.Item.FindControl( "lbSelectSchedule" ) ).AddCssClass( "active" );
+            //if ( System.Text.RegularExpressions.Regex.IsMatch( ( (LinkButton)e.Item.FindControl( "lbSelectSchedule" ) ).CssClass, @"\s*\b" + "active" + @"\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase ) )
+            //{
+            //    ( (LinkButton)e.Item.FindControl( "lbSelectSchedule" ) ).RemoveCssClass( "active" );
+            //}
+            //else
+            //{
+                ( (LinkButton)e.Item.FindControl( "lbSelectSchedule" ) ).AddCssClass( "active" );
+            //}
             pnlSelectSchedule.Update();
             Session["schedule"] = int.Parse( e.CommandArgument.ToString() );
 
@@ -168,16 +170,17 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var locations = groups.SelectMany( g => g.Locations ).ToList();
             var schedules = locations.SelectMany( l => l.Schedules ).Where( s => s.Schedule.Id == scheduleId ).ToList();
 
-            // clear out any locations that are currently selected for the chosen schedule. 
-            var locationsToClear = locations.Where( l => l.Schedules.Any( s => s.Schedule.Id == scheduleId && s.Selected ) ).ToList();
+            // clear out any schedules that are currently selected for the chosen schedule. 
+            var schedulesToClear = schedules.Where( s => s.Schedule.Id == scheduleId && s.Selected ).ToList();
+            schedulesToClear.ForEach( s => s.Selected = false );
+
+            // clear out any locations where all the schedules are not selected
+            var locationsToClear = locations.Where( l => l.Schedules.All( s => s.Selected == false ) ).ToList();
             locationsToClear.ForEach( l => l.Selected = false );
 
             // clear out any groups where all the locations are not selected.
             var groupsToClear = groups.Where( g => g.Locations.All( l => l.Selected == false ) ).ToList();
             groupsToClear.ForEach( g => g.Selected = false );
-
-            // clear out all the schedules before picking the selected one below.
-            schedules.ForEach( s => s.Selected = false );
 
             var chosenGroupType = person.GroupTypes.Where( gt => gt.Groups.Any( g => g.Locations.Any( l => l.Location.Id == locationId ) ) ).FirstOrDefault();
             chosenGroupType.Selected = true;
@@ -187,7 +190,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             chosenGroup.Selected = true;
             var chosenLocation = chosenGroup.Locations.Where( l => l.Location.Id == locationId ).FirstOrDefault();
             chosenLocation.Selected = true;
-            chosenLocation.Schedules.ForEach( s => s.Selected = false );
             var chosenSchedule = chosenLocation.Schedules.Where( s => s.Schedule.Id == scheduleId ).FirstOrDefault();
             chosenSchedule.Selected = true;
 
@@ -307,9 +309,19 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var selectedLocation = selectedGroup.Locations.Where( l => l.Selected && l.Location.Id == locationId).FirstOrDefault();
             var selectedSchedule = selectedLocation.Schedules.Where( s => s.Selected && s.Schedule.Id == scheduleId ).FirstOrDefault();
 
-            selectedGroup.Selected = false;
-            selectedLocation.Selected = false;
             selectedSchedule.Selected = false;
+
+            var clearLocation = selectedLocation.Schedules.All( s => s.Selected == false );
+            if ( clearLocation )
+            {
+                selectedLocation.Selected = false;
+            }
+
+            var clearGroup = selectedGroup.Locations.All( l => l.Selected == false );
+            if ( clearGroup )
+            {
+                selectedGroup.Selected = false;
+            }
 
             BindLocations( person );
             BindSchedules( person );
@@ -640,20 +652,75 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 activityGrid.Columns.Add( "Time", typeof( string ) );
                 activityGrid.Columns.Add( "Activity", typeof( string ) );
 
-                gSelectedList.DataSource = person.GroupTypes.Where( gt => gt.Selected )
-                    .SelectMany( gt => gt.Groups ).Where( g => g.Selected )
-                    .SelectMany( g => g.Locations ).Where( l => l.Selected )
-                    .Select( l => new
+                var selectedGroupTypes = person.GroupTypes.Where( gt => gt.Selected ).ToList();
+                var selectedGroups = selectedGroupTypes.SelectMany( gt => gt.Groups.Where( g => g.Selected ) ).ToList();
+                var selectedLocations = selectedGroups.SelectMany( g => g.Locations.Where( l => l.Selected ) ).ToList();
+                var selectedSchedules = selectedLocations.SelectMany( l => l.Schedules.Where( s => s.Selected ) ).ToList();
+
+                // A list that includes any selected locations and any selected schedules for those locations.
+                List<CheckInInfo> checkInInfoList = new List<CheckInInfo>();
+                foreach ( var location in selectedLocations )
+                {
+                    foreach ( var schedule in location.Schedules.Where( s => s.Selected ) )
                     {
-                        Location = l.Location.Name,
-                        Schedule = l.Schedules.Where( s => s.Selected ).Select( s => s.Schedule.Name ).FirstOrDefault(),
-                        StartTime = Convert.ToDateTime( l.Schedules.Where( s => s.Selected ).Select( s => s.StartTime ).FirstOrDefault() ).TimeOfDay,
-                        LocationId = l.Location.Id.ToString(),
-                        ScheduleId = l.Schedules.Where( s => s.Selected ).Select( s => s.Schedule.Id ).FirstOrDefault().ToString()
-                    } ).OrderBy( gt => gt.StartTime ).ToList();
+                        var checkInInfo = new CheckInInfo();
+                        checkInInfo.Location = location.Location.Name;
+                        checkInInfo.Schedule = schedule.Schedule.Name;
+                        checkInInfo.StartTime = Convert.ToDateTime( schedule.StartTime );
+                        checkInInfo.LocationId = location.Location.Id;
+                        checkInInfo.ScheduleId = schedule.Schedule.Id;
+                        checkInInfoList.Add( checkInInfo );
+                    }
+                }
+                gSelectedList.DataSource = checkInInfoList.OrderBy( c => c.StartTime ).ToList();
                 gSelectedList.DataBind();                
                 pnlSelectedGrid.Update();
             }            
+        }
+
+        /// <summary>
+        /// Gets or sets the selected locations.
+        /// </summary>
+        /// <value>
+        /// The selected locations.
+        /// </value>
+        protected List<CheckInLocation> SelectedLocations
+        {
+            get
+            {
+                var locations = ViewState["SelectedLocations"] as List<CheckInLocation>;
+                if ( locations == null )
+                {
+                    locations = new List<CheckInLocation>();
+                }
+                return locations;
+            }
+            set
+            {
+                ViewState["SelectedLocations"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Check In Information class used to bind the selected grid.
+        /// </summary>
+        protected class CheckInInfo
+        {
+            public string Location { get; set; }
+            public string Schedule { get; set; }
+            public DateTime? StartTime { get; set; }
+            public int LocationId { get; set; }
+            public int ScheduleId { get; set; }
+
+            public CheckInInfo()
+            {
+                Location = string.Empty;
+                Schedule = string.Empty;
+                StartTime = new DateTime?();
+                LocationId = 0;
+                ScheduleId = 0;
+            }
+
         }
 
         /// <summary>
@@ -672,7 +739,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var attribute = AttributeCache.Read( attributeId );
             Person.LoadAttributes();
             var attributeValue = Person.GetAttributeValue( attribute.Key );
-            attribute.AddControl( fsNotes.Controls, attributeValue, string.Empty, true, true );
+            attribute.AddControl( fsNotes.Controls, attributeValue, "", true, true );
             hfAttributeId.Value = attribute.Id.ToString();
             mpeAddNote.Show();
         }
