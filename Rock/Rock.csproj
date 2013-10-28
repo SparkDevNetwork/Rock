@@ -314,6 +314,7 @@
     <Compile Include="PersonProfile\Badge\NextSteps.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Reporting\DataFilter\Person\InGroupGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupFilter.cs" />
     <Compile Include="Reporting\FilterExpressionExtractor.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
