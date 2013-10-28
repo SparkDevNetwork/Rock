@@ -16,21 +16,20 @@
             <div id="pnlEditDetails" runat="server">
 
                 <fieldset>
-
-                    <div class="row">
-                        <div class="col-md-2"><Rock:HighlightLabel ID="hlFlaggedMessage" IconCssClass="icon-flag" LabelType="warning" runat="server" Visible="false" ToolTip="re-approve the request to clear the flags" /></div>
-                        <div class="col-md-1"><Rock:RockCheckBox ID="cbIsActive" Text="Active " CssClass="checkbox inline" runat="server" /></div>
-                        <div class="col-md-1"><Rock:RockCheckBox ID="cbIsPublic" Text="Public " CssClass="checkbox inline" runat="server" /></div>
-                        <div class="col-md-2"><Rock:RockCheckBox ID="cbIsUrgent" Text="Urgent " CssClass="checkbox inline" runat="server" /></div>
-                        <div class="col-md-2"><Rock:RockCheckBox ID="cbAllowComments" Text="Allow Comments " CssClass="checkbox inline" runat="server" /></div>
-                        <div class="col-md-2"><Rock:RockCheckBox ID="cbApproved" Text="Approved " CssClass="checkbox inline" runat="server" /></div>
-                        <div class="col-md-2"><asp:Label ID="lblApprovedByPerson" runat="server" CssClass="muted text-muted" Visible="false" /></div>
-                    </div>
                 
                     <div class="row">
-                        <div class="col-md-12">
+                        <div class="col-md-6">
                             <Rock:DataTextBox ID="tbFirstName" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="FirstName" />
                             <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="LastName" />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:RockCheckBox ID="cbIsActive" Text="Active " CssClass="checkbox inline" runat="server" />
+                            <Rock:RockCheckBox ID="cbApproved" Text="Approved " CssClass="checkbox inline" runat="server" />
+                            <Rock:HighlightLabel ID="hlFlaggedMessage" IconCssClass="icon-flag" LabelType="warning" runat="server" Visible="false" ToolTip="re-approve the request to clear the flags" />
+                            <Rock:RockCheckBox ID="cbIsPublic" Text="Public " CssClass="checkbox inline" runat="server" />
+                            <Rock:RockCheckBox ID="cbIsUrgent" Text="Urgent " CssClass="checkbox inline" runat="server" />
+                            <Rock:RockCheckBox ID="cbAllowComments" Text="Allow Comments " CssClass="checkbox inline" runat="server" />
+                            <asp:Label ID="lblApprovedByPerson" runat="server" CssClass="muted text-muted" Visible="false" />
                         </div>
                     </div>
 

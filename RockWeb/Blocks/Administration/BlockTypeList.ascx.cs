@@ -146,11 +146,11 @@ namespace RockWeb.Blocks.Administration
                 string blockPath = Request.MapPath( e.Row.DataItem.GetPropertyValue( "Path" ) as string );
                 if ( !System.IO.File.Exists( blockPath ) )
                 {
-                    e.Row.Cells[4].Text = "<span class='label label-important'>Missing</span>";
+                    e.Row.Cells[4].Text = "<span class='label label-danger'>Missing</span>";
                 }
                 else
                 {
-                    e.Row.Cells[4].Text = "<span class='label label-success'>OK</span>";
+                    e.Row.Cells[4].Text = "<span class='label label-success'>Found</span>";
                 }
             }
         }

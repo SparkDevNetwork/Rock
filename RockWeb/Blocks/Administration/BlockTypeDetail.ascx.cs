@@ -7,6 +7,7 @@
 using System;
 using System.Linq;
 using System.Web.UI;
+using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -137,12 +138,16 @@ namespace RockWeb.Blocks.Administration
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 blockType = new BlockTypeService().Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( BlockType.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Edit( BlockType.FriendlyTypeName ).FormatAsHtmlTitle();
+                lstPages.Visible = true;
+                lblStatus.Visible = true;
             }
             else
             {
                 blockType = new BlockType { Id = 0 };
-                lActionTitle.Text = ActionTitle.Add( BlockType.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Add( BlockType.FriendlyTypeName ).FormatAsHtmlTitle();
+                lstPages.Visible = false;
+                lblStatus.Visible = false;
             }
 
             hfBlockTypeId.Value = blockType.Id.ToString();
@@ -156,17 +161,17 @@ namespace RockWeb.Blocks.Administration
 
             if ( lstPages.Items.Count == 0 )
             {
-                lstPages.Items.Add( Rock.Constants.None.Text );
+                lstPages.Items.Add( "No pages are currently using this block" );
             }
 
             string blockPath = Request.MapPath( blockType.Path );
             if ( !System.IO.File.Exists( blockPath ) )
             {
-                lblStatus.Text = string.Format( "<span class='label label-important'>The file '{0}' [{1}] does not exist.</span>", blockType.Path, blockType.Guid );
+                lblStatus.Text = string.Format( "<span class='label label-danger'>The file '{0}' [{1}] does not exist.</span>", blockType.Path, blockType.Guid );
             }
             else
             {
-                lblStatus.Text = "<span class='label label-success'>OK</span>";
+                lblStatus.Text = "<span class='label label-success'>Block exists on the file system.</span>";
             }
 
             // render UI based on Authorized and IsSystem
@@ -187,7 +192,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( readOnly )
             {
-                lActionTitle.Text = ActionTitle.View( BlockType.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.View( BlockType.FriendlyTypeName ).FormatAsHtmlTitle();
                 btnCancel.Text = "Close";
             }
 
