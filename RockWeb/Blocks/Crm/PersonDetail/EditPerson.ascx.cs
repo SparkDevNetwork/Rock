@@ -121,9 +121,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 HiddenField hfPhoneType = item.FindControl( "hfPhoneType" ) as HiddenField;
                 TextBox tbPhone = item.FindControl( "tbPhone" ) as TextBox;
                 CheckBox cbUnlisted = item.FindControl( "cbUnlisted" ) as CheckBox;
+                CheckBox cbSms = item.FindControl( "cbSms" ) as CheckBox;
 
                 if ( hfPhoneType != null &&
                     tbPhone != null &&
+                    cbSms != null &&
                     cbUnlisted != null )
                 {
                     if ( !string.IsNullOrWhiteSpace( tbPhone.Text ) )
@@ -139,6 +141,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             }
 
                             phoneNumber.Number = PhoneNumber.CleanNumber( tbPhone.Text );
+                            phoneNumber.IsMessagingEnabled = cbSms.Checked;
                             phoneNumber.IsUnlisted = cbUnlisted.Checked;
 
                             phoneNumberTypeIds.Add( phoneNumberTypeId );
@@ -197,6 +200,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ddlRecordStatus.SelectedValue = Person.RecordStatusValueId.HasValue ? Person.RecordStatusValueId.Value.ToString() : string.Empty;
             ddlReason.SelectedValue = Person.RecordStatusReasonValueId.HasValue ? Person.RecordStatusReasonValueId.Value.ToString() : string.Empty;
 
+            var mobilePhoneType = DefinedValueCache.Read(new Guid(Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE));
+
             var phoneNumbers = new List<PhoneNumber>();
             var phoneNumberTypes = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
             if ( phoneNumberTypes.DefinedValues.Any() )
@@ -211,6 +216,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         numberType.Name = phoneNumberType.Name;
 
                         phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
+                        phoneNumber.IsMessagingEnabled = mobilePhoneType != null && phoneNumberType.Id == mobilePhoneType.Id;
                     }
 
                     phoneNumbers.Add( phoneNumber );
