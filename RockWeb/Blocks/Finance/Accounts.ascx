@@ -84,7 +84,7 @@
 
             <div class="actions">
                 <asp:LinkButton ID="btnSaveAccount" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveAccount_Click" />
-                <asp:LinkButton ID="btnCancelAccount" runat="server" Text="Cancel" CssClass="btn btn-default" CausesValidation="false" OnClick="btnCancel_Click" />
+                <asp:LinkButton ID="btnCancelAccount" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
             </div>
 
         </div>

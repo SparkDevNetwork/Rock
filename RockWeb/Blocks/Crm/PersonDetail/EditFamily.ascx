@@ -53,12 +53,12 @@
         </div>
 
         <p>
-            <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-default" OnClick="lbAddPerson_Click"><i class="icon-user"></i> Add Person</asp:LinkButton>
+            <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn" OnClick="lbAddPerson_Click"><i class="icon-user"></i> Add Person</asp:LinkButton>
         </p>
 
         <h4>Addresses</h4>
         <p>
-            <asp:LinkButton ID="lbMoved" runat="server" CssClass="btn btn-default" OnClick="lbMoved_Click"><i class="icon-truck icon-flip-horizontal"></i> Family Moved</asp:LinkButton>
+            <asp:LinkButton ID="lbMoved" runat="server" CssClass="btn" OnClick="lbMoved_Click"><i class="icon-truck icon-flip-horizontal"></i> Family Moved</asp:LinkButton>
         </p>
 
         <Rock:Grid ID="gLocations" runat="server" AllowSorting="true" AllowPaging="false" DisplayType="Light">
@@ -136,7 +136,7 @@
 
         <div class="actions">
             <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default" CausesValidation="false" OnClick="btnCancel_Click" />
+            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
         </div>
 
         <Rock:ConfirmPageUnload ID="confirmExit" runat="server" ConfirmationMessage="Changes have been made to this family that have not yet been saved." Enabled="false" />
