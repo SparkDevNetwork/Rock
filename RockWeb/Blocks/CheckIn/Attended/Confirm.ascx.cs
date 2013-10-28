@@ -72,31 +72,56 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             var selectedPeopleList = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
                 .People.Where( p => p.Selected ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
-            var checkInGrid = new System.Data.DataTable();
-            checkInGrid.Columns.Add( "PersonId", typeof(int) );
-            checkInGrid.Columns.Add( "Name", typeof(string) );
-            checkInGrid.Columns.Add( "Location", typeof(string) );
-            checkInGrid.Columns.Add( "LocationId", typeof(int) );
-            checkInGrid.Columns.Add( "Schedule", typeof(string) );
-            checkInGrid.Columns.Add( "ScheduleId", typeof(int) );
-            
+
+            List<CheckInInfo> checkInInfoList = new List<CheckInInfo>();
             foreach ( var person in selectedPeopleList )
             {
-                int personId = person.Person.Id;
-                string personName = person.Person.FullName;
                 var locations = person.GroupTypes.Where( gt => gt.Selected )
                     .SelectMany( gt => gt.Groups ).Where( g => g.Selected )
                     .SelectMany( g => g.Locations ).Where( l => l.Selected ).ToList();                    
                                 
                 foreach ( var location in locations )
                 {
-                    var schedule = location.Schedules.Where( s => s.Selected ).FirstOrDefault();                    
-                    checkInGrid.Rows.Add( personId, personName, location.Location.Name, location.Location.Id, schedule.Schedule.Name, schedule.Schedule.Id );
-                }                
+                    foreach ( var schedule in location.Schedules.Where( s => s.Selected ) )
+                    {
+                        var checkInInfo = new CheckInInfo();
+                        checkInInfo.PersonId = person.Person.Id;
+                        checkInInfo.Name = person.Person.FullName;
+                        checkInInfo.Location = location.Location.Name;
+                        checkInInfo.LocationId = location.Location.Id;
+                        checkInInfo.Schedule = schedule.Schedule.Name;
+                        checkInInfo.ScheduleId = schedule.Schedule.Id;
+                        checkInInfoList.Add( checkInInfo );
+                    }
+                }
             }
 
-            gPersonList.DataSource = checkInGrid;
+            gPersonList.DataSource = checkInInfoList;
             gPersonList.DataBind();
+        }
+
+        /// <summary>
+        /// Check In Information class used to bind the grid.
+        /// </summary>
+        protected class CheckInInfo
+        {
+            public int PersonId { get; set; }
+            public string Name { get; set; }
+            public string Location { get; set; }
+            public int LocationId { get; set; }
+            public string Schedule { get; set; }
+            public int ScheduleId { get; set; }
+
+            public CheckInInfo()
+            {
+                PersonId = 0;
+                Name = string.Empty;
+                Location = string.Empty;
+                LocationId = 0;
+                Schedule = string.Empty;
+                ScheduleId = 0;
+            }
+
         }
 
         #endregion
@@ -168,7 +193,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             
             var selectedPerson = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
                 .People.Where( p => p.Person.Id == personId ).FirstOrDefault();
-            var selectedGroups = selectedPerson.GroupTypes.Where( gt => gt.Selected ).SelectMany( gt => gt.Groups );
+            var selectedGroups = selectedPerson.GroupTypes.Where( gt => gt.Selected ).SelectMany( gt => gt.Groups.Where( g => g.Selected ) );
             CheckInGroup selectedGroup = selectedGroups.Where( g => g.Selected
                 && g.Locations.Any( l => l.Location.Id == locationId
                     && l.Schedules.Any( s => s.Schedule.Id == scheduleId ) ) ).FirstOrDefault();
@@ -180,12 +205,16 @@ namespace RockWeb.Blocks.CheckIn.Attended
             
             selectedSchedule.Selected = false;
             selectedSchedule.PreSelected = false;
-            selectedLocation.Selected = false;
-            selectedLocation.PreSelected = false;
-            if ( selectedGroups.Count() == 1 )
+            var hasSelectedSchedules = selectedLocation.Schedules.Where( s => s.Selected ).Any();
+            if ( !hasSelectedSchedules )
             {
+                selectedLocation.Selected = false;
+                selectedLocation.PreSelected = false;
                 selectedGroup.Selected = false;
                 selectedGroup.PreSelected = false;
+            }
+            if ( selectedGroups.Count() == 0 )
+            {
                 selectedPerson.Selected = false;
                 selectedPerson.PreSelected = false;
             }

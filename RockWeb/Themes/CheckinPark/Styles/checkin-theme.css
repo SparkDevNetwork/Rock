@@ -7827,7 +7827,7 @@ body {
 }
 .attended.modal-foreground .checkin-body .row {
   margin-bottom: 10px;
-}.dropdown-menu{ color: #555555; }
+}
 @font-face {
   font-family: 'OpenSans';
   src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
