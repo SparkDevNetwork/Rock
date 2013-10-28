@@ -126,7 +126,7 @@ namespace Rock
                 }
             }
         }
-        
+
         #endregion
 
         #region String Extensions
@@ -303,7 +303,7 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <param name="NullIsFalse">if set to <c>true</c> [null is false].</param>
         /// <returns></returns>
-        public static bool AsBoolean (this string str, bool NullIsFalse = true)
+        public static bool AsBoolean( this string str, bool NullIsFalse = true )
         {
             if ( NullIsFalse )
             {
@@ -312,7 +312,7 @@ namespace Rock
                     return false;
                 }
             }
-            
+
             if ( str.Equals( "true", StringComparison.OrdinalIgnoreCase ) || str.Equals( "yes", StringComparison.OrdinalIgnoreCase ) || str.Equals( "1", StringComparison.OrdinalIgnoreCase ) )
             {
                 return true;
@@ -320,7 +320,7 @@ namespace Rock
 
             return false;
         }
-        
+
         /// <summary>
         /// Attempts to convert string to integer.  Returns null if unsuccessful.
         /// </summary>
@@ -336,7 +336,7 @@ namespace Rock
                     return null;
                 }
             }
-            
+
             int value;
             if ( int.TryParse( str, out value ) )
             {
@@ -377,14 +377,14 @@ namespace Rock
         /// </summary>
         /// <param name="str">The STR.</param>
         /// <returns></returns>
-        public static string FormatAsHtmlTitle(this string str)
+        public static string FormatAsHtmlTitle( this string str )
         {
 
             // split first word from rest of string
-            int endOfFirstWord = str.IndexOf(" ");
+            int endOfFirstWord = str.IndexOf( " " );
 
-            if (endOfFirstWord != -1)
-                return "<span class='first-word'>" + str.Substring(0, endOfFirstWord) + " </span> " + str.Substring(endOfFirstWord, str.Length - endOfFirstWord);
+            if ( endOfFirstWord != -1 )
+                return "<span class='first-word'>" + str.Substring( 0, endOfFirstWord ) + " </span> " + str.Substring( endOfFirstWord, str.Length - endOfFirstWord );
             else
                 return "<span class='first-word'>" + str + " </span>";
         }
@@ -412,7 +412,7 @@ namespace Rock
         {
             if ( value.Length > 4 )
             {
-                return string.Concat(new string('*', 12 ), value.Substring( value.Length - 4 ) );
+                return string.Concat( new string( '*', 12 ), value.Substring( value.Length - 4 ) );
             }
             else
             {
@@ -894,6 +894,37 @@ namespace Rock
 
         #endregion
 
+        #region CheckBoxList Extensions
+
+        /// <summary>
+        /// Sets the values.
+        /// </summary>
+        /// <param name="checkBoxList">The check box list.</param>
+        /// <param name="values">The values.</param>
+        public static void SetValues( this CheckBoxList checkBoxList, List<string> values )
+        {
+            foreach ( ListItem item in checkBoxList.Items )
+            {
+                item.Selected = values.Contains( item.Value, StringComparer.OrdinalIgnoreCase );
+            }
+        }
+
+        /// <summary>
+        /// Sets the values.
+        /// </summary>
+        /// <param name="checkBoxList">The check box list.</param>
+        /// <param name="values">The values.</param>
+        public static void SetValues( this CheckBoxList checkBoxList, List<int> values )
+        {
+            foreach ( ListItem item in checkBoxList.Items )
+            {
+                int numValue = int.MinValue;
+                item.Selected = int.TryParse( item.Value, out numValue ) && values.Contains( numValue );
+            }
+        }
+
+        #endregion
+
         #region ListControl Extensions
 
         /// <summary>
@@ -912,7 +943,6 @@ namespace Rock
                 if ( listControl.Items.Count > 0 )
                     listControl.SelectedIndex = 0;
             }
-
         }
 
         /// <summary>
@@ -1091,7 +1121,7 @@ namespace Rock
                 }
             }
             return null;
-        }        
+        }
 
         /// <summary>
         /// Converts to int.
