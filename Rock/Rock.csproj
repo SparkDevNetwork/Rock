@@ -95,6 +95,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NuGet.Core.2.2.0\lib\net40-Client\NuGet.Core.dll</HintPath>
     </Reference>
+    <Reference Include="RestSharp">
+      <HintPath>..\packages\RestSharp.104.3.3\lib\net4\RestSharp.dll</HintPath>
+    </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System" />
@@ -131,6 +134,9 @@
     </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="Twilio.Api">
+      <HintPath>..\packages\Twilio.3.6.5\lib\3.5\Twilio.Api.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Address\GeocodeContainer.cs">
@@ -171,6 +177,7 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
+    <Compile Include="Communication\Transport\Twilio.cs" />
     <Compile Include="Field\Types\TimeFieldType.cs" />
     <Compile Include="Field\Types\IntegerRangeFieldType.cs" />
     <Compile Include="Field\Types\DateRangeFieldType.cs" />
@@ -289,6 +296,10 @@
     <Compile Include="Migrations\201310241348152_GroupTerms.cs" />
     <Compile Include="Migrations\201310241348152_GroupTerms.Designer.cs">
       <DependentUpon>201310241348152_GroupTerms.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201310281702071_SMSFromValue.cs" />
+    <Compile Include="Migrations\201310281702071_SMSFromValue.Designer.cs">
+      <DependentUpon>201310281702071_SMSFromValue.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
@@ -1184,6 +1195,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201310241348152_GroupTerms.resx">
       <DependentUpon>201310241348152_GroupTerms.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310281702071_SMSFromValue.resx">
+      <DependentUpon>201310281702071_SMSFromValue.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

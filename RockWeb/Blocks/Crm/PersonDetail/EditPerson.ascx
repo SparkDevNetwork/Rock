@@ -47,6 +47,7 @@
                                                 <Rock:DataTextBox ID="tbPhone" PrependText="<i class='icon-phone-sign'></i>" runat="server" Text='<%# Eval("NumberFormatted")  %>' />
                                             </div>    
                                             <div class="col-sm-3">
+                                                <asp:CheckBox ID="cbSms" runat="server" Text="sms" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' />
                                                 <asp:CheckBox ID="cbUnlisted" runat="server" Text="unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' />
                                             </div>
 
