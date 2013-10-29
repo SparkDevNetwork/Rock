@@ -11,10 +11,9 @@
             </Rock:RockDropDownList>
         </Rock:GridFilter>
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-        <Rock:Grid ID="gGroupType" runat="server" AllowSorting="true" OnRowSelected="gGroupType_Edit">
+        <Rock:Grid ID="gGroupType" runat="server" AllowSorting="true" OnRowSelected="gGroupType_Edit" DescriptionField="Description">
             <Columns>
                 <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
                 <asp:BoundField DataField="Purpose" HeaderText="Purpose" SortExpression="Purpose" />
                 <asp:BoundField DataField="GroupsCount" HeaderText="Group Count" SortExpression="GroupsCount" />
                 <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
