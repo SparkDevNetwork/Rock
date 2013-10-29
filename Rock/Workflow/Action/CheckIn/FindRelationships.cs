@@ -90,7 +90,7 @@ namespace Rock.Workflow.Action.CheckIn
                             relationshipGroups.Contains( g.GroupId ) &&
                             roles.Contains( g.GroupRoleId ) )
                         .Select( g => g.Person )
-                        .Distinct())
+                        .Distinct().ToList() )
                     {
                         if ( !family.People.Any( p => p.Person.Id == person.Id ) )
                         {

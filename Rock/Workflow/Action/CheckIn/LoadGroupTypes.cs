@@ -35,7 +35,7 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
             {
-                foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
+                foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ).ToList() )
                 {
                     foreach ( var person in family.People )
                     {
