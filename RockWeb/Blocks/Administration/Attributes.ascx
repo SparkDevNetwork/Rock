@@ -8,7 +8,7 @@
                 <Rock:RockDropDownList ID="ddlEntityType" runat="server" Label="Entity Type" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
                 <Rock:CategoryPicker ID="cpCategoriesFilter" runat="server" Label="Categories" AllowMultiSelect="true" />
             </Rock:GridFilter>
-            <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" OnRowSelected="rGrid_Edit">
+            <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" DescriptionField="Description" OnRowSelected="rGrid_Edit">
                 <Columns>
                     <asp:BoundField 
                         DataField="Id" 
@@ -22,12 +22,6 @@
                         </ItemTemplate>
                     </asp:TemplateField>
                     <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" ItemStyle-Wrap="false" />
-                    <asp:TemplateField>
-                        <HeaderTemplate>Description</HeaderTemplate>
-                        <ItemTemplate>
-                            <asp:Literal ID="lDescription" runat="server"></asp:Literal>
-                        </ItemTemplate>
-                    </asp:TemplateField>                    
                     <asp:TemplateField ItemStyle-Wrap="false">
                         <HeaderTemplate>Categories</HeaderTemplate>
                         <ItemTemplate>
