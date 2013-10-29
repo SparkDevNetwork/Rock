@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.Crm
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gGroupMembers_AddClick( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "groupMemberId", 0, "groupId", hfGroupId.ValueAsInt() );
+            NavigateToLinkedPage( "DetailPage", "groupMemberId", 0, "groupId", _group.Id );
         }
 
         /// <summary>
