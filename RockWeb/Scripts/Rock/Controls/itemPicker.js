@@ -103,7 +103,7 @@
                 });
             },
             updateScrollbar: function () {
-                var $container = $('#' + this.controlId).find('.scroll-container'),
+                var $container = $('#' + this.options.controlId).find('.scroll-container'),
                     $dialog = $('#modal-scroll-container'),
                     dialogTop,
                     pickerTop,

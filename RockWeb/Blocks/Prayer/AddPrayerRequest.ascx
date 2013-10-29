@@ -37,7 +37,7 @@
             <h2>Request Submitted</h2>
             <Rock:NotificationBox ID="nbMessage" runat="server" NotificationBoxType="Success" ></Rock:NotificationBox>
 
-            <asp:Button ID="btnAddAnother" runat="server" Text="Add Another Request" OnClick="btnAddAnother_Click" CssClass="btn btn-default"/>
+            <asp:Button ID="btnAddAnother" runat="server" Text="Add Another Request" OnClick="btnAddAnother_Click" CssClass="btn"/>
 
         </asp:Panel>
     </ContentTemplate>

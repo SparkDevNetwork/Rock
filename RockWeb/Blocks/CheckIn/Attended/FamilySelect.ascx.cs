@@ -911,6 +911,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
             return familyGroup;
         }
 
+        /// <summary>
+        /// Refreshes the family.
+        /// </summary>
         protected void RefreshFamily()
         {
             lvFamily.DataSource = CurrentCheckInState.CheckIn.Families.OrderBy( f => f.Caption ).ToList();

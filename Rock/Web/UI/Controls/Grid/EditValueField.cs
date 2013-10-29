@@ -15,7 +15,7 @@ namespace Rock.Web.UI.Controls
     /// <see cref="Grid"/> Column for editing the value of a row in a grid
     /// </summary>
     [ToolboxData( "<{0}:EditValueField runat=server></{0}:EditValueField>" )]
-    public class EditValueField : TemplateField
+    public class EditValueField : TemplateField, INotRowSelectedField
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="EditValueField" /> class.

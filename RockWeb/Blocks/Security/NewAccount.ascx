@@ -122,7 +122,7 @@
         </div>
 
         <div class="actions">
-            <asp:Button ID="btnDuplicatesPrev" runat="server" Text="Previous" CssClass="btn btn-default" OnClick="btnDuplicatesPrev_Click" />
+            <asp:Button ID="btnDuplicatesPrev" runat="server" Text="Previous" CssClass="btn" OnClick="btnDuplicatesPrev_Click" />
             <asp:Button ID="btnDuplicatesNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnDuplicatesNext_Click" />
         </div>
 
@@ -137,7 +137,7 @@
         </div>
 
         <div class="actions">
-            <asp:Button ID="btnSendPrev" runat="server" Text="Previous" CssClass="btn btn-default" OnClick="btnSendPrev_Click" />
+            <asp:Button ID="btnSendPrev" runat="server" Text="Previous" CssClass="btn" OnClick="btnSendPrev_Click" />
             <asp:Button ID="btnSendYes" runat="server" Text="Yes, send it" CssClass="btn btn-primary" OnClick="btnSendYes_Click" />
             <asp:Button ID="btnSendLogin" runat="server" Text="No, just let me login" CssClass="btn btn-primary" OnClick="btnSendLogin_Click" />
         </div>

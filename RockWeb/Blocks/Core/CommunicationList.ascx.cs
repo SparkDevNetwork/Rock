@@ -181,9 +181,32 @@ namespace RockWeb.Blocks.Core
             NavigateToLinkedPage( "DetailPage", "CommunicationId", (int)e.RowKeyValue );
         }
 
+        /// <summary>
+        /// Handles the Delete event of the gCommunication control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gCommunication_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
+            RockTransactionScope.WrapTransaction( () =>
+            {
+                var communicationService = new CommunicationService();
+                var communication = communicationService.Get( e.RowKeyId );
+                if ( communication != null )
+                {
+                    string errorMessage;
+                    if ( !communicationService.CanDelete( communication, out errorMessage ) )
+                    {
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
 
+                    communicationService.Delete( communication, CurrentPersonId );
+                    communicationService.Save( communication, CurrentPersonId );
+                }
+            } );
+
+            BindGrid();
         }
 
         /// <summary>

@@ -42,7 +42,7 @@
 
             <div class="actions">
                 <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" ValidationGroup="LayoutDetail" ></asp:LinkButton>
-                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
+                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
             </div>
 
         </div>

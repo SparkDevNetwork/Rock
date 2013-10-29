@@ -220,12 +220,24 @@ namespace Rock.Web.UI.Controls
             private set
             {
                 EnsureChildControls();
-                _hfLocationId.Value = value.Id.ToString();
-                _tbAddress1.Text = value.Street1;
-                _tbAddress2.Text = value.Street2;
-                _tbCity.Text = value.City;
-                _ddlState.SelectedValue = value.State;
-                _tbZip.Text = value.Zip;
+                if ( value != null )
+                {
+                    _hfLocationId.Value = value.Id.ToString();
+                    _tbAddress1.Text = value.Street1;
+                    _tbAddress2.Text = value.Street2;
+                    _tbCity.Text = value.City;
+                    _ddlState.SelectedValue = value.State;
+                    _tbZip.Text = value.Zip;
+                }
+                else
+                {
+                    _hfLocationId.Value = string.Empty;
+                    _tbAddress1.Text = string.Empty;
+                    _tbAddress2.Text = string.Empty;
+                    _tbCity.Text = string.Empty;
+                    _ddlState.SelectedValue = string.Empty;
+                    _tbZip.Text = string.Empty;
+                }
             }
         }
 
