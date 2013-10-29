@@ -46,7 +46,7 @@
 
     </asp:Panel>
 
-    <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="admin-details well">
+    <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="admin-details">
 
         <asp:HiddenField ID="hfBlockLocation" runat="server" />
         <asp:HiddenField ID="hfBlockId" runat="server" />
