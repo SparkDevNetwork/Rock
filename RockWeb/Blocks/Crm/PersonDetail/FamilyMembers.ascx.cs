@@ -224,41 +224,44 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         private void BindFamilies()
         {
-            Guid familyGroupGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
-
-            var memberService = new GroupMemberService();
-            var families = memberService.Queryable()
-                .Where( m =>
-                    m.PersonId == Person.Id &&
-                    m.Group.GroupType.Guid == familyGroupGuid
-                )
-                .Select( m => m.Group )
-                .ToList();
-
-            if (!families.Any())
+            if ( Person != null && Person.Id > 0 )
             {
-                var role = new GroupTypeRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) );
-                if ( role != null && role.GroupTypeId.HasValue )
+                Guid familyGroupGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+
+                var memberService = new GroupMemberService();
+                var families = memberService.Queryable()
+                    .Where( m =>
+                        m.PersonId == Person.Id &&
+                        m.Group.GroupType.Guid == familyGroupGuid
+                    )
+                    .Select( m => m.Group )
+                    .ToList();
+
+                if ( !families.Any() )
                 {
-                    var groupMember = new GroupMember();
-                    groupMember.PersonId = Person.Id;
-                    groupMember.GroupRoleId = role.Id;
+                    var role = new GroupTypeRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) );
+                    if ( role != null && role.GroupTypeId.HasValue )
+                    {
+                        var groupMember = new GroupMember();
+                        groupMember.PersonId = Person.Id;
+                        groupMember.GroupRoleId = role.Id;
 
-                    var family = new Group();
-                    family.Name = Person.LastName;
-                    family.GroupTypeId = role.GroupTypeId.Value;
-                    family.Members.Add( groupMember );
+                        var family = new Group();
+                        family.Name = Person.LastName;
+                        family.GroupTypeId = role.GroupTypeId.Value;
+                        family.Members.Add( groupMember );
 
-                    var groupService = new GroupService();
-                    groupService.Add( family, CurrentPersonId );
-                    groupService.Save( family, CurrentPersonId );
+                        var groupService = new GroupService();
+                        groupService.Add( family, CurrentPersonId );
+                        groupService.Save( family, CurrentPersonId );
 
-                    families.Add(groupService.Get( family.Id ));
+                        families.Add( groupService.Get( family.Id ) );
+                    }
                 }
-            }
 
-            rptrFamilies.DataSource = families;
-            rptrFamilies.DataBind();
+                rptrFamilies.DataSource = families;
+                rptrFamilies.DataBind();
+            }
         }
 
 
