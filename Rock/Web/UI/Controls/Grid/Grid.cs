@@ -887,10 +887,14 @@ namespace Rock.Web.UI.Controls
                         PropertyInfo pi = e.Row.DataItem.GetType().GetProperty( DescriptionField );
                         if ( pi != null )
                         {
-                            string description = pi.GetValue( e.Row.DataItem ).ToString();
-                            if ( !string.IsNullOrWhiteSpace( description ) )
+                            var piv = pi.GetValue( e.Row.DataItem );
+                            if ( piv != null )
                             {
-                                e.Row.ToolTip = description;
+                                string description = piv.ToString();
+                                if ( !string.IsNullOrWhiteSpace( description ) )
+                                {
+                                    e.Row.ToolTip = description;
+                                }
                             }
                         }
                     }
