@@ -114,6 +114,20 @@ namespace Rock.Model
                 result = Queryable().Where( a => a.GeoFence != null ).Where( a => a.GeoFence.SpatialEquals( value ) ).FirstOrDefault();
             }
 
+            if ( result == null )
+            {
+                // if the Location can't be found, save the new location to the database
+                Location newLocation = new Location
+                {
+                    GeoPoint = value,
+                    Guid = Guid.NewGuid()
+                };
+
+                Add( newLocation, null );
+                Save( newLocation, null );
+                return Get( newLocation.Guid );
+            }
+
             return result;
             
         }
