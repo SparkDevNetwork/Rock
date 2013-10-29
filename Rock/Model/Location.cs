@@ -386,8 +386,7 @@ namespace Rock.Model
 
             if ( string.IsNullOrEmpty( result ) )
             {
-                result = string.Format( "{0} {1} {2}, {3} {4}",
-                    this.Street1, this.Street2, this.City, this.State, this.Zip ).ReplaceWhileExists( "  ", " " );
+                result = GetFullStreetAddress();
             }
 
             if ( string.IsNullOrWhiteSpace( result.Replace(",", string.Empty) ))
@@ -401,6 +400,16 @@ namespace Rock.Model
             
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the full street address.
+        /// </summary>
+        /// <returns></returns>
+        public string GetFullStreetAddress()
+        {
+            return string.Format( "{0} {1} {2}, {3} {4}",
+                this.Street1, this.Street2, this.City, this.State, this.Zip ).ReplaceWhileExists( "  ", " " );
         }
 
         #endregion
