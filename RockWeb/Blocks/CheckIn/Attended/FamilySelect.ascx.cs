@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
+            
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
                 NavigateToHomePage();
@@ -284,15 +284,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddPerson_Click( object sender, EventArgs e )
         {
-            SetAddPersonFields();
+            
             lblAddPersonHeader.Text = "Add Person";
-            personVisitorType.Value = "Person";
-            tbFirstNameSearch.RemoveCssClass( "red-border" );
-            tbLastNameSearch.RemoveCssClass( "red-border" );
-            dpDOBSearch.RemoveCssClass( "red-border" );
-            ddlGenderSearch.RemoveCssClass( "red-border" );
-            tbFirstNameSearch.Focus();
-            mpeAddPerson.Show();
+            personVisitorType.Value = "Person";   
+            SetAddPersonFields();            
         }
 
         /// <summary>
@@ -301,12 +296,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddVisitor_Click( object sender, EventArgs e )
-        {
-            SetAddPersonFields();
+        {            
             lblAddPersonHeader.Text = "Add Visitor";
             personVisitorType.Value = "Visitor";
-            tbFirstNameSearch.Focus();
-            mpeAddPerson.Show();
+            SetAddPersonFields();
         }
 
         /// <summary>
@@ -323,6 +316,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
             ddlAbilitySearch.SelectedIndex = 0;
             rGridPersonResults.Visible = false;
             lbAddNewPerson.Visible = false;
+            pnlAddPerson.Visible = true;
+            tbFirstNameSearch.Focus();
+            mpeAddPerson.Show();
         }
 
         /// <summary>
@@ -369,6 +365,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 checkInFamily.SubCaption = string.Join( ",", checkInFamily.People.Select( p => p.Person.FirstName ) );
                 checkInFamily.Selected = true;
                 CurrentCheckInState.CheckIn.Families.Add( checkInFamily );
+                pnlAddPerson.Visible = false;
 
                 ProcessFamily();
                 RefreshFamily();
@@ -403,6 +400,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             ViewState["newFamily"] = newFamilyList;
             lvAddFamily.DataSource = newFamilyList;
             lvAddFamily.DataBind();
+            pnlAddFamily.Visible = true;
             mpeAddFamily.Show();
         }
 
@@ -454,6 +452,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             CurrentCheckInState.CheckIn.Families.Clear();
             CurrentCheckInState.CheckIn.Families.Add( checkInFamily );
+            pnlAddFamily.Visible = false;
 
             ProcessFamily();
             RefreshFamily();

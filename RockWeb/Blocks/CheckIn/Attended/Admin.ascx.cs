@@ -33,11 +33,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
         #region Control Methods
 
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
-        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnLoad( EventArgs e )
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
         {
+            base.OnInit( e );
+
             if ( !Page.IsPostBack )
             {
                 CurrentPage.AddScriptLink( this.Page, "~/Blocks/CheckIn/Scripts/geo-min.js" );
@@ -69,7 +71,17 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 </script>
                 ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
                 phScript.Controls.Add( new LiteralControl( script ) );
+            }
+        }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            if ( !Page.IsPostBack )
+            {
                 if ( !CurrentKioskId.HasValue || UserBackedUp || CurrentGroupTypeIds == null )
                 {   
                     // #DEBUG, may be the local machine

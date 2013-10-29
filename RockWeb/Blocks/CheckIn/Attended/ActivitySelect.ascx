@@ -1,8 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ActivitySelect.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Attended.ActivitySelect" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="asp" %>
 
-<asp:UpdatePanel ID="upContent" runat="server" UpdateMode="Conditional">
-<ContentTemplate>
+<asp:Panel ID="pnlContent" runat="server" >
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
     <asp:HiddenField ID="hfAttributeId" runat="server" />
@@ -105,7 +104,7 @@
 		
         <div class="checkin-body">
             <div class="row">    
-                <fieldset id="fsNotes" runat="server"/>
+                <fieldset id="fsNotes" runat="server" />
             </div>
         </div>
     </asp:Panel>
@@ -113,8 +112,7 @@
         CancelControlID="lbAddNoteCancel" BackgroundCssClass="attended modal-background" />
     <asp:HiddenField ID="hfOpenNotePanel" runat="server" />    
 
-</ContentTemplate>
-</asp:UpdatePanel>
+</asp:Panel>
 
 <script type="text/javascript">
 
