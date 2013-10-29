@@ -5,8 +5,6 @@
 
         <asp:Panel ID="pnlContent" runat="server">
 
-            <asp:HiddenField runat="server" ID="hfGroupId" />
-            
             <div id="pnlGroupMembers" runat="server">
 
                 <h4><asp:Literal ID="lHeading" runat="server" Text="Group Members" /></h4>
