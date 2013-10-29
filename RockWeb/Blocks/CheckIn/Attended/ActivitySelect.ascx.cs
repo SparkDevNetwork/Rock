@@ -383,25 +383,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
-        /// Handles the Click event of the lbAddSpecialNeeds control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddSpecialNeeds_Click( object sender, EventArgs e )
-        {
-            string match = @"\s*\b" + "active" + @"\b";
-            string css = lbAddSpecialNeeds.CssClass;
-            if ( System.Text.RegularExpressions.Regex.IsMatch( css, match, System.Text.RegularExpressions.RegexOptions.IgnoreCase ) )
-            {
-                lbAddSpecialNeeds.RemoveCssClass( "active" );
-            }
-            else
-            {
-                lbAddSpecialNeeds.AddCssClass( "active" );
-            }
-        }
-
-        /// <summary>
         /// Handles the Click event of the lbBack control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
