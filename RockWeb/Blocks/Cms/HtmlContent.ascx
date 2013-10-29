@@ -50,7 +50,7 @@
                 </Rock:Grid>
             </div>
             <div class="modal-footer">
-                <button id="html-content-versions-cancel-<%=CurrentBlock.Id %>" class="btn">Cancel</button>
+                <button id="html-content-versions-cancel-<%=CurrentBlock.Id %>" class="btn btn-link">Cancel</button>
             </div>
         </div>
 
@@ -70,7 +70,7 @@
             </div>
             <div class="modal-footer">
                 
-                <asp:LinkButton ID="lbCancel" runat="server" CssClass="btn" Text="Cancel" />
+                <asp:LinkButton ID="lbCancel" runat="server" CssClass="btn btn-link" Text="Cancel" />
                 <asp:LinkButton ID="lbOk" runat="server" CssClass="btn btn-primary" Text="Save" />
             </div>
         </div>

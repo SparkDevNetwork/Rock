@@ -31,7 +31,7 @@
 
                 <div class="actions">
                     <asp:LinkButton ID="btnSaveType" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveType_Click" />
-                    <asp:LinkButton ID="btnCancelType" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancelType_Click" />
+                    <asp:LinkButton ID="btnCancelType" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancelType_Click" />
                 </div>
             </div>
 
