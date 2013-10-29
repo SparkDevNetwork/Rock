@@ -1,13 +1,13 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Confirm.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Attended.Confirm" %>
 
-<asp:UpdatePanel ID="upContent" runat="server">
+<asp:UpdatePanel ID="upContent" runat="server" UpdateMode="Conditional">
 <ContentTemplate>
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
     <asp:Panel ID="pnlConfirm" runat="server" CssClass="attended">
         <div class="row checkin-header">
             <div class="col-sm-3 checkin-actions">
-                <asp:LinkButton ID="lbBack" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbBack_Click" Text="Back"/>
+                <Rock:BootstrapButton ID="lbBack" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbBack_Click" Text="Back" EnableViewState="false" />
             </div>
 
             <div class="col-sm-6">
@@ -15,7 +15,7 @@
             </div>
 
             <div class="col-sm-3 checkin-actions">
-                <asp:LinkButton ID="lbDone" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbDone_Click" Text="Done"/>
+                <Rock:BootstrapButton ID="lbDone" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbDone_Click" Text="Done" EnableViewState="false" />
             </div>
         </div>
 
@@ -44,11 +44,10 @@
             <div class="row">
                 <div class="col-md-9"></div>
                 <div class="col-md-3">
-                    <asp:LinkButton ID="lbPrintAll" CssClass="btn btn-primary btn-lg btn-block btn-checkin-select" runat="server" OnClick="lbPrintAll_Click" Text="Print All" />
+                    <Rock:BootstrapButton ID="lbPrintAll" CssClass="btn btn-primary btn-lg btn-block btn-checkin-select" runat="server" OnClick="lbPrintAll_Click" Text="Print All" EnableViewState="false" />
                 </div>
             </div>
-        </div>
-        
+        </div>        
     </asp:Panel>
 </ContentTemplate>
 </asp:UpdatePanel>

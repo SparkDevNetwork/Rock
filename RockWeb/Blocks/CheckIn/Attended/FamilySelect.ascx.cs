@@ -42,37 +42,34 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 NavigateToHomePage();
             }
-            else
-            {
-                if ( !Page.IsPostBack )
-                {
-                    if ( CurrentCheckInState.CheckIn.Families.Count > 0 )
-                    {
-                        // do something here to order by campus, dependent on a block attribute
-                        var familyList = CurrentCheckInState.CheckIn.Families.OrderBy( f => f.Caption ).ToList();
-                        if ( !UserBackedUp )
-                        {
-                            familyList.FirstOrDefault().Selected = true;
-                        }
 
-                        ProcessFamily();
-                        lvFamily.DataSource = familyList;
-                        lvFamily.DataBind();
-                        rGridPersonResults.PageSize = 3;
-                    }
-                    else
+            if ( !Page.IsPostBack )
+            {
+                if ( CurrentCheckInState.CheckIn.Families.Count > 0 )
+                {
+                    // do something here to order by campus, dependent on a block attribute
+                    var familyList = CurrentCheckInState.CheckIn.Families.OrderBy( f => f.Caption ).ToList();
+                    if ( !UserBackedUp )
                     {
-                        lblFamilyTitle.InnerText = "No Search Results";
-                        lbNext.Enabled = false;
-                        lbNext.Visible = false;
-                        pnlSelectFamily.Visible = false;
-                        pnlSelectPerson.Visible = false;
-                        pnlSelectVisitor.Visible = false;
-                        actions.Visible = false;
-                        divNothingFound.Visible = true;
+                        familyList.FirstOrDefault().Selected = true;
                     }
+
+                    ProcessFamily();
+                    lvFamily.DataSource = familyList;
+                    lvFamily.DataBind();                        
                 }
-            }
+                else
+                {
+                    lblFamilyTitle.InnerText = "No Search Results";
+                    lbNext.Enabled = false;
+                    lbNext.Visible = false;
+                    pnlSelectFamily.Visible = false;
+                    pnlSelectPerson.Visible = false;
+                    pnlSelectVisitor.Visible = false;
+                    actions.Visible = false;
+                    divNothingFound.Visible = true;
+                }
+            }            
         }
 
         #endregion
@@ -542,6 +539,16 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
+        /// Handles the GridRebind event of the rGridPersonResults control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rGridPersonResults_GridRebind( object sender, EventArgs e )
+        {
+            BindPersonGrid();
+        }
+
+        /// <summary>
         /// Handles the Click event of the lbBack control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -605,21 +612,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         #region Internal Methods
 
         /// <summary>
-        /// Goes back one page.
-        /// </summary>
-        private new void GoBack()
-        {
-            // reset checkin state 
-            if ( CurrentCheckInState != null && CurrentCheckInState.CheckIn != null )
-            {
-                CurrentCheckInState.CheckIn.Families = new List<CheckInFamily>();
-            }
-
-            SaveState();
-            NavigateToPreviousPage();
-        }
-
-        /// <summary>
         /// Processes the family.
         /// </summary>
         private void ProcessFamily()
@@ -632,22 +624,23 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 {
                     IEnumerable<CheckInPerson> memberDataSource = null;
                     IEnumerable<CheckInPerson> visitorDataSource = null;
-                    var familyMembers = family.People.Where( f => f.FamilyMember ).ToList();
-                    if ( familyMembers.Count() > 0 )
-                    {
-                        familyMembers.ForEach( p => p.Selected = true );
-                        hfSelectedPerson.Value = string.Join( ",", familyMembers.Select( f => f.Person.Id ) ) + ",";
-                        memberDataSource = familyMembers.OrderBy( p => p.Person.FullNameLastFirst ).ToList();
-                    }
-
-                    if ( family.People.Where( f => !f.FamilyMember ).Count() > 0 )
-                    {
-                        var selectedVisitors = family.People.Where( f => !f.FamilyMember ).Where( p => p.Selected ).ToList();
-                        foreach ( var visitor in selectedVisitors )
+                    if ( family.People.Any() )
+                    {                         
+                        if ( family.People.Where( f => f.FamilyMember ).Any() )
                         {
-                            hfSelectedVisitor.Value = string.Join( ",", selectedVisitors.Select( p => p.Person.Id ) ) + ",";
+                            var familyMembers = family.People.Where( f => f.FamilyMember ).ToList();
+                            familyMembers.ForEach( p => p.Selected = true );
+                            hfSelectedPerson.Value = string.Join( ",", familyMembers.Select( f => f.Person.Id ) ) + ",";
+                            memberDataSource = familyMembers.OrderBy( p => p.Person.FullNameLastFirst ).ToList();
                         }
-                        visitorDataSource = family.People.Where( f => !f.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
+
+                        if ( family.People.Where( f => !f.FamilyMember ).Any() )
+                        {
+                            //var familyVisitors = family.People.Where( f => !f.FamilyMember ).Where( p => p.Selected ).ToList();
+                            var familyVisitors = family.People.Where( f => !f.FamilyMember ).ToList();
+                            hfSelectedVisitor.Value = string.Join( ",", familyVisitors.Select( f => f.Person.Id ) ) + ",";
+                            visitorDataSource = familyVisitors.OrderBy( p => p.Person.FullNameLastFirst ).ToList();
+                        }
                     }
 
                     lvPerson.DataSource = memberDataSource;
@@ -787,7 +780,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 Person.CreateCheckinRelationship( familyMember.Person.Id, personId, CurrentPersonId );
             }
         }
-        
+
         /// <summary>
         /// Binds the person search results grid.
         /// </summary>
@@ -967,5 +960,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         #endregion
+       
 }
 }
