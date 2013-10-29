@@ -1,8 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="FamilySelect.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Attended.FamilySelect" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="asp" %>
 
-<asp:UpdatePanel ID="upContent" runat="server">
-<ContentTemplate>
+<asp:Panel ID="pnlContent" runat="server" >
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
     <asp:HiddenField ID="personVisitorType" runat="server" />
@@ -12,7 +11,7 @@
         <div class="row checkin-header">
             <div class="col-sm-3 checkin-actions">
                 <Rock:BootstrapButton ID="lbBack" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbBack_Click" 
-                    Text="Back" EnableViewState="false" CausesValidation="false" />
+                    Text="Back" />
             </div>
 
             <div class="col-sm-6">                
@@ -21,7 +20,7 @@
 
             <div class="col-sm-3 checkin-actions">
                 <Rock:BootstrapButton ID="lbNext" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbNext_Click" 
-                    Text="Next" EnableViewState="false" CausesValidation="false" />
+                    Text="Next" />
             </div>
         </div>
                 
@@ -114,7 +113,7 @@
 
     </asp:Panel>
 
-    <asp:Panel ID="pnlAddPerson" runat="server" CssClass="attended modal-foreground" DefaultButton="lbAddPersonSearch">
+    <asp:Panel ID="pnlAddPerson" runat="server" CssClass="attended modal-foreground" DefaultButton="lbAddPersonSearch" Visible="false">
         
         <Rock:ModalAlert ID="maAddPerson" runat="server" />
         <div class="row checkin-header">
@@ -183,7 +182,7 @@
     <asp:ModalPopupExtender ID="mpeAddPerson" runat="server" BehaviorID="mpeAddPerson" TargetControlID="hfOpenPersonPanel" PopupControlID="pnlAddPerson" CancelControlID="lbAddPersonCancel" BackgroundCssClass="attended modal-background" />
     <asp:HiddenField ID="hfOpenPersonPanel" runat="server" />    
 
-    <asp:Panel ID="pnlAddFamily" runat="server" CssClass="attended modal-foreground">
+    <asp:Panel ID="pnlAddFamily" runat="server" CssClass="attended modal-foreground" Visible="false">
 
         <div class="row checkin-header">
             <div class="col-sm-3 checkin-actions">
@@ -195,7 +194,7 @@
             </div>
 
             <div class="col-sm-3 checkin-actions">
-                <asp:LinkButton ID="lbAddFamilySave" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbAddFamilySave_Click" Text="Save" CausesValidation="false" EnableViewState="false" />
+                <asp:LinkButton ID="lbAddFamilySave" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbAddFamilySave_Click" Text="Save"  EnableViewState="false" />
             </div>
         </div>        
     
@@ -252,11 +251,10 @@
         </div>
 
     </asp:Panel>
-    <asp:ModalPopupExtender ID="mpeAddFamily" runat="server" BehaviorID="mpeAddFamily" TargetControlID="hfOpenFamilyPanel" PopupControlID="pnlAddFamily" CancelControlID="lbAddFamilyCancel" BackgroundCssClass="attended modal-background" />
+    <asp:ModalPopupExtender ID="mpeAddFamily" runat="server" BehaviorID="mpeAddFamily" TargetControlID="hfOpenFamilyPanel" PopupControlID="pnlAddFamily" OkControlID="lbAddFamilySave" CancelControlID="lbAddFamilyCancel" BackgroundCssClass="attended modal-background" />
     <asp:HiddenField ID="hfOpenFamilyPanel" runat="server" />
 
-</ContentTemplate>
-</asp:UpdatePanel>
+</asp:Panel>
 
 <script type="text/javascript">
 
@@ -286,6 +284,10 @@
             return false;
         });
 
+        $('#<%= pnlSelectFamily.ClientID %>').on('click', 'a', function () {
+            $('.nothing-eligible').html("<i class='icon-spinner icon-spin icon-large'></i>");
+        });
+
         $find("mpeAddPerson").add_shown(function () {
             $find("mpeAddPerson")._backgroundElement.onclick = function () {
                 $find("mpeAddPerson").hide();
@@ -297,6 +299,7 @@
                 $find("mpeAddFamily").hide();
             }
         });
+
     };
 
     $(document).ready(function () { setControlEvents(); });

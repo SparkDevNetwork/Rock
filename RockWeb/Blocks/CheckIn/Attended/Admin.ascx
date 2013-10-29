@@ -1,7 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Admin.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Attended.Admin" %>
 
-<asp:UpdatePanel ID="upContent" runat="server" UpdateMode="Conditional">
-<ContentTemplate>
+<asp:Panel id="pnlContent" runat="server">
 
     <asp:PlaceHolder ID="phScript" runat="server"></asp:PlaceHolder>
     <asp:HiddenField ID="hfLatitude" runat="server" />
@@ -46,8 +45,7 @@
         </div>
     </asp:Panel>
 
-</ContentTemplate>
-</asp:UpdatePanel>
+</asp:Panel>
 
 <script type="text/javascript">
     function setControlEvents() {

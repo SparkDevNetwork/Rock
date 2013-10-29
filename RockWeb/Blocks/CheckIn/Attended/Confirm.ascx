@@ -1,7 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Confirm.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Attended.Confirm" %>
 
-<asp:UpdatePanel ID="upContent" runat="server" UpdateMode="Conditional">
-<ContentTemplate>
+<asp:Panel ID="pnlContent" runat="server" >
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
     <asp:Panel ID="pnlConfirm" runat="server" CssClass="attended">
@@ -49,5 +48,5 @@
             </div>
         </div>        
     </asp:Panel>
-</ContentTemplate>
-</asp:UpdatePanel>
+
+</asp:Panel>
