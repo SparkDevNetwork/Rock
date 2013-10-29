@@ -301,6 +301,10 @@
     <Compile Include="Migrations\201310281702071_SMSFromValue.Designer.cs">
       <DependentUpon>201310281702071_SMSFromValue.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201310291850368_StatementGenGroupTypeRoleFix.cs" />
+    <Compile Include="Migrations\201310291850368_StatementGenGroupTypeRoleFix.Designer.cs">
+      <DependentUpon>201310291850368_StatementGenGroupTypeRoleFix.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -1200,6 +1204,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201310281702071_SMSFromValue.resx">
       <DependentUpon>201310281702071_SMSFromValue.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310291850368_StatementGenGroupTypeRoleFix.resx">
+      <DependentUpon>201310291850368_StatementGenGroupTypeRoleFix.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
