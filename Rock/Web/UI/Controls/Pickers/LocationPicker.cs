@@ -217,6 +217,7 @@ namespace Rock.Web.UI.Controls
             _locationAddressPicker.ID = this.ID + "_locationAddressPicker";
             _locationGeoPicker = new GeoPicker();
             _locationGeoPicker.ID = this.ID + "_locationGeoPicker";
+            _locationGeoPicker.SelectGeography += _locationGeoPicker_SelectGeography;
 
             _locationItemPicker.ModePanel = _pnlModeSelection;
             _locationGeoPicker.ModePanel = _pnlModeSelection;
@@ -225,6 +226,22 @@ namespace Rock.Web.UI.Controls
             _pickersPanel.Controls.Add( _locationItemPicker );
             _pickersPanel.Controls.Add( _locationAddressPicker );
             _pickersPanel.Controls.Add( _locationGeoPicker );
+        }
+
+        /// <summary>
+        /// Handles the SelectGeography event of the _locationGeoPicker control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void _locationGeoPicker_SelectGeography( object sender, EventArgs e )
+        {
+            // this will autosave the GeoPicker result as Location if it isn't in the database already
+            LocationService locationService = new LocationService();
+            Location location = null;
+            location = locationService.GetByGeoLocation( _locationGeoPicker.GeoPoint ?? _locationGeoPicker.GeoFence );
+
+            Location = location;
         }
 
         /// <summary>
