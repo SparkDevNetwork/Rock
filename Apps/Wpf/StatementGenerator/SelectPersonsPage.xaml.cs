@@ -179,7 +179,7 @@ namespace Rock.Apps.StatementGenerator
                         {
                             Id = node["Id"].InnerText.AsInteger() ?? 0,
                             FullName = node["Name"].InnerText,
-                            Age = node["Age"].InnerText,
+                            Age = node["Age"].InnerText == "-1" ? "" : node["Age"].InnerText,
                             Gender = node["Gender"].InnerText
                         } );
                     }
