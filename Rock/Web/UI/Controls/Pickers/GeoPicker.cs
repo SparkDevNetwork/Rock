@@ -426,8 +426,6 @@ namespace Rock.Web.UI.Controls
             {
                 sm.RegisterAsyncPostBackControl( _btnSelect );
                 sm.RegisterAsyncPostBackControl( _btnSelectNone );
-                var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
-                sm.Scripts.Add( new ScriptReference( string.Format( "https://maps.googleapis.com/maps/api/js?key={0}&sensor=false&libraries=drawing", googleAPIKey )  ) );
             }
         }
 
