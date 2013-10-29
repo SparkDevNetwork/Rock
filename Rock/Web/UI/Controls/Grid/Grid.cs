@@ -264,6 +264,32 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the description field.  If specified, the description will be 
+        /// added as a tooltip (title) attribute on the row
+        /// </summary>
+        /// <value>
+        /// The description field.
+        /// </value>
+        public string DescriptionField
+        {
+            get
+            {
+                string descriptionField = ViewState["DescriptionField"] as string;
+                if ( string.IsNullOrWhiteSpace( descriptionField ) )
+                {
+                    descriptionField = null;
+                }
+
+                return descriptionField;
+            }
+
+            set
+            {
+                ViewState["DescriptionField"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the new communication page route.
         /// </summary>
         /// <value>
@@ -842,13 +868,32 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            if ( e.Row.DataItem != null && this.DataKeys != null && this.DataKeys.Count > 0 )
+            if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                object dataKey = this.DataKeys[e.Row.RowIndex].Value as object;
-                if ( dataKey != null )
+                if ( e.Row.DataItem != null )
                 {
-                    string key = dataKey.ToString();
-                    e.Row.Attributes.Add( "datakey", key );
+                    if ( this.DataKeys != null && this.DataKeys.Count > 0 )
+                    {
+                        object dataKey = this.DataKeys[e.Row.RowIndex].Value as object;
+                        if ( dataKey != null )
+                        {
+                            string key = dataKey.ToString();
+                            e.Row.Attributes.Add( "datakey", key );
+                        }
+                    }
+
+                    if ( DescriptionField != null )
+                    {
+                        PropertyInfo pi = e.Row.DataItem.GetType().GetProperty( DescriptionField );
+                        if ( pi != null )
+                        {
+                            string description = pi.GetValue( e.Row.DataItem ).ToString();
+                            if ( !string.IsNullOrWhiteSpace( description ) )
+                            {
+                                e.Row.ToolTip = description;
+                            }
+                        }
+                    }
                 }
             }
         }
