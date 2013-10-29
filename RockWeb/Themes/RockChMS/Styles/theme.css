@@ -7613,6 +7613,10 @@ td.visible-print {
 .picker.picker-geography .picker-menu {
   width: 520px;
 }
+.picker.picker-person .picker-select {
+  padding: 0;
+  list-style: none;
+}
 .picker.picker-person .picker-select-item-details img {
   width: 65px;
 }
@@ -9002,13 +9006,14 @@ span.cke_skin_kama {
 
 */
 .zone-instance.outline {
-  border: 1px solid #909090;
+  border: 1px dashed #909090;
   /* todo */
 
   min-height: 30px;
   min-width: 120px;
   position: relative;
   margin: 1px;
+  border-radius: 3px;
 }
 .zone-configuration {
   background: #8498ab;
@@ -9025,6 +9030,9 @@ span.cke_skin_kama {
   z-index: 11000;
   right: auto;
 }
+.zone-configuration p {
+  float: left;
+}
 .zone-configuration-bar {
   color: #ecf0f3;
   display: inline-block;
@@ -9040,10 +9048,7 @@ span.cke_skin_kama {
   float: left;
   font-size: 10px;
   padding-right: 20px;
-  margin-top: 3px;
-}
-.zone-configuration p {
-  float: left;
+  margin-top: 4px;
 }
 .block-configuration {
   background: #8498ab;
@@ -9209,10 +9214,6 @@ td[align=center] {
 .grid-filter .grid-filter-entry {
   margin-bottom: 12px;
 }
-.grid-filter .grid-filter-entry .form-group {
-  width: 350px;
-  float: left;
-}
 .grid-filter .picker .picker-label {
   background-color: #e7ecf0;
   color: #515151;
@@ -9365,11 +9366,6 @@ td[align=center] {
 .modal-backdrop {
   background-color: #8b8b8b;
   opacity: 0.7;
-}
-.bootbox.modal {
-  width: 500px;
-  left: 50%;
-  margin-left: -250px;
 }
 .modal {
   position: fixed;
