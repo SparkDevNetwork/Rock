@@ -1,24 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Admin.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Attended.Admin" %>
 
-<script type="text/javascript">
-    function setControlEvents() {
-        $('.btn-checkin-select').unbind('click').on('click', function () {
-            $(this).toggleClass('active');
-            var selectedIds = $('#hfParentTypes').val();
-            var buttonId = this.getAttribute('data-id') + ',';
-            if (typeof selectedIds == "string" && (selectedIds.indexOf(buttonId) >= 0) ) {
-                $('#hfParentTypes').val(selectedIds.replace(buttonId, ''));
-            } else {
-                $('#hfParentTypes').val(buttonId + selectedIds);     
-            }
-            return false;
-        });
-    };
-    $(document).ready(function () { setControlEvents(); });
-    Sys.WebForms.PageRequestManager.getInstance().add_endRequest(setControlEvents);
-
-</script>
-
 <asp:UpdatePanel ID="upContent" runat="server" UpdateMode="Conditional">
 <ContentTemplate>
 
@@ -41,7 +22,7 @@
                 <h1>Admin</h1>
             </div>
             <div class="col-sm-3 checkin-actions">
-                <asp:LinkButton ID="lbOk" runat="server" CssClass="btn btn-lg btn-primary" OnClick="lbOk_Click" Text="Ok"></asp:LinkButton>
+                <Rock:BootstrapButton ID="lbOk" runat="server" CssClass="btn btn-lg btn-primary" OnClick="lbOk_Click" Text="Ok" EnableViewState="false" />
             </div>
         </div>
 
@@ -67,3 +48,22 @@
 
 </ContentTemplate>
 </asp:UpdatePanel>
+
+<script type="text/javascript">
+    function setControlEvents() {
+        $('.btn-checkin-select').unbind('click').on('click', function () {
+            $(this).toggleClass('active');
+            var selectedIds = $('#hfParentTypes').val();
+            var buttonId = this.getAttribute('data-id') + ',';
+            if (typeof selectedIds == "string" && (selectedIds.indexOf(buttonId) >= 0)) {
+                $('#hfParentTypes').val(selectedIds.replace(buttonId, ''));
+            } else {
+                $('#hfParentTypes').val(buttonId + selectedIds);
+            }
+            return false;
+        });
+    };
+    $(document).ready(function () { setControlEvents(); });
+    Sys.WebForms.PageRequestManager.getInstance().add_endRequest(setControlEvents);
+
+</script>

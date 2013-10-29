@@ -1,64 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="FamilySelect.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Attended.FamilySelect" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="asp" %>
-<script type="text/javascript">
 
-    function setControlEvents() {
-
-        $('.family').unbind('click').on('click', function () {
-            $('.family').removeClass('active');
-            $(this).addClass('active');
-        });
-
-        $('.person').unbind('click').on('click', function () {
-            $(this).toggleClass('active');
-            var selectedIds = $('#hfSelectedPerson').val();
-            var buttonId = this.getAttribute('data-id') + ',';
-            if (typeof selectedIds == "string" && (selectedIds.indexOf(buttonId) >= 0)) {
-                $('#hfSelectedPerson').val(selectedIds.replace(buttonId, ''));
-            } else {
-                $('#hfSelectedPerson').val(buttonId + selectedIds);
-            }
-            return false;
-        });
-
-        $('.visitor').unbind('click').on('click', function () {
-            $(this).toggleClass('active');
-            var selectedIds = $('#hfSelectedVisitor').val();
-            var buttonId = this.getAttribute('data-id') + ',';
-            if (typeof selectedIds == "string" && (selectedIds.indexOf(buttonId) >= 0)) {
-                $('#hfSelectedVisitor').val(selectedIds.replace(buttonId, ''));
-            } else {
-                $('#hfSelectedVisitor').val(buttonId + selectedIds);
-            }
-            return false;
-        });
-
-        function cvBirthDateValidator_ClientValidate(sender, args) {
-            // check the birthdate against a date regex
-            alert('checking date');
-            args.IsValid = args.Value.match(/^(\d{1,2})[- /.](\d{1,2})[- /.](\d{2,4})$/);        
-        };
-
-        $find("mpeAddPerson").add_shown(function () {
-            $find("mpeAddPerson")._backgroundElement.onclick = function () {
-                $find("mpeAddPerson").hide();
-            }
-        });
-
-        $find("mpeAddFamily").add_shown(function () {
-            $find("mpeAddFamily")._backgroundElement.onclick = function () {
-                $find("mpeAddFamily").hide();
-            }
-        });
-
-    };
-
-    $(document).ready(function () { setControlEvents(); });
-    Sys.WebForms.PageRequestManager.getInstance().add_endRequest(setControlEvents);
-
-</script>
-
-<asp:UpdatePanel ID="upContent" runat="server" UpdateMode="Conditional">
+<asp:UpdatePanel ID="upContent" runat="server">
 <ContentTemplate>
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
@@ -68,7 +11,8 @@
 
         <div class="row checkin-header">
             <div class="col-sm-3 checkin-actions">
-                <asp:LinkButton ID="lbBack" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbBack_Click" Text="Back" CausesValidation="false"/>
+                <Rock:BootstrapButton ID="lbBack" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbBack_Click" 
+                    Text="Back" EnableViewState="false" CausesValidation="false" />
             </div>
 
             <div class="col-sm-6">                
@@ -76,7 +20,8 @@
             </div>
 
             <div class="col-sm-3 checkin-actions">
-                <asp:LinkButton ID="lbNext" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbNext_Click" Text="Next" CausesValidation="false" />
+                <Rock:BootstrapButton ID="lbNext" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbNext_Click" 
+                    Text="Next" EnableViewState="false" CausesValidation="false" />
             </div>
         </div>
                 
@@ -119,7 +64,7 @@
 					</ItemTemplate>    
 					<EmptyDataTemplate>
 						<div runat="server" class="nothing-eligible">
-							<asp:Label ID="lblPersonTitle" runat="server" Text="No one in this family is eligible to check-in." />
+							<asp:Literal ID="lblPersonTitle" runat="server" Text="No one in this family is eligible to check-in." />
 						</div>                            
 					</EmptyDataTemplate>              
 				</asp:ListView>
@@ -156,14 +101,14 @@
             <div ID="divNothingFound" runat="server" class="col-md-9" visible="false">
                 <div class="col-md-3"></div>
                 <div class="col-md-9 nothing-eligible">
-                    <asp:Label ID="lblNothingFound" runat="server" Text="Please add them using one of the buttons on the right:" />
+                    <asp:Literal ID="lblNothingFound" runat="server" Text="Please add them using one of the buttons on the right:" EnableViewState="false" />
                 </div>
             </div>
             <div class="col-md-3">
                 <h3 id="actions" runat="server">Actions</h3>
-                <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-primary btn-lg btn-block btn-checkin-select" OnClick="lbAddPerson_Click" Text="Add Person" CausesValidation="false"></asp:LinkButton>
-                <asp:LinkButton ID="lbAddVisitor" runat="server" CssClass="btn btn-primary btn-lg btn-block btn-checkin-select" OnClick="lbAddVisitor_Click" Text="Add Visitor" CausesValidation="false"></asp:LinkButton>                
-                <asp:LinkButton ID="lbAddFamily" runat="server" CssClass="btn btn-primary btn-lg btn-block btn-checkin-select" OnClick="lbAddFamily_Click" Text="Add Family" CausesValidation="false" />
+                <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-primary btn-lg btn-block btn-checkin-select" OnClick="lbAddPerson_Click" Text="Add Person" CausesValidation="false" EnableViewState="false" />
+                <asp:LinkButton ID="lbAddVisitor" runat="server" CssClass="btn btn-primary btn-lg btn-block btn-checkin-select" OnClick="lbAddVisitor_Click" Text="Add Visitor" CausesValidation="false" EnableViewState="false" />
+                <asp:LinkButton ID="lbAddFamily" runat="server" CssClass="btn btn-primary btn-lg btn-block btn-checkin-select" OnClick="lbAddFamily_Click" Text="Add Family" CausesValidation="false" EnableViewState="false" />
             </div>
         </div>
 
@@ -175,15 +120,15 @@
         <div class="row checkin-header">
             <div class="checkin-actions">
                 <div class="col-sm-3">
-                    <asp:LinkButton ID="lbAddPersonCancel" CssClass="btn btn-lg btn-primary" runat="server" Text="Cancel" CausesValidation="false"/>
+                    <asp:LinkButton ID="lbAddPersonCancel" CssClass="btn btn-lg btn-primary" runat="server" Text="Cancel" CausesValidation="false" EnableViewState="false" />
                 </div>
 
                 <div class="col-sm-6">
-                    <h2><asp:Label ID="lblAddPersonHeader" runat="server"></asp:Label></h2>
+                    <h2><asp:Literal ID="lblAddPersonHeader" runat="server" EnableViewState="false" /></h2>
                 </div>
 
                 <div class="col-sm-3">
-                    <asp:LinkButton ID="lbAddPersonSearch" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbAddPersonSearch_Click" Text="Search" CausesValidation="false" />
+                    <asp:LinkButton ID="lbAddPersonSearch" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbAddPersonSearch_Click" Text="Search" CausesValidation="false" EnableViewState="false" />
                 </div>
             </div>
         </div>
@@ -209,7 +154,7 @@
             
             <div class="row">
                 <Rock:Grid ID="rGridPersonResults" runat="server" OnRowCommand="rGridPersonResults_AddExistingPerson"
-                    ShowActionRow="false" PageSize="3" DataKeyNames="Id" AllowSorting="true">
+                    OnGridRebind="rGridPersonResults_GridRebind" ShowActionRow="false" PageSize="3" DataKeyNames="Id" AllowSorting="true">
                     <Columns>
                         <asp:BoundField DataField="Id" Visible="false" />
                         <asp:BoundField DataField="FirstName" HeaderText="First Name" SortExpression="FirstName"/>
@@ -230,21 +175,19 @@
             </div>
 
             <div class="row">
-                <asp:LinkButton ID="lbAddNewPerson" runat="server" Text="None of these, add a new person."
-                    CssClass="btn btn-lg btn-primary btn-checkin-select" Visible="false" OnClick="lbAddNewPerson_Click" ValidationGroup="test">
-                </asp:LinkButton>
+                <asp:LinkButton ID="lbAddNewPerson" runat="server" Text="None of these, add a new person." EnableViewState="false"
+                    CssClass="btn btn-lg btn-primary btn-checkin-select" Visible="false" OnClick="lbAddNewPerson_Click" ValidationGroup="test" />
             </div>
         </div>
     </asp:Panel>
-    <asp:ModalPopupExtender ID="mpeAddPerson" runat="server" BehaviorID="mpeAddPerson" TargetControlID="hfOpenPersonPanel" PopupControlID="pnlAddPerson" 
-        CancelControlID="lbAddPersonCancel" BackgroundCssClass="attended modal-background" />
+    <asp:ModalPopupExtender ID="mpeAddPerson" runat="server" BehaviorID="mpeAddPerson" TargetControlID="hfOpenPersonPanel" PopupControlID="pnlAddPerson" CancelControlID="lbAddPersonCancel" BackgroundCssClass="attended modal-background" />
     <asp:HiddenField ID="hfOpenPersonPanel" runat="server" />    
 
     <asp:Panel ID="pnlAddFamily" runat="server" CssClass="attended modal-foreground">
 
         <div class="row checkin-header">
             <div class="col-sm-3 checkin-actions">
-                <asp:LinkButton ID="lbAddFamilyCancel" CssClass="btn btn-lg btn-primary" runat="server" Text="Cancel" CausesValidation="false" />
+                <asp:LinkButton ID="lbAddFamilyCancel" CssClass="btn btn-lg btn-primary" runat="server" Text="Cancel" CausesValidation="false" EnableViewState="false" />
             </div>
 
             <div class="col-sm-6">
@@ -252,7 +195,7 @@
             </div>
 
             <div class="col-sm-3 checkin-actions">
-                <asp:LinkButton ID="lbAddFamilySave" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbAddFamilySave_Click" Text="Save" CausesValidation="false"></asp:LinkButton>
+                <asp:LinkButton ID="lbAddFamilySave" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbAddFamilySave_Click" Text="Save" CausesValidation="false" EnableViewState="false" />
             </div>
         </div>        
     
@@ -309,9 +252,54 @@
         </div>
 
     </asp:Panel>
-    <asp:ModalPopupExtender ID="mpeAddFamily" runat="server" BehaviorID="mpeAddFamily" TargetControlID="hfOpenFamilyPanel" PopupControlID="pnlAddFamily"
-        CancelControlID="lbAddFamilyCancel" BackgroundCssClass="attended modal-background" />
+    <asp:ModalPopupExtender ID="mpeAddFamily" runat="server" BehaviorID="mpeAddFamily" TargetControlID="hfOpenFamilyPanel" PopupControlID="pnlAddFamily" CancelControlID="lbAddFamilyCancel" BackgroundCssClass="attended modal-background" />
     <asp:HiddenField ID="hfOpenFamilyPanel" runat="server" />
 
 </ContentTemplate>
 </asp:UpdatePanel>
+
+<script type="text/javascript">
+
+    function setControlEvents() {
+
+        $('.person').unbind('click').on('click', function () {
+            $(this).toggleClass('active');
+            var selectedIds = $('#hfSelectedPerson').val();
+            var buttonId = this.getAttribute('data-id') + ',';
+            if (typeof selectedIds == "string" && (selectedIds.indexOf(buttonId) >= 0)) {
+                $('#hfSelectedPerson').val(selectedIds.replace(buttonId, ''));
+            } else {
+                $('#hfSelectedPerson').val(buttonId + selectedIds);
+            }
+            return false;
+        });
+
+        $('.visitor').unbind('click').on('click', function () {
+            $(this).toggleClass('active');
+            var selectedIds = $('#hfSelectedVisitor').val();
+            var buttonId = this.getAttribute('data-id') + ',';
+            if (typeof selectedIds == "string" && (selectedIds.indexOf(buttonId) >= 0)) {
+                $('#hfSelectedVisitor').val(selectedIds.replace(buttonId, ''));
+            } else {
+                $('#hfSelectedVisitor').val(buttonId + selectedIds);
+            }
+            return false;
+        });
+
+        $find("mpeAddPerson").add_shown(function () {
+            $find("mpeAddPerson")._backgroundElement.onclick = function () {
+                $find("mpeAddPerson").hide();
+            }
+        });
+
+        $find("mpeAddFamily").add_shown(function () {
+            $find("mpeAddFamily")._backgroundElement.onclick = function () {
+                $find("mpeAddFamily").hide();
+            }
+        });
+    };
+
+    $(document).ready(function () { setControlEvents(); });
+    Sys.WebForms.PageRequestManager.getInstance().add_endRequest(setControlEvents);
+
+</script>

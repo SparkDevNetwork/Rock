@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         private void AttemptKioskMatchByIpOrName()
         {
-            // try to find matching kiosk by REMOTE_ADDR (ip/name).
+            // match kiosk by REMOTE_ADDR (ip/name).
             var checkInDeviceTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
             var device = new DeviceService().GetByIPAddress( Request.ServerVariables["REMOTE_ADDR"], checkInDeviceTypeId, false );
             if ( device != null )

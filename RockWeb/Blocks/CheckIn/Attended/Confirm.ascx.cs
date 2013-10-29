@@ -145,9 +145,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDone_Click( object sender, EventArgs e )
         {
-            GoNext();
+            CurrentCheckInState.CheckIn.SearchType = null;
+            CurrentCheckInState.CheckIn.SearchValue = string.Empty;
+            SaveState();
+            NavigateToNextPage();
         }
-        
+                
         /// <summary>
         /// Handles the Click event of the lbPrintAll control.
         /// </summary>
@@ -262,20 +265,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
             }
         }
-             
-        // GoBack() handled by Rock.Model.CheckInBlock
-
-        /// <summary>
-        /// Goes to the next page.
-        /// </summary>
-        private void GoNext()
-        {
-            CurrentCheckInState.CheckIn.SearchType = null;
-            CurrentCheckInState.CheckIn.SearchValue = string.Empty;
-            SaveState();
-            NavigateToNextPage();
-        }
-
+        
         /// <summary>
         /// Prints the label.
         /// </summary>
