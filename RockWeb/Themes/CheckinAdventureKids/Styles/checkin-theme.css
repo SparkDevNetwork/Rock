@@ -7825,6 +7825,9 @@ body {
   width: 75%;
   margin: 0 auto;
 }
+.attended.modal-foreground .checkin-body .row {
+  margin-bottom: 10px;
+}
 @font-face {
   font-family: 'OpenSans';
   src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');

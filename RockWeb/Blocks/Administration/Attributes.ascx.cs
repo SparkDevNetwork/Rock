@@ -90,11 +90,11 @@ namespace RockWeb.Blocks.Administration
                 rGrid.RowDataBound += rGrid_RowDataBound;
 
                 rGrid.Columns[1].Visible = !_configuredType;
-                rGrid.Columns[8].Visible = !_displayValueEdit;
+                rGrid.Columns[7].Visible = !_displayValueEdit;
+                rGrid.Columns[8].Visible = _displayValueEdit;
                 rGrid.Columns[9].Visible = _displayValueEdit;
-                rGrid.Columns[10].Visible = _displayValueEdit;
 
-                SecurityField securityField = rGrid.Columns[11] as SecurityField;
+                SecurityField securityField = rGrid.Columns[10] as SecurityField;
                 securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
 
                 modalDetails.SaveClick += modalDetails_SaveClick;
@@ -346,12 +346,6 @@ namespace RockWeb.Blocks.Administration
                     {
                         lEntityQualifier.Text = "Global Attribute";
                     }
-                }
-
-                Literal lDescription = e.Row.FindControl( "lDescription" ) as Literal;
-                if ( lDescription != null )
-                {
-                    lDescription.Text = attribute.Description.Truncate( 100 );
                 }
 
                 if ( _displayValueEdit )

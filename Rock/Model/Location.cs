@@ -382,15 +382,25 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            if ( string.IsNullOrEmpty( this.Name ) )
+            string result = this.Name;
+
+            if ( string.IsNullOrEmpty( result ) )
             {
-                return string.Format( "{0} {1} {2}, {3} {4}",
+                result = string.Format( "{0} {1} {2}, {3} {4}",
                     this.Street1, this.Street2, this.City, this.State, this.Zip ).ReplaceWhileExists( "  ", " " );
             }
-            else
+
+            if ( string.IsNullOrWhiteSpace( result.Replace(",", string.Empty) ))
             {
-                return this.Name;
+                DbGeography geo = this.GeoPoint ?? this.GeoFence;
+                if ( geo != null )
+                {
+                    result = geo.AsText();   
+                }
             }
+            
+
+            return result;
         }
 
         #endregion
