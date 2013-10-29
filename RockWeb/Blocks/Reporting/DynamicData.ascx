@@ -63,7 +63,7 @@
 
                             <div class="actions">
                                 <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                                <a onclick="return toggleDetails();" class="btn">Cancel</a>
+                                <a onclick="return toggleDetails();" class="btn btn-link">Cancel</a>
                             </div>
                         </div>
                     </div>
