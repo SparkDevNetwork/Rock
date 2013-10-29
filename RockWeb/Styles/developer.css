@@ -8,11 +8,6 @@
 
     */
 
-/* NA: I'd like to propose se use dashed lines to denote zones when you enter zone editing mode */
-.zone-instance.outline {
-    border: 1px dashed #909090;
-    border-radius: 3px;
-}
 
 /* NA: Used to style a checkboxlist grouping -- based somewhat off the textarea of the rock-boot.less */
 .checkboxlist-group {
