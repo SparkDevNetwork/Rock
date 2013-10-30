@@ -27,7 +27,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
+                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" ValidationGroup="GroupTypeDetail" />
                     </div>
                     <div class="col-md-6">
                     </div>
@@ -35,7 +35,7 @@
 
                 <div class="row">
                     <div class="col-md-12">
-                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" ValidationGroup="GroupTypeDetail" />
                     </div>
                 </div>
 
@@ -226,33 +226,33 @@
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
-        <Rock:ModalDialog ID="dlgChildGroupType" runat="server" OnSaveClick="dlgChildGroupType_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ChildGroupType">
+        <Rock:ModalDialog ID="dlgChildGroupType" runat="server" OnSaveClick="dlgChildGroupType_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="GroupTypeDetail_ChildGroupType">
             <Content>
-                <Rock:RockDropDownList ID="ddlChildGroupType" runat="server" DataTextField="Name" DataValueField="Id" Label="Child Group Type" ValidationGroup="ChildGroupType" />
+                <Rock:RockDropDownList ID="ddlChildGroupType" runat="server" DataTextField="Name" DataValueField="Id" Label="Child Group Type" ValidationGroup="GroupTypeDetail_ChildGroupType" />
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:ModalDialog ID="dlgLocationType" runat="server" OnSaveClick="dlgLocationType_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="LocationType">
+        <Rock:ModalDialog ID="dlgLocationType" runat="server" OnSaveClick="dlgLocationType_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="GroupTypeDetail_LocationType">
             <Content>
-                <Rock:RockDropDownList ID="ddlLocationType" runat="server" DataTextField="Name" DataValueField="Id" Label="Location Type" ValidationGroup="LocationType" />
+                <Rock:RockDropDownList ID="ddlLocationType" runat="server" DataTextField="Name" DataValueField="Id" Label="Location Type" ValidationGroup="GroupTypeDetail_LocationType" />
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:ModalDialog ID="dlgGroupTypeAttribute" runat="server" OnSaveClick="dlgGroupTypeAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="GroupTypeAttribute">
+        <Rock:ModalDialog ID="dlgGroupTypeAttribute" runat="server" OnSaveClick="dlgGroupTypeAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="GroupTypeDetail_GroupTypeAttribute">
             <Content>
-                <Rock:AttributeEditor ID="edtGroupTypeAttributes" runat="server" ShowActions="false" ValidationGroup="GroupTypeAttribute" />
+                <Rock:AttributeEditor ID="edtGroupTypeAttributes" runat="server" ShowActions="false" ValidationGroup="GroupTypeDetail_GroupTypeAttribute" />
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:ModalDialog ID="dlgGroupAttribute" runat="server" OnSaveClick="dlgGroupAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="GroupAttribute">
+        <Rock:ModalDialog ID="dlgGroupAttribute" runat="server" OnSaveClick="dlgGroupAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="GroupTypeDetail_GroupAttribute">
             <Content>
-                <Rock:AttributeEditor ID="edtGroupAttributes" runat="server" ShowActions="false" ValidationGroup="GroupAttribute" />
+                <Rock:AttributeEditor ID="edtGroupAttributes" runat="server" ShowActions="false" ValidationGroup="GroupTypeDetail_GroupAttribute" />
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:ModalDialog ID="dlgGroupMemberAttribute" runat="server" OnSaveClick="dlgGroupMemberAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="GroupMemberAttribute">
+        <Rock:ModalDialog ID="dlgGroupMemberAttribute" runat="server" OnSaveClick="dlgGroupMemberAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="GroupTypeDetail_GroupMemberAttribute">
             <Content>
-                <Rock:AttributeEditor ID="edtGroupMemberAttributes" runat="server" ShowActions="false" ValidationGroup="GroupMemberAttribute" />
+                <Rock:AttributeEditor ID="edtGroupMemberAttributes" runat="server" ShowActions="false" ValidationGroup="GroupTypeDetail_GroupMemberAttribute" />
             </Content>
         </Rock:ModalDialog>
 
