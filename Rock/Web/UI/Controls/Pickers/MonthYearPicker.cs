@@ -105,6 +105,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets an optional validation group to use.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get { return ViewState["ValidationGroup"] as string; }
+            set { ViewState["ValidationGroup"] = value; }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -251,10 +263,12 @@ namespace Rock.Web.UI.Controls
             EnsureChildControls();
             _monthDropDownList.Items.Clear();
             _monthDropDownList.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            for ( int month = 1; month <= 12; month++ )
+            DateTime date = new DateTime( 2000, 1, 1 );
+            for ( int i = 0; i <= 11; i++ )
             {
-                _monthDropDownList.Items.Add( new ListItem( month.ToString(), month.ToString() ) );
+                _monthDropDownList.Items.Add( new ListItem( date.AddMonths( i ).ToString( "MMM" ), ( i + 1 ).ToString() ) );
             }
+
 
             _yearDropDownList.Items.Clear();
             _yearDropDownList.Items.Add( new ListItem( string.Empty, string.Empty ) );
@@ -312,6 +326,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
+                EnsureChildControls();
                 int? selectedMonth = _monthDropDownList.SelectedValueAsInt( true );
                 int? selectedYear = _yearDropDownList.SelectedValueAsInt( true );
 
@@ -325,6 +340,7 @@ namespace Rock.Web.UI.Controls
 
             set
             {
+                EnsureChildControls();
                 if ( value != null )
                 {
                     _monthDropDownList.SelectedValue = value.Value.Month.ToString();

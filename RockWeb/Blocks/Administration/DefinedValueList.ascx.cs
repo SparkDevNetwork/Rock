@@ -127,9 +127,17 @@ namespace RockWeb.Blocks.Administration
 
             if ( definedValueId.Equals( 0 ) )
             {
+                int definedTypeId = hfDefinedTypeId.ValueAsInt();
                 definedValue = new DefinedValue { Id = 0 };
-                definedValue.DefinedTypeId = hfDefinedTypeId.ValueAsInt();
+                definedValue.DefinedTypeId = definedTypeId;
                 definedValue.IsSystem = false;
+
+                var orders = definedValueService.Queryable()
+                    .Where( d => d.DefinedTypeId == definedTypeId )
+                    .Select( d => d.Order)
+                    .ToList();
+                
+                definedValue.Order = orders.Any() ? orders.Max() + 1 : 0;
             }
             else
             {
@@ -161,6 +169,7 @@ namespace RockWeb.Blocks.Administration
 
                 definedValueService.Save( definedValue, CurrentPersonId );
                 Rock.Attribute.Helper.SaveAttributeValues( definedValue, CurrentPersonId );
+                Rock.Web.Cache.DefinedTypeCache.Flush( definedValue.DefinedTypeId );
             } );
                         
             BindDefinedValuesGrid();
@@ -261,7 +270,7 @@ namespace RockWeb.Blocks.Administration
                     boundField.DataField = dataFieldExpression;
                     boundField.HeaderText = item.Name;
                     boundField.SortExpression = string.Empty;
-                    int insertPos = gDefinedValues.Columns.IndexOf( gDefinedValues.Columns.OfType<ReorderField>().First());
+                    int insertPos = gDefinedValues.Columns.IndexOf( gDefinedValues.Columns.OfType<DeleteField>().First());
                     gDefinedValues.Columns.Insert(insertPos, boundField );
                 }
             }

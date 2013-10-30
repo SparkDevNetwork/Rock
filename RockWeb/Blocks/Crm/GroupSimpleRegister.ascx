@@ -7,12 +7,11 @@
 
 
                 <fieldset>
-                    <Rock:RockTextBox ID="txtFirstName" runat="server" Placeholder="First Name" Required="true" ValidationGroup="GroupSimpleRegister" ></Rock:RockTextBox>
-                    <Rock:RockTextBox ID="txtLastName" runat="server" Placeholder="Last Name" Required="true" ValidationGroup="GroupSimpleRegister" ></Rock:RockTextBox>
-                    <Rock:RockTextBox ID="txtEmail" runat="server" Placeholder="Email" Required="true" ValidationGroup="GroupSimpleRegister" ></Rock:RockTextBox>
+                    <Rock:RockTextBox ID="txtFirstName" runat="server" Placeholder="First Name" ></Rock:RockTextBox>
+                    <Rock:RockTextBox ID="txtLastName" runat="server" Placeholder="Last Name" ></Rock:RockTextBox>
+                    <Rock:RockTextBox ID="txtEmail" runat="server" Placeholder="Email" ></Rock:RockTextBox>
                 </fieldset>
 
-                <asp:ValidationSummary ID="valSummary" runat="server" ValidationGroup="GroupSimpleRegister" />
                 <Rock:NotificationBox ID="nbError" runat="server" Visible="false" NotificationBoxType="Danger"></Rock:NotificationBox>
 
                 <div id="divActions" runat="server" class="actions">

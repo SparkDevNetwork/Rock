@@ -15,7 +15,7 @@ namespace Rock.Web.UI.Controls
     /// Displays a bootstrap badge
     /// </summary>
     [ToolboxData( "<{0}:Badge runat=server></{0}:Badge>" )]
-    public class Badge : PlaceHolder
+    public class Badge : Literal
     {
         /// <summary>
         /// Gets or sets the tool tip.
@@ -63,6 +63,7 @@ namespace Rock.Web.UI.Controls
                 }
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
 
+                // Renders the Text property
                 base.RenderControl( writer );
 
                 writer.RenderEndTag();

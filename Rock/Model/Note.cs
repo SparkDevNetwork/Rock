@@ -38,7 +38,7 @@ namespace Rock.Model
         /// Gets or sets the Id of the <see cref="Rock.Model.NoteType"/>. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int"/> representing the Id of the <see cref="Rock.Model.NoteType"/>
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.NoteType"/>
         /// </value>
         [Required]
         [DataMember]
@@ -117,7 +117,7 @@ namespace Rock.Model
         /// Gets or sets the source of the note.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.DefienedValue"/> representing the source of the note.
+        /// A <see cref="Rock.Model.DefinedValue"/> representing the source of the note.
         /// </value>
         [DataMember]
         public virtual DefinedValue SourceType { get; set; }

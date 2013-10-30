@@ -81,15 +81,24 @@ namespace Rock.Model
             else
             {
                 var target = new SiteDomain();
-                target.IsSystem = source.IsSystem;
-                target.SiteId = source.SiteId;
-                target.Domain = source.Domain;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another SiteDomain object to this SiteDomain object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this SiteDomain target, SiteDomain source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.SiteId = source.SiteId;
+            target.Domain = source.Domain;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

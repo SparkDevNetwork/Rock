@@ -10,7 +10,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-
+using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Security;
 
@@ -273,6 +273,100 @@ namespace Rock.Net
             {
                 httpMessage.EnsureSuccessStatusCode();
             }
+        }
+
+        /// <summary>
+        /// Posts the data with result.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="R"></typeparam>
+        /// <param name="postPath">The post path.</param>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
+        /// <exception cref="Rock.Net.HttpErrorException"></exception>
+        public R PostDataWithResult<T, R>( string postPath, T data ) where R : new()
+        {
+            Uri requestUri = new Uri( rockBaseUri, postPath );
+
+            HttpClient httpClient = new HttpClient( new HttpClientHandler { CookieContainer = this.CookieContainer } );
+            HttpResponseMessage httpMessage = null;
+            string contentResult = null;
+
+            Action<Task<HttpResponseMessage>> handleContinue = new Action<Task<HttpResponseMessage>>( p =>
+            {
+                p.Result.Content.ReadAsStringAsync().ContinueWith( c =>
+                {
+                    contentResult = c.Result;
+                } ).Wait();
+
+                httpMessage = p.Result;
+            } );
+
+            httpClient.PostAsJsonAsync<T>( requestUri.ToString(), data ).ContinueWith( handleContinue ).Wait();
+
+            if ( httpMessage != null )
+            {
+                httpMessage.EnsureSuccessStatusCode();
+            }
+
+            R result = JsonConvert.DeserializeObject<R>( contentResult );
+
+            return result;
+        }
+
+        /// <summary>
+        /// Gets the XML.
+        /// </summary>
+        /// <param name="getPath">The get path.</param>
+        /// <param name="maxWaitMilliseconds">The maximum wait milliseconds.</param>
+        /// <param name="odataFilter">The odata filter.</param>
+        /// <returns></returns>
+        public string GetXml( string getPath, int maxWaitMilliseconds = -1, string odataFilter = null )
+        {
+            HttpClient httpClient = new HttpClient( new HttpClientHandler { CookieContainer = this.CookieContainer } );
+            httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/xml"));
+            
+            Uri requestUri;
+
+            if ( !string.IsNullOrWhiteSpace( odataFilter ) )
+            {
+                string queryParam = "?$filter=" + odataFilter;
+                requestUri = new Uri( rockBaseUri, getPath + queryParam );
+            }
+            else
+            {
+                requestUri = new Uri( rockBaseUri, getPath );
+            }
+
+            HttpContent resultContent;
+            string result = null;
+
+            try
+            {
+
+                httpClient.GetAsync( requestUri ).ContinueWith( ( postTask ) =>
+                {
+                    if ( postTask.Result.IsSuccessStatusCode )
+                    {
+                        resultContent = postTask.Result.Content;
+                        resultContent.ReadAsStringAsync().ContinueWith( s =>
+                        {
+                            result = s.Result;
+                        } ).Wait( maxWaitMilliseconds );
+                    }
+                    else
+                    {
+                        throw new HttpErrorException( new HttpError( postTask.Result.ReasonPhrase ) );
+                    }
+
+               } ).Wait();
+            }
+            catch ( AggregateException ex )
+            {
+                throw ex.Flatten();
+            }
+
+            return result;
         }
     }
 

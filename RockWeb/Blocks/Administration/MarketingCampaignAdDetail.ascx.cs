@@ -381,11 +381,11 @@ namespace RockWeb.Blocks.Administration
             ltMarketingCampaignAdStatus.Text = status.ConvertToString();
             switch ( status )
             {
-                case MarketingCampaignAdStatus.Approved: ltMarketingCampaignAdStatus.TextCssClass = "alert MarketingCampaignAdStatus alert-success";
+                case MarketingCampaignAdStatus.Approved: ltMarketingCampaignAdStatus.CssClass = "alert MarketingCampaignAdStatus alert-success";
                     break;
-                case MarketingCampaignAdStatus.Denied: ltMarketingCampaignAdStatus.TextCssClass = "alert MarketingCampaignAdStatus alert-danger";
+                case MarketingCampaignAdStatus.Denied: ltMarketingCampaignAdStatus.CssClass = "alert MarketingCampaignAdStatus alert-danger";
                     break;
-                default: ltMarketingCampaignAdStatus.TextCssClass = "alert MarketingCampaignAdStatus alert-info";
+                default: ltMarketingCampaignAdStatus.CssClass = "alert MarketingCampaignAdStatus alert-info";
                     break;
             }
 

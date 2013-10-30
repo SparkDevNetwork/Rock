@@ -74,7 +74,7 @@ namespace Rock.Model
         {
             return Queryable("Person,GroupRole", includeDeceased)
                 .Where( t => t.GroupId == groupId)
-                .OrderBy( g => g.GroupRole.SortOrder );
+                .OrderBy( g => g.GroupRole.Order );
         }
 
         /// <summary>
@@ -93,14 +93,13 @@ namespace Rock.Model
 
         /// <summary>
         /// Returns the first <see cref="Rock.Model.GroupMember"/> that mathces the Id of the <see cref="Rock.Model.Group"/>,
-        /// the Id of the <see cref="Rock.Model.Person"/>, and the Id fo the <see cref="Rock.Model.GroupRole"/>
+        /// the Id of the <see cref="Rock.Model.Person"/>, and the Id fo the <see cref="Rock.Model.GroupTypeRole"/>
         /// </summary>
         /// <param name="groupId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/> to search by.</param>
         /// <param name="personId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> to search by.</param>
-        /// <param name="groupRoleId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupRole"/> to search by.</param>
+        /// <param name="groupRoleId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupTypeRole"/> to search by.</param>
         /// <param name="includeDeceased">A <see cref="System.Boolean"/> value indicating if deceased <see cref="Rock.Model.GroupMember">GroupMembers</see> should be included. If <c>true</c> 
         /// deceased group members will be included, if <c>false</c> deceased group members will not be included. This parameter defaults to false.</param>
-        /// </param>
         /// <returns>The first <see cref="Rock.Model.GroupMember"/> that matches the search criteria. If no results found returns null.</returns>
         /// <remarks>
         /// In theory a maximum of one result should be returned, since there is a unique constraint on GroupId, PersonId, and GroupRoleId.
@@ -112,12 +111,12 @@ namespace Rock.Model
 
 
         /// <summary>
-        /// Returns a queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> by the Id of the <see cref="Rock.Model.GroupRole"/> that the member belongs to.
+        /// Returns a queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> by the Id of the <see cref="Rock.Model.GroupTypeRole"/> that the member belongs to.
         /// </summary>
-        /// <param name="groupRoleId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupRole"/> to search by.</param>
+        /// <param name="groupRoleId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupTypeRole"/> to search by.</param>
         /// <param name="includeDeceased">A <see cref="System.Boolean"/> value indicating if deceased <see cref="Rock.Model.GroupMember">GroupMembers</see> should be included. If <c>true</c> 
         /// deceased group members will be included, if <c>false</c> deceased group members will not be included. This parameter defaults to false.</param>
-        /// <returns>A queryable collection of <see cref="Rock.Model.GroupMembers"/> who are members of the specified <see cref="Rock.Model.GroupRole"/>.</returns>
+        /// <returns>A queryable collection of <see cref="Rock.Model.GroupMember"/> who are members of the specified <see cref="Rock.Model.GroupTypeRole"/>.</returns>
         public IQueryable<GroupMember> GetByGroupRoleId( int groupRoleId, bool includeDeceased = false )
         {
             return Queryable( "Person", includeDeceased ).Where( t => t.GroupRoleId == groupRoleId );
@@ -143,7 +142,7 @@ namespace Rock.Model
         public IEnumerable<string> GetFirstNames( int groupId, bool includeDeceased = false )
         {
             return GetByGroupId(groupId, includeDeceased).
-                OrderBy( m => m.GroupRole.SortOrder ).
+                OrderBy( m => m.GroupRole.Order ).
                 ThenBy( m => m.Person.BirthYear ).ThenBy( m => m.Person.BirthMonth ).ThenBy( m => m.Person.BirthDay ).
                 ThenBy( m => m.Person.Gender ).
                 Select( m => m.Person.FirstName ).
@@ -243,7 +242,7 @@ namespace Rock.Model
 
                                 if ( inverseGroupMember == null )
                                 {
-                                    var inverseRole = new GroupRoleService().Get( inverseRoleGuid );
+                                    var inverseRole = new GroupTypeRoleService().Get( inverseRoleGuid );
                                     if ( inverseRole != null )
                                     {
                                         inverseGroupMember = new GroupMember();

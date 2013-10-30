@@ -32,7 +32,7 @@ namespace Rock.PersonProfile.Badge
             get
             {
                 var defaults = base.AttributeValueDefaults;
-                defaults["Order"] = "8";
+                defaults["Order"] = "9";
                 return defaults;
             }
         }

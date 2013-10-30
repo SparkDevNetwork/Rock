@@ -24,6 +24,7 @@
 @font-weight-bold:      700;
 @font-weight-semibold:  600;
 
+@bg-color:      #dbc189;
 @text-color:    #92724C;
 
 @header-text-color:     #54412b;
@@ -103,7 +104,7 @@
 // Mix-ins
 // --------------------------------------------------
 .checkinBackground () {
-  	background: #dbc189 url('../Assets/Images/background.jpg') top right no-repeat fixed;
+  	background: @bg-color url('../Assets/Images/background.jpg') top right no-repeat fixed;
 }
 
 .checkinBackgroundRetina()

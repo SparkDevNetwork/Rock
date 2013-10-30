@@ -127,7 +127,7 @@ namespace Rock.Model
 
 
         /// <summary>
-        /// Gets or sets a collection containing the <see cref="Rock.Model.Locaton">Locations</see> that use this device.
+        /// Gets or sets a collection containing the <see cref="Rock.Model.Location">Locations</see> that use this device.
         /// </summary>
         /// <value>
         /// A collection of <see cref="Rock.Model.Location">Locations</see> that use this device.
@@ -165,7 +165,7 @@ namespace Rock.Model
         /// Returns an enumerable collection of <see cref="Rock.Model.GroupType">GroupTypes</see> that use the <see cref="Rock.Model.Location">Locations</see> that this
         /// device is configured for.
         /// </summary>
-        /// <returns>A enumerable collection of <see cref="Rock.Model.GroupType"/> entities that use the <see cref="Rock.Model.Location">Locations that this device is configured for.</returns>
+        /// <returns>A enumerable collection of <see cref="Rock.Model.GroupType"/> entities that use the <see cref="Rock.Model.Location"/>Locations that this device is configured for.</returns>
         public virtual IEnumerable<GroupType> GetLocationGroupTypes()
         {
             var groupTypes = new Dictionary<int, GroupType>();

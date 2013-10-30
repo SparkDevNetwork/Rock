@@ -352,6 +352,7 @@ namespace Rock.Web.UI.Controls
         public override void RenderControl( HtmlTextWriter writer )
         {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "note-editor" );
+            writer.AddAttribute( "rel", this.NoteId.ToStringSafe() );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // Edit Mode HTML...

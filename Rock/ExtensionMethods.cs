@@ -126,7 +126,7 @@ namespace Rock
                 }
             }
         }
-        
+
         #endregion
 
         #region String Extensions
@@ -262,8 +262,18 @@ namespace Rock
         /// <returns></returns>
         public static string Pluralize( this string str )
         {
-            var pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService( new System.Globalization.CultureInfo( "en-US" ) );
-            return pluralizationService.Pluralize( str );
+            // Pluralization services handles most words, but there are some exceptions (i.e. campus)
+            switch ( str )
+            {
+                case "Campus":
+                case "campus":
+                    return str + "es";
+                case "CAMPUS":
+                    return str + "ES";
+                default:
+                    var pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService( new System.Globalization.CultureInfo( "en-US" ) );
+                    return pluralizationService.Pluralize( str );
+            }
         }
 
         /// <summary>
@@ -293,7 +303,7 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <param name="NullIsFalse">if set to <c>true</c> [null is false].</param>
         /// <returns></returns>
-        public static bool AsBoolean (this string str, bool NullIsFalse = true)
+        public static bool AsBoolean( this string str, bool NullIsFalse = true )
         {
             if ( NullIsFalse )
             {
@@ -302,7 +312,7 @@ namespace Rock
                     return false;
                 }
             }
-            
+
             if ( str.Equals( "true", StringComparison.OrdinalIgnoreCase ) || str.Equals( "yes", StringComparison.OrdinalIgnoreCase ) || str.Equals( "1", StringComparison.OrdinalIgnoreCase ) )
             {
                 return true;
@@ -310,7 +320,7 @@ namespace Rock
 
             return false;
         }
-        
+
         /// <summary>
         /// Attempts to convert string to integer.  Returns null if unsuccessful.
         /// </summary>
@@ -326,7 +336,7 @@ namespace Rock
                     return null;
                 }
             }
-            
+
             int value;
             if ( int.TryParse( str, out value ) )
             {
@@ -355,8 +365,6 @@ namespace Rock
                 return content;
 
             Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-            //TODO: This should probably use the theme assets folder
-            Template.FileSystem = new DotLiquid.FileSystems.LocalFileSystem( System.Web.HttpContext.Current.Server.MapPath( "~/Assets/Liquid" ) );
             Template template = Template.Parse( content );
 
             return template.Render( Hash.FromDictionary( mergeObjects ) );
@@ -367,14 +375,14 @@ namespace Rock
         /// </summary>
         /// <param name="str">The STR.</param>
         /// <returns></returns>
-        public static string FormatAsHtmlTitle(this string str)
+        public static string FormatAsHtmlTitle( this string str )
         {
 
             // split first word from rest of string
-            int endOfFirstWord = str.IndexOf(" ");
+            int endOfFirstWord = str.IndexOf( " " );
 
-            if (endOfFirstWord != -1)
-                return "<span class='first-word'>" + str.Substring(0, endOfFirstWord) + " </span> " + str.Substring(endOfFirstWord, str.Length - endOfFirstWord);
+            if ( endOfFirstWord != -1 )
+                return "<span class='first-word'>" + str.Substring( 0, endOfFirstWord ) + " </span> " + str.Substring( endOfFirstWord, str.Length - endOfFirstWord );
             else
                 return "<span class='first-word'>" + str + " </span>";
         }
@@ -402,7 +410,7 @@ namespace Rock
         {
             if ( value.Length > 4 )
             {
-                return string.Concat(new string('*', 12 ), value.Substring( value.Length - 4 ) );
+                return string.Concat( new string( '*', 12 ), value.Substring( value.Length - 4 ) );
             }
             else
             {
@@ -763,25 +771,6 @@ namespace Rock
         }
 
         /// <summary>
-        /// Rocks the page.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <returns></returns>
-        public static Rock.Web.UI.RockPage RockPage( this System.Web.UI.Control control )
-        {
-            System.Web.UI.Control parentControl = control.Parent;
-            while ( parentControl != null )
-            {
-                if ( parentControl is Rock.Web.UI.RockPage )
-                {
-                    return (Rock.Web.UI.RockPage)parentControl;
-                }
-                parentControl = parentControl.Parent;
-            }
-            return null;
-        }
-
-        /// <summary>
         /// Parents the update panel.
         /// </summary>
         /// <param name="control">The control.</param>
@@ -903,46 +892,76 @@ namespace Rock
 
         #endregion
 
-        #region DropDownList/ListControl Extensions
+        #region CheckBoxList Extensions
+
+        /// <summary>
+        /// Sets the values.
+        /// </summary>
+        /// <param name="checkBoxList">The check box list.</param>
+        /// <param name="values">The values.</param>
+        public static void SetValues( this CheckBoxList checkBoxList, List<string> values )
+        {
+            foreach ( ListItem item in checkBoxList.Items )
+            {
+                item.Selected = values.Contains( item.Value, StringComparer.OrdinalIgnoreCase );
+            }
+        }
+
+        /// <summary>
+        /// Sets the values.
+        /// </summary>
+        /// <param name="checkBoxList">The check box list.</param>
+        /// <param name="values">The values.</param>
+        public static void SetValues( this CheckBoxList checkBoxList, List<int> values )
+        {
+            foreach ( ListItem item in checkBoxList.Items )
+            {
+                int numValue = int.MinValue;
+                item.Selected = int.TryParse( item.Value, out numValue ) && values.Contains( numValue );
+            }
+        }
+
+        #endregion
+
+        #region ListControl Extensions
 
         /// <summary>
         /// Try's to set the selected value, if the value does not exist, will set the first item in the list
         /// </summary>
-        /// <param name="ddl">The DDL.</param>
+        /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
-        public static void SetValue( this DropDownList ddl, string value )
+        public static void SetValue( this ListControl listControl, string value )
         {
             try
             {
-                ddl.SelectedValue = value;
+                listControl.SelectedValue = value;
             }
             catch
             {
-                if ( ddl.Items.Count > 0 )
-                    ddl.SelectedIndex = 0;
+                if ( listControl.Items.Count > 0 )
+                    listControl.SelectedIndex = 0;
             }
-
         }
 
         /// <summary>
         /// Sets the read only value.
         /// </summary>
-        /// <param name="ddl">The DDL.</param>
+        /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
-        public static void SetReadOnlyValue( this DropDownList ddl, string value )
+        public static void SetReadOnlyValue( this ListControl listControl, string value )
         {
-            ddl.Items.Clear();
-            ddl.Items.Add( value );
+            listControl.Items.Clear();
+            listControl.Items.Add( value );
         }
 
         /// <summary>
         /// Try's to set the selected value, if the value does not exist, will set the first item in the list
         /// </summary>
-        /// <param name="ddl">The DDL.</param>
+        /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
-        public static void SetValue( this DropDownList ddl, int? value )
+        public static void SetValue( this ListControl listControl, int? value )
         {
-            ddl.SetValue( value == null ? "0" : value.ToString() );
+            listControl.SetValue( value == null ? "0" : value.ToString() );
         }
 
         /// <summary>
@@ -985,6 +1004,7 @@ namespace Rock
                     v.Id
                 } );
 
+            listControl.SelectedIndex = -1;
             listControl.DataSource = ds;
             listControl.DataTextField = "Name";
             listControl.DataValueField = "Id";
@@ -994,6 +1014,7 @@ namespace Rock
             {
                 listControl.Items.Insert( 0, new ListItem() );
             }
+
         }
 
         /// <summary>
@@ -1063,6 +1084,7 @@ namespace Rock
         /// Converts to the enum value to it's string value
         /// </summary>
         /// <param name="eff">The eff.</param>
+        /// <param name="SplitCase">if set to <c>true</c> [split case].</param>
         /// <returns></returns>
         public static String ConvertToString( this Enum eff, bool SplitCase = true )
         {
@@ -1099,7 +1121,7 @@ namespace Rock
                 }
             }
             return null;
-        }        
+        }
 
         /// <summary>
         /// Converts to int.

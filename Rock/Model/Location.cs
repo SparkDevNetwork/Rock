@@ -68,6 +68,7 @@ namespace Rock.Model
         /// A <see cref="System.Data.Entity.Spatial.DbGeography"/> object that represents the geolocation of the Location.
         /// </value>
         [DataMember]
+        [Newtonsoft.Json.JsonIgnore]
         public DbGeography GeoPoint { get; set; }
 
         /// <summary>
@@ -82,6 +83,7 @@ namespace Rock.Model
         /// A <see cref="System.Data.Entity.Spatial.DbGeography"/> object representing the parameter of a location.
         /// </value>
         [DataMember]
+        [Newtonsoft.Json.JsonIgnore]
         public DbGeography GeoFence { get; set; }
 
         /// <summary>
@@ -380,15 +382,34 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            if ( string.IsNullOrEmpty( this.Name ) )
+            string result = this.Name;
+
+            if ( string.IsNullOrEmpty( result ) )
             {
-                return string.Format( "{0} {1} {2}, {3} {4}",
-                    this.Street1, this.Street2, this.City, this.State, this.Zip ).ReplaceWhileExists( "  ", " " );
+                result = GetFullStreetAddress();
             }
-            else
+
+            if ( string.IsNullOrWhiteSpace( result.Replace(",", string.Empty) ))
             {
-                return this.Name;
+                DbGeography geo = this.GeoPoint ?? this.GeoFence;
+                if ( geo != null )
+                {
+                    result = geo.AsText();   
+                }
             }
+            
+
+            return result;
+        }
+
+        /// <summary>
+        /// Gets the full street address.
+        /// </summary>
+        /// <returns></returns>
+        public string GetFullStreetAddress()
+        {
+            return string.Format( "{0} {1} {2}, {3} {4}",
+                this.Street1, this.Street2, this.City, this.State, this.Zip ).ReplaceWhileExists( "  ", " " );
         }
 
         #endregion

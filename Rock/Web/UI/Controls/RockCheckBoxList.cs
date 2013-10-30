@@ -187,16 +187,39 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the selected values as int.
+        /// Selects the values.
         /// </summary>
         /// <value>
-        /// The selected values as int.
+        /// The selected values.
         /// </value>
         public List<string> SelectedValues
         {
             get
             {
                 return this.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value ).ToList();
+            }
+        }
+
+        /// <summary>
+        /// Selects the values as int.
+        /// </summary>
+        /// <value>
+        /// The selected values as int.
+        /// </value>
+        public List<int> SelectedValuesAsInt
+        {
+            get
+            {
+                var values = new List<int>();
+                foreach ( string stringValue in SelectedValues )
+                {
+                    int numValue = int.MinValue;
+                    if ( int.TryParse( stringValue, out numValue ) )
+                    {
+                        values.Add( numValue );
+                    }
+                }
+                return values;
             }
         }
 

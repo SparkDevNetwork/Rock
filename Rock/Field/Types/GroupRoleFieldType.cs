@@ -36,7 +36,7 @@ namespace Rock.Field.Types
             Guid guid = Guid.Empty;
             if ( Guid.TryParse( value, out guid ) )
             {
-                var groupRole = new Rock.Model.GroupRoleService().Get( guid );
+                var groupRole = new Rock.Model.GroupTypeRoleService().Get( guid );
                 if ( groupRole != null )
                 {
                     return groupRole.Name;
@@ -157,7 +157,7 @@ namespace Rock.Field.Types
             {
                 if ( groupRolePicker.GroupRoleId.HasValue )
                 {
-                    var groupRole = new Rock.Model.GroupRoleService().Get( groupRolePicker.GroupRoleId.Value );
+                    var groupRole = new Rock.Model.GroupTypeRoleService().Get( groupRolePicker.GroupRoleId.Value );
                     if ( groupRole != null )
                     {
                         return groupRole.Guid.ToString();
@@ -182,7 +182,7 @@ namespace Rock.Field.Types
                 GroupRolePicker groupRolePicker = control as GroupRolePicker;
                 if ( groupRolePicker != null )
                 {
-                    var groupRole = new Rock.Model.GroupRoleService().Get( guid );
+                    var groupRole = new Rock.Model.GroupTypeRoleService().Get( guid );
                     if ( groupRole != null )
                     {
                         groupRolePicker.GroupRoleId = groupRole.Id;

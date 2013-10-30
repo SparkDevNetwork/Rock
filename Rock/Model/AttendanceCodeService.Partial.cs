@@ -22,7 +22,7 @@ namespace Rock.Model
         /// </summary>
         private char[] codeCharacters = new char[] { 'B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'R', 'S', 'T', 'X', 'Z', '2', '4', '5', '6', '7', '8', '9' };
         /// <summary>
-        /// A list of <see cref="Rock.Model.String"/> values that are not allowable as attendance codes.
+        /// A list of <see cref="System.String"/> values that are not allowable as attendance codes.
         /// </summary>
         private List<string> noGood = new List<string> { "666", "KKK", "FCK", "SHT", "5HT", "DCK" };
 
@@ -40,7 +40,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a new <see cref="Rock.Model.Code"/>
+        /// Returns a new <see cref="Rock.Model.AttendanceCode"/>
         /// </summary>
         /// <param name="codeLength">A <see cref="System.Int32"/> representing the length of the (security) code.</param>
         /// <returns>A new <see cref="Rock.Model.AttendanceCode"/></returns>

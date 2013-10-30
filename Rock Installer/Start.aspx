@@ -233,21 +233,23 @@
         string userName = user.Translate(typeof (System.Security.Principal.NTAccount)).ToString();
 
         bool canWrite = false;
+
+        // check for write permissions
+        string filename = Server.MapPath(".") + @"\write-permission.test";
         
-        // check rights on directory
-        DirectorySecurity dirSecurity = Directory.GetAccessControl(Server.MapPath("."), AccessControlSections.Access);
-		foreach(FileSystemAccessRule fsRule in dirSecurity.GetAccessRules(true, true, typeof(System.Security.Principal.NTAccount)))
-        {             
-            if(fsRule.IdentityReference.Value.ToLower() == userName.ToLower()) {
-	            	            
-	            if ((fsRule.FileSystemRights.ToString().Contains("Write"))  
-	            		|| (fsRule.FileSystemRights.ToString().Contains("FullControl")) 
-	            		|| (fsRule.FileSystemRights.ToString().Contains("Modify")))
-	            {
-	            	canWrite = true;
-	            	break;
-	            }
-            }
+        try
+        {
+            File.Create(filename).Dispose();
+        }
+        catch (Exception ex)
+        {
+
+        }
+
+        if (File.Exists(filename))
+        {
+            canWrite = true;
+            File.Delete(filename);
         }
         
         if (!canWrite) {

@@ -81,19 +81,28 @@ namespace Rock.Model
             else
             {
                 var target = new Audit();
-                target.EntityTypeId = source.EntityTypeId;
-                target.EntityId = source.EntityId;
-                target.Title = source.Title;
-                target.AuditType = source.AuditType;
-                target.Properties = source.Properties;
-                target.DateTime = source.DateTime;
-                target.PersonId = source.PersonId;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another Audit object to this Audit object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this Audit target, Audit source )
+        {
+            target.EntityTypeId = source.EntityTypeId;
+            target.EntityId = source.EntityId;
+            target.Title = source.Title;
+            target.AuditType = source.AuditType;
+            target.Properties = source.Properties;
+            target.DateTime = source.DateTime;
+            target.PersonId = source.PersonId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

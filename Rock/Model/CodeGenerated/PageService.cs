@@ -93,35 +93,44 @@ namespace Rock.Model
             else
             {
                 var target = new Page();
-                target.Name = source.Name;
-                target.ParentPageId = source.ParentPageId;
-                target.Title = source.Title;
-                target.IsSystem = source.IsSystem;
-                target.LayoutId = source.LayoutId;
-                target.RequiresEncryption = source.RequiresEncryption;
-                target.EnableViewState = source.EnableViewState;
-                target.PageDisplayTitle = source.PageDisplayTitle;
-                target.PageDisplayBreadCrumb = source.PageDisplayBreadCrumb;
-                target.PageDisplayIcon = source.PageDisplayIcon;
-                target.PageDisplayDescription = source.PageDisplayDescription;
-                target.DisplayInNavWhen = source.DisplayInNavWhen;
-                target.MenuDisplayDescription = source.MenuDisplayDescription;
-                target.MenuDisplayIcon = source.MenuDisplayIcon;
-                target.MenuDisplayChildPages = source.MenuDisplayChildPages;
-                target.BreadCrumbDisplayName = source.BreadCrumbDisplayName;
-                target.BreadCrumbDisplayIcon = source.BreadCrumbDisplayIcon;
-                target.Order = source.Order;
-                target.OutputCacheDuration = source.OutputCacheDuration;
-                target.Description = source.Description;
-                target.IconFileId = source.IconFileId;
-                target.IconCssClass = source.IconCssClass;
-                target.IncludeAdminFooter = source.IncludeAdminFooter;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another Page object to this Page object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this Page target, Page source )
+        {
+            target.Name = source.Name;
+            target.ParentPageId = source.ParentPageId;
+            target.Title = source.Title;
+            target.IsSystem = source.IsSystem;
+            target.LayoutId = source.LayoutId;
+            target.RequiresEncryption = source.RequiresEncryption;
+            target.EnableViewState = source.EnableViewState;
+            target.PageDisplayTitle = source.PageDisplayTitle;
+            target.PageDisplayBreadCrumb = source.PageDisplayBreadCrumb;
+            target.PageDisplayIcon = source.PageDisplayIcon;
+            target.PageDisplayDescription = source.PageDisplayDescription;
+            target.DisplayInNavWhen = source.DisplayInNavWhen;
+            target.MenuDisplayDescription = source.MenuDisplayDescription;
+            target.MenuDisplayIcon = source.MenuDisplayIcon;
+            target.MenuDisplayChildPages = source.MenuDisplayChildPages;
+            target.BreadCrumbDisplayName = source.BreadCrumbDisplayName;
+            target.BreadCrumbDisplayIcon = source.BreadCrumbDisplayIcon;
+            target.Order = source.Order;
+            target.OutputCacheDuration = source.OutputCacheDuration;
+            target.Description = source.Description;
+            target.IconFileId = source.IconFileId;
+            target.IconCssClass = source.IconCssClass;
+            target.IncludeAdminFooter = source.IncludeAdminFooter;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

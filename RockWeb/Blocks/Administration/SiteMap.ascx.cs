@@ -38,26 +38,26 @@ public partial class SiteMap : RockBlock
     /// <summary>
     /// Adds the page nodes.
     /// </summary>
-    /// <param name="Page">The page.</param>
+    /// <param name="page">The page.</param>
     /// <returns></returns>
-    protected string PageNode( Rock.Model.Page Page )
+    protected string PageNode( Page page )
     {
         var sb = new StringBuilder();
 
-        sb.AppendFormat( "<li data-expanded='false'><i class=\"icon-file-alt\">&nbsp;</i> <a href='{0}'>{1}</a>{2}", new PageReference( Page.Id ).BuildUrl(), Page.Name, Environment.NewLine );
+        sb.AppendFormat( "<li data-expanded='false' data-model='Page' data-id='{0}'><span><i class=\"icon-file-alt\">&nbsp;</i> <a href='{1}'>{2}</a></span>{3}", page.Id, new PageReference( page.Id ).BuildUrl(), page.Name, Environment.NewLine );
 
-        if ( Page.Pages.Any() || Page.Blocks.Any() )
+        if ( page.Pages.Any() || page.Blocks.Any() )
         {
             sb.AppendLine("<ul>");
 
-            foreach ( var childPage in Page.Pages.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+            foreach ( var childPage in page.Pages.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
                 sb.Append( PageNode( childPage ) );
             }
 
-            foreach ( var block in Page.Blocks.OrderBy( b => b.Order ) )
+            foreach ( var block in page.Blocks.OrderBy( b => b.Order ) )
             {
-                sb.AppendFormat("<li data-expanded='false'>{0}{1}:{2}</li>{3}", CreateConfigIcon(block), block.Name, block.BlockType.Name, Environment.NewLine );
+                sb.AppendFormat("<li data-expanded='false' data-model='Block' data-id='{0}'><span>{1}{2}:{3}</span></li>{4}", block.Id, CreateConfigIcon(block), block.Name, block.BlockType.Name, Environment.NewLine );
             }
 
             sb.AppendLine( "</ul>" );

@@ -10,6 +10,7 @@ using System.Linq;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Constants;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -34,6 +35,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             rblStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_STATUS ) ) );
             ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
             ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
+
+            ddlGivingGroup.Items.Clear();
+            ddlGivingGroup.Items.Add(new ListItem(None.Text, None.IdValue));
+            if ( Person != null )
+            {
+                var personService = new PersonService();
+                foreach ( var family in personService.GetFamilies( Person ) )
+                {
+                    ddlGivingGroup.Items.Add( new ListItem( family.Name, family.Id.ToString() ) );
+                }
+            }
         }
 
         /// <summary>
@@ -77,7 +89,26 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             person.MiddleName = tbMiddleName.Text;
             person.LastName = tbLastName.Text;
             person.SuffixValueId = ddlSuffix.SelectedValueAsInt();
-            person.BirthDate = dpBirthDate.SelectedDate;
+
+            var birthday = bpBirthDay.SelectedDate;
+            if ( birthday.HasValue )
+            {
+                person.BirthMonth = birthday.Value.Month;
+                person.BirthDay = birthday.Value.Day;
+                if ( birthday.Value.Year != DateTime.MinValue.Year )
+                {
+                    person.BirthYear = birthday.Value.Year;
+                }
+                else
+                {
+                    person.BirthYear = null;
+                }
+            }
+            else
+            {
+                person.BirthDate = null;
+            }
+
             person.AnniversaryDate = dpAnniversaryDate.SelectedDate;
             person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
             person.MaritalStatusValueId = rblMaritalStatus.SelectedValueAsInt();
@@ -90,9 +121,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 HiddenField hfPhoneType = item.FindControl( "hfPhoneType" ) as HiddenField;
                 TextBox tbPhone = item.FindControl( "tbPhone" ) as TextBox;
                 CheckBox cbUnlisted = item.FindControl( "cbUnlisted" ) as CheckBox;
+                CheckBox cbSms = item.FindControl( "cbSms" ) as CheckBox;
 
                 if ( hfPhoneType != null &&
                     tbPhone != null &&
+                    cbSms != null &&
                     cbUnlisted != null )
                 {
                     if ( !string.IsNullOrWhiteSpace( tbPhone.Text ) )
@@ -108,6 +141,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             }
 
                             phoneNumber.Number = PhoneNumber.CleanNumber( tbPhone.Text );
+                            phoneNumber.IsMessagingEnabled = cbSms.Checked;
                             phoneNumber.IsUnlisted = cbUnlisted.Checked;
 
                             phoneNumberTypeIds.Add( phoneNumberTypeId );
@@ -123,7 +157,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 .ForEach( n => person.PhoneNumbers.Remove( n ) );
 
             person.Email = tbEmail.Text;
-            
+
+            person.GivingGroupId = ddlGivingGroup.SelectedValueAsId();
+
             person.RecordStatusValueId = ddlRecordStatus.SelectedValueAsInt();
             person.RecordStatusReasonValueId = ddlReason.SelectedValueAsInt();
 
@@ -154,29 +190,33 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             tbMiddleName.Text = Person.MiddleName;
             tbLastName.Text = Person.LastName;
             ddlSuffix.SelectedValue = Person.SuffixValueId.HasValue ? Person.SuffixValueId.Value.ToString() : string.Empty;
-            dpBirthDate.SelectedDate = Person.BirthDate;
+            bpBirthDay.SelectedDate = Person.BirthDate;
             dpAnniversaryDate.SelectedDate = Person.AnniversaryDate;
             rblGender.SelectedValue = Person.Gender.ConvertToString();
             rblMaritalStatus.SelectedValue = Person.MaritalStatusValueId.HasValue ? Person.MaritalStatusValueId.Value.ToString() : string.Empty;
             rblStatus.SelectedValue = Person.PersonStatusValueId.HasValue ? Person.PersonStatusValueId.Value.ToString() : string.Empty;
             tbEmail.Text = Person.Email;
+
             ddlRecordStatus.SelectedValue = Person.RecordStatusValueId.HasValue ? Person.RecordStatusValueId.Value.ToString() : string.Empty;
             ddlReason.SelectedValue = Person.RecordStatusReasonValueId.HasValue ? Person.RecordStatusReasonValueId.Value.ToString() : string.Empty;
 
+            var mobilePhoneType = DefinedValueCache.Read(new Guid(Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE));
+
             var phoneNumbers = new List<PhoneNumber>();
             var phoneNumberTypes = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
-            if (phoneNumberTypes.DefinedValues.Any())
+            if ( phoneNumberTypes.DefinedValues.Any() )
             {
-                foreach(var phoneNumberType in phoneNumberTypes.DefinedValues)
+                foreach ( var phoneNumberType in phoneNumberTypes.DefinedValues )
                 {
                     var phoneNumber = Person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberType.Id );
-                    if (phoneNumber == null)
+                    if ( phoneNumber == null )
                     {
                         var numberType = new DefinedValue();
                         numberType.Id = phoneNumberType.Id;
                         numberType.Name = phoneNumberType.Name;
 
                         phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
+                        phoneNumber.IsMessagingEnabled = mobilePhoneType != null && phoneNumberType.Id == mobilePhoneType.Id;
                     }
 
                     phoneNumbers.Add( phoneNumber );
@@ -186,7 +226,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 rContactInfo.DataBind();
             }
 
-        }
+            ddlGivingGroup.SetValue( Person.GivingGroupId );
 
+        }
     }
 }
