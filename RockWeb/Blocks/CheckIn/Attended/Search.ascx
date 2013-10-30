@@ -25,7 +25,7 @@
             <div class="col-md-6">
                 <Rock:RockTextBox ID="tbSearchBox" MaxLength="50" CssClass="checkin-phone-entry" runat="server" Label="" TabIndex="0" />
 
-                <asp:Panel id="pnlKeyPad" runat="server" Visible="false" CssClass="tenkey">
+                <asp:Panel id="pnlKeyPad" runat="server" Visible="false" CssClass="tenkey checkin-phone-entry ">
                     <div>
                         <a href="#" class="btn btn-default btn-lg digit">1</a>
                         <a href="#" class="btn btn-default btn-lg digit">2</a>

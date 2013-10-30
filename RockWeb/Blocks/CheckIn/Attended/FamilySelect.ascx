@@ -11,7 +11,7 @@
         <div class="row checkin-header">
             <div class="col-sm-3 checkin-actions">
                 <Rock:BootstrapButton ID="lbBack" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbBack_Click" 
-                    Text="Back" />
+                    EnableViewState="false" Text="Back" />
             </div>
 
             <div class="col-sm-6">                
@@ -20,7 +20,7 @@
 
             <div class="col-sm-3 checkin-actions">
                 <Rock:BootstrapButton ID="lbNext" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbNext_Click" 
-                    Text="Next" />
+                    EnableViewState="false" Text="Next" />
             </div>
         </div>
                 

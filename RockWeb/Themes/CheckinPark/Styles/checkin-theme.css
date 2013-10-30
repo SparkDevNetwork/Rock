@@ -7737,7 +7737,7 @@ input.checkin-phone-entry {
 }
 .attended .checkin-phone-entry {
   font-weight: 600;
-  margin-top: 25%;
+  margin-top: 15%;
   width: 100%;
 }
 .attended .nothing-eligible {
@@ -7819,9 +7819,6 @@ input.checkin-phone-entry {
 .attended.modal-foreground div[class*='col-md-'] {
   padding-left: 3px;
   padding-right: 3px;
-}
-.attended input[type="text"].note {
-  width: 65%;
 }
 .attended .help-inline {
   color: #9d0f12;
