@@ -554,6 +554,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbBack_Click( object sender, EventArgs e )
         {
+            // reset checkin state 
+            if ( CurrentCheckInState != null && CurrentCheckInState.CheckIn != null )
+            {
+                CurrentCheckInState.CheckIn.Families = new List<CheckInFamily>();
+            } 
             GoBack();
         }
 
