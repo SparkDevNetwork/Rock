@@ -49,6 +49,7 @@
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.Formatting, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.4.0.20710.0\lib\net40\System.Net.Http.Formatting.dll</HintPath>
@@ -89,6 +90,7 @@
     <Compile Include="Controllers\CodeGenerated\FinancialTransactionImagesController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialTransactionRefundsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialTransactionScannedChecksController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupTypeRolesController.cs" />
     <Compile Include="Controllers\CodeGenerated\LayoutsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NotesController.cs" />
     <Compile Include="Controllers\CodeGenerated\NoteTypesController.cs" />
@@ -123,7 +125,6 @@
     <Compile Include="Controllers\CodeGenerated\FinancialTransactionDetailsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialTransactionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupMembersController.cs" />
-    <Compile Include="Controllers\CodeGenerated\GroupRolesController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupsController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\HtmlContentsController.cs" />

@@ -7,10 +7,12 @@
 using System;
 using System.Linq;
 using System.Web.UI;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -32,6 +34,8 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnInit( e );
 
+            rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
+
             gGroupType.DataKeyNames = new string[] { "id" };
             gGroupType.Actions.ShowAdd = true;
             gGroupType.Actions.AddClick += gGroupType_Add;
@@ -41,6 +45,8 @@ namespace RockWeb.Blocks.Crm
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
             gGroupType.Actions.ShowAdd = canAddEditDelete;
             gGroupType.IsDeleteEnabled = canAddEditDelete;
+
+            BindFilter();
         }
 
         /// <summary>
@@ -60,6 +66,44 @@ namespace RockWeb.Blocks.Crm
         #endregion
 
         #region Grid Events (main grid)
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the rFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        {
+            rFilter.SaveUserPreference( "Purpose", ddlPurpose.SelectedValue );
+            rFilter.SaveUserPreference( "System Group Types", ddlIsSystem.SelectedValue );
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Rs the filter_ display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            switch ( e.Key )
+            {
+                case "Purpose":
+
+                    int id = int.MinValue;
+                    if ( int.TryParse( e.Value, out id ) )
+                    {
+                        var purpose = DefinedValueCache.Read( id );
+                        if ( purpose != null )
+                        {
+                            e.Value = purpose.Name;
+                        }
+                    }
+
+                    break;
+            }
+
+        }
 
         /// <summary>
         /// Handles the Add event of the gGroupType control.
@@ -125,6 +169,21 @@ namespace RockWeb.Blocks.Crm
         #region Internal Methods
 
         /// <summary>
+        /// Binds the filter.
+        /// </summary>
+        private void BindFilter()
+        {
+            ddlPurpose.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE ) ), true );
+
+            var purpose = rFilter.GetUserPreference( "Purpose" );
+            ddlPurpose.SelectedValue = purpose;
+
+            var isSystem = rFilter.GetUserPreference( "System Group Types" );
+            ddlIsSystem.SelectedValue = isSystem;
+        }
+
+
+        /// <summary>
         /// Binds the grid.
         /// </summary>
         private void BindGrid()
@@ -132,23 +191,42 @@ namespace RockWeb.Blocks.Crm
             GroupTypeService groupTypeService = new GroupTypeService();
             SortProperty sortProperty = gGroupType.SortProperty;
 
-            var qry = groupTypeService.Queryable().Select( a =>
+            var qry = groupTypeService.Queryable();
+
+            int purposeId = int.MinValue;
+            if ( int.TryParse( rFilter.GetUserPreference( "Purpose" ), out purposeId ) )
+            {
+                qry = qry.Where( t => t.GroupTypePurposeValueId == purposeId );
+            }
+
+            var isSystem = rFilter.GetUserPreference( "System Group Types" );
+            if ( isSystem == "Yes" )
+            {
+                qry = qry.Where( t => t.IsSystem );
+            }
+            else if (isSystem == "No")
+            {
+                qry = qry.Where( t => !t.IsSystem);
+            }
+
+            var selectQry = qry.Select( a =>
                 new
                 {
                     a.Id,
                     a.Name,
                     a.Description,
+                    Purpose = a.GroupTypePurposeValue.Name,
                     GroupsCount = a.Groups.Count(),
                     a.IsSystem
                 } );
 
             if ( sortProperty != null )
             {
-                gGroupType.DataSource = qry.Sort( sortProperty ).ToList();
+                gGroupType.DataSource = selectQry.Sort( sortProperty ).ToList();
             }
             else
             {
-                gGroupType.DataSource = qry.OrderBy( p => p.Name ).ToList();
+                gGroupType.DataSource = selectQry.OrderBy( p => p.Name ).ToList();
             }
 
             gGroupType.DataBind();

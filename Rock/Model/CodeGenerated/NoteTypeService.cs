@@ -81,18 +81,27 @@ namespace Rock.Model
             else
             {
                 var target = new NoteType();
-                target.IsSystem = source.IsSystem;
-                target.EntityTypeId = source.EntityTypeId;
-                target.Name = source.Name;
-                target.SourcesTypeId = source.SourcesTypeId;
-                target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
-                target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another NoteType object to this NoteType object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this NoteType target, NoteType source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.EntityTypeId = source.EntityTypeId;
+            target.Name = source.Name;
+            target.SourcesTypeId = source.SourcesTypeId;
+            target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
+            target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

@@ -19,7 +19,8 @@
                     <asp:BoundField DataField="Name" HeaderText="Name" />
                     <asp:TemplateField HeaderText="Type" >
                         <ItemTemplate>
-                            <%# DataBinder.Eval(Container, "DataItem.BlockType.Name") %>
+                            <%# Eval("BlockType.Name") %><br />
+                            <small><%# Eval("BlockType.Path") %></small>
                         </ItemTemplate>
                     </asp:TemplateField>
                     <Rock:DeleteField OnClick="gPageBlocks_Delete" />
@@ -34,7 +35,8 @@
                     <asp:BoundField DataField="Name" HeaderText="Name" />
                     <asp:TemplateField HeaderText="Type" >
                         <ItemTemplate>
-                            <%# DataBinder.Eval(Container, "DataItem.BlockType.Name") %>
+                            <%# Eval("BlockType.Name") %><br />
+                            <small><%# Eval("BlockType.Path") %></small>
                         </ItemTemplate>
                     </asp:TemplateField>
                     <Rock:DeleteField OnClick="gLayoutBlocks_Delete" />
@@ -44,7 +46,7 @@
 
     </asp:Panel>
 
-    <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="admin-details well">
+    <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="admin-details">
 
         <asp:HiddenField ID="hfBlockLocation" runat="server" />
         <asp:HiddenField ID="hfBlockId" runat="server" />
@@ -59,7 +61,7 @@
 
         <div class="actions">
             <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" onclick="btnSave_Click" ValidationGroup="ZoneBlockValidationGroup" />
-            <asp:LinkButton id="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
+            <asp:LinkButton id="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
         </div>
 
     </asp:Panel>

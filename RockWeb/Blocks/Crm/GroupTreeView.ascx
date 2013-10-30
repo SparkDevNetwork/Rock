@@ -18,91 +18,26 @@
 
             <div id="treeview-content">
             </div>
-            <script>
-                function onSelect(e) {
-                    var groupId = this.dataItem(e.node).id;
-                    showGroupDetails(groupId);
-                }
+            <script type="text/javascript">
+                $(function () {
+                    var $selectedId = $('#hfSelectedGroupId'),
+                        $expandedIds = $('#hfInitialGroupParentIds');
 
-                function showGroupDetails(groupId) {
-                    var groupSearch = '?groupId=' + groupId;
-                    if (window.location.search.indexOf(groupSearch) === -1) {
-                        $('#hfSelectedGroupId').val(groupId);
-                        window.location.search = groupSearch;
-                    }
-                }
-
-                function findChildItemInTree(treeViewData, groupId, groupParentIds) {
-                    if (groupParentIds != '') {
-                        var groupParentList = groupParentIds.split(",");
-                        for (var i = 0; i < groupParentList.length; i++) {
-                            var parentGroupId = groupParentList[i];
-                            var parentItem = treeViewData.dataSource.get(parentGroupId);
-                            var parentNodeItem = treeViewData.findByUid(parentItem.uid);
-                            if (!parentItem.expanded && parentItem.hasChildren) {
-                                // if not yet expand, expand and return null (which will fetch more data and fire the databound event)
-                                treeViewData.expand(parentNodeItem);
-                                return null;
+                    $('#treeview-content')
+                        .on('rockTree:selected', function (e, id) {
+                            var groupSearch = '?groupId=' + id;
+                            if (window.location.search.indexOf(groupSearch) === -1) {
+                                $('#hfSelectedGroupId').val(id); // Todo: Is this necessary, since we're redirecting on the next line?
+                                window.location.search = groupSearch;
                             }
-                        }
-                    }
-
-                    var initialGroupItem = treeViewData.dataSource.get(groupId);
-
-                    return initialGroupItem;
-                }
-
-                function onDataBound(e) {
-                    // select the item specified in the page param in the treeview if there isn't one currently selected
-                    var treeViewData = $('#treeview-content').data("kendoTreeView");
-                    var selectedNode = treeViewData.select();
-                    var nodeData = this.dataItem(selectedNode);
-                    if (!nodeData) {
-                        var initialGroupId = $('#hfInitialGroupId').val();
-                        var initialGroupParentIds = $('#hfInitialGroupParentIds').val();
-                        var initialGroupItem = findChildItemInTree(treeViewData, initialGroupId, initialGroupParentIds);
-                        if (initialGroupId) {
-                            if (initialGroupItem) {
-                                var firstItem = treeViewData.findByUid(initialGroupItem.uid);
-                                var firstDataItem = this.dataItem(firstItem);
-                                if (firstDataItem) {
-                                    treeViewData.select(firstItem);
-                                    showGroupDetails(firstDataItem.id);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                var restUrl = "<%=ResolveUrl( "~/api/groups/getchildren/" ) %>";
-                var rootGroupId = $('#hfRootGroupId').val();
-                var limitToSecurityRoleGroups = $('#hfLimitToSecurityRoleGroups').val();
-                var groupTypes = $('#hfGroupTypes').val();
-
-                var groupList = new kendo.data.HierarchicalDataSource({
-                    transport: {
-                        read: {
-                            url: function (options) {
-                                var requestUrl = restUrl + (options.id || 0) + '/' + (rootGroupId || 0) + '/' + (limitToSecurityRoleGroups || false) + '/' + (groupTypes || '0');
-                                return requestUrl;
-                            }
-                        }
-                    },
-                    schema: {
-                        model: {
-                            id: 'Id',
-                            hasChildren: 'HasChildren'
-                        }
-                    }
-                });
-
-                $('#treeview-content').kendoTreeView({
-                    template: "<i class='#= item.IconCssClass #'></i> #= item.Name #",
-                    dataSource: groupList,
-                    dataTextField: 'Name',
-                    dataImageUrlField: 'IconSmallUrl',
-                    select: onSelect,
-                    dataBound: onDataBound
+                        })
+                        .rockTree({
+                            restUrl: '<%=ResolveUrl( "~/api/groups/getchildren/" ) %>',
+                            restParams: '/' + ($('#hfRootGroupId').val() || 0) + '/' + ($('#hfLimitToSecurityRoleGroups').val() || false) + '/' + ($('#hfGroupTypes').val() || 0),
+                            multiSelect: false,
+                            selectedIds: $selectedId.val() ? $selectedId.val().split(',') : null,
+                            expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null
+                        });
                 });
             </script>
         </div>

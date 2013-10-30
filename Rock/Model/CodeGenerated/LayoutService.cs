@@ -87,17 +87,26 @@ namespace Rock.Model
             else
             {
                 var target = new Layout();
-                target.IsSystem = source.IsSystem;
-                target.SiteId = source.SiteId;
-                target.FileName = source.FileName;
-                target.Name = source.Name;
-                target.Description = source.Description;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another Layout object to this Layout object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this Layout target, Layout source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.SiteId = source.SiteId;
+            target.FileName = source.FileName;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

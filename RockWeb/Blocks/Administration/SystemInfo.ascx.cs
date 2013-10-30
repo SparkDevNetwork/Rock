@@ -149,6 +149,16 @@ namespace RockWeb.Blocks.Administration
             {
                 Rock.Web.Cache.PageCache.Flush( page.Id );
             }
+
+            foreach ( var definedType in new Rock.Model.DefinedTypeService().Queryable().ToList() )
+            {
+                Rock.Web.Cache.DefinedTypeCache.Flush( definedType.Id );
+            }
+
+            foreach ( var definedValue in new Rock.Model.DefinedValueService().Queryable().ToList() )
+            {
+                Rock.Web.Cache.DefinedValueCache.Flush( definedValue.Id );
+            }
         }
     }
 }

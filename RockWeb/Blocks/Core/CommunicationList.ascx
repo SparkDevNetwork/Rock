@@ -24,10 +24,10 @@
                 <Rock:EnumField DataField="Communication.Status" SortExpression="Communication.Status" HeaderText="Communication Status" />
                 <asp:TemplateField HeaderText="Recipients" SortExpression="Recipients">
                     <ItemTemplate>
-                        <Rock:Badge ID="bPending" runat="server" ToolTip="Pending" BadgeType="None"><%# ((int)Eval("PendingRecipients")).ToString("N0") %></Rock:Badge>
-                        <Rock:Badge ID="bSuccess" runat="server" ToolTip="Successful" BadgeType="Success"><%# ((int)Eval("SuccessRecipients")).ToString("N0") %></Rock:Badge>
-                        <Rock:Badge ID="bWarning" runat="server" ToolTip="Cancelled" BadgeType="Warning"><%# ((int)Eval("CancelledRecipients")).ToString("N0") %></Rock:Badge>
-                        <Rock:Badge ID="bFailed" runat="server" Tooltip="Failed" BadgeType="Important"><%# ((int)Eval("FailedRecipients")).ToString("N0") %></Rock:Badge>
+                        <Rock:Badge ID="bPending" runat="server" ToolTip="Pending" BadgeType="None"></Rock:Badge>
+                        <Rock:Badge ID="bSuccess" runat="server" ToolTip="Successful" BadgeType="Success"></Rock:Badge>
+                        <Rock:Badge ID="bWarning" runat="server" ToolTip="Cancelled" BadgeType="Warning"></Rock:Badge>
+                        <Rock:Badge ID="bFailed" runat="server" Tooltip="Failed" BadgeType="Important"></Rock:Badge>
                     </ItemTemplate>
                 </asp:TemplateField>
                 <Rock:DeleteField OnClick="gCommunication_Delete" />

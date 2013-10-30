@@ -112,7 +112,7 @@ namespace Rock.Model
         /// Gets or sets a collection containing the <see cref="Rock.Model.Schedule">Schedules</see> that are associated with this GroupLocation.
         /// </summary>
         /// <value>
-        /// A collection of <see cref="Rock.Model.Scheudles"/> that are associated with this GroupLocation.
+        /// A collection of <see cref="Rock.Model.Schedule"/> that are associated with this GroupLocation.
         /// </value>
         public virtual ICollection<Schedule> Schedules
         {

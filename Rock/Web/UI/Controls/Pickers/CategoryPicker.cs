@@ -25,9 +25,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            base.OnInit( e );
             SetExtraRestParams();
             this.IconCssClass = "icon-folder-open";
+            base.OnInit( e );
         }
 
         /// <summary>

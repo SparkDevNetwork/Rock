@@ -35,7 +35,6 @@ namespace RockWeb.Blocks.Prayer
     public partial class AddPrayerRequest : RockBlock
     {
         #region Private BlockType Attributes
-        int _groupCategoryId = 0;
         protected int? _prayerRequestEntityTypeId = null;
         protected bool enableUrgentFlag = false;
         protected bool enableCommentsFlag = false;

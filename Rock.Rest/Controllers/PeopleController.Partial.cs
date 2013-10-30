@@ -27,13 +27,21 @@ namespace Rock.Rest.Controllers
         public void AddRoutes( System.Web.Routing.RouteCollection routes )
         {
             routes.MapHttpRoute(
+                name: "PeopleSearchParam",
+                routeTemplate: "api/People/Search",
+                defaults: new
+                {
+                    controller = "People",
+                    action = "Search"
+                } );
+            
+            routes.MapHttpRoute(
                 name: "PeopleSearch",
                 routeTemplate: "api/People/Search/{name}/{includeHtml}",
                 defaults: new
                 {
                     controller = "People",
-                    action = "Search",
-                    includeHtml = RouteParameter.Optional
+                    action = "Search"
                 } );
 
             routes.MapHttpRoute(
@@ -62,7 +70,18 @@ namespace Rock.Rest.Controllers
         /// <param name="name">The name.</param>
         /// <returns></returns>
         [HttpGet]
-        public IQueryable<PersonSearchResult> Search( string name, bool includeHtml = true)
+        public IQueryable<PersonSearchResult> Search( string name)
+        {
+            return Search( name, false );
+        }
+
+        /// <summary>
+        /// Searches the specified name.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        [HttpGet]
+        public IQueryable<PersonSearchResult> Search( string name, bool includeHtml)
         {
             int count = 20;
             bool lastFirst;
@@ -190,7 +209,7 @@ namespace Rock.Rest.Controllers
 
                 searchResult.Add( personSearchResult );
             }
-
+            
             return searchResult.AsQueryable();
         }
 

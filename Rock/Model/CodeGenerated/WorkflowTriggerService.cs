@@ -81,19 +81,28 @@ namespace Rock.Model
             else
             {
                 var target = new WorkflowTrigger();
-                target.IsSystem = source.IsSystem;
-                target.EntityTypeId = source.EntityTypeId;
-                target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
-                target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
-                target.WorkflowTypeId = source.WorkflowTypeId;
-                target.WorkflowTriggerType = source.WorkflowTriggerType;
-                target.WorkflowName = source.WorkflowName;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another WorkflowTrigger object to this WorkflowTrigger object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this WorkflowTrigger target, WorkflowTrigger source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.EntityTypeId = source.EntityTypeId;
+            target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
+            target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+            target.WorkflowTypeId = source.WorkflowTypeId;
+            target.WorkflowTriggerType = source.WorkflowTriggerType;
+            target.WorkflowName = source.WorkflowName;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

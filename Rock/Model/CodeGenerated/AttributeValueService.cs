@@ -81,17 +81,26 @@ namespace Rock.Model
             else
             {
                 var target = new AttributeValue();
-                target.IsSystem = source.IsSystem;
-                target.AttributeId = source.AttributeId;
-                target.EntityId = source.EntityId;
-                target.Order = source.Order;
-                target.Value = source.Value;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another AttributeValue object to this AttributeValue object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this AttributeValue target, AttributeValue source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.AttributeId = source.AttributeId;
+            target.EntityId = source.EntityId;
+            target.Order = source.Order;
+            target.Value = source.Value;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

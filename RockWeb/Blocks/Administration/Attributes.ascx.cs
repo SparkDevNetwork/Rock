@@ -90,11 +90,11 @@ namespace RockWeb.Blocks.Administration
                 rGrid.RowDataBound += rGrid_RowDataBound;
 
                 rGrid.Columns[1].Visible = !_configuredType;
-                rGrid.Columns[8].Visible = !_displayValueEdit;
+                rGrid.Columns[7].Visible = !_displayValueEdit;
+                rGrid.Columns[8].Visible = _displayValueEdit;
                 rGrid.Columns[9].Visible = _displayValueEdit;
-                rGrid.Columns[10].Visible = _displayValueEdit;
 
-                SecurityField securityField = rGrid.Columns[11] as SecurityField;
+                SecurityField securityField = rGrid.Columns[10] as SecurityField;
                 securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
 
                 modalDetails.SaveClick += modalDetails_SaveClick;
@@ -348,12 +348,6 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
 
-                Literal lDescription = e.Row.FindControl( "lDescription" ) as Literal;
-                if ( lDescription != null )
-                {
-                    lDescription.Text = attribute.Description.Truncate( 100 );
-                }
-
                 if ( _displayValueEdit )
                 {
                     Literal lValue = e.Row.FindControl( "lValue" ) as Literal;
@@ -367,7 +361,7 @@ namespace RockWeb.Blocks.Administration
                         }
                         else
                         {
-                            lValue.Text = string.Format( "<span class='muted'>{0}</span>", fieldType.Field.FormatValue( lValue, attribute.DefaultValue, attribute.QualifierValues, true ) );
+                            lValue.Text = string.Format( "<span class='text-muted'>{0}</span>", fieldType.Field.FormatValue( lValue, attribute.DefaultValue, attribute.QualifierValues, true ) );
                         }
                     }
                 }
@@ -673,7 +667,7 @@ namespace RockWeb.Blocks.Administration
 
                 var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
                 var attributeValue = new AttributeValueService().GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
-                attribute.AddControl( fsEditControl.Controls, attributeValue.Value, setValues, true );
+                attribute.AddControl( fsEditControl.Controls, attributeValue != null ? attributeValue.Value : null, string.Empty, setValues, true );
 
                 hfIdValues.Value = attribute.Id.ToString();
 

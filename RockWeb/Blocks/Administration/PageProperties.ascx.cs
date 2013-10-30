@@ -309,19 +309,15 @@ namespace RockWeb.Blocks.Administration
                     }
 
                     page.PageContexts.Clear();
-
-                    if ( phContextPanel.Visible )
+                    foreach ( var control in phContext.Controls )
                     {
-                        foreach ( var control in phContext.Controls )
+                        if ( control is RockTextBox )
                         {
-                            if ( control is RockTextBox )
-                            {
-                                var tbContext = control as RockTextBox;
-                                var pageContext = new PageContext();
-                                pageContext.Entity = tbContext.Label;
-                                pageContext.IdParameter = tbContext.Text;
-                                page.PageContexts.Add( pageContext );
-                            }
+                            var tbContext = control as RockTextBox;
+                            var pageContext = new PageContext();
+                            pageContext.Entity = tbContext.Label;
+                            pageContext.IdParameter = tbContext.Text;
+                            page.PageContexts.Add( pageContext );
                         }
                     }
 

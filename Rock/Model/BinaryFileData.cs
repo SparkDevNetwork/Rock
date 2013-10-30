@@ -27,7 +27,7 @@ namespace Rock.Model
         /// Gets or sets the data/content of a <see cref="Rock.Model.BinaryFile"/>
         /// </summary>
         /// <value>
-        /// A <see cref="System.byte"/> array that contains the data/content of a <see cref="Rock.Model.BinaryFile"/>
+        /// A byte array that contains the data/content of a <see cref="Rock.Model.BinaryFile"/>
         /// </value>
         [DataMember]
         public byte[] Content { get; set; }

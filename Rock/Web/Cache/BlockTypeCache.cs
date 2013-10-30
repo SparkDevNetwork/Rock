@@ -244,7 +244,18 @@ namespace Rock.Web.Cache
             filePaths.Add( physicalPath );
             filePaths.Add( physicalPath + ".cs" );
 
-            cacheItemPolicy.ChangeMonitors.Add( new HostFileChangeMonitor( filePaths ) );
+            var fileinfo = new System.IO.FileInfo( physicalPath );
+
+            // TODO:  There is a bug in the the .NET 4.5 System.Runtime.Caching framework that causes an 
+            // ArgumentOutOfRange exception when running in a positive UTC timezone.  The bug is caused by 
+            // initializing a DateTimeOffset variable to DateTime.MinValue that when ajdusted for timzone 
+            // ends up being lower then the minimum allowed range.  For now, HostFileChangeMonitoring will
+            // only be done in negative timezone offsets.  After we upgrade to .NET 4.5.1 we will need to 
+            // see if bug has been fixed.
+            if (TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).Ticks <= 0)
+            {
+                cacheItemPolicy.ChangeMonitors.Add( new HostFileChangeMonitor( filePaths ) );
+            }
         }
 
         /// <summary>

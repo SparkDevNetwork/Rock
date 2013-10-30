@@ -12,9 +12,9 @@
                     <Rock:ModalAlert ID="mdGridWarningValues" runat="server" />
                     <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="False">
                         <Columns>
+                            <Rock:ReorderField/>
                             <asp:BoundField DataField="Name" HeaderText="Name"/>
                             <asp:BoundField DataField="Description" HeaderText="Description"/>
-                            <Rock:ReorderField/>
                             <Rock:DeleteField OnClick="gDefinedValues_Delete" />
                         </Columns>
                     </Rock:Grid>

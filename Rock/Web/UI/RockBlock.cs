@@ -14,7 +14,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using Rock.Attribute;
+
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -27,6 +27,20 @@ namespace Rock.Web.UI
     public abstract class RockBlock : UserControl
     {
         #region Public Properties
+
+        /// <summary>
+        /// Gets the rock page.
+        /// </summary>
+        /// <value>
+        /// The rock page.
+        /// </value>
+        public RockPage RockPage
+        {
+            get
+            {
+                return (RockPage)this.Page;
+            }
+        }
 
         /// <summary>
         /// The current page.  This value is read and cached by the RockRouteHandler
@@ -53,7 +67,7 @@ namespace Rock.Web.UI
         /// </summary>
         public int? CurrentPersonId
         {
-            get { return ( (RockPage)this.Page ).CurrentPersonId; }
+            get { return RockPage.CurrentPersonId; }
         }
 
         /// <summary>
@@ -61,7 +75,7 @@ namespace Rock.Web.UI
         /// </summary>
         public UserLogin CurrentUser
         {
-            get { return ( (RockPage)this.Page ).CurrentUser; }
+            get { return RockPage.CurrentUser; }
         }
 
         /// <summary>
@@ -69,20 +83,7 @@ namespace Rock.Web.UI
         /// </summary>
         public Person CurrentPerson
         {
-            get { return ( (RockPage)this.Page ).CurrentPerson; }
-        }
-
-        /// <summary>
-        /// Relative path to the current theme and layout folder.  Useful for setting paths to
-        /// theme resource files
-        /// <example>
-        /// Client Side: <c><![CDATA[<img src='<%= CurrentTheme %>/Images/avatar.gif' />]]> </c>
-        /// Server Side: <c>myImg.ImageUrl = CurrentTheme + "/Images/avatar.gif";</c>
-        /// </example>
-        /// </summary>
-        public string CurrentTheme
-        {
-            get { return ( (RockPage)this.Page ).CurrentTheme; }
+            get { return RockPage.CurrentPerson; }
         }
 
         /// <summary>
@@ -99,7 +100,7 @@ namespace Rock.Web.UI
         /// </value>
         public List<BreadCrumb> BreadCrumbs
         {
-            get { return ( (RockPage)this.Page ).BreadCrumbs; }
+            get { return RockPage.BreadCrumbs; }
         }
 
         /// <summary>
@@ -110,7 +111,7 @@ namespace Rock.Web.UI
         /// </value>
         public string AppPath
         {
-            get { return ( (RockPage)this.Page ).AppPath; }
+            get { return RockPage.AppPath; }
         }
 
         /// <summary>
@@ -522,7 +523,7 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public string PageParameter( string name )
         {
-            return ( (RockPage)this.Page ).PageParameter( name );
+            return RockPage.PageParameter( name );
         }
 
         /// <summary>
@@ -533,7 +534,7 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public string PageParameter( PageReference pageReference, string name )
         {
-            return ( (RockPage)this.Page ).PageParameter( pageReference, name );
+            return RockPage.PageParameter( pageReference, name );
         }
 
         /// <summary>
@@ -542,7 +543,7 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public Dictionary<string, object> PageParameters()
         {
-            return ( (RockPage)this.Page ).PageParameters();
+            return RockPage.PageParameters();
         }
 
         /// <summary>
@@ -593,7 +594,7 @@ namespace Rock.Web.UI
         /// <param name="queryString">The query string.</param>
         public void NavigateToPage( Guid pageGuid, Dictionary<string, string> queryString )
         {
-            NavigateToPage(pageGuid, Guid.Empty, queryString);
+            NavigateToPage( pageGuid, Guid.Empty, queryString );
         }
 
         /// <summary>
@@ -609,8 +610,8 @@ namespace Rock.Web.UI
             {
                 int routeId = 0;
                 {
-                    var pageRouteInfo = pageCache.PageRoutes.FirstOrDefault( a => a.Guid == pageRouteGuid);
-                    if (pageRouteInfo != null)
+                    var pageRouteInfo = pageCache.PageRoutes.FirstOrDefault( a => a.Guid == pageRouteGuid );
+                    if ( pageRouteInfo != null )
                     {
                         routeId = pageRouteInfo.Id;
                     }
@@ -629,7 +630,7 @@ namespace Rock.Web.UI
         /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
         public void DimOtherBlocks( bool dimmed )
         {
-            this.RockPage().DimOtherBlocks( this, dimmed );
+            RockPage.DimOtherBlocks( this, dimmed );
         }
 
         /// <summary>
@@ -638,9 +639,20 @@ namespace Rock.Web.UI
         /// <param name="key">The key to use for the history point</param>
         /// <param name="state">any state information to store for the history point</param>
         /// <param name="title">The title to be used by the browser</param>
-        public void AddHistory(string key, string state, string title)
+        public void AddHistory( string key, string state, string title )
         {
-            ((RockPage)this.Page).AddHistory(key, state, title);
+            RockPage.AddHistory( key, state, title );
+        }
+
+        /// <summary>
+        /// Resolves a rock URL.  Similiar to the System.Web.Control.ResolveUrl method except that you can prefix 
+        /// a url with '~~' to indicate a virtual path to Rock's current theme root folder
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns></returns>
+        public string ResolveRockUrl( string url )
+        {
+            return RockPage.ResolveRockUrl( url );
         }
 
         #region User Preferences
@@ -652,7 +664,7 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public string GetUserPreference( string key )
         {
-            return ( (RockPage)this.Page ).GetUserPreference( key );
+            return RockPage.GetUserPreference( key );
         }
 
         /// <summary>
@@ -662,7 +674,7 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public Dictionary<string, string> GetUserPreferences( string keyPrefix )
         {
-            return ( (RockPage)this.Page ).GetUserPreferences( keyPrefix );
+            return RockPage.GetUserPreferences( keyPrefix );
         }
 
         /// <summary>
@@ -672,7 +684,7 @@ namespace Rock.Web.UI
         /// <param name="value"></param>
         public void SetUserPreference( string key, string value )
         {
-            ( (RockPage)this.Page ).SetUserPreference( key, value );
+            RockPage.SetUserPreference( key, value );
         }
 
         #endregion

@@ -131,6 +131,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets an optional validation group to use.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get { return ViewState["ValidationGroup"] as string; }
+            set { ViewState["ValidationGroup"] = value; }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -414,8 +426,6 @@ namespace Rock.Web.UI.Controls
             {
                 sm.RegisterAsyncPostBackControl( _btnSelect );
                 sm.RegisterAsyncPostBackControl( _btnSelectNone );
-                var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
-                sm.Scripts.Add( new ScriptReference( string.Format( "https://maps.googleapis.com/maps/api/js?key={0}&sensor=false&libraries=drawing", googleAPIKey )  ) );
             }
         }
 

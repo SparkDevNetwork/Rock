@@ -91,7 +91,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets an enumerable collection of <see cref="Rock.Model.EntityType">EntityTypes</see> where the IsEntity flag is set to true.
         /// </summary>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.EntityTypes"/> where the IsEntity flag is set tot true.</returns>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.EntityType"/> where the IsEntity flag is set tot true.</returns>
         public IEnumerable<EntityType> GetEntities()
         {
             return Repository.AsQueryable()
@@ -99,10 +99,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns the <see cref="Rock.Model.EntityType">EntityTypes</see> as a grouped collection of <see cref="System.Web.UI.WebControl.ListItem">ListItems</see> with the 
+        /// Returns the <see cref="Rock.Model.EntityType">EntityTypes</see> as a grouped collection of <see cref="System.Web.UI.WebControls.ListItem">ListItems</see> with the 
         /// "Common" flag set to true.
         /// </summary>
-        /// <returns>A list of <see cref="Rock.Model.EntityType"/> <see cref="System.Web.UI.WebControl.ListItem">ListItems</see> ordered by their "Common" flag and FriendlyName</returns>
+        /// <returns>A list of <see cref="Rock.Model.EntityType"/> <see cref="System.Web.UI.WebControls.ListItem">ListItems</see> ordered by their "Common" flag and FriendlyName</returns>
         public List<System.Web.UI.WebControls.ListItem> GetEntityListItems()
         {
             var items = new List<System.Web.UI.WebControls.ListItem>();

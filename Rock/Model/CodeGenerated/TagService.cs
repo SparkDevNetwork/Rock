@@ -81,19 +81,28 @@ namespace Rock.Model
             else
             {
                 var target = new Tag();
-                target.IsSystem = source.IsSystem;
-                target.EntityTypeId = source.EntityTypeId;
-                target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
-                target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
-                target.Name = source.Name;
-                target.Order = source.Order;
-                target.OwnerId = source.OwnerId;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another Tag object to this Tag object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this Tag target, Tag source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.EntityTypeId = source.EntityTypeId;
+            target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
+            target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+            target.Name = source.Name;
+            target.Order = source.Order;
+            target.OwnerId = source.OwnerId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

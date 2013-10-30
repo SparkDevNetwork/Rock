@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 if ( !Page.IsPostBack )
                 {
-                    mpeAddNote.OnCancelScript = string.Format( "$('#{0}').val('');", hfAttributeId.ClientID );
+                    mpeAddNote.OnCancelScript = string.Format( "$('#{0}').val('');", hfAllergyAttributeId.ClientID );
                     Session["groupType"] = null;
                     Session["location"] = null;
                     Session["locationList"] = null;
@@ -79,10 +79,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 else
                 {
                     var entity = new EntityTypeService().Get( "Rock.Model.Person" );
-                    string attributeId = Request.Form[hfAttributeId.UniqueID];
-                    if (!string.IsNullOrEmpty(attributeId) )
+                    string allergyAttributeId = Request.Form[hfAllergyAttributeId.UniqueID];
+                    if ( !string.IsNullOrEmpty( allergyAttributeId ) )
                     {
-                        ShowNoteModal( int.Parse( attributeId ), entity.Id );
+                        ShowNoteModal( int.Parse( allergyAttributeId ), entity.Id );
                     }
                 }
             }
@@ -149,12 +149,14 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
             .People.Where( p => p.Person.Id == personId ).FirstOrDefault();
 
-            foreach ( RepeaterItem item in rSchedule.Items )
-            {
-                ( (LinkButton)item.FindControl( "lbSelectSchedule" ) ).RemoveCssClass( "active" );
-            }
-
-            ( (LinkButton)e.Item.FindControl( "lbSelectSchedule" ) ).AddCssClass( "active" );
+            //if ( System.Text.RegularExpressions.Regex.IsMatch( ( (LinkButton)e.Item.FindControl( "lbSelectSchedule" ) ).CssClass, @"\s*\b" + "active" + @"\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase ) )
+            //{
+            //    ( (LinkButton)e.Item.FindControl( "lbSelectSchedule" ) ).RemoveCssClass( "active" );
+            //}
+            //else
+            //{
+                ( (LinkButton)e.Item.FindControl( "lbSelectSchedule" ) ).AddCssClass( "active" );
+            //}
             pnlSelectSchedule.Update();
             Session["schedule"] = int.Parse( e.CommandArgument.ToString() );
 
@@ -168,16 +170,17 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var locations = groups.SelectMany( g => g.Locations ).ToList();
             var schedules = locations.SelectMany( l => l.Schedules ).Where( s => s.Schedule.Id == scheduleId ).ToList();
 
-            // clear out any locations that are currently selected for the chosen schedule. 
-            var locationsToClear = locations.Where( l => l.Schedules.Any( s => s.Schedule.Id == scheduleId && s.Selected ) ).ToList();
+            // clear out any schedules that are currently selected for the chosen schedule. 
+            var schedulesToClear = schedules.Where( s => s.Schedule.Id == scheduleId && s.Selected ).ToList();
+            schedulesToClear.ForEach( s => s.Selected = false );
+
+            // clear out any locations where all the schedules are not selected
+            var locationsToClear = locations.Where( l => l.Schedules.All( s => s.Selected == false ) ).ToList();
             locationsToClear.ForEach( l => l.Selected = false );
 
             // clear out any groups where all the locations are not selected.
             var groupsToClear = groups.Where( g => g.Locations.All( l => l.Selected == false ) ).ToList();
             groupsToClear.ForEach( g => g.Selected = false );
-
-            // clear out all the schedules before picking the selected one below.
-            schedules.ForEach( s => s.Selected = false );
 
             var chosenGroupType = person.GroupTypes.Where( gt => gt.Groups.Any( g => g.Locations.Any( l => l.Location.Id == locationId ) ) ).FirstOrDefault();
             chosenGroupType.Selected = true;
@@ -187,7 +190,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             chosenGroup.Selected = true;
             var chosenLocation = chosenGroup.Locations.Where( l => l.Location.Id == locationId ).FirstOrDefault();
             chosenLocation.Selected = true;
-            chosenLocation.Schedules.ForEach( s => s.Selected = false );
             var chosenSchedule = chosenLocation.Schedules.Where( s => s.Schedule.Id == scheduleId ).FirstOrDefault();
             chosenSchedule.Selected = true;
 
@@ -307,12 +309,19 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var selectedLocation = selectedGroup.Locations.Where( l => l.Selected && l.Location.Id == locationId).FirstOrDefault();
             var selectedSchedule = selectedLocation.Schedules.Where( s => s.Selected && s.Schedule.Id == scheduleId ).FirstOrDefault();
 
-            selectedGroup.Selected = false;
-            selectedGroup.PreSelected = false;
-            selectedLocation.Selected = false;
-            selectedLocation.PreSelected = false;
             selectedSchedule.Selected = false;
-            selectedSchedule.PreSelected = false;
+
+            var clearLocation = selectedLocation.Schedules.All( s => s.Selected == false );
+            if ( clearLocation )
+            {
+                selectedLocation.Selected = false;
+            }
+
+            var clearGroup = selectedGroup.Locations.All( l => l.Selected == false );
+            if ( clearGroup )
+            {
+                selectedGroup.Selected = false;
+            }
 
             BindLocations( person );
             BindSchedules( person );
@@ -327,7 +336,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddNoteCancel_Click( object sender, EventArgs e )
         {
-            hfAttributeId.Value = string.Empty;
+            hfAllergyAttributeId.Value = string.Empty;
         }
 
         /// <summary>
@@ -345,19 +354,19 @@ namespace RockWeb.Blocks.CheckIn.Attended
             Person Person = new PersonService().Get( person.Person.Id );
 
             var entity = new EntityTypeService().Get( "Rock.Model.Person" );
-            var attributeId = new AttributeService().GetByEntityTypeId( entity.Id ).Where( a => a.Name.ToUpper() == "ALLERGY" ).FirstOrDefault().Id;
-            var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
+            Person.LoadAttributes();
 
-            Control attributeControl = fsNotes.FindControl( string.Format( "attribute_field_{0}", attributeId ) );
-            if ( attributeControl != null )
+            var allergyAttributeId = new AttributeService().GetByEntityTypeId( entity.Id ).Where( a => a.Name.ToUpper() == "ALLERGY" ).FirstOrDefault().Id;
+            var allergyAttribute = Rock.Web.Cache.AttributeCache.Read( allergyAttributeId );
+
+            Control allergyAttributeControl = fsNotes.FindControl( string.Format( "attribute_field_{0}", allergyAttributeId ) );
+            if ( allergyAttributeControl != null )
             {
-                Person.LoadAttributes();
-                Person.SetAttributeValue( "Allergy", attribute.FieldType.Field.GetEditValue( attributeControl, attribute.QualifierValues ) );
-                Rock.Attribute.Helper.SaveAttributeValues( Person, CurrentPersonId );
+                Person.SetAttributeValue( "Allergy", allergyAttribute.FieldType.Field.GetEditValue( allergyAttributeControl, allergyAttribute.QualifierValues ) );
             }
 
-            hfAttributeId.Value = string.Empty;
-
+            Rock.Attribute.Helper.SaveAttributeValues( Person, CurrentPersonId );
+            hfAllergyAttributeId.Value = string.Empty;
             mpeAddNote.Hide();
         }
 
@@ -369,27 +378,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void lbAddNote_Click( object sender, EventArgs e )
         {
             var entity = new EntityTypeService().Get( "Rock.Model.Person" );
-            var attributeId = new AttributeService().GetByEntityTypeId( entity.Id ).Where( a => a.Name.ToUpper() == "ALLERGY" ).FirstOrDefault().Id;
-            ShowNoteModal( attributeId, entity.Id );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbAddSpecialNeeds control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddSpecialNeeds_Click( object sender, EventArgs e )
-        {
-            string match = @"\s*\b" + "active" + @"\b";
-            string css = lbAddSpecialNeeds.CssClass;
-            if ( System.Text.RegularExpressions.Regex.IsMatch( css, match, System.Text.RegularExpressions.RegexOptions.IgnoreCase ) )
-            {
-                lbAddSpecialNeeds.RemoveCssClass( "active" );
-            }
-            else
-            {
-                lbAddSpecialNeeds.AddCssClass( "active" );
-            }
+            var allergyAttributeId = new AttributeService().GetByEntityTypeId( entity.Id ).Where( a => a.Name.ToUpper() == "ALLERGY" ).FirstOrDefault().Id;
+            ShowNoteModal( allergyAttributeId, entity.Id );
         }
 
         /// <summary>
@@ -643,20 +633,75 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 activityGrid.Columns.Add( "Time", typeof( string ) );
                 activityGrid.Columns.Add( "Activity", typeof( string ) );
 
-                gSelectedList.DataSource = person.GroupTypes.Where( gt => gt.Selected )
-                    .SelectMany( gt => gt.Groups ).Where( g => g.Selected )
-                    .SelectMany( g => g.Locations ).Where( l => l.Selected )
-                    .Select( l => new
+                var selectedGroupTypes = person.GroupTypes.Where( gt => gt.Selected ).ToList();
+                var selectedGroups = selectedGroupTypes.SelectMany( gt => gt.Groups.Where( g => g.Selected ) ).ToList();
+                var selectedLocations = selectedGroups.SelectMany( g => g.Locations.Where( l => l.Selected ) ).ToList();
+                var selectedSchedules = selectedLocations.SelectMany( l => l.Schedules.Where( s => s.Selected ) ).ToList();
+
+                // A list that includes any selected locations and any selected schedules for those locations.
+                List<CheckInInfo> checkInInfoList = new List<CheckInInfo>();
+                foreach ( var location in selectedLocations )
+                {
+                    foreach ( var schedule in location.Schedules.Where( s => s.Selected ) )
                     {
-                        Location = l.Location.Name,
-                        Schedule = l.Schedules.Where( s => s.Selected ).Select( s => s.Schedule.Name ).FirstOrDefault(),
-                        StartTime = Convert.ToDateTime( l.Schedules.Where( s => s.Selected ).Select( s => s.StartTime ).FirstOrDefault() ).TimeOfDay,
-                        LocationId = l.Location.Id.ToString(),
-                        ScheduleId = l.Schedules.Where( s => s.Selected ).Select( s => s.Schedule.Id ).FirstOrDefault().ToString()
-                    } ).OrderBy( gt => gt.StartTime ).ToList();
+                        var checkInInfo = new CheckInInfo();
+                        checkInInfo.Location = location.Location.Name;
+                        checkInInfo.Schedule = schedule.Schedule.Name;
+                        checkInInfo.StartTime = Convert.ToDateTime( schedule.StartTime );
+                        checkInInfo.LocationId = location.Location.Id;
+                        checkInInfo.ScheduleId = schedule.Schedule.Id;
+                        checkInInfoList.Add( checkInInfo );
+                    }
+                }
+                gSelectedList.DataSource = checkInInfoList.OrderBy( c => c.StartTime ).ToList();
                 gSelectedList.DataBind();                
                 pnlSelectedGrid.Update();
             }            
+        }
+
+        /// <summary>
+        /// Gets or sets the selected locations.
+        /// </summary>
+        /// <value>
+        /// The selected locations.
+        /// </value>
+        protected List<CheckInLocation> SelectedLocations
+        {
+            get
+            {
+                var locations = ViewState["SelectedLocations"] as List<CheckInLocation>;
+                if ( locations == null )
+                {
+                    locations = new List<CheckInLocation>();
+                }
+                return locations;
+            }
+            set
+            {
+                ViewState["SelectedLocations"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Check In Information class used to bind the selected grid.
+        /// </summary>
+        protected class CheckInInfo
+        {
+            public string Location { get; set; }
+            public string Schedule { get; set; }
+            public DateTime? StartTime { get; set; }
+            public int LocationId { get; set; }
+            public int ScheduleId { get; set; }
+
+            public CheckInInfo()
+            {
+                Location = string.Empty;
+                Schedule = string.Empty;
+                StartTime = new DateTime?();
+                LocationId = 0;
+                ScheduleId = 0;
+            }
+
         }
 
         /// <summary>
@@ -664,7 +709,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         /// <param name="attributeId">The attribute id.</param>
         /// <param name="entityId">The entity id.</param>
-        protected void ShowNoteModal( int attributeId, int entityId )
+        protected void ShowNoteModal( int allergyAttributeId, int entityId )
         {
             var personId = Request.QueryString["personId"].AsType<int?>();
             var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
@@ -672,11 +717,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
             Person Person = new PersonService().Get( person.Person.Id );
 
             fsNotes.Controls.Clear();
-            var attribute = AttributeCache.Read( attributeId );
+
+            var attribute = AttributeCache.Read( allergyAttributeId );
             Person.LoadAttributes();
             var attributeValue = Person.GetAttributeValue( attribute.Key );
-            attribute.AddControl( fsNotes.Controls, attributeValue, true, true );
-            hfAttributeId.Value = attribute.Id.ToString();
+            attribute.AddControl( fsNotes.Controls, attributeValue, "", true, true );
+            hfAllergyAttributeId.Value = attribute.Id.ToString();
+
             mpeAddNote.Show();
         }
 

@@ -40,7 +40,7 @@ namespace Rock.Model
         /// only contain notes for entities of this type. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.MOdel.EntityType"/>
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.EntityType"/>
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -58,7 +58,7 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the Sources Type <see cref="System.Rock.DefinedType" /> that defines the sources that can be used
+        /// Gets or sets the Id of the Sources Type <see cref="Rock.Model.DefinedType" /> that defines the sources that can be used
         /// for <see cref="Rock.Model.Note">Notes</see> of this NoteType.
         /// </summary>
         /// <value>

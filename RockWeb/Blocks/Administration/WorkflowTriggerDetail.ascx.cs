@@ -99,12 +99,12 @@ namespace RockWeb.Blocks.Administration
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 WorkflowTrigger = new WorkflowTriggerService().Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( WorkflowTrigger.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Edit( WorkflowTrigger.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
                 WorkflowTrigger = new WorkflowTrigger { Id = 0, WorkflowTriggerType = WorkflowTriggerType.PostSave };
-                lActionTitle.Text = ActionTitle.Add( WorkflowTrigger.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Add( WorkflowTrigger.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             LoadDropDowns();

@@ -223,17 +223,6 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Gets the full url path to the current theme folder
-        /// </summary>
-        public string CurrentTheme
-        {
-            get
-            {
-                return ResolveUrl( string.Format( "~/Themes/{0}", CurrentPage.Layout.Site.Theme ) );
-            }
-        }
-
-        /// <summary>
         /// Gets the root url path
         /// </summary>
         public string AppPath
@@ -331,9 +320,13 @@ namespace Rock.Web.UI
             // Add library and UI bundles during init, that way theme developers will only
             // need to worry about registering any custom scripts or script bundles they need
             _scriptManager.Scripts.Add( new ScriptReference { Name = "WebFormsBundle" } );
-            _scriptManager.Scripts.Add( new ScriptReference( "~/bundles/RockLibs" ) );
-            _scriptManager.Scripts.Add( new ScriptReference( "~/bundles/RockUi" ) );
-            _scriptManager.Scripts.Add( new ScriptReference( "~/bundles/RockValidation" ) );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockLibs" ) );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockUi" ) );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockValidation" ) );
+
+            // add Google Maps API
+            var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
+            _scriptManager.Scripts.Add( new ScriptReference( string.Format( "https://maps.googleapis.com/maps/api/js?key={0}&sensor=false&libraries=drawing", googleAPIKey ) ) );
 
             // Recurse the page controls to find the rock page title and zone controls
             Page.Trace.Warn( "Recursing layout to find zones" );
@@ -856,6 +849,7 @@ namespace Rock.Web.UI
             }
         }
 
+        
         #endregion
 
         #region Public Methods
@@ -943,6 +937,23 @@ namespace Rock.Web.UI
             }
         }
 
+        /// <summary>
+        /// Resolves a rock URL.  Similiar to the System.Web.Control.ResolveUrl method except that you can prefix 
+        /// a url with '~~' to indicate a virtual path to Rock's current theme root folder
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns></returns>
+        public string ResolveRockUrl( string url )
+        {
+            string themeUrl = url;
+            if ( url.StartsWith( "~~" ) )
+            {
+                themeUrl = "~/Themes/" + CurrentPage.Layout.Site.Theme + ( url.Length > 2 ? url.Substring( 2 ) : string.Empty );
+            }
+
+            return ResolveUrl( themeUrl );
+        }
+
         #endregion
 
         #region Cms Admin Content
@@ -968,7 +979,7 @@ namespace Rock.Web.UI
         private void AddConfigElements()
         {
             // Add the page admin script
-            AddScriptLink( Page, "~/bundles/RockAdmin" );
+            AddScriptLink( Page, "~/Scripts/Bundles/RockAdmin" );
 
             AddBlockMove();
             // Add Zone Wrappers
