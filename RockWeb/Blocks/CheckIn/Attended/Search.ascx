@@ -1,6 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Search.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Attended.Search" %>
 
-<asp:Panel ID="pnlContent" runat="server" >
+<asp:UpdatePanel ID="pnlContent" runat="server" UpdateMode="Conditional">
+<ContentTemplate>
     
     <asp:PlaceHolder ID="phScript" runat="server"></asp:PlaceHolder>
     <Rock:ModalAlert ID="maWarning" runat="server" />
@@ -53,7 +54,8 @@
         </div>
     </asp:Panel>
 
-</asp:Panel>
+</ContentTemplate>
+</asp:UpdatePanel>
 
 <script>
 

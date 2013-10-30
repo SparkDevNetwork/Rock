@@ -1,13 +1,14 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="FamilySelect.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Attended.FamilySelect" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="asp" %>
 
-<asp:Panel ID="pnlContent" runat="server" >
+<asp:UpdatePanel ID="pnlContent" runat="server" UpdateMode="Conditional">
+<ContentTemplate>
 
-    <Rock:ModalAlert ID="maWarning" runat="server" />
-    <asp:HiddenField ID="personVisitorType" runat="server" />
+    <asp:Panel ID="pnlSelections" runat="server" CssClass="attended" >
+
+        <Rock:ModalAlert ID="maWarning" runat="server" />
+        <asp:HiddenField ID="personVisitorType" runat="server" />
         
-    <asp:Panel ID="pnlFamilySelect" runat="server" CssClass="attended">
-
         <div class="row checkin-header">
             <div class="col-sm-3 checkin-actions">
                 <Rock:BootstrapButton ID="lbBack" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbBack_Click" 
@@ -28,50 +29,50 @@
             
             <asp:UpdatePanel ID="pnlSelectFamily" runat="server" UpdateMode="Conditional" class="col-md-3">
             <ContentTemplate>
-				<h3>Families</h3>
-				<asp:ListView ID="lvFamily" runat="server" OnPagePropertiesChanging="lvFamily_PagePropertiesChanging" 
-					OnItemCommand="lvFamily_ItemCommand" OnItemDataBound="lvFamily_ItemDataBound" >
-				<ItemTemplate>                            
-						<asp:LinkButton ID="lbSelectFamily" runat="server" CommandArgument='<%# Eval("Group.Id") %>'
-							CssClass="btn btn-primary btn-lg btn-block btn-checkin-select family" CausesValidation="false">
-							<%# Eval("Caption") %><br /><span class='checkin-sub-title'><%# Eval("SubCaption") %></span>
-						</asp:LinkButton>
-				</ItemTemplate>                    
-				</asp:ListView>
-				<asp:DataPager ID="dpFamilyPager" runat="server" PageSize="5" PagedControlID="lvFamily">
-					<Fields>
-						<asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-lg btn-primary btn-checkin-select" />
-					</Fields>
-				</asp:DataPager>
+			    <h3>Families</h3>
+			    <asp:ListView ID="lvFamily" runat="server" OnPagePropertiesChanging="lvFamily_PagePropertiesChanging" 
+				    OnItemCommand="lvFamily_ItemCommand" OnItemDataBound="lvFamily_ItemDataBound" >
+			    <ItemTemplate>                            
+					    <asp:LinkButton ID="lbSelectFamily" runat="server" CommandArgument='<%# Eval("Group.Id") %>'
+						    CssClass="btn btn-primary btn-lg btn-block btn-checkin-select family" CausesValidation="false">
+						    <%# Eval("Caption") %><br /><span class='checkin-sub-title'><%# Eval("SubCaption") %></span>
+					    </asp:LinkButton>
+			    </ItemTemplate>                    
+			    </asp:ListView>
+			    <asp:DataPager ID="dpFamilyPager" runat="server" PageSize="5" PagedControlID="lvFamily">
+				    <Fields>
+					    <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-lg btn-primary btn-checkin-select" />
+				    </Fields>
+			    </asp:DataPager>
             </ContentTemplate>
             </asp:UpdatePanel>
 
             <asp:UpdatePanel ID="pnlSelectPerson" runat="server" UpdateMode="Conditional" class="col-md-3">
             <ContentTemplate>
-				<asp:HiddenField ID="hfSelectedPerson" runat="server" ClientIDMode="Static" />
+			    <asp:HiddenField ID="hfSelectedPerson" runat="server" ClientIDMode="Static" />
 
-				<h3>People</h3>                    
-				<asp:ListView ID="lvPerson" runat="server" OnItemDataBound="lvPerson_ItemDataBound" OnPagePropertiesChanging="lvPerson_PagePropertiesChanging" >
-					<ItemTemplate>                            
-						<asp:LinkButton ID="lbSelectPerson" runat="server" data-id='<%# Eval("Person.Id") %>'
-							CssClass="btn btn-primary btn-lg btn-block btn-checkin-select person">
-							<%# Eval("Person.FullName") %><br />
-							<span class='checkin-sub-title'>
-								Birthday: <%# Eval("Person.BirthMonth") + "/" + Eval("Person.BirthDay") ?? "N/A" %> 
-							</span>
-						</asp:LinkButton>
-					</ItemTemplate>    
-					<EmptyDataTemplate>
-						<div runat="server" class="nothing-eligible">
-							<asp:Literal ID="lblPersonTitle" runat="server" Text="No one in this family is eligible to check-in." />
-						</div>                            
-					</EmptyDataTemplate>              
-				</asp:ListView>
-				<asp:DataPager ID="dpPersonPager" runat="server" PageSize="5" PagedControlID="lvPerson">
-					<Fields>
-						<asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-lg btn-primary btn-checkin-select" />
-					</Fields>
-				</asp:DataPager>
+			    <h3>People</h3>                    
+			    <asp:ListView ID="lvPerson" runat="server" OnItemDataBound="lvPerson_ItemDataBound" OnPagePropertiesChanging="lvPerson_PagePropertiesChanging" >
+				    <ItemTemplate>                            
+					    <asp:LinkButton ID="lbSelectPerson" runat="server" data-id='<%# Eval("Person.Id") %>'
+						    CssClass="btn btn-primary btn-lg btn-block btn-checkin-select person">
+						    <%# Eval("Person.FullName") %><br />
+						    <span class='checkin-sub-title'>
+							    Birthday: <%# Eval("Person.BirthMonth") + "/" + Eval("Person.BirthDay") ?? "N/A" %> 
+						    </span>
+					    </asp:LinkButton>
+				    </ItemTemplate>    
+				    <EmptyDataTemplate>
+					    <div runat="server" class="nothing-eligible">
+						    <asp:Literal ID="lblPersonTitle" runat="server" Text="No one in this family is eligible to check-in." />
+					    </div>                            
+				    </EmptyDataTemplate>              
+			    </asp:ListView>
+			    <asp:DataPager ID="dpPersonPager" runat="server" PageSize="5" PagedControlID="lvPerson">
+				    <Fields>
+					    <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-lg btn-primary btn-checkin-select" />
+				    </Fields>
+			    </asp:DataPager>
             </ContentTemplate>
             </asp:UpdatePanel>
 
@@ -79,21 +80,21 @@
             <ContentTemplate>
                 <asp:HiddenField ID="hfSelectedVisitor" runat="server" ClientIDMode="Static" />
 
-				<h3>Visitors</h3>
-				<asp:ListView ID="lvVisitor" runat="server" OnItemDataBound="lvVisitor_ItemDataBound" OnPagePropertiesChanging="lvVisitor_PagePropertiesChanging">
-					<ItemTemplate>
-						<asp:LinkButton ID="lbSelectVisitor" runat="server" data-id='<%# Eval("Person.Id") %>' 
-							CssClass="btn btn-primary btn-lg btn-block btn-checkin-select visitor">
-							<%# Eval("Person.FullName") %><br />
-							<span class='checkin-sub-title'>Birthday: <%# Eval("Person.BirthMonth") + "/" + Eval("Person.BirthDay") ?? "Not entered" %></span>
-						</asp:LinkButton>
-					</ItemTemplate>
-				</asp:ListView>
-				<asp:DataPager ID="dpVisitorPager" runat="server" PageSize="5" PagedControlID="lvVisitor">
-					<Fields>
-						<asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-lg btn-primary btn-checkin-select" />
-					</Fields>
-				</asp:DataPager>
+			    <h3>Visitors</h3>
+			    <asp:ListView ID="lvVisitor" runat="server" OnItemDataBound="lvVisitor_ItemDataBound" OnPagePropertiesChanging="lvVisitor_PagePropertiesChanging">
+				    <ItemTemplate>
+					    <asp:LinkButton ID="lbSelectVisitor" runat="server" data-id='<%# Eval("Person.Id") %>' 
+						    CssClass="btn btn-primary btn-lg btn-block btn-checkin-select visitor">
+						    <%# Eval("Person.FullName") %><br />
+						    <span class='checkin-sub-title'>Birthday: <%# Eval("Person.BirthMonth") + "/" + Eval("Person.BirthDay") ?? "Not entered" %></span>
+					    </asp:LinkButton>
+				    </ItemTemplate>
+			    </asp:ListView>
+			    <asp:DataPager ID="dpVisitorPager" runat="server" PageSize="5" PagedControlID="lvVisitor">
+				    <Fields>
+					    <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-lg btn-primary btn-checkin-select" />
+				    </Fields>
+			    </asp:DataPager>
             </ContentTemplate>
             </asp:UpdatePanel>
 
@@ -103,23 +104,25 @@
                     <asp:Literal ID="lblNothingFound" runat="server" Text="Please add them using one of the buttons on the right:" EnableViewState="false" />
                 </div>
             </div>
+
             <div class="col-md-3">
                 <h3 id="actions" runat="server">Actions</h3>
                 <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-primary btn-lg btn-block btn-checkin-select" OnClick="lbAddPerson_Click" Text="Add Person" CausesValidation="false" EnableViewState="false" />
                 <asp:LinkButton ID="lbAddVisitor" runat="server" CssClass="btn btn-primary btn-lg btn-block btn-checkin-select" OnClick="lbAddVisitor_Click" Text="Add Visitor" CausesValidation="false" EnableViewState="false" />
                 <asp:LinkButton ID="lbAddFamily" runat="server" CssClass="btn btn-primary btn-lg btn-block btn-checkin-select" OnClick="lbAddFamily_Click" Text="Add Family" CausesValidation="false" EnableViewState="false" />
             </div>
+
         </div>
 
     </asp:Panel>
 
-    <asp:Panel ID="pnlAddPerson" runat="server" CssClass="attended modal-foreground" DefaultButton="lbAddPersonSearch" Visible="false">
+    <asp:Panel ID="pnlAddPerson" runat="server" CssClass="attended modal-foreground" DefaultButton="lbAddPersonSearch" style="display:none">
         
         <Rock:ModalAlert ID="maAddPerson" runat="server" />
         <div class="row checkin-header">
             <div class="checkin-actions">
                 <div class="col-sm-3">
-                    <asp:LinkButton ID="lbAddPersonCancel" CssClass="btn btn-lg btn-primary" runat="server" Text="Cancel" CausesValidation="false" EnableViewState="false" />
+                    <Rock:BootstrapButton ID="lbAddPersonCancel" CssClass="btn btn-lg btn-primary" runat="server" Text="Cancel" CausesValidation="false" EnableViewState="false" />
                 </div>
 
                 <div class="col-sm-6">
@@ -127,7 +130,7 @@
                 </div>
 
                 <div class="col-sm-3">
-                    <asp:LinkButton ID="lbAddPersonSearch" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbAddPersonSearch_Click" Text="Search" CausesValidation="false" EnableViewState="false" />
+                    <Rock:BootstrapButton ID="lbAddPersonSearch" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbAddPersonSearch_Click" Text="Search" CausesValidation="false" EnableViewState="false" />
                 </div>
             </div>
         </div>
@@ -135,16 +138,16 @@
         <div class="checkin-body">
             <div class="row">
                 <div class="col-md-2">
-                    <Rock:RockTextBox ID="tbFirstNameSearch" runat="server" CssClass="col-md-12" Label="First Name" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
+                    <Rock:RockTextBox ID="tbFirstNameSearch" runat="server" CssClass="col-md-12" Label="First Name" />
                 </div>
                 <div class="col-md-3">
-                    <Rock:RockTextBox ID="tbLastNameSearch" runat="server" CssClass="col-md-12" Label="Last Name" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
+                    <Rock:RockTextBox ID="tbLastNameSearch" runat="server" CssClass="col-md-12" Label="Last Name" />
                 </div>
                 <div class="col-md-2">
-                    <Rock:DatePicker ID="dpDOBSearch" runat="server" Label="DOB" CssClass="col-md-12" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
+                    <Rock:DatePicker ID="dpDOBSearch" runat="server" Label="DOB" CssClass="col-md-12" />
                 </div>
                 <div class="col-md-2">
-                    <Rock:DataDropDownList ID="ddlGenderSearch" runat="server" CssClass="col-md-12" Label="Gender" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
+                    <Rock:DataDropDownList ID="ddlGenderSearch" runat="server" CssClass="col-md-12" Label="Gender" />
                 </div>
                 <div class="col-md-3">
                     <Rock:DataDropDownList ID="ddlAbilitySearch" runat="server" CssClass="col-md-12" Label="Ability/Grade" />
@@ -153,7 +156,7 @@
             
             <div class="row">
                 <Rock:Grid ID="rGridPersonResults" runat="server" OnRowCommand="rGridPersonResults_AddExistingPerson"
-                    OnGridRebind="rGridPersonResults_GridRebind" ShowActionRow="false" PageSize="3" DataKeyNames="Id" AllowSorting="true">
+                    OnGridRebind="rGridPersonResults_GridRebind" ShowActionRow="false" PageSize="4" DataKeyNames="Id" AllowSorting="true">
                     <Columns>
                         <asp:BoundField DataField="Id" Visible="false" />
                         <asp:BoundField DataField="FirstName" HeaderText="First Name" SortExpression="FirstName"/>
@@ -175,18 +178,16 @@
 
             <div class="row">
                 <asp:LinkButton ID="lbAddNewPerson" runat="server" Text="None of these, add a new person." EnableViewState="false"
-                    CssClass="btn btn-lg btn-primary btn-checkin-select" Visible="false" OnClick="lbAddNewPerson_Click" ValidationGroup="test" />
+                    CssClass="btn btn-lg btn-primary btn-checkin-select" Visible="false" OnClick="lbAddNewPerson_Click" ValidationGroup="Person" />
             </div>
         </div>
     </asp:Panel>
-    <asp:ModalPopupExtender ID="mpeAddPerson" runat="server" BehaviorID="mpeAddPerson" TargetControlID="hfOpenPersonPanel" PopupControlID="pnlAddPerson" CancelControlID="lbAddPersonCancel" BackgroundCssClass="attended modal-background" />
-    <asp:HiddenField ID="hfOpenPersonPanel" runat="server" />    
-
-    <asp:Panel ID="pnlAddFamily" runat="server" CssClass="attended modal-foreground" Visible="false">
+    
+    <asp:Panel ID="pnlAddFamily" runat="server" CssClass="attended modal-foreground" style="display:none">
 
         <div class="row checkin-header">
             <div class="col-sm-3 checkin-actions">
-                <asp:LinkButton ID="lbAddFamilyCancel" CssClass="btn btn-lg btn-primary" runat="server" Text="Cancel" CausesValidation="false" EnableViewState="false" />
+                <Rock:BootstrapButton ID="lbAddFamilyCancel" CssClass="btn btn-lg btn-primary" runat="server" Text="Cancel" CausesValidation="false" EnableViewState="false" />
             </div>
 
             <div class="col-sm-6">
@@ -194,7 +195,7 @@
             </div>
 
             <div class="col-sm-3 checkin-actions">
-                <asp:LinkButton ID="lbAddFamilySave" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbAddFamilySave_Click" Text="Save"  EnableViewState="false" />
+                <Rock:BootstrapButton ID="lbAddFamilySave" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbAddFamilySave_Click" Text="Save" EnableViewState="false" />
             </div>
         </div>        
     
@@ -251,10 +252,15 @@
         </div>
 
     </asp:Panel>
-    <asp:ModalPopupExtender ID="mpeAddFamily" runat="server" BehaviorID="mpeAddFamily" TargetControlID="hfOpenFamilyPanel" PopupControlID="pnlAddFamily" OkControlID="lbAddFamilySave" CancelControlID="lbAddFamilyCancel" BackgroundCssClass="attended modal-background" />
+
+    <asp:ModalPopupExtender ID="mpeAddPerson" runat="server" BehaviorID="mpeAddPerson" TargetControlID="hfOpenPersonPanel" PopupControlID="pnlAddPerson" CancelControlID="lbAddPersonCancel" BackgroundCssClass="attended modal-background" />
+    <asp:HiddenField ID="hfOpenPersonPanel" runat="server" />    
+
+    <asp:ModalPopupExtender ID="mpeAddFamily" runat="server" BehaviorID="mpeAddFamily" TargetControlID="hfOpenFamilyPanel" PopupControlID="pnlAddFamily" CancelControlID="lbAddFamilyCancel" BackgroundCssClass="attended modal-background" />
     <asp:HiddenField ID="hfOpenFamilyPanel" runat="server" />
 
-</asp:Panel>
+</ContentTemplate>
+</asp:UpdatePanel>
 
 <script type="text/javascript">
 
@@ -287,7 +293,7 @@
         $('#<%= pnlSelectFamily.ClientID %>').on('click', 'a', function () {
             $('.nothing-eligible').html("<i class='icon-spinner icon-spin icon-large'></i>");
         });
-
+        
         $find("mpeAddPerson").add_shown(function () {
             $find("mpeAddPerson")._backgroundElement.onclick = function () {
                 $find("mpeAddPerson").hide();
