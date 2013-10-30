@@ -23,9 +23,10 @@
 
         <div class="checkin-body selected-grid">
             <div class="row">
-                <asp:UpdatePanel ID="pnlSelectedGrid" runat="server" UpdateMode="Conditional">
-                <ContentTemplate> 
-                    <Rock:Grid ID="gPersonList" runat="server" DataKeyNames="PersonId,LocationId,ScheduleId" DisplayType="Light" OnRowCommand="gPersonList_Print" EmptyDataText="No People Selected">
+                <asp:UpdatePanel ID="pnlSelectedGrid" runat="server">
+                <ContentTemplate>
+                    <Rock:Grid ID="gPersonList" runat="server" DataKeyNames="PersonId,LocationId,ScheduleId" DisplayType="Light" OnRowCommand="gPersonList_Print" 
+                        EmptyDataText="No People Selected" OnGridRebind="gPersonList_GridRebind">
                         <Columns>
                             <asp:BoundField DataField="PersonId" Visible="false" />                    
                             <asp:BoundField DataField="Name" HeaderText="Name" />
