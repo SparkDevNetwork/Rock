@@ -21,10 +21,10 @@
 					<recordArea x="12" width="288" height="18" font="HelveticaBold" y="6" id="raTopTotalText" fontSize="10">
 						<text>Total Cash Gifts This Period</text>
 					</recordArea>
-					<recordBox dataFormat="" x="390" y="6" height="18" width="108" id="rbTopTotalAmount" font="HelveticaBold" align="right" fontSize="10" field="Sum(Amount, InnerReport, InnerQuery)"/>
+					<recordBox x="390" y="6" height="18" width="108" id="rbTopTotalAmount" font="HelveticaBold" align="right" fontSize="10" field="Sum(Amount, InnerReport, InnerQuery)" dataFormat="$#,##0.00"/>
 				</header>
 				<detail autoSplit="true" id="TranListDetail" height="15">
-					<recordBox dataFormat="" height="14" width="100" field="Amount" id="rbAmount" x="396" align="right" y="2" fontSize="9"/>
+					<recordBox height="14" width="100" field="Amount" id="rbAmount" x="396" align="right" y="2" fontSize="9" dataFormat="$#,##0.00"/>
 					<recordBox height="14" field="TransactionDateTime" id="rbTransactionDateTime" dataFormat="MM/dd/yyyy" x="6" y="2" fontSize="9" width="114"/>
 					<recordBox dataFormat="" field="Summary" id="rbSummary" width="167" x="90" height="14" y="2" fontSize="9"/>
 					<recordBox dataFormat="" height="14" field="AccountName" id="rbAccountName" width="126" x="264" y="2" fontSize="9"/>
@@ -46,7 +46,7 @@
 				</query>
 				<header id="Header1"/>
 				<detail id="OrgDetail" height="100">
-					<image height="51" path="rock-logo.jpg" width="137" x="0" y="0" id="imgLogo"/>
+					<image height="51" path="logo.jpg" width="137" x="0" y="0" id="imgLogo"/>
 					<recordArea x="0" width="252" id="raOrganizationAddress" height="42" y="54" fontSize="10">
 						<text>#Street1#, #City# #State# #Zip#
 </text>
@@ -74,12 +74,12 @@
 				</header>
 				<detail id="AccountSummaryDetail" height="14">
 					<recordBox dataFormat="" width="100" id="raAccountSummaryAccountName" field="AccountName" fontSize="9" x="6" y="0" height="12"/>
-					<recordBox dataFormat="" width="90" id="raAccountSummaryAmount" field="Amount" align="right" y="0" height="12" x="192" fontSize="9"/>
+					<recordBox width="90" id="raAccountSummaryAmount" field="Amount" align="right" y="0" height="12" x="192" fontSize="9" dataFormat="$#,##0.00"/>
 				</detail>
 				<footer id="AccountSummaryFooter"/>
 			</subReport>
 			<label width="100" text="Total" font="HelveticaBold" height="18" fontSize="10" x="6" y="300" id="lblBottomTotal"/>
-			<recordBox dataFormat="" height="14" field="Sum(Amount, InnerReport, InnerQuery)" fontSize="10" font="HelveticaBold" align="right" width="264" id="rbBottomTotal" y="300" x="234"/></detail>
+			<recordBox height="14" field="Sum(Amount, InnerReport, InnerQuery)" fontSize="10" font="HelveticaBold" align="right" width="264" id="rbBottomTotal" y="300" x="234" dataFormat="$#,##0.00"/></detail>
 		<footer id="ReportFooter"/>
 	</report>
 </document>
