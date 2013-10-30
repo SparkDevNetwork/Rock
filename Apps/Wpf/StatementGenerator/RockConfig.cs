@@ -25,6 +25,11 @@ namespace Rock.Apps.StatementGenerator
         private static string fileName = "rockConfig.xml";
 
         /// <summary>
+        /// The default logo file
+        /// </summary>
+        public static string DefaultLogoFile = "logo.jpg";
+
+        /// <summary>
         /// Gets or sets the rock base URL.
         /// </summary>
         /// <value>
@@ -98,6 +103,36 @@ namespace Rock.Apps.StatementGenerator
         [XmlElement]
         [DataMember]
         public string LayoutFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the logo file.
+        /// </summary>
+        /// <value>
+        /// The logo file.
+        /// </value>
+        [XmlElement]
+        [DataMember]
+        public string LogoFile {
+            get
+            {
+                string result = (_logoFile ?? string.Empty).Trim();
+                if ( !string.IsNullOrWhiteSpace( result ) )
+                {
+                    if ( File.Exists( result ) )
+                    {
+                        return result;
+                    }
+                }
+
+                return DefaultLogoFile;
+            }
+            set
+            {
+                _logoFile = value;
+            }
+        }
+        private string _logoFile;
+        
 
         /// <summary>
         /// Saves this instance.
