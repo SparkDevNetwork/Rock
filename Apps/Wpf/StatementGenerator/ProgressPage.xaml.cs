@@ -32,8 +32,11 @@ namespace Rock.Apps.StatementGenerator
         private void Page_Loaded( object sender, RoutedEventArgs e )
         {
             btnSaveAs.Visibility = Visibility.Hidden;
-            lblReportProgress.Visibility = System.Windows.Visibility.Hidden;
+            btnBack.Visibility = Visibility.Hidden;
+            lblReportProgress.Visibility = Visibility.Hidden;
             lblReportProgress.Content = "Progress - Creating Statements";
+            pgReportProgress.Visibility = Visibility.Hidden;
+            WpfHelper.FadeIn( pgReportProgress, 2000 );
             WpfHelper.FadeIn( lblReportProgress, 2000 );
             BackgroundWorker bw = new BackgroundWorker();
             bw.DoWork += bw_DoWork;
@@ -49,6 +52,9 @@ namespace Rock.Apps.StatementGenerator
         /// <exception cref="System.NotImplementedException"></exception>
         protected void bw_RunWorkerCompleted( object sender, RunWorkerCompletedEventArgs e )
         {
+            btnBack.Visibility = Visibility.Visible;
+            pgReportProgress.Visibility = Visibility.Collapsed;
+            
             if ( e.Error != null )
             {
                 lblReportProgress.Content = "Error: " + e.Error.Message;
@@ -125,19 +131,26 @@ namespace Rock.Apps.StatementGenerator
 
                 if ( max > 0 )
                 {
-                    lblReportProgress.Content = string.Format( "{0}/{1} - {2}", position, max, progressMessage );
+                    lblReportProgress.Content = progressMessage;
+                    pgReportProgress.Maximum = max;
+                    pgReportProgress.Value = position;
+                    if ( pgReportProgress.Visibility != Visibility.Visible )
+                    {
+                        pgReportProgress.Visibility = Visibility.Visible;
+                    }
                     
                     // put the current statements/second in the tooltip
                     var duration = DateTime.Now - _startProgressDateTime;
                     if ( duration.TotalSeconds > 10 )
                     {
                         double rate = position / duration.TotalSeconds;
-                        lblReportProgress.ToolTip = string.Format( "{0} per second", rate );
+                        lblReportProgress.ToolTip = string.Format( "{1}/{2} @ {0:F2} per second", rate, position, max );
                     }
                 }
                 else
                 {
                     lblReportProgress.Content = progressMessage;
+                    pgReportProgress.Visibility = Visibility.Collapsed;
                 }
             } );
         }
@@ -159,6 +172,16 @@ namespace Rock.Apps.StatementGenerator
                 File.WriteAllBytes( dlg.FileName, _pdfOutput );
                 Process.Start( dlg.FileName );
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnBack control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnBack_Click( object sender, RoutedEventArgs e )
+        {
+            this.NavigationService.GoBack();
         }
     }
 }
