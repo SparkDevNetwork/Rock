@@ -270,7 +270,7 @@ namespace RockWeb.Blocks.Administration
                     boundField.DataField = dataFieldExpression;
                     boundField.HeaderText = item.Name;
                     boundField.SortExpression = string.Empty;
-                    int insertPos = gDefinedValues.Columns.IndexOf( gDefinedValues.Columns.OfType<ReorderField>().First());
+                    int insertPos = gDefinedValues.Columns.IndexOf( gDefinedValues.Columns.OfType<DeleteField>().First());
                     gDefinedValues.Columns.Insert(insertPos, boundField );
                 }
             }
