@@ -98,6 +98,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             gPersonList.DataSource = checkInInfoList;
             gPersonList.DataBind();
+            pnlSelectedGrid.Update();
         }
 
         /// <summary>
