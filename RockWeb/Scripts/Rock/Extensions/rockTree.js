@@ -133,7 +133,6 @@
             promise.fail(function (msg) {
                 self.renderError(msg);
                 self.discardLoading(self.$el);
-                self.initErrorEvents();
             });
         },
         fetch: function (id) {
