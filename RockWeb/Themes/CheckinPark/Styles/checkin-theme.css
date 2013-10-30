@@ -7733,7 +7733,8 @@ input.checkin-phone-entry {
 .attended .btn-primary:active.active,
 .attended .btn-primary:active.disabled,
 .attended .btn-primary:active[disabled] {
-  background: #8f0d10;
+  background: #57080a;
+  border: 1px solid #fff;
 }
 .attended .checkin-phone-entry {
   font-weight: 600;
