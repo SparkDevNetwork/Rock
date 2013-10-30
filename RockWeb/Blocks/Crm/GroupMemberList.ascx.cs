@@ -39,16 +39,6 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnInit( e );
 
-            rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
-
-            gGroupMembers.DataKeyNames = new string[] { "Id" };
-            gGroupMembers.CommunicateMergeFields = new List<string> { "GroupRole.Name" };
-            gGroupMembers.PersonIdField = "PersonId";
-            gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
-            gGroupMembers.Actions.ShowAdd = true;
-            gGroupMembers.IsDeleteEnabled = true;
-            gGroupMembers.GridRebind += gGroupMembers_GridRebind;
-
             // if this block has a specific GroupId set, use that, otherwise, determine it from the PageParameters
             int groupId = GetAttributeValue( "Group" ).AsInteger() ?? 0;
             if ( groupId == 0 )
@@ -57,8 +47,20 @@ namespace RockWeb.Blocks.Crm
                 if ( groupId != 0 )
                 {
                     _group = new GroupService().Get( groupId );
+
+                    rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
+
+                    gGroupMembers.DataKeyNames = new string[] { "Id" };
+                    gGroupMembers.CommunicateMergeFields = new List<string> { "GroupRole.Name" };
+                    gGroupMembers.PersonIdField = "PersonId";
+                    gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
+                    gGroupMembers.Actions.ShowAdd = true;
+                    gGroupMembers.IsDeleteEnabled = true;
+                    gGroupMembers.GridRebind += gGroupMembers_GridRebind;
+                    gGroupMembers.RowItemText = _group.GroupType.GroupTerm + " " + _group.GroupType.GroupMemberTerm;
                 }
             }
+
         }
 
         /// <summary>
@@ -331,7 +333,6 @@ namespace RockWeb.Blocks.Crm
                     }
                     else
                     {
-                        nbRoleWarning.Title = string.Format( "Not Configured", lHeading.Text );
                         nbRoleWarning.Text = string.Format( "{0} cannot be added to this {1} because the '{2}' group type does not have any roles defined.",
                             _group.GroupType.GroupMemberTerm.Pluralize(), _group.GroupType.GroupTerm, _group.GroupType.Name );
                         nbRoleWarning.Visible = true;
