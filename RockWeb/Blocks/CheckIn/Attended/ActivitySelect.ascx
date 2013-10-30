@@ -4,7 +4,7 @@
 <asp:UpdatePanel ID="pnlContent" runat="server" UpdateMode="Conditional">
 <ContentTemplate>
 
-    <asp:Panel ID="pnlActivitySelect" runat="server">
+    <asp:Panel ID="pnlActivitySelect" runat="server" CssClass="attended">
 
         <Rock:ModalAlert ID="maWarning" runat="server" />
         <asp:HiddenField ID="hfAllergyAttributeId" runat="server" />
