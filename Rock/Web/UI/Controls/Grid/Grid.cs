@@ -35,7 +35,6 @@ namespace Rock.Web.UI.Controls
         private Table _table;
         private GridViewRow _actionRow;
         private GridActions _gridActions;
-        private Dictionary<int, string> _rowSelectedColumns = new Dictionary<int, string>();
 
         #region Properties
 
@@ -299,6 +298,24 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["CommunicationPageRoute"] as string ?? "~/Communication/{0}"; }
             set { ViewState["CommunicationPageRoute"] = value; }
+        }
+
+        private Dictionary<int, string> RowSelectedColumns
+        {
+            get 
+            {
+                var rowSelectedColumns = ViewState["RowSelectedColumns"] as Dictionary<int, string>;
+                if (rowSelectedColumns == null)
+                {
+                    rowSelectedColumns = new Dictionary<int,string>();
+                    ViewState["RowSelectedColumns"] = rowSelectedColumns;
+                }
+                return rowSelectedColumns;
+            }
+            set
+            {
+                ViewState["RowSelectedColumns"] = value;
+            }                
         }
 
         #region Action Row Properties
@@ -783,12 +800,12 @@ namespace Rock.Web.UI.Controls
         protected override void OnDataBinding( EventArgs e )
         {
             // Get the css class for any column that does not implement the INotRowSelectedField
-            _rowSelectedColumns = new Dictionary<int, string>();
+            RowSelectedColumns = new Dictionary<int, string>();
             for ( int i = 0; i < this.Columns.Count; i++ )
             {
                 if ( !( this.Columns[i] is INotRowSelectedField ) )
                 {
-                    _rowSelectedColumns.Add( i, this.Columns[i].ItemStyle.CssClass );
+                    RowSelectedColumns.Add( i, this.Columns[i].ItemStyle.CssClass );
                 }
             }
 
@@ -914,7 +931,7 @@ namespace Rock.Web.UI.Controls
             {
                 string clickUrl = Page.ClientScript.GetPostBackClientHyperlink( this, "RowSelected$" + e.Row.RowIndex );
 
-                foreach ( var col in _rowSelectedColumns)
+                foreach ( var col in RowSelectedColumns)
                 {
                     var cell = e.Row.Cells[col.Key];
                     cell.AddCssClass( col.Value );
