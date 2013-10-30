@@ -9391,6 +9391,13 @@ td[align=center] {
   width: 100%;
   border: 0;
 }
+/* Bootbox Modal Overrides */
+.modal.bootbox {
+  left: 0;
+  top: 0;
+  width: auto;
+  background-color: transparent;
+}
 /*
     Used to manage styles related to Rock's forms
     
