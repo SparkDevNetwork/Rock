@@ -98,7 +98,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             gPersonList.DataSource = checkInInfoList;
             gPersonList.DataBind();
-            pnlSelectedGrid.Update();
         }
 
         /// <summary>
@@ -243,8 +242,17 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 var scheduleId = Convert.ToInt32( dataKeyValues["ScheduleId"] );
                 PrintLabel( personId, locationId, scheduleId );
             }
-        }        
+        }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gPersonList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gPersonList_GridRebind( object sender, EventArgs e )
+        {
+            BindGrid();
+        }
         #endregion
 
         #region Internal Methods
@@ -385,5 +393,5 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         #endregion        
-    }
+}
 }
