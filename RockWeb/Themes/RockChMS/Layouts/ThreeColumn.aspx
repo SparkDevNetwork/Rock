@@ -11,8 +11,8 @@
             <div class="container">
 			    <div class="navbar-header">
                     
-                    <asp:HyperLink ID="HyperLink1" runat="server" CssClass="navbar-brand" NavigateUrl="~" ToolTip="Rock ChMS">
-                        <asp:Image ID="Image1" runat="server" AlternateText="Rock ChMS" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="brandbar-logo" />
+                    <asp:HyperLink ID="hlHome" runat="server" CssClass="navbar-brand" NavigateUrl="~" ToolTip="Rock ChMS">
+                        <asp:Image ID="imgLogo" runat="server" AlternateText="Rock ChMS" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="brandbar-logo" />
                     </asp:HyperLink>
                     
                     <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".pageheader-collapse">
@@ -24,7 +24,7 @@
 			    </div>	
                 <div class="navbar-collapse collapse pageheader-collapse">   
                     <div class="navbar-right navbar-text">
-                        <Rock:Zone ID="Heading" Name="Header" runat="server" />
+                        <Rock:Zone ID="Header" Name="Header" runat="server" />
                     </div>
                     <div class="navbar-right navbar-text">				
 					    <Rock:SearchField ID="searchField" runat="server" />
@@ -36,7 +36,7 @@
         <!-- Main Navigation -->
 	    <nav class="navbar navbar-static-top pagenav">
             <div class="container">
-                <Rock:Zone ID="Menu" runat="server" />
+                <Rock:Zone ID="Navigation" runat="server" />
             </div>									
 	    </nav>
 		
@@ -48,7 +48,7 @@
 					    <Rock:PageIcon ID="PageIcon" runat="server" /> <h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1> <Rock:Zone ID="PageTitleBar" runat="server" />  
 				    </div>
                     <div class="col-md-6">
-                        <Rock:Zone ID="Zone1" runat="server" />
+                        <Rock:Zone ID="TitleRight" runat="server" />
                     </div>
 			    </div>
             </div>
@@ -56,45 +56,62 @@
 
     </header>
 
-    <div class="body-content container">
+    <main>
+
+        <%-- Start Content Area --%>
+
+        <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
+                    
+        <!-- display any ajax error messages here (use with ajax-client-error-handler.js) -->
+        <div class="alert alert-danger ajax-error" style="display:none">
+            <p><strong>Error</strong></p>
+            <span class="ajax-error-message" / ></span>
+        </div>
+
         <div class="row">
             <div class="col-md-12">
-                <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
-                
-
-                <%-- Content Area --%>
-                    
-                <!-- display any ajax error messages here (use with ajax-client-error-handler.js) -->
-                <div class="alert alert-danger ajax-error" style="display:none">
-                    <strong>Ooops!</strong>
-                    <span class="ajax-error-message" / ></span>
-                </div>
-
-                <div class="row">
-                    
-                    <div class="col-md-3">
-                            <Rock:Zone ID="LeftContent" runat="server" />
-                    </div>
-                    <div class="col-md-9">
-                        <div class="panel panel-default">
-                            <div class="panel-body">
-                                <Rock:Zone ID="RightContent" runat="server" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <%-- End Content Area --%>
+                <Rock:Zone ID="Feature" runat="server" />
             </div>
         </div>
-    </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <Rock:Zone ID="Sidebar1" runat="server" />
+            </div>
+            <div class="col-md-6">
+                <Rock:Zone ID="Main" runat="server" />
+            </div>
+            <div class="col-md-3">
+                <Rock:Zone ID="Sidebar2" runat="server" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <Rock:Zone ID="SectionA" runat="server" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <Rock:Zone ID="SectionB" runat="server" />
+            </div>
+            <div class="col-md-4">
+                <Rock:Zone ID="SectionC" runat="server" />
+            </div>
+            <div class="col-md-4">
+                <Rock:Zone ID="SectionD" runat="server" />
+            </div>
+        </div>
+
+        <%-- End Content Area --%>
+
+    </main>
 
     <footer class="page-footer">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-12">
-                    <Rock:Zone ID="Footer" runat="server" />
-                </div>
+        <div class="row">
+            <div class="col-md-12">
+                <Rock:Zone ID="Footer" runat="server" />
             </div>
         </div>
     </footer>
