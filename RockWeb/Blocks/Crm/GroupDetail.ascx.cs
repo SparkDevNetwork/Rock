@@ -6,8 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -527,8 +527,10 @@ namespace RockWeb.Blocks.Crm
 
             if ( group.IsSystem )
             {
-                nbEditModeMessage.Text = EditModeMessage.System( GroupType.FriendlyTypeName );
+                nbEditModeMessage.Text = EditModeMessage.System( Group.FriendlyTypeName );
             }
+
+            var roleLimitWarnings = new StringBuilder();
 
             if ( group.GroupType != null && group.GroupType.Roles != null && group.GroupType.Roles.Any() )
             {
@@ -544,20 +546,19 @@ namespace RockWeb.Blocks.Crm
 
                     if ( role.MinCount.HasValue && role.MinCount.Value > curCount )
                     {
-                        nbEditModeMessage.Text += nbEditModeMessage.Text.Length > 0 ? "<br/>" : "";
-                        nbEditModeMessage.Text += string.Format( "The {0} role is currently below its minimum requirement of {1:N0} active {2}.",
-                            role.Name, role.MinCount, 
-                            role.MinCount == 1 ? group.GroupType.GroupMemberTerm : group.GroupType.GroupMemberTerm.Pluralize() );
+                        roleLimitWarnings.AppendFormat("The <strong>{1}</strong> role is currently below its minimum requirement of {2:N0} active {3}.<br/>",
+                            role.Name.Pluralize(), role.Name, role.MinCount, role.MinCount == 1 ? group.GroupType.GroupMemberTerm : group.GroupType.GroupMemberTerm.Pluralize() );
                     }
                     if ( role.MaxCount.HasValue && role.MaxCount.Value < curCount )
                     {
-                        nbEditModeMessage.Text += nbEditModeMessage.Text.Length > 0 ? "<br/>" : "";
-                        nbEditModeMessage.Text += string.Format( "The {0} role is currently above its maximum limit of {1:N0} active {2}.",
-                            role.Name, role.MaxCount, 
-                            role.MaxCount == 1 ? group.GroupType.GroupMemberTerm : group.GroupType.GroupMemberTerm.Pluralize() );
+                        roleLimitWarnings.AppendFormat( "The <strong>{1}</strong> role is currently above its maximum limit of {2:N0} active {3}.<br/>",
+                            role.Name.Pluralize(), role.Name, role.MaxCount, role.MaxCount == 1 ? group.GroupType.GroupMemberTerm : group.GroupType.GroupMemberTerm.Pluralize() );
                     }
                 }
             }
+
+            nbRoleLimitWarning.Text = roleLimitWarnings.ToString();
+            nbRoleLimitWarning.Visible = roleLimitWarnings.Length > 0;
 
             if ( readOnly )
             {
