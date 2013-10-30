@@ -194,8 +194,16 @@ header {
 .pagenav {
     border-top: 1px solid lighten(@header-bg, 10%);
     border-bottom: 1px solid darken(@header-bg, 10%);
-    
-    .block-gradient(@header-bg);
+
+    background: @header-bg;
+	background:-moz-linear-gradient(top, darken( @header-bg, 3%) 0%, @header-bg 100%); /* FF3.6+ */
+	background:-webkit-gradient(linear, left top, left bottom, color-stop(0%,darken( @header-bg, 3%)), color-stop(100%,@header-bg)); /* Chrome,Safari4+ */
+	background:-webkit-linear-gradient(top, darken( @header-bg, 3%) 0%,@header-bg 100%); /* Chrome10+,Safari5.1+ */
+	background:-o-linear-gradient(top, darken( @header-bg, 3%) 0%,@header-bg 100%); /* Opera11.10+ */
+	background:-ms-linear-gradient(top, darken( @header-bg, 3%) 0%,@header-bg 100%); /* IE10+ */
+	background:linear-gradient(top, darken( @header-bg, 3%) 0%,@header-bg 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='darken( @header-bg, 3%)', endColorstr='@header-bg');
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='darken( @header-bg, 3%)', endColorstr='@header-bg')";
 
     .navbar-nav {
         margin: 0;
