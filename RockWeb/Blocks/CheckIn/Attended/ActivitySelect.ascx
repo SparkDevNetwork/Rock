@@ -17,8 +17,7 @@
             </div>
 
             <div class="col-sm-3 checkin-actions">
-                <Rock:BootstrapButton ID="lbNext" CssClass="btn btn-primary btn-lg" runat="server" OnClick="lbNext_Click" Text="Next"
-                    DataLoadingText="Processing... &lt;i class='icon-spinner icon-spin icon-large'&gt;&lt;/i&gt;" EnableViewState="false" />
+                <Rock:BootstrapButton ID="lbNext" CssClass="btn btn-primary btn-lg" runat="server" OnClick="lbNext_Click" Text="Next" EnableViewState="false" />
             </div>
         </div>
                 
