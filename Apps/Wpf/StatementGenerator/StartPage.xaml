@@ -41,7 +41,7 @@
                 Click="btnStart_Click">
             <StackPanel Orientation="Horizontal">
                 <Label Style="{StaticResource labelStyleButtonTextPrimary}"
-                       Content="Start " />
+                       Content="Start" />
                 <Label Style="{StaticResource labelStyleIconPrimary}"
                        Content="&#xf0da;" />
             </StackPanel>
