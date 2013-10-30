@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 if ( !Page.IsPostBack )
                 {
-                    mpeAddNote.OnCancelScript = string.Format( "$('#{0}').val('');", hfAttributeId.ClientID );
+                    mpeAddNote.OnCancelScript = string.Format( "$('#{0}').val('');", hfAllergyAttributeId.ClientID );
                     Session["groupType"] = null;
                     Session["location"] = null;
                     Session["locationList"] = null;
@@ -79,10 +79,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 else
                 {
                     var entity = new EntityTypeService().Get( "Rock.Model.Person" );
-                    string attributeId = Request.Form[hfAttributeId.UniqueID];
-                    if (!string.IsNullOrEmpty(attributeId) )
+                    string allergyAttributeId = Request.Form[hfAllergyAttributeId.UniqueID];
+                    if ( !string.IsNullOrEmpty( allergyAttributeId ) )
                     {
-                        ShowNoteModal( int.Parse( attributeId ), entity.Id );
+                        ShowNoteModal( int.Parse( allergyAttributeId ), entity.Id );
                     }
                 }
             }
@@ -336,7 +336,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddNoteCancel_Click( object sender, EventArgs e )
         {
-            hfAttributeId.Value = string.Empty;
+            hfAllergyAttributeId.Value = string.Empty;
         }
 
         /// <summary>
@@ -354,19 +354,19 @@ namespace RockWeb.Blocks.CheckIn.Attended
             Person Person = new PersonService().Get( person.Person.Id );
 
             var entity = new EntityTypeService().Get( "Rock.Model.Person" );
-            var attributeId = new AttributeService().GetByEntityTypeId( entity.Id ).Where( a => a.Name.ToUpper() == "ALLERGY" ).FirstOrDefault().Id;
-            var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
+            Person.LoadAttributes();
 
-            Control attributeControl = fsNotes.FindControl( string.Format( "attribute_field_{0}", attributeId ) );
-            if ( attributeControl != null )
+            var allergyAttributeId = new AttributeService().GetByEntityTypeId( entity.Id ).Where( a => a.Name.ToUpper() == "ALLERGY" ).FirstOrDefault().Id;
+            var allergyAttribute = Rock.Web.Cache.AttributeCache.Read( allergyAttributeId );
+
+            Control allergyAttributeControl = fsNotes.FindControl( string.Format( "attribute_field_{0}", allergyAttributeId ) );
+            if ( allergyAttributeControl != null )
             {
-                Person.LoadAttributes();
-                Person.SetAttributeValue( "Allergy", attribute.FieldType.Field.GetEditValue( attributeControl, attribute.QualifierValues ) );
-                Rock.Attribute.Helper.SaveAttributeValues( Person, CurrentPersonId );
+                Person.SetAttributeValue( "Allergy", allergyAttribute.FieldType.Field.GetEditValue( allergyAttributeControl, allergyAttribute.QualifierValues ) );
             }
 
-            hfAttributeId.Value = string.Empty;
-
+            Rock.Attribute.Helper.SaveAttributeValues( Person, CurrentPersonId );
+            hfAllergyAttributeId.Value = string.Empty;
             mpeAddNote.Hide();
         }
 
@@ -378,8 +378,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void lbAddNote_Click( object sender, EventArgs e )
         {
             var entity = new EntityTypeService().Get( "Rock.Model.Person" );
-            var attributeId = new AttributeService().GetByEntityTypeId( entity.Id ).Where( a => a.Name.ToUpper() == "ALLERGY" ).FirstOrDefault().Id;
-            ShowNoteModal( attributeId, entity.Id );
+            var allergyAttributeId = new AttributeService().GetByEntityTypeId( entity.Id ).Where( a => a.Name.ToUpper() == "ALLERGY" ).FirstOrDefault().Id;
+            ShowNoteModal( allergyAttributeId, entity.Id );
         }
 
         /// <summary>
@@ -709,7 +709,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         /// <param name="attributeId">The attribute id.</param>
         /// <param name="entityId">The entity id.</param>
-        protected void ShowNoteModal( int attributeId, int entityId )
+        protected void ShowNoteModal( int allergyAttributeId, int entityId )
         {
             var personId = Request.QueryString["personId"].AsType<int?>();
             var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
@@ -717,11 +717,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
             Person Person = new PersonService().Get( person.Person.Id );
 
             fsNotes.Controls.Clear();
-            var attribute = AttributeCache.Read( attributeId );
+
+            var attribute = AttributeCache.Read( allergyAttributeId );
             Person.LoadAttributes();
             var attributeValue = Person.GetAttributeValue( attribute.Key );
             attribute.AddControl( fsNotes.Controls, attributeValue, "", true, true );
-            hfAttributeId.Value = attribute.Id.ToString();
+            hfAllergyAttributeId.Value = attribute.Id.ToString();
+
             mpeAddNote.Show();
         }
 

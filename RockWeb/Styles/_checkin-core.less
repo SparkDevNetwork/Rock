@@ -311,6 +311,13 @@ input.checkin-phone-entry
     color: @header-text-color;
 }
 
+.attended .checkin-footer
+{
+    margin: 0 auto;
+    bottom: 2%;
+    right: 2%;
+}
+
 .attended .btn-checkin-select 
 {
     margin-bottom: 10px;
@@ -333,7 +340,7 @@ input.checkin-phone-entry
 .attended .btn-primary:active.disabled,
 .attended .btn-primary:active[disabled]
 {
-    background: darken(@btn-primary-bg, 15%); 
+    background: darken(@btn-primary-bg, 18%); 
 }
 
 .attended .checkin-phone-entry 
@@ -424,15 +431,15 @@ input.checkin-phone-entry
     z-index: 10001 !important;
 }
 
-.attended.modal-foreground.small 
+.attended.modal-foreground.small-modal
 {    
     width: 60%;
     height: auto;
 }
 
-.attended.modal-foreground.small .checkin-actions a.btn-primary
+.attended.modal-foreground.small-modal .checkin-actions a.btn-primary
 {
-    font-size: 1.4em;
+    font-size: 1em;
 }
 
 .attended.modal-foreground .checkin-header,
@@ -475,4 +482,10 @@ input.checkin-phone-entry
 .attended.modal-foreground .checkin-body .row
 {
     margin-bottom: 10px;
+}
+
+.attended .checkbox input[type="checkbox"]
+{
+    float: none;
+    margin-right: 10px;
 }
