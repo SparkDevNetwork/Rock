@@ -897,17 +897,17 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Dims the other blocks.
+        /// Hides any secondary blocks.
         /// </summary>
         /// <param name="caller">The caller.</param>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        public void DimOtherBlocks( RockBlock caller, bool dimmed )
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void HideSecondaryBlocks( RockBlock caller, bool hidden )
         {
-            foreach ( IDimmableBlock dimmableBlock in this.RockBlocks.Where( a => a is IDimmableBlock ) )
+            foreach ( ISecondaryBlock secondaryBlock in this.RockBlocks.Where( a => a is ISecondaryBlock ) )
             {
-                if ( dimmableBlock != caller )
+                if ( secondaryBlock != caller )
                 {
-                    dimmableBlock.SetDimmed( dimmed );
+                    secondaryBlock.SetVisible( !hidden );
                 }
             }
         }

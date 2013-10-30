@@ -625,12 +625,12 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Dims the other blocks.
+        /// Hides the secondary blocks.
         /// </summary>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        public void DimOtherBlocks( bool dimmed )
+        /// <param name="hidden">if set to <c>true</c> [hidden].</param>
+        public void HideSecondaryBlocks( bool hidden )
         {
-            RockPage.DimOtherBlocks( this, dimmed );
+            RockPage.HideSecondaryBlocks( this, hidden );
         }
 
         /// <summary>

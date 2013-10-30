@@ -761,7 +761,7 @@ namespace RockWeb.Blocks.Crm
             pnlEditDetails.Visible = editable;
             fieldsetViewDetails.Visible = !editable;
 
-            this.DimOtherBlocks( editable );
+            this.HideSecondaryBlocks( editable );
         }
 
         /// <summary>
