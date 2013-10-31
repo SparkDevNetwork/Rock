@@ -1,0 +1,41 @@
+// Imports
+// -------------------------
+
+@FontAwesomePath: '../../../../Assets/Fonts';
+
+
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/FontAwesome/font-awesome.less";
+@import "../../../Styles/Bootstrap/bootstrap.less"; 
+@import "../../../Styles/_rock-core.less";
+@import "_variables.less";
+
+
+/*
+    Rock ChMS Theme Styles
+
+    1. HTML Overrides
+    2. Bootstrap Overides
+    3. Page Header
+    4. Footer
+    5. Responsive Tweaks
+    6. Layout Specific Styles
+
+*/
+
+// 1. HTML Overrides
+// -------------------------
+
+main {
+    display:block;
+}
+
+
+// 2. Bootstrap Overrides 
+// ------------------------- 
+
+.navbar {
+    position: static; // default is relative which causes the dropdowns to go under the other navbars dispite having a higher z-index - JME 9/9/2013
+}
+
