@@ -26,7 +26,7 @@
         <div class="col-md-12">
 
             <Rock:RockDropDownList ID="ddlKiosk" runat="server" CssClass="input-xlarge" Label="Kiosk Device" OnSelectedIndexChanged="ddlKiosk_SelectedIndexChanged" AutoPostBack="true" DataTextField="Name" DataValueField="Id" ></Rock:RockDropDownList>
-            <Rock:RockCheckBoxList ID="cblGroupTypes" runat="server" Label="Group Type(s)" DataTextField="Name" DataValueField="Id" ></Rock:RockCheckBoxList>
+            <Rock:RockCheckBoxList ID="cblGroupTypes" runat="server" Label="Check-in Area(s)" DataTextField="Name" DataValueField="Id" ></Rock:RockCheckBoxList>
 
         </div>
     </div>
