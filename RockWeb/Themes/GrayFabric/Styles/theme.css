@@ -7684,6 +7684,10 @@ ul.rock-tree ul {
 ul.rock-tree ul {
   margin: 0px 0px 0px 25px;
 }
+.rock-tree .rock-tree-item > i {
+  cursor: pointer;
+  padding: 4px;
+}
 .rock-tree li {
   margin: 0px;
 }
