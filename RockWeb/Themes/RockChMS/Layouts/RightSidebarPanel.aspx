@@ -45,7 +45,7 @@
 		    <div class="container">
                 <div class="row">
 				    <div class="col-md-6">
-					    <Rock:PageIcon ID="PageIcon" runat="server" /> <h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1> <Rock:Zone ID="PageTitleBar" runat="server" />  
+					    <Rock:PageIcon ID="PageIcon" runat="server" /> <h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1> <Rock:Zone ID="TitleLeft" runat="server" />  
 				    </div>
                     <div class="col-md-6">
                         <Rock:Zone ID="TitleRight" runat="server" />
@@ -58,11 +58,11 @@
 
     <main>
 
-        <%-- Start Content Area --%>
+        <!-- Start Content Area -->
 
         <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
                     
-        <!-- display any ajax error messages here (use with ajax-client-error-handler.js) -->
+        <!-- Ajax Error -->
         <div class="alert alert-danger ajax-error" style="display:none">
             <p><strong>Error</strong></p>
             <span class="ajax-error-message" / ></span>
@@ -105,7 +105,7 @@
             </div>
         </div>
 
-        <%-- End Content Area --%>
+        <!-- End Content Area -->
     </main>
 
     <footer class="page-footer">
