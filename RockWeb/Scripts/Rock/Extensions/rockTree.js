@@ -500,6 +500,7 @@
         selectedIds: null,
         expandedIds: null,
         restUrl: null,
+        restParams: null,
         local: null,
         multiselect: false,
         loadingHtml: '<span class="rock-tree-loading"><i class="icon-refresh icon-spin"></i></span>',
