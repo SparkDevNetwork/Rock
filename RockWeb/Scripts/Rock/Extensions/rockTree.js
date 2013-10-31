@@ -112,11 +112,12 @@
     RockTree.prototype = {
         constructor: RockTree,
         init: function () {
-            // Load data into tree
+            // Load data into tree asynchronously
             var promise = this.fetch(this.options.id),
 				self = this;
 
             this.showLoading(this.$el);
+            
             // If Selected Ids is set, pre-select those nodes
             promise.done(function () {
                 if (self.options.selectedIds && typeof self.options.selectedIds.length === 'number') {
@@ -256,6 +257,8 @@
                 throw 'Unable to load data!';
             }
 
+            // Call configured `mapData` function. If it wasn't overridden by the user,
+            // `_mapArrayDefault` will be called.
             nodeArray = this.options.mapping.mapData(data);
             
             for (i = 0; i < nodeArray.length; i++) {
@@ -271,6 +274,8 @@
                 this.nodes = nodeArray;
             }
 
+            // Trigger "internal" databound event and trigger "public" databound event
+            // via the $el to notify the DOM
             this.events.trigger('nodes:dataBound');
             this.$el.trigger('rockTree:dataBound');
             return nodeArray;
