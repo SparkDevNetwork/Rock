@@ -505,8 +505,8 @@
         multiselect: false,
         loadingHtml: '<span class="rock-tree-loading"><i class="icon-refresh icon-spin"></i></span>',
         iconClasses: {
-            branchOpen: 'icon-folder-open',
-            branchClosed: 'icon-folder-close',
+            branchOpen: 'icon-caret-down',
+            branchClosed: 'icon-caret-right',
             leaf: ''
         },
         mapping: {
