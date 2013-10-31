@@ -410,7 +410,7 @@
                     $ul.hide();
                     node.isOpen = false;
                     $icon.removeClass(openClass).addClass(closedClass);
-                    self.$el.trigger('rockTree:close');
+                    self.$el.trigger('rockTree:collapse');
                 } else {
                     node.isOpen = true;
                     $icon.removeClass(closedClass).addClass(openClass);
@@ -421,11 +421,11 @@
                         self.showLoading($icon.parent('li'));
                         self.fetch(node.id).done(function () {
                             self.render();
-                            self.$el.trigger('rockTree:open');
+                            self.$el.trigger('rockTree:expand');
                         });
                     } else {
                         $ul.show();
-                        self.$el.trigger('rockTree:open');
+                        self.$el.trigger('rockTree:expand');
                     }
                 }
             });
