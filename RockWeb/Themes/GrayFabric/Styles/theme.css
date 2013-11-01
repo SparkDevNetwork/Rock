@@ -7724,13 +7724,17 @@ ul.rock-tree ul {
   padding-left: 12px;
 }
 .personlist {
-  padding-left: 16px;
+  padding-left: 0;
   list-style: none;
+}
+.personlist li {
+  padding-left: 16px;
 }
 .personlist li i[class=icon-circle] {
   font-size: 9px;
   color: #d0cfcf;
   margin-right: 6px;
+  margin-left: -16px;
 }
 .personlist li .actions {
   opacity: 0;
@@ -9506,6 +9510,7 @@ dl dd {
 .popover-content header img {
   float: left;
   margin-right: 6px;
+  width: 32px;
 }
 .popover-content header h3 {
   float: left;
