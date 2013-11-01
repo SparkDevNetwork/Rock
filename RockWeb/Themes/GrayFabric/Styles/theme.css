@@ -9143,19 +9143,6 @@ span.cke_skin_kama {
 .table-hover tbody tr:hover th {
   cursor: pointer;
 }
-/*.grid-table th a:hover {
-    --text-decoration: none;
-}
-
-td[align=center] {
-    text-align: center;
-}
-
-.grid-table a.minimal i {
-    text-decoration: none;
-    color: @text-color;
-}
-*/
 .grid-filter {
   background-color: #d9e1e8;
   border-radius: 4px;
@@ -9239,6 +9226,9 @@ td[align=center] {
   font-size: 11px;
   margin-left: 10px;
   margin-top: 7px;
+}
+td.grid-col-actions {
+  text-align: right;
 }
 .grid-actions {
   text-align: right;
