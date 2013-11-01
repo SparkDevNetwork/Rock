@@ -301,29 +301,6 @@ small
     margin-top: 2px;
 }
 
-        
-
-
-
-.personlist
-{
-    list-style: none;
-    margin-left: 0;
-}
-
-.personlist li
-{
-    margin-left: 16px;
-}
-
-.personlist i[class=icon-circle]
-{
-    font-size: 9px;
-    color: #d0cfcf;
-    margin-left: -16px;
-    margin-right: 3px;
-    vertical-align: middle;
-}
 
 @media (max-width: 767px) {
 	/* center the person image */
