@@ -31,6 +31,8 @@ namespace Rock.Model
         {
             ShowInGroupList = true;
             ShowInNavigation = true;
+            GroupTerm = "Group";
+            GroupMemberTerm = "Member";
         }
 
         #region Entity Properties
@@ -363,7 +365,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual DefinedValue GroupTypePurposeValue { get; set; }
-        
+
         /// <summary>
         /// Gets a count of <see cref="Rock.Model.Group">Groups</see> that belong to this GroupType.
         /// </summary>
