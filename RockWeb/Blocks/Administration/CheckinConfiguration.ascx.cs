@@ -39,6 +39,8 @@ namespace RockWeb.Blocks.Administration
                 {
                     pnlDetails.Visible = false;
                 }
+
+                lCheckinAreasTitle.Text = lCheckinAreasTitle.Text.FormatAsHtmlTitle();
             }
             else
             {
