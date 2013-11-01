@@ -115,9 +115,11 @@ namespace Rock.Web.UI.Controls
 
             if ( !string.IsNullOrWhiteSpace( Role ) )
             {
+                writer.RenderBeginTag(HtmlTextWriterTag.Small);
                 writer.Write( " (" );
                 writer.Write( Role );
                 writer.Write( ")" );
+                writer.RenderEndTag();
             }
 
             string script = @"

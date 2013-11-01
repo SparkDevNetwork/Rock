@@ -7503,7 +7503,7 @@ td.visible-print {
     1. Pickers - used to pick complex data types
     2. Banner - used as the primary heading for a page or large section
     3. Tree - used for tree control
-
+    4. Person List - used to show a list of people
     5. Tooltip - styles for the tooltipster module
     6. Pagelist - used to list child pages; currently used in admin screens
     7. Tags - component that allows you to tag entities
@@ -7722,6 +7722,25 @@ ul.rock-tree ul {
 }
 .rock-tree .rock-tree-leaf {
   padding-left: 12px;
+}
+.personlist {
+  padding-left: 16px;
+  list-style: none;
+}
+.personlist li i[class=icon-circle] {
+  font-size: 9px;
+  color: #d0cfcf;
+  margin-right: 6px;
+}
+.personlist li .actions {
+  opacity: 0;
+  -webkit-transition: opacity 0.5s ease-out;
+  -moz-transition: opacity 0.5s ease-out;
+  -o-transition: opacity 0.5s ease-out;
+  transition: opacity 0.5s ease-out;
+}
+.personlist li:hover .actions {
+  opacity: 1;
 }
 .tooltipster-default {
   border-radius: 5px;
@@ -9487,8 +9506,6 @@ dl dd {
     2. Badge Bar
     3. Family Bar
     4. Page Tabs
-    5. Timeline
-    6. Misc Items
 
 */
 .persondetails-header {
@@ -9638,14 +9655,10 @@ dl dd {
 .pagetabs .nav {
   margin: 10px 0;
 }
-/*.bookmarkattributes ul // todo check if this is needed
+/*.persondetails small
 {
-    list-style-type: none;
-    margin-left: 0;
+    color: lighten(@text-color, 20%);
 }*/
-.persondetails small {
-  color: #848484;
-}
 /*
     Used to manage styles related to Rock's internal scrollbar
 
@@ -9741,6 +9754,12 @@ a.help {
   color: #bbbbbb;
 }
 /* extension of Bootstrap 3 panel */
+.panel {
+  /*.actions {
+        margin-top: 36px;
+        .clearfix();
+    }*/
+}
 .panel legend {
   border-color: #d9e1e8;
 }
@@ -9755,33 +9774,6 @@ a.help {
   background-color: #d9e1e8;
   color: #515151;
   border-color: #b9c8d5;
-}
-.panel .actions {
-  margin-top: 36px;
-}
-.panel .actions:before,
-.panel .actions:after {
-  content: " ";
-  /* 1 */
-
-  display: table;
-  /* 2 */
-
-}
-.panel .actions:after {
-  clear: both;
-}
-.panel .actions:before,
-.panel .actions:after {
-  content: " ";
-  /* 1 */
-
-  display: table;
-  /* 2 */
-
-}
-.panel .actions:after {
-  clear: both;
 }
 .panel-widget {
   border-color: #d9e1e8;
