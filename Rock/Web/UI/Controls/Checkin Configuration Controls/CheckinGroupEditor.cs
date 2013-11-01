@@ -457,10 +457,10 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // make two span6 columns: Left Column for Name and Attributes. Right Column for Locations Grid
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row-fluid" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // edit fields
@@ -470,7 +470,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             _phGroupAttributes.RenderControl( writer );
 
             writer.RenderEndTag();
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // Locations grid
