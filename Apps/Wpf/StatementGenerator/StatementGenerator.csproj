@@ -190,7 +190,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="rock-logo.jpg">
+    <None Include="logo.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

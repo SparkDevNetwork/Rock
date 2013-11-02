@@ -245,7 +245,7 @@ namespace Rock.Web.UI.Controls.Communication
 
             writer.RenderEndTag();  // span6 div
 
-            writer.RenderEndTag();  // row-fluid div
+            writer.RenderEndTag();  // row div
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );

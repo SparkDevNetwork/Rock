@@ -301,29 +301,6 @@ small
     margin-top: 2px;
 }
 
-        
-
-
-
-.personlist
-{
-    list-style: none;
-    margin-left: 0;
-}
-
-.personlist li
-{
-    margin-left: 16px;
-}
-
-.personlist i[class=icon-circle]
-{
-    font-size: 9px;
-    color: #d0cfcf;
-    margin-left: -16px;
-    margin-right: 3px;
-    vertical-align: middle;
-}
 
 @media (max-width: 767px) {
 	/* center the person image */
@@ -361,7 +338,6 @@ small
 
 }
 
-/* Schedule Builder classes - MP */
 
 /* Family Edit - DT */
 #person-search-results.scroll-container {
@@ -391,57 +367,3 @@ span.data-view-filter-label {
     margin: 8px 12px 0 0;
 }
 
-/* RockTree css - JO */
-ul.rock-tree,
-ul.rock-tree ul {
-	list-style-type: none;
-	margin: 10px 0px;
-	padding: 0px;
-}
-
-ul.rock-tree ul {
-	margin: 0px 0px 0px 25px;
-}
-
-.rock-tree li {
-	margin: 0px;
-}
-
-.rock-tree span,
-.rock-tree a {
-	margin: 1px;
-	display: inline-block;
-}
-
-.rock-tree .rock-tree-name:hover,
-.rock-tree span:hover,
-.rock-tree span:hover a {
-	background: #59849C;
-    color: #fff;
-}
-
-.rock-tree .selected,
-.rock-tree .selected a {
-	background: #779cb1;
-    color: #fff
-}
-
-.rock-tree .rock-tree-name {
-	padding: 2px 6px;
-	border-radius: 3px;
-	cursor: pointer;
-}
-
-.rock-tree .rock-tree-loading {
-  margin-left: 10px;
-  color: #777 !important;
-  font-size: 12px;
-}
-
-.rock-tree .rock-tree-loading i {
-  margin-right: 5px;
-}
-
-.rock-tree-leaf {
-    padding-left: 12px;
-}

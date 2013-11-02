@@ -2,27 +2,27 @@
 
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
-        <div class="row-fluid">
-            <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-            <Rock:NotificationBox ID="nbDeleteWarning" runat="server" NotificationBoxType="Warning" />
-        </div>
+        <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+        <Rock:NotificationBox ID="nbDeleteWarning" runat="server" NotificationBoxType="Warning" />
 
         <asp:Panel ID="pnlDetails" runat="server">
+
+            <div class="banner">
+                <h1>
+                    <asp:Literal ID="lCheckinAreasTitle" runat="server" Text="Check-in Areas" /></h1>
+            </div>
 
             <asp:HiddenField ID="hfParentGroupTypeId" runat="server" />
             <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-danger" />
 
-            <fieldset>
-                <legend>
-                    <asp:Literal ID="lCheckinAreasTitle" runat="server" Text="Check-in Areas" />
-                    <span class="pull-right">
-                        <asp:LinkButton ID="lbAddCheckinArea" runat="server" CssClass="btn btn-mini" OnClick="lbAddCheckinArea_Click" CausesValidation="false"><i class="icon-plus"></i> Add Check-in Area</asp:LinkButton>
-                    </span>
-                </legend>
-                <div class="row-fluid checkin-grouptype-list">
-                    <asp:PlaceHolder ID="phCheckinGroupTypes" runat="server" EnableViewState="false" />
-                </div>
-            </fieldset>
+            <div class="clearfix">
+                <asp:LinkButton ID="lbAddCheckinArea" runat="server" CssClass="btn btn-default btn-mini pull-right" OnClick="lbAddCheckinArea_Click" CausesValidation="false"><i class="icon-plus"></i> Add Check-in Area</asp:LinkButton>
+            </div>
+
+            <div class="checkin-grouptype-list">
+                <h4>Checkin Areas</h4>
+                <asp:PlaceHolder ID="phCheckinGroupTypes" runat="server" EnableViewState="false" />
+            </div>
 
             <div class="actions">
                 <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
@@ -75,7 +75,8 @@
                     update: function (event, ui) {
                         {
                             $('#' + '<%=btnSave.ClientID %>').addClass('disabled');
-                            __doPostBack('<%=upDetail.ClientID %>', 're-order-grouptype:' + ui.item.attr('data-key') + ';' + ui.item.index());
+                            var newGroupTypeIndex = $(ui.item).prevAll('.checkin-grouptype').length;
+                            __doPostBack('<%=upDetail.ClientID %>', 're-order-grouptype:' + ui.item.attr('data-key') + ';' + newGroupTypeIndex);
                         }
                     }
                 });
@@ -95,7 +96,8 @@
                     update: function (event, ui) {
                         {
                             $('#' + '<%=btnSave.ClientID %>').addClass('disabled');
-                            __doPostBack('<%=upDetail.ClientID %>', 're-order-group:' + ui.item.attr('data-key') + ';' + ui.item.index());
+                            var newGroupIndex = $(ui.item).prevAll('.checkin-group').length;
+                            __doPostBack('<%=upDetail.ClientID %>', 're-order-group:' + ui.item.attr('data-key') + ';' + newGroupIndex);
                         }
                     }
                 });

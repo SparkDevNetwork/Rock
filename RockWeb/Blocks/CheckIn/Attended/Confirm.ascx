@@ -1,9 +1,12 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Confirm.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Attended.Confirm" %>
 
-<asp:Panel ID="pnlContent" runat="server" >
-
-    <Rock:ModalAlert ID="maWarning" runat="server" />
+<asp:UpdatePanel ID="pnlContent" runat="server" UpdateMode="Conditional">
+<ContentTemplate>
+        
     <asp:Panel ID="pnlConfirm" runat="server" CssClass="attended">
+
+        <Rock:ModalAlert ID="maWarning" runat="server" />
+
         <div class="row checkin-header">
             <div class="col-sm-3 checkin-actions">
                 <Rock:BootstrapButton ID="lbBack" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbBack_Click" Text="Back" EnableViewState="false" />
@@ -20,9 +23,10 @@
 
         <div class="checkin-body selected-grid">
             <div class="row">
-                <asp:UpdatePanel ID="pnlSelectedGrid" runat="server" UpdateMode="Conditional">
-                <ContentTemplate> 
-                    <Rock:Grid ID="gPersonList" runat="server" DataKeyNames="PersonId,LocationId,ScheduleId" DisplayType="Light" OnRowCommand="gPersonList_Print" EmptyDataText="No People Selected">
+                <asp:UpdatePanel ID="pnlSelectedGrid" runat="server">
+                <ContentTemplate>
+                    <Rock:Grid ID="gPersonList" runat="server" DataKeyNames="PersonId,LocationId,ScheduleId" DisplayType="Light" OnRowCommand="gPersonList_Print" 
+                        EmptyDataText="No People Selected" OnGridRebind="gPersonList_GridRebind">
                         <Columns>
                             <asp:BoundField DataField="PersonId" Visible="false" />                    
                             <asp:BoundField DataField="Name" HeaderText="Name" />
@@ -53,4 +57,5 @@
         </div>        
     </asp:Panel>
 
-</asp:Panel>
+</ContentTemplate>
+</asp:UpdatePanel>
