@@ -382,6 +382,7 @@ namespace RockWeb.Blocks.Crm
             {
                 GroupTypeService groupTypeService = new GroupTypeService();
                 AttributeService attributeService = new AttributeService();
+                AttributeQualifierService qualifierService = new AttributeQualifierService();
                 CategoryService categoryService = new CategoryService();
 
                 int groupTypeId = int.Parse( hfGroupTypeId.Value );
@@ -451,9 +452,9 @@ namespace RockWeb.Blocks.Crm
 
                         /* Save Attributes */
                         string qualifierValue = groupType.Id.ToString();
-                        SaveAttributes( new GroupType().TypeId, "Id", qualifierValue, GroupTypeAttributesState, attributeService, categoryService );
-                        SaveAttributes( new Group().TypeId, "GroupTypeId", qualifierValue, GroupAttributesState, attributeService, categoryService );
-                        SaveAttributes( new GroupMember().TypeId, "GroupTypeId", qualifierValue, GroupMemberAttributesState, attributeService, categoryService );
+                        SaveAttributes( new GroupType().TypeId, "Id", qualifierValue, GroupTypeAttributesState, attributeService, qualifierService, categoryService );
+                        SaveAttributes( new Group().TypeId, "GroupTypeId", qualifierValue, GroupAttributesState, attributeService, qualifierService, categoryService );
+                        SaveAttributes( new GroupMember().TypeId, "GroupTypeId", qualifierValue, GroupMemberAttributesState, attributeService, qualifierService, categoryService );
 
                     } );
 
@@ -912,7 +913,7 @@ namespace RockWeb.Blocks.Crm
         }
 
         private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, ViewStateList<Attribute> viewStateAttributes,
-            AttributeService attributeService, CategoryService categoryService )
+            AttributeService attributeService, AttributeQualifierService qualifierService, CategoryService categoryService )
         {
             // Get the existing attributes for this entity type and qualifier value
             var attributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
@@ -931,7 +932,6 @@ namespace RockWeb.Blocks.Crm
             foreach ( var attributeState in viewStateAttributes )
             {
                 // remove old the old qualifiers for this attribute in case they changed
-                var qualifierService = new AttributeQualifierService();
                 foreach ( var oldQualifier in qualifierService.GetByAttributeId( attributeState.Id ).ToList() )
                 {
                     qualifierService.Delete( oldQualifier, CurrentPersonId );
@@ -1162,12 +1162,11 @@ namespace RockWeb.Blocks.Crm
         /// <param name="attributeGuid">The attribute GUID.</param>
         protected void gGroupTypeAttributes_ShowEdit( Guid attributeGuid )
         {
-            edtGroupTypeAttributes.AttributeEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( GroupType ) ).Id;
-
             Attribute attribute;
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
+                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtGroupTypeAttributes.ActionTitle = ActionTitle.Add( "attribute for group type " + tbName.Text );
             }
             else
@@ -1307,12 +1306,11 @@ namespace RockWeb.Blocks.Crm
         /// <param name="attributeGuid">The attribute GUID.</param>
         protected void gGroupAttributes_ShowEdit( Guid attributeGuid )
         {
-            edtGroupAttributes.AttributeEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( Group ) ).Id;
-
             Attribute attribute;
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
+                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtGroupAttributes.ActionTitle = ActionTitle.Add( "attribute for groups of group type " + tbName.Text );
             }
             else
@@ -1446,12 +1444,11 @@ namespace RockWeb.Blocks.Crm
         /// <param name="attributeGuid">The attribute GUID.</param>
         protected void gGroupMemberAttributes_ShowEdit( Guid attributeGuid )
         {
-            edtGroupMemberAttributes.AttributeEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( GroupMember ) ).Id;
-
             Attribute attribute;
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
+                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtGroupMemberAttributes.ActionTitle = ActionTitle.Add( "attribute for members in groups of group type " + tbName.Text );
             }
             else

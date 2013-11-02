@@ -71,6 +71,8 @@ namespace Rock.Field.Types
             controls.Add( ddl );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
+            ddl.Label = "Group Type";
+            ddl.Help = "Type of group to select roles from, if left blank any group type's role can be selected.";
 
             ddl.Items.Add( new ListItem() );
 
