@@ -7502,8 +7502,9 @@ td.visible-print {
     
     1. Pickers - used to pick complex data types
     2. Banner - used as the primary heading for a page or large section
-    4. Widget - reusable box wrapper for content
-    5. Tooltip - styles for the tooltipster module
+    3. Tree - used for tree control
+    4. Person List - used to show a list of people
+    5. 
     6. Pagelist - used to list child pages; currently used in admin screens
     7. Tags - component that allows you to tag entities
     8. Switch - uses the Bootstrap Switch component
@@ -7674,324 +7675,79 @@ td.visible-print {
   margin-top: 16px;
   margin-left: 6px;
 }
-/*
-.widget {
-    background-color: @body-bg;
-    border: 1px solid darken(@accent-light-color, @const-border-darken-amt);
-    border-radius: @border-radius-base;
-    margin-bottom: 2em;
-
-    h3 {
-        font-size: 15px;  
-        line-height: 15px;
-        margin: 0 0 6px 0;
-    }
-
-    header {
-        background-color: @widget-header-bg;
-        color: @widget-header-text-color;
-        padding: 6px 15px;
-        border-radius: @border-radius-base @border-radius-base 0 0 ;
-    }
+ul.rock-tree,
+ul.rock-tree ul {
+  list-style-type: none;
+  margin: 10px 0px;
+  padding: 0px;
 }
-
-.filter-toogle > span {
-    vertical-align: 20%;
+ul.rock-tree ul {
+  margin: 0px 0px 0px 25px;
 }
-
-.widget.widget-dark > header
-{
-	background-color: @widget-header-bg-dark;
-    color: @widget-header-text-color-dark;
+.rock-tree .rock-tree-item > i {
+  cursor: pointer;
+  padding: 4px;
 }
-
-
-.widget-content
-{
-    padding: 20px 15px 15px;
+.rock-tree li {
+  margin: 0px;
 }
-*/
-.tooltipster-default {
-  border-radius: 5px;
-  border: 2px solid #000;
-  background: #4c4c4c;
-  color: #fff;
+.rock-tree span,
+.rock-tree a {
+  margin: 1px;
+  display: inline-block;
 }
-.tooltipster-default .tooltipster-content {
-  font-family: Arial, sans-serif;
-  font-size: 14px;
-  line-height: 16px;
-  padding: 8px 10px;
-  overflow: hidden;
+.rock-tree .rock-tree-name:hover,
+.rock-tree span:hover,
+.rock-tree span:hover a {
+  background: #779cb1;
+  color: #ecf0f3;
 }
-.tooltipster-base {
-  border-radius: 4px;
-  border: 1px solid #cccccc;
-  background: #f4f4f4;
-  color: #d4d4d4;
-  padding: 0;
-  font-size: 0;
-  line-height: 0;
-  position: absolute;
-  z-index: 9999999;
-  pointer-events: none;
-  width: auto;
-  overflow: visible;
+.rock-tree .selected,
+.rock-tree .selected a {
+  background: #a4b4c4;
+  color: #ffffff;
 }
-.tooltipster-base .tooltipster-content {
-  overflow: hidden;
+.rock-tree .rock-tree-name {
+  padding: 2px 6px;
+  border-radius: 3px;
+  cursor: pointer;
 }
-.tooltipster-arrow {
-  display: block;
-  text-align: center;
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: -1;
+.rock-tree .rock-tree-loading {
+  margin-left: 10px;
+  color: #d4d4d4 !important;
+  font-size: 12px;
 }
-.tooltipster-arrow span,
-.tooltipster-arrow-border {
-  display: block;
-  width: 0;
-  height: 0;
-  position: absolute;
+.rock-tree .rock-tree-loading i {
+  margin-right: 5px;
 }
-.tooltipster-arrow-top span,
-.tooltipster-arrow-top-right span,
-.tooltipster-arrow-top-left span {
-  border-left: 8px solid transparent !important;
-  border-right: 8px solid transparent !important;
-  border-top: 8px solid;
-  bottom: -8px;
+.rock-tree .rock-tree-leaf {
+  padding-left: 12px;
 }
-.tooltipster-arrow-top .tooltipster-arrow-border,
-.tooltipster-arrow-top-right .tooltipster-arrow-border,
-.tooltipster-arrow-top-left .tooltipster-arrow-border {
-  border-left: 9px solid transparent !important;
-  border-right: 9px solid transparent !important;
-  border-top: 9px solid;
-  bottom: -8px;
+.personlist {
+  padding-left: 0;
+  list-style: none;
 }
-.tooltipster-arrow-bottom span,
-.tooltipster-arrow-bottom-right span,
-.tooltipster-arrow-bottom-left span {
-  border-left: 8px solid transparent !important;
-  border-right: 8px solid transparent !important;
-  border-bottom: 8px solid;
-  top: -8px;
+.personlist li {
+  padding-left: 16px;
 }
-.tooltipster-arrow-bottom .tooltipster-arrow-border,
-.tooltipster-arrow-bottom-right .tooltipster-arrow-border,
-.tooltipster-arrow-bottom-left .tooltipster-arrow-border {
-  border-left: 9px solid transparent !important;
-  border-right: 9px solid transparent !important;
-  border-bottom: 9px solid;
-  top: -8px;
+.personlist li i[class=icon-circle] {
+  font-size: 9px;
+  color: #d0cfcf;
+  margin-right: 6px;
+  margin-left: -16px;
 }
-.tooltipster-arrow-top span,
-.tooltipster-arrow-top .tooltipster-arrow-border,
-.tooltipster-arrow-bottom span,
-.tooltipster-arrow-bottom .tooltipster-arrow-border {
-  left: 0;
-  right: 0;
-  margin: 0 auto;
-}
-.tooltipster-arrow-top-left span,
-.tooltipster-arrow-bottom-left span {
-  left: 6px;
-}
-.tooltipster-arrow-top-left .tooltipster-arrow-border,
-.tooltipster-arrow-bottom-left .tooltipster-arrow-border {
-  left: 5px;
-}
-.tooltipster-arrow-top-right span,
-.tooltipster-arrow-bottom-right span {
-  right: 6px;
-}
-.tooltipster-arrow-top-right .tooltipster-arrow-border,
-.tooltipster-arrow-bottom-right .tooltipster-arrow-border {
-  right: 5px;
-}
-.tooltipster-arrow-left span,
-.tooltipster-arrow-left .tooltipster-arrow-border {
-  border-top: 8px solid transparent !important;
-  border-bottom: 8px solid transparent !important;
-  border-left: 8px solid;
-  top: 50%;
-  margin-top: -7px;
-  right: -8px;
-}
-.tooltipster-arrow-left .tooltipster-arrow-border {
-  border-top: 9px solid transparent !important;
-  border-bottom: 9px solid transparent !important;
-  border-left: 9px solid;
-  margin-top: -8px;
-}
-.tooltipster-arrow-right span,
-.tooltipster-arrow-right .tooltipster-arrow-border {
-  border-top: 8px solid transparent !important;
-  border-bottom: 8px solid transparent !important;
-  border-right: 8px solid;
-  top: 50%;
-  margin-top: -7px;
-  left: -8px;
-}
-.tooltipster-arrow-right .tooltipster-arrow-border {
-  border-top: 9px solid transparent !important;
-  border-bottom: 9px solid transparent !important;
-  border-right: 9px solid;
-  margin-top: -8px;
-}
-.tooltipster-fade {
+.personlist li .actions {
   opacity: 0;
-  -webkit-transition-property: opacity;
-  -moz-transition-property: opacity;
-  -o-transition-property: opacity;
-  -ms-transition-property: opacity;
-  transition-property: opacity;
+  -webkit-transition: opacity 0.5s ease-out;
+  -moz-transition: opacity 0.5s ease-out;
+  -o-transition: opacity 0.5s ease-out;
+  transition: opacity 0.5s ease-out;
 }
-.tooltipster-fade-show {
+.personlist li:hover .actions {
   opacity: 1;
 }
-.tooltipster-grow {
-  -webkit-transform: scale(0, 0);
-  -moz-transform: scale(0, 0);
-  -o-transform: scale(0, 0);
-  -ms-transform: scale(0, 0);
-  transform: scale(0, 0);
-  -webkit-transition-property: -webkit-transform;
-  -moz-transition-property: -moz-transform;
-  -o-transition-property: -o-transform;
-  -ms-transition-property: -ms-transform;
-  transition-property: transform;
-  -webkit-backface-visibility: hidden;
-}
-.tooltipster-grow-show {
-  -webkit-transform: scale(1, 1);
-  -moz-transform: scale(1, 1);
-  -o-transform: scale(1, 1);
-  -ms-transform: scale(1, 1);
-  transform: scale(1, 1);
-  -webkit-transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1);
-  -webkit-transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.15);
-  -moz-transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.15);
-  -ms-transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.15);
-  -o-transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.15);
-  transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.15);
-}
-.tooltipster-swing {
-  opacity: 0;
-  -webkit-transform: rotateZ(4deg);
-  -moz-transform: rotateZ(4deg);
-  -o-transform: rotateZ(4deg);
-  -ms-transform: rotateZ(4deg);
-  transform: rotateZ(4deg);
-  -webkit-transition-property: -webkit-transform, opacity;
-  -moz-transition-property: -moz-transform;
-  -o-transition-property: -o-transform;
-  -ms-transition-property: -ms-transform;
-  transition-property: transform;
-}
-.tooltipster-swing-show {
-  opacity: 1;
-  -webkit-transform: rotateZ(0deg);
-  -moz-transform: rotateZ(0deg);
-  -o-transform: rotateZ(0deg);
-  -ms-transform: rotateZ(0deg);
-  transform: rotateZ(0deg);
-  -webkit-transition-timing-function: cubic-bezier(0.23, 0.635, 0.495, 1);
-  -webkit-transition-timing-function: cubic-bezier(0.23, 0.635, 0.495, 2.4);
-  -moz-transition-timing-function: cubic-bezier(0.23, 0.635, 0.495, 2.4);
-  -ms-transition-timing-function: cubic-bezier(0.23, 0.635, 0.495, 2.4);
-  -o-transition-timing-function: cubic-bezier(0.23, 0.635, 0.495, 2.4);
-  transition-timing-function: cubic-bezier(0.23, 0.635, 0.495, 2.4);
-}
-.tooltipster-fall {
-  top: 0;
-  -webkit-transition-property: top;
-  -moz-transition-property: top;
-  -o-transition-property: top;
-  -ms-transition-property: top;
-  transition-property: top;
-  -webkit-transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1);
-  -webkit-transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.15);
-  -moz-transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.15);
-  -ms-transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.15);
-  -o-transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.15);
-  transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.15);
-}
-.tooltipster-fall.tooltipster-dying {
-  -webkit-transition-property: all;
-  -moz-transition-property: all;
-  -o-transition-property: all;
-  -ms-transition-property: all;
-  transition-property: all;
-  top: 0px !important;
-  opacity: 0;
-}
-.tooltipster-slide {
-  left: -40px;
-  -webkit-transition-property: left;
-  -moz-transition-property: left;
-  -o-transition-property: left;
-  -ms-transition-property: left;
-  transition-property: left;
-  -webkit-transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1);
-  -webkit-transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.15);
-  -moz-transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.15);
-  -ms-transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.15);
-  -o-transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.15);
-  transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.15);
-}
-.tooltipster-slide.tooltipster-dying {
-  -webkit-transition-property: all;
-  -moz-transition-property: all;
-  -o-transition-property: all;
-  -ms-transition-property: all;
-  transition-property: all;
-  left: 0px !important;
-  opacity: 0;
-}
-.tooltipster-content-changing {
-  opacity: 0.5;
-  -webkit-transform: scale(1.1, 1.1);
-  -moz-transform: scale(1.1, 1.1);
-  -o-transform: scale(1.1, 1.1);
-  -ms-transform: scale(1.1, 1.1);
-  transform: scale(1.1, 1.1);
-}
-.tooltipster-content header img,
-.tooltipster-content header div {
-  float: left;
-}
-.tooltipster-content header div {
-  margin: 4px 0 0 8px;
-  font-weight: 600;
-}
-.tooltipster-content header small {
-  display: block;
-  font-weight: normal;
-  font-family: 300;
-}
-.tooltipster-content header:after {
-  content: ".";
-  display: block;
-  height: 0;
-  clear: both;
-  visibility: hidden;
-}
-.tooltipster-content header {
-  background-color: #d9e1e8;
-  margin: -8px -10px 8px -10px;
-  padding: 8px 10px;
-  border-radius: 4px;
-  color: #d4d4d4;
-}
-.tooltipster-content strong {
-  font-weight: 600;
-  font-weight: normal;
+.personlist .popover {
+  width: 320px;
 }
 .page-list-as-blocks h3 {
   margin-top: 0;
@@ -8282,63 +8038,27 @@ div.tagsinput div {
   -moz-border-radius-bottomright: 4px;
   -webkit-border-bottom-right-radius: 4px;
   border-bottom-right-radius: 4px;
-  /*background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #ffffff), color-stop(100%, #e6e6e6));
-  background-image: -webkit-linear-gradient(bottom, #ffffff, #e6e6e6);
-  background-image: -moz-linear-gradient(bottom, #ffffff, #e6e6e6);
-  background-image: -o-linear-gradient(bottom, #ffffff, #e6e6e6);
-  background-image: linear-gradient(bottom, #ffffff, #e6e6e6);*/
-
 }
 .switch span.switch-primary,
 .switch span.switch-left {
   color: #ecf0f3;
   background: #779cb1;
-  /*background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #0088cc), color-stop(100%, #0055cc));
-    background-image: -webkit-linear-gradient(bottom, #0088cc, #0055cc);
-    background-image: -moz-linear-gradient(bottom, #0088cc, #0055cc);
-    background-image: -o-linear-gradient(bottom, #0088cc, #0055cc);
-    background-image: linear-gradient(bottom, #0088cc, #0055cc);*/
-
 }
 .switch span.switch-info {
   color: white;
   background: #5bc0de;
-  /*background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #5bc0de), color-stop(100%, #2f96b4));
-  background-image: -webkit-linear-gradient(bottom, #5bc0de, #2f96b4);
-  background-image: -moz-linear-gradient(bottom, #5bc0de, #2f96b4);
-  background-image: -o-linear-gradient(bottom, #5bc0de, #2f96b4);
-  background-image: linear-gradient(bottom, #5bc0de, #2f96b4);*/
-
 }
 .switch span.switch-success {
   color: white;
   background: #5cb85c;
-  /*background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #62c462), color-stop(100%, #51a351));
-  background-image: -webkit-linear-gradient(bottom, #62c462, #51a351);
-  background-image: -moz-linear-gradient(bottom, #62c462, #51a351);
-  background-image: -o-linear-gradient(bottom, #62c462, #51a351);
-  background-image: linear-gradient(bottom, #62c462, #51a351);*/
-
 }
 .switch span.switch-warning {
   color: white;
   background: #f0ad4e;
-  /*background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #dbb450), color-stop(100%, #f89406));
-  background-image: -webkit-linear-gradient(bottom, #dbb450, #f89406);
-  background-image: -moz-linear-gradient(bottom, #dbb450, #f89406);
-  background-image: -o-linear-gradient(bottom, #dbb450, #f89406);
-  background-image: linear-gradient(bottom, #dbb450, #f89406);*/
-
 }
 .switch span.switch-danger {
   color: white;
   background: #d9534f;
-  /*background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #ee5f5b), color-stop(100%, #bd362f));
-  background-image: -webkit-linear-gradient(bottom, #ee5f5b, #bd362f);
-  background-image: -moz-linear-gradient(bottom, #ee5f5b, #bd362f);
-  background-image: -o-linear-gradient(bottom, #ee5f5b, #bd362f);
-  background-image: linear-gradient(bottom, #ee5f5b, #bd362f);*/
-
 }
 .smartsearch {
   width: 290px;
@@ -9167,19 +8887,6 @@ span.cke_skin_kama {
 .table-hover tbody tr:hover th {
   cursor: pointer;
 }
-/*.grid-table th a:hover {
-    --text-decoration: none;
-}
-
-td[align=center] {
-    text-align: center;
-}
-
-.grid-table a.minimal i {
-    text-decoration: none;
-    color: @text-color;
-}
-*/
 .grid-filter {
   background-color: #d9e1e8;
   border-radius: 4px;
@@ -9263,6 +8970,9 @@ td[align=center] {
   font-size: 11px;
   margin-left: 10px;
   margin-top: 7px;
+}
+td.grid-col-actions {
+  text-align: right;
 }
 .grid-actions {
   text-align: right;
@@ -9521,8 +9231,6 @@ dl dd {
     2. Badge Bar
     3. Family Bar
     4. Page Tabs
-    5. Timeline
-    6. Misc Items
 
 */
 .persondetails-header {
@@ -9672,14 +9380,10 @@ dl dd {
 .pagetabs .nav {
   margin: 10px 0;
 }
-/*.bookmarkattributes ul // todo check if this is needed
+/*.persondetails small
 {
-    list-style-type: none;
-    margin-left: 0;
+    color: lighten(@text-color, 20%);
 }*/
-.persondetails small {
-  color: #ffffff;
-}
 /*
     Used to manage styles related to Rock's internal scrollbar
 
@@ -9768,6 +9472,54 @@ dl dd {
 .badge-info {
   background-color: #5bc0de;
 }
+/* add alternate popover title style that exists inside of the popover-content to use ajax updates */
+.popover-content header {
+  margin: -9px -14px 8px -14px;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 18px;
+  background-color: #f7f7f7;
+  border-bottom: 1px solid #ebebeb;
+  border-radius: 5px 5px 0 0;
+}
+.popover-content header:before,
+.popover-content header:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.popover-content header:after {
+  clear: both;
+}
+.popover-content header:before,
+.popover-content header:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.popover-content header:after {
+  clear: both;
+}
+.popover-content header img {
+  float: left;
+  margin-right: 6px;
+  width: 32px;
+}
+.popover-content header h3 {
+  float: left;
+  font-size: 18px;
+  margin-top: 2px;
+}
+.popover-content header h3 small {
+  display: block;
+}
 /* context help  */
 a.help {
   margin-left: 6px;
@@ -9775,6 +9527,12 @@ a.help {
   color: #bbbbbb;
 }
 /* extension of Bootstrap 3 panel */
+.panel {
+  /*.actions {
+        margin-top: 36px;
+        .clearfix();
+    }*/
+}
 .panel legend {
   border-color: #d9e1e8;
 }
@@ -9789,33 +9547,6 @@ a.help {
   background-color: #d9e1e8;
   color: #d4d4d4;
   border-color: #b9c8d5;
-}
-.panel .actions {
-  margin-top: 36px;
-}
-.panel .actions:before,
-.panel .actions:after {
-  content: " ";
-  /* 1 */
-
-  display: table;
-  /* 2 */
-
-}
-.panel .actions:after {
-  clear: both;
-}
-.panel .actions:before,
-.panel .actions:after {
-  content: " ";
-  /* 1 */
-
-  display: table;
-  /* 2 */
-
-}
-.panel .actions:after {
-  clear: both;
 }
 .panel-widget {
   border-color: #d9e1e8;

@@ -160,6 +160,7 @@ namespace Rock.Web.UI.Controls
             _headerPanel.Controls.Add( _titleH3 );
 
             _title = new LiteralControl();
+            _title.Text = string.Empty;
             _titleH3.Controls.Add( _title );
 
             _cancelLink = new HtmlAnchor();

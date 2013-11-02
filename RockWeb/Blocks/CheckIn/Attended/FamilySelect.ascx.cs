@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                     ProcessFamily();
                     lvFamily.DataSource = familyList;
-                    lvFamily.DataBind();                        
+                    lvFamily.DataBind();
                 }
                 else
                 {
@@ -67,8 +67,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     pnlSelectPerson.Visible = false;
                     pnlSelectVisitor.Visible = false;
                     actions.Visible = false;
-                    divNothingFound.Visible = true;
+                    divNothingFound.Visible = true;                    
                 }
+
+                rGridPersonResults.PageSize = 4;
             }            
         }
 
@@ -316,7 +318,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             ddlAbilitySearch.SelectedIndex = 0;
             rGridPersonResults.Visible = false;
             lbAddNewPerson.Visible = false;
-            pnlAddPerson.Visible = true;
             tbFirstNameSearch.Focus();
             mpeAddPerson.Show();
         }
@@ -365,8 +366,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 checkInFamily.SubCaption = string.Join( ",", checkInFamily.People.Select( p => p.Person.FirstName ) );
                 checkInFamily.Selected = true;
                 CurrentCheckInState.CheckIn.Families.Add( checkInFamily );
-                pnlAddPerson.Visible = false;
-
+                
                 ProcessFamily();
                 RefreshFamily();
             }
@@ -384,6 +384,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             rGridPersonResults.PageIndex = 0;
             BindPersonGrid();
             rGridPersonResults.Visible = true;
+            rGridPersonResults.PageSize = 4;
             dpDOBSearch.SelectedDate = storeDOB;
             mpeAddPerson.Show();
         }
@@ -400,7 +401,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             ViewState["newFamily"] = newFamilyList;
             lvAddFamily.DataSource = newFamilyList;
             lvAddFamily.DataBind();
-            pnlAddFamily.Visible = true;
             mpeAddFamily.Show();
         }
 
@@ -452,7 +452,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             CurrentCheckInState.CheckIn.Families.Clear();
             CurrentCheckInState.CheckIn.Families.Add( checkInFamily );
-            pnlAddFamily.Visible = false;
 
             ProcessFamily();
             RefreshFamily();

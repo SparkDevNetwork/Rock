@@ -466,7 +466,8 @@ namespace Rock.Web.UI.Controls
     defaultText: '{3}',
     restParams: $('#{4}').val(),
     expandedIds: [{5}]
-}});";
+}});
+";
             string treeViewScript = string.Format( treeViewScriptFormat, this.ID, this.ResolveUrl( ItemRestUrl ), this.AllowMultiSelect.ToString().ToLower(), this.DefaultText, _hfItemRestUrlExtraParams.ClientID, this.InitialItemParentIds );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "item_picker-treeviewscript_" + this.ID, treeViewScript, true );
         }
