@@ -8,7 +8,8 @@
         <asp:Panel ID="pnlDetails" runat="server">
 
             <div class="banner">
-                <h1><asp:Literal ID="lCheckinAreasTitle" runat="server" Text="Check-in Areas" /></h1>
+                <h1>
+                    <asp:Literal ID="lCheckinAreasTitle" runat="server" Text="Check-in Areas" /></h1>
             </div>
 
             <asp:HiddenField ID="hfParentGroupTypeId" runat="server" />
@@ -74,7 +75,8 @@
                     update: function (event, ui) {
                         {
                             $('#' + '<%=btnSave.ClientID %>').addClass('disabled');
-                            __doPostBack('<%=upDetail.ClientID %>', 're-order-grouptype:' + ui.item.attr('data-key') + ';' + ui.item.index());
+                            var newGroupTypeIndex = $(ui.item).prevAll('.checkin-grouptype').length;
+                            __doPostBack('<%=upDetail.ClientID %>', 're-order-grouptype:' + ui.item.attr('data-key') + ';' + newGroupTypeIndex);
                         }
                     }
                 });
@@ -94,7 +96,8 @@
                     update: function (event, ui) {
                         {
                             $('#' + '<%=btnSave.ClientID %>').addClass('disabled');
-                            __doPostBack('<%=upDetail.ClientID %>', 're-order-group:' + ui.item.attr('data-key') + ';' + ui.item.index());
+                            var newGroupIndex = $(ui.item).prevAll('.checkin-group').length;
+                            __doPostBack('<%=upDetail.ClientID %>', 're-order-group:' + ui.item.attr('data-key') + ';' + newGroupIndex);
                         }
                     }
                 });
