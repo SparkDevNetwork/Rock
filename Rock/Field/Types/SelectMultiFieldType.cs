@@ -45,7 +45,8 @@ namespace Rock.Field.Types
             tb.Rows = 3;
             tb.AutoPostBack = true;
             tb.TextChanged += OnQualifierUpdated;
-
+            tb.Label = "Values";
+            tb.Help = "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1:text1,value2:text2,value3:text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.";
             return controls;
         }
 

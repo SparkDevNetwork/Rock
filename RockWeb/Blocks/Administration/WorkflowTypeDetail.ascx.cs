@@ -12,6 +12,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -623,13 +624,13 @@ namespace RockWeb.Blocks.Administration
         protected void gWorkflowTypeAttributes_ShowEdit( Guid attributeGuid )
         {
             pnlDetails.Visible = false;
-            vsDetails.Enabled = false;
             pnlWorkflowTypeAttributes.Visible = true;
 
             Attribute attribute;
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
+                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtWorkflowTypeAttributes.ActionTitle = ActionTitle.Add( "attribute for workflow type " + tbName.Text );
             }
             else
@@ -639,7 +640,7 @@ namespace RockWeb.Blocks.Administration
                 edtWorkflowTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for workflow type " + tbName.Text );
             }
 
-            edtWorkflowTypeAttributes.SetAttributeProperties( attribute );
+            edtWorkflowTypeAttributes.SetAttributeProperties( attribute, typeof( Workflow ) );
         }
 
         /// <summary>
@@ -690,39 +691,76 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSaveWorkflowTypeAttribute_Click( object sender, EventArgs e )
         {
-            Attribute attribute = null;
-            AttributeService attributeService = new AttributeService();
-            if ( edtWorkflowTypeAttributes.AttributeId.HasValue )
-            {
-                attribute = attributeService.Get( edtWorkflowTypeAttributes.AttributeId.Value );
-            }
-
-            if (attribute == null)
-            {
-                attribute = new Attribute();
-            }
-
-            edtWorkflowTypeAttributes.GetAttributeProperties( attribute );
+            var newAttribute = new Attribute();
+            edtWorkflowTypeAttributes.GetAttributeProperties( newAttribute );
 
             // Controls will show warnings
-            if ( !attribute.IsValid )
+            if ( !newAttribute.IsValid )
             {
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
+            using ( new UnitOfWorkScope() )
             {
-                if ( attribute.Id.Equals( 0 ) )
+                AttributeService attributeService = new AttributeService();
+                AttributeQualifierService qualifierService = new AttributeQualifierService();
+                CategoryService categoryService = new CategoryService();
+
+                RockTransactionScope.WrapTransaction( () =>
                 {
+                    Attribute attribute = null;
+
+                    if ( newAttribute.Id > 0 )
+                    {
+                        // remove old the old qualifiers for this attribute in case they changed
+                        foreach ( var oldQualifier in qualifierService.GetByAttributeId( newAttribute.Id ).ToList() )
+                        {
+                            qualifierService.Delete( oldQualifier, CurrentPersonId );
+                            qualifierService.Save( oldQualifier, CurrentPersonId );
+                        }
+
+                        // Find the existing attribute if it already existed
+                        attribute = attributeService.Get( newAttribute.Id );
+                    }
+
+                    if ( attribute == null )
+                    {
+                        // If it didn't exist, create it
+                        attribute = new Attribute();
+                        attributeService.Add( attribute, CurrentPersonId );
+                    }
+                    else
+                    {
+                        // If it did exist, set the UI's attribute ID and GUID since we're copying all properties in the next step
+                        newAttribute.Id = attribute.Id;
+                        newAttribute.Guid = attribute.Guid;
+                    }
+
+                    // Copy all the properties from the UI's attribute to the attribute model
+                    attribute.CopyPropertiesFrom( newAttribute );
+
+                    // Add any qualifiers
+                    foreach ( var qualifier in newAttribute.AttributeQualifiers )
+                    {
+                        attribute.AttributeQualifiers.Add( new AttributeQualifier { Key = qualifier.Key, Value = qualifier.Value, IsSystem = qualifier.IsSystem } );
+                    }
+
+                    // Add any categories
+                    attribute.Categories.Clear();
+                    foreach ( var category in newAttribute.Categories )
+                    {
+                        attribute.Categories.Add( categoryService.Get( category.Id ) );
+                    }
+
+                    // Set the entity qualifer
                     attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( Workflow ) ).Id;
                     attribute.EntityTypeQualifierColumn = "WorkflowTypeId";
                     attribute.EntityTypeQualifierValue = hfWorkflowTypeId.Value;
-                    attributeService.Add( attribute, CurrentPersonId );
-                }
+                    attributeService.Save( attribute, CurrentPersonId );
 
-                Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
-                attributeService.Save( attribute, CurrentPersonId );
-            } );
+                    Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+                } );
+            }
 
             pnlDetails.Visible = true;
             pnlWorkflowTypeAttributes.Visible = false;

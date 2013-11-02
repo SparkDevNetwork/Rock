@@ -137,10 +137,21 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            if ( !Page.IsPostBack && _canConfigure )
+            if ( !Page.IsPostBack )
             {
-                BindGrid();
+                if ( _canConfigure )
+                {
+                    BindGrid();
+                }
             }
+            else
+            {
+                if ( !string.IsNullOrWhiteSpace( hfIdValues.Value ) )
+                {
+                    modalDetails.Show();
+                }
+            }
+
 
             base.OnLoad( e );
         }
@@ -506,7 +517,6 @@ namespace RockWeb.Blocks.Administration
                 }
 
                 hfIdValues.Value = string.Empty;
-
                 modalDetails.Hide();
             }
 
@@ -598,13 +608,12 @@ namespace RockWeb.Blocks.Administration
         {
             var attributeModel = new AttributeService().Get( attributeId );
 
-            edtAttribute.AttributeEntityTypeId = _entityTypeId;
-
             if ( attributeModel == null )
             {
                 lAttributeTitle.Text = ("Add Attribute").FormatAsHtmlTitle();
 
                 attributeModel = new Rock.Model.Attribute();
+                attributeModel.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
 
                 if ( !_configuredType )
                 {
@@ -669,8 +678,9 @@ namespace RockWeb.Blocks.Administration
                 var attributeValue = new AttributeValueService().GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
                 attribute.AddControl( fsEditControl.Controls, attributeValue != null ? attributeValue.Value : null, string.Empty, setValues, true );
 
-                hfIdValues.Value = attribute.Id.ToString();
+                SetValidationGroup( fsEditControl.Controls, modalDetails.ValidationGroup );
 
+                hfIdValues.Value = attribute.Id.ToString();
                 modalDetails.Show();
             }
         }

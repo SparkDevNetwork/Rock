@@ -65,7 +65,7 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlDefinedTypeAttributes" runat="server" Visible="false">
-            <Rock:AttributeEditor ID="edtDefinedTypeAttributes" runat="server" OnSaveClick="btnSaveDefinedTypeAttribute_Click" OnCancelClick="btnCancelDefinedTypeAttribute_Click" />
+            <Rock:AttributeEditor ID="edtDefinedTypeAttributes" runat="server" OnSaveClick="btnSaveDefinedTypeAttribute_Click" OnCancelClick="btnCancelDefinedTypeAttribute_Click" ValidationGroup="Attribute" />
         </asp:Panel>
         
     </ContentTemplate>

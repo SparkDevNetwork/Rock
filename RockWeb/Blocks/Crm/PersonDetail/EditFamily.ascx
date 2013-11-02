@@ -141,25 +141,25 @@
 
         <Rock:ConfirmPageUnload ID="confirmExit" runat="server" ConfirmationMessage="Changes have been made to this family that have not yet been saved." Enabled="false" />
 
-        <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Person" Content-Height="380" ValidationGroup="modalAddPersonValidationGroup">
+        <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Person" Content-Height="380" ValidationGroup="AddPerson" >
             <Content>
 
-                <asp:HiddenField ID="hfActiveTab" runat="server" Value="Existing" />
+                <asp:HiddenField ID="hfActiveTab" runat="server" />
 
                 <ul class="nav nav-pills">
                     <li id="liExistingPerson" runat="server" class="active"><a href='#<%=divExistingPerson.ClientID%>' data-toggle="pill">Add Existing Person</a></li>
                     <li id="liNewPerson" runat="server"><a href='#<%=divNewPerson.ClientID%>' data-toggle="pill">Add New Person</a></li>
                 </ul>
 
-                <asp:ValidationSummary ID="valSummaryAddPerson" runat="server" ValidationGroup="modalAddPersonValidationGroup"
+                <asp:ValidationSummary ID="valSummaryAddPerson" runat="server" ValidationGroup="AddPerson"
                     HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
 
                 <div class="tab-content">
 
                     <div id="divExistingPerson" runat="server" class="tab-pane active">
                         <fieldset>
-                            <Rock:PersonPicker2 ID="ppExistingPerson" runat="server" />
-                            <Rock:RockCheckBox ID="cbRemoveOtherFamilies" runat="server" Checked="true" Text="Remove person from other families" />
+                            <Rock:PersonPicker2 ID="ppExistingPerson" runat="server" ValidationGroup="AddPerson"/>
+                            <Rock:RockCheckBox ID="cbRemoveOtherFamilies" runat="server" Checked="true" Text="Remove person from other families" ValidationGroup="AddPerson"/>
                         </fieldset>
                     </div>
 
@@ -167,31 +167,31 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <fieldset>
-                                    <Rock:RockTextBox ID="tbNewPersonFirstName" runat="server" Label="First Name" ValidationGroup="modalAddPersonValidationGroup" />
+                                    <Rock:RockTextBox ID="tbNewPersonFirstName" runat="server" Label="First Name" ValidationGroup="AddPerson" />
                                 </fieldset>
                             </div>
                             <div class="col-md-4">
                                 <fieldset>
-                                    <Rock:RockTextBox ID="tbNewPersonLastName" runat="server" Label="Last Name" ValidationGroup="modalAddPersonValidationGroup" />
-                                </fieldset>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <fieldset>
-                                    <Rock:RockDropDownList ID="ddlNewPersonGender" runat="server" Label="Gender" />
-                                </fieldset>
-                            </div>
-                            <div class="col-md-4">
-                                <fieldset>
-                                    <Rock:DatePicker ID="dpNewPersonBirthDate" runat="server" Label="Birthdate" />
+                                    <Rock:RockTextBox ID="tbNewPersonLastName" runat="server" Label="Last Name" ValidationGroup="AddPerson" />
                                 </fieldset>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-4">
                                 <fieldset>
-                                    <Rock:RockRadioButtonList ID="rblNewPersonRole" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Role" />
+                                    <Rock:RockDropDownList ID="ddlNewPersonGender" runat="server" Label="Gender" ValidationGroup="AddPerson"/>
+                                </fieldset>
+                            </div>
+                            <div class="col-md-4">
+                                <fieldset>
+                                    <Rock:DatePicker ID="dpNewPersonBirthDate" runat="server" Label="Birthdate" ValidationGroup="AddPerson"/>
+                                </fieldset>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <fieldset>
+                                    <Rock:RockRadioButtonList ID="rblNewPersonRole" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Role" ValidationGroup="AddPerson"/>
                                 </fieldset>
                             </div>
                         </div>

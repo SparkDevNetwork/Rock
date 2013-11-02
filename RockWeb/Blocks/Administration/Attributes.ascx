@@ -63,14 +63,15 @@
                 <Rock:RockTextBox ID="tbAttrQualifierField" runat="server" Label="Qualifier Field" />
                 <Rock:RockTextBox ID="tbAttrQualifierValue" runat="server" Label="Qualifier Value" />
 
-                <Rock:AttributeEditor ID="edtAttribute" runat="server" OnSaveClick="btnSave_Click" OnCancelClick="btnCancel_Click" />
+                <Rock:AttributeEditor ID="edtAttribute" runat="server" OnSaveClick="btnSave_Click" OnCancelClick="btnCancel_Click" ValidationGroup="Attribute" />
+
             </div>
         </asp:Panel>
 
-        <Rock:ModalDialog ID="modalDetails" runat="server" Title="Attribute">
+        <Rock:ModalDialog ID="modalDetails" runat="server" Title="Attribute" ValidationGroup="AttributeValue" >
             <Content>
                 <asp:HiddenField ID="hfIdValues" runat="server" />
-                <asp:ValidationSummary ID="ValidationSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+                <asp:ValidationSummary ID="ValidationSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" ValidationGroup="AttributeValue"  />
                 <fieldset id="fsEditControl" runat="server"/>
             </Content>
         </Rock:ModalDialog>

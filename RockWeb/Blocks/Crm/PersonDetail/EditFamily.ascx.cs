@@ -120,6 +120,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             modalAddPerson.SaveButtonText = "Ok";
             modalAddPerson.SaveClick += modalAddPerson_SaveClick;
+            modalAddPerson.OnCancelScript = string.Format( "$('#{0}').val('');", hfActiveTab.ClientID );
 
             gLocations.DataKeyNames = new string[] { "id" };
             gLocations.RowDataBound += gLocations_RowDataBound;
@@ -173,7 +174,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 if ( _family != null )
                 {
-
                     tbFamilyName.Text = _family.Name;
                     cpCampus.SelectedCampusId = _family.CampusId;
 
@@ -190,7 +190,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         FamilyAddresses.Add( new FamilyAddress( groupLocation ) );
                     }
                     BindLocations();
+                }
 
+                if ( !string.IsNullOrWhiteSpace( hfActiveTab.Value ) )
+                {
+                    modalAddPerson.Show();
                 }
             }
         }
@@ -388,6 +392,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     familyMember.RoleGuid = role.Guid;
                     familyMember.RoleName = role.Name;
                 }
+
                 FamilyMembers.Add( familyMember );
             }
 
@@ -395,6 +400,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             tbNewPersonLastName.Required = false;
 
             confirmExit.Enabled = true;
+
+            hfActiveTab.Value = string.Empty;
 
             BindMembers();
         }

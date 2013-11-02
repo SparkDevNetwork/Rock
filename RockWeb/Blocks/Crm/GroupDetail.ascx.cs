@@ -8,12 +8,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -88,6 +90,8 @@ namespace RockWeb.Blocks.Crm
             gGroupMemberAttributes.GridRebind += gGroupMemberAttributes_GridRebind;
             gGroupMemberAttributes.GridReorder += gGroupMemberAttributes_GridReorder;
 
+            dlgGroupMemberAttribute.OnCancelScript = string.Format( "$('#{0}').val('');", hfAttributeId.ClientID );
+
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", Group.FriendlyTypeName );
         }
 
@@ -122,7 +126,10 @@ namespace RockWeb.Blocks.Crm
             }
             else
             {
-                ShowDialog();
+                if ( !string.IsNullOrWhiteSpace( hfAttributeId.Value ) )
+                {
+                    dlgGroupMemberAttribute.Show();
+                }
             }
 
             if ( pnlDetails.Visible )
@@ -791,34 +798,6 @@ namespace RockWeb.Blocks.Crm
                         .Count();
         }
 
-        private void ShowDialog( string dialog )
-        {
-            hfActiveDialog.Value = dialog.ToUpper().Trim();
-            ShowDialog();
-        }
-
-        private void ShowDialog()
-        {
-            switch ( hfActiveDialog.Value )
-            {
-                case "GROUPMEMBERATTRIBUTES":
-                    dlgGroupMemberAttribute.Show();
-                    break;
-            }
-        }
-
-        private void HideDialog()
-        {
-            switch ( hfActiveDialog.Value )
-            {
-                case "GROUPMEMBERATTRIBUTES":
-                    dlgGroupMemberAttribute.Hide();
-                    break;
-            }
-
-            hfActiveDialog.Value = string.Empty;
-        }
-
         private void BindInheritedAttributes( int? inheritedGroupTypeId, GroupTypeService groupTypeService, AttributeService attributeService )
         {
             GroupMemberAttributesInheritedState = new List<InheritedAttribute>();
@@ -909,6 +888,7 @@ namespace RockWeb.Blocks.Crm
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
+                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtGroupMemberAttributes.ActionTitle = ActionTitle.Add( "attribute for group members of " + tbName.Text );
             }
             else
@@ -919,7 +899,8 @@ namespace RockWeb.Blocks.Crm
 
             edtGroupMemberAttributes.SetAttributeProperties( attribute, typeof( GroupMember ) );
 
-            ShowDialog( "GroupMemberAttributes" );
+            hfAttributeId.Value = attribute.Id.ToString();
+            dlgGroupMemberAttribute.Show();
         }
 
         /// <summary>
@@ -987,7 +968,9 @@ namespace RockWeb.Blocks.Crm
             GroupMemberAttributesState.Add( attribute );
 
             BindGroupMemberAttributesGrid();
-            HideDialog();
+
+            hfAttributeId.Value = string.Empty;
+            dlgGroupMemberAttribute.Hide();
         }
 
         /// <summary>
