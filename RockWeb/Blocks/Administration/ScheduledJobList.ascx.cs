@@ -89,7 +89,7 @@ namespace RockWeb.Blocks.Administration
         {
             RockTransactionScope.WrapTransaction( () =>
             {
-                ServiceJobService jobService = new ServiceJobService();
+                var jobService = new ServiceJobService();
                 ServiceJob job = jobService.Get( (int)e.RowKeyValue );
 
                 string errorMessage;
@@ -125,16 +125,16 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindGrid()
         {
-            ServiceJobService jobService = new ServiceJobService();
+            var jobService = new ServiceJobService();
             SortProperty sortProperty = gScheduledJobs.SortProperty;
 
             if ( sortProperty != null )
             {
-                gScheduledJobs.DataSource = jobService.GetActiveJobs().Sort( sortProperty ).ToList();
+                gScheduledJobs.DataSource = jobService.GetAllJobs().Sort( sortProperty ).ToList();
             }
             else
             {
-                gScheduledJobs.DataSource = jobService.GetActiveJobs().OrderByDescending(a => a.LastRunDateTime).ToList();
+                gScheduledJobs.DataSource = jobService.GetAllJobs().OrderByDescending( a => a.LastRunDateTime ).ToList();
             }
             
             gScheduledJobs.DataBind();
