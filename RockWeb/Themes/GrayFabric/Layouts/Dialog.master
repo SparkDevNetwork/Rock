@@ -100,7 +100,7 @@
                 </div>
 
                 <div id="footerPanel" class="modal-footer">
-                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" OnClientClick="window.parent.Rock.controls.modal.close();" CausesValidation="false" />
+                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClientClick="window.parent.Rock.controls.modal.close();" CausesValidation="false" />
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click " />
                 </div>
             </ContentTemplate>
