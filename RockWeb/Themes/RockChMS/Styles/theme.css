@@ -9043,6 +9043,7 @@ td.grid-col-actions {
 }
 .rock-modal .modal-header h3 {
   float: left;
+  margin-right: 12px;
 }
 .rock-modal .modal-header .close {
   margin: 0;
@@ -9052,6 +9053,11 @@ td.grid-col-actions {
 }
 .rock-modal .modal-header .label {
   margin-top: 8px;
+}
+.rock-modal .modal-header small {
+  margin-top: 12px;
+  display: block;
+  color: #6e6e6e;
 }
 .rock-modal .modal-body .nav-pills {
   margin: 6px 0 18px;
