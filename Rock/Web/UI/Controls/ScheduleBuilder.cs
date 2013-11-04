@@ -230,6 +230,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the text displayed when the mouse pointer hovers over the Web server control.
+        /// </summary>
+        /// <returns>The text displayed when the mouse pointer hovers over the Web server control. The default is <see cref="F:System.String.Empty" />.</returns>
+        public override string ToolTip
+        {
+            get
+            {
+                EnsureChildControls();
+                return _btnShowPopup.ToolTip;
+            }
+            set
+            {
+                EnsureChildControls();
+                _btnShowPopup.ToolTip = value;
+            }
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
