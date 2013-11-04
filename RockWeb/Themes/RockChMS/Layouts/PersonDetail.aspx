@@ -11,8 +11,8 @@
             <div class="container">
 			    <div class="navbar-header">
                     
-                    <asp:HyperLink ID="HyperLink1" runat="server" CssClass="navbar-brand" NavigateUrl="~" ToolTip="Rock ChMS">
-                        <asp:Image ID="Image1" runat="server" AlternateText="Rock ChMS" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="brandbar-logo" />
+                    <asp:HyperLink ID="hlHome" runat="server" CssClass="navbar-brand" NavigateUrl="~" ToolTip="Rock ChMS">
+                        <asp:Image ID="imgLogo" runat="server" AlternateText="Rock ChMS" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="brandbar-logo" />
                     </asp:HyperLink>
                     
                     <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".pageheader-collapse">
@@ -24,7 +24,7 @@
 			    </div>	
                 <div class="navbar-collapse collapse pageheader-collapse">   
                     <div class="navbar-right navbar-text">
-                        <Rock:Zone ID="Heading" Name="Header" runat="server" />
+                        <Rock:Zone ID="Header" Name="Header" runat="server" />
                     </div>
                     <div class="navbar-right navbar-text">				
 					    <Rock:SearchField ID="searchField" runat="server" />
@@ -36,7 +36,7 @@
         <!-- Main Navigation -->
 	    <nav class="navbar navbar-static-top pagenav">
             <div class="container">
-                <Rock:Zone ID="Menu" runat="server" />
+                <Rock:Zone ID="Navigation" runat="server" />
             </div>									
 	    </nav>
 
@@ -44,7 +44,7 @@
 
         <div class="navbar navbar-static-top persondetails-header">
             <div class="container">
-                <Rock:Zone ID="HeaderZone" runat="server" />
+                <Rock:Zone ID="IndividualDetail" runat="server" />
             </div>
         </div>
 
@@ -52,13 +52,13 @@
             <div class="container">
                 <div class="row">
                     <div class="badge-group col-md-3">
-                        <Rock:Zone ID="BadgBarZone1" runat="server" />
+                        <Rock:Zone ID="BadgBarLeft" runat="server" />
                     </div>
                     <div class="badge-group col-md-3">
-                        <Rock:Zone ID="BadgBarZone2" runat="server" />
+                        <Rock:Zone ID="BadgBarMiddle" runat="server" />
                     </div>
                     <div class="badge-group col-md-6">
-                        <Rock:Zone ID="BadgBarZone3" runat="server" />
+                        <Rock:Zone ID="BadgBarRight" runat="server" />
                     </div>
                 </div>
             </div>
@@ -66,14 +66,14 @@
 
         <div class="navbar navbar-static-top persondetails-familybar">
 			<div class="container">    
-                <Rock:Zone ID="FamilyZone" runat="server" />
+                <Rock:Zone ID="FamilyDetail" runat="server" />
             </div>
         </div>
 
 		<div class="container pagetabs">
             <div class="row">
                 <div class="col-md-12">
-                    <Rock:Zone ID="TabsZone" runat="server" />
+                    <Rock:Zone ID="SubNavigation" runat="server" />
                 </div>
             </div> 
 		</div>
@@ -81,10 +81,10 @@
         <div class="container person-content">
             <div class="row">
                 <div class="col-md-8">
-                    <Rock:Zone ID="ContentZoneLeft" runat="server" />
+                    <Rock:Zone ID="Main" runat="server" />
                 </div>
                 <div class="col-md-4">
-                    <Rock:Zone ID="ContentZoneRight" runat="server" />
+                    <Rock:Zone ID="Sidebar1" runat="server" />
                 </div>
             </div>
         </div>
