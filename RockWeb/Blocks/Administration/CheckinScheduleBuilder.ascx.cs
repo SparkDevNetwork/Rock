@@ -93,13 +93,13 @@ namespace RockWeb.Blocks.Administration
             {
                 string dataFieldName = string.Format( "scheduleField_{0}", item.Id );
 
-                CheckBoxEditableField field = new CheckBoxEditableField { HeaderText = item.ToString(), DataField = dataFieldName };
+                CheckBoxEditableField field = new CheckBoxEditableField { HeaderText = item.Name, DataField = dataFieldName };
                 gGroupLocationSchedule.Columns.Add( field );
             }
 
             if ( !scheduleList.Any() )
             {
-                nbNotification.Text = nbNotification.Text = String.Format("<p><strong>Warning</strong></p>No schedules found. Consider <a class='alert-link' href='{0}'>adding a schedule</a> or a different schedule category.", ResolveUrl("~/Schedules"));
+                nbNotification.Text = nbNotification.Text = String.Format( "<p><strong>Warning</strong></p>No schedules found. Consider <a class='alert-link' href='{0}'>adding a schedule</a> or a different schedule category.", ResolveUrl( "~/Schedules" ) );
                 nbNotification.Visible = true;
             }
             else
@@ -145,7 +145,7 @@ namespace RockWeb.Blocks.Administration
             var filterCategory = new CategoryService().Get( rFilter.GetUserPreference( "Category" ).AsInteger() ?? 0 );
             pCategory.SetValue( filterCategory );
 
-            pkrParentLocation.SetValue(rFilter.GetUserPreference( "Parent Location" ).AsInteger(false));
+            pkrParentLocation.SetValue( rFilter.GetUserPreference( "Parent Location" ).AsInteger( false ) );
         }
 
         #endregion
@@ -160,7 +160,7 @@ namespace RockWeb.Blocks.Administration
         private void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             rFilter.SaveUserPreference( "Group Type", ddlGroupType.SelectedValueAsId().ToString() );
-            
+
             rFilter.SaveUserPreference( "Parent Location", pkrParentLocation.SelectedValueAsId().ToString() );
 
             BindGrid();
@@ -238,7 +238,7 @@ namespace RockWeb.Blocks.Administration
         protected void BindGrid()
         {
             AddScheduleColumns();
-            
+
             var groupLocationService = new GroupLocationService();
 
             var groupLocationQry = groupLocationService.Queryable();
@@ -394,5 +394,34 @@ namespace RockWeb.Blocks.Administration
             rFilter.SaveUserPreference( "Category", pCategory.SelectedValueAsId().ToString() );
             BindGrid();
         }
-}
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gGroupLocationSchedule control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gGroupLocationSchedule_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            // add tooltip to header columns
+            if ( e.Row.RowType == DataControlRowType.Header )
+            {
+                var scheduleService = new ScheduleService();
+
+                foreach ( var cell in e.Row.Cells.OfType<DataControlFieldCell>() )
+                {
+                    if ( cell.ContainingField is CheckBoxEditableField )
+                    {
+                        CheckBoxEditableField checkBoxEditableField = cell.ContainingField as CheckBoxEditableField;
+                        int scheduleId = int.Parse( checkBoxEditableField.DataField.Replace( "scheduleField_", string.Empty ) );
+
+                        var schedule = scheduleService.Get( scheduleId );
+                        if ( schedule != null )
+                        {
+                            cell.Attributes["title"] = schedule.ToString();
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
