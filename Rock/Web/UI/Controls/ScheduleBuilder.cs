@@ -191,6 +191,14 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
 
             RegisterJavaScript();
+
+            var sm = ScriptManager.GetCurrent( this.Page );
+            EnsureChildControls();
+
+            if ( sm != null )
+            {
+                sm.RegisterAsyncPostBackControl( _btnShowPopup );
+            }
         }
 
         /// <summary>
