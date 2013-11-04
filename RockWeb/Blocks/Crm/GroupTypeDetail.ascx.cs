@@ -1070,7 +1070,7 @@ namespace RockWeb.Blocks.Crm
             DefinedValueService definedValueService = new DefinedValueService();
 
             // populate dropdown with all locationtypes that aren't already locationtypes
-            var qry = from dlt in definedValueService.GetByDefinedTypeGuid( new Guid( Rock.SystemGuid.DefinedType.LOCATION_LOCATION_TYPE ) )
+            var qry = from dlt in definedValueService.GetByDefinedTypeGuid( new Guid( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE ) )
                       where !( from lt in LocationTypesDictionary.Keys
                                select lt ).Contains( dlt.Id )
                       select dlt;

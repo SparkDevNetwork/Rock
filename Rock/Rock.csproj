@@ -150,6 +150,7 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
+    <Compile Include="Attribute\GroupLocationTypeFieldAttribute.cs" />
     <Compile Include="Attribute\InheritedAttribute.cs" />
     <Compile Include="Attribute\TimeFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerRangeFieldAttribute.cs" />
@@ -178,6 +179,7 @@
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
     <Compile Include="Communication\Transport\Twilio.cs" />
+    <Compile Include="Field\Types\GroupLocationTypeFieldType.cs" />
     <Compile Include="Field\Types\TimeFieldType.cs" />
     <Compile Include="Field\Types\IntegerRangeFieldType.cs" />
     <Compile Include="Field\Types\DateRangeFieldType.cs" />
@@ -304,6 +306,10 @@
     <Compile Include="Migrations\201310291850368_StatementGenGroupTypeRoleFix.cs" />
     <Compile Include="Migrations\201310291850368_StatementGenGroupTypeRoleFix.Designer.cs">
       <DependentUpon>201310291850368_StatementGenGroupTypeRoleFix.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201311042002460_RenameLocationFields.cs" />
+    <Compile Include="Migrations\201311042002460_RenameLocationFields.Designer.cs">
+      <DependentUpon>201311042002460_RenameLocationFields.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
@@ -1209,6 +1215,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201310291850368_StatementGenGroupTypeRoleFix.resx">
       <DependentUpon>201310291850368_StatementGenGroupTypeRoleFix.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201311042002460_RenameLocationFields.resx">
+      <DependentUpon>201311042002460_RenameLocationFields.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

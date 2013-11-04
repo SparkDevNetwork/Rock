@@ -114,12 +114,6 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<Location>().Queryable().Any( a => a.LocationTypeValueId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Location.FriendlyTypeName );
-                return false;
-            }  
- 
             if ( new Service<Metric>().Queryable().Any( a => a.CollectionFrequencyValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Metric.FriendlyTypeName );
