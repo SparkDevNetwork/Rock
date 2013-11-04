@@ -68,9 +68,8 @@
                 
 
                 <div class="row">
-                    <div class="col-md-6">
-                        <asp:Literal ID="lblMainDetails" runat="server" />
-                    </div>
+                    <asp:Literal ID="lblMainDetails" runat="server" />
+
                     <div class="col-md-6">
                         <asp:Panel ID="pnlAttributeTypes" runat="server">
                             <Rock:ModalAlert ID="mdGridWarningAttributes" runat="server" />
