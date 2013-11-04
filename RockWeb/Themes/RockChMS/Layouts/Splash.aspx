@@ -29,7 +29,7 @@
                 <asp:Image ID="Image1" runat="server" AlternateText="Rock ChMS" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="pageheader-logo" />
                 
                 <div id="content-box" class="clearfix">
-                    <Rock:Zone ID="Content" runat="server" />
+                    <Rock:Zone ID="Main" runat="server" />
                 </div>
             </div>
 
