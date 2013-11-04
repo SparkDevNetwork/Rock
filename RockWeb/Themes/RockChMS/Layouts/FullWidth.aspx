@@ -56,7 +56,7 @@
 
     </header>
 		
-	<main>
+	<main class="container">
         
         <!-- Start Content Area -->
             
@@ -103,10 +103,12 @@
 	</main>
 		
 	<footer class="page-footer">
-		<div class="row">
-			<div class="col-md-12">
-				<Rock:Zone ID="Footer" runat="server" />
-			</div>
+		<div class="container">
+            <div class="row">
+			    <div class="col-md-12">
+				    <Rock:Zone ID="Footer" runat="server" />
+			    </div>
+		    </div>
 		</div>
 	</footer>
         
