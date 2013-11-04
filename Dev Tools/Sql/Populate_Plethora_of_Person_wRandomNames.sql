@@ -18,7 +18,7 @@
 	@maxPerson int = 99999,
     @createGroups int = 1,
     @familyGroupType int = (SELECT id FROM GroupType WHERE guid = '790E3215-3B10-442B-AF69-616C0DCB998E'),
-    @adultRole int = (SELECT id FROM GroupRole WHERE guid = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42'),
+    @adultRole int = (SELECT id FROM GroupTypeRole WHERE guid = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42'),
     @groupId int,
     @locationId int,
     @locationTypeValueHome int = (select id from DefinedValue where guid = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC'),
