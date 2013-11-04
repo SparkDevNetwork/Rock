@@ -11,6 +11,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -122,6 +123,7 @@ namespace RockWeb.Blocks.Administration
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
+                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtAdTypeAttributes.ActionTitle = ActionTitle.Add( "attribute for ad type " + tbName.Text );
 
             }

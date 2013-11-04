@@ -69,7 +69,8 @@ namespace Rock.Field.Types
             ddl.DataSource = new Rock.Model.DefinedTypeService().Queryable().OrderBy( d => d.Order ).ToList();
             ddl.DataBind();
             ddl.Items.Insert(0, new ListItem(string.Empty, string.Empty));
-
+            ddl.Label = "Defined Type";
+            ddl.Help = "Optional Defined Type to select values from, otherwise values will be free-form text fields.";
             return controls;
         }
 

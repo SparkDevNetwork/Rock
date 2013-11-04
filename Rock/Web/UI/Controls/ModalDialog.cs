@@ -19,7 +19,7 @@ namespace Rock.Web.UI.Controls
     /// A Modal Popup Dialog Window
     /// </summary>
     [ToolboxData( "<{0}:ModalDialog runat=server></{0}:ModalDialog>" )]
-    public class ModalDialog : ModalPopupExtender, INamingContainer
+    public class ModalDialog : ModalPopupExtender, INamingContainer, IHasValidationGroup
     {
         private Button _dfltShowButton;
         private Panel _dialogPanel;
@@ -87,8 +87,11 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The validation group.
         /// </value>
-        public string ValidationGroup { get; set; }
-
+        public string ValidationGroup 
+        {
+            get { return ViewState["ValidationGroup"] as string ?? string.Empty; }
+            set { ViewState["ValidationGroup"] = value; }
+        }
 
         /// <summary>
         /// The content of the popup.
@@ -157,6 +160,7 @@ namespace Rock.Web.UI.Controls
             _headerPanel.Controls.Add( _titleH3 );
 
             _title = new LiteralControl();
+            _title.Text = string.Empty;
             _titleH3.Controls.Add( _title );
 
             _cancelLink = new HtmlAnchor();
@@ -169,14 +173,12 @@ namespace Rock.Web.UI.Controls
             _footerPanel.Controls.Add( _serverSaveLink );
             _serverSaveLink.ID = "serverSaveLink";
             _serverSaveLink.Attributes.Add( "class", "btn btn-primary" );
-            _serverSaveLink.ValidationGroup = this.ValidationGroup;
             _serverSaveLink.ServerClick += SaveLink_ServerClick;
 
             _saveLink = new HtmlAnchor();
             _footerPanel.Controls.Add( _saveLink );
             _saveLink.ID = "saveLink";
             _saveLink.Attributes.Add( "class", "btn btn-primary modaldialog-save-button" );
-            _saveLink.ValidationGroup = this.ValidationGroup;
 
             this.PopupControlID = _dialogPanel.ID;
             this.CancelControlID = _cancelLink.ID;
@@ -193,9 +195,11 @@ namespace Rock.Web.UI.Controls
 
             _serverSaveLink.Visible = SaveClick != null;
             _serverSaveLink.InnerText = SaveButtonText;
+            _serverSaveLink.ValidationGroup = this.ValidationGroup;
 
             _saveLink.Visible = SaveClick == null && !( string.IsNullOrWhiteSpace( OnOkScript ) );
             _saveLink.InnerText = SaveButtonText;
+            _saveLink.ValidationGroup = this.ValidationGroup;
 
             if ( !_serverSaveLink.Visible )
             {

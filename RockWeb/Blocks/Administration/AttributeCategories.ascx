@@ -5,7 +5,7 @@
         <asp:Panel ID="pnlList" runat="server">
 
             <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
-                <Rock:RockDropDownList ID="ddlEntityType" runat="server" Label="Entity Type" />
+                <Rock:EntityTypePicker ID="entityTypeFilter" runat="server" Required="false" Label="Entity Type" IncludeGlobalOption="true" />
             </Rock:GridFilter>
             <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" OnRowSelected="rGrid_Edit">
                 <Columns>
@@ -23,11 +23,12 @@
 
         </asp:Panel>
 
-        <Rock:ModalDialog ID="modalDetails" runat="server" Title="Category">
+        <Rock:ModalDialog ID="modalDetails" runat="server" Title="Category" ValidationGroup="EntityTypeName">
             <Content>
                 <asp:HiddenField ID="hfIdValue" runat="server" />
                 <fieldset>
-                    <Rock:RockTextBox ID="tbName" runat="server" Label="Name" />
+                    <Rock:RockTextBox ID="tbName" runat="server" Label="Name" Required="true" ValidationGroup="EntityTypeName" />
+                    <Rock:EntityTypePicker ID="entityTypePicker" runat="server" Required="true" Label="Entity Type" IncludeGlobalOption="true" />
                 </fieldset>
             </Content>
         </Rock:ModalDialog>

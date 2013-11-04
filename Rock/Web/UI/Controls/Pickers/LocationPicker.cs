@@ -145,6 +145,44 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the best picker mode for location.
+        /// </summary>
+        /// <param name="location">The location.</param>
+        /// <returns></returns>
+        public LocationPickerMode GetBestPickerModeForLocation( Location location )
+        {
+            if ( location != null )
+            {
+                if ( location.IsLocation )
+                {
+                    return LocationPickerMode.NamedLocation;
+                }
+                else
+                {
+                    if ( !string.IsNullOrWhiteSpace( location.GetFullStreetAddress().Replace( ",", string.Empty ) ) )
+                    {
+                        return LocationPickerMode.Address;
+                    }
+                    else
+                    {
+                        var geo = location.GeoPoint ?? location.GeoFence;
+                        if ( geo != null )
+                        {
+                            return LocationPickerMode.LatLong;
+                        }
+                        else
+                        {
+                            return LocationPickerMode.NamedLocation;
+                        }
+                    }
+                }
+            }
+
+            return LocationPickerMode.NamedLocation;
+        }
+
+
         #endregion
 
         #region Methods
@@ -164,6 +202,18 @@ namespace Rock.Web.UI.Controls
             _radAddress.Attributes["onclick"] = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "AddressMode" ) );
             _radLatLong.Attributes["onclick"] = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "LatLongMode" ) );
 
+            if ( Page.IsPostBack )
+            {
+                HandleModePostback();
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnPreRender( EventArgs e )
+        {
             _radNamedLocation.Checked = this.PickerMode == LocationPickerMode.NamedLocation;
             _radAddress.Checked = this.PickerMode == LocationPickerMode.Address;
             _radLatLong.Checked = this.PickerMode == LocationPickerMode.LatLong;
@@ -171,11 +221,9 @@ namespace Rock.Web.UI.Controls
             _locationAddressPicker.Visible = this.PickerMode == LocationPickerMode.Address;
             _locationGeoPicker.Visible = this.PickerMode == LocationPickerMode.LatLong;
             _pnlModeSelection.Visible = this.AllowModeSelection;
+            
 
-            if ( Page.IsPostBack )
-            {
-                HandleModePostback();
-            }
+            base.OnPreRender( e );
         }
 
         /// <summary>

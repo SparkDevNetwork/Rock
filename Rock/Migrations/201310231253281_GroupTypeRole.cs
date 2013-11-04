@@ -22,6 +22,26 @@ namespace Rock.Migrations
             AlterColumn( "dbo.GroupRole", "SortOrder", c => c.Int( nullable: false ) );
             RenameColumn( "dbo.GroupRole", "SortOrder", "Order" );
             RenameTable( "GroupRole", "GroupTypeRole" );
+
+            Sql( @"
+    DECLARE @EntityTypeId int
+    SET @EntityTypeId = (SELECT [Id] FROM EntityType WHERE [Name] = 'Rock.Model.GroupTypeRole')
+
+    DELETE Audit
+    WHERE [EntityTypeId] = @EntityTypeId
+
+    DELETE EntityType
+    WHERE [Id] = @EntityTypeId
+
+    UPDATE EntityType SET
+	    [Name] = 'Rock.Model.GroupTypeRole',
+	    [AssemblyName] = 'Rock.Model.GroupTypeRole, Rock, Version=0.0.1.0, Culture=neutral, PublicKeyToken=null',
+	    [FriendlyName] = 'Group Type Role',
+	    [IsEntity] = 1,
+	    [IsSecured] = 0
+    WHERE [Name] = 'Rock.Model.GroupRole'
+" );
+
         }
         
         /// <summary>
@@ -32,6 +52,25 @@ namespace Rock.Migrations
             AlterColumn( "dbo.GroupTypeRole", "Order", c => c.Int( nullable: true ) );
             RenameColumn( "dbo.GroupTypeRole", "Order", "SortOrder" );
             RenameTable( "GroupTypeRole", "GroupRole" );
+
+            Sql( @"
+    DECLARE @EntityTypeId int
+    SET @EntityTypeId = (SELECT [Id] FROM EntityType WHERE [Name] = 'Rock.Model.GroupRole')
+
+    DELETE Audit
+    WHERE [EntityTypeId] = @EntityTypeId
+
+    DELETE EntityType
+    WHERE [Id] = @EntityTypeId
+
+    UPDATE EntityType SET
+	    [Name] = 'Rock.Model.GroupRole',
+	    [AssemblyName] = 'Rock.Model.GroupRole, Rock, Version=0.0.1.0, Culture=neutral, PublicKeyToken=null',
+	    [FriendlyName] = 'Group Role',
+	    [IsEntity] = 1,
+	    [IsSecured] = 0
+    WHERE [Name] = 'Rock.Model.GroupTypeRole'
+" );
         }
     }
 }

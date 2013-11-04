@@ -301,6 +301,10 @@
     <Compile Include="Migrations\201310281702071_SMSFromValue.Designer.cs">
       <DependentUpon>201310281702071_SMSFromValue.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201310291850368_StatementGenGroupTypeRoleFix.cs" />
+    <Compile Include="Migrations\201310291850368_StatementGenGroupTypeRoleFix.Designer.cs">
+      <DependentUpon>201310291850368_StatementGenGroupTypeRoleFix.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -558,6 +562,8 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\IHasValidationGroup.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\EntityTypePicker.cs" />
     <Compile Include="Web\UI\Controls\RockControlWrapper.cs" />
     <Compile Include="Web\UI\Controls\HighlightLabel.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BirthdayPicker.cs" />
@@ -639,7 +645,7 @@
     <Compile Include="Web\UI\Controls\IRockControl.cs" />
     <Compile Include="Web\UI\BreadCrumb.cs" />
     <Compile Include="Web\UI\IDetailBlock.cs" />
-    <Compile Include="Web\UI\IDimmableBlock.cs" />
+    <Compile Include="Web\UI\ISecondaryBlock.cs" />
     <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
@@ -1200,6 +1206,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201310281702071_SMSFromValue.resx">
       <DependentUpon>201310281702071_SMSFromValue.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310291850368_StatementGenGroupTypeRoleFix.resx">
+      <DependentUpon>201310291850368_StatementGenGroupTypeRoleFix.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

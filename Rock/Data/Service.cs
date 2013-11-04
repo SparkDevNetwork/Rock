@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using Rock.Model;
 using Rock.Workflow;
 
@@ -464,41 +465,64 @@ namespace Rock.Data
         /// <returns></returns>
         private bool TriggerWorkflows( IEntity entity, WorkflowTriggerType triggerType, int? personId )
         {
+            Dictionary<string, PropertyInfo> properties = null;
+
             foreach ( var trigger in TriggerCache.Triggers( entity.TypeName, triggerType ) )
             {
-                if ( triggerType == WorkflowTriggerType.PreSave || triggerType == WorkflowTriggerType.PreDelete )
+                bool match = true;
+
+                if ( !string.IsNullOrWhiteSpace( trigger.EntityTypeQualifierColumn ) )
                 {
-                    var workflowTypeService = new WorkflowTypeService();
-                    var workflowType = workflowTypeService.Get( trigger.WorkflowTypeId );
-
-                    if ( workflowType != null )
+                    if ( properties == null )
                     {
-                        var workflow = Rock.Model.Workflow.Activate( workflowType, trigger.WorkflowName );
-
-                        List<string> workflowErrors;
-                        if ( !workflow.Process( entity, out workflowErrors ) )
+                        properties = new Dictionary<string,PropertyInfo>();
+                        foreach ( PropertyInfo propertyInfo in entity.GetType().GetProperties() )
                         {
-                            ErrorMessages.AddRange( workflowErrors );
-                            return false;
+                            properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
                         }
-                        else
+                    }
+
+                    match = ( properties.ContainsKey( trigger.EntityTypeQualifierColumn.ToLower() ) &&
+                        properties[trigger.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ).ToString()
+                            == trigger.EntityTypeQualifierValue );
+                }
+
+                if ( match )
+                {
+                    if ( triggerType == WorkflowTriggerType.PreSave || triggerType == WorkflowTriggerType.PreDelete )
+                    {
+                        var workflowTypeService = new WorkflowTypeService();
+                        var workflowType = workflowTypeService.Get( trigger.WorkflowTypeId );
+
+                        if ( workflowType != null )
                         {
-                            if ( workflowType.IsPersisted )
+                            var workflow = Rock.Model.Workflow.Activate( workflowType, trigger.WorkflowName );
+
+                            List<string> workflowErrors;
+                            if ( !workflow.Process( entity, out workflowErrors ) )
                             {
-                                var workflowService = new Rock.Model.WorkflowService();
-                                workflowService.Add( workflow, personId );
-                                workflowService.Save( workflow, personId );
+                                ErrorMessages.AddRange( workflowErrors );
+                                return false;
+                            }
+                            else
+                            {
+                                if ( workflowType.IsPersisted )
+                                {
+                                    var workflowService = new Rock.Model.WorkflowService();
+                                    workflowService.Add( workflow, personId );
+                                    workflowService.Save( workflow, personId );
+                                }
                             }
                         }
                     }
-                }
-                else
-                {
-                    var transaction = new Rock.Transactions.WorkflowTriggerTransaction();
-                    transaction.Trigger = trigger;
-                    transaction.Entity = entity.Clone();
-                    transaction.PersonId = personId;
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                    else
+                    {
+                        var transaction = new Rock.Transactions.WorkflowTriggerTransaction();
+                        transaction.Trigger = trigger;
+                        transaction.Entity = entity.Clone();
+                        transaction.PersonId = personId;
+                        Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                    }
                 }
             }
             return true;

@@ -104,6 +104,7 @@ namespace Rock.Web.UI.Controls
                 {
                     rockControl.RequiredFieldValidator.ErrorMessage = rockControl.Label + " is Required.";
                 }
+                rockControl.RequiredFieldValidator.ValidationGroup = rockControl.ValidationGroup;
                 rockControl.RequiredFieldValidator.RenderControl( writer );
             }
 

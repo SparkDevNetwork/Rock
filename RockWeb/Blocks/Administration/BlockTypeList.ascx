@@ -8,10 +8,9 @@
             <Rock:DataTextBox ID="tbPathFilter" runat="server" SourceTypeName="Rock.Model.BlockType, Rock" PropertyName="Path" Required="false" CausesValidation="false" Label="Path contains" />
             <Rock:RockCheckBox ID="cbExcludeSystem" runat="server" Label="Exclude 'System' types?" />
         </Rock:GridFilter>
-        <Rock:Grid ID="gBlockTypes" runat="server" AllowSorting="true" OnRowDataBound="gBlockTypes_RowDataBound" OnRowSelected="gBlockTypes_Edit">
+        <Rock:Grid ID="gBlockTypes" runat="server" AllowSorting="true" OnRowDataBound="gBlockTypes_RowDataBound" OnRowSelected="gBlockTypes_Edit" DescriptionField="Description">
             <Columns>
                 <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                <asp:BoundField HeaderText="Description" DataField="Description" SortExpression="Description" />
                 <asp:BoundField HeaderText="Path" DataField="Path" SortExpression="Path" />
                 <Rock:BadgeField HeaderText="Usage" DataField="BlocksCount" SortExpression="BlocksCount"
                     ImportantMin="0" ImportantMax="0" InfoMin="1" InfoMax="1" SuccessMin="2" />

@@ -12,11 +12,11 @@
 
         <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
-        <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" ValidationGroup="GroupRoleDetail" />
+        <asp:ValidationSummary ID="valGroupRoleDetail" runat="server" CssClass="alert alert-danger" ValidationGroup="GroupRoleDetail" />
 
         <div class="row">
             <div class="col-md-6">
-                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="Name" ValidationGroup="GroupRoleDetail" />
+                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.GroupTypeRole, Rock" PropertyName="Name" ValidationGroup="GroupRoleDetail" />
             </div>
             <div class="col-md-6">
             </div>
@@ -24,7 +24,7 @@
 
         <div class="row">
             <div class="col-md-12">
-                <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" ValidationGroup="GroupRoleDetail" />
+                <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.GroupTypeRole, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" ValidationGroup="GroupRoleDetail" />
             </div>
         </div>
 
@@ -42,7 +42,7 @@
 
         <div class="actions">
             <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" ValidationGroup="GroupRoleDetail" />
-            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
+            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
         </div>
 
     </ContentTemplate>

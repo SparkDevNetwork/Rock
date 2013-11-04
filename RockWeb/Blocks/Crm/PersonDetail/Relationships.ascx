@@ -37,13 +37,13 @@
                 </ul>
             </div>
 
-            <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Relationship" Content-Height="380">
+            <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Relationship" Content-Height="380" ValidationGroup="NewRelationship" >
                 <Content>
 
                     <div id="divExistingPerson" runat="server">
                         <fieldset>
-                            <Rock:GroupRolePicker ID="grpRole" runat="server" Label="Relationship Type"  />
-                            <Rock:PersonPicker2 ID="ppPerson" runat="server" />
+                            <Rock:GroupRolePicker ID="grpRole" runat="server" Label="Relationship Type" ValidationGroup="NewRelationship"  />
+                            <Rock:PersonPicker2 ID="ppPerson" runat="server" ValidationGroup="NewRelationship" />
                         </fieldset>
                     </div>
 

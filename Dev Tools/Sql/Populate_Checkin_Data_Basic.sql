@@ -179,48 +179,48 @@ DECLARE @JHGroupTypeId int
 DECLARE @HSGroupTypeId int
 
 -- Insert the new top level Check-in GroupType
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[GroupTypePurposeValueId])
-   VALUES (0, 'Weekly Service Check-in Area', 'FEDD389A-616F-4A53-906C-63D8255631C5', 0, 0, 0, 0, 0,0,0,0, @GroupTypePurposeCheckinTemplateId)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[GroupTypePurposeValueId],[GroupTerm],[GroupMemberTerm])
+   VALUES (0, 'Weekly Service Check-in Area', 'FEDD389A-616F-4A53-906C-63D8255631C5', 0, 0, 0, 0, 0,0,0,0, @GroupTypePurposeCheckinTemplateId, 'Group', 'Member')
 SET @ParentGroupTypeId = SCOPE_IDENTITY()
 
 -- Now insert the all the new GroupTypes under that one...
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[GroupTypePurposeValueId])
-   VALUES (0, 'Check in by Age', '0572A5FE-20A4-4BF1-95CD-C71DB5281392', 0, 0, 0, 0, 0,0,0,0,@GroupTypePurposeCheckinFilterId)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[GroupTypePurposeValueId],[GroupTerm],[GroupMemberTerm])
+   VALUES (0, 'Check in by Age', '0572A5FE-20A4-4BF1-95CD-C71DB5281392', 0, 0, 0, 0, 0,0,0,0,@GroupTypePurposeCheckinFilterId, 'Group', 'Member')
 SET @AgeGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @AgeGroupTypeId);
 
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId],[GroupTypePurposeValueId])
-   VALUES (0, 'Check in by AbilityLevel', '13A6139D-EEEC-412D-8572-773ECA1939CC', 0, 0, 0, 0, 0,0,0,0,@AgeGroupTypeId, @GroupTypePurposeCheckinFilterId)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId],[GroupTypePurposeValueId],[GroupTerm],[GroupMemberTerm])
+   VALUES (0, 'Check in by AbilityLevel', '13A6139D-EEEC-412D-8572-773ECA1939CC', 0, 0, 0, 0, 0,0,0,0,@AgeGroupTypeId, @GroupTypePurposeCheckinFilterId, 'Group', 'Member')
 SET @AbilityLevelGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @AbilityLevelGroupTypeId);
 
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId],[GroupTypePurposeValueId])
-   VALUES (0, 'Check in by Grade', '4F9565A7-DD5A-41C3-B4E8-13F0B872B10B', 0, 0, 0, 0, 0,0,0,0,@AgeGroupTypeId, @GroupTypePurposeCheckinFilterId)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId],[GroupTypePurposeValueId],[GroupTerm],[GroupMemberTerm])
+   VALUES (0, 'Check in by Grade', '4F9565A7-DD5A-41C3-B4E8-13F0B872B10B', 0, 0, 0, 0, 0,0,0,0,@AgeGroupTypeId, @GroupTypePurposeCheckinFilterId, 'Group', 'Member')
 SET @GradeGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @GradeGroupTypeId);
 
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode])
-   VALUES (0, 'Check-in Test (Don''t Use) Area', 'CAAF4F9B-58B9-45B4-AABC-9188347948B7', 1, 1, 0, 0,0,0,0,0)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[GroupTerm],[GroupMemberTerm])
+   VALUES (0, 'Check-in Test (Don''t Use) Area', 'CAAF4F9B-58B9-45B4-AABC-9188347948B7', 1, 1, 0, 0,0,0,0,0, 'Group', 'Member')
 SET @TestGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @TestGroupTypeId);
 
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId])
-   VALUES (0, 'Nursery/Preschool Area', 'CADB2D12-7836-44BC-8EEA-3C6AB22FD5E8', 1, 1, 0, 0, 0,0,1,0,@AbilityLevelGroupTypeId)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId],[GroupTerm],[GroupMemberTerm])
+   VALUES (0, 'Nursery/Preschool Area', 'CADB2D12-7836-44BC-8EEA-3C6AB22FD5E8', 1, 1, 0, 0, 0,0,1,0,@AbilityLevelGroupTypeId, 'Group', 'Member')
 SET @NurseryPreschoolGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @NurseryPreschoolGroupTypeId);
 
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId])
-   VALUES (0, 'Elementary Area', 'E3C8F7D6-5CEB-43BB-802F-66C3E734049E', 1, 1, 0, 0, 0,0,2,0,@GradeGroupTypeId)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId],[GroupTerm],[GroupMemberTerm])
+   VALUES (0, 'Elementary Area', 'E3C8F7D6-5CEB-43BB-802F-66C3E734049E', 1, 1, 0, 0, 0,0,2,0,@GradeGroupTypeId, 'Group', 'Member')
 SET @ElementaryGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @ElementaryGroupTypeId);
 
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId])
-   VALUES (0, 'Jr High Area', '7A17235B-69AD-439B-BAB0-1A0A472DB96F', 1, 1, 0, 0, 0,0,3,0,@GradeGroupTypeId)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId],[GroupTerm],[GroupMemberTerm])
+   VALUES (0, 'Jr High Area', '7A17235B-69AD-439B-BAB0-1A0A472DB96F', 1, 1, 0, 0, 0,0,3,0,@GradeGroupTypeId, 'Group', 'Member')
 SET @JHGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @JHGroupTypeId);
 
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId])
-   VALUES (0, 'High School Area', '9A88743B-F336-4404-B877-2A623689195D', 1, 1, 0, 0, 0,0,4,0,@GradeGroupTypeId)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId],[GroupTerm],[GroupMemberTerm])
+   VALUES (0, 'High School Area', '9A88743B-F336-4404-B877-2A623689195D', 1, 1, 0, 0, 0,0,4,0,@GradeGroupTypeId, 'Group', 'Member')
 SET @HSGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @HSGroupTypeId);
 
@@ -320,9 +320,13 @@ SET @AttributeId = SCOPE_IDENTITY()
     VALUES ( 0, @AttributeId, @HSGroupId , 0, '13.0,19.0',  newid() )
 
 -- AbilityLevel attribute and values
-INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
-  VALUES ( 0, @DefinedValueFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @AbilityLevelGroupTypeId, 'AbilityLevel', 'Ability Level', 0, 0, 0, 0, 'A6898019-5954-4E48-A46C-A76A23639956', 'The ability level allowed to check in to these group types.' )
-SET @AttributeId = SCOPE_IDENTITY()
+SET @AttributeId = ( SELECT id from Attribute where Guid = 'A6898019-5954-4E48-A46C-A76A23639956' )
+IF @AttributeId IS NULL
+BEGIN
+	INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
+	  VALUES ( 0, @DefinedValueFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @AbilityLevelGroupTypeId, 'AbilityLevel', 'Ability Level', 0, 0, 0, 0, 'A6898019-5954-4E48-A46C-A76A23639956', 'The ability level allowed to check in to these group types.' )
+	SET @AttributeId = SCOPE_IDENTITY()
+
 
     -- ... and two attribute qualifiers:
     DECLARE @AttributeLevelDefinedTypeId int
@@ -347,6 +351,7 @@ SET @AttributeId = SCOPE_IDENTITY()
   INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
     VALUES ( 0, @AttributeId, @PreschoolGroupId , 0, 'E6905502-4C23-4879-A60F-8C4CEB3EE2E9',  newid() )
 
+END
 
 -- Grade Range
 INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
@@ -385,7 +390,7 @@ SET @ServiceTimesCategoryId = (SELECT Id FROM Category WHERE [Guid] = '4FECC91B-
 
 DELETE [Schedule]
 INSERT INTO [Schedule] ([Name],[iCalendarContent], [CheckInStartOffsetMinutes],[CheckInEndOffsetMinutes],[EffectiveStartDate],[Guid],[CategoryId]) VALUES 
-    ('4:30',        
+    ('Saturday 4:30pm',        
 'BEGIN:VCALENDAR
 BEGIN:VEVENT
 DTEND:20130501T173000
@@ -394,7 +399,7 @@ RRULE:FREQ=WEEKLY;BYDAY=SA
 END:VEVENT
 END:VCALENDAR', '30', '30', '05/01/2013', NEWID(), @ServiceTimesCategoryId ),
     
-    ('6:00',        
+    ('Saturday 6:00pm',        
 'BEGIN:VCALENDAR
 BEGIN:VEVENT
 DTEND:20130501T190000
@@ -403,7 +408,7 @@ RRULE:FREQ=WEEKLY;BYDAY=SA
 END:VEVENT
 END:VCALENDAR', '30', '30', '05/01/2013', NEWID(), @ServiceTimesCategoryId ),
 
-    ('9:00',        
+    ('Sunday 9:00am',        
 'BEGIN:VCALENDAR
 BEGIN:VEVENT
 DTEND:20130501T100000
@@ -412,7 +417,7 @@ RRULE:FREQ=WEEKLY;BYDAY=SU
 END:VEVENT
 END:VCALENDAR', '30', '30', '05/01/2013', NEWID(), @ServiceTimesCategoryId ),
 
-    ('10:30',        
+    ('Sunday 10:30am',        
 'BEGIN:VCALENDAR
 BEGIN:VEVENT
 DTEND:20130501T113000
@@ -421,7 +426,7 @@ RRULE:FREQ=WEEKLY;BYDAY=SU
 END:VEVENT
 END:VCALENDAR', '30', '30', '05/01/2013', NEWID(), @ServiceTimesCategoryId ),
 
-    ('12:00',        
+    ('Sunday 12:00pm',        
 'BEGIN:VCALENDAR
 BEGIN:VEVENT
 DTEND:20130501T130000
@@ -512,12 +517,12 @@ SET @PrinterDeviceId = SCOPE_IDENTITY()
 
 -- A centralized kiosk
 INSERT INTO [Device] ([Name],[DeviceTypeValueId],[PrinterDeviceId],[PrintFrom],[PrintToOverride],[Guid])
-SELECT C.Name + ': Centralized', @DeviceTypeValueId, @PrinterDeviceId, 0, 1, NEWID()
+SELECT C.Name + ': Central Kiosk', @DeviceTypeValueId, @PrinterDeviceId, 0, 1, NEWID()
 FROM Location C WHERE C.Name = 'Main Campus'
   
 -- kiosks for each campus/building/room
 INSERT INTO [Device] ([Name],[DeviceTypeValueId],[PrinterDeviceId],[PrintFrom],[PrintToOverride],[Guid])
-SELECT C.Name + ':' + B.Name + ':' + R.Name, @DeviceTypeValueId, @PrinterDeviceId, 0, 1, NEWID()
+SELECT C.Name + ': ' + B.Name + ': ' + R.Name, @DeviceTypeValueId, @PrinterDeviceId, 0, 1, NEWID()
 FROM Location C
 INNER JOIN Location B
   ON B.ParentLocationId = C.Id
@@ -534,7 +539,7 @@ INNER JOIN Location B
 INNER JOIN Location R
   ON R.ParentLocationId = B.Id
 INNER JOIN Device D 
-  ON D.Name = C.Name + ':' + B.Name + ':' + R.Name
+  ON D.Name = C.Name + ': ' + B.Name + ': ' + R.Name
 
 -- Add centralized kiosk to each Location
 INSERT INTO [DeviceLocation] (DeviceId, LocationId)
@@ -545,7 +550,7 @@ INNER JOIN Location B
 INNER JOIN Location R
   ON R.ParentLocationId = B.Id
 INNER JOIN Device D 
-  ON D.Name = C.Name + ': Centralized'
+  ON D.Name = C.Name + ': Central Kiosk'
 WHERE C.Name = 'Main Campus'
 
 
@@ -592,7 +597,7 @@ DELETE [GroupLocation] where [Guid] in (select * from @tGroupLocationGuids)
    
   -- Add Test group to each location
   INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailing, IsLocation, Guid)
-   SELECT @TestGroupId, L.Id, 0,0,'5E8B611A-F84A-45E1-8CB7-2584FC66F3C3' FROM Location L WHERE L.ParentLocationId = @BuildingLocationId
+   SELECT @TestGroupId, L.Id, 0,0, NEWID() FROM Location L WHERE L.ParentLocationId = @BuildingLocationId
 
 ---------------------------------------------------------------------------
 -- Add Group Locations to Schedules

@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 
 using Rock;
@@ -14,6 +15,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -88,6 +90,8 @@ namespace RockWeb.Blocks.Crm
             gGroupMemberAttributes.GridRebind += gGroupMemberAttributes_GridRebind;
             gGroupMemberAttributes.GridReorder += gGroupMemberAttributes_GridReorder;
 
+            dlgGroupMemberAttribute.OnCancelScript = string.Format( "$('#{0}').val('');", hfAttributeId.ClientID );
+
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", Group.FriendlyTypeName );
         }
 
@@ -122,7 +126,10 @@ namespace RockWeb.Blocks.Crm
             }
             else
             {
-                ShowDialog();
+                if ( !string.IsNullOrWhiteSpace( hfAttributeId.Value ) )
+                {
+                    dlgGroupMemberAttribute.Show();
+                }
             }
 
             if ( pnlDetails.Visible )
@@ -527,8 +534,10 @@ namespace RockWeb.Blocks.Crm
 
             if ( group.IsSystem )
             {
-                nbEditModeMessage.Text = EditModeMessage.System( GroupType.FriendlyTypeName );
+                nbEditModeMessage.Text = EditModeMessage.System( Group.FriendlyTypeName );
             }
+
+            var roleLimitWarnings = new StringBuilder();
 
             if ( group.GroupType != null && group.GroupType.Roles != null && group.GroupType.Roles.Any() )
             {
@@ -544,20 +553,19 @@ namespace RockWeb.Blocks.Crm
 
                     if ( role.MinCount.HasValue && role.MinCount.Value > curCount )
                     {
-                        nbEditModeMessage.Text += nbEditModeMessage.Text.Length > 0 ? "<br/>" : "";
-                        nbEditModeMessage.Text += string.Format( "The {0} role is currently below its minimum requirement of {1:N0} active {2}.",
-                            role.Name, role.MinCount, 
-                            role.MinCount == 1 ? group.GroupType.GroupMemberTerm : group.GroupType.GroupMemberTerm.Pluralize() );
+                        roleLimitWarnings.AppendFormat("The <strong>{1}</strong> role is currently below its minimum requirement of {2:N0} active {3}.<br/>",
+                            role.Name.Pluralize(), role.Name, role.MinCount, role.MinCount == 1 ? group.GroupType.GroupMemberTerm : group.GroupType.GroupMemberTerm.Pluralize() );
                     }
                     if ( role.MaxCount.HasValue && role.MaxCount.Value < curCount )
                     {
-                        nbEditModeMessage.Text += nbEditModeMessage.Text.Length > 0 ? "<br/>" : "";
-                        nbEditModeMessage.Text += string.Format( "The {0} role is currently above its maximum limit of {1:N0} active {2}.",
-                            role.Name, role.MaxCount, 
-                            role.MaxCount == 1 ? group.GroupType.GroupMemberTerm : group.GroupType.GroupMemberTerm.Pluralize() );
+                        roleLimitWarnings.AppendFormat( "The <strong>{1}</strong> role is currently above its maximum limit of {2:N0} active {3}.<br/>",
+                            role.Name.Pluralize(), role.Name, role.MaxCount, role.MaxCount == 1 ? group.GroupType.GroupMemberTerm : group.GroupType.GroupMemberTerm.Pluralize() );
                     }
                 }
             }
+
+            nbRoleLimitWarning.Text = roleLimitWarnings.ToString();
+            nbRoleLimitWarning.Visible = roleLimitWarnings.Length > 0;
 
             if ( readOnly )
             {
@@ -760,7 +768,7 @@ namespace RockWeb.Blocks.Crm
             pnlEditDetails.Visible = editable;
             fieldsetViewDetails.Visible = !editable;
 
-            this.DimOtherBlocks( editable );
+            this.HideSecondaryBlocks( editable );
         }
 
         /// <summary>
@@ -788,34 +796,6 @@ namespace RockWeb.Blocks.Crm
                         .Where( m => m.GroupRoleId == roleId )
                         .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
                         .Count();
-        }
-
-        private void ShowDialog( string dialog )
-        {
-            hfActiveDialog.Value = dialog.ToUpper().Trim();
-            ShowDialog();
-        }
-
-        private void ShowDialog()
-        {
-            switch ( hfActiveDialog.Value )
-            {
-                case "GROUPMEMBERATTRIBUTES":
-                    dlgGroupMemberAttribute.Show();
-                    break;
-            }
-        }
-
-        private void HideDialog()
-        {
-            switch ( hfActiveDialog.Value )
-            {
-                case "GROUPMEMBERATTRIBUTES":
-                    dlgGroupMemberAttribute.Hide();
-                    break;
-            }
-
-            hfActiveDialog.Value = string.Empty;
         }
 
         private void BindInheritedAttributes( int? inheritedGroupTypeId, GroupTypeService groupTypeService, AttributeService attributeService )
@@ -908,6 +888,7 @@ namespace RockWeb.Blocks.Crm
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
+                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtGroupMemberAttributes.ActionTitle = ActionTitle.Add( "attribute for group members of " + tbName.Text );
             }
             else
@@ -918,7 +899,8 @@ namespace RockWeb.Blocks.Crm
 
             edtGroupMemberAttributes.SetAttributeProperties( attribute, typeof( GroupMember ) );
 
-            ShowDialog( "GroupMemberAttributes" );
+            hfAttributeId.Value = attribute.Id.ToString();
+            dlgGroupMemberAttribute.Show();
         }
 
         /// <summary>
@@ -986,7 +968,9 @@ namespace RockWeb.Blocks.Crm
             GroupMemberAttributesState.Add( attribute );
 
             BindGroupMemberAttributesGrid();
-            HideDialog();
+
+            hfAttributeId.Value = string.Empty;
+            dlgGroupMemberAttribute.Hide();
         }
 
         /// <summary>
