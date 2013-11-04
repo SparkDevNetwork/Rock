@@ -116,8 +116,7 @@ namespace Rock.Model
             target.IsActive = source.IsActive;
             target.GeoPoint = source.GeoPoint;
             target.GeoFence = source.GeoFence;
-            target.LocationTypeValueId = source.LocationTypeValueId;
-            target.IsLocation = source.IsLocation;
+            target.IsNamedLocation = source.IsNamedLocation;
             target.Street1 = source.Street1;
             target.Street2 = source.Street2;
             target.City = source.City;

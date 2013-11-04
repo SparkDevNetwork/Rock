@@ -87,22 +87,13 @@ namespace Rock.Model
         public DbGeography GeoFence { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.DefinedValue"/> that represents the type/category of this location.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the <see cref="Rock.Model.DefinedValue"/> that represents the location type.
-        /// </value>
-        [DataMember]
-        public int? LocationTypeValueId { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether this instance is a named location.
         /// </summary>
         /// <value>
         /// A <see cref="System.Boolean"/> that is <c>true</c> if this instance is a named location; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsLocation { get; set; }
+        public bool IsNamedLocation { get; set; }
 
         /// <summary>
         /// Gets or sets the first line of the Location's Street/Mailing Address.
@@ -326,15 +317,6 @@ namespace Rock.Model
         private ICollection<GroupLocation> _groupLocations;
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.DefinedValue" /> that represents the Location Type for this Location.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.DefinedValue"/> that represents the Location Type for this location.
-        /// </value>
-        [DataMember]
-        public virtual DefinedValue LocationType { get; set; }
-
-        /// <summary>
         /// Gets or sets the Attendance Printer <see cref="Rock.Model.Device"/> that is used at this Location.
         /// </summary>
         /// <value>
@@ -429,7 +411,6 @@ namespace Rock.Model
         public LocationConfiguration()
         {
             this.HasOptional( l => l.ParentLocation ).WithMany( l => l.ChildLocations ).HasForeignKey( l => l.ParentLocationId ).WillCascadeOnDelete( false );
-            this.HasOptional( l => l.LocationType ).WithMany().HasForeignKey( l => l.LocationTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( l => l.PrinterDevice ).WithMany().HasForeignKey( l => l.PrinterDeviceId ).WillCascadeOnDelete( false );
         }
     }
