@@ -123,7 +123,7 @@
         <div class="row checkin-header">
             <div class="checkin-actions">
                 <div class="col-sm-3">
-                    <Rock:BootstrapButton ID="lbAddPersonCancel" runat="server" CssClass="btn btn-lg btn-primary cancel" Text="Cancel" CausesValidation="false" EnableViewState="false" />
+                    <Rock:BootstrapButton ID="lbAddPersonCancel" runat="server" CssClass="btn btn-lg btn-primary cancel" Text="Cancel" EnableViewState="false" />
                 </div>
 
                 <div class="col-sm-6">
@@ -131,7 +131,7 @@
                 </div>
 
                 <div class="col-sm-3">
-                    <Rock:BootstrapButton ID="lbPersonSearch" runat="server" CssClass="btn btn-lg btn-primary" OnClick="lbPersonSearch_Click" Text="Search" CausesValidation="false" EnableViewState="false" />
+                    <Rock:BootstrapButton ID="lbPersonSearch" runat="server" CssClass="btn btn-lg btn-primary" OnClick="lbPersonSearch_Click" Text="Search" EnableViewState="false" />
                 </div>
             </div>
         </div>
@@ -148,10 +148,10 @@
                     <Rock:DatePicker ID="dpDOBSearch" runat="server" Label="DOB" ValidationGroup="Person" CssClass="col-md-12" />
                 </div>
                 <div class="col-md-2">
-                    <Rock:DataDropDownList ID="ddlGenderSearch" runat="server" ValidationGroup="Person" CssClass="col-md-12" Label="Gender" />
+                    <Rock:RockDropDownList ID="ddlGenderSearch" runat="server" ValidationGroup="Person" CssClass="col-md-12" Label="Gender" />
                 </div>
                 <div class="col-md-3">
-                    <Rock:DataDropDownList ID="ddlAbilitySearch" runat="server" CssClass="col-md-12" Label="Ability/Grade" />
+                    <Rock:RockDropDownList ID="ddlAbilitySearch" runat="server" CssClass="col-md-12" Label="Ability/Grade" />
                 </div>
             </div>
             
@@ -182,7 +182,7 @@
             </div>
 
             <div class="row">
-                <asp:LinkButton ID="lbSavePerson" runat="server" Text="None of these, add a new person." CssClass="btn btn-lg btn-primary btn-checkin-select" OnClick="lbSavePerson_Click" />
+                <asp:LinkButton ID="lbSavePerson" runat="server" Text="None of these, add a new person." CssClass="btn btn-lg btn-primary btn-checkin-select" ValidationGroup="Person" CausesValidation="true" OnClick="lbSavePerson_Click" />
             </div>
             
         </div>
@@ -240,13 +240,12 @@
                         <Rock:DatePicker ID="dpBirthDate" runat="server" RequiredErrorMessage="DOB is Required" SelectedDate='<%# ((NewPerson)Container.DataItem).BirthDate %>' ValidationGroup="Family"  />
                     </div>
                     <div class="col-md-2">
-                        <Rock:DataDropDownList ID="ddlGender" runat="server" RequiredErrorMessage="Gender is Required" ValidationGroup="Family" />
+                        <Rock:RockDropDownList ID="ddlGender" runat="server" RequiredErrorMessage="Gender is Required" ValidationGroup="Family" />
                     </div>
                     <div class="col-md-3">
-                        <Rock:DataDropDownList ID="ddlAbilityGrade" runat="server" />
+                        <Rock:RockDropDownList ID="ddlAbilityGrade" runat="server" />
                     </div>
-                </div>
-                <asp:CustomValidator ID="cvFamily" runat="server" OnServerValidate="cvFamily_ServerValidate" Display="Dynamic" ValidationGroup="Family" />
+                </div>                
             </ItemTemplate>        
             </asp:ListView>        
 

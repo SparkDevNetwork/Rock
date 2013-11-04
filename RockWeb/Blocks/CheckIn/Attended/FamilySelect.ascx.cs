@@ -206,15 +206,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var tbLastName = (RockTextBox)e.Item.FindControl( "tbLastName" );
             var dpBirthDate = (DatePicker)e.Item.FindControl( "dpBirthDate" );            
             var ddlGender = (RockDropDownList)e.Item.FindControl( "ddlGender" );
-            var cvFamily = (CustomValidator)e.Item.FindControl( "cvFamily" );
-
-            var validationGroup = "NewPerson" + e.Item.DataItemIndex.ToString(); 
-            tbFirstName.ValidationGroup = validationGroup;
-            tbLastName.ValidationGroup = validationGroup;
-            dpBirthDate.ValidationGroup = validationGroup; 
-            ddlGender.ValidationGroup = validationGroup; 
-            cvFamily.ValidationGroup = validationGroup;
-
             ddlGender.BindToEnum( typeof( Gender ) );
             BindAbilityGrade( (RockDropDownList)e.Item.FindControl( "ddlAbilityGrade" ) );            
         }
@@ -358,6 +349,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             if ( string.IsNullOrEmpty( tbFirstNameSearch.Text ) || string.IsNullOrEmpty( tbLastNameSearch.Text ) || string.IsNullOrEmpty( dpDOBSearch.Text ) || ddlGenderSearch.SelectedValueAsInt() == 0 )
             {   // modal takes care of the validation
+                Page.Validate( "Person" );
                 mpeAddPerson.Show();
             }
             else
@@ -938,19 +930,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 Person.CreateCheckinRelationship( familyMember.Person.Id, personId, CurrentPersonId );
             }
         }
-
-        /// <summary>
-        /// Handles the ServerValidate event of the cvFamily control.
-        /// </summary>
-        /// <param name="source">The source of the event.</param>
-        /// <param name="args">The <see cref="ServerValidateEventArgs"/> instance containing the event data.</param>
-        protected void cvFamily_ServerValidate( object source, ServerValidateEventArgs args )
-        {
-            var test = args;
-            var basd = Page.GetValidators( "Person1" );
-            //args.IsValid = 
-        }
-       
+               
         #endregion
 
         #region NewPerson Class
