@@ -14,6 +14,11 @@ namespace Rock.Web.UI
     public class DialogMasterPage : MasterPage
     {
         /// <summary>
+        /// An optional subtitle
+        /// </summary>        
+        public string SubTitle { get; set; }
+        
+        /// <summary>
         /// Fires the save.
         /// </summary>
         /// <param name="sender">The sender.</param>
