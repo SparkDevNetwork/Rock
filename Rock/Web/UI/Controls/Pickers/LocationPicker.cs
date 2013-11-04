@@ -154,7 +154,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( location != null )
             {
-                if ( location.IsLocation )
+                if ( location.IsNamedLocation )
                 {
                     return LocationPickerMode.NamedLocation;
                 }
