@@ -16,7 +16,9 @@
 
     <asp:Panel ID="pnlAdmin" runat="server" DefaultButton="lbOk" CssClass="attended">
         <div class="row checkin-header">
-            <div class="col-sm-3"></div>
+            <div class="col-sm-3 checkin-actions">
+                <a id="lbRetry" runat="server" class="btn btn-lg btn-primary" visible="false" href="javascript:window.location.href=window.location.href">Retry</a>
+            </div>
             <div class="col-sm-6">
                 <h1>Admin</h1>
             </div>
@@ -38,11 +40,6 @@
             <div class="col-md-4"></div>
         </div>
 
-        <div class="row checkin-footer">
-            <div class="checkin-actions">
-                <a id="lbRetry" runat="server" class="btn btn-primary" visible="false" href="javascript:window.location.href=window.location.href">Retry</a>
-            </div>
-        </div>
     </asp:Panel>
 
 </asp:Panel>
