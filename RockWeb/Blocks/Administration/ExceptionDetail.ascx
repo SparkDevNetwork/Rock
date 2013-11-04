@@ -60,7 +60,7 @@
                                     <td onclick="<%# string.Format("redirectToPage('{0}')", GetExceptionDetailUrl((int)Eval("Id"))) %>"><%# Eval("Source") %></td>
                                     <td onclick="<%# string.Format("redirectToPage('{0}')", GetExceptionDetailUrl((int)Eval("Id"))) %>"><%# Eval("Description") %></td>
                                     <td style="text-align: center;">
-                                        <a id="<%# "lbToggleStackTrace_" + Eval("Id").ToString()  %>" href="#" onclick="<%# string.Format("toggleStackTrace({0})", Eval("Id")) %>" class="btn btn-default">
+                                        <a id="<%# "lbToggleStackTrace_" + Eval("Id").ToString()  %>" href="#" onclick="<%# string.Format("return toggleStackTrace({0});", Eval("Id")) %>" class="btn btn-default">
                                             <i class="icon-file-alt"></i> Show Stack Trace
                                         </a>
                                     </td>
@@ -97,6 +97,7 @@
         else {
             $(link).html($(link).html().replace("Hide", "Show"));
         }
+        return false;
     }
 
     function redirectToPage(pageUrl) {
