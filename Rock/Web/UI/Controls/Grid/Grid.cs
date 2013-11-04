@@ -790,6 +790,10 @@ namespace Rock.Web.UI.Controls
 
             this.PrepareControlHierarchy();
 
+            // render script for popovers
+            string script = "$('.grid-table tr').tooltip({html: true, container: 'body'});";
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "grid-popover", script, true);
+
             this.RenderContents( writer );
         }
 
