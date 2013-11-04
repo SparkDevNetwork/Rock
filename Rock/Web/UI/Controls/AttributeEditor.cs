@@ -492,7 +492,7 @@ namespace Rock.Web.UI.Controls
                 _btnCancel = new LinkButton();
                 _btnCancel.ID = "btnCancel";
                 _btnCancel.Text = "Cancel";
-                _btnCancel.CssClass = "btn";
+                _btnCancel.CssClass = "btn btn-link";
                 _btnCancel.CausesValidation = false;
                 _btnCancel.Click += btnCancel_Click;
                 Controls.Add( _btnCancel );
