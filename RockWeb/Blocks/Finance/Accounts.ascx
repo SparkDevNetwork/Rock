@@ -20,7 +20,7 @@
         </Rock:GridFilter>
         
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-        <Rock:Grid ID="rGridAccount" runat="server" AllowSorting="true" RowItemText="account" OnRowSelected="rGridAccount_Edit" DescriptionField="Description">
+        <Rock:Grid ID="rGridAccount" runat="server" AllowSorting="true" RowItemText="account" OnRowSelected="rGridAccount_Edit" TooltipField="Description">
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
                 <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />

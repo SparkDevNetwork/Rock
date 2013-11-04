@@ -6,7 +6,7 @@
             <Rock:RockDropDownList ID="ddlCategoryFilter" runat="server" Label="Category" AutoPostBack="false" />
         </Rock:GridFilter>
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-        <Rock:Grid ID="gDefinedType" runat="server" AllowSorting="true" OnRowSelected="gDefinedType_Edit" DescriptionField="Description">
+        <Rock:Grid ID="gDefinedType" runat="server" AllowSorting="true" OnRowSelected="gDefinedType_Edit" TooltipField="Description">
             <Columns>
                 <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category" />
                 <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
