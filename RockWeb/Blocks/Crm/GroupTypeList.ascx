@@ -11,7 +11,7 @@
             </Rock:RockDropDownList>
         </Rock:GridFilter>
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-        <Rock:Grid ID="gGroupType" runat="server" AllowSorting="true" OnRowSelected="gGroupType_Edit" DescriptionField="Description">
+        <Rock:Grid ID="gGroupType" runat="server" AllowSorting="true" OnRowSelected="gGroupType_Edit" TooltipField="Description">
             <Columns>
                 <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                 <asp:BoundField DataField="Purpose" HeaderText="Purpose" SortExpression="Purpose" />

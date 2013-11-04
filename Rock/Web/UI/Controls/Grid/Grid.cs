@@ -269,22 +269,22 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The description field.
         /// </value>
-        public string DescriptionField
+        public string TooltipField
         {
             get
             {
-                string descriptionField = ViewState["DescriptionField"] as string;
-                if ( string.IsNullOrWhiteSpace( descriptionField ) )
+                string tooltipField = ViewState["TooltipField"] as string;
+                if ( string.IsNullOrWhiteSpace( tooltipField ) )
                 {
-                    descriptionField = null;
+                    tooltipField = null;
                 }
 
-                return descriptionField;
+                return tooltipField;
             }
 
             set
             {
-                ViewState["DescriptionField"] = value;
+                ViewState["TooltipField"] = value;
             }
         }
 
@@ -903,9 +903,9 @@ namespace Rock.Web.UI.Controls
                         }
                     }
 
-                    if ( DescriptionField != null )
+                    if ( TooltipField != null )
                     {
-                        PropertyInfo pi = e.Row.DataItem.GetType().GetProperty( DescriptionField );
+                        PropertyInfo pi = e.Row.DataItem.GetType().GetProperty( TooltipField );
                         if ( pi != null )
                         {
                             var piv = pi.GetValue( e.Row.DataItem );
