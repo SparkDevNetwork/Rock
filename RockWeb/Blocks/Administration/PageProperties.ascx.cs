@@ -73,7 +73,7 @@ namespace RockWeb.Blocks.Administration
                     if ( masterPage != null )
                     {
                         masterPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
-                        masterPage.SubTitle = string.Format( "(Id: {0})", _page.Id );
+                        masterPage.SubTitle = string.Format( "Id: {0}", _page.Id );
                     }
 
                     if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
