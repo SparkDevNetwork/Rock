@@ -146,9 +146,10 @@ namespace RockWeb.Blocks.Administration
 
             definedType.FieldType = definedType.FieldType ?? new FieldTypeService().Get( definedType.FieldTypeId ?? 0 );
 
+            lTitle.Text = definedType.Name.FormatAsHtmlTitle();
+            lDescription.Text = definedType.Description;
+
             lblMainDetails.Text = new DescriptionList()
-                .Add("Name", definedType.Name)
-                .Add("Description", definedType.Description)
                 .Add("Category", definedType.Category)
                 .Add("FieldType", definedType.FieldType.Name)
                 .Html;

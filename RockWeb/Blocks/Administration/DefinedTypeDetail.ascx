@@ -18,14 +18,27 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbTypeName" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="Name" />
-                            <Rock:DataTextBox ID="tbTypeDescription" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                        </div>
+                    </div> 
+                    
+                    <div class="row">
+                         <div class="col-md-12">
+                             <Rock:DataTextBox ID="tbTypeDescription" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                         </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:DataTextBox ID="tbTypeCategory" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="Category" />
+                            
                         </div>
 
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbTypeCategory" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="Category" />
                             <Rock:FieldTypeList ID="ddlTypeFieldType" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="FieldType" />
                         </div>
                     </div>
+
+
 
                 </fieldset>
 
@@ -37,7 +50,22 @@
 
             <fieldset id="fieldsetViewDetails" runat="server">
 
+
+                <div class="banner">
+                    <h1>
+                        <asp:Literal ID="lTitle" runat="server" />
+                    </h1>
+                </div>
+
+
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <asp:Literal ID="lDescription" runat="server" />
+                    </div>
+                </div>
+                
 
                 <div class="row">
                     <div class="col-md-6">
