@@ -20,7 +20,7 @@ begin
     declare @groupAdultFullNames varchar(max) = '';
     declare @groupNonAdultFullNames varchar(max) = '';
     declare @groupMemberTable table (LastName varchar(max), FirstName varchar(max), FullName varchar(max), GroupRoleGuid uniqueidentifier );
-    declare @GROUPROLE_FAMILY_MEMBER_ADULT uniqueidentifier = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42';
+    declare @GROUPTYPEROLE_FAMILY_MEMBER_ADULT uniqueidentifier = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42';
 
     if (@personId is not null) 
     begin
@@ -40,7 +40,7 @@ begin
         on 
             [p].[Id] = [gm].[PersonId] 
         join
-            [GroupRole] [gr]
+            [GroupTypeRole] [gr]
         on 
             [gm].[GroupRoleId] = [gr].[Id]
         where 
@@ -53,7 +53,7 @@ begin
         from 
             @groupMemberTable
         where
-            [GroupRoleGuid] = @GROUPROLE_FAMILY_MEMBER_ADULT;  
+            [GroupRoleGuid] = @GROUPTYPEROLE_FAMILY_MEMBER_ADULT;  
 
         if @adultLastNameCount > 0 
         begin
@@ -64,7 +64,7 @@ begin
             from      
                 @groupMemberTable
             where
-                [GroupRoleGuid] = @GROUPROLE_FAMILY_MEMBER_ADULT;
+                [GroupRoleGuid] = @GROUPTYPEROLE_FAMILY_MEMBER_ADULT;
 
             -- cleanup the trailing ' &'s
             if len(@groupFirstNames) > 2 begin

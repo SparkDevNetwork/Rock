@@ -16,19 +16,40 @@
             <ColumnDefinition />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="48" />
+        </Grid.RowDefinitions>
         <StackPanel Grid.Column="1"
                     VerticalAlignment="Center">
+            
             <Label x:Name="lblReportProgress"
                    Visibility="Visible"
                    Style="{StaticResource labelStyleAlert}"
                    Content="Progress" />
+            <ProgressBar x:Name="pgReportProgress"
+                         Maximum="100"
+                         Value="67" Height="4"/>
 
-                <Button x:Name="btnSaveAs"
+            <Button x:Name="btnSaveAs"
                         HorizontalAlignment="Center"
                         Margin="4"
                         Style="{StaticResource buttonStylePrimary}"
                         Content="Save As.."
                         Click="btnSaveAs_Click"/>
         </StackPanel>
+        <Button x:Name="btnBack"
+                Grid.Row="1"
+                HorizontalAlignment="Left"
+                Style="{StaticResource buttonStylePrimary}"
+                Margin="8,8,8,8"
+                Click="btnBack_Click">
+            <StackPanel Orientation="Horizontal">
+                <Label Style="{StaticResource labelStyleIconPrimaryLeft}"
+                       Content="&#xf0d9;" />
+                <Label Style="{StaticResource labelStyleButtonTextPrimary}"
+                       Content="Back" />
+            </StackPanel>
+        </Button>
     </Grid>
 </Page>

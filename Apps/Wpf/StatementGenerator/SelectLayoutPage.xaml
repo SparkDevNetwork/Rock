@@ -31,13 +31,28 @@
             </ScrollViewer>
 
         </StackPanel>
-        <Button x:Name="btnImport"
-                Grid.Row="1"
-                HorizontalAlignment="Left"
-                Style="{StaticResource buttonStyle}"
-                Margin="8,8,8,8"
-                Content="Import..."
-                Click="btnImport_Click" />
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Left"
+                    Grid.Row="1">
+            <Button x:Name="btnBack"
+                    HorizontalAlignment="Left"
+                    Style="{StaticResource buttonStylePrimary}"
+                    Margin="8,8,8,8"
+                    Click="btnBack_Click">
+                <StackPanel Orientation="Horizontal">
+                    <Label Style="{StaticResource labelStyleIconPrimaryLeft}"
+                           Content="&#xf0d9;" />
+                    <Label Style="{StaticResource labelStyleButtonTextPrimary}"
+                           Content="Back" />
+                </StackPanel>
+            </Button>
+            <Button x:Name="btnImport"
+                    Style="{StaticResource buttonStyle}"
+                    Margin="4,8,8,8"
+                    Content="Import..."
+                    Click="btnImport_Click" />
+        </StackPanel>
+        
         <Button x:Name="btnNext"
                 Grid.Row="1"
                 HorizontalAlignment="Right"
@@ -46,7 +61,7 @@
                 Click="btnNext_Click">
             <StackPanel Orientation="Horizontal">
                 <Label Style="{StaticResource labelStyleButtonTextPrimary}"
-                       Content="Next " />
+                       Content="Next" />
                 <Label Style="{StaticResource labelStyleIconPrimary}"
                        Content="&#xf0da;" />
             </StackPanel>

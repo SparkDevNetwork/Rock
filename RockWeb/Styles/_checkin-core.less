@@ -291,7 +291,6 @@ input.checkin-phone-entry
 
 /***********************  DEVELOPER ADDITIONS BELOW  ***********************/
 
-
 // --------------------------------------
 // 5. Attended Check-In Styles
 // --------------------------------------
@@ -309,6 +308,13 @@ input.checkin-phone-entry
     text-align: center;
     margin: 1% auto 0;
     color: @header-text-color;
+}
+
+.attended .checkin-footer
+{
+    margin: 0 auto;
+    bottom: 2%;
+    right: 2%;
 }
 
 .attended .btn-checkin-select 
@@ -333,13 +339,14 @@ input.checkin-phone-entry
 .attended .btn-primary:active.disabled,
 .attended .btn-primary:active[disabled]
 {
-    background: darken(@btn-primary-bg, 15%); 
+    background: darken(@btn-primary-bg, 30%);
+    border: 1px solid #fff;
 }
 
 .attended .checkin-phone-entry 
 {
     font-weight: @font-weight-semibold;
-    margin-top: 25%;
+    margin-top: 15%;
     width: 100%;
 }
 
@@ -424,15 +431,15 @@ input.checkin-phone-entry
     z-index: 10001 !important;
 }
 
-.attended.modal-foreground.small 
+.attended.modal-foreground.small-modal
 {    
     width: 60%;
     height: auto;
 }
 
-.attended.modal-foreground.small .checkin-actions a.btn-primary
+.attended.modal-foreground.small-modal .checkin-actions a.btn-primary
 {
-    font-size: 1.4em;
+    font-size: 1em;
 }
 
 .attended.modal-foreground .checkin-header,
@@ -447,11 +454,6 @@ input.checkin-phone-entry
 {
     padding-left: 3px;
     padding-right: 3px;
-}
-
-.attended input[type="text"].note
-{
-    width: 65%;
 }
 
 .attended .help-inline 
@@ -475,4 +477,10 @@ input.checkin-phone-entry
 .attended.modal-foreground .checkin-body .row
 {
     margin-bottom: 10px;
+}
+
+.attended .checkbox input[type="checkbox"]
+{
+    float: none;
+    margin-right: 10px;
 }

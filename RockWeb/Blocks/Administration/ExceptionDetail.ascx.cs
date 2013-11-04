@@ -15,6 +15,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -42,9 +43,9 @@ namespace RockWeb.Blocks.Administration
                 // set page title
                 lPageTitle.Text = ("Exception Overview").FormatAsHtmlTitle();
 
-                //sets icon and text for cookies and server variables checkboxes
-                cbShowCookies.Text = "<i class=\"icon-laptop\"> </i> Show Cookies";
-                cbShowServerVariables.Text = "<i class=\"icon-hdd\"></i> Show Server Variables";
+                //sets icon and text for cookies and server variables check boxes
+                chkShowCookies.Text = "<i class=\"icon-laptop\"> </i> Show Cookies";
+                chkShowServerVariables.Text = "<i class=\"icon-hdd\"></i> Show Server Variables";
 
                 //if ExceptionId is not null and is an integer
                 if ( !String.IsNullOrWhiteSpace( PageParameter( "ExceptionId" ) ) && int.TryParse( PageParameter( "ExceptionId" ), out exceptionId ) )
@@ -61,88 +62,8 @@ namespace RockWeb.Blocks.Administration
         #endregion
 
         #region Internal Methods
-
         /// <summary>
-        /// Builds table cells for the Exception Detail table and adds them to the table
-        /// </summary>
-        /// <param name="detailSummaries">List of Excpetion Detial Summary objects</param>
-        private void BuildExceptionDetailTable( List<ExceptionDetailSummary> detailSummaries )
-        {
-            StringBuilder script = new StringBuilder();
-            foreach ( var summary in detailSummaries )
-            {
-                string exceptionPageUrl = string.Format( "/page/{0}?ExceptionId={1}", CurrentPage.Id, summary.ExceptionId );
-                TableRow detailRow = new TableRow();
-          
-                detailRow.ID = string.Format( "tdRowExceptionDetail_{0}", summary.ExceptionId );
-
-                TableCell exceptionTypeCell = new TableCell();
-                exceptionTypeCell.ID = string.Format( "tcExceptionType_{0}", summary.ExceptionId );
-                exceptionTypeCell.Text = summary.ExceptionType;
-                detailRow.Cells.Add( exceptionTypeCell );
-
-                TableCell exceptionSourceCell = new TableCell();
-                exceptionSourceCell.ID = string.Format( "tcExceptionSource_{0}", summary.ExceptionId );
-                exceptionSourceCell.Text = summary.ExceptionSource;
-                detailRow.Cells.Add( exceptionSourceCell );
-
-                TableCell exceptionDescriptionCell = new TableCell();
-                exceptionDescriptionCell.ID = string.Format( "tcExceptionDetail_{0}", summary.ExceptionId );
-                exceptionDescriptionCell.Text = summary.ExceptionDescription;
-                detailRow.Cells.Add( exceptionDescriptionCell );
-
-                TableCell exceptionStackTraceToggleCell = new TableCell();
-                exceptionStackTraceToggleCell.ID = string.Format( "tcExceptionStackTraceToggle_{0}", summary.ExceptionId );
-
-                LinkButton lbExceptionStackTrace = new LinkButton();
-                lbExceptionStackTrace.ID = string.Format( "lbExceptionStackTraceToggle_{0}", summary.ExceptionId );
-                lbExceptionStackTrace.Attributes.Add( "onClick", string.Format("toggleStackTrace({0});return false;", summary.ExceptionId) );
-                var iToggle = new HtmlGenericControl( "i" );
-                iToggle.AddCssClass( "icon-file-alt" );
-                lbExceptionStackTrace.Controls.Add( iToggle );
-
-                var spanTitle = new HtmlGenericContainer( "span" );
-                spanTitle.ID = string.Format( "spanExceptionStackTrace_{0}", summary.ExceptionId );
-                spanTitle.InnerText = " Show Stack Trace";
-                lbExceptionStackTrace.Controls.Add( spanTitle );
-
-
-                lbExceptionStackTrace.AddCssClass( "btn" );
-                exceptionStackTraceToggleCell.Controls.Add( lbExceptionStackTrace );
-
-                exceptionStackTraceToggleCell.HorizontalAlign = HorizontalAlign.Center;
-                detailRow.Cells.Add( exceptionStackTraceToggleCell );
-
-                tblExceptionDetails.Rows.Add( detailRow );
-
-                TableRow stackTraceRow = new TableRow();
-                stackTraceRow.CssClass = "exceptionDetail-stackTrace-hide";
-                stackTraceRow.ID = string.Format( "tdRowExceptionStackTrace_{0}", summary.ExceptionId );
-
-                TableCell exceptionStackTraceCell = new TableCell();
-                exceptionStackTraceCell.ID = string.Format( "tdExceptionStackTrace_{0}", summary.ExceptionId );
-                exceptionStackTraceCell.ColumnSpan = 4;
-                exceptionStackTraceCell.Text = summary.StackTrace;
-                exceptionStackTraceCell.HorizontalAlign = HorizontalAlign.Left;
-
-                stackTraceRow.Cells.Add( exceptionStackTraceCell );
-
-                tblExceptionDetails.Rows.Add( stackTraceRow );
-
-                script.Append( "$(\"[id*=" + exceptionSourceCell.ID + "]\").click(function () { redirectToPage(\"" + exceptionPageUrl + "\"); });" );
-                script.Append( "$(\"[id*=" + exceptionSourceCell.ID +"]\").click(function () { redirectToPage(\"" + exceptionPageUrl + "\"); });" );
-                script.Append( "$(\"[id*=" + exceptionDescriptionCell.ID + "]\").click(function () { redirectToPage(\"" + exceptionPageUrl + "\"); });" );
-                script.Append( "$(\"[id*=" + exceptionStackTraceCell.ID + "]\").click(function () { redirectToPage(\"" + exceptionPageUrl + "\"); });" );
-            }
-
-            if ( !String.IsNullOrWhiteSpace( script.ToString() ) )
-            {
-                ScriptManager.RegisterStartupScript( upExcpetionDetail, upExcpetionDetail.GetType(), "ExceptionRedirects" + DateTime.Now.Ticks, script.ToString(), true );
-            }
-        }
-
-        /// <summary>
-        /// Disect the query string value and build unordered list
+        /// Dissect the query string value and build unordered list
         /// </summary>
         /// <param name="queryString">The query string.</param>
         /// <returns>unordered list of query string values</returns>
@@ -176,63 +97,43 @@ namespace RockWeb.Blocks.Administration
         /// Gets the related exception logs
         /// </summary>
         /// <param name="baseException">The base exception.</param>
-        /// <returns>List of Exception Detial Summary objects</returns>
-        private List<ExceptionDetailSummary> GetExceptionLogs( ExceptionLog baseException )
+        /// <returns>List of Exception Detail Summary objects</returns>
+        private List<ExceptionLog> GetExceptionLogs( ExceptionLog baseException )
         {
-            List<ExceptionDetailSummary> summaryList = new List<ExceptionDetailSummary>();
+            List<ExceptionLog> exceptionList = new List<ExceptionLog>();
             ExceptionLogService svc = new ExceptionLogService();
 
             //load the base exception 
-            summaryList.Add( new ExceptionDetailSummary() 
-                {   ExceptionId = baseException.Id, 
-                    ExceptionSource = baseException.Source, 
-                    ExceptionType = baseException.ExceptionType, 
-                    ExceptionDescription = baseException.Description, 
-                    StackTrace = baseException.StackTrace 
-                } );
+            exceptionList.Add( baseException );
             
             //get the parentID
             int? parentId = baseException.ParentId;
 
-            //loop through exception hierachy (parent, grandparent, etc)
+            //loop through exception hierarchy (parent, grandparent, etc)
             while ( parentId != null && parentId > 0 )
             {
                 var exception = svc.Get( (int)parentId );
 
                 if ( exception != null )
                 {
-                    summaryList.Add( new ExceptionDetailSummary()
-                        {
-                            ExceptionId = exception.Id,
-                            ExceptionSource = exception.Source,
-                            ExceptionType = exception.ExceptionType,
-                            ExceptionDescription = exception.Description,
-                            StackTrace = exception.StackTrace
-                        }
-                    );
+                    exceptionList.Add( exception );
                 }
 
                 parentId = exception.ParentId;
             }
 
-            //get inner excpetions
+            //get inner exceptions
             if ( baseException.HasInnerException != null &&  (bool)baseException.HasInnerException )
             {
-                foreach ( ExceptionLog exception in svc.GetByParentId(baseException.Id) )
-                {
-                    summaryList.Add( new ExceptionDetailSummary()
-                        {
-                            ExceptionId = exception.Id,
-                            ExceptionSource = exception.Source,
-                            ExceptionType = exception.ExceptionType,
-                            ExceptionDescription = exception.Description,
-                            StackTrace = exception.StackTrace
-                        }
-                        );
-                }
+                exceptionList.AddRange( svc.GetByParentId( baseException.Id ) );
             }
 
-            return summaryList;
+            return exceptionList;
+        }
+
+        protected string GetExceptionDetailUrl( int exceptionId )
+        {
+            return string.Format( "/page/{0}?ExceptionId={1}", this.CurrentPage.Id, exceptionId );
         }
 
         /// <summary>
@@ -257,76 +158,56 @@ namespace RockWeb.Blocks.Administration
                 return;
             }
 
-            lblSite.Text = baseException.Site != null ? baseException.Site.Name : string.Empty;
-            lblPage.Text = baseException.Page != null ? baseException.Site.Name : string.Empty;
+            DescriptionList dl = new DescriptionList();
 
-            hlPageLink.NavigateUrl = string.Format( "~{0}", baseException.PageUrl );
+            dl.Add( "Site", baseException.Site != null ? baseException.Site.Name : String.Empty, true );
+            dl.Add( "Page", baseException.Page != null ? string.Format( "{0} <a href=\"{1}\" class=\"btn btn-mini\" target=\"_blank\"><i class=\"icon-arrow-right\"></i></a>", baseException.Page.Name, baseException.PageUrl ) : String.Empty, true );
 
-            if ( baseException.CreatedByPersonId == null || baseException.CreatedByPersonId == 0 )
+            //If query string is not empty build query string list
+            if ( !String.IsNullOrWhiteSpace( baseException.QueryString ) )
             {
-                //user null show Anonymous
-                lblUser.Text = "Anonymous";
-            }
-            else
-            {
-                lblUser.Text = baseException.CreatedByPerson.FullName;
+                dl.Add( "Query String", BuildQueryStringList( baseException.QueryString ) );
             }
 
-            litCookies.Text = baseException.Cookies;
-            litServerVariables.Text = baseException.ServerVariables;
+            dl.StartSecondColumn();
 
-            //If query string is not empty buld query string list and show div
-            if (!String.IsNullOrWhiteSpace(baseException.QueryString))
-            {
-                litQueryStringList.Text = BuildQueryStringList(baseException.QueryString);
-                divQueryString.Visible = true;
-            }
-            else
-            {
-                divQueryString.Visible = false;
-            }
+
+            dl.Add( "User", baseException.CreatedByPersonId != null ? baseException.CreatedByPerson.FullName : "Anonymous" );
+            dl.Add( "Exception Date", string.Format( "{0:g}", baseException.ExceptionDateTime ) );
+            lExceptionSummary.Text = dl.Html;
+
+            lCookies.Text = baseException.Cookies;
+            lServerVariables.Text = baseException.ServerVariables;
 
             //check to see if Show Cookies attribute is true
             if( Convert.ToBoolean( GetAttributeValue( "ShowCookies" ) ) )
             {
-                //if so check checkbox and register script to show cookies div
-                cbShowCookies.Checked = true;
-                ScriptManager.RegisterStartupScript( upExcpetionDetail, upExcpetionDetail.GetType(), "ShowCookiesOnLoad" + DateTime.Now.Ticks, "$(\"#pnlCookies\").css(\"display\", \"inherit\");", true );
+                //if so check check box and register script to show cookies div
+                chkShowCookies.Checked = true;
+                ScriptManager.RegisterStartupScript( upExcpetionDetail, upExcpetionDetail.GetType(), "ShowCookiesOnLoad" + DateTime.Now.Ticks, "$(\"#divCookies\").css(\"display\", \"inherit\");", true );
             }
             else
             {
-                cbShowCookies.Checked = false;
+                chkShowCookies.Checked = false;
             }
 
             //check to see if show server variables attribute is checked
             if ( Convert.ToBoolean( GetAttributeValue( "ShowServerVariables" ) ) )
             {
-                cbShowServerVariables.Checked = true;
-                ScriptManager.RegisterStartupScript( upExcpetionDetail, upExcpetionDetail.GetType(), "ShowServerVariablesOnLoad" + DateTime.Now.Ticks, "$(\"#pnlServerVariables\").css(\"display\", \"inherit\");", true );
+                chkShowServerVariables.Checked = true;
+                ScriptManager.RegisterStartupScript( upExcpetionDetail, upExcpetionDetail.GetType(), "ShowServerVariablesOnLoad" + DateTime.Now.Ticks, "$(\"#divServerVariables\").css(\"display\", \"inherit\");", true );
             }
             else
             {
-                cbShowServerVariables.Checked = false;
+                chkShowServerVariables.Checked = false;
             }
 
-            //get related exceptions
-            List<ExceptionDetailSummary> exceptionDetailSummaryList = GetExceptionLogs( baseException );
-
-            //build the exception detail table
-            BuildExceptionDetailTable( exceptionDetailSummaryList );
+            rptExcpetionDetails.DataSource = GetExceptionLogs( baseException ).OrderBy( e => e.Id );
+            rptExcpetionDetails.DataBind();
 
             pnlSummary.Visible = true;
         }
         #endregion
     }
 
-    public class ExceptionDetailSummary
-    {
-        public int ExceptionId { get; set; }
-        public string ExceptionType { get; set; }
-        public string ExceptionSource { get; set; }
-        public string ExceptionDescription { get; set; }
-        public string StackTrace { get; set; }
-
-    }
 }

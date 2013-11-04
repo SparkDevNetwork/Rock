@@ -82,6 +82,8 @@ namespace Rock.Field.Types
                 .ToList();
             ddl.DataBind();
             ddl.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+            ddl.Label = "File Type";
+            ddl.Help = "The type of files to list.";
 
             return controls;
         }

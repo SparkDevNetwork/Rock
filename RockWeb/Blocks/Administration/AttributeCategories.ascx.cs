@@ -38,9 +38,9 @@ namespace RockWeb.Blocks.Administration
             base.OnInit( e );
 
             // Load Entity Type Filter
-            ddlEntityType.Items.Add( new ListItem( "All", "" ) );
-            ddlEntityType.Items.Add( new ListItem( "None (Global Attributes)", "None" ) );
-            new EntityTypeService().GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );
+            var entityTypes = new EntityTypeService().GetEntities().OrderBy( t => t.FriendlyName ).ToList();
+            entityTypeFilter.EntityTypes = entityTypes;
+            entityTypePicker.EntityTypes = entityTypes;
 
             _canConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
 
@@ -72,10 +72,21 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            if ( !Page.IsPostBack && _canConfigure )
+            if ( !Page.IsPostBack )
             {
-                BindGrid();
+                if ( _canConfigure )
+                {
+                    BindGrid();
+                }
             }
+            else
+            {
+                if ( !string.IsNullOrWhiteSpace( hfIdValue.Value ) )
+                {
+                    modalDetails.Show();
+                }
+            }
+
 
             base.OnLoad( e );
         }
@@ -91,7 +102,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "EntityType", ddlEntityType.SelectedValue );
+            rFilter.SaveUserPreference( "EntityType", entityTypeFilter.SelectedValue );
             BindGrid();
         }
 
@@ -106,19 +117,17 @@ namespace RockWeb.Blocks.Administration
             {
                 case "EntityType":
 
-                    if ( e.Value == "" )
+                    if ( e.Value != "" )
                     {
-                        e.Value = "All";
+                        if ( e.Value == "0" )
+                        {
+                            e.Value = "None (Global Attributes)";
+                        }
+                        else
+                        {
+                            e.Value = EntityTypeCache.Read( int.Parse( e.Value ) ).FriendlyName;
+                        }
                     }
-                    else if ( e.Value == "None" )
-                    {
-                        e.Value = "None (Global Attributes)";
-                    }
-                    else
-                    {
-                        e.Value = EntityTypeCache.Read( int.Parse(ddlEntityType.SelectedValue) ).FriendlyName;
-                    }
-
                     break;
             }
 
@@ -240,10 +249,9 @@ namespace RockWeb.Blocks.Administration
             if ( category == null )
             {
                 string QualifierValue = null;
-                if ( ddlEntityType.SelectedValue != "" &&
-                    ddlEntityType.SelectedValue != "None" )
+                if ( (entityTypePicker.SelectedEntityTypeId ?? 0) != 0 )
                 {
-                    QualifierValue = ddlEntityType.SelectedValue;
+                    QualifierValue = entityTypePicker.SelectedEntityTypeId.ToString();
                 }
 
                 category = new Category();
@@ -255,13 +263,15 @@ namespace RockWeb.Blocks.Administration
 
             category.Name = tbName.Text;
 
-            service.Save( category, CurrentPersonId );
+            if ( category.IsValid )
+            {
+                service.Save( category, CurrentPersonId );
 
-            hfIdValue.Value = string.Empty;
+                hfIdValue.Value = string.Empty;
+                modalDetails.Hide();
 
-            modalDetails.Hide();
-
-            BindGrid();
+                BindGrid();
+            }
         }
 
         #endregion
@@ -273,8 +283,7 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindFilter()
         {
-             
-            ddlEntityType.SelectedValue = rFilter.GetUserPreference( "EntityType" );
+            entityTypeFilter.SelectedValue = rFilter.GetUserPreference( "EntityType" );
         }
 
         /// <summary>
@@ -282,7 +291,7 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindGrid()
         {
-            string selectedValue = ddlEntityType.SelectedValue;
+            string selectedValue = rFilter.GetUserPreference( "EntityType" );
 
             var attributeEntityTypeId = EntityTypeCache.Read(typeof(Rock.Model.Attribute)).Id;
             var queryable = new CategoryService().Queryable()
@@ -290,7 +299,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( !string.IsNullOrWhiteSpace( selectedValue ) )
             {
-                if ( selectedValue == "None" )
+                if ( selectedValue == "0" )
                 {
                     queryable = queryable
                         .Where( c =>
@@ -330,6 +339,27 @@ namespace RockWeb.Blocks.Administration
         {
             var category = new CategoryService().Get(categoryId);
             tbName.Text = category != null ? category.Name : string.Empty;
+            int entityTypeId = 0;
+            if ( category == null || category.EntityTypeQualifierValue == null ||
+                !int.TryParse( category.EntityTypeQualifierValue, out entityTypeId ) )
+            {
+                entityTypeId = 0;
+            }
+
+            if ( entityTypeId == 0 )
+            {
+                var filterValue = rFilter.GetUserPreference( "EntityType" );
+                if ( !string.IsNullOrWhiteSpace( filterValue ) )
+                {
+                    if ( !int.TryParse( filterValue, out entityTypeId ) )
+                    {
+                        entityTypeId = 0;
+                    }
+                }
+            }
+
+            entityTypePicker.SelectedEntityTypeId = entityTypeId;
+            hfIdValue.Value = categoryId.ToString();
             modalDetails.Show();
         }
 

@@ -18,13 +18,6 @@
                 
             <div class="row">
                 <div class="col-md-6">
-                </div>
-                <div class="col-md-6">
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6">
                     <Rock:PersonPicker runat="server" ID="ppGroupMemberPerson" Label="Person" Required="true"/>
                     <Rock:RockDropDownList runat="server" ID="ddlGroupRole" DataTextField="Name" DataValueField="Id" Label="Role" />
                 </div>
@@ -37,7 +30,7 @@
 
             <div class="actions">
                 <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click"></asp:LinkButton>
-                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
+                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
             </div>
 
         </div>

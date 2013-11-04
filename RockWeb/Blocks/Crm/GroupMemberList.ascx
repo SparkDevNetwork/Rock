@@ -10,7 +10,8 @@
                 <h4><asp:Literal ID="lHeading" runat="server" Text="Group Members" /></h4>
                 
                 <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-                <Rock:NotificationBox ID="nbRoleWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
+
+                <Rock:NotificationBox ID="nbRoleWarning" runat="server" NotificationBoxType="Warning" Title="No roles!" Visible="false" />
 
                 <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
                     <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" />

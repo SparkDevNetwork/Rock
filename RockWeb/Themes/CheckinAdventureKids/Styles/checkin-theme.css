@@ -7547,6 +7547,10 @@ h1 {
 }
 body {
   background: #dbc189 url('../Assets/Images/background.jpg') top right no-repeat fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
 }
 @media all and (-webkit-min-device-pixel-ratio: 1.5) {
   body {
@@ -7653,6 +7657,13 @@ body {
   font-weight: 300;
   padding-top: 28px;
 }
+/* bootbox modal styles */
+.bootbox .modal-content {
+  background-color: #dbc189;
+}
+.bootbox .modal-footer {
+  border-top-color: #f3ead7;
+}
 .checkin-search-body {
   margin-right: auto !important;
   margin-left: auto !important;
@@ -7687,12 +7698,6 @@ input.checkin-phone-entry {
   color: #92724c;
 }
 /***********************  DEVELOPER ADDITIONS BELOW  ***********************/
-body {
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;
-  background-size: cover;
-}
 .attended h1,
 .attended h2,
 .attended h3,
@@ -7705,6 +7710,11 @@ body {
   text-align: center;
   margin: 1% auto 0;
   color: #54412b;
+}
+.attended .checkin-footer {
+  margin: 0 auto;
+  bottom: 2%;
+  right: 2%;
 }
 .attended .btn-checkin-select {
   margin-bottom: 10px;
@@ -7723,11 +7733,12 @@ body {
 .attended .btn-primary:active.active,
 .attended .btn-primary:active.disabled,
 .attended .btn-primary:active[disabled] {
-  background: #1b0e0e;
+  background: #000000;
+  border: 1px solid #fff;
 }
 .attended .checkin-phone-entry {
   font-weight: 600;
-  margin-top: 25%;
+  margin-top: 15%;
   width: 100%;
 }
 .attended .nothing-eligible {
@@ -7793,12 +7804,12 @@ body {
   border-radius: 10px;
   z-index: 10001 !important;
 }
-.attended.modal-foreground.small {
+.attended.modal-foreground.small-modal {
   width: 60%;
   height: auto;
 }
-.attended.modal-foreground.small .checkin-actions a.btn-primary {
-  font-size: 1.4em;
+.attended.modal-foreground.small-modal .checkin-actions a.btn-primary {
+  font-size: 1em;
 }
 .attended.modal-foreground .checkin-header,
 .attended.modal-foreground .checkin-body {
@@ -7809,9 +7820,6 @@ body {
 .attended.modal-foreground div[class*='col-md-'] {
   padding-left: 3px;
   padding-right: 3px;
-}
-.attended input[type="text"].note {
-  width: 65%;
 }
 .attended .help-inline {
   color: #1b0e0e;
@@ -7827,6 +7835,10 @@ body {
 }
 .attended.modal-foreground .checkin-body .row {
   margin-bottom: 10px;
+}
+.attended .checkbox input[type="checkbox"] {
+  float: none;
+  margin-right: 10px;
 }
 @font-face {
   font-family: 'OpenSans';

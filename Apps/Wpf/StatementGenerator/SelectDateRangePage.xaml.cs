@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace Rock.Apps.StatementGenerator
@@ -14,6 +15,16 @@ namespace Rock.Apps.StatementGenerator
         public SelectDateRangePage()
         {
             InitializeComponent();
+            if ( !dpStartDate.SelectedDate.HasValue )
+            {
+                DateTime firstDayOfYear = new DateTime(DateTime.Now.Year, 1, 1);
+                dpStartDate.SelectedDate = firstDayOfYear;
+            }
+
+            if ( !dpEndDate.SelectedDate.HasValue )
+            {
+                dpEndDate.SelectedDate = DateTime.Now.Date;
+            }
         }
 
         /// <summary>
@@ -51,6 +62,16 @@ namespace Rock.Apps.StatementGenerator
 
             SelectLayoutPage nextPage = new SelectLayoutPage();
             this.NavigationService.Navigate( nextPage );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnBack control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnBack_Click( object sender, RoutedEventArgs e )
+        {
+            this.NavigationService.GoBack();
         }
     }
 }

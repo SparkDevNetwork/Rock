@@ -1,41 +1,25 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ActivitySelect.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Attended.ActivitySelect" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="asp" %>
 
-<script type="text/javascript">
-
-    function setControlEvents() {
-        
-        $find("mpeAddNote").add_shown(function () {
-            $find("mpeAddNote")._backgroundElement.onclick = function () {
-                $find("mpeAddNote").hide();
-            }
-        });
-
-    };
-
-    $(document).ready(function () { setControlEvents(); });
-    Sys.WebForms.PageRequestManager.getInstance().add_endRequest(setControlEvents);
-
-</script>
-
-<asp:UpdatePanel ID="upContent" runat="server" UpdateMode="Conditional">
+<asp:UpdatePanel ID="pnlContent" runat="server" UpdateMode="Conditional">
 <ContentTemplate>
 
-    <Rock:ModalAlert ID="maWarning" runat="server" />
-    <asp:HiddenField ID="hfAttributeId" runat="server" />
+    <asp:Panel ID="pnlActivitySelect" runat="server" CssClass="attended">
 
-    <asp:Panel ID="pnlActivitySelect" runat="server" CssClass="attended" >
+        <Rock:ModalAlert ID="maWarning" runat="server" />
+        <asp:HiddenField ID="hfAllergyAttributeId" runat="server" />
+
         <div class="row checkin-header">
             <div class="col-sm-3 checkin-actions">
-                <asp:LinkButton ID="lbBack" CssClass="btn btn-primary btn-lg" runat="server" OnClick="lbBack_Click" Text="Back"/>
+                <Rock:BootstrapButton ID="lbBack" CssClass="btn btn-primary btn-lg" runat="server" OnClick="lbBack_Click" Text="Back" EnableViewState="false" />
             </div>
 
             <div class="col-sm-6">
-                <h1><asp:Label ID="lblPersonName" runat="server"></asp:Label></h1>
+                <h1><asp:Literal ID="lblPersonName" runat="server" EnableViewState="false" /></h1>
             </div>
 
             <div class="col-sm-3 checkin-actions">
-                <asp:LinkButton ID="lbNext" CssClass="btn btn-primary btn-lg" runat="server" OnClick="lbNext_Click" Text="Next"/>
+                <Rock:BootstrapButton ID="lbNext" CssClass="btn btn-primary btn-lg" runat="server" OnClick="lbNext_Click" Text="Next" EnableViewState="false" />
             </div>
         </div>
                 
@@ -100,35 +84,58 @@
                     </Rock:Grid>
                 </ContentTemplate>
                 </asp:UpdatePanel>
+            </div>
+        </div>
+
+        <div class="row checkin-footer">
+            <div class="col-md-9"></div>
+            <div class="col-md-3">
                 <asp:LinkButton ID="lbAddNote" runat="server" Text="Add a Note" CssClass="btn btn-primary btn-lg btn-checkin-select" OnClick="lbAddNote_Click" CausesValidation="false" />
             </div>
         </div>
+
     </asp:Panel>
 
-    <!-- Add Note Panel -->
-    <asp:Panel ID="pnlAddNote" runat="server" CssClass="attended modal-foreground small" DefaultButton="lbAddNoteSave">
+    <asp:Panel ID="pnlAddNote" runat="server" CssClass="attended modal-foreground small-modal" DefaultButton="lbAddNoteSave" style="display:none">
         <div class="checkin-header row">
             <div class="col-sm-3 checkin-actions">
-                <asp:LinkButton ID="lbAddNoteCancel" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbAddNoteCancel_Click" Text="Cancel" CausesValidation="false"/>
+                <asp:LinkButton ID="lbAddNoteCancel" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbAddNoteCancel_Click" Text="Cancel" CausesValidation="false" EnableViewState="false" />
             </div>
             <div class="col-sm-6">
                 <h3>Add Note</h3>
             </div>
             <div class="col-sm-3 checkin-actions">
-                <asp:LinkButton ID="lbAddNoteSave" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbAddNoteSave_Click" Text="Save" />
+                <asp:LinkButton ID="lbAddNoteSave" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbAddNoteSave_Click" Text="Save" EnableViewState="false" />
             </div>
         </div>
 		
         <div class="checkin-body">
             <div class="row">
-                <%--<asp:PlaceHolder ID="phNotes" runat="server"></asp:PlaceHolder>--%>
                 <fieldset id="fsNotes" runat="server"/>
             </div>
         </div>
     </asp:Panel>
+
     <asp:ModalPopupExtender ID="mpeAddNote" runat="server" BehaviorID="mpeAddNote" TargetControlID="hfOpenNotePanel" PopupControlID="pnlAddNote" 
         CancelControlID="lbAddNoteCancel" BackgroundCssClass="attended modal-background" />
     <asp:HiddenField ID="hfOpenNotePanel" runat="server" />    
 
 </ContentTemplate>
 </asp:UpdatePanel>
+
+<script type="text/javascript">
+
+    function setControlEvents() {
+
+        $find("mpeAddNote").add_shown(function () {
+            $find("mpeAddNote")._backgroundElement.onclick = function () {
+                $find("mpeAddNote").hide();
+            }
+        });
+
+    };
+
+    $(document).ready(function () { setControlEvents(); });
+    Sys.WebForms.PageRequestManager.getInstance().add_endRequest(setControlEvents);
+
+</script>

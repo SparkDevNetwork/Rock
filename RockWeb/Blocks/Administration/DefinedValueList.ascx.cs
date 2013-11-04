@@ -21,7 +21,7 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// User controls for managing defined values
     /// </summary>    
-    public partial class DefinedValueList : RockBlock
+    public partial class DefinedValueList : RockBlock, ISecondaryBlock
     {        
         #region Control Methods
 
@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Administration
             gDefinedValues.IsDeleteEnabled = canAddEditDelete;
 
             modalValue.SaveClick += btnSaveValue_Click;
-            modalValue.OnCancelScript = string.Format( "$('#{0}').val('');", hfDefinedValueId.ClientID );           
+            modalValue.OnCancelScript = string.Format( "$('#{0}').val('');", hfDefinedValueId.ClientID );
         }
 
         /// <summary>
@@ -66,7 +66,14 @@ namespace RockWeb.Blocks.Administration
                 {
                     pnlList.Visible = false;
                 }
-            }            
+            }
+            else
+            {
+                if ( !string.IsNullOrWhiteSpace( hfDefinedValueId.Value ) )
+                {
+                    modalValue.Show();
+                }
+            }
         }
 
         #endregion
@@ -173,6 +180,9 @@ namespace RockWeb.Blocks.Administration
             } );
                         
             BindDefinedValuesGrid();
+
+            hfDefinedValueId.Value = string.Empty;
+            modalValue.Hide();
         }
                
         #endregion
@@ -270,7 +280,7 @@ namespace RockWeb.Blocks.Administration
                     boundField.DataField = dataFieldExpression;
                     boundField.HeaderText = item.Name;
                     boundField.SortExpression = string.Empty;
-                    int insertPos = gDefinedValues.Columns.IndexOf( gDefinedValues.Columns.OfType<ReorderField>().First());
+                    int insertPos = gDefinedValues.Columns.IndexOf( gDefinedValues.Columns.OfType<DeleteField>().First());
                     gDefinedValues.Columns.Insert(insertPos, boundField );
                 }
             }
@@ -314,9 +324,25 @@ namespace RockWeb.Blocks.Administration
             definedValue.LoadAttributes();
             phDefinedValueAttributes.Controls.Clear();
             Rock.Attribute.Helper.AddEditControls( definedValue, phDefinedValueAttributes, true );
+
+            SetValidationGroup( phDefinedValueAttributes.Controls, modalValue.ValidationGroup );
+
             modalValue.Show();
         }
-                
+
+        #endregion
+
+        #region ISecondaryBlock
+
+        /// <summary>
+        /// Sets the visible.
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            pnlContent.Visible = visible;
+        }
+
         #endregion
     }
 }

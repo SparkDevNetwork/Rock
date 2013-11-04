@@ -21,14 +21,14 @@
                         if (getData) {
                             if (availabilityMessageRow.is(':visible')) {
                                 usernameUnavailable.html('This username is available.');
-                                usernameUnavailable.addClass('success');
-                                usernameUnavailable.removeClass('warning');
+                                usernameUnavailable.addClass('alert-success');
+                                usernameUnavailable.removeClass('alert-warning');
                             }
                         } else {
                             availabilityMessageRow.show();
                             usernameUnavailable.html('This username is already taken!');
-                            usernameUnavailable.addClass('warning');
-                            usernameUnavailable.removeClass('success');
+                            usernameUnavailable.addClass('alert-warning');
+                            usernameUnavailable.removeClass('alert-success');
                         }
                     },
                     error: function (xhr, status, error) {
@@ -122,7 +122,7 @@
         </div>
 
         <div class="actions">
-            <asp:Button ID="btnDuplicatesPrev" runat="server" Text="Previous" CssClass="btn" OnClick="btnDuplicatesPrev_Click" />
+            <asp:Button ID="btnDuplicatesPrev" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnDuplicatesPrev_Click" />
             <asp:Button ID="btnDuplicatesNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnDuplicatesNext_Click" />
         </div>
 
@@ -137,7 +137,7 @@
         </div>
 
         <div class="actions">
-            <asp:Button ID="btnSendPrev" runat="server" Text="Previous" CssClass="btn" OnClick="btnSendPrev_Click" />
+            <asp:Button ID="btnSendPrev" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnSendPrev_Click" />
             <asp:Button ID="btnSendYes" runat="server" Text="Yes, send it" CssClass="btn btn-primary" OnClick="btnSendYes_Click" />
             <asp:Button ID="btnSendLogin" runat="server" Text="No, just let me login" CssClass="btn btn-primary" OnClick="btnSendLogin_Click" />
         </div>

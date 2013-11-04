@@ -72,13 +72,10 @@
 
                 <div class="row">
                     
-                    <div id="left-column" class="col-md-3">
-
-                        <div id="left-column-content">
+                    <div class="col-md-3">
                             <Rock:Zone ID="LeftContent" runat="server" />
-                        </div>
                     </div>
-                    <div id="right-column" class="col-md-9">
+                    <div class="col-md-9">
                         <div class="panel panel-default">
                             <div class="panel-body">
                                 <Rock:Zone ID="RightContent" runat="server" />

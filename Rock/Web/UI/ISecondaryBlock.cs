@@ -9,12 +9,12 @@ namespace Rock.Web.UI
     /// <summary>
     /// 
     /// </summary>
-    public interface IDimmableBlock
+    public interface ISecondaryBlock
     {
         /// <summary>
-        /// Sets the dimmed.
+        /// Sets the visible.
         /// </summary>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        void SetDimmed( bool dimmed );
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        void SetVisible( bool visible );
     }
 }

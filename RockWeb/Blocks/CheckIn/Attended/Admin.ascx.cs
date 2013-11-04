@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 phScript.Controls.Add( new LiteralControl( script ) );
 
                 if ( !CurrentKioskId.HasValue || UserBackedUp || CurrentGroupTypeIds == null )
-                {   
+                {
                     // #DEBUG, may be the local machine
                     var kiosk = new DeviceService().Queryable().Where( d => d.Name == Environment.MachineName ).FirstOrDefault();
                     if ( kiosk != null )
@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         private void AttemptKioskMatchByIpOrName()
         {
-            // try to find matching kiosk by REMOTE_ADDR (ip/name).
+            // match kiosk by REMOTE_ADDR (ip/name).
             var checkInDeviceTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
             var device = new DeviceService().GetByIPAddress( Request.ServerVariables["REMOTE_ADDR"], checkInDeviceTypeId, false );
             if ( device != null )

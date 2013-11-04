@@ -106,8 +106,9 @@ namespace RockWeb.Blocks.Administration
                 if ( sortedGroupEditor != null )
                 {
                     var siblingGroupEditors = allCheckinGroupEditors.Where( a => a.GroupTypeId == sortedGroupEditor.GroupTypeId ).ToList();
-                    
+
                     Control parentControl = sortedGroupEditor.Parent;
+                    
                     // parent control has other controls, so just just remove all the checkingroupeditors, sort them, and add them back in the new order
                     foreach ( var item in siblingGroupEditors )
                     {
@@ -129,7 +130,7 @@ namespace RockWeb.Blocks.Administration
                         parentControl.Controls.Add( item );
                     }
 
-                    (sortedGroupEditor.Parent as CheckinGroupTypeEditor).ForceContentVisible = true;
+                    ( sortedGroupEditor.Parent as CheckinGroupTypeEditor ).ForceContentVisible = true;
                 }
             }
         }
@@ -231,7 +232,7 @@ namespace RockWeb.Blocks.Administration
         /// Creates the group type editor controls.
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
-        private void CreateGroupTypeEditorControls( GroupType groupType, Control parentControl )
+        private void CreateGroupTypeEditorControls( GroupType groupType, Control parentControl, bool forceGroupTypeEditorVisible = false )
         {
             CheckinGroupTypeEditor groupTypeEditor = new CheckinGroupTypeEditor();
             groupTypeEditor.ID = "GroupTypeEditor_" + groupType.Guid.ToString( "N" );
@@ -242,6 +243,7 @@ namespace RockWeb.Blocks.Administration
             groupTypeEditor.AddCheckinLabelClick += groupTypeEditor_AddCheckinLabelClick;
             groupTypeEditor.DeleteGroupTypeClick += groupTypeEditor_DeleteGroupTypeClick;
             groupTypeEditor.CheckinLabels = null;
+            groupTypeEditor.ForceContentVisible = forceGroupTypeEditorVisible;
 
             if ( GroupTypeCheckinLabelAttributesState.ContainsKey( groupType.Guid ) )
             {
@@ -353,7 +355,7 @@ namespace RockWeb.Blocks.Administration
             checkinArea.ParentGroupTypes.Add( parentGroupType );
             checkinArea.LoadAttributes();
 
-            CreateGroupTypeEditorControls( checkinArea, phCheckinGroupTypes );
+            CreateGroupTypeEditorControls( checkinArea, phCheckinGroupTypes, true );
         }
 
         /// <summary>
@@ -569,7 +571,7 @@ namespace RockWeb.Blocks.Administration
             hfAddLocationGroupGuid.Value = checkinGroupEditor.GroupGuid.ToString();
             checkinGroupEditor.ForceContentVisible = true;
             ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).ForceContentVisible = true;
-            
+
             mdLocationPicker.Show();
         }
 
@@ -957,6 +959,8 @@ namespace RockWeb.Blocks.Administration
                 pnlDetails.Visible = false;
                 return;
             }
+
+            lCheckinAreasTitle.Text = parentGroupType.Name.FormatAsHtmlTitle();
 
             hfParentGroupTypeId.Value = parentGroupType.Id.ToString();
 

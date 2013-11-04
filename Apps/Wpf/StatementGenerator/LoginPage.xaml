@@ -6,7 +6,6 @@
       mc:Ignorable="d"
       d:DesignHeight="500"
       d:DesignWidth="800"
-      Title="Statement Generator - Login"
       Loaded="Page_Loaded"
       Background="#FF373737">
 
@@ -73,8 +72,8 @@
                    Margin="0,0,0,20" />
             <Label Grid.Column="1"
                    Grid.Row="0"
-                   Style="{StaticResource labelStyleTitle}">
-                Statement Generator
+                   Style="{StaticResource labelStyleTitle}"
+                   Content="Statement Generator">
             </Label>
         </Grid>
 

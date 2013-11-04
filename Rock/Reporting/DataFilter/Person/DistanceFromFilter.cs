@@ -176,6 +176,7 @@ function() {
             {
                 var locationPicker = controls[0] as LocationPicker;
                 locationPicker.Location = new LocationService().Get( selectionValues[0].AsInteger() ?? 0 );
+                locationPicker.PickerMode = locationPicker.GetBestPickerModeForLocation( locationPicker.Location );
                 var numberBox = controls[1] as NumberBox;
                 numberBox.Text = selectionValues[1];
             }
@@ -199,11 +200,6 @@ function() {
                 if ( location == null )
                 {
                     return null;
-                }
-
-                if ( location.GeoPoint == null )
-                {
-                    new LocationService().Geocode( location, null );
                 }
 
                 var selectedLocationGeoPoint = location.GeoPoint;

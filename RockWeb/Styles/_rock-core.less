@@ -41,6 +41,37 @@
     background-color: @label-info-bg;
 }
 
+/* add alternate popover title style that exists inside of the popover-content to use ajax updates */
+.popover-content {
+    header {
+        .clearfix();
+        margin: -9px -14px 8px -14px;
+        padding: 8px 14px;
+        font-size: @font-size-base;
+        font-weight: normal;
+        line-height: 18px;
+        background-color: @popover-title-bg;
+        border-bottom: 1px solid darken(@popover-title-bg, 5%);
+        border-radius: 5px 5px 0 0;
+
+        img {
+            float: left;
+            margin-right: 6px;
+            width: 32px;
+        }
+
+        h3 {
+            float: left;
+            font-size: 18px;
+            margin-top: 2px;
+
+            small {
+                display: block;
+            }
+        }
+    }
+}
+
 /* context help  */
 a.help {
     margin-left: 6px;
@@ -73,10 +104,10 @@ a.help {
         border-color: darken(@accent-color, 10%)
     }
 
-    .actions {
+    /*.actions {
         margin-top: 36px;
         .clearfix();
-    }
+    }*/ // breaks person details page
 }
 
 //.panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}

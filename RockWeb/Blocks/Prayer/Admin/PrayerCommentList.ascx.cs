@@ -132,16 +132,6 @@ namespace RockWeb.Blocks.Prayer
             //    prayerComments = prayerComments.Where( c => c.CategoryId == _blockInstanceGroupCategoryId );
             //}
 
-            // TODO: Filter by approved/unapproved
-            //if ( rblApprovedFilter.SelectedValue == "unapproved" )
-            //{
-            //    prayerComments = prayerComments.Where( a => a.IsApproved == false || !a.IsApproved.HasValue );
-            //}
-            //else if ( rblApprovedFilter.SelectedValue == "approved" )
-            //{
-            //    prayerComments = prayerComments.Where( a => a.IsApproved == true );
-            //}
-
             // Filter by Date Range
             if ( pDateRange.LowerValue.HasValue )
             {
@@ -196,16 +186,6 @@ namespace RockWeb.Blocks.Prayer
                 if ( prayerComment != null )
                 {
                     failure = false;
-                    // if it was approved, set it to unapproved... otherwise
-                    //if ( prayerComment.IsApproved ?? false )
-                    //{
-                    //    prayerComment.IsApproved = false;
-                    //}
-                    //else
-                    //{
-                    //    prayerComment.IsApproved = true;
-                    //}
-
                     noteService.Save( prayerComment, CurrentPersonId );
                 }
 
@@ -302,13 +282,6 @@ namespace RockWeb.Blocks.Prayer
             {
                 pDateRange.UpperValue = DateTime.Parse( toDate );
             }
-
-            // Set the Approval Status radio options.
-            var item = ddlApprovedFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.ApprovalStatus ) );
-            if ( item != null )
-            {
-                item.Selected = true;
-            }
         }
 
         /// <summary>
@@ -320,12 +293,6 @@ namespace RockWeb.Blocks.Prayer
         {
             rFilter.SaveUserPreference( FilterSetting.FromDate, pDateRange.LowerValue.HasValue ? pDateRange.LowerValue.Value.ToString( "d" ) : string.Empty );
             rFilter.SaveUserPreference( FilterSetting.ToDate, pDateRange.UpperValue.HasValue ? pDateRange.UpperValue.Value.ToString( "d" ) : string.Empty );
-
-            // only save settings that are not the default "all" preference...
-            if ( ddlApprovedFilter.SelectedValue != "all" )
-            {
-                rFilter.SaveUserPreference( FilterSetting.ApprovalStatus, ddlApprovedFilter.SelectedValue );
-            }
 
             BindCommentsGrid();
         }

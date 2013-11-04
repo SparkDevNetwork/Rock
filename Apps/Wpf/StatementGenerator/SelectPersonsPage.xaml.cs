@@ -63,10 +63,17 @@ namespace Rock.Apps.StatementGenerator
             {
                 if ( grdPersons.SelectedValue != null )
                 {
+                    // they selected a person in the grid
                     ReportOptions.Current.PersonId = (int)grdPersons.SelectedValue.GetPropertyValue( "Id" );
+                }
+                else if ( grdPersons.Items.Count == 1 )
+                {
+                    // they didn't select a person in the grid, but there is only one listed. So, that is who they want to run the report for
+                    ReportOptions.Current.PersonId = (int)grdPersons.Items[0].GetPropertyValue( "Id" );
                 }
                 else
                 {
+                    // no person is selected, show a warning message 
                     lblWarning.Visibility = Visibility.Visible;
                     return;
                 }
@@ -77,30 +84,25 @@ namespace Rock.Apps.StatementGenerator
         }
 
         /// <summary>
-        /// Handles the Checked event of the radSingle control.
+        /// Handles the Checked event of the radPersons control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
-        private void radSingle_Checked( object sender, RoutedEventArgs e )
+        private void radPersons_Checked( object sender, RoutedEventArgs e )
         {
             if ( this.IsInitialized )
             {
-                txtPersonSearch.IsEnabled = true;
-                grdPersons.IsEnabled = true;
-            }
-        }
-
-        /// <summary>
-        /// Handles the Checked event of the radAllPersons control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
-        private void radAllPersons_Checked( object sender, RoutedEventArgs e )
-        {
-            if ( this.IsInitialized )
-            {
-                txtPersonSearch.IsEnabled = false;
-                grdPersons.IsEnabled = false;
+                if ( radSingle.IsChecked == true)
+                {
+                    txtPersonSearch.Visibility = Visibility.Visible;
+                    grdPersons.Visibility = Visibility.Visible;
+                    
+                }
+                else
+                {
+                    txtPersonSearch.Visibility = Visibility.Hidden;
+                    grdPersons.Visibility = Visibility.Hidden;
+                }
             }
         }
 
@@ -179,7 +181,7 @@ namespace Rock.Apps.StatementGenerator
                         {
                             Id = node["Id"].InnerText.AsInteger() ?? 0,
                             FullName = node["Name"].InnerText,
-                            Age = node["Age"].InnerText,
+                            Age = node["Age"].InnerText == "-1" ? "" : node["Age"].InnerText,
                             Gender = node["Gender"].InnerText
                         } );
                     }
@@ -203,6 +205,26 @@ namespace Rock.Apps.StatementGenerator
                     lblWarning.Visibility = Visibility.Hidden;
                 }
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnBack control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnBack_Click( object sender, RoutedEventArgs e )
+        {
+            this.NavigationService.GoBack();
+        }
+
+        /// <summary>
+        /// Handles the Loaded event of the Page control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void Page_Loaded( object sender, RoutedEventArgs e )
+        {
+            radPersons_Checked( sender, e );
         }
     }
 }

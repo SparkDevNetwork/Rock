@@ -185,6 +185,17 @@
            TargetType="{x:Type Label}">
         <Setter Property="Label.Foreground"
                 Value="White"></Setter>
+        <Setter Property="Label.Margin"
+                Value="4,6,0,4"></Setter>
+    </Style>
+
+    <Style x:Key="labelStyleIconPrimaryLeft"
+           BasedOn="{StaticResource labelStyleIcon}"
+           TargetType="{x:Type Label}">
+        <Setter Property="Label.Foreground"
+                Value="White"></Setter>
+        <Setter Property="Label.Margin"
+                Value="0,6,0,4"></Setter>
     </Style>
 
     <!-- Label style: Button Text-->

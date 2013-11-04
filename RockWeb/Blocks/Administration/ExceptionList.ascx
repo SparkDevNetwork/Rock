@@ -9,9 +9,8 @@
 <asp:UpdatePanel ID="upExceptionList" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlExceptionGroups" runat="server" Visible="true">
-            
             <div class="row">
-                <div class="span12 clearExceptionsLink">
+                <div class="col-md-12 clearExceptionsLink">
                     <asp:LinkButton ID="btnClearExceptions" runat="server" CssClass="btn btn-action btn-sm" OnClientClick="return confirmExceptionListClear();" OnClick="btnClearExceptions_Click" CausesValidation="false">
                         <i class="icon-repeat"></i> Clear All Exceptions
                     </asp:LinkButton>
@@ -23,7 +22,7 @@
                 <Rock:PagePicker ID="ppPage" runat="server" Label="Page" />
                 <Rock:PersonPicker ID="ppUser" runat="server" Label="User" />
                 <Rock:RockTextBox ID="txtStatusCode" runat="server" Label="Status Code" />
-                <Rock:DatePicker ID="dpStartDate" runat="server"   Label="Start Date" />
+                <Rock:DatePicker ID="dpStartDate" runat="server" Label="Start Date" />
                 <Rock:DatePicker ID="dpEndDate" runat="server" Label="End Date" />
             </Rock:GridFilter>
             <Rock:Grid ID="gExceptionList" runat="server" AllowSorting="true" OnRowSelected="gExceptionList_RowSelected" EmptyDataText="No Exceptions Found">
@@ -41,9 +40,10 @@
         <asp:Panel ID="pnlExceptionOccurrences" runat="server" Visible="false">
             <asp:HiddenField ID="hfBaseExceptionID" runat="server" />
             <div class="banner">
-                <h1><asp:Literal ID="lDetailTitle" runat="server"></asp:Literal></h1>
+                <h1>
+                    <asp:Literal ID="lDetailTitle" runat="server"></asp:Literal></h1>
             </div>
-            
+
             <div class="row">
                 <asp:Literal ID="lblMainDetails" runat="server" />
             </div>
@@ -57,6 +57,13 @@
                     <asp:BoundField DataField="Description" HeaderText="Exception" SortExpression="Description" />
                 </Columns>
             </Rock:Grid>
+            <div class="row">
+                <div class="col-md-1">
+                    <asp:LinkButton ID="btnReturnToList" runat="server" CssClass="btn btn-action btn-sm" OnClick="btnReturnToList_Click" CausesValidation="false">
+                        <i class="icon-arrow-left"></i> Return to List
+                    </asp:LinkButton>
+                </div>
+            </div>
         </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>
