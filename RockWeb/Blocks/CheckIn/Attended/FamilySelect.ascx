@@ -60,7 +60,8 @@
 						        CssClass="btn btn-primary btn-lg btn-block btn-checkin-select person">
 						        <%# Eval("Person.FullName") %><br />
 						        <span class='checkin-sub-title'>
-							        Birthday: <%# Eval("Person.BirthMonth") + "/" + Eval("Person.BirthDay") ?? "N/A" %> 
+							        Birthday: <%# Eval("Person.BirthMonth") + "/" + Eval("Person.BirthDay") + " " ?? "N/A " %> 
+                                    <%# Convert.ToInt32( Eval( "Person.Age" ) ) <= 18 ? "Age: " + Eval( "Person.Age" ) : string.Empty %>
 						        </span>
 					        </asp:LinkButton>
 				        </ItemTemplate>    
@@ -90,7 +91,7 @@
 					        <asp:LinkButton ID="lbSelectVisitor" runat="server" data-id='<%# Eval("Person.Id") %>' 
 						        CssClass="btn btn-primary btn-lg btn-block btn-checkin-select visitor">
 						        <%# Eval("Person.FullName") %><br />
-						        <span class='checkin-sub-title'>Birthday: <%# Eval("Person.BirthMonth") + "/" + Eval("Person.BirthDay") ?? "Not entered" %></span>
+						        <span class='checkin-sub-title'>Birthday: <%# Eval("Person.BirthMonth") + "/" + Eval("Person.BirthDay") ?? "N/A" %></span>
 					        </asp:LinkButton>
 				        </ItemTemplate>
 			        </asp:ListView>

@@ -30,6 +30,29 @@ namespace RockWeb.Blocks.CheckIn.Attended
     [LinkedPage("Activity Select Page")]
     public partial class Confirm : CheckInBlock
     {
+        /// <summary>
+        /// Check-In information class used to bind the selected grid.
+        /// </summary>
+        protected class CheckIn
+        {
+            public int PersonId { get; set; }
+            public string Name { get; set; }
+            public string Location { get; set; }
+            public int LocationId { get; set; }
+            public string Schedule { get; set; }
+            public int ScheduleId { get; set; }
+
+            public CheckIn()
+            {
+                PersonId = 0;
+                Name = string.Empty;
+                Location = string.Empty;
+                LocationId = 0;
+                Schedule = string.Empty;
+                ScheduleId = 0;
+            }
+        }
+
         #region Control Methods
 
         /// <summary>
@@ -66,7 +89,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
-        /// Creates the grid data source.
+        /// Binds the grid.
         /// </summary>
         protected void BindGrid()
         {
@@ -76,57 +99,37 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var checkInList = new List<CheckIn>();
             foreach ( var person in selectedPeopleList )
             {
-                //var checkIn = new CheckIn();
-                //checkIn.PersonId = person.Person.Id;
-                //checkIn.Name = person.Person.FullName;
-                
                 var locations = person.GroupTypes.Where( gt => gt.Selected )
                     .SelectMany( gt => gt.Groups ).Where( g => g.Selected )
                     .SelectMany( g => g.Locations ).Where( l => l.Selected ).ToList();
-                                
-                foreach ( var location in locations )
-                {
-                    foreach ( var schedule in location.Schedules.Where( s => s.Selected ) )
-                    {
-                        var checkIn = new CheckIn();
-                        checkIn.PersonId = person.Person.Id;
-                        checkIn.Name = person.Person.FullName;
-                        checkIn.Location = location.Location.Name;
-                        checkIn.LocationId = location.Location.Id;
-                        checkIn.Schedule = schedule.Schedule.Name;
-                        checkIn.ScheduleId = schedule.Schedule.Id;
-                        checkInList.Add( checkIn );
-                    }
-                }
 
+                if ( locations.Any() )
+                {
+                    foreach ( var location in locations )
+                    {
+                        foreach ( var schedule in location.Schedules.Where( s => s.Selected ) )
+                        {
+                            var checkIn = new CheckIn();
+                            checkIn.PersonId = person.Person.Id;
+                            checkIn.Name = person.Person.FullName;
+                            checkIn.Location = location.Location.Name;
+                            checkIn.LocationId = location.Location.Id;
+                            checkIn.Schedule = schedule.Schedule.Name;
+                            checkIn.ScheduleId = schedule.Schedule.Id;
+                            checkInList.Add( checkIn );
+                        }                    
+                    }                    
+                }
+                else
+                {   // auto assignment didn't select anything
+                    checkInList.Add( new CheckIn { PersonId = person.Person.Id, Name = person.Person.FullName } );
+                }
             }
 
             gPersonList.DataSource = checkInList;
             gPersonList.DataBind();
         }
-
-         
-        protected class CheckIn
-        {
-            public int PersonId { get; set; }
-            public string Name { get; set; }
-            public string Location { get; set; }
-            public int LocationId { get; set; }
-            public string Schedule { get; set; }
-            public int ScheduleId { get; set; }
-
-            public CheckIn()
-            {
-                PersonId = 0;
-                Name = string.Empty;
-                Location = string.Empty;
-                LocationId = 0;
-                Schedule = string.Empty;
-                ScheduleId = 0;
-            }
-
-        }
-
+        
         #endregion
 
         #region Edit Events
@@ -182,6 +185,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "personId", dataKeyValues["PersonId"].ToString() );
             queryParams.Add( "locationId", dataKeyValues["LocationId"].ToString() );
+            queryParams.Add( "scheduleId", dataKeyValues["ScheduleId"].ToString() );
             NavigateToLinkedPage( "ActivitySelectPage", queryParams);
         }
 
