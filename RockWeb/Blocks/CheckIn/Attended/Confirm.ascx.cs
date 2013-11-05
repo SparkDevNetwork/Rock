@@ -73,37 +73,40 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var selectedPeopleList = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
                 .People.Where( p => p.Selected ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
 
-            List<CheckInInfo> checkInInfoList = new List<CheckInInfo>();
+            var checkInList = new List<CheckIn>();
             foreach ( var person in selectedPeopleList )
             {
+                //var checkIn = new CheckIn();
+                //checkIn.PersonId = person.Person.Id;
+                //checkIn.Name = person.Person.FullName;
+                
                 var locations = person.GroupTypes.Where( gt => gt.Selected )
                     .SelectMany( gt => gt.Groups ).Where( g => g.Selected )
-                    .SelectMany( g => g.Locations ).Where( l => l.Selected ).ToList();                    
+                    .SelectMany( g => g.Locations ).Where( l => l.Selected ).ToList();
                                 
                 foreach ( var location in locations )
                 {
                     foreach ( var schedule in location.Schedules.Where( s => s.Selected ) )
                     {
-                        var checkInInfo = new CheckInInfo();
-                        checkInInfo.PersonId = person.Person.Id;
-                        checkInInfo.Name = person.Person.FullName;
-                        checkInInfo.Location = location.Location.Name;
-                        checkInInfo.LocationId = location.Location.Id;
-                        checkInInfo.Schedule = schedule.Schedule.Name;
-                        checkInInfo.ScheduleId = schedule.Schedule.Id;
-                        checkInInfoList.Add( checkInInfo );
+                        var checkIn = new CheckIn();
+                        checkIn.PersonId = person.Person.Id;
+                        checkIn.Name = person.Person.FullName;
+                        checkIn.Location = location.Location.Name;
+                        checkIn.LocationId = location.Location.Id;
+                        checkIn.Schedule = schedule.Schedule.Name;
+                        checkIn.ScheduleId = schedule.Schedule.Id;
+                        checkInList.Add( checkIn );
                     }
                 }
+
             }
 
-            gPersonList.DataSource = checkInInfoList;
+            gPersonList.DataSource = checkInList;
             gPersonList.DataBind();
         }
 
-        /// <summary>
-        /// Check In Information class used to bind the grid.
-        /// </summary>
-        protected class CheckInInfo
+         
+        protected class CheckIn
         {
             public int PersonId { get; set; }
             public string Name { get; set; }
@@ -112,7 +115,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             public string Schedule { get; set; }
             public int ScheduleId { get; set; }
 
-            public CheckInInfo()
+            public CheckIn()
             {
                 PersonId = 0;
                 Name = string.Empty;
