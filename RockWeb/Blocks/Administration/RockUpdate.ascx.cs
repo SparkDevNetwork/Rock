@@ -25,7 +25,7 @@ namespace RockWeb.Blocks.Administration
         private string rockPackageId = "RockChMS";
 
         /// <summary>
-        /// Obtains a WebProjectManager from the Global "PackageSourceUrl" Attribute.
+        /// Obtains a WebProjectManager from the Global "UpdateServerUrl" Attribute.
         /// </summary>
         protected WebProjectManager NuGetService
         {
@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Administration
                 if ( nuGetService == null )
                 {
                     var globalAttributesCache = GlobalAttributesCache.Read();
-                    string packageSource = globalAttributesCache.GetValue( "PackageSourceUrl" );
+                    string packageSource = globalAttributesCache.GetValue( "UpdateServerUrl" );
                     string siteRoot = Request.MapPath( "~/" );
                     nuGetService = new WebProjectManager( packageSource, siteRoot );
                 }
