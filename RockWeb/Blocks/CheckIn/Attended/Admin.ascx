@@ -7,7 +7,7 @@
     <asp:HiddenField ID="hfLongitude" runat="server" />
     <asp:HiddenField ID="hfKiosk" runat="server" />
     <asp:HiddenField ID="hfGroupTypes" runat="server" />
-    <asp:HiddenField ID="hfParentTypes" runat="server" Value="" ClientIDMode="static"/>
+    
     <span style="display: none">
         <asp:LinkButton ID="lbRefresh" runat="server" OnClick="lbRefresh_Click"></asp:LinkButton>
         <asp:LinkButton ID="lbCheckGeoLocation" runat="server" OnClick="lbCheckGeoLocation_Click"></asp:LinkButton>
@@ -48,12 +48,12 @@
     function setControlEvents() {
         $('.btn-checkin-select').unbind('click').on('click', function () {
             $(this).toggleClass('active');
-            var selectedIds = $('#hfParentTypes').val();
+            var selectedIds = $('input[id$="hfGroupTypes"]').val();
             var buttonId = this.getAttribute('data-id') + ',';
             if (typeof selectedIds == "string" && (selectedIds.indexOf(buttonId) >= 0)) {
-                $('#hfParentTypes').val(selectedIds.replace(buttonId, ''));
+                $('input[id$="hfGroupTypes"]').val(selectedIds.replace(buttonId, ''));
             } else {
-                $('#hfParentTypes').val(buttonId + selectedIds);
+                $('input[id$="hfGroupTypes"]').val(buttonId + selectedIds);
             }
             return false;
         });

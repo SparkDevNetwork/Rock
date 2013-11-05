@@ -46,6 +46,7 @@ namespace Rock.Workflow.Action.CheckIn
                             CheckInGroupType groupType;
                             if ( person.GroupTypes.Count > 1 )
                             {
+                                // check grouptypes for a grade range
                                 var gradeFilter = person.GroupTypes.Where( gt => gt.GroupType.Attributes.ContainsKey( "GradeRange" ) ).Select( g =>
                                         new
                                         {
@@ -54,12 +55,12 @@ namespace Rock.Workflow.Action.CheckIn
                                                 .Select( av => av.AsType<int?>() )
                                         } ).ToList();
 
-                                // use an aggregate function to find the grouptype with the closest grade
-                                // #ToDO: Test the upper value of grade and age ranges
+                                // #TODO: Test the upper value of grade and age ranges
                                 var groupTypeMatchGrade = gradeFilter.Aggregate( ( x, y ) => Math.Abs( Convert.ToDouble( x.GradeRange.First() - person.Person.Grade ) )
                                         < Math.Abs( Convert.ToDouble( y.GradeRange.First() - person.Person.Grade ) ) ? x : y )
                                             .GroupType;
 
+                                // check grouptypes for an age range
                                 var ageFilter = person.GroupTypes.Where( g => g.GroupType.Attributes.ContainsKey( "AgeRange" ) ).Select( g =>
                                         new
                                         {
@@ -68,7 +69,6 @@ namespace Rock.Workflow.Action.CheckIn
                                                 .Select( av => av.AsType<double?>() )
                                         } ).ToList();
 
-                                // use an aggregate function to find the grouptype with the closest age
                                 var groupTypeMatchAge = ageFilter.Aggregate( ( x, y ) => Math.Abs( Convert.ToDouble( x.AgeRange.First() - person.Person.Age ) )
                                         < Math.Abs( Convert.ToDouble( y.AgeRange.First() - person.Person.Age ) ) ? x : y )
                                             .GroupType;
@@ -76,16 +76,17 @@ namespace Rock.Workflow.Action.CheckIn
                                 groupType = groupTypeMatchGrade ?? groupTypeMatchAge;
                             }
                             else 
-                            {   // only one option is left
+                            {   // only one grouptype is available
                                 groupType = person.GroupTypes.FirstOrDefault();
-                            }                            
+                            }
 
-                            if ( groupType != null && groupType.Groups.Count > 0 )
+                            if ( groupType != null && groupType.Groups.Any() )
                             {
                                 groupType.PreSelected = true;
                                 groupType.Selected = true;
+
                                 var group = groupType.Groups.Where( g => g.Selected ).FirstOrDefault();
-                                if ( group == null )
+                                if ( group == null && groupType.Groups.Count > 1 )
                                 {
                                     //  check groups by grade
                                     var gradeGroups = groupType.Groups.Where( g => g.Group.Attributes.ContainsKey( "GradeRange" ) ).Select( g => 
@@ -95,8 +96,7 @@ namespace Rock.Workflow.Action.CheckIn
                                                 .Select( av => av.AsType<int?>() )
                                         } ).ToList();
 
-                                    var groupMatchGrade = new CheckInGroup();
-                                    groupMatchGrade = null;
+                                    CheckInGroup groupMatchGrade = null;
                                     if ( gradeGroups.Count > 0 )
                                     {
                                         groupMatchGrade = gradeGroups.Aggregate( ( x, y ) => Math.Abs( Convert.ToDouble( x.GradeRange.First() - person.Person.Grade ) )
@@ -112,8 +112,7 @@ namespace Rock.Workflow.Action.CheckIn
                                                 .Select( av => av.AsType<double?>() )
                                         } ).ToList();
 
-                                    var groupMatchAge = new CheckInGroup();
-                                    groupMatchAge = null;
+                                    CheckInGroup groupMatchAge = null;                                    
                                     if ( ageGroups.Count > 0 )
                                     {
                                         groupMatchAge = ageGroups.Aggregate( ( x, y ) => Math.Abs( Convert.ToDouble( x.AgeRange.First() - person.Person.Age ) )
@@ -122,9 +121,13 @@ namespace Rock.Workflow.Action.CheckIn
                                     }
 
                                     group = groupMatchGrade ?? groupMatchAge;
-                                }                                
+                                }
+                                else
+                                {   // only one group is available
+                                    group = groupType.Groups.FirstOrDefault();
+                                }
 
-                                if ( group != null && group.Locations.Count > 0 )
+                                if ( group != null && group.Locations.Any() )
                                 {
                                     group.PreSelected = true;
                                     group.Selected = true;
@@ -137,7 +140,7 @@ namespace Rock.Workflow.Action.CheckIn
                                         location = group.Locations.Where( l => l.Location.Id == primaryGroupLocationId ).FirstOrDefault();
                                     }
 
-                                    if ( location != null && location.Schedules.Count > 0 )
+                                    if ( location != null && location.Schedules.Any() )
                                     {
                                         location.PreSelected = true;
                                         location.Selected = true;
