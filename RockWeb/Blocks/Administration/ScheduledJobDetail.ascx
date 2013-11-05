@@ -20,8 +20,8 @@
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbNotificationEmails" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock" PropertyName="NotificationEmails" />
                         <Rock:RockDropDownList ID="ddlNotificationStatus" runat="server" Label="Notification Status" />
-                        <Rock:DataTextBox ID="tbCronExpression" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock" PropertyName="CronExpression" />
-                        <p>Need help with this expression? Try <a href="http://www.cronmaker.com" target="_blank">CronMaker</a>.</p>
+                        <Rock:DataTextBox ID="tbCronExpression" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock" PropertyName="CronExpression" 
+                            Help="Add a valid cron expression. Need help? Try <a href='http://cronmaker.com' target='_blank'>CronMaker</a>." />
                     </div>
                 </div>
 
@@ -32,5 +32,6 @@
 
             </div>
         </asp:Panel>
+
     </ContentTemplate>
 </asp:UpdatePanel>
