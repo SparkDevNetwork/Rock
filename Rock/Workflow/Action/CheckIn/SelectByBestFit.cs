@@ -86,7 +86,7 @@ namespace Rock.Workflow.Action.CheckIn
                                 groupType.Selected = true;
 
                                 var group = groupType.Groups.Where( g => g.Selected ).FirstOrDefault();
-                                if ( group == null && groupType.Groups.Count > 1 )
+                                if ( group == null && groupType.Groups.Any() )
                                 {
                                     //  check groups by grade
                                     var gradeGroups = groupType.Groups.Where( g => g.Group.Attributes.ContainsKey( "GradeRange" ) ).Select( g => 
@@ -120,12 +120,8 @@ namespace Rock.Workflow.Action.CheckIn
                                                     .Group;
                                     }
 
-                                    group = groupMatchGrade ?? groupMatchAge;
-                                }
-                                else
-                                {   // only one group is available
-                                    group = groupType.Groups.FirstOrDefault();
-                                }
+                                    group = groupMatchGrade ?? groupMatchAge ?? groupType.Groups.FirstOrDefault();
+                                }                               
 
                                 if ( group != null && group.Locations.Any() )
                                 {
