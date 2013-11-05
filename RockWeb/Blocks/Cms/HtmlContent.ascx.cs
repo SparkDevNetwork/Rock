@@ -272,6 +272,11 @@ namespace RockWeb.Blocks.Cms
                 else
                     html = string.Empty;
 
+                // Resolve any dynamic url references
+                string appRoot = ResolveRockUrl("~/");
+                string themeRoot = ResolveRockUrl("~~/");
+                html = html.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+
                 // cache content
                 int cacheDuration = 0;
                 if ( Int32.TryParse( GetAttributeValue( "CacheDuration" ), out cacheDuration ) && cacheDuration > 0 )
