@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Administration
                 if ( nuGetService == null )
                 {
                     var globalAttributesCache = GlobalAttributesCache.Read();
-                    string packageSource = globalAttributesCache.GetValue( "PackageSourceUrl" );
+                    string packageSource = globalAttributesCache.GetValue( "UpdateServerUrl" );
                     string siteRoot = Request.MapPath( "~/" );
 
                     nuGetService = new WebProjectManager( packageSource, siteRoot );
