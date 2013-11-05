@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
 using System.Web.UI;
 using Rock;
 using Rock.Constants;
@@ -81,8 +82,7 @@ namespace RockWeb.Blocks.Administration
             job.Name = tbName.Text;
             job.Description = tbDescription.Text;
             job.IsActive = cbActive.Checked;
-            job.Assembly = tbAssembly.Text;
-            job.Class = tbClass.Text;
+            job.Class = ddlJobTypes.SelectedValue;
             job.NotificationEmails = tbNotificationEmails.Text;
             job.NotificationStatus = (JobNotificationStatus)int.Parse( drpNotificationStatus.SelectedValue );
             job.CronExpression = tbCronExpression.Text;
@@ -102,9 +102,10 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
-        /// Shows the edit.
+        /// Shows the detail.
         /// </summary>
-        /// <param name="jobId">The job id.</param>
+        /// <param name="itemKey">The item key.</param>
+        /// <param name="itemKeyValue">The item key value.</param>
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
             // return if unexpected itemKey 
@@ -121,20 +122,19 @@ namespace RockWeb.Blocks.Administration
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 job = new ServiceJobService().Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( ServiceJob.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Edit( ServiceJob.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
                 job = new ServiceJob { Id = 0, IsActive = true };
-                lActionTitle.Text = ActionTitle.Add( ServiceJob.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Add( ServiceJob.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             hfId.Value = job.Id.ToString();
             tbName.Text = job.Name;
             tbDescription.Text = job.Description;
             cbActive.Checked = job.IsActive.HasValue ? job.IsActive.Value : false;
-            tbAssembly.Text = job.Assembly;
-            tbClass.Text = job.Class;
+            ddlJobTypes.SelectedValue = job.Class;
             tbNotificationEmails.Text = job.NotificationEmails;
             drpNotificationStatus.SetValue( (int)job.NotificationStatus );
             tbCronExpression.Text = job.CronExpression;
@@ -157,15 +157,14 @@ namespace RockWeb.Blocks.Administration
 
             if ( readOnly )
             {
-                lActionTitle.Text = ActionTitle.View( ServiceJob.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.View( ServiceJob.FriendlyTypeName ).FormatAsHtmlTitle();
                 btnCancel.Text = "Close";
             }
 
             tbName.ReadOnly = readOnly;
             tbDescription.ReadOnly = readOnly;
             cbActive.Enabled = !readOnly;
-            tbAssembly.ReadOnly = readOnly;
-            tbClass.ReadOnly = readOnly;
+            ddlJobTypes.Enabled = !readOnly;
             tbNotificationEmails.ReadOnly = readOnly;
             drpNotificationStatus.Enabled = !readOnly;
             tbCronExpression.ReadOnly = readOnly;
@@ -179,6 +178,8 @@ namespace RockWeb.Blocks.Administration
         private void LoadDropDowns()
         {
             drpNotificationStatus.BindToEnum( typeof( JobNotificationStatus ) );
+            ddlJobTypes.DataSource = Rock.Reflection.FindTypes( typeof( Quartz.IJob ) ).Values;
+            ddlJobTypes.DataBind();
         }
 
         #endregion

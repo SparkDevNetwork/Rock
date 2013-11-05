@@ -222,7 +222,12 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void UpdateHelpText()
         {
-            hbSchedulePreview.Text = "<div style='white-space: pre' Font-Names='Consolas' Font-Size='9'>" + sbSchedule.iCalendarContent + "</div>";
+            var fakeSchedule = new Rock.Model.Schedule();
+            fakeSchedule.iCalendarContent = sbSchedule.iCalendarContent;
+            sbSchedule.ToolTip = fakeSchedule.ToFriendlyScheduleText();
+
+            hbSchedulePreview.Text = @"<strong>iCalendar Content</strong>
+<div style='white-space: pre' Font-Names='Consolas' Font-Size='9'><br />" + sbSchedule.iCalendarContent + "</div>";
 
             iCalendar calendar = iCalendar.LoadFromStream( new StringReader( sbSchedule.iCalendarContent ) ).First() as iCalendar;
             DDay.iCal.Event calendarEvent = calendar.Events[0] as Event;
@@ -231,7 +236,7 @@ namespace RockWeb.Blocks.Administration
             {
                 List<Occurrence> nextOccurrences = calendar.GetOccurrences( DateTime.Now.Date, DateTime.Now.Date.AddYears( 1 ) ).Take( 26 ).ToList();
 
-                string listHtml = "<hr /><span>Occurrences Preview</span><ul>";
+                string listHtml = "<hr /><strong>Occurrences Preview</strong><ul>";
                 foreach ( var occurrence in nextOccurrences )
                 {
                     if ( occurrence.Period.StartTime.Value.Date.Equals( occurrence.Period.EndTime.Value.Date ) )
@@ -332,7 +337,7 @@ namespace RockWeb.Blocks.Administration
         /// Shows the edit details.
         /// </summary>
         /// <param name="schedule">The schedule.</param>
-        public void ShowEditDetails ( Schedule schedule )
+        public void ShowEditDetails( Schedule schedule )
         {
             if ( schedule.Id > 0 )
             {
@@ -391,9 +396,9 @@ namespace RockWeb.Blocks.Administration
             }
 
             DescriptionList descriptionList = new DescriptionList()
-                .Add("Description", schedule.Description ?? string.Empty)
-                .Add("Next Occurrence", occurrenceText)
-                .Add("Category", schedule.Category != null ? schedule.Category.Name : string.Empty);
+                .Add( "Description", schedule.Description ?? string.Empty )
+                .Add( "Next Occurrence", occurrenceText )
+                .Add( "Category", schedule.Category != null ? schedule.Category.Name : string.Empty );
 
             if ( schedule.CheckInStartOffsetMinutes.HasValue )
             {
@@ -402,7 +407,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( schedule.CheckInEndOffsetMinutes.HasValue )
             {
-                descriptionList.Add(  "Check-in Ends", schedule.CheckInEndOffsetMinutes.Value.ToString() + " minutes after start of schedule" );
+                descriptionList.Add( "Check-in Ends", schedule.CheckInEndOffsetMinutes.Value.ToString() + " minutes after start of schedule" );
             }
 
             lblMainDetails.Text = descriptionList.Html;

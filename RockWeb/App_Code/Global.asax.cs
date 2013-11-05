@@ -71,13 +71,6 @@ namespace RockWeb
             if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
             {
                 System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", DateTime.Now ) );
-
-                //string visualStudioEdition = Environment.GetEnvironmentVariable( "VisualStudioEdition" );
-                //if ( visualStudioEdition.EndsWith( "2012" ) )
-                //{
-                //    System.Diagnostics.Debug.WriteLine( "Using HttpInternals.RockWebFileChangeMonitor()" );
-                    HttpInternals.RockWebFileChangeMonitor();
-                //}
             }
 
             // Check if database should be auto-migrated for the core and plugins
