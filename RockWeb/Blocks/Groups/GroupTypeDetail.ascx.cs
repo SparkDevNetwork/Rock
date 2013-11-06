@@ -21,7 +21,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
 
-namespace RockWeb.Blocks.Crm
+namespace RockWeb.Blocks.Groups
 {
     public partial class GroupTypes : RockBlock, IDetailBlock
     {

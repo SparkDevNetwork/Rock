@@ -18,7 +18,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Administration
+namespace RockWeb.Blocks.Core
 {
     /// <summary>
     /// User control for managing the attributes that are available for a specific entity

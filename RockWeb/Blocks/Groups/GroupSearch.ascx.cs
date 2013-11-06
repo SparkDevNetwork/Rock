@@ -14,7 +14,7 @@ using Rock;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Crm
+namespace RockWeb.Blocks.Groups
 {
     public partial class GroupSearch : Rock.Web.UI.RockBlock
     {

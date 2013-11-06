@@ -26,7 +26,7 @@ using Rock.Web.UI.Controls;
 
 using Rock.Reporting.DataTransform.Person;
 
-namespace RockWeb.Blocks.Utility
+namespace RockWeb.Blocks.Reporting
 {
     /// <summary>
     /// Block to execute a sql command and display the result (if any).

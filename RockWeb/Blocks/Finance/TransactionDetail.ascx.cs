@@ -17,7 +17,7 @@ using Rock.Web.UI.Controls;
 using Rock.Web.Cache;
 using System.Collections.Generic;
 
-namespace RockWeb.Blocks.Finance.Administration
+namespace RockWeb.Blocks.Finance
 {
     /// <summary>
     /// 

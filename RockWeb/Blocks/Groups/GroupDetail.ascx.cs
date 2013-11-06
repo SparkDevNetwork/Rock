@@ -20,7 +20,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
 
-namespace RockWeb.Blocks.Crm
+namespace RockWeb.Blocks.Groups
 {
     [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false )]
     [BooleanField( "Show Edit", "", true )]

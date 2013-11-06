@@ -12,7 +12,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
-namespace RockWeb.Blocks.Finance.Administration
+namespace RockWeb.Blocks.Finance
 {
     /// <summary>
     /// 

@@ -19,7 +19,7 @@ using Site = Rock.Model.Site;
 using Rock.Constants;
 using Rock.Web;
 
-namespace RockWeb.Blocks.Administration
+namespace RockWeb.Blocks.Cms
 {
     /// <summary>
     /// 

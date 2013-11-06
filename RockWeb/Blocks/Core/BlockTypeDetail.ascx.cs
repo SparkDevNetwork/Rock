@@ -14,7 +14,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
-namespace RockWeb.Blocks.Administration
+namespace RockWeb.Blocks.Core
 {
     /// <summary>
     /// 

@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PluginManager.ascx.cs" Inherits="RockWeb.Blocks.Administration.PluginManager" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PluginManager.ascx.cs" Inherits="RockWeb.Blocks.Core.PluginManager" %>
 
 <asp:UpdateProgress id="updateProgress" runat="server">
 		<ProgressTemplate>

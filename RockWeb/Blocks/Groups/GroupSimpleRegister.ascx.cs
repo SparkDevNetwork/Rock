@@ -21,7 +21,7 @@ using Rock.Web.Cache;
 
 using System.Collections.Generic;
 
-namespace RockWeb.Blocks.Crm
+namespace RockWeb.Blocks.Groups
 {
     /// <summary>
     /// Block that will prompt for name and email, create a person if they don't exist, and add them to a group.
