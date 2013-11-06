@@ -10,12 +10,13 @@
         <nav class="navbar navbar-default navbar-static-top">
             <div class="container">
 			    <div class="navbar-header">
-                    <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".pageheader-collapse">
+                    <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse">
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
                     <a class="navbar-brand" href="#">Stark Theme</a>
+                    <Rock:Zone Name="Header" Name="Header" runat="server" />
 			    </div>	
                 <div class="navbar-collapse collapse">   
                     <!-- Main Navigation -->
@@ -26,7 +27,7 @@
 
     </header>
 		
-	<main>
+	<main class="container">
         
         <!-- Start Content Area -->
         
@@ -76,12 +77,24 @@
 
 	</main>
 		
-	<footer class="page-footer">
-		<div class="row">
-			<div class="col-md-12">
-				<Rock:Zone Name="Footer" runat="server" />
-			</div>
-		</div>
+	<footer>
+        <div class="container">
+		    
+            <hr />
+
+            <div class="row">
+			    <div class="col-md-12">
+				    <Rock:Zone Name="Footer" runat="server" />
+			    </div>
+		    </div>
+
+            <div class="row">
+                <div class="col-md-3 col-md-offset-8">
+                    <Rock:Zone Name="Login" runat="server" />
+                </div>
+            </div>
+
+        </div>
 	</footer>
         
 </asp:Content>
