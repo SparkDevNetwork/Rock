@@ -20,7 +20,7 @@ namespace Rock.Reporting.DataTransform.Person
     /// </summary>
     [Description( "Filter people based on their total contribution amount" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Person Distance From Filter" )]
+    [ExportMetadata( "ComponentName", "Giving Amount Filter" )]
     public class GivingAmountFilter : DataFilterComponent
     {
         #region Properties
@@ -75,12 +75,15 @@ namespace Rock.Reporting.DataTransform.Person
         /// </value>
         public override string GetClientFormatSelection( Type entityType )
         {
+            // Giving amount total {0} {1} between {2} and {3}
             return @"
 function() {
-  //var locationName = $('.picker-label', $content).find('span').text();
-  //var miles = $('.number-box', $content).find('input').val();
+    var comparisonText = $('select:first', $content).find(':selected').text();
+    var totalAmount = $('.number-box', $content).find('input').val();
+    var startDate = $('.date-range-picker', $content).find('input:first').val();
+    var endDate = $('.date-range-picker', $content).find('input:last').val();
 
-  return 'ToDo'
+    return 'Giving amount total ' + comparisonText.toLowerCase() + ' $' + totalAmount + ' between ' + startDate + ' and ' + endDate;
 }
 ";
         }
@@ -98,7 +101,7 @@ function() {
 
             if ( selectionValues.Length >= 4 )
             {
-                ComparisonType comparisonType = selectionValues[0].ConvertToEnum<ComparisonType>( ComparisonType.LessThan );
+                ComparisonType comparisonType = selectionValues[0].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
                 decimal amount = selectionValues[1].AsDecimal() ?? 0.00M;
                 DateTime startDate = selectionValues[2].AsDateTime() ?? DateTime.MinValue;
                 DateTime endDate = selectionValues[3].AsDateTime() ?? DateTime.MaxValue;
@@ -121,6 +124,7 @@ function() {
             filterControl.Controls.Add( comparisonControl );
 
             NumberBox numberBoxAmount = new NumberBox();
+            numberBoxAmount.PrependText = "$";
             numberBoxAmount.NumberType = ValidationDataType.Currency;
             numberBoxAmount.ID = filterControl.ID + "_1";
             numberBoxAmount.Label = "Amount";
@@ -135,7 +139,7 @@ function() {
 
             var controls = new Control[3] { comparisonControl, numberBoxAmount, dateRangePicker };
 
-            SetSelection( entityType, controls, string.Format( "{0}|||", ComparisonType.LessThan.ConvertToInt().ToString() ) );
+            SetSelection( entityType, controls, string.Format( "{0}|||", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
 
             return controls;
         }
@@ -184,7 +188,16 @@ function() {
                 var dateRangePicker = controls[2] as DateRangePicker;
 
                 comparisonControl.SetValue( selectionValues[0] );
-                numberBox.Text = selectionValues[1];
+                decimal? amount = selectionValues[1].AsDecimal();
+                if (amount.HasValue)
+                {
+                    numberBox.Text = amount.Value.ToString( "F2" );
+                }
+                else
+                {
+                    numberBox.Text = string.Empty;
+                }
+                
                 dateRangePicker.LowerValue = selectionValues[2].AsDateTime();
                 dateRangePicker.UpperValue = selectionValues[3].AsDateTime();
             }
@@ -206,7 +219,7 @@ function() {
                 return null;
             }
 
-            ComparisonType comparisonType = selectionValues[0].ConvertToEnum<ComparisonType>( ComparisonType.LessThan );
+            ComparisonType comparisonType = selectionValues[0].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
             decimal amount = selectionValues[1].AsDecimal() ?? 0.00M;
             DateTime startDate = selectionValues[2].AsDateTime() ?? DateTime.MinValue;
             DateTime endDate = selectionValues[3].AsDateTime() ?? DateTime.MaxValue;
