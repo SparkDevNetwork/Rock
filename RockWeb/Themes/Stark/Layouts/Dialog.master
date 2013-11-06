@@ -39,14 +39,12 @@
     
 </script>
 
-<html>
+<html class="no-js">
 <head runat="server">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title></title>
 
-    <!--[if lt IE 9]>
-        <script src="<%# ResolveRockUrl("~/Themes/RockChMS/Scripts/html5.js") %>" ></script>
-    <![endif]-->
+    <script src="<%# ResolveUrl("~/Scripts/modernizr.js") %>" ></script>
 
     <asp:ContentPlaceHolder ID="css" runat="server" />
 
