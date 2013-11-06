@@ -14,7 +14,7 @@ using Rock.Constants;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Administration
+namespace RockWeb.Blocks.Core
 {
     /// <summary>
     /// Block for administrating a tag

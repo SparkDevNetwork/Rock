@@ -14,7 +14,7 @@ using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Administration
+namespace RockWeb.Blocks.Communication
 {
     /// <summary>
     /// User control for managing the emailTemplates that are available for a specific entity

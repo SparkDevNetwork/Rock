@@ -16,7 +16,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock;
 
-namespace RockWeb.Blocks.Administration
+namespace RockWeb.Blocks.Core
 {
     /// <summary>
     /// Block for viewing entities with a selected tag

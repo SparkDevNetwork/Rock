@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CheckinConfiguration.ascx.cs" Inherits="RockWeb.Blocks.Administration.CheckinConfiguration" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CheckinConfiguration.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.CheckinConfiguration" %>
 
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>

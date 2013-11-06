@@ -11,7 +11,7 @@ using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI;
 
-namespace RockWeb.Blocks.Crm
+namespace RockWeb.Blocks.Groups
 {
     /// <summary>
     /// 

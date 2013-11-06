@@ -1,6 +1,6 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="SiteMap.ascx.cs" Inherits="SiteMap" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="SiteMap.ascx.cs" Inherits="RockWeb.Blocks.Cms.SiteMap" %>
 
-<asp:UpdatePanel ID="upMarketingCampaigns" runat="server">
+<asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
         <asp:Panel ID="pnlDetails" runat="server">

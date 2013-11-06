@@ -24,7 +24,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls.Communication;
 
-namespace RockWeb.Blocks.Core
+namespace RockWeb.Blocks.Communication
 {
     /// <summary>
     /// User control for creating a new communication

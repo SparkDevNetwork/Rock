@@ -16,7 +16,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
 
-namespace RockWeb.Blocks.Administration
+namespace RockWeb.Blocks.Core
 {
     public partial class BinaryFileTypeDetail : RockBlock, IDetailBlock
     {
