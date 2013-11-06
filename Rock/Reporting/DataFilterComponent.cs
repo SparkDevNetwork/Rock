@@ -99,8 +99,8 @@ namespace Rock.Reporting
             string[] options = selection.Split( '|' );
             if ( options.Length > 0 )
             {
-                try { comparisonType= options[0].ConvertToEnum<ComparisonType>(); }
-                catch {}
+                comparisonType= options[0].ConvertToEnum<ComparisonType>(ComparisonType.StartsWith); 
+                
             }
             if ( options.Length > 1 )
             {
