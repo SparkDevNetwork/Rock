@@ -19,7 +19,7 @@ using Rock.Security;
 namespace RockWeb.Blocks.Cms
 {
     [MemoField( "Layout", "The layout of the Ad details", true, @"<h1>{{ MarketingCampaign.Title }}</h1><br/><br/>{{ SummaryText }}<br/><br/>{{ DetailHtml }}" )]
-    public partial class MarketingCampaignAdDetail : Rock.Web.UI.RockBlock
+    public partial class ViewAdDetail : Rock.Web.UI.RockBlock
     {
         protected override void OnLoad( EventArgs e )
         {

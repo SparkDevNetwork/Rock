@@ -13,7 +13,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Model;
 
-namespace RockWeb.Blocks.Group
+namespace RockWeb.Blocks.Groups
 {
     [IntegerField( "Group Id", "The Group Id of the parent group")]
     [IntegerField( "Group Levels", "The Group Role to use when person is added to group" )]
