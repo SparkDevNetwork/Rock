@@ -19,7 +19,7 @@
 			    </div>	
                 <div class="navbar-collapse collapse">   
                     <!-- Main Navigation -->
-                    <Rock:Zone ID="Navigation" runat="server" />
+                    <Rock:Zone Name="Navigation" runat="server" />
 			    </div>	
             </div>
         </nav>
@@ -44,31 +44,31 @@
 
         <div class="row">
             <div class="col-md-12">
-                <Rock:Zone ID="Feature" runat="server" />
+                <Rock:Zone Name="Feature" runat="server" />
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-12">
-                <Rock:Zone ID="Main" runat="server" />
+                <Rock:Zone Name="Main" runat="server" />
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-12">
-                <Rock:Zone ID="SectionA" runat="server" />
+                <Rock:Zone Name="Section A" runat="server" />
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-4">
-                <Rock:Zone ID="SectionB" runat="server" />
+                <Rock:Zone Name="Section B" runat="server" />
             </div>
             <div class="col-md-4">
-                <Rock:Zone ID="SectionC" runat="server" />
+                <Rock:Zone Name="Section C" runat="server" />
             </div>
             <div class="col-md-4">
-                <Rock:Zone ID="SectionD" runat="server" />
+                <Rock:Zone Name="Section D" runat="server" />
             </div>
         </div>
 
@@ -79,7 +79,7 @@
 	<footer class="page-footer">
 		<div class="row">
 			<div class="col-md-12">
-				<Rock:Zone ID="Footer" runat="server" />
+				<Rock:Zone Name="Footer" runat="server" />
 			</div>
 		</div>
 	</footer>
