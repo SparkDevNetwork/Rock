@@ -257,7 +257,7 @@ namespace Rock.Web.UI
                     {
                         Zone zone = control as Zone;
                         if ( zone != null )
-                            Zones.Add( zone.ID, new KeyValuePair<string, Zone>( zone.Name, zone ) );
+                            Zones.Add( zone.Name.Replace(" ", ""), new KeyValuePair<string, Zone>( zone.Name, zone ) );
                     }
 
                     FindRockControls( control.Controls );
@@ -1002,7 +1002,7 @@ namespace Rock.Web.UI
 
                 HtmlGenericControl zoneWrapper = new HtmlGenericControl( "div" );
                 parent.Controls.AddAt( parent.Controls.IndexOf( control ), zoneWrapper );
-                zoneWrapper.ID = string.Format( "zone-{0}", control.ID );
+                zoneWrapper.ID = string.Format( "zone-{0}", zoneControl.Key );
                 zoneWrapper.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 zoneWrapper.Attributes.Add( "class", "zone-instance can-configure" );
 
@@ -1030,11 +1030,11 @@ namespace Rock.Web.UI
                 // Configure Blocks icon
                 HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
                 zoneConfigBar.Controls.Add( aBlockConfig );
-                aBlockConfig.ID = string.Format( "aBlockConfig-{0}", control.ID );
+                aBlockConfig.ID = string.Format( "aBlockConfig-{0}", zoneControl.Key );
                 aBlockConfig.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 aBlockConfig.Attributes.Add( "class", "zone-blocks" );
                 aBlockConfig.Attributes.Add( "height", "500px" );
-                aBlockConfig.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", CurrentPage.Id, control.ID ) ) + "')" );
+                aBlockConfig.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", CurrentPage.Id, zoneControl.Key ) ) + "')" );
                 aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
                 aBlockConfig.Attributes.Add( "zone", zoneControl.Key );
                 //aBlockConfig.InnerText = "Blocks";
@@ -1125,7 +1125,7 @@ namespace Rock.Web.UI
             ddlZones.ID = "block-move-zone";
             ddlZones.Label = "Zone";
             foreach ( var zone in Zones )
-                ddlZones.Items.Add( new ListItem( zone.Value.Key, zone.Value.Value.ID ) );
+                ddlZones.Items.Add( new ListItem( zone.Value.Key, zone.Key ) );
             fsZoneSelect.Controls.Add( ddlZones );
 
             RockRadioButtonList rblLocation = new RockRadioButtonList();

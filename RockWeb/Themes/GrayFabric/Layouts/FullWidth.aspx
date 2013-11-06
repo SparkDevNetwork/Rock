@@ -14,7 +14,7 @@
                         <asp:Image ID="imgLogo" runat="server" ImageUrl="~/Themes/GrayFabric/Assets/Images/rocksolidchurchlogo.svg" CssClass="logo" />
                     </asp:HyperLink>
 			  	</div>
-                <Rock:Zone ID="Heading" Name="Header" runat="server" />
+                <Rock:Zone Name="Heading" runat="server" />
 			  	<div class="span3 service-times">
 			  		<i class="icon-time"></i> <span class="bold">Service Times</span>
 				  	<br><span class="light">Sunday 9am, 10:30am and Noon</span>
@@ -22,7 +22,7 @@
 			  	<div class="span3 my-account">My Account</div>
 			</div>
 	  		
-           <Rock:Zone ID="Navigation" runat="server" />
+           <Rock:Zone Name="Navigation" runat="server" />
 
 	  	</header>
 
@@ -32,7 +32,7 @@
   	<div id="content" class="container"> 
         <h1 class="page-title"><Rock:PageTitle ID="PageTitle" runat="server" /></h1>
 
-        <Rock:Zone ID="Main" runat="server" />
+        <Rock:Zone Name="Main" runat="server" />
 
     </div>
   	
@@ -54,7 +54,7 @@
 
     
     
-    <Rock:Zone ID="Footer" runat="server" />
+    <Rock:Zone Name="Footer" runat="server" />
 
 
     

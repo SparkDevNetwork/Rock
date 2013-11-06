@@ -27,7 +27,7 @@
 
                             <div class="nav-collapse collapse">
 
-                                <Rock:Zone ID="Heading" Name="Header" runat="server" />
+                                <Rock:Zone Name="Heading" runat="server" />
 
                             </div>
                         </div>
@@ -49,7 +49,7 @@
         <div class="navbar-inner">
             <div class="container-fluid">
 
-                <Rock:Zone ID="Menu" runat="server" />
+                <Rock:Zone Name="Menu" runat="server" />
 
             </div>
         </div>
@@ -61,10 +61,10 @@
                 <div class="row-fluid">
                     <div class="span6">
                         <Rock:PageIcon ID="PageIcon" runat="server" /> <h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1>
-                        <Rock:Zone ID="PageTitleBar" runat="server" />
+                        <Rock:Zone Name="Page Title Bar" runat="server" />
                     </div>
                     <div class="span6">
-                        <Rock:Zone ID="Zone1" runat="server" />
+                        <Rock:Zone Name="Zone 1" runat="server" />
                     </div>
                 </div>
             </div>
@@ -90,12 +90,12 @@
                     <div id="left-column" class="span3">
 
                         <div id="left-column-content">
-                            <Rock:Zone ID="LeftContent" runat="server" />
+                            <Rock:Zone Name="Left Content" runat="server" />
                         </div>
                     </div>
                     <div id="right-column" class="span9">
                         <div class="panel">
-                            <Rock:Zone ID="RightContent" runat="server" />
+                            <Rock:Zone Name="Right Content" runat="server" />
                         </div>
                     </div>
                 </div>
@@ -109,7 +109,7 @@
         <div class="container-fluid">
             <div class="row-fluid">
                 <div class="span12">
-                    <Rock:Zone ID="Footer" runat="server" />
+                    <Rock:Zone Name="Footer" runat="server" />
                 </div>
             </div>
         </div>

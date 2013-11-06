@@ -24,7 +24,7 @@
 			    </div>	
                 <div class="navbar-collapse collapse pageheader-collapse">   
                     <div class="navbar-right navbar-text">
-                        <Rock:Zone ID="Header" Name="Header" runat="server" />
+                        <Rock:Zone Name="Header" runat="server" />
                     </div>
                     <div class="navbar-right navbar-text">				
 					    <Rock:SearchField ID="searchField" runat="server" />
@@ -36,7 +36,7 @@
         <!-- Main Navigation -->
 	    <nav class="navbar navbar-static-top pagenav">
             <div class="container">
-                <Rock:Zone ID="Navigation" runat="server" />
+                <Rock:Zone Name="Navigation" runat="server" />
             </div>									
 	    </nav>
 		
@@ -45,10 +45,10 @@
 		    <div class="container">
                 <div class="row">
 				    <div class="col-md-6">
-					    <Rock:PageIcon ID="PageIcon" runat="server" /> <h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1> <Rock:Zone ID="PageTitleBar" runat="server" />  
+					    <Rock:PageIcon ID="PageIcon" runat="server" /> <h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1> <Rock:Zone Name="PageTitleBar" runat="server" />  
 				    </div>
                     <div class="col-md-6">
-                        <Rock:Zone ID="TitleRight" runat="server" />
+                        <Rock:Zone Name="TitleRight" runat="server" />
                     </div>
 			    </div>
             </div>
@@ -70,34 +70,34 @@
 
         <div class="row">
             <div class="col-md-12">
-                <Rock:Zone ID="Feature" runat="server" />
+                <Rock:Zone Name="Feature" runat="server" />
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-3">
-                <Rock:Zone ID="Sidebar1" runat="server" />
+                <Rock:Zone Name="Sidebar1" runat="server" />
             </div>
             <div class="col-md-9">
-                <Rock:Zone ID="Main" runat="server" />
+                <Rock:Zone Name="Main" runat="server" />
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-12">
-                <Rock:Zone ID="SectionA" runat="server" />
+                <Rock:Zone Name="SectionA" runat="server" />
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-4">
-                <Rock:Zone ID="SectionB" runat="server" />
+                <Rock:Zone Name="SectionB" runat="server" />
             </div>
             <div class="col-md-4">
-                <Rock:Zone ID="SectionC" runat="server" />
+                <Rock:Zone Name="SectionC" runat="server" />
             </div>
             <div class="col-md-4">
-                <Rock:Zone ID="SectionD" runat="server" />
+                <Rock:Zone Name="SectionD" runat="server" />
             </div>
         </div>
 
@@ -108,7 +108,7 @@
     <footer class="page-footer">
         <div class="row">
             <div class="col-md-12">
-                <Rock:Zone ID="Footer" runat="server" />
+                <Rock:Zone Name="Footer" runat="server" />
             </div>
         </div>
     </footer>
