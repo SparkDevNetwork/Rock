@@ -15,7 +15,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
 
-namespace RockWeb.Blocks.Administration
+namespace RockWeb.Blocks.Cms
 {
     /// <summary>
     /// 

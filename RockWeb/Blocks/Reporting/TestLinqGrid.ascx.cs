@@ -32,7 +32,7 @@ namespace RockWeb.Blocks.Utility
     /// Block to execute a sql command and display the result (if any).
     /// </summary>
     [Description( "Block to execute a linq command and display the result (if any)." )]
-    public partial class LinqGrid : RockBlock
+    public partial class TestLinqGrid : RockBlock
     {
         #region Control Methods
 

@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ClassVideo.ascx.cs" Inherits="RockWeb.Blocks.Group.ClassVideo" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ClassVideo.ascx.cs" Inherits="RockWeb.Blocks.Groups.ClassVideo" %>
 
 <h3><asp:Literal ID="lParentGroup" runat="server"></asp:Literal></h3>
 
