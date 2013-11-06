@@ -15,7 +15,7 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Administration
 {
     /// <summary>
-    /// 
+    /// User controls for managing scheduled jobs.
     /// </summary>
     public partial class ScheduledJobDetail : RockBlock
     {
@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Administration
             job.IsActive = cbActive.Checked;
             job.Class = ddlJobTypes.SelectedValue;
             job.NotificationEmails = tbNotificationEmails.Text;
-            job.NotificationStatus = (JobNotificationStatus)int.Parse( drpNotificationStatus.SelectedValue );
+            job.NotificationStatus = (JobNotificationStatus)int.Parse( ddlNotificationStatus.SelectedValue );
             job.CronExpression = tbCronExpression.Text;
 
             if ( !job.IsValid )
@@ -118,7 +118,7 @@ namespace RockWeb.Blocks.Administration
             LoadDropDowns();
 
             // Load depending on Add(0) or Edit
-            ServiceJob job = null;
+            ServiceJob job;
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 job = new ServiceJobService().Get( itemKeyValue );
@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Administration
             cbActive.Checked = job.IsActive.HasValue ? job.IsActive.Value : false;
             ddlJobTypes.SelectedValue = job.Class;
             tbNotificationEmails.Text = job.NotificationEmails;
-            drpNotificationStatus.SetValue( (int)job.NotificationStatus );
+            ddlNotificationStatus.SetValue( (int)job.NotificationStatus );
             tbCronExpression.Text = job.CronExpression;
 
             // render UI based on Authorized and IsSystem
@@ -166,7 +166,7 @@ namespace RockWeb.Blocks.Administration
             cbActive.Enabled = !readOnly;
             ddlJobTypes.Enabled = !readOnly;
             tbNotificationEmails.ReadOnly = readOnly;
-            drpNotificationStatus.Enabled = !readOnly;
+            ddlNotificationStatus.Enabled = !readOnly;
             tbCronExpression.ReadOnly = readOnly;
 
             btnSave.Visible = !readOnly;
@@ -177,11 +177,12 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void LoadDropDowns()
         {
-            drpNotificationStatus.BindToEnum( typeof( JobNotificationStatus ) );
+            ddlNotificationStatus.BindToEnum( typeof( JobNotificationStatus ) );
             ddlJobTypes.DataSource = Rock.Reflection.FindTypes( typeof( Quartz.IJob ) ).Values;
             ddlJobTypes.DataBind();
         }
 
         #endregion
+
     }
 }

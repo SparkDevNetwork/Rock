@@ -58,9 +58,15 @@ namespace Rock.Web.UI
             set
             {
                 _currentPage = value;
+
                 HttpContext.Current.Items.Add( "Rock:PageId", _currentPage.Id );
                 HttpContext.Current.Items.Add( "Rock:LayoutId", _currentPage.LayoutId );
                 HttpContext.Current.Items.Add( "Rock:SiteId", _currentPage.Layout.SiteId );
+
+                if (this.Master is RockMasterPage)
+                {
+                    ( (RockMasterPage)this.Master ).CurrentPage = value;
+                }
             }
         }
         private PageCache _currentPage = null;
@@ -405,6 +411,12 @@ namespace Rock.Web.UI
             // If a PageInstance exists
             if ( CurrentPage != null )
             {
+                // If there's a master page, update it's reference to Current Page
+                if ( this.Master is RockMasterPage )
+                {
+                    ( (RockMasterPage)this.Master ).CurrentPage = CurrentPage;
+                }
+
                 // check if page should have been loaded via ssl
                 Page.Trace.Warn( "Checking for SSL request" );
                 if ( !Request.IsSecureConnection && CurrentPage.RequiresEncryption )
