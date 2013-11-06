@@ -1,27 +1,11 @@
 ﻿{% if page.display-child-pages == 'true' && page.pages != empty %}
     <ul class="nav navbar-nav">
-        {% for topPage in page.pages %}
-            <li class="dropdown pagenav-item">
-                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                    <i class="{{ topPage.icon-css-class }}"></i>
-                    {{ topPage.title }}
-                    <b class="caret"></b>
-                </a>
-                {% if topPage.display-child-pages == 'true' && topPage.pages != empty %}
-                    <ul class="dropdown-menu" role="menu">
-                        {% for sectionPage in topPage.pages %}
-                            <li class="dropdown-header">{{ sectionPage.title }}</li>
-                            {% if sectionPage.display-child-pages == 'true' %}
-                                {% for childpage in sectionPage.pages %}
-                                    <li role="presentation">
-                                        <a role="menu-item" href="{{ childpage.url }}">{{ childpage.title }}</a>
-                                    </li>
-                                {% endfor %}
-                                <li class="divider"></li>
-                            {% endif %}
-                        {% endfor %}
-                    </ul>
-                {% endif %}
+        
+		<li><a href="{{ page.url }}">{{ page.title }}</a></li>
+
+		{% for childPage in page.pages %}
+            <li>
+				<a href="{{ childPage.url }}">{{ childPage.title }}</a>
             </li>
         {% endfor %}
     </ul>
