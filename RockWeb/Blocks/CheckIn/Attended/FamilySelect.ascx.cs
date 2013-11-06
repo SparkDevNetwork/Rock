@@ -393,7 +393,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 dpDOBSearch.Required = false;
                 
                 ProcessFamily();
-                //RefreshFamily();
             }
         }
 
