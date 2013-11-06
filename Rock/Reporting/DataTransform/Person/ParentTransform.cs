@@ -4,7 +4,6 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -82,102 +81,15 @@ namespace Rock.Reporting.DataTransform.Person
         /// <returns></returns>
         private Expression BuildExpression( IQueryable<int> idQuery, Expression parameterExpression )
         {
-            //p.Members.Where(a => a.GroupRole.Guid == new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) )
-            //    .Any( a => a.Group.Members
-            //        .Any( c => c.GroupRole.Guid == new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) && idList.Contains( c.Person.Id ) ) ) );
+            Guid adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
+            Guid childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
 
-            MethodInfo whereMethod = (MethodInfo)GetGenericMethod( "Where" );
-            MethodInfo anyMethod = (MethodInfo)GetGenericMethod( "Any" );
+            var qry = new Rock.Data.Service<Rock.Model.Person>().Queryable()
+                .Where( p => p.Members.Where( a => a.GroupRole.Guid == adultGuid )
+                    .Any( a => a.Group.Members
+                    .Any( c => c.GroupRole.Guid == childGuid && idQuery.Contains( c.PersonId ) ) ) );
 
-            // p.Members
-            MemberExpression adultMembers = Expression.Property( parameterExpression, "Members" );
-
-            // a =>
-            ParameterExpression adultMemberParameter = Expression.Parameter( typeof( Rock.Model.GroupMember ), "a" );
-
-            // a.GroupRole
-            MemberExpression adultGroupRole = Expression.Property( adultMemberParameter, "GroupRole" );
-
-            // a.GroupRole.Guid
-            MemberExpression adultGroupRoleGuid = Expression.Property( adultGroupRole, "Guid" );
-
-            // [AdultRoleGuid]
-            Expression adultRole = Expression.Constant( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) );
-
-            // a.GroupRole.Guid == [AdultRoleGuid]
-            Expression isAdult = Expression.Equal( adultGroupRoleGuid, adultRole );
-
-            // a => a.GroupRole.Guid == [AdultRoleGuid]
-            LambdaExpression adultLambda = Expression.Lambda<Func<Rock.Model.GroupMember, bool>>( isAdult, adultMemberParameter );
-
-            // p.Members.where(a => a.GroupRole.Guid == [AdultRoleGuid])
-            Expression whereAdult = Expression.Call( whereMethod, adultMembers, adultLambda );
-
-            // c =>
-            ParameterExpression childMemberParameter = Expression.Parameter( typeof( Rock.Model.GroupMember ), "c" );
-
-            // c.GroupRole
-            MemberExpression childGroupRole = Expression.Property( childMemberParameter, "GroupRole" );
-
-            // c.GroupRole.Guid
-            MemberExpression childGroupRoleGuid = Expression.Property( childGroupRole, "Guid" );
-
-            // [ChildRoleGuid]
-            Expression childRole = Expression.Constant( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) );
-
-            // c.GroupRole.Guid == [ChildRoleGuid]
-            Expression isChild = Expression.Equal( childGroupRoleGuid, childRole );
-
-            // c.Person
-            MemberExpression childPerson = Expression.Property( childMemberParameter, "Person" );
-
-            // c.Person.Id
-            MemberExpression childPersonId = Expression.Property( childPerson, "Id" );
-
-            // [IdList]
-            ConstantExpression ids = Expression.Constant( idQuery, typeof( IQueryable<int> ) );
-
-            // [IdList].Contains(c.Person.Id)
-            MethodCallExpression containsExpression = Expression.Call( typeof( Queryable ), "Contains", new Type[] { typeof( int ) }, ids, childPersonId );
-
-            // c.GroupRole.Guid == [ChildRoleGuid] && [IdList].Contains(c.Person.Id)
-            Expression andExpression = Expression.AndAlso( isChild, containsExpression );
-            
-            // a.Group
-            Expression groupProperty = Expression.Property( adultMemberParameter, "Group" );
-
-            // a.Group.Members
-            Expression membersProperty = Expression.Property( groupProperty, "Members" );
-
-            // c => c.GroupRole.Guid == [ChildRoleGuid] && [IdList].Contains(c.Person.Id)
-            LambdaExpression anyChildLambda = Expression.Lambda<Func<Rock.Model.GroupMember, bool>>( andExpression, childMemberParameter );
-
-            // a.Group.Members.Any(c => c.GroupRole.Guid == [ChildRoleGuid] && [IdList].Contains(c.Person.Id)
-            Expression whereAnyChild = Expression.Call( anyMethod, membersProperty, anyChildLambda );
-
-            // a => a.Group.Members.Any(c => c.GroupRole.Guid == [ChildRoleGuid] && [IdList].Contains(c.Person.Id)
-            LambdaExpression anyAdultLambda = Expression.Lambda<Func<Rock.Model.GroupMember, bool>>( whereAnyChild, adultMemberParameter );
-
-            // p.Members.where(a => a.GroupRole.Guid == [AdultRoleGuid]).Any(a => a.Group.Members.Any(c => c.GroupRole.Guid == [ChildRoleGuid] && [IdList].Contains(c.Person.Id))
-            return Expression.Call( anyMethod, whereAdult, anyAdultLambda );
+            return FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
         }
-
-        /// <summary>
-        /// Gets the generic method.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns></returns>
-        private MethodBase GetGenericMethod( string name )
-        {
-            var methods = typeof( Enumerable ).GetMethods()
-                .Where( m => m.Name == name )
-                .Where( m => m.GetGenericArguments().Length == 1 )
-                .Select( m => m.MakeGenericMethod( new Type[] { typeof( Rock.Model.GroupMember ) } ) );
-
-            return Type.DefaultBinder.SelectMethod( BindingFlags.Static, methods.ToArray(), new Type[] { typeof( IEnumerable<Rock.Model.GroupMember> ), typeof( Func<Rock.Model.GroupMember, bool> ) }, null );
-        }
-
-
-
     }
 }
