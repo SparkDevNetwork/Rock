@@ -4817,7 +4817,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .nav > li > a:hover,
 .nav > li > a:focus {
   text-decoration: none;
-  background-color: transparent;
+  background-color: #eeeeee;
 }
 .nav > li.disabled > a {
   color: #999999;
@@ -4832,7 +4832,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .nav .open > a,
 .nav .open > a:hover,
 .nav .open > a:focus {
-  background-color: transparent;
+  background-color: #eeeeee;
   border-color: #8498ab;
 }
 .nav .nav-divider {
@@ -9713,10 +9713,7 @@ fieldset[disabled] .btn-edit.active {
 
     1. HTML Overrides
     2. Bootstrap Overides
-    3. Page Header
-    4. Footer
-    5. Responsive Tweaks
-    6. Layout Specific Styles
+    3. Theme Styling
 
 */
 main {
@@ -9724,4 +9721,8 @@ main {
 }
 .navbar {
   position: static;
+}
+.nav-sub li {
+  border: 1px solid #eeeeee;
+  border-radius: 4px;
 }

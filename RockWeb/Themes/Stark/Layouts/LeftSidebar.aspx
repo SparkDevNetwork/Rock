@@ -7,7 +7,7 @@
     <header>
         
         <!-- Brand Bar -->
-        <nav class="navbar navbar-default navbar-static-top brandbar" role="navigation">
+        <nav class="navbar navbar-inverse navbar-static-top brandbar" role="navigation">
             <div class="container">
 			    <div class="navbar-header">
                    <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse">
@@ -50,7 +50,7 @@
 
         <div class="row">
             <div class="col-md-3">
-                <Rock:Zone Name="Sidebar1" runat="server" />
+                <Rock:Zone Name="Sidebar 1" runat="server" />
             </div>
             <div class="col-md-9">
                 <Rock:Zone Name="Main" runat="server" />
@@ -59,19 +59,19 @@
 
         <div class="row">
             <div class="col-md-12">
-                <Rock:Zone Name="SectionA" runat="server" />
+                <Rock:Zone Name="Section A" runat="server" />
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-4">
-                <Rock:Zone Name="SectionB" runat="server" />
+                <Rock:Zone Name="Section B" runat="server" />
             </div>
             <div class="col-md-4">
-                <Rock:Zone Name="SectionC" runat="server" />
+                <Rock:Zone Name="Section C" runat="server" />
             </div>
             <div class="col-md-4">
-                <Rock:Zone Name="SectionD" runat="server" />
+                <Rock:Zone Name="Section D" runat="server" />
             </div>
         </div>
 
