@@ -17,7 +17,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
-namespace RockWeb.Blocks.Administration
+namespace RockWeb.Blocks.Core
 {
     [BooleanField("Show Binary File Type")]
     [WorkflowTypeField("Workflow", "An optional workflow to activate for any new file uploaded")]

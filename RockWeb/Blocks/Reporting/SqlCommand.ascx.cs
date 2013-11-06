@@ -23,7 +23,7 @@ using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Utility
+namespace RockWeb.Blocks.Reporting
 {
     /// <summary>
     /// Block to execute a sql command and display the result (if any).

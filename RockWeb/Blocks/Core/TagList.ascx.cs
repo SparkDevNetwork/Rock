@@ -16,7 +16,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Administration
+namespace RockWeb.Blocks.Core
 {
     /// <summary>
     /// Block for viewing list of tags

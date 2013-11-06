@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupRoleDetail.ascx.cs" Inherits="RockWeb.Blocks.Crm.GroupRoleDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupRoleDetail.ascx.cs" Inherits="RockWeb.Blocks.Groups.GroupRoleDetail" %>
 
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>

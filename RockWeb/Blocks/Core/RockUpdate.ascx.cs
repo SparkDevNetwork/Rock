@@ -17,7 +17,7 @@ using Rock.Web.Cache;
 
 using NuGet;
 
-namespace RockWeb.Blocks.Administration
+namespace RockWeb.Blocks.Core
 {
     public partial class RockUpdate : Rock.Web.UI.RockBlock
     {

@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DeviceList.ascx.cs" Inherits="RockWeb.Blocks.Administration.DeviceList" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DeviceList.ascx.cs" Inherits="RockWeb.Blocks.Core.DeviceList" %>
 
 <asp:UpdatePanel ID="upDevice" runat="server">
     <ContentTemplate>

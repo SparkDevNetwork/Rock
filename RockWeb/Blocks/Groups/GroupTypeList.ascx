@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupTypeList.ascx.cs" Inherits="RockWeb.Blocks.Crm.GroupTypeList" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupTypeList.ascx.cs" Inherits="RockWeb.Blocks.Groups.GroupTypeList" %>
 
 <asp:UpdatePanel ID="upGroupType" runat="server">
     <ContentTemplate>

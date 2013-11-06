@@ -16,7 +16,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Crm
+namespace RockWeb.Blocks.Groups
 {
     /// <summary>
     /// 
