@@ -18,7 +18,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Core
+namespace RockWeb.Blocks.Communication
 {
     [AdditionalActions( new string[] { "Approve" } )]
     [LinkedPage("Detail Page")]

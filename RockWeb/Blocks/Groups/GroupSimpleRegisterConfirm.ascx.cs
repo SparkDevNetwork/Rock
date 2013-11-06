@@ -21,7 +21,7 @@ using Rock.Web.Cache;
 
 using System.Collections.Generic;
 
-namespace RockWeb.Blocks.Crm
+namespace RockWeb.Blocks.Groups
 {
     /// <summary>
     /// Block that will update a group member's status to active

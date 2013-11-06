@@ -13,7 +13,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 
-namespace RockWeb.Blocks.Utility
+namespace RockWeb.Blocks.Core
 {
     /// <summary>
     /// 

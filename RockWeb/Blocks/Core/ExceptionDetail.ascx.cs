@@ -19,7 +19,7 @@ using Rock.Web;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Administration
+namespace RockWeb.Blocks.Core
 {
     [LinkedPage("Detail Page")] 
     [BooleanField( "Show Cookies", "Show cookie information when block loads.", false )]

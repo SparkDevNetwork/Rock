@@ -20,7 +20,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 
-namespace RockWeb.Blocks.Administration
+namespace RockWeb.Blocks.Core
 {
     public partial class WorkflowTriggerDetail : RockBlock, IDetailBlock
     {

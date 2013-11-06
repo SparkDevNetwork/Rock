@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MarketingCampaignAdList.ascx.cs" Inherits="RockWeb.Blocks.Administration.MarketingCampaignAdList" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MarketingCampaignAdList.ascx.cs" Inherits="RockWeb.Blocks.Cms.MarketingCampaignAdList" %>
 
 <asp:UpdatePanel ID="upList" runat="server">
     <ContentTemplate>

@@ -18,7 +18,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Administration
+namespace RockWeb.Blocks.Core
 {
     [EntityTypeField( "Entity Type", "The type of entity to associate category with" )]
     [TextField( "Entity Type Qualifier Property", "", false )]

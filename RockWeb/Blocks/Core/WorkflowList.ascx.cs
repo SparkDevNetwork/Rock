@@ -17,7 +17,7 @@ using Rock.Web.UI.Controls;
 using Rock;
 using Attribute = Rock.Model.Attribute;
 
-namespace RockWeb.Blocks.Administration
+namespace RockWeb.Blocks.Core
 {
     /// <summary>
     /// 

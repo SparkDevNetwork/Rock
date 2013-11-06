@@ -15,7 +15,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Administration
+namespace RockWeb.Blocks.CheckIn
 {
     /// <summary>
     /// 
