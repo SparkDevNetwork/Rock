@@ -416,12 +416,16 @@ namespace Rock.Apps.CheckScannerUtility
                 BinaryFile binaryFileFront = new BinaryFile();
                 binaryFileFront.Guid = Guid.NewGuid();
                 binaryFileFront.FileName = string.Format( "{0}_{1}_{2}_front.png", scannedCheckInfo.RoutingNumber, scannedCheckInfo.MaskedAccountNumber, scannedCheckInfo.CheckNumber );
-                binaryFileFront.Data = new BinaryFileData();
-                binaryFileFront.Data.Content = scannedCheckInfo.FrontImagePngBytes;
                 binaryFileFront.BinaryFileTypeId = binaryFileTypeContribution.Id;
                 binaryFileFront.IsSystem = false;
                 binaryFileFront.MimeType = "image/png";
                 client.PostData<BinaryFile>( "api/BinaryFiles/", binaryFileFront );
+
+                // upload image data content of front of check
+                binaryFileFront.Data = new BinaryFileData();
+                binaryFileFront.Data.Content = scannedCheckInfo.FrontImagePngBytes;
+                binaryFileFront.Data.Id = client.GetDataByGuid<BinaryFile>( "api/BinaryFiles/", binaryFileFront.Guid ).Id;
+                client.PostData<BinaryFileData>( "api/BinaryFileDatas/", binaryFileFront.Data );
 
                 // upload image of back of check (if it exists)
                 BinaryFile binaryFileBack = null;
@@ -431,12 +435,18 @@ namespace Rock.Apps.CheckScannerUtility
                     binaryFileBack = new BinaryFile();
                     binaryFileBack.Guid = Guid.NewGuid();
                     binaryFileBack.FileName = string.Format( "{0}_{1}_{2}_back.png", scannedCheckInfo.RoutingNumber, scannedCheckInfo.MaskedAccountNumber, scannedCheckInfo.CheckNumber );
-                    binaryFileBack.Data = new BinaryFileData();
-                    binaryFileBack.Data.Content = scannedCheckInfo.BackImagePngBytes;
+
+                    // upload image of back of check
                     binaryFileBack.BinaryFileTypeId = binaryFileTypeContribution.Id;
                     binaryFileBack.IsSystem = false;
                     binaryFileBack.MimeType = "image/png";
                     client.PostData<BinaryFile>( "api/BinaryFiles/", binaryFileBack );
+
+                    // upload image data content of back of check
+                    binaryFileBack.Data = new BinaryFileData();
+                    binaryFileBack.Data.Content = scannedCheckInfo.BackImagePngBytes;
+                    binaryFileBack.Data.Id = client.GetDataByGuid<BinaryFile>( "api/BinaryFiles/", binaryFileBack.Guid ).Id;
+                    client.PostData<BinaryFileData>( "api/BinaryFileDatas/", binaryFileBack.Data  );
                 }
 
                 int percentComplete = position++ * 100 / totalCount;
@@ -819,7 +829,14 @@ namespace Rock.Apps.CheckScannerUtility
                     financialBatch.ControlAmount = 0.00M;
                 }
 
-                client.PostData<FinancialBatch>( "api/FinancialBatches/", financialBatch );
+                if ( financialBatch.Id == 0 )
+                {
+                    client.PostData<FinancialBatch>( "api/FinancialBatches/", financialBatch );
+                }
+                else
+                {
+                    client.PutData<FinancialBatch>( "api/FinancialBatches/", financialBatch );
+                }
 
                 if ( SelectedFinancialBatchId.Equals( 0 ) )
                 {
@@ -948,6 +965,14 @@ namespace Rock.Apps.CheckScannerUtility
                     foreach ( var image in financialTransaction.Images )
                     {
                         image.BinaryFile = client.GetData<BinaryFile>( string.Format( "api/BinaryFiles/{0}", image.BinaryFileId ) );
+                        try
+                        {
+                            image.BinaryFile.Data = client.GetData<BinaryFileData>( string.Format( "api/BinaryFileDatas/{0}", image.BinaryFileId ) );
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception( "Error getting check image data: " + ex.Message );
+                        }
                     }
 
                     BatchItemDetailPage.TransactionImageTypeValueFront = client.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_IMAGE_TYPE_CHECK_FRONT ) );
