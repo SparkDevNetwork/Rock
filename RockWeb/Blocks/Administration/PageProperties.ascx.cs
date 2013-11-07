@@ -329,21 +329,25 @@ namespace RockWeb.Blocks.Administration
                         }
                     }
 
-                    pageService.Save( page, CurrentPersonId );
-
-                    foreach ( var pageRoute in new PageRouteService().GetByPageId( page.Id ) )
+                    if ( page.IsValid )
                     {
-                        RouteTable.Routes.AddPageRoute( pageRoute );
+                        pageService.Save( page, CurrentPersonId );
+
+                        foreach ( var pageRoute in new PageRouteService().GetByPageId( page.Id ) )
+                        {
+                            RouteTable.Routes.AddPageRoute( pageRoute );
+                        }
+
+                        Rock.Attribute.Helper.GetEditValues( phAttributes, _page );
+                        _page.SaveAttributeValues( CurrentPersonId );
+
+                        Rock.Web.Cache.PageCache.Flush( _page.Id );
+
+                        string script = "if (typeof window.parent.Rock.controls.modal.close === 'function') window.parent.Rock.controls.modal.close('PAGE_UPDATED');";
+                        ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
                     }
-
-                    Rock.Attribute.Helper.GetEditValues( phAttributes, _page );
-                    _page.SaveAttributeValues( CurrentPersonId );
-
-                    Rock.Web.Cache.PageCache.Flush( _page.Id );
                 }
 
-                string script = "if (typeof window.parent.Rock.controls.modal.close === 'function') window.parent.Rock.controls.modal.close();";
-                ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
             }
         }
 
