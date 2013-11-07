@@ -37,7 +37,8 @@ namespace RockWeb.Blocks.Cms
 
             base.OnInit( e );
 
-            this.AttributesUpdated += PageXslt_AttributesUpdated;
+            this.BlockUpdated += PageXslt_AttributesUpdated;
+            this.AddConfigurationUpdateTrigger( upContent );
 
             // add css file to page
             if (GetAttributeValue( "CSSFile" ).Trim() != string.Empty)

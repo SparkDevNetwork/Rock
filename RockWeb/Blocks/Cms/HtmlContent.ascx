@@ -15,7 +15,7 @@
         });
     });
 </script>
-<asp:UpdatePanel runat="server" class="html-content-block">
+<asp:UpdatePanel ID="upPanel" runat="server" class="html-content-block">
 <ContentTemplate>
 
     <asp:Literal ID="lPreText" runat="server"></asp:Literal><asp:Literal ID="lHtmlContent" runat="server"></asp:Literal><asp:Literal ID="lPostText" runat="server"></asp:Literal>
