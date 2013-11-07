@@ -14,6 +14,7 @@ using DotLiquid;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -39,7 +40,8 @@ namespace RockWeb.Blocks.Cms
 
             base.OnInit( e );
 
-            this.AttributesUpdated += PageLiquid_AttributesUpdated;
+            this.BlockUpdated += PageLiquid_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upContent );
 
             // add css file to page
             if (GetAttributeValue( "CSSFile" ).Trim() != string.Empty)
@@ -59,13 +61,13 @@ namespace RockWeb.Blocks.Cms
             base.OnPreRender( e );
             Render();
         }
-        
+
         /// <summary>
-        /// Handles the AttributesUpdated event of the PageLiquid control.
+        /// Handles the BlockUpdated event of the PageLiquid control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void PageLiquid_AttributesUpdated( object sender, EventArgs e )
+        protected void PageLiquid_BlockUpdated( object sender, EventArgs e )
         {
             ObjectCache cache = MemoryCache.Default;
             cache.Remove( CacheKey() );

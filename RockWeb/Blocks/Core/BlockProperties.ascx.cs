@@ -99,7 +99,7 @@ namespace RockWeb.Blocks.Core
                     Rock.Web.Cache.BlockCache.Flush( _block.Id );
                 }
 
-                string script = @"window.parent.Rock.controls.modal.close();";
+                string script = string.Format( "window.parent.Rock.controls.modal.close('BLOCK_UPDATED:{0}');", blockId );
                 ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
             }
         }

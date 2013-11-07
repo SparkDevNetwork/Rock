@@ -49,7 +49,8 @@ namespace RockWeb.Blocks.Cms
             rGrid.DataKeyNames = new string[] { "id" };
             rGrid.ShowActionRow = false;
 
-            this.AttributesUpdated += HtmlContent_AttributesUpdated;
+            this.BlockUpdated += HtmlContent_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upPanel );
 
             ShowView();
         }
@@ -124,7 +125,7 @@ namespace RockWeb.Blocks.Cms
             base.OnPreRender( e );
         }
 
-        void HtmlContent_AttributesUpdated( object sender, EventArgs e )
+        protected void HtmlContent_BlockUpdated( object sender, EventArgs e )
         {
             lPreText.Text = GetAttributeValue( "PreText" );
             lPostText.Text = GetAttributeValue( "PostText" );
