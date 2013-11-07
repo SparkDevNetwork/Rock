@@ -17,6 +17,9 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
+using System.Text;
+using System.Text.RegularExpressions;
+
 namespace RockWeb.Blocks.Cms
 {
     [IntegerField( "Max Items", "", true, int.MinValue, "", 0 )]
@@ -272,12 +275,32 @@ namespace RockWeb.Blocks.Cms
             catch ( Exception ex )
             {
                 // xslt compile error
-                string exMessage = "An excception occurred while compiling the XSLT template.";
+                string exMessage = "An excception occurred while compiling the Liquid template.";
 
                 if ( ex.InnerException != null )
                     exMessage += "<br /><em>" + ex.InnerException.Message + "</em>";
 
                 content = "<div class='alert warning' style='margin: 24px auto 0 auto; max-width: 500px;' ><strong>XSLT Compile Error</strong><p>" + exMessage + "</p></div>";
+            }
+
+            // check for errors
+            if (content.Contains("No such template"))
+            {
+                // get template name
+                Match match = Regex.Match(GetAttributeValue("Template"), @"'([^']*)");
+                if (match.Success)
+                {
+                    content = String.Format("<div class='alert alert-warning'><h4>Warning</h4>Could not find the template _{1}.liquid in {0}.</div>", ResolveRockUrl("~~/Assets/Liquid"), match.Groups[1].Value);
+                }
+                else
+                {
+                    content = "<div class='alert alert-warning'><h4>Warning</h4>Unable to parse the template name from settings.</div>";
+                }
+            }
+
+            if (content.Contains("error"))
+            {
+                content = "<div class='alert alert-warning'><h4>Warning</h4>" + content + "</div>";
             }
 
             phContent.Controls.Clear();
