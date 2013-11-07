@@ -79,7 +79,7 @@
 
             </div>
 
-            <Rock:ModalDialog ID="modalPreview" runat="server" Title="Preview">
+            <Rock:ModalDialog ID="modalPreview" runat="server" Title="Preview" ValidationGroup="Preview" >
                 <Content>
                     <Rock:Grid ID="gPreview" runat="server" AllowSorting="true" EmptyDataText="No Results" ShowActionRow="false" />
                 </Content>

@@ -21,7 +21,7 @@ namespace RockWeb.Blocks.Crm
     /// </summary>
     [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter" )]
     [LinkedPage("Detail Page")]
-    public partial class GroupMemberList : RockBlock, IDimmableBlock
+    public partial class GroupMemberList : RockBlock, ISecondaryBlock
     {
         #region Private Variables
 
@@ -401,15 +401,15 @@ namespace RockWeb.Blocks.Crm
         #endregion
 
 
-        #region IDimmableBlock
+        #region ISecondaryBlock
 
         /// <summary>
-        /// Sets the dimmed.
+        /// Sets the visible.
         /// </summary>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        public void SetDimmed( bool dimmed )
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
         {
-            pnlContent.Visible = !dimmed;
+            pnlContent.Visible = visible;
         }
 
         #endregion

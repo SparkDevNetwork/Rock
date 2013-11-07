@@ -22,7 +22,7 @@ namespace RockWeb.Blocks.Cms
     /// 
     /// </summary>
     [LinkedPage("Detail Page")]
-    public partial class LayoutList : RockBlock, IDimmableBlock
+    public partial class LayoutList : RockBlock, ISecondaryBlock
     {
         #region Control Methods
 
@@ -185,16 +185,15 @@ namespace RockWeb.Blocks.Cms
 
         #endregion
 
-        #region IDimmableBlock
+        #region ISecondaryBlock
 
         /// <summary>
-        /// Sets the dimmed.
+        /// Sets the visible.
         /// </summary>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        public void SetDimmed( bool dimmed )
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
         {
-            pnlLayouts.Disabled = dimmed;
-            gLayouts.Enabled = !dimmed;
+            pnlContent.Visible = visible;
         }
 
         #endregion

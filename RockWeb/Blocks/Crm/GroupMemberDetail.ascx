@@ -18,13 +18,6 @@
                 
             <div class="row">
                 <div class="col-md-6">
-                </div>
-                <div class="col-md-6">
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6">
                     <Rock:PersonPicker runat="server" ID="ppGroupMemberPerson" Label="Person" Required="true"/>
                     <Rock:RockDropDownList runat="server" ID="ddlGroupRole" DataTextField="Name" DataValueField="Id" Label="Role" />
                 </div>

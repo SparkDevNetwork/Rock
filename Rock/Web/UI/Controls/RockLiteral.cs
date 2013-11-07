@@ -164,6 +164,7 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             HelpBlock = new HelpBlock();
+            Text = string.Empty;
         }
 
         /// <summary>

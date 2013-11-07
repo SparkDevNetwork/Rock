@@ -69,7 +69,10 @@ namespace Rock.Field.Types
 
             var tb = new RockTextBox();
             controls.Add( tb );
-
+            tb.AutoPostBack = true;
+            tb.TextChanged += OnQualifierUpdated;
+            tb.Label = "Container Assembly Name";
+            tb.Help = "The assembly name of the MEF container to show components of.";
             return controls;
         }
 

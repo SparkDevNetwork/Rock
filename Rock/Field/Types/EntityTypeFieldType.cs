@@ -32,10 +32,14 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string entityTypeName = value;
-            if ( !string.IsNullOrWhiteSpace( entityTypeName ) )
+            Guid guid = Guid.Empty;
+            if ( Guid.TryParse( value, out guid ) )
             {
-                return EntityTypeCache.Read( entityTypeName ).FriendlyName;
+                var entityType = EntityTypeCache.Read( guid );
+                if ( entityType != null )
+                {
+                    return entityType.FriendlyName;
+                }
             }
 
             return string.Empty;
@@ -51,10 +55,10 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var dropDownList = new RockDropDownList { ID = id }; 
-            dropDownList.Items.Add( new ListItem( "None (Global)", "") );
-            new EntityTypeService().GetEntityListItems().ForEach( l => dropDownList.Items.Add( l ) );
-            return dropDownList;
+            var entityTypePicker = new EntityTypePicker { ID = id };
+            entityTypePicker.IncludeGlobalOption = true;
+            entityTypePicker.EntityTypes = new EntityTypeService().GetEntities().ToList();
+            return entityTypePicker;
         }
 
         /// <summary>
@@ -65,10 +69,14 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            DropDownList dropDownList = control as DropDownList;
-            if ( dropDownList != null )
+            EntityTypePicker entityTypePicker = control as EntityTypePicker;
+            if ( entityTypePicker != null && entityTypePicker.SelectedEntityTypeId.HasValue )
             {
-                return dropDownList.SelectedValue;
+                var entityType = EntityTypeCache.Read(entityTypePicker.SelectedEntityTypeId.Value);
+                if (entityType != null)
+                {
+                    return entityType.Guid.ToString();
+                }
             }
 
             return null;
@@ -82,12 +90,19 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            Guid guid = Guid.Empty;
+            if (Guid.TryParse(value, out guid))
             {
-                DropDownList dropDownList = control as DropDownList;
-                if ( dropDownList != null )
+                EntityTypePicker entityTypePicker = control as EntityTypePicker;
+                if ( entityTypePicker != null )
                 {
-                    dropDownList.SetValue( value );
+                    int selectedValue = 0;
+                    var entityType = EntityTypeCache.Read(guid);
+                    if (entityType != null)
+                    {
+                        selectedValue = entityType.Id;
+                    }
+                    entityTypePicker.SelectedEntityTypeId = selectedValue;
                 }
             }
         }

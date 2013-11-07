@@ -85,6 +85,8 @@ namespace Rock.Field.Types
             controls.Add( ddl );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
+            ddl.Label = "Defined Type";
+            ddl.Help = "The Defined Type to select values from.";
 
             Rock.Model.DefinedTypeService definedTypeService = new Model.DefinedTypeService();
             foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Order ) )
@@ -98,7 +100,9 @@ namespace Rock.Field.Types
             controls.Add( cb );
             cb.AutoPostBack = true;
             cb.CheckedChanged += OnQualifierUpdated;
+            cb.Label = "Allow Multiple Values";
             cb.Text = "Yes";
+            cb.Help = "When set, allows multiple defined type values to be selected.";
             return controls;
         }
 

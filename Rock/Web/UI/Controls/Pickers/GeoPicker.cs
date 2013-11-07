@@ -630,7 +630,14 @@ namespace Rock.Web.UI.Controls
                 options += string.Format( ", centerLatitude: '{0}', centerLongitude: '{1}'", centerPoint.Latitude, centerPoint.Longitude );
             }
 
-            string script = string.Format( "Rock.controls.geoPicker.initialize({{ {0} }});", options );
+            string script = string.Format( @"
+// if the geoPicker was rendered, initialize it
+if ($('#{1}').length > 0)
+{{
+    Rock.controls.geoPicker.initialize({{ {0} }});
+}}
+
+", options, this.ClientID );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "geo_picker-" + this.ClientID, script, true );
         }

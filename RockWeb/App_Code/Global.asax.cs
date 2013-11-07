@@ -71,16 +71,15 @@ namespace RockWeb
             if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
             {
                 System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", DateTime.Now ) );
-                HttpInternals.RockWebFileChangeMonitor();
             }
-            
+
             // Check if database should be auto-migrated for the core and plugins
             bool autoMigrate = true;
             if ( !Boolean.TryParse( ConfigurationManager.AppSettings["AutoMigrateDatabase"], out autoMigrate ) )
             {
                 autoMigrate = true;
             }
-            
+
             if ( autoMigrate )
             {
                 try
@@ -264,7 +263,7 @@ namespace RockWeb
                     Global.BaseUrl = string.Format( "{0}://{1}/", Context.Request.Url.Scheme, Context.Request.Url.Authority );
                 }
             }
-            
+
             Context.Items.Add( "Request_Start_Time", DateTime.Now );
         }
 
@@ -402,7 +401,7 @@ namespace RockWeb
                     }
                 }
             }
-        } 
+        }
 
         /// <summary>
         /// Formats the exception.
@@ -448,9 +447,9 @@ namespace RockWeb
             else
             {
                 var pid = context.Items["Rock:PageId"];
-                pageId = pid != null ? int.Parse( pid.ToString() ) : (int?) null;
+                pageId = pid != null ? int.Parse( pid.ToString() ) : (int?)null;
                 var sid = context.Items["Rock:SiteId"];
-                siteId = sid != null ? int.Parse( sid.ToString() ) : (int?) null;
+                siteId = sid != null ? int.Parse( sid.ToString() ) : (int?)null;
                 var user = UserLoginService.GetCurrentUser();
                 personId = user != null ? user.PersonId : null;
             }
@@ -485,7 +484,7 @@ namespace RockWeb
                     string shutDownMessage = (string)runtime.GetType().InvokeMember( "_shutDownMessage", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField, null, runtime, null );
 
                     // send debug info to debug window
-                    System.Diagnostics.Debug.WriteLine( String.Format( "shutDownMessage:{0}", shutDownMessage ));
+                    System.Diagnostics.Debug.WriteLine( String.Format( "shutDownMessage:{0}", shutDownMessage ) );
                 }
             }
             catch

@@ -37,12 +37,13 @@ namespace RockWeb.Blocks.Crm
             base.OnInit( e );
 
             gGroupType.DataKeyNames = new string[] { "id" };
-            gGroupType.Actions.ShowAdd = false;
-            gGroupType.IsDeleteEnabled = false;
+            gGroupType.Actions.ShowAdd = true;
+            gGroupType.Actions.AddClick += gGroupType_Add;
             gGroupType.GridRebind += gGroupType_GridRebind;
 
             // Block Security and special attributes (RockPage takes care of "View")
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            gGroupType.Actions.ShowAdd = canAddEditDelete;
 
         }
 
@@ -107,29 +108,64 @@ namespace RockWeb.Blocks.Crm
         #endregion
 
         /// <summary>
+        /// Handles the Add event of the gGroupType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void gGroupType_Add( object sender, EventArgs e )
+        {
+            mdAddCheckinGroupType.Show();
+        }
+
+
+        /// <summary>
         /// Handles the RowCommand event of the gGroupType control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewCommandEventArgs"/> instance containing the event data.</param>
         protected void gGroupType_RowCommand( object sender, System.Web.UI.WebControls.GridViewCommandEventArgs e )
         {
-            int rowIndex = int.Parse( ( e.CommandArgument as string ) );
-            GridViewRow row = ( sender as Grid ).Rows[rowIndex];
-            RowEventArgs rowEventArgs = new RowEventArgs( row );
+            int? rowIndex = ( e.CommandArgument as string ).AsInteger( false );
+            if ( rowIndex != null )
+            {
+                GridViewRow row = ( sender as Grid ).Rows[rowIndex.Value];
+                RowEventArgs rowEventArgs = new RowEventArgs( row );
 
-            if ( e.CommandName.Equals( "schedule" ) )
-            {
-                Dictionary<string, string> qryParams = new Dictionary<string, string>();
-                qryParams.Add( "groupTypeId", rowEventArgs.RowKeyId.ToString() );
-                this.NavigateToLinkedPage( "ScheduleBuilderPage", qryParams );
-            }
-            else if ( e.CommandName.Equals( "configure" ) )
-            {
-                Dictionary<string, string> qryParams = new Dictionary<string, string>();
-                qryParams.Add( "groupTypeId", rowEventArgs.RowKeyId.ToString() );
-                this.NavigateToLinkedPage( "ConfigureGroupsPage", qryParams );
+                if ( e.CommandName.Equals( "schedule" ) )
+                {
+                    Dictionary<string, string> qryParams = new Dictionary<string, string>();
+                    qryParams.Add( "groupTypeId", rowEventArgs.RowKeyId.ToString() );
+                    this.NavigateToLinkedPage( "ScheduleBuilderPage", qryParams );
+                }
+                else if ( e.CommandName.Equals( "configure" ) )
+                {
+                    Dictionary<string, string> qryParams = new Dictionary<string, string>();
+                    qryParams.Add( "groupTypeId", rowEventArgs.RowKeyId.ToString() );
+                    this.NavigateToLinkedPage( "ConfigureGroupsPage", qryParams );
+                }
             }
         }
 
+        /// <summary>
+        /// Handles the SaveClick event of the mdAddCheckinGroupType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdAddCheckinGroupType_SaveClick( object sender, EventArgs e )
+        {
+            var groupTypeService = new GroupTypeService();
+            GroupType groupType = new GroupType();
+            groupType.Name = tbGroupTypeName.Text;
+            groupType.GroupTypePurposeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ).Id;
+            groupType.ShowInNavigation = false;
+            groupType.ShowInGroupList = false;
+
+            groupTypeService.Add( groupType, this.CurrentPersonId );
+            groupTypeService.Save( groupType, this.CurrentPersonId );
+            mdAddCheckinGroupType.Hide();
+
+            BindGrid();
+        }
     }
 }

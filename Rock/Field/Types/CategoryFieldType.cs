@@ -68,16 +68,22 @@ namespace Rock.Field.Types
             controls.Add( ddl );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
+            ddl.Label = "Entity Type";
+            ddl.Help = "The type of entity to display categories for.";
 
             var tbColumn = new RockTextBox();
             controls.Add( tbColumn );
             tbColumn.AutoPostBack = true;
             tbColumn.TextChanged += OnQualifierUpdated;
+            tbColumn.Label = "Qualifier Column";
+            tbColumn.Help = "Entity column qualifier.";
 
             var tbValue = new RockTextBox();
             controls.Add( tbValue );
             tbValue.AutoPostBack = true;
             tbValue.TextChanged += OnQualifierUpdated;
+            tbValue.Label = "Qualifier Value";
+            tbValue.Help = "Entity column value.";
 
             return controls;
         }

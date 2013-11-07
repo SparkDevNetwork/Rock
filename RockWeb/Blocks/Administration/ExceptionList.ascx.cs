@@ -31,7 +31,7 @@ namespace RockWeb.Blocks.Administraton
 
 
         /// <summary>
-        /// Initialzes the control/Rock Block
+        /// Initializes the control/Rock Block
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
@@ -59,6 +59,12 @@ namespace RockWeb.Blocks.Administraton
             // set detail title with formating
             lDetailTitle.Text = ("Exception Occurrences").FormatAsHtmlTitle();
 
+            RockPage page = Page as RockPage;
+            if ( page != null )
+            {
+                page.PageNavigate += page_PageNavigate;
+            }
+
         }
 
         /// <summary>
@@ -74,6 +80,17 @@ namespace RockWeb.Blocks.Administraton
                 //Set Exception Panel visibility to show Exception List
                 SetExceptionPanelVisibility( None.Id );
             }
+        }
+
+        void page_PageNavigate( object sender, HistoryEventArgs e )
+        {
+            string stateData = e.State["Exception"];
+
+            int exceptionId = 0;
+            int.TryParse( stateData, out exceptionId );
+
+            SetExceptionPanelVisibility( exceptionId );
+
         }
 
         #endregion
@@ -210,7 +227,7 @@ namespace RockWeb.Blocks.Administraton
 
         #endregion
 
-        #region Exception Occurrece Grid Events
+        #region Exception Occurrence Grid Events
 
         /// <summary>
         /// Handles the GridRebind event of the gExceptionOccurrences control.
@@ -250,6 +267,17 @@ namespace RockWeb.Blocks.Administraton
             BindExceptionListGrid();
         }
 
+
+        /// <summary>
+        /// Handles the Click event of the btnReturnToList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnReturnToList_Click( object sender, EventArgs e )
+        {
+            this.AddHistory( "Exception", None.Id.ToString(), "Exception List" );
+            SetExceptionPanelVisibility( None.Id );
+        }
         
         #endregion
 
@@ -400,7 +428,7 @@ namespace RockWeb.Blocks.Administraton
         }
 
         /// <summary>
-        /// Bulds the base query for the Exception List grid data
+        /// Builds the base query for the Exception List grid data
         /// </summary>
         /// <returns>IQueryable containing filtered ExceptionLog records</returns>
         private IQueryable<ExceptionLog> BuildBaseExceptionListQuery()
@@ -467,6 +495,7 @@ namespace RockWeb.Blocks.Administraton
         /// </summary>
         private void LoadExceptionList()
         {
+            //this.AddHistory( "Exception", None.Id.ToString(), "Exception List" );
             BindExceptionListFilter();
             BindExceptionListGrid();
         }
@@ -484,6 +513,7 @@ namespace RockWeb.Blocks.Administraton
             //set the summary fields for the base exception
             if ( exception != null )
             {
+                this.AddHistory( "Exception", exceptionId.ToString(), string.Format( "Exception Occurrences {0}", exception.Description ) );
                 hfBaseExceptionID.Value = exceptionId.ToString();
 
                 var descriptionList = new Rock.Web.DescriptionList();

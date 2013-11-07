@@ -122,6 +122,25 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Group Location Type
+
+        /// <summary>
+        /// Home location type
+        /// </summary>
+        public const string GROUP_LOCATION_TYPE_HOME = "8C52E53C-2A66-435A-AE6E-5EE307D9A0DC";
+
+        /// <summary>
+        /// Work Record Type
+        /// </summary>
+        public const string GROUP_LOCATION_TYPE_WORK = "E071472A-F805-4FC4-917A-D5E3C095C35C";
+
+        /// <summary>
+        /// Work Record Type
+        /// </summary>
+        public const string GROUP_LOCATION_TYPE_PREVIOUS = "853D98F1-6E08-4321-861B-520B4106CFE0";
+
+        #endregion
+
         #region Group Type Purpose
 
         /// <summary>
@@ -248,25 +267,6 @@ namespace Rock.SystemGuid
         /// Business Record Type
         /// </summary>
         public const string PERSON_RECORD_TYPE_BUSINESS = "BF64ADD3-E70A-44CE-9C4B-E76BBED37550";
-
-        #endregion
-
-        #region Location Type
-
-        /// <summary>
-        /// Home location type
-        /// </summary>
-        public const string LOCATION_TYPE_HOME = "8C52E53C-2A66-435A-AE6E-5EE307D9A0DC";
-
-        /// <summary>
-        /// Work Record Type
-        /// </summary>
-        public const string LOCATION_TYPE_WORK = "E071472A-F805-4FC4-917A-D5E3C095C35C";
-
-        /// <summary>
-        /// Work Record Type
-        /// </summary>
-        public const string LOCATION_TYPE_PREVIOUS = "853D98F1-6E08-4321-861B-520B4106CFE0";
 
         #endregion
 
