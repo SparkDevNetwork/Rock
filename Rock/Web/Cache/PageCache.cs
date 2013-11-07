@@ -836,7 +836,7 @@ namespace Rock.Web.Cache
         /// <param name="parameters">The parameters.</param>
         /// <param name="queryString">The query string.</param>
         /// <returns></returns>
-        public Dictionary<string, object> GetMenuProperties( int levelsDeep, Person person, PageCache currentPage = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
+        public Dictionary<string, object> GetMenuProperties( int levelsDeep, Person person, List<int> currentPageHeirarchy = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
         {
             if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
             {
@@ -848,12 +848,19 @@ namespace Rock.Web.Cache
                         this.IconFileId.Value );
                 }
 
-                bool isCurrentPage = currentPage != null && currentPage.Id == this.Id;
+                bool isCurrentPage = false;
+                bool isParentOfCurrent = false;
+                if ( currentPageHeirarchy != null && currentPageHeirarchy.Any() )
+                {
+                    isCurrentPage = currentPageHeirarchy.First() == this.Id;
+                    isParentOfCurrent = currentPageHeirarchy.Skip( 1 ).Any( p => p == this.Id );
+                }
 
                 var properties = new Dictionary<string, object>();
                 properties.Add( "id", this.Id );
                 properties.Add( "title", this.Title ?? this.Name );
                 properties.Add( "current", isCurrentPage.ToString() );
+                properties.Add( "isParentOfCurrent", isParentOfCurrent.ToString() );
                 properties.Add( "url", new PageReference( this.Id, 0, parameters, queryString ).BuildUrl() );
                 properties.Add( "display-description", this.MenuDisplayDescription.ToString().ToLower() );
                 properties.Add( "display-icon", this.MenuDisplayIcon.ToString().ToLower() );
@@ -870,9 +877,11 @@ namespace Rock.Web.Cache
                     {
                         if ( page != null )
                         {
-                            var childPageElement = page.GetMenuProperties( levelsDeep - 1, person, currentPage, parameters, queryString );
+                            var childPageElement = page.GetMenuProperties( levelsDeep - 1, person, currentPageHeirarchy, parameters, queryString );
                             if ( childPageElement != null )
+                            {
                                 childPages.Add( childPageElement );
+                            }
                         }
                     }
 
