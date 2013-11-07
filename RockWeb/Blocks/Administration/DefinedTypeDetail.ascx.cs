@@ -200,6 +200,8 @@ namespace RockWeb.Blocks.Administration
             pnlEditDetails.Visible = editable;
             vsDetails.Enabled = editable;
             fieldsetViewDetails.Visible = !editable;
+
+            this.HideSecondaryBlocks( editable );
         }
 
         /// <summary>
@@ -224,6 +226,7 @@ namespace RockWeb.Blocks.Administration
             else
             {
                 definedType = new DefinedType { Id = 0 };
+                definedType.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
             }
 
             hfDefinedTypeId.SetValue( definedType.Id );
@@ -304,6 +307,7 @@ namespace RockWeb.Blocks.Administration
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
+                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtDefinedTypeAttributes.ActionTitle = ActionTitle.Add( "attribute for defined type " + tbTypeName.Text );
             }
             else
@@ -314,6 +318,8 @@ namespace RockWeb.Blocks.Administration
             }
 
             edtDefinedTypeAttributes.SetAttributeProperties( attribute, typeof( DefinedValue ) );
+
+            this.HideSecondaryBlocks( true );
         }
 
         /// <summary>
@@ -399,7 +405,9 @@ namespace RockWeb.Blocks.Administration
             pnlDetails.Visible = true;
             pnlDefinedTypeAttributes.Visible = false;
 
-            BindDefinedTypeAttributesGrid();            
+            BindDefinedTypeAttributesGrid();
+
+            this.HideSecondaryBlocks( false );
         }
 
         /// <summary>
@@ -411,6 +419,8 @@ namespace RockWeb.Blocks.Administration
         {
             pnlDetails.Visible = true;
             pnlDefinedTypeAttributes.Visible = false;
+
+            this.HideSecondaryBlocks( false );
         }
 
         /// <summary>

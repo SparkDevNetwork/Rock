@@ -157,7 +157,7 @@ namespace Rock.Apps.StatementGenerator
             if ( selected != null )
             {
                 string fileName = selected.Tag.ToString();
-                ReportOptions.Current.LayoutFile = new DplxFile( fileName );
+                ReportOptions.Current.LayoutFile = fileName;
                 var rockConfig = RockConfig.Load();
                 rockConfig.LayoutFile = fileName;
                 rockConfig.Save();

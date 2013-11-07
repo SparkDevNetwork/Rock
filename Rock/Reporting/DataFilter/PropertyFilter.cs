@@ -159,9 +159,7 @@ namespace Rock.Reporting.DataFilter
                     // If two more values, then it is a comparison and a value
                     else if ( values.Count == 3 )
                     {
-                        ComparisonType comparisonType = ComparisonType.StartsWith;
-                        try { comparisonType = values[1].ConvertToEnum<ComparisonType>(); }
-                        catch { }
+                        ComparisonType comparisonType = values[1].ConvertToEnum<ComparisonType>( ComparisonType.StartsWith );
                         return string.Format( "{0} {1} '{2}'", entityField.Title, comparisonType.ConvertToString(), values[2] );
                     }
                 }
@@ -826,8 +824,7 @@ namespace Rock.Reporting.DataFilter
                         DateTime dateValue = DateTime.MinValue;
                         if ( DateTime.TryParse( values[1], out dateValue ) )
                         {
-                            try { comparisonType = values[0].ConvertToEnum<ComparisonType>(); }
-                            catch { }
+                            comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo); 
                             constantExpression = Expression.Constant( dateValue );
 
                             if ( entityField.PropertyType == typeof( DateTime? ) )
@@ -855,8 +852,7 @@ namespace Rock.Reporting.DataFilter
                         int intValue = int.MinValue;
                         if ( int.TryParse( values[1], out intValue ) )
                         {
-                            try { comparisonType = values[0].ConvertToEnum<ComparisonType>(); }
-                            catch { }
+                            comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo ); 
                             constantExpression = Expression.Constant( intValue );
 
                             if ( entityField.PropertyType == typeof( int? ) )
@@ -950,8 +946,7 @@ namespace Rock.Reporting.DataFilter
 
                     if ( values.Count == 2 )
                     {
-                        try { comparisonType = values[0].ConvertToEnum<ComparisonType>(); }
-                        catch { }
+                        comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo ); 
                         constantExpression = Expression.Constant( values[1] );
 
                         return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
@@ -993,9 +988,8 @@ namespace Rock.Reporting.DataFilter
                         DateTime dateValue = DateTime.MinValue;
                         if ( DateTime.TryParse( values[1], out dateValue ) )
                         {
-                            try { comparisonType = values[0].ConvertToEnum<ComparisonType>(); }
-                            catch { }
-
+                            comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                            
                             switch ( comparisonType )
                             {
                                 case ComparisonType.EqualTo:
@@ -1027,9 +1021,8 @@ namespace Rock.Reporting.DataFilter
                         int intValue = int.MinValue;
                         if ( int.TryParse( values[1], out intValue ) )
                         {
-                            try { comparisonType = values[0].ConvertToEnum<ComparisonType>(); }
-                            catch { }
-
+                            comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                            
                             switch ( comparisonType )
                             {
                                 case ComparisonType.EqualTo:
@@ -1058,9 +1051,8 @@ namespace Rock.Reporting.DataFilter
 
                     if ( values.Count == 2 )
                     {
-                        try { comparisonType = values[0].ConvertToEnum<ComparisonType>(); }
-                        catch { }
-
+                        comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo ); 
+                        
                         switch ( comparisonType )
                         {
                             case ComparisonType.Contains:

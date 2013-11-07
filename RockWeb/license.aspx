@@ -64,7 +64,6 @@
                             <li><a href="#eventdrag">Event Drag</a> (Custom) - <a href="http://threedubmedia.com">Project Site</a> </li>
                             <li><a href="#taginput">jQuery Tag Input</a> (MIT) - <a href="http://xoxco.com/projects/code/tagsinput/">Project Site</a> </li>
                             <li><a href="#tinyscrollbar">Tiny Scrollbar</a> (MIT) - <a href="http://www.baijs.nl/tinyscrollbar/">Project Site</a> </li>
-                            <li><a href="#tooltipster">Tooltipster</a> (MIT) - <a href="http://calebjacob.com/tooltipster/">Project Site</a> </li>
                             <li><a href="#epplus">EPPlus</a> (LGPL) - <a href="http://epplus.codeplex.com/">Project Site</a> </li>
                             <li><a href="#dotliquid">DotLiquid</a> (Apache) - <a href="http://dotliquidmarkup.org/">Project Site</a> </li>
                             <li><a href="#bootbox">Bootbox.js</a> (MIT) - <a href="http://bootboxjs.com/">Project Site</a> </li>
@@ -996,31 +995,6 @@ THE SOFTWARE.
 </pre>
 
                         <a name="tinyscrollbar"></a><h3>Tiny Scrollbar</h3>
-                        <pre>
-The MIT License (MIT)
-
-Copyright (c) <year> <copyright holders>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-</pre>
-
-                        <a name="tooltipster"></a><h3>Tooltipster</h3>
                         <pre>
 The MIT License (MIT)
 

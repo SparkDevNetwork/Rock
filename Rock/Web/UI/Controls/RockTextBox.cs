@@ -192,7 +192,6 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             RequiredFieldValidator = new RequiredFieldValidator();
-            RequiredFieldValidator.ValidationGroup = this.ValidationGroup;
             HelpBlock = new HelpBlock();
         }
 

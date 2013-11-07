@@ -83,8 +83,6 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( System.EventArgs e )
         {
             base.OnInit( e );
-
-            RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.tooltipster.min.js" ) );
         }
 
         /// <summary>
@@ -115,30 +113,47 @@ namespace Rock.Web.UI.Controls
 
             if ( !string.IsNullOrWhiteSpace( Role ) )
             {
+                writer.RenderBeginTag(HtmlTextWriterTag.Small);
                 writer.Write( " (" );
                 writer.Write( Role );
                 writer.Write( ")" );
+                writer.RenderEndTag();
             }
 
             string script = @"
-    $('.popover-person').tooltipster({
-        content: 'Loading...',
-        position: 'right', 
-        interactive: true, 
-        interactiveTolerance: 350,
-        updateAnimation: false,
-        functionBefore: function(origin, continueTooltip) {
-            continueTooltip();
-            if (origin.data('ajax') !== 'cached') {
-                var url = Rock.settings.get('baseUrl') + 'api/People/PopupHtml/' +  origin.attr('personId');
-                $.get(
-                    url,
-                    function(data) {
-                        origin.tooltipster('update', data.PickerItemDetailsHtml).data('ajax', 'cached');
-                    }
-                );
-            }
+    $('.popover-person').popover({
+        placement: 'right', 
+        trigger: 'manual',
+        delay: 500,
+        html: true,
+        content: function() {
+            var dataUrl = Rock.settings.get('baseUrl') + 'api/People/PopupHtml/' +  $(this).attr('personid');
+
+            var result = $.ajax({ 
+                                type: 'GET', 
+                                url: dataUrl, 
+                                dataType: 'json', 
+                                contentType: 'application/json; charset=utf-8',
+                                async: false }).responseText;
+            
+            var resultObject = jQuery.parseJSON(result);
+
+            return resultObject.PickerItemDetailsHtml;
+
         }
+    }).on('mouseenter', function () {
+        var _this = this;
+        $(this).popover('show');
+        $(this).siblings('.popover').on('mouseleave', function () {
+            $(_this).popover('hide');
+        });
+    }).on('mouseleave', function () {
+        var _this = this;
+        setTimeout(function () {
+            if (!$('.popover:hover').length) {
+                $(_this).popover('hide')
+            }
+        }, 100);
     });
 ";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "person-link-popover", script, true );

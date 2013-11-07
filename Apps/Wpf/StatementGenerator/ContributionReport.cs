@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Xml;
 using ceTe.DynamicPDF;
 using ceTe.DynamicPDF.ReportWriter;
 using ceTe.DynamicPDF.ReportWriter.Data;
@@ -53,7 +54,7 @@ namespace Rock.Apps.StatementGenerator
         /// <value>
         /// The layout file.
         /// </value>
-        public DplxFile LayoutFile { get; set; }
+        public string LayoutFile { get; set; }
 
         /// <summary>
         /// Gets or sets the current report options
@@ -174,6 +175,37 @@ namespace Rock.Apps.StatementGenerator
 
             // setup report layout and events
             DocumentLayout report = new DocumentLayout( this.Options.LayoutFile );
+
+            //// if there is an imgLogo and the path is "logo.jpg", use the logo specified in rockconfig.  
+            //// We have to read the layout as Xml first to figure out what the Path of the imgLogo
+            XmlDocument layoutXmlDoc = new XmlDocument();
+            layoutXmlDoc.Load( this.Options.LayoutFile );
+            var imageNodes = layoutXmlDoc.GetElementsByTagName( "image" );
+            foreach ( var imageNode in imageNodes.OfType<XmlNode>() )
+            {
+                string imagePath = imageNode.Attributes["path"].Value;
+                string imageId =imageNode.Attributes["id"].Value;
+                if (imageId.Equals("imgLogo" ) &&  imagePath.Equals( RockConfig.DefaultLogoFile, StringComparison.OrdinalIgnoreCase )  )
+                {
+                    Image imgLogo = report.GetReportElementById( "imgLogo" ) as Image;
+                    if ( imgLogo != null )
+                    {
+                        try
+                        {
+                            if ( !rockConfig.LogoFile.Equals( RockConfig.DefaultLogoFile, StringComparison.OrdinalIgnoreCase ) )
+                            {
+                                imgLogo.ImageData = ceTe.DynamicPDF.Imaging.ImageData.GetImage( rockConfig.LogoFile );
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception( "Error loading Logo Image: " + rockConfig.LogoFile + "\n\n" + ex.Message);
+                        }
+                    }
+                }
+            }
+
+
             Query query = report.GetQueryById( "OuterQuery" );
             if ( query == null )
             {

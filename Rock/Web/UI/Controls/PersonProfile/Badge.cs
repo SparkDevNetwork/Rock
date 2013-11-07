@@ -60,8 +60,6 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( System.EventArgs e )
         {
             base.OnInit( e );
-
-            RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.tooltipster.min.js" ) );
         }
 
         /// <summary>
@@ -85,7 +83,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            string script = "$('.badge').tooltipster({ position: 'top', interactive: true, interactiveTolerance: 350 });";
+            string script = "$('.badge').tooltip();";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "badge-popover", script, true );
 
         }

@@ -91,12 +91,17 @@ namespace Rock.Field.Types
             controls.Add( tbTrue );
             tbTrue.AutoPostBack = true;
             tbTrue.TextChanged += OnQualifierUpdated;
+            tbTrue.Label = "True Text";
+            tbTrue.Text = "Yes";
+            tbTrue.Help = "The text to display when value is true.";
 
             RockTextBox tbFalse = new RockTextBox();
             controls.Add( tbFalse );
             tbFalse.AutoPostBack = true;
             tbFalse.TextChanged += OnQualifierUpdated;
-
+            tbFalse.Label = "False Text";
+            tbFalse.Text = "No";
+            tbFalse.Help = "The text to display when value is false.";
             return controls;
         }
 

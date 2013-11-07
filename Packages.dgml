@@ -15,7 +15,7 @@
     <Node Id="WebActivatorEx 2.0.1" Label="WebActivatorEx 2.0.1" Category="Package" />
     <Node Id="WebGrease 1.3.0" Label="WebGrease 1.3.0" Category="Package" />
     <Node Id="Rock.Tests" Label="Rock.Tests" Category="Project" />
-    <Node Id="EntityFramework 6.0.0-beta1" Label="EntityFramework 6.0.0-beta1" Category="Package" />
+    <Node Id="EntityFramework 6.0.1" Label="EntityFramework 6.0.1" Category="Package" />
     <Node Id="Newtonsoft.Json 5.0.6" Label="Newtonsoft.Json 5.0.6" Category="Package" />
     <Node Id="NUnit 2.6.2" Label="NUnit 2.6.2" Category="Package" />
     <Node Id="Rock.Rest" Label="Rock.Rest" Category="Project" />
@@ -31,13 +31,16 @@
     <Node Id="AjaxControlToolkit 7.0725" Label="AjaxControlToolkit 7.0725" Category="Package" />
     <Node Id="AjaxMin 4.97.4951.28483" Label="AjaxMin 4.97.4951.28483" Category="Package" />
     <Node Id="DDay.iCal 1.0.2.575" Label="DDay.iCal 1.0.2.575" Category="Package" />
-    <Node Id="EntityFramework 6.0.0-beta1" Label="EntityFramework 6.0.0-beta1" Category="Package" />
+    <Node Id="EntityFramework 6.0.1" Label="EntityFramework 6.0.1" Category="Package" />
     <Node Id="Facebook 6.4.0" Label="Facebook 6.4.0" Category="Package" />
     <Node Id="HtmlAgilityPack 1.4.6" Label="HtmlAgilityPack 1.4.6" Category="Package" />
+    <Node Id="Microsoft.SqlServer.Types 10.50.1600.1" Label="Microsoft.SqlServer.Types 10.50.1600.1" Category="Package" />
     <Node Id="Microsoft.Web.Infrastructure 1.0.0.0" Label="Microsoft.Web.Infrastructure 1.0.0.0" Category="Package" />
     <Node Id="Newtonsoft.Json 5.0.6" Label="Newtonsoft.Json 5.0.6" Category="Package" />
     <Node Id="NuGet.Core 2.2.0" Label="NuGet.Core 2.2.0" Category="Package" />
+    <Node Id="RestSharp 104.3.3" Label="RestSharp 104.3.3" Category="Package" />
     <Node Id="T4Scaffolding 1.0.5" Label="T4Scaffolding 1.0.5" Category="Package" />
+    <Node Id="Twilio 3.6.5" Label="Twilio 3.6.5" Category="Package" />
   </Nodes>
   <Links>
     <Link Source="Microsoft.AspNet.Web.Optimization 1.1.0" Target="Microsoft.Web.Infrastructure 1.0.0.0" Category="Package Dependency" />
@@ -54,7 +57,7 @@
     <Link Source="RockWeb" Target="Microsoft.AspNet.WebApi 4.0.20710.0" Category="Installed Package" />
     <Link Source="RockWeb" Target="NuGet.Core 2.2.0" Category="Installed Package" />
     <Link Source="RockWeb" Target="WebActivatorEx 2.0.1" Category="Installed Package" />
-    <Link Source="Rock.Tests" Target="EntityFramework 6.0.0-beta1" Category="Installed Package" />
+    <Link Source="Rock.Tests" Target="EntityFramework 6.0.1" Category="Installed Package" />
     <Link Source="Rock.Tests" Target="Newtonsoft.Json 5.0.6" Category="Installed Package" />
     <Link Source="Rock.Tests" Target="NUnit 2.6.2" Category="Installed Package" />
     <Link Source="Microsoft.AspNet.WebApi.Client 4.0.20710.0" Target="Microsoft.Net.Http 2.0.20710.0" Category="Package Dependency" />
@@ -69,14 +72,17 @@
     <Link Source="Rock.Rest" Target="Microsoft.AspNet.WebApi.OData 4.0.1" Category="Installed Package" />
     <Link Source="AjaxControlToolkit 7.0725" Target="AjaxMin 4.97.4951.28483" Category="Package Dependency" />
     <Link Source="AjaxControlToolkit 7.0725" Target="HtmlAgilityPack 1.4.6" Category="Package Dependency" />
-    <Link Source="T4Scaffolding 1.0.5" Target="EntityFramework 6.0.0-beta1" Category="Package Dependency" />
+    <Link Source="T4Scaffolding 1.0.5" Target="EntityFramework 6.0.1" Category="Package Dependency" />
+    <Link Source="Twilio 3.6.5" Target="RestSharp 104.3.3" Category="Package Dependency" />
     <Link Source="Rock" Target="AjaxControlToolkit 7.0725" Category="Installed Package" />
     <Link Source="Rock" Target="DDay.iCal 1.0.2.575" Category="Installed Package" />
     <Link Source="Rock" Target="Facebook 6.4.0" Category="Installed Package" />
+    <Link Source="Rock" Target="Microsoft.SqlServer.Types 10.50.1600.1" Category="Installed Package" />
     <Link Source="Rock" Target="Microsoft.Web.Infrastructure 1.0.0.0" Category="Installed Package" />
     <Link Source="Rock" Target="Newtonsoft.Json 5.0.6" Category="Installed Package" />
     <Link Source="Rock" Target="NuGet.Core 2.2.0" Category="Installed Package" />
     <Link Source="Rock" Target="T4Scaffolding 1.0.5" Category="Installed Package" />
+    <Link Source="Rock" Target="Twilio 3.6.5" Category="Installed Package" />
   </Links>
   <Categories>
     <Category Id="Project" />

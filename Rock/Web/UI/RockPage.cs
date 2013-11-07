@@ -58,9 +58,15 @@ namespace Rock.Web.UI
             set
             {
                 _currentPage = value;
+
                 HttpContext.Current.Items.Add( "Rock:PageId", _currentPage.Id );
                 HttpContext.Current.Items.Add( "Rock:LayoutId", _currentPage.LayoutId );
                 HttpContext.Current.Items.Add( "Rock:SiteId", _currentPage.Layout.SiteId );
+
+                if (this.Master is RockMasterPage)
+                {
+                    ( (RockMasterPage)this.Master ).CurrentPage = value;
+                }
             }
         }
         private PageCache _currentPage = null;
@@ -405,6 +411,12 @@ namespace Rock.Web.UI
             // If a PageInstance exists
             if ( CurrentPage != null )
             {
+                // If there's a master page, update it's reference to Current Page
+                if ( this.Master is RockMasterPage )
+                {
+                    ( (RockMasterPage)this.Master ).CurrentPage = CurrentPage;
+                }
+
                 // check if page should have been loaded via ssl
                 Page.Trace.Warn( "Checking for SSL request" );
                 if ( !Request.IsSecureConnection && CurrentPage.RequiresEncryption )
@@ -897,17 +909,17 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Dims the other blocks.
+        /// Hides any secondary blocks.
         /// </summary>
         /// <param name="caller">The caller.</param>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        public void DimOtherBlocks( RockBlock caller, bool dimmed )
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void HideSecondaryBlocks( RockBlock caller, bool hidden )
         {
-            foreach ( IDimmableBlock dimmableBlock in this.RockBlocks.Where( a => a is IDimmableBlock ) )
+            foreach ( ISecondaryBlock secondaryBlock in this.RockBlocks.Where( a => a is ISecondaryBlock ) )
             {
-                if ( dimmableBlock != caller )
+                if ( secondaryBlock != caller )
                 {
-                    dimmableBlock.SetDimmed( dimmed );
+                    secondaryBlock.SetVisible( !hidden );
                 }
             }
         }

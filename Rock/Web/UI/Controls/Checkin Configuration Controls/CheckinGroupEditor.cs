@@ -70,7 +70,7 @@ namespace Rock.Web.UI.Controls
             string script = @"
 // group animation
 $('.checkin-group > header').click(function () {
-    $(this).siblings('.widget-content').slideToggle();
+    $(this).siblings('.panel-body').slideToggle();
 
     $('i.checkin-group-state', this).toggleClass('icon-chevron-down');
     $('i.checkin-group-state', this).toggleClass('icon-chevron-up');
@@ -406,11 +406,11 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget checkin-group" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget checkin-group" );
             writer.AddAttribute( "data-key", _hfGroupGuid.Value );
             writer.RenderBeginTag( "article" );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "clearfix clickable" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix clickable" );
             writer.RenderBeginTag( "header" );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left" );
@@ -442,7 +442,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             // header div
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget-content" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
 
             Group group = this.GetGroup();
 
@@ -457,10 +457,10 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // make two span6 columns: Left Column for Name and Attributes. Right Column for Locations Grid
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row-fluid" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // edit fields
@@ -470,7 +470,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             _phGroupAttributes.RenderControl( writer );
 
             writer.RenderEndTag();
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // Locations grid

@@ -23,7 +23,7 @@
                         <Rock:ImageUploader ID="imgIconSmall" runat="server" Label="Small Icon Image" />
                         <Rock:ImageUploader ID="imgIconLarge" runat="server" Label="Large Icon Image" />
                         <Rock:RockCheckBox ID="cbAllowCaching" runat="server" Label="Allows Caching" Help="If 'true' the file will be cached from the storage provider to the server's file system.  This is not recommended for files that need heightened security. "/>
-                        <Rock:ComponentPicker ID="cpStorageType" runat="server" ContainerType="Rock.Storage.ProviderContainer, Rock" Label="Storage Type" />
+                        <Rock:ComponentPicker ID="cpStorageType" runat="server" ContainerType="Rock.Storage.ProviderContainer, Rock" Label="Storage Type" Required="true" />
                     </div>
                     <div class="col-md-6">
 
@@ -51,7 +51,7 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlBinaryFileAttribute" runat="server" Visible="false">
-            <Rock:AttributeEditor ID="edtBinaryFileAttributes" runat="server" OnSaveClick="btnSaveBinaryFileAttribute_Click" OnCancelClick="btnCancelBinaryFileAttribute_Click" />
+            <Rock:AttributeEditor ID="edtBinaryFileAttributes" runat="server" OnSaveClick="btnSaveBinaryFileAttribute_Click" OnCancelClick="btnCancelBinaryFileAttribute_Click" ValidationGroup="Attribute" />
         </asp:Panel>
 
     </ContentTemplate>
