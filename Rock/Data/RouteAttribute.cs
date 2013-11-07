@@ -12,7 +12,8 @@ namespace Rock.Data
     /// <summary>
     /// 
     /// </summary>
-    public class RouteAttribute : ValidationAttribute
+    [AttributeUsage( AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false )]
+    sealed public class RouteAttribute : ValidationAttribute
     {
         /// <summary>
         /// Determines whether the specified value of the object is valid.
