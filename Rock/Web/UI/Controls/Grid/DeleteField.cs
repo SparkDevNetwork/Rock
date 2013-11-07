@@ -140,7 +140,7 @@ namespace Rock.Web.UI.Controls
                 ParentGrid.Enabled && 
                 ParentGrid.IsDeleteEnabled )
             {
-                lbDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.controls.grid.confirmDelete(event, '{0}');", ParentGrid.RowItemText );
+                lbDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.grid.confirmDelete(event, '{0}');", ParentGrid.RowItemText );
             }
             else
             {
