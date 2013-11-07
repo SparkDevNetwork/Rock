@@ -1,0 +1,13 @@
+﻿<div id="ad-rotator" class="carousel slide" data-ride="carousel">
+
+  <!-- Wrapper for slides -->
+  <div class="carousel-inner">
+    {% for ad in AdList.Ads %}
+    <div class="item active">
+      <img src="http://freefever.com/stock/latest-funny-jokes-for-kids-picture-of-a-funny-joke-kids-who-were.jpg" alt="{{ ad.Title }}" />
+
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
