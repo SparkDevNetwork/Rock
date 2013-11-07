@@ -86,6 +86,7 @@
                     <div class="col-md-6">
                         <fieldset>                
                             <Rock:DataTextBox ID="tbPageRoute" runat="server" TextMode="MultiLine" Rows="3" Label="Page Routes" SourceTypeName="Rock.Model.Page, Rock" PropertyName="PageRoutes"  />
+                            <asp:CustomValidator ID="cvPageRoute" runat="server" ControlToValidate="tbPageRoute" OnServerValidate="cvPageRoute_ServerValidate" Display="None" ErrorMessage="Invalid Route(s)" />
                         </fieldset>
                         <asp:PlaceHolder ID="phContextPanel" runat="server">
                             <fieldset>
