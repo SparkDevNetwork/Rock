@@ -254,72 +254,41 @@ namespace RockWeb.Blocks.Cms
 
                 RockTransactionScope.WrapTransaction( () =>
                 {
+                    AttributeService attributeService = new AttributeService();
+                    AttributeQualifierService attributeQualifierService = new AttributeQualifierService();
+                    CategoryService categoryService = new CategoryService();
+
                     marketingCampaignAdTypeService.Save( marketingCampaignAdType, CurrentPersonId );
 
                     // get it back to make sure we have a good Id for it for the Attributes
                     marketingCampaignAdType = marketingCampaignAdTypeService.Get( marketingCampaignAdType.Guid );
 
-                    // delete AdTypeAttributes that are no longer configured in the UI
-                    AttributeService attributeService = new AttributeService();
+                    var entityTypeId = EntityTypeCache.Read(typeof(MarketingCampaignAd)).Id;
+                    string qualifierColumn = "MarketingCampaignAdTypeId";
                     string qualifierValue = marketingCampaignAdType.Id.ToString();
-                    int typeId = new MarketingCampaignAd().TypeId;
-                    var qry = attributeService.GetByEntityTypeId( typeId  ).AsQueryable()
-                        .Where( a => a.EntityTypeQualifierColumn == "MarketingCampaignAdTypeId"
-                        && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
-                    var deletedAttributes = from attr in qry.ToList()
-                                            where !( from d in AttributesState
-                                                     select d.Guid ).Contains( attr.Guid )
-                                            select attr;
+                    // Get the existing attributes for this entity type and qualifier value
+                    var attributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
 
-                    deletedAttributes.ToList().ForEach( a =>
-                        {
-                            var attr = attributeService.Get( a.Guid );
-                            if ( attr != null )
-                            {
-                                Rock.Web.Cache.AttributeCache.Flush( attr.Id );
-                                attributeService.Delete( attr, CurrentPersonId );
-                                attributeService.Save( attr, CurrentPersonId );
-                            }
-                        } );
+                    // Delete any of those attributes that were removed in the UI
+                    var selectedAttributeGuids = AttributesState.Select( a => a.Guid );
+                    foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
+                    {
+                        Rock.Web.Cache.AttributeCache.Flush( attr.Id );
 
-                    // add/update the AdTypes that are assigned in the UI
+                        attributeService.Delete( attr, CurrentPersonId );
+                        attributeService.Save( attr, CurrentPersonId );
+                    }
+
+                    // Update the Attributes that were assigned in the UI
                     foreach ( var attributeState in AttributesState )
                     {
-                        // remove old qualifiers in case they changed
-                        var qualifierService = new AttributeQualifierService();
-                        foreach ( var oldQualifier in qualifierService.GetByAttributeId( attributeState.Id ).ToList() )
-                        {
-                            qualifierService.Delete( oldQualifier, CurrentPersonId );
-                            qualifierService.Save( oldQualifier, CurrentPersonId );
-                        }
-
-                        Attribute attribute = qry.FirstOrDefault( a => a.Guid.Equals( attributeState.Guid ) );
-                        if ( attribute == null )
-                        {
-                            attribute = attributeState.Clone() as Rock.Model.Attribute;
-                            attributeService.Add( attribute, CurrentPersonId );
-                        }
-                        else
-                        {
-                            attributeState.Id = attribute.Id;
-                            attribute.FromDictionary( attributeState.ToDictionary() );
-
-                            foreach ( var qualifier in attributeState.AttributeQualifiers )
-                            {
-                                attribute.AttributeQualifiers.Add( qualifier.Clone() as AttributeQualifier );
-                            }
-
-                        }
-
-                        attribute.EntityTypeQualifierColumn = "MarketingCampaignAdTypeId";
-                        attribute.EntityTypeQualifierValue = marketingCampaignAdType.Id.ToString();
-                        attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof(MarketingCampaignAd) ).Id;
-                        Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
-                        attributeService.Save( attribute, CurrentPersonId );
+                        Rock.Attribute.Helper.SaveAttributeEdits( attributeState, attributeService, attributeQualifierService, categoryService,
+                            entityTypeId, qualifierColumn, qualifierValue, CurrentPersonId );
                     }
                 } );
             }
+
             NavigateToParentPage();
         }
 

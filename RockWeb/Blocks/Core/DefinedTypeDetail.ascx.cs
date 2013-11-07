@@ -368,40 +368,14 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSaveDefinedTypeAttribute_Click( object sender, EventArgs e )
         {
-            Attribute attribute = null;
-            
-            AttributeService attributeService = new AttributeService();
-            if ( edtDefinedTypeAttributes.AttributeId.HasValue )
-            {
-                attribute = attributeService.Get( edtDefinedTypeAttributes.AttributeId.Value );
-            }
+            var attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtDefinedTypeAttributes, EntityTypeCache.Read( typeof( DefinedValue ) ).Id,
+                "DefinedTypeId", hfDefinedTypeId.Value, CurrentPersonId );
 
+            // Attribute will be null if it was not valid
             if (attribute == null)
-            {
-                attribute = new Attribute();
-            }
-
-            edtDefinedTypeAttributes.GetAttributeProperties( attribute );
-
-            // Controls will show warnings
-            if ( !attribute.IsValid )
             {
                 return;
             }
-
-            RockTransactionScope.WrapTransaction( () =>
-            {
-                if ( attribute.Id.Equals( 0 ) )
-                {
-                    attribute.EntityTypeId = EntityTypeCache.Read( typeof( DefinedValue ) ).Id;
-                    attribute.EntityTypeQualifierColumn = "DefinedTypeId";
-                    attribute.EntityTypeQualifierValue = hfDefinedTypeId.Value;
-                    attributeService.Add( attribute, CurrentPersonId );
-                }
-
-                AttributeCache.Flush( attribute.Id );
-                attributeService.Save( attribute, CurrentPersonId );
-            } );
 
             pnlDetails.Visible = true;
             pnlDefinedTypeAttributes.Visible = false;

@@ -914,7 +914,7 @@ namespace Rock.Web.UI
         /// Hides any secondary blocks.
         /// </summary>
         /// <param name="caller">The caller.</param>
-        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        /// <param name="hidden">if set to <c>true</c> [hidden].</param>
         public void HideSecondaryBlocks( RockBlock caller, bool hidden )
         {
             foreach ( ISecondaryBlock secondaryBlock in this.RockBlocks.Where( a => a is ISecondaryBlock ) )

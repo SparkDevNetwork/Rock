@@ -20,11 +20,11 @@ using Rock.Web.Cache;
 
 using Twilio;
 
-/// <summary>
-/// Sends a communication (SMS) through Twilio API
-/// </summary>
 namespace Rock.Communication.Transport
 {
+    /// <summary>
+    /// Communication transport for sending SMS messages using Twilio
+    /// </summary>
     [Description( "Sends a communication through Twilio API" )]
     [Export( typeof( TransportComponent ) )]
     [ExportMetadata( "ComponentName", "Twilio" )]

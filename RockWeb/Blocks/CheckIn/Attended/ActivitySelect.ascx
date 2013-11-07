@@ -3,14 +3,12 @@
 
 <asp:UpdatePanel ID="pnlContent" runat="server" UpdateMode="Conditional">
 <ContentTemplate>
+        
+    <asp:HiddenField ID="hfAllergyAttributeId" runat="server" />
 
     <asp:Panel ID="pnlActivities" runat="server" CssClass="attended">
 
         <Rock:ModalAlert ID="maWarning" runat="server" />
-        <asp:HiddenField ID="hfGroupTypeId" runat="server" />
-        <asp:HiddenField ID="hfLocationId" runat="server" />
-        <asp:HiddenField ID="hfScheduleId" runat="server" />
-        <asp:HiddenField ID="hfAllergyAttributeId" runat="server" />
 
         <div class="row checkin-header">
             <div class="col-sm-3 checkin-actions">
@@ -75,13 +73,13 @@
                 <h3>Selected</h3>
                 <asp:UpdatePanel ID="pnlSelected" runat="server" UpdateMode="Conditional">
                 <ContentTemplate> 
-                    <Rock:Grid ID="gSelectedList" runat="server" ShowHeader="false" DataKeyNames="LocationId, ScheduleId" DisplayType="Light" EmptyDataText="No CheckIn Selected">
+                    <Rock:Grid ID="gSelectedGrid" runat="server" ShowHeader="false" DataKeyNames="LocationId, ScheduleId" DisplayType="Light" EmptyDataText="No CheckIn Selected">
                     <Columns>
                         <asp:BoundField DataField="Schedule" />
                         <asp:BoundField DataField="ScheduleId" Visible="false" />
                         <asp:BoundField DataField="Location" />
                         <asp:BoundField DataField="LocationId" Visible="false" />                        
-                        <Rock:DeleteField OnClick="gSelectedList_Delete" ControlStyle-CssClass="btn btn-lg btn-primary" />
+                        <Rock:DeleteField OnClick="gSelectedGrid_Delete" ControlStyle-CssClass="btn btn-lg btn-primary" />
                     </Columns>
                     </Rock:Grid>
                 </ContentTemplate>
@@ -91,7 +89,7 @@
 
         <div class="row checkin-footer">
             <div class="col-md-9"></div>
-            <div class="col-md-3 checkin-actions">
+            <div class="col-md-3">
                 <asp:LinkButton ID="lbAddNote" runat="server" Text="Add a Note" CssClass="btn btn-primary btn-lg btn-checkin-select" OnClick="lbAddNote_Click" CausesValidation="false" />
             </div>
         </div>
