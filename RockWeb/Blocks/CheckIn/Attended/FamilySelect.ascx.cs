@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 if ( CurrentCheckInState.CheckIn.Families.Count > 0 )
                 {
-                    // do something here to order by campus, dependent on a block attribute
+                    // TODO: make ordering smarter, possibly by campus then by caption
                     var familyList = CurrentCheckInState.CheckIn.Families.OrderBy( f => f.Caption ).ToList();
                     if ( !UserBackedUp )
                     {
@@ -63,9 +63,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     lblFamilyTitle.InnerText = "No Search Results";
                     lbNext.Enabled = false;
                     lbNext.Visible = false;
-                    pnlSelectFamily.Visible = false;
-                    pnlSelectPerson.Visible = false;
-                    pnlSelectVisitor.Visible = false;
+                    pnlFamily.Visible = false;
+                    pnlPerson.Visible = false;
+                    pnlVisitor.Visible = false;
                     actions.Visible = false;
                     divNothingFound.Visible = true;
                 }
@@ -251,17 +251,14 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 dpPersonPager.Visible = false;
             }
-            lvPerson.DataBind();
+            
             dpVisitorPager.Visible = true;
             dpVisitorPager.SetPageProperties( 0, dpVisitorPager.MaximumRows, false );
             if ( lvVisitor.DataSource == null )
             {
                 dpVisitorPager.Visible = false;
             }
-            lvVisitor.DataBind();
-
-            pnlSelectPerson.Update();
-            pnlSelectVisitor.Update();
+            
         }
 
         /// <summary>
@@ -276,7 +273,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             // rebind List View
             lvFamily.DataSource = CurrentCheckInState.CheckIn.Families.OrderBy( f => f.Caption ).ToList();
             lvFamily.DataBind();
-            pnlSelectFamily.Update();
+            pnlFamily.Update();
         }
 
         /// <summary>
@@ -292,7 +289,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             lvPerson.DataSource = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
                 .People.Where( f => f.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
             lvPerson.DataBind();
-            pnlSelectPerson.Update();
+            pnlPerson.Update();
         }
 
         /// <summary>
@@ -308,7 +305,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             lvVisitor.DataSource = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
                 .People.Where( f => !f.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
             lvVisitor.DataBind();
-            pnlSelectVisitor.Update();
+            pnlVisitor.Update();
         }
 
         #endregion
@@ -558,11 +555,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
                             checkInPerson.FamilyMember = false;
                             hfSelectedVisitor.Value += personId + ",";
                         }
-
                         checkInPerson.Selected = true;
                         family.People.Add( checkInPerson );
                         ProcessFamily();
                     }
+                    
+                    mpeAddPerson.Hide();
                 }
                 else
                 {
@@ -690,7 +688,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                         if ( family.People.Where( f => !f.FamilyMember ).Any() )
                         {
-                            //var familyVisitors = family.People.Where( f => !f.FamilyMember ).Where( p => p.Selected ).ToList();
                             var familyVisitors = family.People.Where( f => !f.FamilyMember ).ToList();
                             hfSelectedVisitor.Value = string.Join( ",", familyVisitors.Select( f => f.Person.Id ) ) + ",";
                             visitorDataSource = familyVisitors.OrderBy( p => p.Person.FullNameLastFirst ).ToList();
@@ -699,8 +696,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                     lvPerson.DataSource = memberDataSource;
                     lvPerson.DataBind();
+                    pnlPerson.Update();
                     lvVisitor.DataSource = visitorDataSource;
                     lvVisitor.DataBind();
+                    pnlVisitor.Update();
                 }
             }
             else
@@ -717,16 +716,16 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             lvFamily.DataSource = CurrentCheckInState.CheckIn.Families.OrderBy( f => f.Caption ).ToList();
             lvFamily.DataBind();
-            pnlSelectFamily.Update();
+            pnlFamily.Update();
 
             if ( divNothingFound.Visible )
             {
                 lblFamilyTitle.InnerText = "Search Results";
                 lbNext.Enabled = true;
                 lbNext.Visible = true;
-                pnlSelectFamily.Visible = true;
-                pnlSelectPerson.Visible = true;
-                pnlSelectVisitor.Visible = true;
+                pnlFamily.Visible = true;
+                pnlPerson.Visible = true;
+                pnlVisitor.Visible = true;
                 actions.Visible = true;
                 divNothingFound.Visible = false;
             }
