@@ -262,7 +262,7 @@ DELETE [Location]
 DECLARE @CampusLocationId int
 DECLARE @CampusID int
 
-INSERT INTO [Location] ([Guid], [Name], [IsActive], [IsLocation], [Street1], [City], [State], [Zip], [Country])	
+INSERT INTO [Location] ([Guid], [Name], [IsActive], [IsNamedLocation], [Street1], [City], [State], [Zip], [Country])	
 VALUES (NEWID(), 'Anderson', 1, 1, '2940 Concord Road', 'Anderson', 'SC', '29621', 'US')
 SET @CampusLocationId = SCOPE_IDENTITY()
 
@@ -538,8 +538,53 @@ INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value],
 -- Create Schedules
 ------------------------------------------------------------------------
 DELETE [Schedule]
+--INSERT INTO [Schedule] ([Name],[iCalendarContent],[CheckInStartOffsetMinutes],[CheckInEndOffsetMinutes],[EffectiveStartDate],[Guid]) VALUES 
+--    ('9:15 AM',
+--'BEGIN:VCALENDAR
+--BEGIN:VEVENT
+--DTEND:20130701T235900
+--DTSTART:20130625T000000
+--RRULE:FREQ=DAILY
+--END:VEVENT
+--END:VCALENDAR', '0', '1439', '06/01/2013', NEWID() )
+--INSERT INTO [Schedule] ([Name],[iCalendarContent], [CheckInStartOffsetMinutes],[CheckInEndOffsetMinutes],[EffectiveStartDate],[Guid]) VALUES 
+--    ('11:15 AM', 
+--'BEGIN:VCALENDAR
+--BEGIN:VEVENT
+--DTEND:20130701T235900
+--DTSTART:20130625T000000
+--RRULE:FREQ=DAILY
+--END:VEVENT
+--END:VCALENDAR', '0', '1439', '06/01/2013', NEWID() )
+--INSERT INTO [Schedule] ([Name],[iCalendarContent], [CheckInStartOffsetMinutes],[CheckInEndOffsetMinutes],[EffectiveStartDate],[Guid]) VALUES 
+--    ('4:00 PM', 
+--'BEGIN:VCALENDAR
+--BEGIN:VEVENT
+--DTEND:20130701T235900
+--DTSTART:20130625T000000
+--RRULE:FREQ=DAILY
+--END:VEVENT
+--END:VCALENDAR', '0', '1439', '06/01/2013', NEWID() )
+--INSERT INTO [Schedule] ([Name],[iCalendarContent], [CheckInStartOffsetMinutes],[CheckInEndOffsetMinutes],[EffectiveStartDate],[Guid]) VALUES 
+--    ('6:00 PM', 
+--'BEGIN:VCALENDAR
+--BEGIN:VEVENT
+--DTEND:20130701T235900
+--DTSTART:20130625T000000
+--RRULE:FREQ=DAILY
+--END:VEVENT
+--END:VCALENDAR', '0', '1439', '06/01/2013', NEWID() )
+INSERT INTO [Schedule] ([Name],[iCalendarContent], [CheckInStartOffsetMinutes],[CheckInEndOffsetMinutes],[EffectiveStartDate],[Guid]) VALUES 
+    ('8:30 AM',
+'BEGIN:VCALENDAR
+BEGIN:VEVENT
+DTEND:20130701T235900
+DTSTART:20130625T000000
+RRULE:FREQ=DAILY
+END:VEVENT
+END:VCALENDAR', '0', '1439', '06/01/2013', NEWID() )
 INSERT INTO [Schedule] ([Name],[iCalendarContent],[CheckInStartOffsetMinutes],[CheckInEndOffsetMinutes],[EffectiveStartDate],[Guid]) VALUES 
-    ('9:15 AM',
+    ('10:00 AM',
 'BEGIN:VCALENDAR
 BEGIN:VEVENT
 DTEND:20130701T235900
@@ -548,7 +593,7 @@ RRULE:FREQ=DAILY
 END:VEVENT
 END:VCALENDAR', '0', '1439', '06/01/2013', NEWID() )
 INSERT INTO [Schedule] ([Name],[iCalendarContent], [CheckInStartOffsetMinutes],[CheckInEndOffsetMinutes],[EffectiveStartDate],[Guid]) VALUES 
-    ('11:15 AM', 
+    ('11:30 AM', 
 'BEGIN:VCALENDAR
 BEGIN:VEVENT
 DTEND:20130701T235900
@@ -557,7 +602,7 @@ RRULE:FREQ=DAILY
 END:VEVENT
 END:VCALENDAR', '0', '1439', '06/01/2013', NEWID() )
 INSERT INTO [Schedule] ([Name],[iCalendarContent], [CheckInStartOffsetMinutes],[CheckInEndOffsetMinutes],[EffectiveStartDate],[Guid]) VALUES 
-    ('4:00 PM', 
+    ('5:00 PM', 
 'BEGIN:VCALENDAR
 BEGIN:VEVENT
 DTEND:20130701T235900
@@ -566,7 +611,7 @@ RRULE:FREQ=DAILY
 END:VEVENT
 END:VCALENDAR', '0', '1439', '06/01/2013', NEWID() )
 INSERT INTO [Schedule] ([Name],[iCalendarContent], [CheckInStartOffsetMinutes],[CheckInEndOffsetMinutes],[EffectiveStartDate],[Guid]) VALUES 
-    ('6:00 PM', 
+    ('6:30 PM', 
 'BEGIN:VCALENDAR
 BEGIN:VEVENT
 DTEND:20130701T235900
@@ -585,45 +630,45 @@ DECLARE @RoomLocationId int
 SET @KioskLocationId = @CampusLocationId
 
 -- KidSpring rooms
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'Wonder Way - 1', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'Wonder Way - 2', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'Wonder Way - 3', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'Wonder Way - 4', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'Wonder Way - 5', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'Wonder Way - 6', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'Wonder Way - 7', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'Wonder Way - 8', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'Fire Station', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'Lil'' Spring', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'Pop''s Garage', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'Spring Fresh', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'SpringTown Police', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'SpringTown Toys', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'Treehouse', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'Base Camp Jr.', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'Base Camp (ES)', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'ImagiNation - K', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'ImagiNation - 1st', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'Jump Street - 2nd', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'Jump Street - 3rd', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'Shockwave - 4th', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, 'Shockwave - 5th', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'Wonder Way - 1', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'Wonder Way - 2', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'Wonder Way - 3', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'Wonder Way - 4', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'Wonder Way - 5', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'Wonder Way - 6', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'Wonder Way - 7', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'Wonder Way - 8', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'Fire Station', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'Lil'' Spring', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'Pop''s Garage', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'Spring Fresh', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'SpringTown Police', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'SpringTown Toys', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'Treehouse', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'Base Camp Jr.', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'Base Camp (ES)', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'ImagiNation - K', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'ImagiNation - 1st', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'Jump Street - 2nd', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'Jump Street - 3rd', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'Shockwave - 4th', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, 'Shockwave - 5th', 1, 1, NEWID())
 
 -- Fuse rooms
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, '6th Grade Boy', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, '6th Grade Girl', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, '7th Grade Boy', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, '7th Grade Girl', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, '8th Grade Boy', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, '8th Grade Girl', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, '9th Grade Boy', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, '9th Grade Girl', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, '10th Grade Boy', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, '10th Grade Girl', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, '11th Grade Boy', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, '11th Grade Girl', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, '12th Grade Boy', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@KioskLocationId, '12th Grade Girl', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, '6th Grade Boy', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, '6th Grade Girl', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, '7th Grade Boy', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, '7th Grade Girl', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, '8th Grade Boy', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, '8th Grade Girl', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, '9th Grade Boy', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, '9th Grade Girl', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, '10th Grade Boy', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, '10th Grade Girl', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, '11th Grade Boy', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, '11th Grade Girl', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, '12th Grade Boy', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@KioskLocationId, '12th Grade Girl', 1, 1, NEWID())
 
 ------------------------------------------------------------------------
 -- Devices (Kiosks)
@@ -697,7 +742,7 @@ INNER JOIN Device D
 ------------------------------------------------------------------------
 -- Insert a grouplocation for each checkin room
 DELETE [GroupLocation]
-INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailing, IsLocation, Guid) 
+INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailingLocation, IsMappedLocation, Guid) 
 SELECT G.Id, L.Id, 0, 1, NEWID()
 FROM Location L
 INNER JOIN [Group] G 
