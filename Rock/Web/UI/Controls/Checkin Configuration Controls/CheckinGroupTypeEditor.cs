@@ -364,7 +364,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
             _lbDeleteGroupType.CssClass = "btn btn-xs btn-danger";
             _lbDeleteGroupType.Click += lbDeleteGroupType_Click;
             _lbDeleteGroupType.Controls.Add( new LiteralControl { Text = "<i class='icon-remove'></i>" } );
-            _lbDeleteGroupType.Attributes["onclick"] = string.Format( "javascript: return Rock.controls.grid.confirmDelete(event, '{0}', '{1}');", "check-in area", "Once saved, you will lose all attendance data." );
+            _lbDeleteGroupType.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', '{1}');", "check-in area", "Once saved, you will lose all attendance data." );
 
             _ddlGroupTypeInheritFrom = new RockDropDownList();
             _ddlGroupTypeInheritFrom.ID = this.ID + "_ddlGroupTypeInheritFrom";

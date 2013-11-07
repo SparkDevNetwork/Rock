@@ -92,7 +92,7 @@ namespace RockWeb.Blocks.Groups
 
             dlgGroupMemberAttribute.OnCancelScript = string.Format( "$('#{0}').val('');", hfAttributeId.ClientID );
 
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", Group.FriendlyTypeName );
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Group.FriendlyTypeName );
         }
 
         /// <summary>

@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", Rock.Model.Site.FriendlyTypeName );
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Rock.Model.Site.FriendlyTypeName );
         }
 
         /// <summary>

@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Core
 
             _canConfigure = IsUserAuthorized( "Administrate" );
 
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", Group.FriendlyTypeName );
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Group.FriendlyTypeName );
 
         }
 

@@ -311,7 +311,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             _lbDeleteGroup.ID = this.ID + "_lbDeleteGroup";
             _lbDeleteGroup.CssClass = "btn btn-xs btn-danger";
             _lbDeleteGroup.Click += lbDeleteGroup_Click;
-            _lbDeleteGroup.Attributes["onclick"] = string.Format( "javascript: return Rock.controls.grid.confirmDelete(event, '{0}', '{1}');", "group", "Once saved, you will lose all attendance data." );
+            _lbDeleteGroup.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', '{1}');", "group", "Once saved, you will lose all attendance data." );
 
             var iDelete = new HtmlGenericControl( "i" );
             _lbDeleteGroup.Controls.Add( iDelete );
