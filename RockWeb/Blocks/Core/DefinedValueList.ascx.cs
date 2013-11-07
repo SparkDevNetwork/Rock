@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Core
             {
                 if ( !string.IsNullOrWhiteSpace( hfDefinedValueId.Value ) )
                 {
-                    modalValue.Show();
+                    ShowAttributeValueEdit( hfDefinedValueId.ValueAsInt(), false );
                 }
             }
         }
@@ -297,8 +297,13 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         /// <param name="valueId">The value id.</param>
         protected void gDefinedValues_ShowEdit( int valueId )
-        {            
-            var definedType = DefinedTypeCache.Read( hfDefinedTypeId.ValueAsInt() );            
+        {
+            ShowAttributeValueEdit( valueId, true );
+        }
+
+        private void ShowAttributeValueEdit(int valueId, bool setValues)
+        {
+            var definedType = DefinedTypeCache.Read( hfDefinedTypeId.ValueAsInt() );
             DefinedValue definedValue;
             if ( !valueId.Equals( 0 ) )
             {
@@ -306,7 +311,7 @@ namespace RockWeb.Blocks.Core
                 if ( definedType != null )
                 {
                     lActionTitleDefinedValue.Text = ActionTitle.Edit( "defined value for " + definedType.Name );
-                }                                
+                }
             }
             else
             {
@@ -316,14 +321,18 @@ namespace RockWeb.Blocks.Core
                 {
                     lActionTitleDefinedValue.Text = ActionTitle.Add( "defined value for " + definedType.Name );
                 }
-            }            
+            }
 
-            hfDefinedValueId.SetValue( definedValue.Id );
-            tbValueName.Text = definedValue.Name;
-            tbValueDescription.Text = definedValue.Description;
+            if ( setValues )
+            {
+                hfDefinedValueId.SetValue( definedValue.Id );
+                tbValueName.Text = definedValue.Name;
+                tbValueDescription.Text = definedValue.Description;
+            }
+
             definedValue.LoadAttributes();
             phDefinedValueAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( definedValue, phDefinedValueAttributes, true );
+            Rock.Attribute.Helper.AddEditControls( definedValue, phDefinedValueAttributes, setValues );
 
             SetValidationGroup( phDefinedValueAttributes.Controls, modalValue.ValidationGroup );
 
