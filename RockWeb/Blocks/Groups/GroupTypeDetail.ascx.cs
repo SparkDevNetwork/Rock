@@ -931,53 +931,9 @@ namespace RockWeb.Blocks.Groups
             // Update the Attributes that were assigned in the UI
             foreach ( var attributeState in viewStateAttributes )
             {
-                // remove old the old qualifiers for this attribute in case they changed
-                foreach ( var oldQualifier in qualifierService.GetByAttributeId( attributeState.Id ).ToList() )
-                {
-                    qualifierService.Delete( oldQualifier, CurrentPersonId );
-                    qualifierService.Save( oldQualifier, CurrentPersonId );
-                }
-
-                // Find the existing attribute if it already existed
-                Attribute attribute = attributes.FirstOrDefault( a => a.Guid.Equals( attributeState.Guid ) );
-                if ( attribute == null )
-                {
-                    // If it didn't exist, create it
-                    attribute = new Attribute();
-                    attributeService.Add( attribute, CurrentPersonId );
-                }
-                else
-                {
-                    // If it did exist, set the UI's attribute ID and GUID since we're copying all properties in the next step
-                    attributeState.Id = attribute.Id;
-                    attributeState.Guid = attribute.Guid;
-                }
-
-                // Copy all the properties from the UI's attribute to the attribute model
-                attribute.CopyPropertiesFrom( attributeState );
-
-                // Add any qualifiers
-                foreach ( var qualifier in attributeState.AttributeQualifiers )
-                {
-                    attribute.AttributeQualifiers.Add( new AttributeQualifier { Key = qualifier.Key, Value = qualifier.Value, IsSystem = qualifier.IsSystem } );
-                }
-
-                // Add any categories
-                attribute.Categories.Clear();
-                foreach ( var category in attributeState.Categories )
-                {
-                    attribute.Categories.Add( categoryService.Get( category.Id ) );
-                }
-
-                // Set the entity qualifer
-                attribute.EntityTypeId = entityTypeId;
-                attribute.EntityTypeQualifierColumn = qualifierColumn;
-                attribute.EntityTypeQualifierValue = qualifierValue;
-                attributeService.Save( attribute, CurrentPersonId );
-
-                Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+                Helper.SaveAttributeEdits( attributeState, attributeService, qualifierService, categoryService,
+                    entityTypeId, qualifierColumn, qualifierValue, CurrentPersonId );
             }
-
         }
 
         #endregion

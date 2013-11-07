@@ -23,8 +23,8 @@
 
         <div class="checkin-body selected-grid">
             <div class="row">
-               <%-- <asp:UpdatePanel ID="pnlSelectedGrid" runat="server">
-                <ContentTemplate>--%>
+                <asp:UpdatePanel ID="pnlSelectedGrid" runat="server">
+                <ContentTemplate>
                     <Rock:Grid ID="gPersonList" runat="server" DataKeyNames="PersonId,LocationId,ScheduleId" DisplayType="Light" OnRowCommand="gPersonList_Print" 
                         EmptyDataText="No People Selected" OnGridRebind="gPersonList_GridRebind">
                         <Columns>
@@ -45,8 +45,8 @@
                             </asp:TemplateField>
                         </Columns>
                     </Rock:Grid>
-                <%--</ContentTemplate>
-                </asp:UpdatePanel>--%>
+                </ContentTemplate>
+                </asp:UpdatePanel>
             </div>
             <div class="row">
                 <div class="col-md-9"></div>

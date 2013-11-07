@@ -483,6 +483,145 @@ namespace Rock.Attribute
         }
 
         /// <summary>
+        /// Saves any attribute edits made using an Attribute Editor control
+        /// </summary>
+        /// <param name="edtAttribute">The edt attribute.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <param name="currentPersonId">The current person identifier.</param>
+        /// <returns></returns>
+        public static Rock.Model.Attribute SaveAttributeEdits( AttributeEditor edtAttribute, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, int? currentPersonId )
+        {
+            Rock.Model.Attribute attribute = null;
+
+            using ( new Rock.Data.UnitOfWorkScope() )
+            {
+                var attributeService = new AttributeService();
+                var attributeQualifierService = new AttributeQualifierService();
+                var categoryService = new CategoryService();
+
+                Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                {
+                    attribute = SaveAttributeEdits( edtAttribute, attributeService, attributeQualifierService, categoryService,  
+                        entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, currentPersonId );
+                } );
+            }
+
+            return attribute;
+        }
+
+        /// <summary>
+        /// Saves any attribute edits made using an Attribute Editor control
+        /// </summary>
+        /// <param name="edtAttribute">The edt attribute.</param>
+        /// <param name="attributeService">The attribute service.</param>
+        /// <param name="attributeQualifierService">The attribute qualifier service.</param>
+        /// <param name="categoryService">The category service.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <param name="currentPersonId">The current person identifier.</param>
+        /// <returns></returns>
+        public static Rock.Model.Attribute SaveAttributeEdits( AttributeEditor edtAttribute, AttributeService attributeService, AttributeQualifierService attributeQualifierService, CategoryService categoryService,
+            int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, int? currentPersonId )
+        {
+            // Create and update a new attribute object with new values
+            var newAttribute = new Rock.Model.Attribute();
+            edtAttribute.GetAttributeProperties( newAttribute );
+
+            return SaveAttributeEdits( newAttribute, attributeService, attributeQualifierService, categoryService,
+                entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, currentPersonId );
+        }
+
+        /// <summary>
+        /// Saves any attribute edits made to an attribute
+        /// </summary>
+        /// <param name="newAttribute">The new attribute.</param>
+        /// <param name="attributeService">The attribute service.</param>
+        /// <param name="attributeQualifierService">The attribute qualifier service.</param>
+        /// <param name="categoryService">The category service.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <param name="currentPersonId">The current person identifier.</param>
+        /// <returns></returns>
+        public static Rock.Model.Attribute SaveAttributeEdits( Rock.Model.Attribute newAttribute, AttributeService attributeService, AttributeQualifierService attributeQualifierService, CategoryService categoryService,
+            int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, int? currentPersonId )
+        {
+            // If attribute is not valid, return null
+            if (!newAttribute.IsValid)
+            {
+                return null;
+            }
+
+            // Create a attribute model that will be saved
+            Rock.Model.Attribute attribute = null;
+
+            // Check to see if this was an existing or new attribute
+            if (newAttribute.Id > 0)
+            {
+                // If editing an existing attribute, remove all the old qualifiers in case they were changed
+                foreach ( var oldQualifier in attributeQualifierService.GetByAttributeId( newAttribute.Id ).ToList() )
+                {
+                    attributeQualifierService.Delete( oldQualifier, currentPersonId );
+                    attributeQualifierService.Save( oldQualifier, currentPersonId );
+                }
+
+                // Then re-load the existing attribute 
+                attribute = attributeService.Get( newAttribute.Id );
+            }
+
+            if ( attribute == null )
+            {
+                // If the attribute didn't exist, create it
+                attribute = new Rock.Model.Attribute();
+                attributeService.Add( attribute, currentPersonId );
+            }
+            else
+            {
+                // If it did exist, set the new attribute ID and GUID since we're copying all properties in the next step
+                newAttribute.Id = attribute.Id;
+                newAttribute.Guid = attribute.Guid;
+            }
+
+            // Copy all the properties from the new attribute to the attribute model
+            attribute.CopyPropertiesFrom( newAttribute );
+
+            // Add any qualifiers
+            foreach ( var qualifier in newAttribute.AttributeQualifiers )
+            {
+                attribute.AttributeQualifiers.Add( new AttributeQualifier { Key = qualifier.Key, Value = qualifier.Value, IsSystem = qualifier.IsSystem } );
+            }
+
+            // Add any categories
+            attribute.Categories.Clear();
+            foreach ( var category in newAttribute.Categories )
+            {
+                attribute.Categories.Add( categoryService.Get( category.Id ) );
+            }
+
+            attribute.EntityTypeId = entityTypeId;
+            attribute.EntityTypeQualifierColumn = entityTypeQualifierColumn;
+            attribute.EntityTypeQualifierValue = entityTypeQualifierValue;
+
+            attributeService.Save( attribute, currentPersonId );
+
+            if ( attribute != null )
+            {
+                Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+
+                // If this is a global attribute, flush all global attributes
+                if ( !entityTypeId.HasValue && entityTypeQualifierColumn == string.Empty && entityTypeQualifierValue == string.Empty )
+                {
+                    Rock.Web.Cache.GlobalAttributesCache.Flush();
+                }
+            }
+
+            return attribute;
+        }
+
+        /// <summary>
         /// Saves the attribute values.
         /// </summary>
         /// <param name="model">The model.</param>

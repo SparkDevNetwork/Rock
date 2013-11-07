@@ -126,7 +126,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
             }
 
-            gPersonList.DataSource = checkInList;
+            gPersonList.DataSource = checkInList.OrderBy( c => c.Schedule ).ToList();
             gPersonList.DataBind();
         }
         

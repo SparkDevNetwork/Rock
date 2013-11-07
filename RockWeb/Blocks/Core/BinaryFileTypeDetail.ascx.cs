@@ -195,8 +195,10 @@ namespace RockWeb.Blocks.Core
             using ( new UnitOfWorkScope() )
             {
                 BinaryFileType binaryFileType;
+
                 BinaryFileTypeService binaryFileTypeService = new BinaryFileTypeService();
                 AttributeService attributeService = new AttributeService();
+                AttributeQualifierService attributeQualifierService = new AttributeQualifierService();
                 CategoryService categoryService = new CategoryService();
 
                 int binaryFileTypeId = int.Parse( hfBinaryFileTypeId.Value );
@@ -258,46 +260,10 @@ namespace RockWeb.Blocks.Core
                         // add/update the BinaryFileAttributes that are assigned in the UI
                         foreach ( var attributeState in BinaryFileAttributesState )
                         {
-                            // remove old qualifiers in case they changed
-                            var qualifierService = new AttributeQualifierService();
-                            foreach ( var oldQualifier in qualifierService.GetByAttributeId( attributeState.Id ).ToList() )
-                            {
-                                qualifierService.Delete( oldQualifier, CurrentPersonId );
-                                qualifierService.Save( oldQualifier, CurrentPersonId );
-                            }
-
-                            Attribute attribute = attributes.FirstOrDefault( a => a.Guid.Equals( attributeState.Guid ) );
-                            if ( attribute == null )
-                            {
-                                attribute = new Attribute();
-                                attributeService.Add( attribute, CurrentPersonId );
-                            }
-                            else
-                            {
-                                attributeState.Id = attribute.Id;
-                                attributeState.Guid = attribute.Guid;
-                            }
-
-                            attribute.CopyPropertiesFrom(attributeState);
-
-                            foreach ( var qualifier in attributeState.AttributeQualifiers )
-                            {
-                                attribute.AttributeQualifiers.Add( qualifier.Clone() as AttributeQualifier );
-                            }
-
-                            attribute.Categories.Clear();
-                            foreach ( var category in attributeState.Categories )
-                            {
-                                attribute.Categories.Add( categoryService.Get( category.Id ) );
-                            }
-
-                            attribute.EntityTypeId = entityTypeId;
-                            attribute.EntityTypeQualifierColumn = "BinaryFileTypeId";
-                            attribute.EntityTypeQualifierValue = binaryFileType.Id.ToString();
-                            attributeService.Save( attribute, CurrentPersonId );
-
-                            Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+                            Rock.Attribute.Helper.SaveAttributeEdits( attributeState, attributeService, attributeQualifierService, categoryService,
+                                entityTypeId, "BinaryFileTypeId", binaryFileType.Id.ToString(), CurrentPersonId );
                         }
+
                     } );
             }
 

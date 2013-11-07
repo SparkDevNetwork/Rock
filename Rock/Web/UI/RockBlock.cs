@@ -675,6 +675,7 @@ namespace Rock.Web.UI
         /// Sets the validation group.
         /// </summary>
         /// <param name="controls">The controls.</param>
+        /// <param name="validationGroup">The validation group.</param>
         public void SetValidationGroup( ControlCollection controls, string validationGroup )
         {
             if ( controls != null )
@@ -890,6 +891,7 @@ namespace Rock.Web.UI
         /// Sets the validation group.
         /// </summary>
         /// <param name="existingValidationGroup">The existing validation group.</param>
+        /// <param name="validationGroup">The validation group.</param>
         /// <returns></returns>
         private string SetValidationGroup( string existingValidationGroup, string validationGroup )
         {
