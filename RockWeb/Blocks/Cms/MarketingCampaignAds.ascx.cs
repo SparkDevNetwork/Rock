@@ -29,9 +29,7 @@ namespace RockWeb.Blocks.Cms
         Rock.SystemGuid.FieldType.IMAGE + "' WHERE E.Name = 'Rock.Model.MarketingCampaignAd' ORDER BY [Key]", false, "", "", 2 )]
 
     [MemoField( "Template", "The liquid template to use for rendering", true, @"
-<div class='ad-list'>
     {% include 'AdList' with Ads %}
-</div>
 ", "", 3 )]
 
     [CampusesField( "Campuses", "Display Ads for selected campus", false, "", "Filter", 4 )]
@@ -42,6 +40,7 @@ namespace RockWeb.Blocks.Cms
 
     [IntegerField( "Image Width", "Width that the image should be resized to. Leave height/width blank to get original size.", false, int.MinValue, "", 8 )]
     [IntegerField( "Image Height", "Height that the image should be resized to. Leave height/width blank to get original size.", false, int.MinValue, "", 9 )]
+    [BooleanField("Enable Debug", "Flag indicating that the control should output the ad data that will be passed to Liquid for parsing.", false)]
 
     [ContextAware( typeof( Campus ) )]
     public partial class MarketingCampaignAds : RockBlock
@@ -228,7 +227,7 @@ namespace RockWeb.Blocks.Cms
                     {
                         string valueHtml = string.Empty;
 
-                        // If Block Attributes limit image types, limit images 
+                        // if block attributes limit image types, limit images 
                         if ( attribute.FieldType.Guid.Equals( new Guid( Rock.SystemGuid.FieldType.IMAGE ) ) )
                         {
                             if ( imageTypeFilter != null )
@@ -263,9 +262,6 @@ namespace RockWeb.Blocks.Cms
             var data = new Dictionary<string, object>();
             data.Add( "Ads", ads );
             data.Add( "ApplicationPath", HttpRuntime.AppDomainAppVirtualPath );
-
-            string showDebugValue = GetAttributeValue( "ShowDebug" ) ?? string.Empty;
-            bool showDebug = showDebugValue.Equals( "true", StringComparison.OrdinalIgnoreCase );
 
             string content;
             try
@@ -305,6 +301,21 @@ namespace RockWeb.Blocks.Cms
 
             phContent.Controls.Clear();
             phContent.Controls.Add( new LiteralControl( content ) );
+
+            // add debug info
+            if (GetAttributeValue("EnableDebug").AsBoolean())
+            {
+                StringBuilder debugInfo = new StringBuilder();
+                debugInfo.Append("<p /><div class='alert alert-info'><h4>Debug Info</h4>");
+
+                debugInfo.Append("<pre>");
+
+                debugInfo.Append("<p /><strong>Ad Data</strong> (referenced as 'AdList.' in Liquid)<br>");
+                debugInfo.Append(data.ToJson() + "</pre>");
+
+                debugInfo.Append("</div>");
+                phContent.Controls.Add(new LiteralControl(debugInfo.ToString()));
+            }
         }
 
         private string CacheKey()
