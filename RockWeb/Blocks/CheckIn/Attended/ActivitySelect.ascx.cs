@@ -353,26 +353,33 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
                 else 
                 {
-                    selectedGroupType = person.GroupTypes.Where( gt => gt.Groups.Any( g => g.Locations.Any( l => l.Location.Id == locationId 
-                        && l.Schedules.Any( s => s.Schedule.Id == scheduleId ) ) ) ).FirstOrDefault();
+                    selectedGroupType = person.GroupTypes.Where( gt => gt.Selected 
+                        && gt.Groups.Any( g => g.Locations.Any( l => l.Location.Id == locationId 
+                            && l.Schedules.Any( s => s.Schedule.Id == scheduleId ) ) ) ).FirstOrDefault();
                 }
                 var selectedGroup = selectedGroupType.Groups.Where( g => g.Selected 
-                    && g.Locations.Any( l => l.Location.Id == locationId ) ).FirstOrDefault();
-                var selectedLocation = selectedGroup.Locations.Where( l => l.Selected && l.Location.Id == locationId ).FirstOrDefault();
-                var selectedSchedule = selectedLocation.Schedules.Where( s => s.Selected && s.Schedule.Id == scheduleId ).FirstOrDefault();
+                    && g.Locations.Any( l => l.Location.Id == locationId 
+                        && l.Schedules.Any( s => s.Schedule.Id == scheduleId ) ) ).FirstOrDefault();
+                var selectedLocation = selectedGroup.Locations.Where( l => l.Selected 
+                    && l.Location.Id == locationId && l.Schedules.Any( s => s.Schedule.Id == scheduleId ) ).FirstOrDefault();
+                var selectedSchedule = selectedLocation.Schedules.Where( s => s.Selected 
+                    && s.Schedule.Id == scheduleId ).FirstOrDefault();
                 selectedSchedule.Selected = false;
 
-                // clear any groups or locations without anything assigned
-                var clearLocation = selectedLocation.Schedules.All( s => s.Selected == false );
-                if ( clearLocation )
+                // clear checkin rows without anything selected
+                if ( !selectedLocation.Schedules.Any( s => s.Selected ) )
                 {
                     selectedLocation.Selected = false;
                 }
 
-                var clearGroup = selectedGroup.Locations.All( l => l.Selected == false );
-                if ( clearGroup )
+                if ( !selectedGroup.Locations.Any( l => l.Selected ) )
                 {
                     selectedGroup.Selected = false;
+                }
+
+                if ( !selectedGroupType.Groups.Any( l => l.Selected ) )
+                {
+                    selectedGroupType.Selected = false;
                 }
 
                 BindLocations( person.GroupTypes );
