@@ -11,6 +11,9 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using System.Text;
+using System.Text.RegularExpressions;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
@@ -19,6 +22,7 @@ using Rock.Security;
 namespace RockWeb.Blocks.Cms
 {
     [MemoField( "Layout", "The layout of the Ad details", true, @"<h1>{{ MarketingCampaign.Title }}</h1><br/><br/>{{ SummaryText }}<br/><br/>{{ DetailHtml }}" )]
+    [BooleanField("Enable Debug", "Flag indicating that the control should output the ad data that will be passed to Liquid for parsing.", false)]
     public partial class ViewAdDetail : Rock.Web.UI.RockBlock
     {
         protected override void OnLoad( EventArgs e )
@@ -38,9 +42,29 @@ namespace RockWeb.Blocks.Cms
                         var dict = ad.ToLiquid() as Dictionary<string, object>;
                         
                         string layout = GetAttributeValue( "Layout" );
-                        string mergedLayout = layout.ResolveMergeFields( dict );
+                        string content = layout.ResolveMergeFields( dict );
 
-                        phDetails.Controls.Add( new LiteralControl( mergedLayout ) );
+                        // check for errors
+                        if (content.Contains("No such template"))
+                        {
+                            // get template name
+                            Match match = Regex.Match(GetAttributeValue("Template"), @"'([^']*)");
+                            if (match.Success)
+                            {
+                                content = String.Format("<div class='alert alert-warning'><h4>Warning</h4>Could not find the template _{1}.liquid in {0}.</div>", ResolveRockUrl("~~/Assets/Liquid"), match.Groups[1].Value);
+                            }
+                            else
+                            {
+                                content = "<div class='alert alert-warning'><h4>Warning</h4>Unable to parse the template name from settings.</div>";
+                            }
+                        }
+
+                        if (content.Contains("error"))
+                        {
+                            content = "<div class='alert alert-warning'><h4>Warning</h4>" + content + "</div>";
+                        }
+
+                        phDetails.Controls.Add( new LiteralControl( content ) );
                     }
                 }
             }
