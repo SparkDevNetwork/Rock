@@ -346,16 +346,23 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 var locationId = int.Parse( dataKeyValues["LocationId"].ToString() );
                 var scheduleId = int.Parse( dataKeyValues["ScheduleId"].ToString() );
 
-                var selectedGroupType = person.GroupTypes.Where( gt => gt.Selected ).FirstOrDefault();
-                GroupLocationService groupLocationService = new GroupLocationService();
-                var groupLocationGroupId = groupLocationService.GetByLocation( locationId )
-                    .Select( l => l.GroupId ).FirstOrDefault();
-                var selectedGroup = selectedGroupType.Groups.Where( g => g.Selected && g.Group.Id == groupLocationGroupId ).FirstOrDefault();
+                CheckInGroupType selectedGroupType;
+                if ( person.GroupTypes.Count == 1 )
+                {
+                    selectedGroupType = person.GroupTypes.FirstOrDefault();
+                }
+                else 
+                {
+                    selectedGroupType = person.GroupTypes.Where( gt => gt.Groups.Any( g => g.Locations.Any( l => l.Location.Id == locationId 
+                        && l.Schedules.Any( s => s.Schedule.Id == scheduleId ) ) ) ).FirstOrDefault();
+                }
+                var selectedGroup = selectedGroupType.Groups.Where( g => g.Selected 
+                    && g.Locations.Any( l => l.Location.Id == locationId ) ).FirstOrDefault();
                 var selectedLocation = selectedGroup.Locations.Where( l => l.Selected && l.Location.Id == locationId ).FirstOrDefault();
                 var selectedSchedule = selectedLocation.Schedules.Where( s => s.Selected && s.Schedule.Id == scheduleId ).FirstOrDefault();
-
                 selectedSchedule.Selected = false;
 
+                // clear any groups or locations without anything assigned
                 var clearLocation = selectedLocation.Schedules.All( s => s.Selected == false );
                 if ( clearLocation )
                 {
@@ -583,7 +590,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
 
                 gSelectedGrid.DataSource = checkInList.OrderBy( c => c.StartTime )
-                    .ThenBy( c => DateTime.Parse( c.Schedule ) ).ToList();
+                    .ThenBy( c => c.Schedule ).ToList();
                 gSelectedGrid.DataBind();
                 pnlSelected.Update();
             }
