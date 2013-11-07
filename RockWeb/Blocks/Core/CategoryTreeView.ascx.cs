@@ -44,103 +44,102 @@ namespace RockWeb.Blocks.Core
             base.OnLoad( e );
 
             // Get EntityTypeName
-            int entityTypeId = 0;
             Guid entityTypeGuid = Guid.Empty;
             if ( Guid.TryParse( GetAttributeValue( "EntityType" ), out entityTypeGuid ) )
             {
-                entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityTypeGuid ).Id;
-            }
-            string entityTypeQualiferColumn = GetAttributeValue("EntityTypeQualifierProperty");
-            string entityTypeQualifierValue = GetAttributeValue("EntityTypeQualifierValue");
+                int entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityTypeGuid ).Id;
+                string entityTypeQualiferColumn = GetAttributeValue( "EntityTypeQualifierProperty" );
+                string entityTypeQualifierValue = GetAttributeValue( "EntityTypeQualifierValue" );
 
-            var parms = new StringBuilder();
-            parms.AppendFormat( "/True/{0}", entityTypeId );
-            if ( !string.IsNullOrEmpty( entityTypeQualiferColumn ) )
-            {
-                parms.AppendFormat( "/{0}", entityTypeQualiferColumn );
-
-                if ( !string.IsNullOrEmpty( entityTypeQualifierValue ) )
+                var parms = new StringBuilder();
+                parms.AppendFormat( "/True/{0}", entityTypeId );
+                if ( !string.IsNullOrEmpty( entityTypeQualiferColumn ) )
                 {
-                    parms.AppendFormat( "/{0}", entityTypeQualifierValue );
-                }
-            }
+                    parms.AppendFormat( "/{0}", entityTypeQualiferColumn );
 
-            RestParms = parms.ToString();
-
-            var cachedEntityType = Rock.Web.Cache.EntityTypeCache.Read( entityTypeId );
-            if ( cachedEntityType != null )
-            {
-                lbAddItem.ToolTip = "Add " + cachedEntityType.FriendlyName;
-                lAddItem.Text = "Add " + cachedEntityType.FriendlyName;
-            }
-
-            PageParameterName = GetAttributeValue( "PageParameterKey" );
-            string itemId = PageParameter( PageParameterName );
-            string selectedEntityType = cachedEntityType.Name;
-            if ( string.IsNullOrWhiteSpace( itemId ) )
-            {
-                itemId = PageParameter( "categoryId" );
-                selectedEntityType = "category";
-            }
-
-            lbAddCategory.Visible = true;
-            lbAddItem.Visible = false;
-
-            if ( !string.IsNullOrWhiteSpace( itemId ) )
-            {
-                hfInitialItemId.Value = itemId;
-                hfInitialEntityIsCategory.Value = (selectedEntityType == "category").ToString();
-                hfSelectedCategoryId.Value = itemId;
-                List<string> parentIdList = new List<string>();
-
-                Category category = null;
-                if ( selectedEntityType.Equals( "category" ) )
-                {
-                    category = new CategoryService().Get( int.Parse( itemId ) );
-                    lbAddItem.Visible = true;
-                }
-                else
-                {
-                    int id = 0;
-                    if ( int.TryParse( itemId, out id ) )
+                    if ( !string.IsNullOrEmpty( entityTypeQualifierValue ) )
                     {
-                        if ( cachedEntityType != null )
-                        {
-                            Type entityType = cachedEntityType.GetEntityType();
-                            if ( entityType != null )
-                            {
-                                Type serviceType = typeof( Rock.Data.Service<> );
-                                Type[] modelType = { entityType };
-                                Type service = serviceType.MakeGenericType( modelType );
-                                var serviceInstance = Activator.CreateInstance( service );
-                                var getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
-                                ICategorized entity = getMethod.Invoke( serviceInstance, new object[] { id } ) as ICategorized;
+                        parms.AppendFormat( "/{0}", entityTypeQualifierValue );
+                    }
+                }
 
-                                if ( entity != null )
+                RestParms = parms.ToString();
+
+                var cachedEntityType = Rock.Web.Cache.EntityTypeCache.Read( entityTypeId );
+                if ( cachedEntityType != null )
+                {
+                    lbAddItem.ToolTip = "Add " + cachedEntityType.FriendlyName;
+                    lAddItem.Text = "Add " + cachedEntityType.FriendlyName;
+                }
+
+                PageParameterName = GetAttributeValue( "PageParameterKey" );
+                string itemId = PageParameter( PageParameterName );
+                string selectedEntityType = cachedEntityType.Name;
+                if ( string.IsNullOrWhiteSpace( itemId ) )
+                {
+                    itemId = PageParameter( "categoryId" );
+                    selectedEntityType = "category";
+                }
+
+                lbAddCategory.Visible = true;
+                lbAddItem.Visible = false;
+
+                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                {
+                    hfInitialItemId.Value = itemId;
+                    hfInitialEntityIsCategory.Value = ( selectedEntityType == "category" ).ToString();
+                    hfSelectedCategoryId.Value = itemId;
+                    List<string> parentIdList = new List<string>();
+
+                    Category category = null;
+                    if ( selectedEntityType.Equals( "category" ) )
+                    {
+                        category = new CategoryService().Get( int.Parse( itemId ) );
+                        lbAddItem.Visible = true;
+                    }
+                    else
+                    {
+                        int id = 0;
+                        if ( int.TryParse( itemId, out id ) )
+                        {
+                            if ( cachedEntityType != null )
+                            {
+                                Type entityType = cachedEntityType.GetEntityType();
+                                if ( entityType != null )
                                 {
-                                    lbAddCategory.Visible = false;
-                                    category = entity.Category;
-                                    if ( category != null )
+                                    Type serviceType = typeof( Rock.Data.Service<> );
+                                    Type[] modelType = { entityType };
+                                    Type service = serviceType.MakeGenericType( modelType );
+                                    var serviceInstance = Activator.CreateInstance( service );
+                                    var getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
+                                    ICategorized entity = getMethod.Invoke( serviceInstance, new object[] { id } ) as ICategorized;
+
+                                    if ( entity != null )
                                     {
-                                        parentIdList.Insert( 0, category.Id.ToString() );
+                                        lbAddCategory.Visible = false;
+                                        category = entity.Category;
+                                        if ( category != null )
+                                        {
+                                            parentIdList.Insert( 0, category.Id.ToString() );
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
-                
-                while ( category != null )
-                {
-                    category = category.ParentCategory;
-                    if ( category != null )
+
+                    while ( category != null )
                     {
-                        parentIdList.Insert( 0, category.Id.ToString() );
+                        category = category.ParentCategory;
+                        if ( category != null )
+                        {
+                            parentIdList.Insert( 0, category.Id.ToString() );
+                        }
+
                     }
 
+                    hfInitialCategoryParentIds.Value = parentIdList.AsDelimited( "," );
                 }
-
-                hfInitialCategoryParentIds.Value = parentIdList.AsDelimited( "," );
             }
         }
 
