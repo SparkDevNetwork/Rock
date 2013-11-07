@@ -27,7 +27,7 @@
                 
         <div class="row checkin-body">
             <div class="col-md-3">
-                <asp:UpdatePanel ID="pnlSelectFamily" runat="server" UpdateMode="Conditional">
+                <asp:UpdatePanel ID="pnlFamily" runat="server" UpdateMode="Conditional">
                 <ContentTemplate>                
 			        <h3>Families</h3>
 			        <asp:ListView ID="lvFamily" runat="server" OnPagePropertiesChanging="lvFamily_PagePropertiesChanging" 
@@ -49,7 +49,7 @@
             </div>
 
             <div class="col-md-3">
-                <asp:UpdatePanel ID="pnlSelectPerson" runat="server" UpdateMode="Conditional"> 
+                <asp:UpdatePanel ID="pnlPerson" runat="server" UpdateMode="Conditional"> 
                 <ContentTemplate>
 			        <asp:HiddenField ID="hfSelectedPerson" runat="server" ClientIDMode="Static" />
 
@@ -81,7 +81,7 @@
             </div>
 
             <div class="col-md-3">
-                <asp:UpdatePanel ID="pnlSelectVisitor" runat="server" UpdateMode="Conditional">
+                <asp:UpdatePanel ID="pnlVisitor" runat="server" UpdateMode="Conditional">
                 <ContentTemplate>
                     <asp:HiddenField ID="hfSelectedVisitor" runat="server" ClientIDMode="Static" />
 
@@ -255,8 +255,6 @@
             </ItemTemplate>        
             </asp:ListView>        
 
-            
-
             <div class="row">
                 <asp:DataPager ID="dpAddFamily" runat="server" PageSize="5" PagedControlID="lvAddFamily">
                     <Fields>
@@ -299,7 +297,7 @@
             return false;
         });
 
-        $('#<%= pnlSelectFamily.ClientID %>').on('click', 'a', function () {
+        $('#<%= pnlFamily.ClientID %>').on('click', 'a', function () {
             $('.nothing-eligible').html("<i class='icon-spinner icon-spin icon-large'></i>");
         });
                 
