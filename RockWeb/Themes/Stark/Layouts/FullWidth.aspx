@@ -16,7 +16,7 @@
                         <span class="icon-bar"></span>
                     </button>
                     <a class="navbar-brand" href="#">Stark Theme</a>
-                    <Rock:Zone Name="Header" Name="Header" runat="server" />
+                    <Rock:Zone Name="Header" runat="server" />
 			    </div>	
                 <div class="navbar-collapse collapse">   
                     <!-- Main Navigation -->
