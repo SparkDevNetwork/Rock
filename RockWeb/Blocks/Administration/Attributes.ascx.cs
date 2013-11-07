@@ -394,66 +394,13 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            using ( new UnitOfWorkScope() )
+            var attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtAttribute, _entityTypeId, 
+                _entityQualifierColumn, _entityQualifierValue, CurrentPersonId );
+
+            // Attribute will be null if it was not valid
+            if ( attribute == null )
             {
-                Rock.Model.Attribute attribute = null;
-
-                RockTransactionScope.WrapTransaction( () =>
-                {
-                    var attributeService = new AttributeService();
-
-                    // remove old qualifier values in case they changed
-                    if ( edtAttribute.AttributeId.HasValue )
-                    {
-                        AttributeQualifierService attributeQualifierService = new AttributeQualifierService();
-                        foreach ( var oldQualifier in attributeQualifierService.GetByAttributeId( edtAttribute.AttributeId.Value ).ToList() )
-                        {
-                            attributeQualifierService.Delete( oldQualifier, CurrentPersonId );
-                            attributeQualifierService.Save( oldQualifier, CurrentPersonId );
-                        }
-                        attribute = attributeService.Get( edtAttribute.AttributeId.Value );
-                    }
-
-                    if ( attribute == null )
-                    {
-                        attribute = new Rock.Model.Attribute();
-                        attributeService.Add( attribute, CurrentPersonId );
-                    }
-
-                    if ( _configuredType )
-                    {
-                        attribute.EntityTypeId = _entityTypeId;
-                        attribute.EntityTypeQualifierColumn = _entityQualifierColumn;
-                        attribute.EntityTypeQualifierValue = _entityQualifierValue;
-                    }
-                    else
-                    {
-                        attribute.EntityTypeId = ddlAttrEntityType.SelectedValueAsInt();
-                        attribute.EntityTypeQualifierColumn = tbAttrQualifierField.Text;
-                        attribute.EntityTypeQualifierValue = tbAttrQualifierValue.Text;
-                    }
-
-                    edtAttribute.GetAttributeProperties( attribute );
-
-                    // Controls will show warnings
-                    if ( !attribute.IsValid )
-                    {
-                        return;
-                    }
-
-                    attributeService.Save( attribute, CurrentPersonId );
-
-                } );
-
-                if ( attribute != null )
-                {
-                    Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
-                    if ( !_entityTypeId.HasValue && _entityQualifierColumn == string.Empty && _entityQualifierValue == string.Empty && !_entityId.HasValue )
-                    {
-                        Rock.Web.Cache.GlobalAttributesCache.Flush();
-                    }
-                }
-
+                return;
             }
 
             BindGrid();
