@@ -44,8 +44,12 @@ namespace RockWeb.Blocks.Core
             base.OnLoad( e );
 
             // Get EntityTypeName
-            string entityTypeName = GetAttributeValue( "EntityType" );
-            int entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityTypeName ).Id;
+            int entityTypeId = 0;
+            Guid entityTypeGuid = Guid.Empty;
+            if ( Guid.TryParse( GetAttributeValue( "EntityType" ), out entityTypeGuid ) )
+            {
+                entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityTypeGuid ).Id;
+            }
             string entityTypeQualiferColumn = GetAttributeValue("EntityTypeQualifierProperty");
             string entityTypeQualifierValue = GetAttributeValue("EntityTypeQualifierValue");
 

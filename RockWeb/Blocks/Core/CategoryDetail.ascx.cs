@@ -39,12 +39,15 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
-            string entityTypeName = GetAttributeValue( "EntityType" );
-            entityTypeId = EntityTypeCache.Read(entityTypeName).Id;
+            Guid entityTypeGuid = Guid.Empty;
+            if ( Guid.TryParse( GetAttributeValue( "EntityType" ), out entityTypeGuid ) )
+            {
+                entityTypeId = EntityTypeCache.Read( entityTypeGuid ).Id;
+            }
             entityTypeQualifierProperty = GetAttributeValue( "EntityTypeQualifierProperty" );
             entityTypeQualifierValue = GetAttributeValue( "EntityTypeQualifierValue" );
             
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", Category.FriendlyTypeName );
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Category.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Category ) ).Id;
         }
 

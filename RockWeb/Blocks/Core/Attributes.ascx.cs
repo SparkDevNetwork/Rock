@@ -60,8 +60,11 @@ namespace RockWeb.Blocks.Core
                 _configuredType = true;
             }
 
-            string entityTypeName = GetAttributeValue( "Entity" );
-            _entityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( entityTypeName );
+            Guid entityTypeGuid = Guid.Empty;
+            if ( Guid.TryParse( GetAttributeValue( "Entity" ), out entityTypeGuid ) )
+            {
+                _entityTypeId = EntityTypeCache.Read( entityTypeGuid ).Id;
+            }
             _entityQualifierColumn = GetAttributeValue( "EntityQualifierColumn" );
             _entityQualifierValue = GetAttributeValue( "EntityQualifierValue" );
             _displayValueEdit = Convert.ToBoolean( GetAttributeValue( "AllowSettingofValues" ) );
