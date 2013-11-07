@@ -11,6 +11,8 @@ using System.Runtime.Caching;
 using System.Web.UI;
 
 using DotLiquid;
+using System.Text;
+using System.Text.RegularExpressions;
 
 using Rock;
 using Rock.Attribute;
@@ -18,16 +20,17 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Cms
 {
-    [MemoField( "Template", "The liquid template to use for rendering", true, @"
+    [MemoField( "Template", "The liquid template to use for rendering. This template should be in the theme's 'Assets/Liquid' folder and should have an underscore prepended to the filename. ", true, @"
 <ul>
-    {% include 'PageMenu' with page.pages %}
+    {% include 'PageNav' %}
 </ul>
 " )]
     [LinkedPage( "Root Page", "The root page to use for the page collection. Defaults to the current page instance if not set.", false, "" )]
     [TextField( "Number of Levels", "Number of parent-child page levels to display. Default 3.", false, "3" )]
-    [TextField("CSS File", "Optional CSS file to add to the page for styling.", false, "")]
+    [TextField("CSS File", "Optional CSS file to add to the page for styling. Example 'Styles/nav.css' would point the stylesheet in the current theme's styles folder.", false, "")]
     [BooleanField( "Include Current Parameters", "Flag indicating if current page's parameters should be used when building url for child pages", false )]
     [BooleanField( "Include Current QueryString", "Flag indicating if current page's QueryString should be used when building url for child pages", false )]
+    [BooleanField("Enable Debug", "Flag indicating that the control should output the page data that will be passed to Liquid for parsing.", false)]
 
     public partial class PageLiquid : Rock.Web.UI.RockBlock
     {
@@ -45,11 +48,8 @@ namespace RockWeb.Blocks.Cms
 
             // add css file to page
             if (GetAttributeValue( "CSSFile" ).Trim() != string.Empty)
-                CurrentPage.AddCSSLink( Page, ResolveUrl("~/CSS/jquery.tagsinput.css"));  //todo why is this hardcoding? JME
+                CurrentPage.AddCSSLink(Page, ResolveRockUrl( GetAttributeValue("CSSFile") ));  
 
-            // add css file to page
-            if (GetAttributeValue( "CSSFile" ).Trim() != string.Empty)
-                CurrentPage.AddCSSLink( Page, ResolveUrl("~/CSS/jquery.tagsinput.css"));
         }
 
         /// <summary>
@@ -106,8 +106,47 @@ namespace RockWeb.Blocks.Cms
             pageProperties.Add( "page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, CurrentPage, pageParameters, queryString ) );
             string content = GetTemplate().Render( Hash.FromDictionary( pageProperties ) );
 
+            // check for errors
+            if (content.Contains("No such template"))
+            {
+                // get template name
+                Match match = Regex.Match(GetAttributeValue("Template"), @"'([^']*)");
+                if (match.Success)
+                {
+                    content = String.Format("<div class='alert alert-warning'><h4>Warning</h4>Could not find the template _{1}.liquid in {0}.</div>", ResolveRockUrl("~~/Assets/Liquid"), match.Groups[1].Value);
+                }
+                else
+                {
+                    content = "<div class='alert alert-warning'><h4>Warning</h4>Unable to parse the template name from settings.</div>";
+                }
+            }
+
+            if (content.Contains("error")) {
+                content = "<div class='alert alert-warning'><h4>Warning</h4>" + content + "</div>";
+            }
+
             phContent.Controls.Clear();
             phContent.Controls.Add(new LiteralControl(content));
+
+            // add debug info
+            if (GetAttributeValue("EnableDebug").AsBoolean())
+            {
+                StringBuilder debugInfo = new StringBuilder();
+                debugInfo.Append("<p /><div class='alert alert-info'><h4>Debug Info</h4>");
+                
+                debugInfo.Append("<pre>");
+
+                debugInfo.Append("<p /><strong>Page Data</strong> (referenced as 'page.' in Liquid)<br>");
+                debugInfo.Append( rootPage.GetMenuProperties(levelsDeep, CurrentPerson, CurrentPage, pageParameters, queryString).ToJson() + "</pre>");
+                
+                debugInfo.Append("<em>Note:</em> If a page or group of pages is not in the data above check the following: <ul>");
+                debugInfo.Append("<li>The parent page has 'Show Child Pages' enabled in the 'Page Properties' > 'Display Settings'</li>");
+                debugInfo.Append("<li>Check the 'Display Settings' on the child pages</li>");
+                debugInfo.Append("<li>Check the security of the child pages</li>");
+                debugInfo.Append("</ul>");
+                debugInfo.Append("</div>");
+                phContent.Controls.Add(new LiteralControl(debugInfo.ToString()));
+            }
 
         }
 
@@ -134,7 +173,7 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 template = Template.Parse( GetAttributeValue( "Template" ) );
-
+                
                 var cachePolicy = new CacheItemPolicy();
                 cache.Set( cacheKey, template, cachePolicy );
 
