@@ -81,10 +81,37 @@
         <div class="container person-content">
             <div class="row">
                 <div class="col-md-8">
-                    <Rock:Zone Name="Main" runat="server" />
+                    <Rock:Zone Name="Section A1" runat="server" />
                 </div>
                 <div class="col-md-4">
-                    <Rock:Zone Name="Sidebar 1" runat="server" />
+                    <Rock:Zone Name="Section A2" runat="server" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <Rock:Zone Name="Section B1" runat="server" />
+                </div>
+                <div class="col-md-4">
+                    <Rock:Zone Name="Section B2" runat="server" />
+                </div>
+                <div class="col-md-4">
+                    <Rock:Zone Name="Section B3" runat="server" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <Rock:Zone Name="Section C1" runat="server" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <Rock:Zone Name="Section D1" runat="server" />
+                </div>
+                <div class="col-md-4">
+                    <Rock:Zone Name="Section D2" runat="server" />
                 </div>
             </div>
         </div>
