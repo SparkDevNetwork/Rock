@@ -1,10 +1,4 @@
--- drop the procedure
-if exists (select * from sys.procedures where object_id = OBJECT_ID(N'[dbo].[sp_get_contribution_person_group_address]'))
-    drop procedure [sp_get_contribution_person_group_address]
-go
-
--- create procedure
-create procedure [sp_get_contribution_person_group_address]
+alter procedure [sp_get_contribution_person_group_address]
 	@startDate datetime,
     @endDate datetime,
     @accountIds varchar(max), -- comma delimited list of integers. NULL means all
@@ -94,7 +88,7 @@ begin
     on 
         [l].[Id] = [gl].[LocationId]
     where 
-        [gl].IsMailing = 1
+        [gl].[IsMailingLocation] = 1
     and
         [gl].[GroupLocationTypeValueId] = (select Id from DefinedValue where Guid = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC' /* LOCATION_TYPE_HOME */)
     and
@@ -105,6 +99,4 @@ begin
         )
     order by
     case when @orderByZipCode = 1 then Zip end
-    
 end
-go
