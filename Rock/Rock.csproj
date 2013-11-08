@@ -311,6 +311,10 @@
     <Compile Include="Migrations\201311042002460_RenameLocationFields.Designer.cs">
       <DependentUpon>201311042002460_RenameLocationFields.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201311081500222_RequireCategoryName.cs" />
+    <Compile Include="Migrations\201311081500222_RequireCategoryName.Designer.cs">
+      <DependentUpon>201311081500222_RequireCategoryName.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -1222,6 +1226,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201311042002460_RenameLocationFields.resx">
       <DependentUpon>201311042002460_RenameLocationFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201311081500222_RequireCategoryName.resx">
+      <DependentUpon>201311081500222_RequireCategoryName.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
