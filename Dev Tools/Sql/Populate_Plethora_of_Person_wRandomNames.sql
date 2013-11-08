@@ -24,7 +24,7 @@
     @locationTypeValueHome int = (select id from DefinedValue where guid = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC'),
     @streetAddress int,
     @zipCode int
-
+ 
 begin
 
 IF OBJECT_ID('tempdb..#fakenames') IS NOT NULL
@@ -5099,11 +5099,11 @@ while @personCounter < @maxPerson
             set @zipCode = ROUND(rand() * 9999, 0)+ 80000;
             set @streetAddress = ROUND(rand() * 9999, 0)+ 100;
 
-            INSERT INTO [Location] (Street1, Street2, City, [State], Zip, LocationTypeValueId, IsActive, [Guid], IsLocation)
-            VALUES ( CONVERT(varchar(max), @streetAddress) + ' Random Street', '', 'Phoenix', 'AZ', @zipCode, @LocationTypeValueHome, 1, NEWID(), 0)
+            INSERT INTO [Location] (Street1, Street2, City, [State], Zip, IsActive, [Guid], IsNamedLocation)
+            VALUES ( CONVERT(varchar(max), @streetAddress) + ' Random Street', '', 'Phoenix', 'AZ', @zipCode, 1, NEWID(), 0)
             SET @locationId = SCOPE_IDENTITY()
 
-            INSERT INTO [GroupLocation] (GroupId, LocationId, GroupLocationTypeValueId, [Guid], IsMailing, IsLocation)
+            INSERT INTO [GroupLocation] (GroupId, LocationId, GroupLocationTypeValueId, [Guid], IsMailingLocation, IsMappedLocation)
             VALUES (@groupId, @locationId, @locationTypeValueHome, NEWID(), 1, 0)             
 
             
