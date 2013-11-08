@@ -4,7 +4,7 @@
 <ContentTemplate>
 
     <section class="panel panel-persondetails">
-        <div class="panel-heading">
+        <div class="panel-heading clearfix">
             <h3 class="panel-title pull-left">
                 <asp:Literal ID="lCategoryName" runat="server" />
             </h3>
