@@ -310,7 +310,7 @@ namespace RockWeb.Blocks.Cms
 
                 debugInfo.Append("<pre>");
 
-                debugInfo.Append("<p /><strong>Ad Data</strong> (referenced as 'AdList.' in Liquid)<br>");
+                debugInfo.Append("<p /><strong>Ad Data</strong> (referenced as 'Ads.' in Liquid)<br>");
                 debugInfo.Append(data.ToJson() + "</pre>");
 
                 debugInfo.Append("</div>");
