@@ -132,7 +132,7 @@
                 restUrl: null,
                 restParams: null,
                 allowMultiSelect: false,
-                defaultText: '<none>',
+                defaultText: '',
                 selectedIds: null,
                 expandedIds: null
             },
