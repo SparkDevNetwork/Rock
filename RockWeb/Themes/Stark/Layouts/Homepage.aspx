@@ -18,9 +18,12 @@
                     <a class="navbar-brand" href="#">Stark Theme</a>
                     <Rock:Zone Name="Header" runat="server" />
 			    </div>	
-                <div class="navbar-collapse collapse">   
+                <div class="navbar-collapse collapse navbar-content">   
                     <!-- Main Navigation -->
+
+                    <Rock:Zone Name="Login" runat="server" />
                     <Rock:Zone Name="Navigation" runat="server" />
+                    
 			    </div>	
             </div>
         </nav>
@@ -31,7 +34,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-12">
-                    <Rock:Zone ID="Zone1" Name="Feature" runat="server" />
+                    <Rock:Zone Name="Feature" runat="server" />
                 </div>
             </div>
         </div>
@@ -88,7 +91,7 @@
 
             <div class="row">
                 <div class="col-md-3 col-md-offset-8">
-                    <Rock:Zone Name="Login" runat="server" />
+                    
                 </div>
             </div>
 

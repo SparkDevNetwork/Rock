@@ -1,0 +1,31 @@
+﻿<div class="row ad-list">
+  
+    {% for Ad in Ads -%}
+      <div class="col-md-4 ad">
+          <a href="{{ Ad.DetailPageUrl }}">
+            {% for Attribute in Ad.Attributes -%}
+              {% if Attribute.Key == 'PromotionImage' -%}
+                {{ Attribute.Value }}
+              {% endif -%}
+            {% endfor -%}
+          </a>
+          <h2>{{ Ad.Title }}</h2>
+          <p class="ad-text">
+            {% for Attribute in Ad.Attributes -%}
+              {% if Attribute.Key == 'PromotionText' -%}
+                {{ Attribute.Value }}
+              {% endif -%}
+            {% endfor -%}
+          </p>
+          <p>
+            <a class="btn btn-default" href="{{ Ad.DetailPageUrl }}" role="button">View details »</a>
+          </p>
+        </div>
+        {% capture breakNow %}{{ forloop.index | Modulo:3 }}{% endcapture %}
+        {% if breakNow == 0 -%}
+          </div>
+          <div class="row ad-list">
+        {% endif -%}
+
+  {% endfor -%}
+</div>

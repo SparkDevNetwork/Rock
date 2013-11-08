@@ -5383,8 +5383,8 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .navbar-default .navbar-nav > .active > a,
 .navbar-default .navbar-nav > .active > a:hover,
 .navbar-default .navbar-nav > .active > a:focus {
-  color: #555555;
-  background-color: #292929;
+  color: #bbbbbb;
+  background-color: #424242;
 }
 .navbar-default .navbar-nav > .disabled > a,
 .navbar-default .navbar-nav > .disabled > a:hover,
@@ -5414,14 +5414,14 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .navbar-default .navbar-nav > .open > a,
 .navbar-default .navbar-nav > .open > a:hover,
 .navbar-default .navbar-nav > .open > a:focus {
-  background-color: #292929;
-  color: #555555;
+  background-color: #424242;
+  color: #bbbbbb;
 }
 .navbar-default .navbar-nav > .open > a .caret,
 .navbar-default .navbar-nav > .open > a:hover .caret,
 .navbar-default .navbar-nav > .open > a:focus .caret {
-  border-top-color: #555555;
-  border-bottom-color: #555555;
+  border-top-color: #bbbbbb;
+  border-bottom-color: #bbbbbb;
 }
 .navbar-default .navbar-nav > .dropdown > a .caret {
   border-top-color: #bbbbbb;
@@ -5439,8 +5439,8 @@ textarea.input-group-sm > .input-group-btn > .btn {
   .navbar-default .navbar-nav .open .dropdown-menu > .active > a,
   .navbar-default .navbar-nav .open .dropdown-menu > .active > a:hover,
   .navbar-default .navbar-nav .open .dropdown-menu > .active > a:focus {
-    color: #555555;
-    background-color: #292929;
+    color: #bbbbbb;
+    background-color: #424242;
   }
   .navbar-default .navbar-nav .open .dropdown-menu > .disabled > a,
   .navbar-default .navbar-nav .open .dropdown-menu > .disabled > a:hover,
@@ -8474,7 +8474,7 @@ span.cke_skin_kama {
   padding: 0 !important;
 }
 .loginstatus {
-  width: 160px;
+  --width: 160px;
 }
 .loginstatus .dropdown-toggle {
   text-align: right;
@@ -9695,6 +9695,15 @@ fieldset[disabled] .btn-edit:active,
 fieldset[disabled] .btn-edit.active {
   background-color: #ffffff;
   border-color: #e6e6e6;
+}
+/* modify BS3 to use fontawesome for carousel icons */
+.carousel-control .icon-chevron-left,
+.carousel-control .icon-chevron-right {
+  position: absolute;
+  top: 50%;
+  z-index: 5;
+  display: inline-block;
+  margin-top: -10px;
 }
 /* user registration styles */
 .not-me {
