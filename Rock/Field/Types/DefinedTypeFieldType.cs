@@ -21,6 +21,29 @@ namespace Rock.Field.Types
     public class DefinedTypeFieldType : FieldType
     {
         /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            Guid guid = Guid.Empty;
+            if (Guid.TryParse(value, out guid))
+            {
+                var definedType = new Model.DefinedTypeService().Get(guid);
+                if (definedType != null)
+                { 
+                    return definedType.Name;
+                }
+            }
+
+            return base.FormatValue( parentControl, value, configurationValues, condensed );
+        }
+
+        /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
@@ -34,7 +57,7 @@ namespace Rock.Field.Types
 
             Rock.Model.DefinedTypeService definedTypeService = new Model.DefinedTypeService();
             foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Order ) )
-                editControl.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
+                editControl.Items.Add( new ListItem( definedType.Name, definedType.Guid.ToString() ) );
 
             return editControl;
         }

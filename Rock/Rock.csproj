@@ -150,6 +150,7 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
+    <Compile Include="Attribute\DefinedTypeFieldAttribute.cs" />
     <Compile Include="Attribute\GroupLocationTypeFieldAttribute.cs" />
     <Compile Include="Attribute\InheritedAttribute.cs" />
     <Compile Include="Attribute\TimeFieldAttribute.cs" />
