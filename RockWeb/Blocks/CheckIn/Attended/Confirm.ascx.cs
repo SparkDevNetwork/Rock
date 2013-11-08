@@ -203,7 +203,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
             
             var selectedPerson = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
                 .People.Where( p => p.Person.Id == personId ).FirstOrDefault();
-            var selectedGroups = selectedPerson.GroupTypes.Where( gt => gt.Selected ).SelectMany( gt => gt.Groups.Where( g => g.Selected ) );
+            var selectedGroups = selectedPerson.GroupTypes.Where( gt => gt.Selected )
+                .SelectMany( gt => gt.Groups.Where( g => g.Selected ) );
             CheckInGroup selectedGroup = selectedGroups.Where( g => g.Selected
                 && g.Locations.Any( l => l.Location.Id == locationId
                     && l.Schedules.Any( s => s.Schedule.Id == scheduleId ) ) ).FirstOrDefault();
@@ -215,15 +216,21 @@ namespace RockWeb.Blocks.CheckIn.Attended
             
             selectedSchedule.Selected = false;
             selectedSchedule.PreSelected = false;
-            var hasSelectedSchedules = selectedLocation.Schedules.Where( s => s.Selected ).Any();
-            if ( !hasSelectedSchedules )
+
+            // clear checkin rows without anything selected
+            if ( !selectedLocation.Schedules.Any( s => s.Selected ) )
             {
                 selectedLocation.Selected = false;
-                selectedLocation.PreSelected = false;
+                selectedLocation.PreSelected = false;                
+            }
+            
+            if ( !selectedGroup.Locations.Any( l => l.Selected ) )
+            {
                 selectedGroup.Selected = false;
                 selectedGroup.PreSelected = false;
-            }
-            if ( selectedGroups.Count() == 0 )
+            }       
+     
+            if ( !selectedGroups.Any() )
             {
                 selectedPerson.Selected = false;
                 selectedPerson.PreSelected = false;
