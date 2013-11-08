@@ -1,5 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="LoginStatus.ascx.cs" Inherits="RockWeb.Blocks.Security.LoginStatus" %>
-<ul class="nav loginstatus">
+<ul class="nav navbar-nav loginstatus">
     <li class="dropdown">
         <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
             <i class="icon-user"></i>

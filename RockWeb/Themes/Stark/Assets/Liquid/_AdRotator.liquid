@@ -2,12 +2,29 @@
 
   <!-- Wrapper for slides -->
   <div class="carousel-inner">
-    {% for ad in AdList.Ads %}
-    <div class="item active">
-      <img src="http://freefever.com/stock/latest-funny-jokes-for-kids-picture-of-a-funny-joke-kids-who-were.jpg" alt="{{ ad.Title }}" />
-
-    </div>
-    {% endfor %}
+    {% for Ad in Ads -%}
+      {% if forloop.index == 1 -%}
+        <div class="item active">
+      {% else -%}
+        <div class="item">
+      {% endif -%}
+          <a href="{{ Ad.DetailPageUrl }}">
+            {% for Attribute in Ad.Attributes -%}
+              {% if Attribute.Key == 'PromotionImage' -%}
+                {{ Attribute.Value }}
+              {% endif -%}
+            {% endfor -%}
+          </a>
+        </div>
+    {% endfor -%}
   </div>
 
+    <!-- Controls -->
+    <a class="left carousel-control" href="#ad-rotator" data-slide="prev">
+      <span class="icon-chevron-left"></span>
+    </a>
+    <a class="right carousel-control" href="#ad-rotator" data-slide="next">
+      <span class="icon-chevron-right"></span>
+    </a>
+    
 </div>

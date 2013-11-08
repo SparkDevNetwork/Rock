@@ -4817,7 +4817,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .nav > li > a:hover,
 .nav > li > a:focus {
   text-decoration: none;
-  background-color: #eeeeee;
+  background-color: #2a2a2a;
 }
 .nav > li.disabled > a {
   color: #999999;
@@ -4832,7 +4832,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .nav .open > a,
 .nav .open > a:hover,
 .nav .open > a:focus {
-  background-color: #eeeeee;
+  background-color: #2a2a2a;
   border-color: #8498ab;
 }
 .nav .nav-divider {
@@ -8474,7 +8474,7 @@ span.cke_skin_kama {
   padding: 0 !important;
 }
 .loginstatus {
-  width: 160px;
+  --width: 160px;
 }
 .loginstatus .dropdown-toggle {
   text-align: right;
@@ -9695,6 +9695,15 @@ fieldset[disabled] .btn-edit:active,
 fieldset[disabled] .btn-edit.active {
   background-color: #ffffff;
   border-color: #e6e6e6;
+}
+/* modify BS3 to use fontawesome for carousel icons */
+.carousel-control .icon-chevron-left,
+.carousel-control .icon-chevron-right {
+  position: absolute;
+  top: 50%;
+  z-index: 5;
+  display: inline-block;
+  margin-top: -10px;
 }
 /* user registration styles */
 .not-me {
