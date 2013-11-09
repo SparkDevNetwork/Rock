@@ -88,11 +88,18 @@ a.help {
     // add an action container to the .panel heading
     .panel-heading {
         .actions {
-            display: none;
+            opacity: 0;
+            .transition(opacity .5s ease-out);
             height: 14px;
 
             a {
                 padding-left: 4px;
+            }
+        }
+
+        &:hover {
+            .actions {
+                opacity: 1;
             }
         }
     }
