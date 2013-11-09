@@ -147,7 +147,7 @@
                 }
         });
 
-        $('.panel .panel-heading').on({
+        /*$('.panel-notes .panel-heading').on({
             mouseenter:
                 function () {
                     var actionsDiv = $('.actions', this);
@@ -162,24 +162,7 @@
                         $(actionsDiv).fadeToggle();
                     }
                 }
-        });
-
-        $('.panel-notes .panel-heading').on({
-            mouseenter:
-                function () {
-                    var actionsDiv = $('.actions', this);
-                    if (actionsDiv.length > 0) {
-                        $(actionsDiv).fadeToggle();
-                    }
-                },
-            mouseleave:
-                function () {
-                    var actionsDiv = $('.actions', this);
-                    if (actionsDiv.length > 0) {
-                        $(actionsDiv).fadeToggle();
-                    }
-                }
-        });
+        });*/
 
         $('.persondetails-familybar').on({
             mouseenter:

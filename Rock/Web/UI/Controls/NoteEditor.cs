@@ -238,23 +238,6 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             string script = @"
-    $('.note-editor').on({
-        mouseenter:
-            function () {
-                var actionsDiv = $('.actions', this);
-                if (actionsDiv.length > 0) {
-                    $(actionsDiv).stop(true, true).fadeIn(""slow"");
-                }
-            },
-        mouseleave:
-            function () {
-                var actionsDiv = $('.actions', this);
-                if (actionsDiv.length > 0) {
-                    $(actionsDiv).stop(true, true).fadeOut(""slow"");
-                }
-            }
-    });
-
     $('a.edit-note').click(function (e) {
         e.preventDefault();
         $(this).parent().parent().parent().children().slideToggle('slow');
@@ -444,7 +427,6 @@ namespace Rock.Web.UI.Controls
             if ( CanEdit )
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
-                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 _lbDeleteNote.RenderControl(writer);

@@ -5,7 +5,7 @@
     2. Banner - used as the primary heading for a page or large section
     3. Tree - used for tree control
     4. Person List - used to show a list of people
-    5. 
+    5. Notes - used to link notes to entities
     6. Pagelist - used to list child pages; currently used in admin screens
     7. Tags - component that allows you to tag entities
     8. Switch - uses the Bootstrap Switch component
@@ -274,8 +274,21 @@ ul.rock-tree ul {
     }
 }
 
-// 5. 
+// 5. Notes
 // -------------------------
+
+.note-editor {
+    .actions {
+        opacity: 0;
+        .transition(opacity .5s ease-out);
+    }
+
+    &:hover {
+        .actions {
+            opacity: 1;
+        }
+    }
+}
 
 // 6. Pagelist
 // -------------------------
