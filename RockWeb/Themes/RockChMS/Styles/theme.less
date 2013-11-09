@@ -2,6 +2,7 @@
 // Load Master Styles
 // -------------------------
 @import "../../../Styles/_rock-core.less";
+@import "../../../Styles/Bootstrap/mixins.less";
 @import "_variables.less";
 
 // Fonts
@@ -359,7 +360,7 @@ body#splash
 
 body#splash #content-box {
     background-color: @body-bg;
-    .border-radius(@border-radius-base);
+    border-radius: @border-radius-base;
     overflow: hidden;
 }
 
