@@ -16,7 +16,7 @@
     13. Datepicker - styles for the date picker
     14. Timepicker - styles for the time picker
     15. File Upload / Image Upload - styles for the file / image uploader
-
+    16. Rollover - Used to hide/show items in the UI has the mouse rolls-over a container.
 */
 
 // 1. Pickers
@@ -274,21 +274,31 @@ ul.rock-tree ul {
     }
 }
 
-// 5. Notes
+// 5. Rollover
 // -------------------------
 
-.note-editor {
-    .actions {
+.rollover-container {
+
+    & > .rollover-item {
         opacity: 0;
-        .transition(opacity .5s ease-out);
+        -webkit-transition: opacity .5s ease-out;
+        -moz-transition: opacity .5s ease-out;
+        -o-transition: opacity .5s ease-out;
+        transition: opacity .5s ease-out;
     }
 
     &:hover {
-        .actions {
+        & > .rollover-item {
             opacity: 1;
         }
     }
 }
+
+// always show item if on touch device
+.touch .rollover-item {
+    opacity: 1;
+}
+
 
 // 6. Pagelist
 // -------------------------

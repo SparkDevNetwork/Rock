@@ -85,36 +85,12 @@ a.help {
         border-color: @accent-color;
     }
 
-    // add an action container to the .panel heading
-    .panel-heading {
-        .actions {
-            opacity: 0;
-            .transition(opacity .5s ease-out);
-            height: 14px;
-
-            a {
-                padding-left: 4px;
-            }
-        }
-
-        &:hover {
-            .actions {
-                opacity: 1;
-            }
-        }
-    }
-
     // adjust the background color of pickers on a panel
     .picker .picker-label {
         background-color: @accent-color;
         color: @accent-text-color;
         border-color: darken(@accent-color, 10%)
     }
-
-    /*.actions {
-        margin-top: 36px;
-        .clearfix();
-    }*/ // breaks person details page
 }
 
 //.panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}

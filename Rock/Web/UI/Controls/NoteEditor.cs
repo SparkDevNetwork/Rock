@@ -185,15 +185,15 @@ namespace Rock.Web.UI.Controls
             {
                 if ( IsAlert )
                 {
-                    return "clearfix highlight";
+                    return "clearfix highlight rollover-container";
                 }
 
                 if ( IsPrivate )
                 {
-                    return "clearfix personal";
+                    return "clearfix personal rollover-container";
                 }
 
-                return "clearfix";
+                return "clearfix rollover-container";
             }
         }
 
@@ -426,7 +426,7 @@ namespace Rock.Web.UI.Controls
 
             if ( CanEdit )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions rollover-item" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 _lbDeleteNote.RenderControl(writer);
