@@ -17,6 +17,11 @@ namespace Rock.Attribute
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class EntityTypeFieldAttribute : FieldAttribute
     {
+        public EntityTypeFieldAttribute( string name, string description = "", bool required = true, string category = "", int order = 0, string key = null )
+            : base( name, description, required, "", category, order, key, typeof( Rock.Field.Types.EntityTypeFieldType ).FullName )
+        {
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityTypeFieldAttribute" /> class.
         /// </summary>
@@ -26,7 +31,7 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public EntityTypeFieldAttribute(string name, string description = "", bool required = true, string category = "", int order = 0, string key = null, bool includeGlobalAttributeOption = true)
+        public EntityTypeFieldAttribute(string name, bool includeGlobalAttributeOption, string description = "", bool required = true, string category = "", int order = 0, string key = null)
             : base( name, description, required, "", category, order, key, typeof( Rock.Field.Types.EntityTypeFieldType ).FullName )
         {
             var configValue = new Field.ConfigurationValue( includeGlobalAttributeOption.ToString() );
