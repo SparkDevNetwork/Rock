@@ -114,7 +114,7 @@
 		
         <div class="checkin-body">
             <div class="row">
-                <fieldset id="fsNotes" runat="server"/>
+                <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
             </div>
         </div>
     </asp:Panel>

@@ -52,6 +52,9 @@
     <Reference Include="CKEditor.NET">
       <HintPath>..\packages\CKEditor.3.6.4\CKEditor.NET.dll</HintPath>
     </Reference>
+    <Reference Include="CronExpressionDescriptor">
+      <HintPath>..\packages\CronExpressionDescriptor.1.7.1\lib\net35\CronExpressionDescriptor.dll</HintPath>
+    </Reference>
     <Reference Include="DDay.iCal">
       <HintPath>..\packages\DDay.iCal.1.0.2.575\lib\DDay.iCal.dll</HintPath>
     </Reference>
