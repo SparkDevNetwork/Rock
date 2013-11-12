@@ -4,12 +4,12 @@
 
         <section class="panel panel-persondetails">
 
-            <div class="panel-heading clearfix">
+            <div class="panel-heading rollover-container clearfix">
                 <h3 class="panel-title pull-left">
                     <asp:PlaceHolder ID="phGroupTypeIcon" runat="server"></asp:PlaceHolder>
                     <asp:Literal ID="lGroupName" runat="server"></asp:Literal></h3>
                 <asp:PlaceHolder ID="phEditActions" runat="server">
-                    <div class="actions pull-right">
+                    <div class="actions rollover-item pull-right">
                         <asp:LinkButton ID="lbAdd" runat="server" CssClass="edit" Text="Add Relationship" OnClick="lbAdd_Click" CausesValidation="false"><i class="icon-plus"></i></asp:LinkButton>
                     </div>
                 </asp:PlaceHolder>

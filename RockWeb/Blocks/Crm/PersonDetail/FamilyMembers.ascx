@@ -6,10 +6,10 @@
         <asp:Repeater ID="rptrFamilies" runat="server">
             <ItemTemplate>
 
-                <div class="persondetails-family">
+                <div class="persondetails-family rollover-container">
 
-                    <div class="actions" style="display: none;">
-                        <asp:HyperLink ID="hlEditFamily" runat="server" CssClass="edit btn btn-xs"><i class="icon-pencil"></i> Edit Family</asp:HyperLink>
+                    <div class="actions rollover-item">
+                        <asp:HyperLink ID="hlEditFamily" runat="server" CssClass="edit btn btn-link btn-xs"><i class="icon-pencil"></i> Edit Family</asp:HyperLink>
                     </div>
 
                     <div class="row">
@@ -44,7 +44,7 @@
 
                                 <asp:Repeater ID="rptrAddresses" runat="server">
                                     <ItemTemplate>
-                                        <li class="address clearfix">
+                                        <li class="address rollover-container clearfix">
                                             <h4><%# FormatAddressType(Eval("LocationTypeValue.Name")) %></h4>
                                             <a id="aMap" runat="server" title="Map This Address" class="map" target="_blank">
                                                 <i class="icon-map-marker"></i>
@@ -54,7 +54,7 @@
                                                 <asp:PlaceHolder ID="phStreet2" runat="server" />
                                                 <span><%# Eval("Location.City") %>, <%# Eval("Location.State") %> <%# Eval("Location.Zip") %></span>
                                             </div>
-                                            <div class="actions" style="display: none;">
+                                            <div class="actions rollover-item">
                                                 <asp:LinkButton ID="lbGeocode" runat="server">
                                                     <i class="icon-globe"></i>
                                                 </asp:LinkButton>
