@@ -1042,7 +1042,7 @@ namespace Rock.Web.UI
 
                 HtmlGenericControl zoneWrapper = new HtmlGenericControl( "div" );
                 parent.Controls.AddAt( parent.Controls.IndexOf( control ), zoneWrapper );
-                zoneWrapper.ID = string.Format( "zone-{0}", zoneControl.Key );
+                zoneWrapper.ID = string.Format( "zone-{0}", zoneControl.Key.ToLower() );
                 zoneWrapper.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 zoneWrapper.Attributes.Add( "class", "zone-instance can-configure" );
 
