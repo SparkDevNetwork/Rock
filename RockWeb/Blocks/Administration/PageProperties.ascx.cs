@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Administration
                         phAttributes.Controls.Clear();
                         Rock.Attribute.Helper.AddEditControls( _page, phAttributes, !Page.IsPostBack );
 
-                        List<string> blockContexts = new List<string>();
+                        var blockContexts = new List<EntityTypeCache>();
                         foreach ( var block in _page.Blocks )
                         {
                             var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
@@ -111,16 +111,16 @@ namespace RockWeb.Blocks.Administration
                         phContextPanel.Visible = blockContexts.Count > 0;
 
                         int i = 0;
-                        foreach ( string context in blockContexts )
+                        foreach ( EntityTypeCache context in blockContexts )
                         {
                             var tbContext = new RockTextBox();
                             tbContext.ID = string.Format( "context_{0}", i++ );
                             tbContext.Required = true;
-                            tbContext.Label = context;
-
-                            if ( _page.PageContexts.ContainsKey( context ) )
+                            tbContext.Label = context.FriendlyName + " Parameter";
+                            tbContext.Help = "The page parameter name that contains the id of this context entity.";
+                            if ( _page.PageContexts.ContainsKey( context.Name ) )
                             {
-                                tbContext.Text = _page.PageContexts[context];
+                                tbContext.Text = _page.PageContexts[context.Name];
                             }
 
                             phContext.Controls.Add( tbContext );

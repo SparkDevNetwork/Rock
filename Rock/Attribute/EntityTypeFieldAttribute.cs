@@ -26,9 +26,11 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public EntityTypeFieldAttribute(string name, string description = "", bool required = true, string category = "", int order = 0, string key = null)
+        public EntityTypeFieldAttribute(string name, string description = "", bool required = true, string category = "", int order = 0, string key = null, bool includeGlobalAttributeOption = true)
             : base( name, description, required, "", category, order, key, typeof( Rock.Field.Types.EntityTypeFieldType ).FullName )
         {
+            var configValue = new Field.ConfigurationValue( includeGlobalAttributeOption.ToString() );
+            FieldConfigurationValues.Add( "includeglobal", configValue );
         }
     }
 }

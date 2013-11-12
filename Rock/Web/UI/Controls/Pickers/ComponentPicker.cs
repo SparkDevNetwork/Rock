@@ -40,7 +40,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( !Required )
                 {
-                    this.Items.Add( new ListItem( string.Empty, Rock.Constants.None.IdValue ) );
+                    this.Items.Add( new ListItem( string.Empty, string.Empty ) );
                 }
 
                 if ( !string.IsNullOrWhiteSpace( value ) )

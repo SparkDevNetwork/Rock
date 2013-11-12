@@ -5,6 +5,7 @@
 //
 
 using System;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI
 {
@@ -22,7 +23,7 @@ namespace Rock.Web.UI
         /// <value>
         /// The type of the entity.
         /// </value>
-        public string EntityType { get; set; }
+        public EntityTypeCache EntityType { get; set; }
         
         /// <summary>
         /// Gets the default name of the parameter.
@@ -45,7 +46,7 @@ namespace Rock.Web.UI
         /// <param name="entityType">Type of the entity.</param>
         public ContextAwareAttribute( Type entityType )
         {
-            EntityType = entityType.FullName;
+            EntityType = EntityTypeCache.Read( entityType );
             DefaultParameterName = entityType.Name + "Id";
         }
     }
