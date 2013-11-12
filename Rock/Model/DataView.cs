@@ -19,7 +19,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Model
 {
     /// <summary>
-    /// DataView POCO Entity.
+    /// Represents a filterable dataview in RockChMS.
     /// </summary>
     [Table( "DataView" )]
     [DataContract]
@@ -68,29 +68,31 @@ namespace Rock.Model
         public int? CategoryId { get; set; }
 
         /// <summary>
-        /// Gets or sets the entity type that this view applies to.
+        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that this DataView reports on.
         /// </summary>
         /// <value>
-        /// The entity type id.
+        /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that this DataView reports on.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the root filter id.
+        /// Gets or sets the DataViewFilterId of the root/base <see cref="Rock.Model.DataViewFilter"/> that is used to generate this DataView. 
         /// </summary>
         /// <value>
-        /// The root filter id.
+        /// A <see cref="System.Int32"/> that represents the DataViewFilterId of the root/base <see cref="Rock.Model.DataViewFilter"/> that is used to generate this DataView. If there is 
+        /// not a filter on this DataView, this value will be null.
         /// </value>
         [DataMember]
         public int? DataViewFilterId { get; set; }
 
         /// <summary>
-        /// Gets or sets the entity type id that is used for an optional transformation
+        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that is used for an optional transformation on this DataView.
         /// </summary>
         /// <value>
-        /// The transformation entity type id.
+        /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that is used for an optional transformation on this DataView. If there
+        /// is not a transformation on this DataView, this value will be null.
         /// </value>
         [DataMember]
         public int? TransformEntityTypeId { get; set; }
@@ -100,37 +102,37 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the category.
+        /// Gets or sets the <see cref="Rock.Model.Category"/> that this DataView belongs to
         /// </summary>
         /// <value>
-        /// The category.
+        /// The <see cref="Rock.Model.Category"/> that this DataView belongs to.
         /// </value>
         [DataMember]
         public virtual Category Category { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the entity.
+        /// Gets or sets the <see cref="Rock.Model.EntityType"/> that this DataView reports on.
         /// </summary>
         /// <value>
-        /// The type of the entity.
+        /// The <see cref="Rock.Model.EntityType"/> that this DataView reports on.
         /// </value>
         [DataMember]
         public virtual EntityType EntityType { get; set; }
 
         /// <summary>
-        /// Gets or sets the root Data View Filter.
+        /// Gets or sets the base <see cref="Rock.Model.DataViewFilter"/> that is used to generate this DataView.
         /// </summary>
         /// <value>
-        /// The report filter.
+        /// The base <see cref="Rock.Model.DataViewFilter"/>.
         /// </value>
         [DataMember]
         public virtual DataViewFilter DataViewFilter { get; set; }
 
         /// <summary>
-        /// Gets the parent authority.
+        /// Gets the parent security authority for the DataView
         /// </summary>
         /// <value>
-        /// The parent authority.
+        /// The parent authority of the DataView.
         /// </value>
         public override Security.ISecured ParentAuthority
         {
