@@ -6,10 +6,10 @@
         <asp:Panel ID="pnlPaymentInfo" runat="server">
 
             <% if ( FluidLayout )
-               { %>
+            { %>
             <div class="row">
                 <div class="col-md-6">
-                    <% } %>
+            <% } %>
 
                     <div class="panel panel-default contribution-info">
                         <div class="panel-heading"><h3 class="panel-title">Contribution Information</h3></div>
@@ -39,11 +39,11 @@
                         </div>
                     </div>
 
-                    <% if ( FluidLayout )
-                       { %>
+                <% if ( FluidLayout )
+                { %>
                 </div>
                 <div class="col-md-6">
-                    <% } %>
+                <% } %>
 
                     <div class="panel panel-default contribution-personal">
                         <div class="panel-heading"><h3 class="panel-title">Personal Information</h3></div>
@@ -72,10 +72,12 @@
                         </div>
                     </div>
 
-                    <% if ( FluidLayout )
-                       { %>
+            <% if ( FluidLayout )
+            { %>
                 </div>
             </div>
+            <div class="row">
+                <div class="col-md-6">
             <% } %>
 
             <div class="panel panel-default contribution-payment">
@@ -91,7 +93,6 @@
                             <li id="liACH" runat="server"><a href='#<%=divACHPaymentInfo.ClientID%>' data-toggle="pill">Bank Account</a></li>
                         </ul>
                     </asp:PlaceHolder>
-
 
                     <div class="tab-content">
 
@@ -111,48 +112,51 @@
                                     </ul>
                                     <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" />
                                     <Rock:NumberBox ID="txtCVV" Label="Card Security Code" runat="server" MaxLength="3" />
-                                    <Rock:RockCheckBox ID="cbBillingAddress" runat="server" Label=" " Text="Enter a different billing address" CssClass="toggle-input" />
-                                    <div id="divBillingAddress" runat="server" class="toggle-content">
-                                        <Rock:RockTextBox ID="txtBillingStreet" runat="server" Label="Billing Address"></Rock:RockTextBox>
-                                        <div class="row">
-                                            <div class="col-md-7">
-                                                <Rock:RockTextBox ID="txtBillingCity" runat="server" Label="City" />
-                                            </div>
-                                            <div class="col-md-2">
-                                                <Rock:StateDropDownList ID="ddlBillingState" runat="server" Label="State" UseAbbreviation="true" />
-                                            </div>
-                                            <div class="col-md-3">                                                
-                                                <Rock:RockTextBox ID="txtBillingZip" runat="server" Label="Zip" />
-                                            </div>
-                                        </div>
-                                    </div>
+                                    
                                 </div>
                             </fieldset>
                         </div>
 
-                        <div id="divACHPaymentInfo" runat="server" visible="false" class="form-horizontal">
+                        <div id="divACHPaymentInfo" runat="server" visible="false">
                             <fieldset>
                                 <Rock:RockRadioButtonList ID="rblSavedAch" runat="server" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
-                                <div id="divNewBank" runat="server" class="radio-content row-fluid">
-                                    <div class="span7">
-                                        <Rock:RockTextBox ID="txtBankName" runat="server" Label="Bank Name" CssClass="input-medium" />
-                                        <Rock:RockTextBox ID="txtRoutingNumber" runat="server" Label="Routing #" CssClass="input-large" />
-                                        <Rock:RockTextBox ID="txtAccountNumber" runat="server" Label="Account #" CssClass="input-large" />
-                                        <Rock:RockRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" Label="Account Type">
-                                            <asp:ListItem Text="Checking" Selected="true" />
-                                            <asp:ListItem Text="Savings" />
-                                        </Rock:RockRadioButtonList>
-                                    </div>
-                                    <div class="span5">
-                                        <asp:Image ID="imgCheck" runat="server" ImageUrl="~/Assets/Images/check-image.png" />
-                                    </div>
+                                <div id="divNewBank" runat="server" class="radio-content">                                    
+                                    <Rock:RockTextBox ID="txtBankName" runat="server" Label="Bank Name" />
+                                    <Rock:RockTextBox ID="txtRoutingNumber" runat="server" Label="Routing #" />
+                                    <Rock:RockTextBox ID="txtAccountNumber" runat="server" Label="Account #" />
+                                    <Rock:RockRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" Label="Account Type">
+                                        <asp:ListItem Text="Checking" Selected="true" />
+                                        <asp:ListItem Text="Savings" />
+                                    </Rock:RockRadioButtonList>
+                                    <asp:Image ID="imgCheck" runat="server" ImageUrl="~/Assets/Images/check-image.png" />                                    
                                 </div>
                             </fieldset>
                         </div>
 
+                        <Rock:RockCheckBox ID="cbBillingAddress" runat="server" Text="Enter a different billing address" CssClass="toggle-input" />
+                        <div id="divBillingAddress" runat="server" class="toggle-content">
+                            <Rock:RockTextBox ID="txtBillingStreet" runat="server" Label="Billing Address"></Rock:RockTextBox>
+                            <div class="row">
+                                <div class="col-md-7">
+                                    <Rock:RockTextBox ID="txtBillingCity" runat="server" Label="City" />
+                                </div>
+                                <div class="col-md-2">
+                                    <Rock:StateDropDownList ID="ddlBillingState" runat="server" Label="State" UseAbbreviation="true" />
+                                </div>
+                                <div class="col-md-3">                                                
+                                    <Rock:RockTextBox ID="txtBillingZip" runat="server" Label="Zip" />
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div> 
             </div>
+
+            <% if ( FluidLayout )
+            { %>
+                </div>
+            </div>            
+            <% } %>
 
         </asp:Panel>
 
@@ -196,14 +200,14 @@
                 <asp:PlaceHolder ID="phSuccessHeader" runat="server"></asp:PlaceHolder>
                 <dl class="dl-horizontal gift-success">
                     <Rock:TermDescription ID="tdScheduleId" runat="server" Term="Payment Schedule ID" />
-                    <Rock:TermDescription ID="tdTransactionCode" runat="server" Term="Transaction Confirmation Code" />
+                    <Rock:TermDescription ID="tdTransactionCode" runat="server" Term="Confirmation Code" />
                 </dl>
             </div>
 
             <asp:Panel ID="pnlSaveAccount" runat="server" Visible="false">
                 <div class="well">
                     <legend>Make Giving Even Easier</legend>
-                    <div class="form-horizontal">
+                    <div>
                         <fieldset>
                             <Rock:RockCheckBox ID="cbSaveAccount" runat="server" Label=" " Text="Save account information for future gifts" CssClass="toggle-input" />
                             <div id="divSaveAccount" runat="server" class="toggle-content">
@@ -255,5 +259,3 @@
 
     </ContentTemplate>
 </asp:UpdatePanel>
-
-

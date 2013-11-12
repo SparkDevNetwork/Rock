@@ -9142,6 +9142,7 @@ dl dt:first-child {
   margin-top: 0;
 }
 dl dd {
+  margin-top: 16px;
   margin-left: 0;
 }
 .form-control.input-width-xs,
