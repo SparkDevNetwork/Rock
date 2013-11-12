@@ -5,7 +5,7 @@
     2. Banner - used as the primary heading for a page or large section
     3. Tree - used for tree control
     4. Person List - used to show a list of people
-    5. 
+    5. Notes - used to link notes to entities
     6. Pagelist - used to list child pages; currently used in admin screens
     7. Tags - component that allows you to tag entities
     8. Switch - uses the Bootstrap Switch component
@@ -16,7 +16,7 @@
     13. Datepicker - styles for the date picker
     14. Timepicker - styles for the time picker
     15. File Upload / Image Upload - styles for the file / image uploader
-
+    16. Rollover - Used to hide/show items in the UI has the mouse rolls-over a container.
 */
 .picker {
   position: relative;
@@ -225,6 +225,19 @@ ul.rock-tree ul {
 }
 .personlist .popover {
   width: 320px;
+}
+.rollover-container > .rollover-item {
+  opacity: 0;
+  -webkit-transition: opacity 0.5s ease-out;
+  -moz-transition: opacity 0.5s ease-out;
+  -o-transition: opacity 0.5s ease-out;
+  transition: opacity 0.5s ease-out;
+}
+.rollover-container:hover > .rollover-item {
+  opacity: 1;
+}
+.touch .rollover-item {
+  opacity: 1;
 }
 .page-list-as-blocks h3 {
   margin-top: 0;
@@ -546,7 +559,7 @@ div.tagsinput div {
   background-color: rgba(255, 255, 255, 0.1);
   border: 1px solid #2c2c2c;
   height: 26px;
-  border-radius: 15px;
+  border-radius: 4px;
   padding: 0 6px;
 }
 .smartsearch:focus {
@@ -1923,21 +1936,8 @@ a.help {
   color: #bbbbbb;
 }
 /* extension of Bootstrap 3 panel */
-.panel {
-  /*.actions {
-        margin-top: 36px;
-        .clearfix();
-    }*/
-}
 .panel legend {
   border-color: #d9e1e8;
-}
-.panel .panel-heading .actions {
-  display: none;
-  height: 14px;
-}
-.panel .panel-heading .actions a {
-  padding-left: 4px;
 }
 .panel .picker .picker-label {
   background-color: #d9e1e8;
@@ -2120,6 +2120,22 @@ main {
 }
 .navbar {
   position: static;
+}
+#zone-Login,
+#zone-Navigation {
+  float: right;
+}
+#ad-rotator .item img {
+  width: 100%;
+}
+.ad-list img {
+  width: 100%;
+}
+.ad-list h2 {
+  height: 70px;
+}
+.ad-list .ad-text {
+  height: 110px;
 }
 .nav-sub li {
   border: 1px solid #eeeeee;
