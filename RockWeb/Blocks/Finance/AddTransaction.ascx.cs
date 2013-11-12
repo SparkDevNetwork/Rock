@@ -1423,22 +1423,23 @@ achieve our mission.  We are so grateful for your commitment.
 
         // As amounts are entered, validate that they are numeric and recalc total
         $('.account-amount').on('change', function() {{
-            var totalAmt = Number(0);            
+            var totalAmt = Number(0);   
+                 
             $('.account-amount .form-control').each(function (index) {{
                 var itemValue = $(this).val();
                 if (itemValue != null && itemValue != '') {{
                     if (isNaN(itemValue)) {{
-                        $(this).parents('div.input-group').addClass('error');
+                        $(this).parents('div.input-group').addClass('has-error');
                     }}
                     else {{
-                        $(this).parents('div.input-group').removeClass('error');
+                        $(this).parents('div.input-group').removeClass('has-error');
                         var num = Number(itemValue);
                         $(this).val(num.toFixed(2));
                         totalAmt = totalAmt + num;
                     }}
                 }}
                 else {{
-                    $(this).parents('div.input-group').removeClass('error');
+                    $(this).parents('div.input-group').removeClass('has-error');
                 }}
             }});
             $('.total-amount').html('$ ' + totalAmt.toFixed(2));
@@ -1480,8 +1481,8 @@ achieve our mission.  We are so grateful for your commitment.
             }}
         }});
 
-        // detect credit card type
-        $('.credit-card').creditCardTypeDetector({{ 'credit_card_logos': '.card_logos' }});
+        // Detect credit card type
+        $('.credit-card').creditCardTypeDetector({{ 'credit_card_logos': '.card-logos' }});
 
         // Toggle credit card display if saved card option is available
         $('div.radio-content').prev('.form-group').find('input:radio').unbind('click').on('click', function () {{
@@ -1512,7 +1513,6 @@ achieve our mission.  We are so grateful for your commitment.
     }});
 
 ", divCCPaymentInfo.ClientID, hfPaymentTab.ClientID, oneTimeFrequencyId );
-
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
         }
 
