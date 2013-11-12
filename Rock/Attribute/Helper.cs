@@ -59,12 +59,12 @@ namespace Rock.Attribute
             foreach ( var customAttribute in type.GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
             {
                 var contextAttribute = (ContextAwareAttribute)customAttribute;
-                if ( String.IsNullOrWhiteSpace( contextAttribute.EntityType ) )
+                if ( contextAttribute != null && contextAttribute.EntityType == null )
                 {
                     string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
                     properties++;
 
-                    blockProperties.Add( new TextFieldAttribute( "Context Entity Type", "Context Entity Type", false, contextAttribute.DefaultParameterName, "Filter", 0, propertyKeyName ) );
+                    blockProperties.Add( new EntityTypeFieldAttribute( "Entity Type", "The type of entity that will provide context for this block", false, "Context", 0, propertyKeyName, false ) );
                 }
             }
 
