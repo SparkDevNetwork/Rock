@@ -3,11 +3,12 @@
 
 <asp:UpdatePanel ID="pnlContent" runat="server" UpdateMode="Conditional">
 <ContentTemplate>
+        
+    <asp:HiddenField ID="hfAllergyAttributeId" runat="server" />
 
-    <asp:Panel ID="pnlActivitySelect" runat="server" CssClass="attended">
+    <asp:Panel ID="pnlActivities" runat="server" CssClass="attended">
 
         <Rock:ModalAlert ID="maWarning" runat="server" />
-        <asp:HiddenField ID="hfAllergyAttributeId" runat="server" />
 
         <div class="row checkin-header">
             <div class="col-sm-3 checkin-actions">
@@ -24,62 +25,61 @@
         </div>
                 
         <div class="row checkin-body">
-
-            <asp:UpdatePanel ID="pnlSelectGroupType" runat="server" UpdateMode="Conditional" class="col-md-3">
-            <ContentTemplate>        
-                
+            <div class="col-md-3">
+                <asp:UpdatePanel ID="pnlGroupTypes" runat="server" UpdateMode="Conditional">
+                <ContentTemplate>     
                     <h3>GroupType</h3>
                     <asp:Repeater ID="rGroupType" runat="server" OnItemCommand="rGroupType_ItemCommand" OnItemDataBound="rGroupType_ItemDataBound">
                         <ItemTemplate>
-                            <asp:LinkButton ID="lbSelectGroupType" runat="server" CssClass="btn btn-primary btn-lg btn-block btn-checkin-select" CausesValidation="false" />
+                            <asp:LinkButton ID="lbGroupType" runat="server" CssClass="btn btn-primary btn-lg btn-block btn-checkin-select" CausesValidation="false" />
                         </ItemTemplate>
                     </asp:Repeater>
-                
-            </ContentTemplate>
-            </asp:UpdatePanel>
+                </ContentTemplate>
+                </asp:UpdatePanel>
+            </div>
 
-            <asp:UpdatePanel ID="pnlSelectLocation" runat="server" UpdateMode="Conditional" class="col-md-3">
-            <ContentTemplate>        
-                
+            <div class="col-md-3">
+                <asp:UpdatePanel ID="pnlLocations" runat="server" UpdateMode="Conditional">
+                <ContentTemplate>                        
                     <h3>Location</h3>
                     <asp:ListView ID="lvLocation" runat="server" OnPagePropertiesChanging="lvLocation_PagePropertiesChanging" OnItemCommand="lvLocation_ItemCommand" OnItemDataBound="lvLocation_ItemDataBound">
                         <ItemTemplate>
-                            <asp:LinkButton ID="lbSelectLocation" runat="server" CssClass="btn btn-primary btn-lg btn-block btn-checkin-select" ></asp:LinkButton>
+                            <asp:LinkButton ID="lbLocation" runat="server" CssClass="btn btn-primary btn-lg btn-block btn-checkin-select" ></asp:LinkButton>
                         </ItemTemplate>
                     </asp:ListView>
                     <asp:DataPager ID="Pager" runat="server" PageSize="5" PagedControlID="lvLocation">
                         <Fields>
                             <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary btn-checkin-select" />
                         </Fields>
-                    </asp:DataPager>
-                
-            </ContentTemplate>
-            </asp:UpdatePanel>
+                    </asp:DataPager>                
+                </ContentTemplate>
+                </asp:UpdatePanel>
+            </div>
 
-            <asp:UpdatePanel ID="pnlSelectSchedule" runat="server" UpdateMode="Conditional" class="col-md-3">
-            <ContentTemplate>        
-                
+            <div class="col-md-3">
+                <asp:UpdatePanel ID="pnlSchedules" runat="server" UpdateMode="Conditional">
+                <ContentTemplate>        
                     <h3>Schedule</h3>
                     <asp:Repeater ID="rSchedule" runat="server" OnItemCommand="rSchedule_ItemCommand" OnItemDataBound="rSchedule_ItemDataBound">
                         <ItemTemplate>
-                            <asp:LinkButton ID="lbSelectSchedule" runat="server" CssClass="btn btn-primary btn-lg btn-block btn-checkin-select" CausesValidation="false" />
+                            <asp:LinkButton ID="lbSchedule" runat="server" CssClass="btn btn-primary btn-lg btn-block btn-checkin-select" CausesValidation="false" />
                         </ItemTemplate>
                     </asp:Repeater>
-                
-            </ContentTemplate>
-            </asp:UpdatePanel>
+                </ContentTemplate>
+                </asp:UpdatePanel>
+            </div>
 
             <div class="col-md-3 selected-grid">
                 <h3>Selected</h3>
-                <asp:UpdatePanel ID="pnlSelectedGrid" runat="server" UpdateMode="Conditional">
+                <asp:UpdatePanel ID="pnlSelected" runat="server" UpdateMode="Conditional">
                 <ContentTemplate> 
-                    <Rock:Grid ID="gSelectedList" runat="server" ShowHeader="false" DataKeyNames="LocationId, ScheduleId" DisplayType="Light">
+                    <Rock:Grid ID="gSelectedGrid" runat="server" ShowHeader="false" DataKeyNames="LocationId, ScheduleId" DisplayType="Light" EmptyDataText="No CheckIn Selected">
                     <Columns>
                         <asp:BoundField DataField="Schedule" />
                         <asp:BoundField DataField="ScheduleId" Visible="false" />
                         <asp:BoundField DataField="Location" />
                         <asp:BoundField DataField="LocationId" Visible="false" />                        
-                        <Rock:DeleteField OnClick="gSelectedList_Delete" ControlStyle-CssClass="btn btn-lg btn-primary" />
+                        <Rock:DeleteField OnClick="gSelectedGrid_Delete" ControlStyle-CssClass="btn btn-lg btn-primary" />
                     </Columns>
                     </Rock:Grid>
                 </ContentTemplate>
@@ -97,9 +97,12 @@
     </asp:Panel>
 
     <asp:Panel ID="pnlAddNote" runat="server" CssClass="attended modal-foreground small-modal" DefaultButton="lbAddNoteSave" style="display:none">
+        <asp:ModalPopupExtender ID="mpeAddNote" runat="server" BehaviorID="mpeAddNote" TargetControlID="hfOpenNotePanel" PopupControlID="pnlAddNote" CancelControlID="lbAddNoteCancel" BackgroundCssClass="attended modal-background" />
+        <asp:HiddenField ID="hfOpenNotePanel" runat="server" />
+
         <div class="checkin-header row">
             <div class="col-sm-3 checkin-actions">
-                <asp:LinkButton ID="lbAddNoteCancel" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbAddNoteCancel_Click" Text="Cancel" CausesValidation="false" EnableViewState="false" />
+                <asp:LinkButton ID="lbAddNoteCancel" CssClass="btn btn-lg btn-primary cancel" runat="server" Text="Cancel" CausesValidation="false" EnableViewState="false" />
             </div>
             <div class="col-sm-6">
                 <h3>Add Note</h3>
@@ -116,23 +119,17 @@
         </div>
     </asp:Panel>
 
-    <asp:ModalPopupExtender ID="mpeAddNote" runat="server" BehaviorID="mpeAddNote" TargetControlID="hfOpenNotePanel" PopupControlID="pnlAddNote" 
-        CancelControlID="lbAddNoteCancel" BackgroundCssClass="attended modal-background" />
-    <asp:HiddenField ID="hfOpenNotePanel" runat="server" />    
-
 </ContentTemplate>
 </asp:UpdatePanel>
 
 <script type="text/javascript">
 
     function setControlEvents() {
-
         $find("mpeAddNote").add_shown(function () {
             $find("mpeAddNote")._backgroundElement.onclick = function () {
                 $find("mpeAddNote").hide();
             }
         });
-
     };
 
     $(document).ready(function () { setControlEvents(); });

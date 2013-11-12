@@ -179,7 +179,7 @@ namespace Rock.Net
                         resultContent.ReadAsStringAsync().ContinueWith( s =>
                         {
 #if DEBUG
-                            string debugResult = s.Result;
+                            string debugResult = postTask.Result.ReasonPhrase + "\n\n" + s.Result;
                             httpError = new HttpError( debugResult );
 #else                            
                             // just get the simple error message, don't expose exception details to user
@@ -223,12 +223,36 @@ namespace Rock.Net
         }
 
         /// <summary>
-        /// Posts the data 
+        /// Posts the data. Use this for Adding a new record
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="postPath">The post path.</param>
         /// <param name="data">The data.</param>
-        public void PostData<T>( string postPath, T data ) where T : IEntity
+        public void PostData<T>( string postPath, T data) where T : IEntity
+        {
+            PostPutData( postPath, data, HttpMethod.Post );
+        }
+
+        /// <summary>
+        /// Puts the data. Use this for Updating an existing record
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="postPath">The post path.</param>
+        /// <param name="data">The data.</param>
+        public void PutData<T>( string postPath, T data ) where T : IEntity
+        {
+            PostPutData( postPath, data, HttpMethod.Put );
+        }
+
+        /// <summary>
+        /// Posts or Puts the data depending on httpMethod
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="postPath">The post path.</param>
+        /// <param name="data">The data.</param>
+        /// <param name="httpMethod">The HTTP method.</param>
+        /// <exception cref="Rock.Net.HttpErrorException"></exception>
+        private void PostPutData<T>( string postPath, T data, HttpMethod httpMethod ) where T : IEntity
         {
             Uri requestUri = new Uri( rockBaseUri, postPath );
 
@@ -251,7 +275,7 @@ namespace Rock.Net
                 httpMessage = p.Result;
             } );
 
-            if ( data.Id.Equals( 0 ) )
+            if ( httpMethod == HttpMethod.Post )
             {
                 // POST is for INSERTs
                 httpClient.PostAsJsonAsync<T>( requestUri.ToString(), data ).ContinueWith( handleContinue ).Wait();

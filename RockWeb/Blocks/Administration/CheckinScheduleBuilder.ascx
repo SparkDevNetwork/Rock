@@ -10,7 +10,7 @@
             <Rock:GroupTypePicker ID="ddlGroupType" runat="server" />
             <Rock:LocationItemPicker ID="pkrParentLocation" runat="server" Label="Parent Location" />
         </Rock:GridFilter>
-        <Rock:Grid ID="gGroupLocationSchedule" runat="server" AllowSorting="true" AllowPaging="false" >
+        <Rock:Grid ID="gGroupLocationSchedule" runat="server" AllowSorting="true" AllowPaging="false" OnRowDataBound="gGroupLocationSchedule_RowDataBound" >
             <Columns>
                 <asp:BoundField DataField="GroupName" HeaderText="Group" SortExpression="GroupName" />
                 <asp:BoundField DataField="LocationName" HeaderText="Location" SortExpression="LocationName" />

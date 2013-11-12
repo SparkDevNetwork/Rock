@@ -44,6 +44,17 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
             this.BackgroundCssClass = "modal-backdrop";
+
+            var sm = ScriptManager.GetCurrent( this.Page );
+            EnsureChildControls();
+
+            if ( sm != null )
+            {
+                // register the buttons as async buttons in case the modal is used in an UpdatePanel
+                sm.RegisterAsyncPostBackControl( _cancelLink );
+                sm.RegisterAsyncPostBackControl( _serverSaveLink );
+                sm.RegisterAsyncPostBackControl( _saveLink );
+            }
         }
 
         /// <summary>
