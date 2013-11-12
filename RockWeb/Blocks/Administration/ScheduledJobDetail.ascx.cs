@@ -42,6 +42,17 @@ namespace RockWeb.Blocks.Administration
                     pnlDetails.Visible = false;
                 }
             }
+
+            if ( pnlDetails.Visible )
+            {
+                var job = new ServiceJob { Id = int.Parse( hfId.Value ), Class = ddlJobTypes.SelectedValue ?? "Rock.Jobs.JobPulse" };
+                if ( job.Id > 0 )
+                {
+                    job.LoadAttributes();
+                    phAttributes.Controls.Clear();
+                    Rock.Attribute.Helper.AddEditControls( job, phAttributes, true );
+                }
+            }
         }
 
         #endregion
@@ -97,9 +108,9 @@ namespace RockWeb.Blocks.Administration
             RockTransactionScope.WrapTransaction( () =>
                 {
                     jobService.Save( job, CurrentPersonId );
-                    //job.LoadAttributes();
-                    //Rock.Attribute.Helper.GetEditValues( phAttributes, job );
-                    //Rock.Attribute.Helper.SaveAttributeValues( job, CurrentPersonId );
+                    job.LoadAttributes();
+                    Rock.Attribute.Helper.GetEditValues( phAttributes, job );
+                    Rock.Attribute.Helper.SaveAttributeValues( job, CurrentPersonId );
                 } );
 
             NavigateToParentPage();
