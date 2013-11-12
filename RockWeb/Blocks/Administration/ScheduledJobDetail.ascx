@@ -14,7 +14,7 @@
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock" PropertyName="Name" />
                         <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock" PropertyName="Description" />
-                        <Rock:RockDropDownList ID="ddlJobTypes" runat="server" Label="Job Type" />
+                        <Rock:RockDropDownList ID="ddlJobTypes" runat="server" Label="Job Type" OnSelectedIndexChanged="ddlJobTypes_SelectedIndexChanged" AutoPostBack="true" />
                         <Rock:RockCheckBox ID="cbActive" runat="server" Label="Active" Text="Yes" />
                     </div>
                     <div class="col-md-6">
@@ -22,6 +22,13 @@
                         <Rock:RockDropDownList ID="ddlNotificationStatus" runat="server" Label="Notification Status" />
                         <Rock:DataTextBox ID="tbCronExpression" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock" PropertyName="CronExpression" 
                             Help="Add a valid cron expression. Need help? Try <a href='http://cronmaker.com' target='_blank'>CronMaker</a>." />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                        <asp:PlaceHolder ID="phAttributesReadOnly" runat="server" Visible="false" EnableViewState="false"></asp:PlaceHolder>
                     </div>
                 </div>
 
