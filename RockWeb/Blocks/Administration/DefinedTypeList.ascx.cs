@@ -200,6 +200,7 @@ namespace RockWeb.Blocks.Administration
                     a.Category,
                     a.Name,
                     a.Description,
+                    a.IsSystem,
                     FieldTypeName = a.FieldType.Name
                 } );
 

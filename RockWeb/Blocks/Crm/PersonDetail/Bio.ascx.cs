@@ -65,7 +65,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
 
                 if ( Person.BirthDate.HasValue )
-                    lAge.Text = string.Format( "{0} yrs old <small>({1})</small><br/>", Person.BirthDate.Value.Age(), Person.BirthDate.Value.ToString( "MM/dd" ) );
+                {
+                    string ageText = ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year ) ?
+                        string.Format( "{0} yrs old ", Person.BirthDate.Value.Age() ) : string.Empty;
+                    lAge.Text = string.Format( "{0}<small>({1})</small><br/>", ageText, Person.BirthDate.Value.ToString( "MM/dd" ) );
+                }
 
                 lGender.Text = Person.Gender.ToString();
 

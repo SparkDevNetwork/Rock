@@ -81,22 +81,31 @@ namespace Rock.Model
             else
             {
                 var target = new Communication();
-                target.SenderPersonId = source.SenderPersonId;
-                target.Subject = source.Subject;
-                target.FutureSendDateTime = source.FutureSendDateTime;
-                target.Status = source.Status;
-                target.ReviewerPersonId = source.ReviewerPersonId;
-                target.ReviewedDateTime = source.ReviewedDateTime;
-                target.ReviewerNote = source.ReviewerNote;
-                target.ChannelEntityTypeId = source.ChannelEntityTypeId;
-                target.ChannelDataJson = source.ChannelDataJson;
-                target.AdditionalMergeFieldsJson = source.AdditionalMergeFieldsJson;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another Communication object to this Communication object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this Communication target, Communication source )
+        {
+            target.SenderPersonId = source.SenderPersonId;
+            target.Subject = source.Subject;
+            target.FutureSendDateTime = source.FutureSendDateTime;
+            target.Status = source.Status;
+            target.ReviewerPersonId = source.ReviewerPersonId;
+            target.ReviewedDateTime = source.ReviewedDateTime;
+            target.ReviewerNote = source.ReviewerNote;
+            target.ChannelEntityTypeId = source.ChannelEntityTypeId;
+            target.ChannelDataJson = source.ChannelDataJson;
+            target.AdditionalMergeFieldsJson = source.AdditionalMergeFieldsJson;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

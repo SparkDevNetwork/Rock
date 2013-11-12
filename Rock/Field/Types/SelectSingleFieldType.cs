@@ -46,6 +46,8 @@ namespace Rock.Field.Types
             tb.Rows = 3;
             tb.AutoPostBack = true;
             tb.TextChanged += OnQualifierUpdated;
+            tb.Label = "Values";
+            tb.Help = "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1:text1,value2:text2,value3:text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.";
 
             var ddl = new RockDropDownList();
             controls.Add( ddl );
@@ -53,7 +55,8 @@ namespace Rock.Field.Types
             ddl.Items.Add( new ListItem( "Radio Buttons", "rb" ) );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
-
+            ddl.Label = "Field Type";
+            ddl.Help = "Field type to use for selection";
             return controls;
         }
 

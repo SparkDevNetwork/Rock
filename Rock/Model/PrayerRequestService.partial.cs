@@ -20,7 +20,7 @@ namespace Rock.Model
         /// Returns an enumerable collection of the <see cref="Rock.Model.PrayerRequest">PrayerRequests</see> that are in a specified <see cref="Rock.Model.Category"/> or any of it's subcategories.
         /// </summary>
         /// <param name="categoryId">A <see cref="System.Int32"/> representing the CategoryId of the <see cref="Rock.Model.Category"/> to retrieve PrayerRequests for.</param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.PrayerRequests"/> that are in the specified <see cref="Rock.Model.Category"/> or any of it's subcategories.</returns>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.PrayerRequest"/> that are in the specified <see cref="Rock.Model.Category"/> or any of it's subcategories.</returns>
         public IEnumerable<PrayerRequest> GetByCategoryId( int categoryId )
         {
             PrayerRequest prayerRequest = new PrayerRequest();

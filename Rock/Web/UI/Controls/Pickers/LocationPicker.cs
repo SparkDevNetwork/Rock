@@ -36,8 +36,19 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public enum LocationPickerMode
         {
+            /// <summary>
+            /// The named location
+            /// </summary>
             NamedLocation,
+
+            /// <summary>
+            /// The address
+            /// </summary>
             Address,
+
+            /// <summary>
+            /// The lat long
+            /// </summary>
             LatLong
         }
 
@@ -102,7 +113,14 @@ namespace Rock.Web.UI.Controls
                         }
                     case LocationPickerMode.LatLong:
                         {
-                            return new LocationService().GetByGeoLocation( _locationGeoPicker.SelectedValue );
+                            if ( _locationGeoPicker.SelectedValue != null )
+                            {
+                                return new LocationService().GetByGeoLocation( _locationGeoPicker.SelectedValue );
+                            }
+                            else
+                            {
+                                return null;
+                            }
                         }
                     default:
                         {
@@ -116,9 +134,54 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 _locationAddressPicker.SetValue( value );
                 _locationItemPicker.SetValue( value );
-                _locationGeoPicker.SetValue( value.GeoPoint ?? value.GeoFence );
+                if ( value != null )
+                {
+                    _locationGeoPicker.SetValue( value.GeoPoint ?? value.GeoFence );
+                }
+                else
+                {
+                    _locationGeoPicker.SetValue( null );
+                }
             }
         }
+
+        /// <summary>
+        /// Gets the best picker mode for location.
+        /// </summary>
+        /// <param name="location">The location.</param>
+        /// <returns></returns>
+        public LocationPickerMode GetBestPickerModeForLocation( Location location )
+        {
+            if ( location != null )
+            {
+                if ( location.IsNamedLocation )
+                {
+                    return LocationPickerMode.NamedLocation;
+                }
+                else
+                {
+                    if ( !string.IsNullOrWhiteSpace( location.GetFullStreetAddress().Replace( ",", string.Empty ) ) )
+                    {
+                        return LocationPickerMode.Address;
+                    }
+                    else
+                    {
+                        var geo = location.GeoPoint ?? location.GeoFence;
+                        if ( geo != null )
+                        {
+                            return LocationPickerMode.LatLong;
+                        }
+                        else
+                        {
+                            return LocationPickerMode.NamedLocation;
+                        }
+                    }
+                }
+            }
+
+            return LocationPickerMode.NamedLocation;
+        }
+
 
         #endregion
 
@@ -139,6 +202,18 @@ namespace Rock.Web.UI.Controls
             _radAddress.Attributes["onclick"] = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "AddressMode" ) );
             _radLatLong.Attributes["onclick"] = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "LatLongMode" ) );
 
+            if ( Page.IsPostBack )
+            {
+                HandleModePostback();
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnPreRender( EventArgs e )
+        {
             _radNamedLocation.Checked = this.PickerMode == LocationPickerMode.NamedLocation;
             _radAddress.Checked = this.PickerMode == LocationPickerMode.Address;
             _radLatLong.Checked = this.PickerMode == LocationPickerMode.LatLong;
@@ -146,11 +221,9 @@ namespace Rock.Web.UI.Controls
             _locationAddressPicker.Visible = this.PickerMode == LocationPickerMode.Address;
             _locationGeoPicker.Visible = this.PickerMode == LocationPickerMode.LatLong;
             _pnlModeSelection.Visible = this.AllowModeSelection;
+            
 
-            if ( Page.IsPostBack )
-            {
-                HandleModePostback();
-            }
+            base.OnPreRender( e );
         }
 
         /// <summary>
@@ -192,6 +265,7 @@ namespace Rock.Web.UI.Controls
             _locationAddressPicker.ID = this.ID + "_locationAddressPicker";
             _locationGeoPicker = new GeoPicker();
             _locationGeoPicker.ID = this.ID + "_locationGeoPicker";
+            _locationGeoPicker.SelectGeography += _locationGeoPicker_SelectGeography;
 
             _locationItemPicker.ModePanel = _pnlModeSelection;
             _locationGeoPicker.ModePanel = _pnlModeSelection;
@@ -203,10 +277,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Handles the CheckedChanged event of the _radMode control.
+        /// Handles the SelectGeography event of the _locationGeoPicker control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void _locationGeoPicker_SelectGeography( object sender, EventArgs e )
+        {
+            // this will autosave the GeoPicker result as Location if it isn't in the database already
+            LocationService locationService = new LocationService();
+            Location location = null;
+            location = locationService.GetByGeoLocation( _locationGeoPicker.GeoPoint ?? _locationGeoPicker.GeoFence );
+
+            Location = location;
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the _radMode control.
+        /// </summary>
         protected void HandleModePostback()
         {
             // Note:  We have to manually wire up the PostBacks since these controls are injected into all three of the pickers and that messes up the normal postback stuff
@@ -344,6 +432,28 @@ namespace Rock.Web.UI.Controls
                 _locationItemPicker.RequiredErrorMessage = value;
                 _locationAddressPicker.RequiredErrorMessage = value;
                 _locationGeoPicker.RequiredErrorMessage = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets an optional validation group to use.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get
+            {
+                EnsureChildControls();
+                return _locationItemPicker.ValidationGroup;
+            }
+            set
+            {
+                EnsureChildControls();
+                _locationItemPicker.ValidationGroup = value;
+                _locationAddressPicker.ValidationGroup = value;
+                _locationGeoPicker.ValidationGroup = value;
             }
         }
 

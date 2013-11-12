@@ -254,22 +254,26 @@ namespace Rock.Attribute
         /// <param name="entity">The item.</param>
         public static void LoadAttributes( Rock.Attribute.IHasAttributes entity )
         {
-            var attributes = new List<Rock.Web.Cache.AttributeCache>();
             Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
 
             Type entityType = entity.GetType();
             if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
                 entityType = entityType.BaseType;
 
-            // Check for inherited group type attributes
-            var inheritedGroupTypeIds = new List<int>();
-            if ( entity is Group || entity is GroupType )
+            // Check for group type attributes
+            var groupTypeIds = new List<int>();
+            if ( entity is GroupMember || entity is Group || entity is GroupType )
             {
-                //int? groupTypeId = null;
-                GroupType groupType = null;
+                var groupService = new GroupService();
                 var groupTypeService = new GroupTypeService();
 
-                if ( entity is Group )
+                GroupType groupType = null;
+                if ( entity is GroupMember )
+                {
+                    var group = ( (GroupMember)entity ).Group ?? groupService.Get( ( (GroupMember)entity ).GroupId );
+                    groupType = group.GroupType ?? groupTypeService.Get( group.GroupTypeId );
+                }
+                else if ( entity is Group )
                 {
                     groupType = ( (Group)entity ).GroupType ?? groupTypeService.Get( ( (Group)entity ).GroupTypeId );
                 }
@@ -278,12 +282,11 @@ namespace Rock.Attribute
                     groupType = ( (GroupType)entity );
                 }
 
-
-
                 while ( groupType != null )
                 {
-                    inheritedGroupTypeIds.Add( groupType.Id );
+                    groupTypeIds.Insert(0, groupType.Id );
 
+                    // Check for inherited group type id's
                     groupType = groupType.InheritedGroupType ?? groupTypeService.Get( groupType.InheritedGroupTypeId ?? 0 );
                 }
 
@@ -295,20 +298,35 @@ namespace Rock.Attribute
             Rock.Model.AttributeService attributeService = new Rock.Model.AttributeService();
             Rock.Model.AttributeValueService attributeValueService = new Rock.Model.AttributeValueService();
 
+            var inheritedAttributes = new Dictionary<int, List<Rock.Web.Cache.AttributeCache>>();
+            if ( groupTypeIds.Any() )
+            {
+                groupTypeIds.ForEach( g => inheritedAttributes.Add( g, new List<Rock.Web.Cache.AttributeCache>() ) );
+            }
+            else
+            {
+                inheritedAttributes.Add( 0, new List<Rock.Web.Cache.AttributeCache>() );
+            }
+
+            var attributes = new List<Rock.Web.Cache.AttributeCache>();
+
             // Get all the attributes that apply to this entity type and this entity's properties match any attribute qualifiers
             int? entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityType ).Id;
             foreach ( Rock.Model.Attribute attribute in attributeService.GetByEntityTypeId( entityTypeId ) )
             {
-                if ( inheritedGroupTypeIds.Any() && (
+                // group type ids exist (entity is either GroupMember, Group, or GroupType) and qualifier is for a group type id
+                if ( groupTypeIds.Any() && (
+                        ( entity is GroupMember && string.Compare( attribute.EntityTypeQualifierColumn, "GroupTypeId", true ) == 0 ) ||
                         ( entity is Group && string.Compare( attribute.EntityTypeQualifierColumn, "GroupTypeId", true ) == 0 ) ||
                         ( entity is GroupType && string.Compare( attribute.EntityTypeQualifierColumn, "Id", true ) == 0 ) ) )
                 {
                     int groupTypeIdValue = int.MinValue;
-                    if ( int.TryParse( attribute.EntityTypeQualifierValue, out groupTypeIdValue ) && inheritedGroupTypeIds.Contains( groupTypeIdValue ) )
+                    if ( int.TryParse( attribute.EntityTypeQualifierValue, out groupTypeIdValue ) && groupTypeIds.Contains( groupTypeIdValue ) )
                     {
-                        attributes.Add( Rock.Web.Cache.AttributeCache.Read( attribute ) );
+                        inheritedAttributes[groupTypeIdValue].Add( Rock.Web.Cache.AttributeCache.Read( attribute ) );
                     }
                 }
+                    
                 else if ( string.IsNullOrEmpty( attribute.EntityTypeQualifierColumn ) ||
                     ( properties.ContainsKey( attribute.EntityTypeQualifierColumn.ToLower() ) &&
                     ( string.IsNullOrEmpty( attribute.EntityTypeQualifierValue ) ||
@@ -318,18 +336,32 @@ namespace Rock.Attribute
                 }
             }
 
+            var allAttributes = new List<Rock.Web.Cache.AttributeCache>();
+
+            foreach ( var attributeGroup in inheritedAttributes )
+            {
+                foreach ( var attribute in attributeGroup.Value )
+                {
+                    allAttributes.Add( attribute );
+                }
+            }
+            foreach ( var attribute in attributes )
+            {
+                allAttributes.Add( attribute );
+            }
+
             var attributeValues = new Dictionary<string, List<Rock.Model.AttributeValue>>();
 
-            if ( attributes.Any() )
+            if ( allAttributes.Any() )
             {
-                foreach ( var attribute in attributes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+                foreach ( var attribute in allAttributes )
                 {
                     // Add a placeholder for this item's value for each attribute
                     attributeValues.Add( attribute.Key, new List<Rock.Model.AttributeValue>() );
                 }
 
                 // Read this item's value(s) for each attribute 
-                List<int> attributeIds = attributes.Select( a => a.Id ).ToList();
+                List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
                 foreach ( var attributeValue in attributeValueService.Queryable( "Attribute" )
                     .Where( v => v.EntityId == entity.Id && attributeIds.Contains( v.AttributeId ) ) )
                 {
@@ -337,7 +369,7 @@ namespace Rock.Attribute
                 }
 
                 // Look for any attributes that don't have a value and create a default value entry
-                foreach ( var attribute in attributes )
+                foreach ( var attribute in allAttributes )
                 {
                     if ( attributeValues[attribute.Key].Count == 0 )
                     {
@@ -371,7 +403,7 @@ namespace Rock.Attribute
             }
 
             entity.Attributes = new Dictionary<string, Web.Cache.AttributeCache>();
-            attributes.ForEach( a => entity.Attributes.Add( a.Key, a ) );
+            allAttributes.ForEach( a => entity.Attributes.Add( a.Key, a ) );
 
             entity.AttributeValues = attributeValues;
         }
@@ -380,23 +412,31 @@ namespace Rock.Attribute
         /// Gets the attribute categories.
         /// </summary>
         /// <param name="entity">The entity.</param>
+        /// <param name="onlyIncludeGridColumns">if set to <c>true</c> will only include those attributes with the option to display in grid set to true</param>
         /// <param name="allowMultiple">if set to <c>true</c> returns the attribute in each of it's categories, if false, only returns attribut in first category.</param>
         /// <returns></returns>
-        public static List<AttributeCategory> GetAttributeCategories( IHasAttributes entity, bool allowMultiple = false )
+        public static List<AttributeCategory> GetAttributeCategories( IHasAttributes entity, bool onlyIncludeGridColumns = false, bool allowMultiple = false )
         {
-            var attributes = entity.Attributes.Select( a => a.Value ).ToList();
-            return GetAttributeCategories( attributes, allowMultiple );
+            var attributes = entity.Attributes.Select( a => a.Value ).OrderBy( t => t.Order).ThenBy(t => t.Name).ToList();
+            return GetAttributeCategories( attributes, onlyIncludeGridColumns, allowMultiple );
         }
 
         /// <summary>
         /// Gets attributes grouped by category
         /// </summary>
         /// <param name="attributes">The attributes.</param>
+        /// <param name="onlyIncludeGridColumns">if set to <c>true</c> will only include those attributes with the option to display in grid set to true</param>
         /// <param name="allowMultiple">if set to <c>true</c> returns the attribute in each of it's categories, if false, only returns attribut in first category.</param>
         /// <returns></returns>
-        public static List<AttributeCategory> GetAttributeCategories( List<Rock.Web.Cache.AttributeCache> attributes, bool allowMultiple = false )
+        public static List<AttributeCategory> GetAttributeCategories( List<Rock.Web.Cache.AttributeCache> attributes, bool onlyIncludeGridColumns = false, bool allowMultiple = false )
         {
             var attributeCategories = new List<AttributeCategory>();
+
+            if ( onlyIncludeGridColumns )
+            {
+                attributes = attributes.Where( a => a.IsGridColumn ).ToList();
+            }
+
             foreach ( var attribute in attributes )
             {
                 if ( attribute.Categories.Any() )
@@ -440,6 +480,145 @@ namespace Rock.Attribute
             }
 
             attributeCategory.Attributes.Add( attribute );
+        }
+
+        /// <summary>
+        /// Saves any attribute edits made using an Attribute Editor control
+        /// </summary>
+        /// <param name="edtAttribute">The edt attribute.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <param name="currentPersonId">The current person identifier.</param>
+        /// <returns></returns>
+        public static Rock.Model.Attribute SaveAttributeEdits( AttributeEditor edtAttribute, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, int? currentPersonId )
+        {
+            Rock.Model.Attribute attribute = null;
+
+            using ( new Rock.Data.UnitOfWorkScope() )
+            {
+                var attributeService = new AttributeService();
+                var attributeQualifierService = new AttributeQualifierService();
+                var categoryService = new CategoryService();
+
+                Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                {
+                    attribute = SaveAttributeEdits( edtAttribute, attributeService, attributeQualifierService, categoryService,  
+                        entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, currentPersonId );
+                } );
+            }
+
+            return attribute;
+        }
+
+        /// <summary>
+        /// Saves any attribute edits made using an Attribute Editor control
+        /// </summary>
+        /// <param name="edtAttribute">The edt attribute.</param>
+        /// <param name="attributeService">The attribute service.</param>
+        /// <param name="attributeQualifierService">The attribute qualifier service.</param>
+        /// <param name="categoryService">The category service.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <param name="currentPersonId">The current person identifier.</param>
+        /// <returns></returns>
+        public static Rock.Model.Attribute SaveAttributeEdits( AttributeEditor edtAttribute, AttributeService attributeService, AttributeQualifierService attributeQualifierService, CategoryService categoryService,
+            int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, int? currentPersonId )
+        {
+            // Create and update a new attribute object with new values
+            var newAttribute = new Rock.Model.Attribute();
+            edtAttribute.GetAttributeProperties( newAttribute );
+
+            return SaveAttributeEdits( newAttribute, attributeService, attributeQualifierService, categoryService,
+                entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, currentPersonId );
+        }
+
+        /// <summary>
+        /// Saves any attribute edits made to an attribute
+        /// </summary>
+        /// <param name="newAttribute">The new attribute.</param>
+        /// <param name="attributeService">The attribute service.</param>
+        /// <param name="attributeQualifierService">The attribute qualifier service.</param>
+        /// <param name="categoryService">The category service.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <param name="currentPersonId">The current person identifier.</param>
+        /// <returns></returns>
+        public static Rock.Model.Attribute SaveAttributeEdits( Rock.Model.Attribute newAttribute, AttributeService attributeService, AttributeQualifierService attributeQualifierService, CategoryService categoryService,
+            int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, int? currentPersonId )
+        {
+            // If attribute is not valid, return null
+            if (!newAttribute.IsValid)
+            {
+                return null;
+            }
+
+            // Create a attribute model that will be saved
+            Rock.Model.Attribute attribute = null;
+
+            // Check to see if this was an existing or new attribute
+            if (newAttribute.Id > 0)
+            {
+                // If editing an existing attribute, remove all the old qualifiers in case they were changed
+                foreach ( var oldQualifier in attributeQualifierService.GetByAttributeId( newAttribute.Id ).ToList() )
+                {
+                    attributeQualifierService.Delete( oldQualifier, currentPersonId );
+                    attributeQualifierService.Save( oldQualifier, currentPersonId );
+                }
+
+                // Then re-load the existing attribute 
+                attribute = attributeService.Get( newAttribute.Id );
+            }
+
+            if ( attribute == null )
+            {
+                // If the attribute didn't exist, create it
+                attribute = new Rock.Model.Attribute();
+                attributeService.Add( attribute, currentPersonId );
+            }
+            else
+            {
+                // If it did exist, set the new attribute ID and GUID since we're copying all properties in the next step
+                newAttribute.Id = attribute.Id;
+                newAttribute.Guid = attribute.Guid;
+            }
+
+            // Copy all the properties from the new attribute to the attribute model
+            attribute.CopyPropertiesFrom( newAttribute );
+
+            // Add any qualifiers
+            foreach ( var qualifier in newAttribute.AttributeQualifiers )
+            {
+                attribute.AttributeQualifiers.Add( new AttributeQualifier { Key = qualifier.Key, Value = qualifier.Value, IsSystem = qualifier.IsSystem } );
+            }
+
+            // Add any categories
+            attribute.Categories.Clear();
+            foreach ( var category in newAttribute.Categories )
+            {
+                attribute.Categories.Add( categoryService.Get( category.Id ) );
+            }
+
+            attribute.EntityTypeId = entityTypeId;
+            attribute.EntityTypeQualifierColumn = entityTypeQualifierColumn;
+            attribute.EntityTypeQualifierValue = entityTypeQualifierValue;
+
+            attributeService.Save( attribute, currentPersonId );
+
+            if ( attribute != null )
+            {
+                Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+
+                // If this is a global attribute, flush all global attributes
+                if ( !entityTypeId.HasValue && entityTypeQualifierColumn == string.Empty && entityTypeQualifierValue == string.Empty )
+                {
+                    Rock.Web.Cache.GlobalAttributesCache.Flush();
+                }
+            }
+
+            return attribute;
         }
 
         /// <summary>
@@ -588,22 +767,24 @@ namespace Rock.Attribute
         /// <summary>
         /// Adds edit controls for each of the item's attributes
         /// </summary>
-        /// <param name="item"></param>
-        /// <param name="parentControl"></param>
-        /// <param name="setValue"></param>
-        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue )
+        /// <param name="item">The item.</param>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="setValue">if set to <c>true</c> [set value].</param>
+        /// <param name="validationGroup">The validation group.</param>
+        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup = "" )
         {
-            AddEditControls( item, parentControl, setValue, new List<string>() );
+            AddEditControls( item, parentControl, setValue, validationGroup, new List<string>() );
         }
 
         /// <summary>
         /// Adds edit controls for each of the item's attributes
         /// </summary>
-        /// <param name="item"></param>
-        /// <param name="parentControl"></param>
-        /// <param name="setValue"></param>
+        /// <param name="item">The item.</param>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="setValue">if set to <c>true</c> [set value].</param>
+        /// <param name="validationGroup">The validation group.</param>
         /// <param name="exclude">List of attribute names not to render</param>
-        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, List<string> exclude )
+        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude )
         {
             if ( item.Attributes != null )
             {
@@ -612,7 +793,7 @@ namespace Rock.Attribute
                     AddEditControls(
                         attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty,
                         attributeCategory.Attributes.Select( a => a.Key ).ToList(),
-                        item, parentControl, setValue, exclude );
+                        item, parentControl, validationGroup, setValue, exclude );
                 }
             }
         }
@@ -624,9 +805,10 @@ namespace Rock.Attribute
         /// <param name="attributeKeys">The attribute keys.</param>
         /// <param name="item">The item.</param>
         /// <param name="parentControl">The parent control.</param>
+        /// <param name="validationGroup">The validation group.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="exclude">The exclude.</param>
-        private static void AddEditControls( string category, List<string> attributeKeys, IHasAttributes item, Control parentControl, bool setValue, List<string> exclude )
+        private static void AddEditControls( string category, List<string> attributeKeys, IHasAttributes item, Control parentControl, string validationGroup, bool setValue, List<string> exclude )
         {
             HtmlGenericControl fieldSet = new HtmlGenericControl( "fieldset" );
             parentControl.Controls.Add( fieldSet );
@@ -647,7 +829,7 @@ namespace Rock.Attribute
                 if ( !exclude.Contains( attribute.Name ) )
                 {
                     // Add the control for editing the attribute value
-                    attribute.AddControl( fieldSet.Controls, item.AttributeValues[attribute.Key][0].Value, setValue, true );
+                    attribute.AddControl( fieldSet.Controls, item.AttributeValues[attribute.Key][0].Value, validationGroup, setValue, true );
                 }
             }
         }
@@ -658,7 +840,6 @@ namespace Rock.Attribute
         /// <param name="item">The item.</param>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="exclude">The exclude.</param>
-        /// <returns></returns>
         public static void AddDisplayControls( IHasAttributes item, Control parentControl, List<string> exclude = null )
         {
             exclude = exclude ?? new List<string>();
@@ -666,37 +847,56 @@ namespace Rock.Attribute
 
             if ( item.Attributes != null )
             {
-                foreach ( var attributeCategory in GetAttributeCategories( item ) )
+                AddDisplayControls(item, GetAttributeCategories(item), parentControl, exclude);
+            }
+        }
+
+        /// <summary>
+        /// Adds the display controls.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="attributeCategories">The attribute categories.</param>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="exclude">The exclude.</param>
+        public static void AddDisplayControls( IHasAttributes item, List<AttributeCategory> attributeCategories, Control parentControl, List<string> exclude = null )
+        {
+            foreach ( var attributeCategory in attributeCategories )
+            {
+                HtmlGenericControl header = new HtmlGenericControl( "h4" );
+
+                string categoryName = attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty;
+
+                header.InnerText = string.IsNullOrWhiteSpace( categoryName ) ? item.GetType().GetFriendlyTypeName() + " Attributes" : categoryName.Trim();
+                parentControl.Controls.Add( header );
+
+                HtmlGenericControl dl = new HtmlGenericControl( "dl" );
+                parentControl.Controls.Add( dl );
+
+                foreach ( var attribute in attributeCategory.Attributes )
                 {
-                    HtmlGenericControl header = new HtmlGenericControl( "h4" );
-
-                    string categoryName = attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty;
-
-                    header.InnerText = string.IsNullOrWhiteSpace( categoryName ) ? item.GetType().GetFriendlyTypeName() + " Attributes" : categoryName.Trim();
-                    parentControl.Controls.Add( header );
-
-                    HtmlGenericControl dl = new HtmlGenericControl( "dl" );
-                    parentControl.Controls.Add( dl );
-
-                    foreach ( var attribute in attributeCategory.Attributes )
+                    if ( exclude == null || !exclude.Contains( attribute.Name ) )
                     {
-                        if ( !exclude.Contains( attribute.Name ) )
+                        HtmlGenericControl dt = new HtmlGenericControl( "dt" );
+                        dt.InnerText = attribute.Name;
+                        dl.Controls.Add( dt );
+
+                        HtmlGenericControl dd = new HtmlGenericControl( "dd" );
+
+                        string value = attribute.DefaultValue;
+                        if (item.AttributeValues.ContainsKey(attribute.Key) && item.AttributeValues[attribute.Key].Any())
                         {
-                            HtmlGenericControl dt = new HtmlGenericControl( "dt" );
-                            dt.InnerText = attribute.Name;
-                            dl.Controls.Add( dt );
-
-                            HtmlGenericControl dd = new HtmlGenericControl( "dd" );
-                            string value = item.AttributeValues[attribute.Key][0].Value;
-                            string controlHtml = attribute.FieldType.Field.FormatValue( parentControl, value, attribute.QualifierValues, false );
-                            if ( string.IsNullOrWhiteSpace( controlHtml ) )
-                            {
-                                controlHtml = None.TextHtml;
-                            }
-
-                            dd.InnerHtml = controlHtml;
-                            dl.Controls.Add( dd );
+                            value = item.AttributeValues[attribute.Key][0].Value;
                         }
+
+                        string controlHtml = attribute.FieldType.Field.FormatValue( parentControl, value, attribute.QualifierValues, false );
+                        
+                        if ( string.IsNullOrWhiteSpace( controlHtml ) )
+                        {
+                            controlHtml = None.TextHtml;
+                        }
+
+                        dd.InnerHtml = controlHtml;
+                        dl.Controls.Add( dd );
                     }
                 }
             }

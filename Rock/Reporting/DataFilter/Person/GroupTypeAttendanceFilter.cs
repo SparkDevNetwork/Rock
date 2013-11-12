@@ -98,9 +98,7 @@ namespace Rock.Reporting.DataTransform.Person
             {
                 var groupType = new GroupTypeService().Get( int.Parse( options[0] ) );
 
-                ComparisonType comparisonType = ComparisonType.GreaterThanOrEqualTo;
-                try { comparisonType= options[0].ConvertToEnum<ComparisonType>(); }
-                catch {}
+                ComparisonType comparisonType = options[0].ConvertToEnum<ComparisonType>(ComparisonType.GreaterThanOrEqualTo);
 
                 s = string.Format( "Attended '{0}' {1} {2} times in the last {3} week(s)",
                     groupType != null ? groupType.Name : "?",
@@ -255,7 +253,6 @@ namespace Rock.Reporting.DataTransform.Person
                 return null;
             }
 
-            ComparisonType comparisonType = ComparisonType.GreaterThanOrEqualTo;
             int attended = 0;
             int weeks = 0;
 
@@ -263,9 +260,8 @@ namespace Rock.Reporting.DataTransform.Person
             if ( !int.TryParse( options[0], out groupTypeId ) )
                 groupTypeId = 0;
 
-            try { comparisonType = options[1].ConvertToEnum<ComparisonType>(); }
-            catch { }
-
+            ComparisonType comparisonType = options[1].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
+            
             if ( !int.TryParse( options[2], out attended ) )
                 attended = 0;
 
@@ -314,7 +310,7 @@ namespace Rock.Reporting.DataTransform.Person
             Expression timesAttendedConstant = Expression.Constant( attended );
             Expression timesAttendedComparison = Expression.GreaterThanOrEqual(attendanceCount, timesAttendedConstant);
 
-            return timesAttendedComparison;
+            return timesAttendedComparison; 
         }
 
         #endregion

@@ -44,18 +44,18 @@ namespace Rock.Workflow.Action.CheckIn
                     loadAll = true;
                 }
 
-                 foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
+                 foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ).ToList() )
                  {
-                     foreach ( var person in family.People.Where( p => p.Selected ) )
+                     foreach ( var person in family.People.Where( p => p.Selected ).ToList() )
                      {
-                         foreach ( var groupType in person.GroupTypes.Where( g => g.Selected || loadAll ) )
+                         foreach ( var groupType in person.GroupTypes.Where( g => g.Selected || loadAll ).ToList() )
                          {
                              var kioskGroupType = checkInState.Kiosk.FilteredGroupTypes( checkInState.ConfiguredGroupTypes ) .Where( g => g.GroupType.Id == groupType.GroupType.Id ).FirstOrDefault();
                              if ( kioskGroupType != null )
                              {
-                                 foreach ( var group in groupType.Groups.Where( g => g.Selected || loadAll ) )
+                                 foreach ( var group in groupType.Groups.Where( g => g.Selected || loadAll ).ToList() )
                                  {
-                                     foreach ( var location in group.Locations.Where( l => l.Selected || loadAll ) )
+                                     foreach ( var location in group.Locations.Where( l => l.Selected || loadAll ).ToList() )
                                      {
                                          var kioskGroup = kioskGroupType.KioskGroups.Where( g => g.Group.Id == group.Group.Id ).FirstOrDefault();
                                          if ( kioskGroup != null )

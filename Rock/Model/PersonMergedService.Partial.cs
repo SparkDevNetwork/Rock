@@ -30,7 +30,7 @@ namespace Rock.Model
         /// Gets a <see cref="Rock.Model.PersonMerged"/> entity based on a <see cref="Rock.Model.Person">Person's</see> previous Guid.
         /// </summary>
         /// <param name="previousPersonGuid">A <see cref="System.Guid"/> representing the previous Guid identifier of the <see cref="Rock.Model.Person"/>.</param>
-        /// <returns>A <see cref="Rock.Model.PersonMrged"/> entity that contains the <see cref="Rock.Model.Person">Person's</see> new identifiers.</returns>
+        /// <returns>A <see cref="Rock.Model.PersonMerged"/> entity that contains the <see cref="Rock.Model.Person">Person's</see> new identifiers.</returns>
         public PersonMerged GetNew( Guid previousPersonGuid )
         {
             return Repository.FirstOrDefault( t => t.PreviousPersonGuid == previousPersonGuid );
@@ -114,7 +114,7 @@ namespace Rock.Model
         /// Gets a <see cref="Rock.Model.Person">Person's</see> current Guid by their previous Guid.
         /// </summary>
         /// <param name="personGuid">A <see cref="System.Int32"/> representing a <see cref="Rock.Model.Person">Person's</see> previous Guid.</param>
-        /// <returns>A <see cref="Rock.Model.Guid"/> representing a <see cref="Rock.Model.Person">Person's</see> new Guid.</returns>
+        /// <returns>A <see cref="System.Guid"/> representing a <see cref="Rock.Model.Person">Person's</see> new Guid.</returns>
         public Guid Current( Guid personGuid )
         {
             PersonMerged personMerged = GetNew( personGuid );

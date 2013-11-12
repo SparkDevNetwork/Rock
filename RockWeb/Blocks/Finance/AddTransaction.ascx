@@ -247,7 +247,7 @@
         <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false"></Rock:NotificationBox>
 
         <div id="divActions" runat="server" class="actions">
-            <asp:LinkButton ID="btnPrev" runat="server" Text="Previous" CssClass="btn" OnClick="btnPrev_Click" Visible="false" />
+            <asp:LinkButton ID="btnPrev" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnPrev_Click" Visible="false" />
             <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnNext_Click" />
         </div>
 

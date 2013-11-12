@@ -70,10 +70,23 @@ namespace RockWeb.Blocks.Core
         $(this).closest('.panel-body').children('textarea').val('');
         $(this).closest('.note-entry').slideToggle(""slow"");
     });
-
 ";
-            ScriptManager.RegisterStartupScript( Page, Page.GetType(), "add-note", script, true );
+            // if a note was given, scroll down to that note...
+            string noteId = PageParameter( "noteId" );
+            if ( !string.IsNullOrWhiteSpace( noteId ) )
+            {
+                script += string.Format( @"
+                    $('html, body').animate( {{scrollTop: $("".note-editor[rel='{0}']"").offset().top }},
+                        'slow',
+                        'swing',
+                        function() {{ 
+                            $("".note-editor[rel='{0}'] > article"").css( ""boxShadow"", ""1px 1px 8px 1px #888888"" );
+                        }}
+                    );",
+                noteId );
+            }
 
+            ScriptManager.RegisterStartupScript( Page, Page.GetType(), "add-note", script, true );
         }
 
         /// <summary>

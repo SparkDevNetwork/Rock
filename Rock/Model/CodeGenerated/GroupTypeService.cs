@@ -97,31 +97,40 @@ namespace Rock.Model
             else
             {
                 var target = new GroupType();
-                target.IsSystem = source.IsSystem;
-                target.Name = source.Name;
-                target.Description = source.Description;
-                target.GroupTerm = source.GroupTerm;
-                target.GroupMemberTerm = source.GroupMemberTerm;
-                target.DefaultGroupRoleId = source.DefaultGroupRoleId;
-                target.AllowMultipleLocations = source.AllowMultipleLocations;
-                target.ShowInGroupList = source.ShowInGroupList;
-                target.ShowInNavigation = source.ShowInNavigation;
-                target.IconSmallFileId = source.IconSmallFileId;
-                target.IconLargeFileId = source.IconLargeFileId;
-                target.IconCssClass = source.IconCssClass;
-                target.TakesAttendance = source.TakesAttendance;
-                target.AttendanceRule = source.AttendanceRule;
-                target.AttendancePrintTo = source.AttendancePrintTo;
-                target.Order = source.Order;
-                target.InheritedGroupTypeId = source.InheritedGroupTypeId;
-                target.LocationSelectionMode = source.LocationSelectionMode;
-                target.GroupTypePurposeValueId = source.GroupTypePurposeValueId;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another GroupType object to this GroupType object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this GroupType target, GroupType source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.GroupTerm = source.GroupTerm;
+            target.GroupMemberTerm = source.GroupMemberTerm;
+            target.DefaultGroupRoleId = source.DefaultGroupRoleId;
+            target.AllowMultipleLocations = source.AllowMultipleLocations;
+            target.ShowInGroupList = source.ShowInGroupList;
+            target.ShowInNavigation = source.ShowInNavigation;
+            target.IconSmallFileId = source.IconSmallFileId;
+            target.IconLargeFileId = source.IconLargeFileId;
+            target.IconCssClass = source.IconCssClass;
+            target.TakesAttendance = source.TakesAttendance;
+            target.AttendanceRule = source.AttendanceRule;
+            target.AttendancePrintTo = source.AttendancePrintTo;
+            target.Order = source.Order;
+            target.InheritedGroupTypeId = source.InheritedGroupTypeId;
+            target.LocationSelectionMode = source.LocationSelectionMode;
+            target.GroupTypePurposeValueId = source.GroupTypePurposeValueId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

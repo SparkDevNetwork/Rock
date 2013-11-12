@@ -81,22 +81,31 @@ namespace Rock.Model
             else
             {
                 var target = new EmailTemplate();
-                target.IsSystem = source.IsSystem;
-                target.PersonId = source.PersonId;
-                target.Category = source.Category;
-                target.Title = source.Title;
-                target.From = source.From;
-                target.To = source.To;
-                target.Cc = source.Cc;
-                target.Bcc = source.Bcc;
-                target.Subject = source.Subject;
-                target.Body = source.Body;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another EmailTemplate object to this EmailTemplate object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this EmailTemplate target, EmailTemplate source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.PersonId = source.PersonId;
+            target.Category = source.Category;
+            target.Title = source.Title;
+            target.From = source.From;
+            target.To = source.To;
+            target.Cc = source.Cc;
+            target.Bcc = source.Bcc;
+            target.Subject = source.Subject;
+            target.Body = source.Body;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

@@ -120,7 +120,7 @@ namespace Rock.Model
         public virtual Block Block { get; set; }
         
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Perosn"/> who approved the HTML content.
+        /// Gets or sets the <see cref="Rock.Model.Person"/> who approved the HTML content.
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.Person"/> who approved the HTMLContent.

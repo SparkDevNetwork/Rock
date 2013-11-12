@@ -8,7 +8,7 @@
                 <Rock:RockDropDownList ID="ddlEntityType" runat="server" Label="Entity Type" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
                 <Rock:CategoryPicker ID="cpCategoriesFilter" runat="server" Label="Categories" AllowMultiSelect="true" />
             </Rock:GridFilter>
-            <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" OnRowSelected="rGrid_Edit">
+            <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" DescriptionField="Description" OnRowSelected="rGrid_Edit">
                 <Columns>
                     <asp:BoundField 
                         DataField="Id" 
@@ -22,12 +22,6 @@
                         </ItemTemplate>
                     </asp:TemplateField>
                     <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" ItemStyle-Wrap="false" />
-                    <asp:TemplateField>
-                        <HeaderTemplate>Description</HeaderTemplate>
-                        <ItemTemplate>
-                            <asp:Literal ID="lDescription" runat="server"></asp:Literal>
-                        </ItemTemplate>
-                    </asp:TemplateField>                    
                     <asp:TemplateField ItemStyle-Wrap="false">
                         <HeaderTemplate>Categories</HeaderTemplate>
                         <ItemTemplate>
@@ -69,14 +63,15 @@
                 <Rock:RockTextBox ID="tbAttrQualifierField" runat="server" Label="Qualifier Field" />
                 <Rock:RockTextBox ID="tbAttrQualifierValue" runat="server" Label="Qualifier Value" />
 
-                <Rock:AttributeEditor ID="edtAttribute" runat="server" OnSaveClick="btnSave_Click" OnCancelClick="btnCancel_Click" />
+                <Rock:AttributeEditor ID="edtAttribute" runat="server" OnSaveClick="btnSave_Click" OnCancelClick="btnCancel_Click" ValidationGroup="Attribute" />
+
             </div>
         </asp:Panel>
 
-        <Rock:ModalDialog ID="modalDetails" runat="server" Title="Attribute">
+        <Rock:ModalDialog ID="modalDetails" runat="server" Title="Attribute" ValidationGroup="AttributeValue" >
             <Content>
                 <asp:HiddenField ID="hfIdValues" runat="server" />
-                <asp:ValidationSummary ID="ValidationSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+                <asp:ValidationSummary ID="ValidationSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" ValidationGroup="AttributeValue"  />
                 <fieldset id="fsEditControl" runat="server"/>
             </Content>
         </Rock:ModalDialog>

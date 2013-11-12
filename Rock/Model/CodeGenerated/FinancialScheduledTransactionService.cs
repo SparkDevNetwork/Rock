@@ -87,25 +87,34 @@ namespace Rock.Model
             else
             {
                 var target = new FinancialScheduledTransaction();
-                target.AuthorizedPersonId = source.AuthorizedPersonId;
-                target.TransactionFrequencyValueId = source.TransactionFrequencyValueId;
-                target.StartDate = source.StartDate;
-                target.EndDate = source.EndDate;
-                target.NumberOfPayments = source.NumberOfPayments;
-                target.NextPaymentDate = source.NextPaymentDate;
-                target.LastStatusUpdateDateTime = source.LastStatusUpdateDateTime;
-                target.IsActive = source.IsActive;
-                target.GatewayEntityTypeId = source.GatewayEntityTypeId;
-                target.TransactionCode = source.TransactionCode;
-                target.GatewayScheduleId = source.GatewayScheduleId;
-                target.CardReminderDate = source.CardReminderDate;
-                target.LastRemindedDate = source.LastRemindedDate;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another FinancialScheduledTransaction object to this FinancialScheduledTransaction object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this FinancialScheduledTransaction target, FinancialScheduledTransaction source )
+        {
+            target.AuthorizedPersonId = source.AuthorizedPersonId;
+            target.TransactionFrequencyValueId = source.TransactionFrequencyValueId;
+            target.StartDate = source.StartDate;
+            target.EndDate = source.EndDate;
+            target.NumberOfPayments = source.NumberOfPayments;
+            target.NextPaymentDate = source.NextPaymentDate;
+            target.LastStatusUpdateDateTime = source.LastStatusUpdateDateTime;
+            target.IsActive = source.IsActive;
+            target.GatewayEntityTypeId = source.GatewayEntityTypeId;
+            target.TransactionCode = source.TransactionCode;
+            target.GatewayScheduleId = source.GatewayScheduleId;
+            target.CardReminderDate = source.CardReminderDate;
+            target.LastRemindedDate = source.LastRemindedDate;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

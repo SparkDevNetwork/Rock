@@ -14,6 +14,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -111,6 +112,7 @@ namespace RockWeb.Blocks.Prayer
             if ( !IsUserAuthorized( "Edit" ) )
             {
                 readOnly = true;
+                nbEditModeMessage.Title = "Information";
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( PrayerRequest.FriendlyTypeName );
             }
 
@@ -142,13 +144,17 @@ namespace RockWeb.Blocks.Prayer
         private void ShowReadonlyDetails( PrayerRequest prayerRequest )
         {
             SetEditMode( false );
+            lActionTitle.Text = string.Format( "{0} Prayer Request", prayerRequest.FullName ).FormatAsHtmlTitle();
 
-            litFullName.Text = prayerRequest.FullName;
-            litCategory.Text = prayerRequest.Category != null ? prayerRequest.Category.Name : "";
-            litRequest.Text = HttpUtility.HtmlEncode( prayerRequest.Text );
+            DescriptionList descriptionList = new DescriptionList();
+            descriptionList.Add( "Name", prayerRequest.FullName );
+            descriptionList.Add( "Category", prayerRequest.Category != null ? prayerRequest.Category.Name : "" );
+            descriptionList.Add( "Request", HttpUtility.HtmlEncode( prayerRequest.Text ) );
+            descriptionList.Add( "Answer", HttpUtility.HtmlEncode( prayerRequest.Answer ) );
+            lblMainDetails.Text = descriptionList.Html;
 
-            ShowStatus( prayerRequest, this.CurrentPerson, litFlaggedMessageRO );
-            ShowPrayerCount( prayerRequest, litPrayerCountRO );
+            ShowStatus( prayerRequest, this.CurrentPerson, hlFlaggedMessageRO );
+            ShowPrayerCount( prayerRequest );
 
             if ( ! prayerRequest.IsApproved.HasValue )
             {
@@ -162,7 +168,6 @@ namespace RockWeb.Blocks.Prayer
             }
 
             hlUrgent.Visible = ( prayerRequest.IsUrgent ?? false );
-            
         }
 
         /// <summary>
@@ -173,8 +178,9 @@ namespace RockWeb.Blocks.Prayer
         {
             SetEditMode(true);
 
-            lActionTitle.Text = ( prayerRequest.Id > 0 ) ? 
-                ActionTitle.Edit( PrayerRequest.FriendlyTypeName ) : ActionTitle.Add( PrayerRequest.FriendlyTypeName );
+            lActionTitle.Text = ( prayerRequest.Id > 0 ) ?
+                ActionTitle.Edit( PrayerRequest.FriendlyTypeName ).FormatAsHtmlTitle() :
+                ActionTitle.Add( PrayerRequest.FriendlyTypeName ).FormatAsHtmlTitle();
 
             pnlDetails.Visible = true;
 
@@ -185,7 +191,7 @@ namespace RockWeb.Blocks.Prayer
             tbText.Text = prayerRequest.Text;
             tbAnswer.Text = prayerRequest.Answer;
 
-            ShowStatus( prayerRequest, this.CurrentPerson, lFlaggedMessage );
+            ShowStatus( prayerRequest, this.CurrentPerson, hlFlaggedMessage );
 
             cbIsPublic.Checked = prayerRequest.IsPublic ?? false;
             cbIsUrgent.Checked = prayerRequest.IsUrgent ?? false;
@@ -200,28 +206,25 @@ namespace RockWeb.Blocks.Prayer
         private void SetEditMode(bool enableEdit)
         {
             fieldsetViewDetails.Visible = !enableEdit;
-            fieldsetEditDetails.Visible = enableEdit;
+            pnlEditDetails.Visible = enableEdit;
         }
 
         /// <summary>
         /// Shows the prayer count.
         /// </summary>
         /// <param name="prayerRequest">The prayer request.</param>
-        /// <param name="lPrayerCount">The l prayer count.</param>
-        private void ShowPrayerCount( PrayerRequest prayerRequest, Literal lPrayerCount )
+        private void ShowPrayerCount( PrayerRequest prayerRequest )
         {
-            string cssClass = "badge";
-
             if ( prayerRequest.PrayerCount > 10 )
             {
-                cssClass += " badge-success";
-            }
-            else if ( prayerRequest.PrayerCount < 1 )
-            {
-                lPrayerCount.Visible = false;
+                bPrayerCount.BadgeType="success";
             }
 
-            lPrayerCount.Text = string.Format( "<span class='{0}' title='current prayer count'>{1}</span>", cssClass, prayerRequest.PrayerCount ?? 0 );
+            if ( prayerRequest.PrayerCount > 0 )
+            {
+                bPrayerCount.Text = string.Format( "{0} prayers", prayerRequest.PrayerCount ?? 0 );
+            }
+            bPrayerCount.ToolTip = string.Format( "{0} prayers so far.", prayerRequest.PrayerCount ?? 0 );
         }
 
         /// <summary>
@@ -230,10 +233,14 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="prayerRequest">The prayer request.</param>
         /// <param name="person">The person.</param>
         /// <param name="lFlagged">The l flagged.</param>
-        private void ShowStatus( PrayerRequest prayerRequest, Person person, Literal lFlagged )
+        private void ShowStatus( PrayerRequest prayerRequest, Person person, HighlightLabel lFlagged )
         {
             int flagCount = prayerRequest.FlagCount ?? 0;
-            lFlagged.Text = ( flagCount == 0 ) ? "" : string.Format( "<span class='label label-warning'><i class='icon-flag'></i> flagged {0} times</span>", flagCount );
+            if ( flagCount > 0 )
+            {
+                lFlagged.Visible = true;
+                lFlagged.Text = string.Format( "flagged {0} times", flagCount );
+            }
 
             cbApproved.Enabled = IsUserAuthorized( "Approve" );
             cbApproved.Checked = prayerRequest.IsApproved ?? false;

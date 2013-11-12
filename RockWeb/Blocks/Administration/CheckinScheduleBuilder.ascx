@@ -10,7 +10,7 @@
             <Rock:GroupTypePicker ID="ddlGroupType" runat="server" />
             <Rock:LocationItemPicker ID="pkrParentLocation" runat="server" Label="Parent Location" />
         </Rock:GridFilter>
-        <Rock:Grid ID="gGroupLocationSchedule" runat="server" AllowSorting="true" AllowPaging="false" >
+        <Rock:Grid ID="gGroupLocationSchedule" runat="server" AllowSorting="true" AllowPaging="false" OnRowDataBound="gGroupLocationSchedule_RowDataBound" >
             <Columns>
                 <asp:BoundField DataField="GroupName" HeaderText="Group" SortExpression="GroupName" />
                 <asp:BoundField DataField="LocationName" HeaderText="Location" SortExpression="LocationName" />
@@ -19,7 +19,7 @@
 
         <div class="actions">
             <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
+            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
         </div>
 
     </ContentTemplate>

@@ -22,7 +22,7 @@ namespace RockWeb.Blocks.Administration
     /// Block for viewing entities with a selected tag
     /// </summary>
     [Description( "Block for viewing entities with a selected tag" )]
-    public partial class TagReport : Rock.Web.UI.RockBlock, IDimmableBlock
+    public partial class TagReport : Rock.Web.UI.RockBlock, ISecondaryBlock
     {
         public string EntityTypeName
         {
@@ -148,12 +148,12 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
-        /// Sets the dimmed.
+        /// Sets the visible.
         /// </summary>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        public void SetDimmed( bool dimmed )
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible)
         {
-            gReport.Enabled = !dimmed;
+            pnlContent.Visible = visible;
         }
         
         #endregion

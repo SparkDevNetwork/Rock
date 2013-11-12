@@ -1,4 +1,4 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true" %>
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
 <%@ Import Namespace="System.Web.Optimization" %>
 <!DOCTYPE html>
 
@@ -9,7 +9,7 @@
     <title></title>
     
     <!--[if lt IE 9]>
-        <script src="<%# ResolveUrl("~/Themes/RockChMS/Scripts/html5.js") %>" ></script>
+        <script src="<%# ResolveRockUrl("~/Themes/RockChMS/Scripts/html5.js") %>" ></script>
     <![endif]-->
 
     <!-- Set the viewport width to device width for mobile -->
@@ -20,7 +20,7 @@
 	<!-- Included CSS Files -->
     <link rel="stylesheet" href="../Styles/checkin-theme.css">
 
-    <script src="<%# ResolveUrl("~/Scripts/fastclick.js") %>" ></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/fastclick.js") %>" ></script>
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 

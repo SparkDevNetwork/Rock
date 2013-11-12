@@ -25,9 +25,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            base.OnInit( e );
             this.ItemRestUrlExtraParams = "/0";
             this.IconCssClass = "icon-home";
+            base.OnInit( e );
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 InitialItemParentIds = parentLocationIds.TrimEnd( new char[] { ',' } );
-                ItemName = location.Name;
+                ItemName = location.ToString();
             }
             else
             {

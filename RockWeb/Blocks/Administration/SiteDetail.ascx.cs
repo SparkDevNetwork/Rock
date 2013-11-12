@@ -67,35 +67,13 @@ namespace RockWeb.Blocks.Administration
         #region Edit Events
 
         /// <summary>
-        /// Handles the Click event of the btnCancel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
-        {
-            if ( hfSiteId.Value.Equals( "0" ) )
-            {
-                // Cancelling on Add return to site list
-                NavigateToParentPage();
-            }
-            else
-            {
-                // Cancelling on Edit.  Return to Details
-                SiteService siteService = new SiteService();
-                Site site = siteService.Get( int.Parse( hfSiteId.Value ) );
-                ShowReadonlyDetails( site );
-            }
-        }
-
-        /// <summary>
         /// Handles the Click event of the btnEdit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            SiteService siteService = new SiteService();
-            Site site = siteService.Get( int.Parse( hfSiteId.Value ) );
+            var site = new SiteService().Get( int.Parse( hfSiteId.Value ) );
             ShowEditDetails( site );
         }
 
@@ -128,18 +106,6 @@ namespace RockWeb.Blocks.Administration
 
             NavigateToParentPage();
 
-        }
-
-        /// <summary>
-        /// Sets the edit mode.
-        /// </summary>
-        /// <param name="editable">if set to <c>true</c> [editable].</param>
-        private void SetEditMode( bool editable )
-        {
-            pnlEditDetails.Visible = editable;
-            fieldsetViewDetails.Visible = !editable;
-
-            this.DimOtherBlocks( editable );
         }
 
         /// <summary>
@@ -233,6 +199,26 @@ namespace RockWeb.Blocks.Administration
             NavigateToPage( this.CurrentPage.Guid, qryParams );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            if ( hfSiteId.Value.Equals( "0" ) )
+            {
+                // Cancelling on Add return to site list
+                NavigateToParentPage();
+            }
+            else
+            {
+                // Cancelling on edit, return to details
+                var site = new SiteService().Get( int.Parse( hfSiteId.Value ) );
+                ShowReadonlyDetails( site );
+            }
+        }
+
         #endregion
 
         #region Internal Methods
@@ -290,12 +276,12 @@ namespace RockWeb.Blocks.Administration
             if ( !IsUserAuthorized( "Edit" ) )
             {
                 readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Rock.Model.Site.FriendlyTypeName );
             }
 
             if ( site.IsSystem )
             {
-                nbEditModeMessage.Text = EditModeMessage.System( Group.FriendlyTypeName );
+                nbEditModeMessage.Text = EditModeMessage.System( Rock.Model.Site.FriendlyTypeName );
             }
 
             if ( readOnly )
@@ -402,6 +388,18 @@ namespace RockWeb.Blocks.Administration
             descriptionList.Add( "Theme", site.Theme );
             descriptionList.Add( "Default Page", site.DefaultPageRoute );
             lblMainDetails.Text = descriptionList.Html;
+        }
+
+        /// <summary>
+        /// Sets the edit mode.
+        /// </summary>
+        /// <param name="editable">if set to <c>true</c> [editable].</param>
+        private void SetEditMode( bool editable )
+        {
+            pnlEditDetails.Visible = editable;
+            fieldsetViewDetails.Visible = !editable;
+
+            this.HideSecondaryBlocks( editable );
         }
 
         #endregion

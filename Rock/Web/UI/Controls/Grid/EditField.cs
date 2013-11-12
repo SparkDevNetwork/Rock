@@ -15,7 +15,7 @@ namespace Rock.Web.UI.Controls
     /// <see cref="Grid"/> Column for editing a row in a grid
     /// </summary>
     [ToolboxData( "<{0}:EditField runat=server></{0}:EditField>" )]
-    public class EditField : TemplateField
+    public class EditField : TemplateField, INotRowSelectedField
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="EditField" /> class.
@@ -98,6 +98,7 @@ namespace Rock.Web.UI.Controls
                 EditField editField = cell.ContainingField as EditField;
                 ParentGrid = editField.ParentGrid;
                 LinkButton lbEdit = new LinkButton();
+                lbEdit.CausesValidation = false;
                 lbEdit.CssClass = "btn btn-edit btn-sm";
                 lbEdit.ToolTip = "Edit";
                 

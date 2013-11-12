@@ -36,7 +36,7 @@ namespace Rock.Field.Types
             Guid guid = Guid.Empty;
             if ( Guid.TryParse( value, out guid ) )
             {
-                var groupRole = new Rock.Model.GroupRoleService().Get( guid );
+                var groupRole = new Rock.Model.GroupTypeRoleService().Get( guid );
                 if ( groupRole != null )
                 {
                     return groupRole.Name;
@@ -71,6 +71,8 @@ namespace Rock.Field.Types
             controls.Add( ddl );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
+            ddl.Label = "Group Type";
+            ddl.Help = "Type of group to select roles from, if left blank any group type's role can be selected.";
 
             ddl.Items.Add( new ListItem() );
 
@@ -157,7 +159,7 @@ namespace Rock.Field.Types
             {
                 if ( groupRolePicker.GroupRoleId.HasValue )
                 {
-                    var groupRole = new Rock.Model.GroupRoleService().Get( groupRolePicker.GroupRoleId.Value );
+                    var groupRole = new Rock.Model.GroupTypeRoleService().Get( groupRolePicker.GroupRoleId.Value );
                     if ( groupRole != null )
                     {
                         return groupRole.Guid.ToString();
@@ -182,7 +184,7 @@ namespace Rock.Field.Types
                 GroupRolePicker groupRolePicker = control as GroupRolePicker;
                 if ( groupRolePicker != null )
                 {
-                    var groupRole = new Rock.Model.GroupRoleService().Get( guid );
+                    var groupRole = new Rock.Model.GroupTypeRoleService().Get( guid );
                     if ( groupRole != null )
                     {
                         groupRolePicker.GroupRoleId = groupRole.Id;

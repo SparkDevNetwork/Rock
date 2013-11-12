@@ -15,11 +15,12 @@
 
 .zone-instance.outline 
 {
-    border: 1px solid #909090; /* todo */
+    border: 1px dashed #909090; /* todo */
     min-height: 30px;
     min-width: 120px;
     position: relative;
     margin: 1px;
+    border-radius: 3px;
 }
 
 .zone-configuration {
@@ -36,6 +37,10 @@
     width: 25px;
     z-index: 11000;
     right: auto;
+
+    p {
+        float: left;   
+    }
 }
 
 .zone-configuration-bar {
@@ -47,19 +52,15 @@
     margin-right: -999em;
     overflow: hidden;
     position: absolute;
-}
 
-.zone-configuration-bar span {
-    display: block;
-    float: left;
-    font-size: 10px;
-    padding-right: 20px;
-    margin-top: 3px;
-}
-
-.zone-configuration p {
-    float: left;   
-}
+    span {
+        display: block;
+        float: left;
+        font-size: 10px;
+        padding-right: 20px;
+        margin-top: 4px;
+    }
+} 
 
 // 2. Module Config
 // -------------------------

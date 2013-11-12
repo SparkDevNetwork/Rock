@@ -74,7 +74,7 @@ namespace Rock.Web.UI.Controls
             string script = @"
 // checkin-grouptype animation
 $('.checkin-grouptype > header').click(function () {
-    $(this).siblings('.widget-content').slideToggle();
+    $(this).siblings('.panel-body').slideToggle();
 
     $('i.checkin-grouptype-state', this).toggleClass('icon-chevron-down');
     $('i.checkin-grouptype-state', this).toggleClass('icon-chevron-up');
@@ -500,16 +500,17 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget widget-dark checkin-grouptype" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget checkin-grouptype" );
             writer.AddAttribute( "data-key", _hfGroupTypeGuid.Value );
             writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ID + "_section" );
             writer.RenderBeginTag( "section" );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "clearfix clickable" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix clickable" );
             writer.RenderBeginTag( "header" );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toogle pull-left" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.AddAttribute(HtmlTextWriterAttribute.Class, "panel-title");
             writer.RenderBeginTag( HtmlTextWriterTag.H3 );
             _lblGroupTypeName.Text = _tbGroupTypeName.Text;
             _lblGroupTypeName.RenderControl( writer );
@@ -547,7 +548,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
             // header div
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget-content" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
 
             if ( !ForceContentVisible )
             {
@@ -557,10 +558,10 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // make two span6 columns: Left Column for Name and Attributes. Right Column for Labels Grid
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row-fluid" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // grouptype edit fields
@@ -571,7 +572,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
             _phGroupTypeAttributes.RenderControl( writer );
 
             writer.RenderEndTag();
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // Check-in Labels grid
@@ -630,7 +631,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
 
             // exclude checkin labels 
             List<string> checkinLabelAttributeNames = GetCheckinLabelAttributes( fakeGroupType ).Select( a => a.Value.Name ).ToList();
-            Rock.Attribute.Helper.AddEditControls( fakeGroupType, _phGroupTypeAttributes, true, checkinLabelAttributeNames );
+            Rock.Attribute.Helper.AddEditControls( fakeGroupType, _phGroupTypeAttributes, true, string.Empty, checkinLabelAttributeNames );
         }
 
         /// <summary>

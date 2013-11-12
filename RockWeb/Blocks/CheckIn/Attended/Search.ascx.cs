@@ -27,6 +27,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
     /// </summary>
     [Description( "Attended Check-In Search block" )]
     [LinkedPage( "Admin Page" )]
+    [BooleanField( "Show Key Pad", "Show the number key pad on the search screen", false)]
     [IntegerField( "Minimum Text Length", "Minimum length for text searches (defaults to 4).", false, 4 )]
     [IntegerField( "Maximum Text Length", "Maximum length for text searches (defaults to 20).", false, 20 )]
     public partial class Search : CheckInBlock
@@ -41,7 +42,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             if ( !Page.IsPostBack )
             {
-                if ( CurrentKioskId == null  || CurrentGroupTypeIds == null )
+                if ( CurrentKioskId == null  || CurrentGroupTypeIds == null || CurrentCheckInState.Kiosk == null )
                 {
                     var queryParams = new Dictionary<string, string>();
                     queryParams.Add( "back", "true" );
@@ -77,7 +78,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     ", CurrentKioskId, CurrentGroupTypeIds.AsDelimited( "," ) );
                     phScript.Controls.Add( new LiteralControl( script ) );
 
-                    CurrentWorkflow = null;
+                    if ( bool.Parse( GetAttributeValue( "ShowKeyPad" ) ) == true )
+                    {
+                        pnlKeyPad.Visible = true;
+                    }
+                    
                     tbSearchBox.Focus();
                     SaveState();
                 }
@@ -164,7 +169,17 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbBack_Click( object sender, EventArgs e )
         {
-            NavigateToPreviousPage();
+            bool selectedFamilyExists = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).Any();
+
+            if ( !selectedFamilyExists )
+            {
+                maWarning.Show( "There is not a selected family to go back to.", ModalAlertType.Warning );
+                return;
+            }
+            else
+            {
+                NavigateToPreviousPage();
+            }
         }
 
         #endregion

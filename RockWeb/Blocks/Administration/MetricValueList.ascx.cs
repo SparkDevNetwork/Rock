@@ -21,7 +21,7 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// User contols for managing metric values
     /// </summary>
-    public partial class MetricValueList : Rock.Web.UI.RockBlock
+    public partial class MetricValueList : Rock.Web.UI.RockBlock, Rock.Web.UI.ISecondaryBlock
     {       
         #region Control Methods
 
@@ -65,6 +65,13 @@ namespace RockWeb.Blocks.Administration
                 else
                 {
                     pnlList.Visible = false;
+                }
+            }
+            else
+            {
+                if ( !string.IsNullOrWhiteSpace( hfMetricValueId.Value ) )
+                {
+                    modalValue.Show();
                 }
             }
         }
@@ -145,11 +152,15 @@ namespace RockWeb.Blocks.Administration
                 metricValue.Label = tbLabel.Text;
                 metricValue.isDateBased = cbIsDateBased.Checked;
                 metricValue.MetricId = Int32.Parse(ddlMetricFilter.SelectedValue);
-                metricValueService.Save( metricValue, CurrentPersonId );
-            }
 
-            BindGrid();
-            modalValue.Hide();            
+                if ( metricValue.IsValid )
+                {
+                    metricValueService.Save( metricValue, CurrentPersonId );
+                    BindGrid();
+                    hfMetricValueId.Value = string.Empty;
+                    modalValue.Hide();
+                }
+            }
         }
 
         /// <summary>
@@ -238,11 +249,25 @@ namespace RockWeb.Blocks.Administration
             tbValueDescription.Text = metricValue.Description;
             tbXValue.Text = metricValue.xValue;
             tbLabel.Text = metricValue.Label;
-            cbIsDateBased.Checked = metricValue.isDateBased; 
+            cbIsDateBased.Checked = metricValue.isDateBased;
 
-            modalValue.Show();            
+            modalValue.Show();
         }
 
         #endregion
+
+        #region ISecondaryBlock
+
+        /// <summary>
+        /// Sets the visible.
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            pnlContent.Visible = visible;
+        }
+
+        #endregion
+
     }
 }

@@ -9,7 +9,6 @@
     */
 
 
-
 /* NA: Used to style a checkboxlist grouping -- based somewhat off the textarea of the rock-boot.less */
 .checkboxlist-group {
     width: 196px;
@@ -302,29 +301,6 @@ small
     margin-top: 2px;
 }
 
-        
-
-
-
-.personlist
-{
-    list-style: none;
-    margin-left: 0;
-}
-
-.personlist li
-{
-    margin-left: 16px;
-}
-
-.personlist i[class=icon-circle]
-{
-    font-size: 9px;
-    color: #d0cfcf;
-    margin-left: -16px;
-    margin-right: 3px;
-    vertical-align: middle;
-}
 
 @media (max-width: 767px) {
 	/* center the person image */
@@ -362,7 +338,6 @@ small
 
 }
 
-/* Schedule Builder classes - MP */
 
 /* Family Edit - DT */
 #person-search-results.scroll-container {
@@ -385,10 +360,55 @@ small
         border-left-width: 0px;
     }
 
-
 /* text between input elements in dataview filters - DT */
 span.data-view-filter-label {
     display: inline-block; 
     height:34px; 
     margin: 8px 12px 0 0;
+}
+
+/* TypeAhead Bootstrap css - JO */
+.twitter-typeahead .tt-query,
+.twitter-typeahead .tt-hint {
+  margin-bottom: 0;
+}
+
+.tt-dropdown-menu {
+  min-width: 160px;
+  margin-top: 2px;
+  padding: 5px 0;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border: 1px solid rgba(0,0,0,.2);
+  *border-right-width: 2px;
+  *border-bottom-width: 2px;
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+  -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+     -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+          box-shadow: 0 5px 10px rgba(0,0,0,.2);
+  -webkit-background-clip: padding-box;
+     -moz-background-clip: padding;
+          background-clip: padding-box;
+}
+
+.tt-suggestion {
+  display: block;
+  padding: 3px 20px;
+}
+
+.tt-suggestion.tt-is-under-cursor {
+  color: #fff;
+  background-color: #a4b4c4;
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0088cc', endColorstr='#ff0077b3', GradientType=0)
+}
+
+.tt-suggestion.tt-is-under-cursor a {
+  color: #fff;
+}
+
+.tt-suggestion p {
+  margin: 0;
 }

@@ -87,6 +87,14 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Gets or sets the validation group.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string BlockValidationGroup { get; set; }
+
+        /// <summary>
         /// Gets the bread crumbs that were created during the page's oninit.  A block
         /// can add additional breadcrumbs to this list to be rendered.  Crumb's added 
         /// this way will not be saved to the current page reference's collection of 
@@ -354,6 +362,18 @@ namespace Rock.Web.UI
             }
 
             base.OnInit( e );
+
+            this.BlockValidationGroup = string.Format( "{0}_{1}", this.GetType().BaseType.Name, CurrentBlock.Id );
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+            SetValidationGroup( this.Controls, BlockValidationGroup );
         }
 
         /// <summary>
@@ -625,12 +645,12 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Dims the other blocks.
+        /// Hides the secondary blocks.
         /// </summary>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        public void DimOtherBlocks( bool dimmed )
+        /// <param name="hidden">if set to <c>true</c> [hidden].</param>
+        public void HideSecondaryBlocks( bool hidden )
         {
-            RockPage.DimOtherBlocks( this, dimmed );
+            RockPage.HideSecondaryBlocks( this, hidden );
         }
 
         /// <summary>
@@ -653,6 +673,49 @@ namespace Rock.Web.UI
         public string ResolveRockUrl( string url )
         {
             return RockPage.ResolveRockUrl( url );
+        }
+
+        /// <summary>
+        /// Sets the validation group.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <param name="validationGroup">The validation group.</param>
+        public void SetValidationGroup( ControlCollection controls, string validationGroup )
+        {
+            if ( controls != null )
+            {
+                foreach ( Control control in controls )
+                {
+                    if ( control is Rock.Web.UI.Controls.IHasValidationGroup )
+                    {
+                        var rockControl = (Rock.Web.UI.Controls.IHasValidationGroup)control;
+                        rockControl.ValidationGroup = SetValidationGroup( rockControl.ValidationGroup, validationGroup );
+                    }
+
+                    if ( control is ValidationSummary )
+                    {
+                        var validationSummary = (ValidationSummary)control;
+                        validationSummary.ValidationGroup = SetValidationGroup( validationSummary.ValidationGroup, validationGroup );
+                    }
+
+                    else if ( control is BaseValidator )
+                    {
+                        var validator = (BaseValidator)control;
+                        validator.ValidationGroup = SetValidationGroup( validator.ValidationGroup, validationGroup );
+                    }
+
+                    else if ( control is IButtonControl )
+                    {
+                        var button = (IButtonControl)control;
+                        button.ValidationGroup = SetValidationGroup( button.ValidationGroup, validationGroup );
+                    }
+                    else
+                    {
+                        // Check child controls
+                        SetValidationGroup( control.Controls, validationGroup );
+                    }
+                }
+            }
         }
 
         #region User Preferences
@@ -848,6 +911,31 @@ namespace Rock.Web.UI
             }
 
             return additionalActions;
+        }
+
+        /// <summary>
+        /// Sets the validation group.
+        /// </summary>
+        /// <param name="existingValidationGroup">The existing validation group.</param>
+        /// <param name="validationGroup">The validation group.</param>
+        /// <returns></returns>
+        private string SetValidationGroup( string existingValidationGroup, string validationGroup )
+        {
+            if ( ( existingValidationGroup ?? string.Empty ).StartsWith( validationGroup ) )
+            {
+                return existingValidationGroup;
+            }
+            else
+            {
+                if ( string.IsNullOrWhiteSpace( existingValidationGroup ) )
+                {
+                    return validationGroup;
+                }
+                else
+                {
+                    return string.Format( "{0}_{1}", validationGroup, existingValidationGroup );
+                }
+            }
         }
 
         #endregion

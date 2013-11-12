@@ -19,6 +19,12 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_CHANNEL = "DC8A841C-E91D-4BD4-A6A7-0DE765308E8F";
 
         /// <summary>
+        /// The list of values that SMS messages can be sent from.  Depending on provider, these may
+        /// be phone numbers or short codes
+        /// </summary>
+        public const string COMMUNICATION_SMS_FROM = "611BDE1F-7405-4D16-8626-CCFEDB0E62BE";
+
+        /// <summary>
         /// Guid for check-in search type
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE = "1EBCDB30-A89A-4C14-8580-8289EC2C7742";
@@ -69,14 +75,14 @@ namespace Rock.SystemGuid
         public const string FINANCIAL_TRANSACTION_TYPE = "FFF62A4B-5D88-4DEB-AF8F-8E6178E41FE5";
 
         /// <summary>
+        /// Guid for the types of Group Locations (such as Home, Main Office, etc)
+        /// </summary>
+        public const string GROUP_LOCATION_TYPE =  "2E68D37C-FB7B-4AA5-9E09-3785D52156CB";
+
+        /// <summary>
         /// Guid for GroupType Purpose
         /// </summary>
         public const string GROUPTYPE_PURPOSE = "B23F1E45-BC26-4E82-BEB3-9B191FE5CCC3";
-        
-        /// <summary>
-        /// Guid for the types of Locations (such as Home, Main Office, etc)
-        /// </summary>
-        public const string LOCATION_LOCATION_TYPE =  "2E68D37C-FB7B-4AA5-9E09-3785D52156CB";
 
         /// <summary>
         /// Guid for the types of States that can be tied to a Location's address.

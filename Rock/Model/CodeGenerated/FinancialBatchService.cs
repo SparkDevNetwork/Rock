@@ -87,20 +87,29 @@ namespace Rock.Model
             else
             {
                 var target = new FinancialBatch();
-                target.Name = source.Name;
-                target.BatchStartDateTime = source.BatchStartDateTime;
-                target.BatchEndDateTime = source.BatchEndDateTime;
-                target.CreatedByPersonId = source.CreatedByPersonId;
-                target.Status = source.Status;
-                target.CampusId = source.CampusId;
-                target.AccountingSystemCode = source.AccountingSystemCode;
-                target.ControlAmount = source.ControlAmount;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another FinancialBatch object to this FinancialBatch object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this FinancialBatch target, FinancialBatch source )
+        {
+            target.Name = source.Name;
+            target.BatchStartDateTime = source.BatchStartDateTime;
+            target.BatchEndDateTime = source.BatchEndDateTime;
+            target.CreatedByPersonId = source.CreatedByPersonId;
+            target.Status = source.Status;
+            target.CampusId = source.CampusId;
+            target.AccountingSystemCode = source.AccountingSystemCode;
+            target.ControlAmount = source.ControlAmount;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

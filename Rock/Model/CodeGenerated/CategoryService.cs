@@ -117,21 +117,30 @@ namespace Rock.Model
             else
             {
                 var target = new Category();
-                target.IsSystem = source.IsSystem;
-                target.ParentCategoryId = source.ParentCategoryId;
-                target.EntityTypeId = source.EntityTypeId;
-                target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
-                target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
-                target.Name = source.Name;
-                target.IconSmallFileId = source.IconSmallFileId;
-                target.IconLargeFileId = source.IconLargeFileId;
-                target.IconCssClass = source.IconCssClass;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another Category object to this Category object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this Category target, Category source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.ParentCategoryId = source.ParentCategoryId;
+            target.EntityTypeId = source.EntityTypeId;
+            target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
+            target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+            target.Name = source.Name;
+            target.IconSmallFileId = source.IconSmallFileId;
+            target.IconLargeFileId = source.IconLargeFileId;
+            target.IconCssClass = source.IconCssClass;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

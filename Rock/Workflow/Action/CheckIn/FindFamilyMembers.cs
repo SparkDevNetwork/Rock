@@ -39,7 +39,7 @@ namespace Rock.Workflow.Action.CheckIn
                 if ( family != null )
                 {
                     var service = new GroupMemberService();
-                    foreach ( var groupMember in service.GetByGroupId( family.Group.Id ) )
+                    foreach ( var groupMember in service.GetByGroupId( family.Group.Id ).ToList() )
                     {
                         if ( !family.People.Any( p => p.Person.Id == groupMember.PersonId ) )
                         {

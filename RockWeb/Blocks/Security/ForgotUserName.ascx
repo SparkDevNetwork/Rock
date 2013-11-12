@@ -8,7 +8,6 @@
         <asp:Literal ID="lCaption" runat="server" ></asp:Literal> 
 
         <fieldset>
-            <legend>Enter Your Email</legend>
             <Rock:RockTextBox ID="tbEmail" runat="server" Label="Email" Required="true" ></Rock:RockTextBox>
         </fieldset>
 

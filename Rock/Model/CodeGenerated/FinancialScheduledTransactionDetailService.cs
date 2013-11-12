@@ -81,18 +81,27 @@ namespace Rock.Model
             else
             {
                 var target = new FinancialScheduledTransactionDetail();
-                target.ScheduledTransactionId = source.ScheduledTransactionId;
-                target.AccountId = source.AccountId;
-                target.Amount = source.Amount;
-                target.Summary = source.Summary;
-                target.EntityTypeId = source.EntityTypeId;
-                target.EntityId = source.EntityId;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another FinancialScheduledTransactionDetail object to this FinancialScheduledTransactionDetail object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this FinancialScheduledTransactionDetail target, FinancialScheduledTransactionDetail source )
+        {
+            target.ScheduledTransactionId = source.ScheduledTransactionId;
+            target.AccountId = source.AccountId;
+            target.Amount = source.Amount;
+            target.Summary = source.Summary;
+            target.EntityTypeId = source.EntityTypeId;
+            target.EntityId = source.EntityId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }
