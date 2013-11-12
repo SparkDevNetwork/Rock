@@ -31,8 +31,8 @@ namespace RockWeb.Blocks.Finance
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "ACH Card Gateway", "The payment gateway to use for ACH (bank account) transactions", false, "", "", 1, "ACHGateway" )]
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving - ", "", 2 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, "", "", 3)]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.LOCATION_LOCATION_TYPE, "Address Type", "The location type to use for the person's address", false,
-        Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME, "", 4 )]
+    [GroupLocationTypeField(Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Address Type", "The location type to use for the person's address", false,
+        Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 4 )]
 
     [CustomDropdownListField( "Layout Style", "How the sections of this page should be displayed", "Vertical,Fluid", false, "Vertical", "", 5 )]
 
@@ -422,7 +422,7 @@ achieve our mission.  We are so grateful for your commitment.
                             Guid addressTypeGuid = Guid.Empty;
                             if ( !Guid.TryParse( GetAttributeValue( "AddressType" ), out addressTypeGuid ) )
                             {
-                                addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME );
+                                addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
                             }
 
                             var address = personService.GetFirstLocation( person, DefinedValueCache.Read( addressTypeGuid ).Id );
@@ -805,7 +805,7 @@ achieve our mission.  We are so grateful for your commitment.
                                 Guid addressTypeGuid = Guid.Empty;
                                 if ( !Guid.TryParse( GetAttributeValue( "AddressType" ), out addressTypeGuid ) )
                                 {
-                                    addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME );
+                                    addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
                                 }
 
                                 groupLocation = new GroupLocation();

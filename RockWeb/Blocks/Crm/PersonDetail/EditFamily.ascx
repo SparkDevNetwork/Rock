@@ -68,7 +68,7 @@
                         <%# Eval("LocationTypeName") %>
                     </ItemTemplate>
                     <EditItemTemplate>
-                        <asp:DropDownList ID="ddlLocType" runat="server" CssClass="input-small" />
+                        <asp:DropDownList ID="ddlLocType" runat="server" CssClass="input-small" DataTextField="Name" DataValueField="Id" />
                     </EditItemTemplate>
                 </asp:TemplateField>
                 <asp:TemplateField HeaderText="Street">

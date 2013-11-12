@@ -81,8 +81,9 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> that represents the Name of the Category.
         /// </value>
-        [MaxLength(100)]
-        [DataMember]
+        [Required( ErrorMessage = "Name is required" )]
+        [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
         /// <summary>

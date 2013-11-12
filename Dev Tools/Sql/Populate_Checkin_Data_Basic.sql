@@ -477,22 +477,22 @@ DECLARE @BuildingLocationId int
 DECLARE @RoomLocationId int
 
 -- Main Campus "Location"
-INSERT INTO [Location] ([Guid], [Name], [IsActive],[IsLocation]) VALUES (NEWID(), 'Main Campus', 1, 1)
+INSERT INTO [Location] ([Guid], [Name], [IsActive],[IsNamedLocation]) VALUES (NEWID(), 'Main Campus', 1, 1)
 SET @CampusLocationId = SCOPE_IDENTITY()
 
 -- Main building
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@CampusLocationId, 'Bldg 1', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation], [Guid]) VALUES (@CampusLocationId, 'Bldg 1', 1, 1, NEWID())
 SET @BuildingLocationId = SCOPE_IDENTITY()
 
 -- Check in Rooms
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'Bunnies Room', 1, 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'Kittens Room', 1, 1,NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'Puppies Room', 1, 1,NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'Bears Room', 1, 1,NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'Bobcats Room', 1, 1,NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'Outpost Room', 1, 1,NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'the Warehouse', 1, 1,NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'the Garage', 1, 1,NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation],[Guid]) VALUES (@BuildingLocationId, 'Bunnies Room', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation],[Guid]) VALUES (@BuildingLocationId, 'Kittens Room', 1, 1,NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation],[Guid]) VALUES (@BuildingLocationId, 'Puppies Room', 1, 1,NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation],[Guid]) VALUES (@BuildingLocationId, 'Bears Room', 1, 1,NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation],[Guid]) VALUES (@BuildingLocationId, 'Bobcats Room', 1, 1,NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation],[Guid]) VALUES (@BuildingLocationId, 'Outpost Room', 1, 1,NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation],[Guid]) VALUES (@BuildingLocationId, 'the Warehouse', 1, 1,NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsNamedLocation],[Guid]) VALUES (@BuildingLocationId, 'the Garage', 1, 1,NEWID())
 
 DELETE [DeviceLocation]
 DELETE [Device]
@@ -571,32 +571,32 @@ UNION ALL SELECT '5E8B611A-F84A-45E1-8CB7-2584FC66F3C3'
 ---------------------------------------------------------------------------
 DELETE [GroupLocation] where [Guid] in (select * from @tGroupLocationGuids)
 
-  INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailing, IsLocation, Guid)
+  INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailingLocation, IsMappedLocation, Guid)
    SELECT @NurseryGroupId, L.Id, 0,0,'95363486-2A66-4916-8DFF-7A4C67200A4A' FROM Location L WHERE L.Name = 'Bunnies Room'
 
-  INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailing, IsLocation, Guid)
+  INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailingLocation, IsMappedLocation, Guid)
    SELECT @CrawlersWalkersGroupId, L.Id, 0,0,'9FEC12C8-1131-4881-8EB5-3A40FFC1D4C8' FROM Location L WHERE L.Name = 'Kittens Room'
    
-  INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailing, IsLocation, Guid)
+  INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailingLocation, IsMappedLocation, Guid)
    SELECT @PreschoolGroupId, L.Id, 0,0,'36B7B587-44B1-44DE-9BD5-64D1BF73C25E' FROM Location L WHERE L.Name = 'Puppies Room'
    
-  INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailing, IsLocation, Guid)
+  INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailingLocation, IsMappedLocation, Guid)
    SELECT @GradeK1GroupId, L.Id, 0,0,'D3DA525C-65DC-4DDF-BCE9-2697753736AC' FROM Location L WHERE L.Name = 'Bears Room'
 
-  INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailing, IsLocation, Guid)
+  INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailingLocation, IsMappedLocation, Guid)
    SELECT @Grade23GroupId, L.Id, 0,0,'FEFDEE04-65BF-4F38-9203-0872BFE17D7C' FROM Location L WHERE L.Name = 'Bobcats Room'
    
-  INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailing, IsLocation, Guid)
+  INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailingLocation, IsMappedLocation, Guid)
    SELECT @Grade46GroupId, L.Id, 0,0,'F281B5AF-250F-4329-BCEC-3F00B3B4761C' FROM Location L WHERE L.Name = 'Outpost Room'  
 
-  INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailing, IsLocation, Guid)
+  INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailingLocation, IsMappedLocation, Guid)
    SELECT @JHGroupId, L.Id, 0,0,'1F1F3271-8E18-4AB7-8F1B-D7C32AB0E328' FROM Location L WHERE L.Name = 'the Warehouse' 
    
-  INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailing, IsLocation, Guid)
+  INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailingLocation, IsMappedLocation, Guid)
    SELECT @HSGroupId, L.Id, 0,0,'2F421E6E-D5C4-4910-80F6-E76EF7CBBB2E' FROM Location L WHERE L.Name = 'the Garage' 
    
   -- Add Test group to each location
-  INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailing, IsLocation, Guid)
+  INSERT INTO [GroupLocation] (GroupId, LocationId, IsMailingLocation, IsMappedLocation, Guid)
    SELECT @TestGroupId, L.Id, 0,0, NEWID() FROM Location L WHERE L.ParentLocationId = @BuildingLocationId
 
 ---------------------------------------------------------------------------

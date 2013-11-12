@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                 string script = string.Format( @"
                 <script>
-                    $(document).ready(function (e) {{
+                    $(document).ready( function (e) {{
                         if (localStorage) {{
                             if (localStorage.checkInKiosk) {{
                                 $('[id$=""hfKiosk""]').val(localStorage.checkInKiosk);
@@ -81,7 +81,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     }
                     else
                     {
-                        maWarning.Show( "This device has not been set up for check in.", ModalAlertType.Warning );
+                        maWarning.Show( "This device has not been set up for check-in.", ModalAlertType.Warning );
                         lbOk.Visible = false;
                         return;
                     }
@@ -128,20 +128,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void lbOk_Click( object sender, EventArgs e )
         {
             var groupTypeIds = new List<int>();
-            if ( !string.IsNullOrEmpty( hfParentTypes.Value ) )
-            {
-                if ( CurrentKioskId == null || CurrentKioskId == 0)
-                {
-                    CurrentKioskId = hfKiosk.ValueAsInt();
-                }
-                var kiosk = new DeviceService().Get( (int)CurrentKioskId );
-                var parentGroupTypes = GetAllParentGroupTypes( kiosk );
-                var selectedParentIds = hfParentTypes.Value.SplitDelimitedValues().Select( int.Parse ).ToList();
-                
-                // get child types for selected parent types
-                groupTypeIds = parentGroupTypes.Where( pg => selectedParentIds.Contains( pg.Id ) )
-                    .SelectMany( pg => pg.ChildGroupTypes
-                        .Select( cg => cg.Id ) ).ToList();
+
+            if ( !string.IsNullOrEmpty( hfGroupTypes.Value ) )
+            {   
+                groupTypeIds = hfGroupTypes.Value.SplitDelimitedValues().Select( int.Parse ).Distinct().ToList();
             }
             else
             {
@@ -151,6 +141,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
                 maWarning.Show( "At least one ministry must be selected!", ModalAlertType.Warning );
                 return;
+            }
+
+            if ( CurrentKioskId == null || CurrentKioskId == 0 )
+            {
+                CurrentKioskId = hfKiosk.ValueAsInt();
             }
             
             ClearMobileCookie();
@@ -324,21 +319,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 var kiosk = new DeviceService().Get( (int)CurrentKioskId );
                 if ( kiosk != null )
                 {
-                    var parentGroupTypes = GetAllParentGroupTypes( kiosk );
+                    var groupTypes = kiosk.Locations.SelectMany( l => l.GroupLocations
+                        .Select( gl => gl.Group.GroupType ) ).Distinct().ToList();
 
-                    if ( !string.IsNullOrWhiteSpace( selectedGroupTypes ) )
-                    {
-                        var selectedChildIds = selectedGroupTypes.SplitDelimitedValues().Select( sgt => int.Parse( sgt ) ).ToList();
+                    hfGroupTypes.Value = selectedGroupTypes;
 
-                        // get parent types for selected child types
-                        var selectedParentIds = parentGroupTypes.Where( pgt => pgt.ChildGroupTypes
-                            .Any( cgt => selectedChildIds.Contains( cgt.Id ) ) )
-                            .Select( pgt => pgt.Id ).ToList();
-
-                        hfParentTypes.Value = selectedParentIds.AsDelimited( "," ) + ",";
-                    }
-
-                    repMinistry.DataSource = parentGroupTypes;
+                    repMinistry.DataSource = groupTypes;
                     repMinistry.DataBind();
                 }
             }
@@ -351,30 +337,17 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void repMinistry_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            var parentGroups = hfParentTypes.Value.SplitDelimitedValues().Select( int.Parse ).ToList();
-            if ( parentGroups.Count > 0 )
+            var selectedGroupTypes = hfGroupTypes.Value.SplitDelimitedValues().Select( int.Parse ).ToList();
+            if ( selectedGroupTypes.Count > 0 )
             {
                 if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
                 {
-                    if ( parentGroups.Contains( ( (GroupType)e.Item.DataItem ).Id ) )
+                    if ( selectedGroupTypes.Contains( ( (GroupType)e.Item.DataItem ).Id ) )
                     {
                         ( (Button)e.Item.FindControl( "lbMinistry" ) ).AddCssClass( "active" );                        
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets the parent of currently selected group types.
-        /// </summary>
-        /// <param name="kioskDevice">The kiosks's device.</param>
-        /// <returns></returns>
-        private List<GroupType> GetAllParentGroupTypes( Device kiosk)
-        {            
-            var pgtList = kiosk.Locations.Select( l => l.GroupLocations
-                .SelectMany( gl => gl.Group.GroupType.ParentGroupTypes ) );
-
-            return pgtList.Select( gt => gt.First() ).Distinct().ToList();
         }
         
         #endregion
