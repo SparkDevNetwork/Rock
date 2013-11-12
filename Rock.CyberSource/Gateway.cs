@@ -100,7 +100,7 @@ namespace Rock.CyberSource
             request.billTo = GetBillTo( paymentInfo );            
             request.item = GetItems( paymentInfo );            
             request.purchaseTotals = GetTotals( paymentInfo );
-            request.merchantReferenceCode = new Guid().ToString();
+            request.merchantReferenceCode = Guid.NewGuid().ToString();
 
             if ( paymentInfo is CreditCardPaymentInfo )
             {
@@ -126,14 +126,23 @@ namespace Rock.CyberSource
             }            
             else if ( paymentInfo is ReferencePaymentInfo )
             {
+                // if subscription doesn't already exist, create one
                 var reference = paymentInfo as ReferencePaymentInfo;
                 request.paySubscriptionCreateService = new PaySubscriptionCreateService();
                 request.paySubscriptionCreateService.run = "true";                
-                request.paySubscriptionCreateService.paymentRequestID = reference.ReferenceNumber;                
+                request.paySubscriptionCreateService.paymentRequestID = reference.ReferenceNumber;
+                request.subscription = new Subscription();
+                request.subscription.title = DateTime.Now + ": Code " + reference.ReferenceNumber  + " for " + paymentInfo.Amount.ToString();
+                request.subscription.paymentMethod = paymentInfo.CurrencyTypeValue.Name;
+                
+                // subscription exists
+                //request.recurringSubscriptionInfo = new RecurringSubscriptionInfo();
+                //request.recurringSubscriptionInfo.subscriptionID = reference.ReferenceNumber;
             }
             else if ( paymentInfo is SwipePaymentInfo )
             {
-                throw new NotImplementedException( "Point of Sale transactions not implemented." );
+                errorMessage = "Point of Sale transactions not implemented.";
+                return null;
             }           
 
             ReplyMessage reply = SubmitTransaction( request );
@@ -240,8 +249,7 @@ namespace Rock.CyberSource
                     return "\nThe following required fields are missing: " + string.Join( "\n", reply.missingField );
                 // Invalid field or fields
                 case 102:
-                    return "\nThe following fields are invalid: " + string.Join("\n", reply.invalidField);
-                        
+                    return "\nThe following fields are invalid: " + string.Join("\n", reply.invalidField);                        
                 // Insufficient funds
                 case 204:
                     return "\nInsufficient funds in the account. Please use a different card or select another form of payment.";
@@ -419,13 +427,12 @@ namespace Rock.CyberSource
         }
 
         /// <summary>
-        /// Gets the detailed list of items.
+        /// Gets the payment items.
         /// </summary>
         /// <param name="paymentInfo">The payment information.</param>
         /// <returns></returns>
         private Item[] GetItems( PaymentInfo paymentInfo )
-        {
-            // #TODO this should really have a itemized list of charges
+        {   // just get a single item for the total amount
             List<Item> itemList = new List<Item>();
             
             Item item = new Item();
