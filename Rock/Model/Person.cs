@@ -141,7 +141,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the nick name of the Person. 
-        /// </summary
+        /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the nick name of the Person.
         /// </value>
@@ -603,16 +603,13 @@ namespace Rock.Model
         /// Gets or sets the Person's birth date.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.DateTime"/> representing the Person's birthdate.  If no birthdate is available, null is returned. If the year is not available then the birthdate is returned with the DateTime.MinValue.Year.
+        /// A <see cref="System.DateTime"/> representing the Person's birthdate.  If no birthdate is available, null is returned. If the year is not available then the birthdate is returned with the DateTime.MinValue.Year.
         /// </value>
         [NotMapped]
         [DataMember]
         [MergeField]
         public virtual DateTime? BirthDate
         {
-            // notes
-            // if no birthday is available then DateTime.MinValue is returned
-            // if no birth year is given then the birth year will be DateTime.MinValue.Year
             get
             {
                 if ( BirthDay == null || BirthMonth == null )
@@ -621,8 +618,7 @@ namespace Rock.Model
                 }
                 else
                 {
-                    string birthYear = ( BirthYear ?? DateTime.MinValue.Year ).ToString();
-                    return Convert.ToDateTime( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + birthYear );
+                    return new DateTime( BirthYear ?? DateTime.MinValue.Year, BirthMonth.Value, BirthDay.Value );
                 }
             }
 
@@ -632,7 +628,14 @@ namespace Rock.Model
                 {
                     BirthMonth = value.Value.Month;
                     BirthDay = value.Value.Day;
-                    BirthYear = value.Value.Year;
+                    if ( value.Value.Year != DateTime.MinValue.Year )
+                    {
+                        BirthYear = value.Value.Year;
+                    }
+                    else
+                    {
+                        BirthYear = null;
+                    }
                 }
                 else
                 {
@@ -670,7 +673,7 @@ namespace Rock.Model
         /// Gets the number of days until the Person's birthday.
         /// </summary>
         /// <value>
-        /// A <see cref="Systeem.Int32"/> representing the number of days until the Person's birthday. If the person's birthdate is not available returns Int.MaxValue
+        /// A <see cref="System.Int32"/> representing the number of days until the Person's birthday. If the person's birthdate is not available returns Int.MaxValue
         /// </value>
         [MergeField]
         public virtual int DaysToBirthday
@@ -793,7 +796,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the <see cref="Rock.Mode.UserLogin"/> of the user being impersonated.
+        /// Gets the <see cref="Rock.Model.UserLogin"/> of the user being impersonated.
         /// </summary>
         /// <value>
         /// Th <see cref="Rock.Model.UserLogin"/> of the user being impersonated.
@@ -811,9 +814,9 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a <see cref="System.Collections.Generic.Dictionary"/> of the Person object
+        /// Creates a <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of the Person object
         /// </summary>
-        /// <returns>A <see cref="Sytem.Collection.Generic.Dictionary"/> of the Person object.</returns>
+        /// <returns>A <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of the Person object.</returns>
         public override Dictionary<string, object> ToDictionary()
         {
             var dictionary = base.ToDictionary();
@@ -864,7 +867,7 @@ namespace Rock.Model
 
                 if ( knownRelationshipGroup != null )
                 {
-                    int? canCheckInRoleId = new GroupRoleService().Queryable()
+                    int? canCheckInRoleId = new GroupTypeRoleService().Queryable()
                         .Where( r =>
                             r.Guid.Equals( new Guid( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) )
                         .Select( r => r.Id )

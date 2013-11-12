@@ -87,18 +87,27 @@ namespace Rock.Model
             else
             {
                 var target = new DefinedType();
-                target.IsSystem = source.IsSystem;
-                target.FieldTypeId = source.FieldTypeId;
-                target.Order = source.Order;
-                target.Category = source.Category;
-                target.Name = source.Name;
-                target.Description = source.Description;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another DefinedType object to this DefinedType object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this DefinedType target, DefinedType source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.FieldTypeId = source.FieldTypeId;
+            target.Order = source.Order;
+            target.Category = source.Category;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

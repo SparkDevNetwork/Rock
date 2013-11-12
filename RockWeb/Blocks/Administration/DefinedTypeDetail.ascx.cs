@@ -164,11 +164,11 @@ namespace RockWeb.Blocks.Administration
         {
             if ( definedType.Id > 0 )
             {
-                lActionTitle.Text = ActionTitle.Edit( DefinedType.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Edit( DefinedType.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( DefinedType.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Add( DefinedType.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             SetEditMode( true );
@@ -200,6 +200,8 @@ namespace RockWeb.Blocks.Administration
             pnlEditDetails.Visible = editable;
             vsDetails.Enabled = editable;
             fieldsetViewDetails.Visible = !editable;
+
+            this.HideSecondaryBlocks( editable );
         }
 
         /// <summary>
@@ -224,6 +226,7 @@ namespace RockWeb.Blocks.Administration
             else
             {
                 definedType = new DefinedType { Id = 0 };
+                definedType.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
             }
 
             hfDefinedTypeId.SetValue( definedType.Id );
@@ -304,6 +307,7 @@ namespace RockWeb.Blocks.Administration
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
+                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
                 edtDefinedTypeAttributes.ActionTitle = ActionTitle.Add( "attribute for defined type " + tbTypeName.Text );
             }
             else
@@ -314,6 +318,8 @@ namespace RockWeb.Blocks.Administration
             }
 
             edtDefinedTypeAttributes.SetAttributeProperties( attribute, typeof( DefinedValue ) );
+
+            this.HideSecondaryBlocks( true );
         }
 
         /// <summary>
@@ -361,45 +367,21 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSaveDefinedTypeAttribute_Click( object sender, EventArgs e )
         {
-            Attribute attribute = null;
-            
-            AttributeService attributeService = new AttributeService();
-            if ( edtDefinedTypeAttributes.AttributeId.HasValue )
-            {
-                attribute = attributeService.Get( edtDefinedTypeAttributes.AttributeId.Value );
-            }
+            var attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtDefinedTypeAttributes, EntityTypeCache.Read( typeof( DefinedValue ) ).Id,
+                "DefinedTypeId", hfDefinedTypeId.Value, CurrentPersonId );
 
+            // Attribute will be null if it was not valid
             if (attribute == null)
-            {
-                attribute = new Attribute();
-            }
-
-            edtDefinedTypeAttributes.GetAttributeProperties( attribute );
-
-            // Controls will show warnings
-            if ( !attribute.IsValid )
             {
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
-            {
-                if ( attribute.Id.Equals( 0 ) )
-                {
-                    attribute.EntityTypeId = EntityTypeCache.Read( typeof( DefinedValue ) ).Id;
-                    attribute.EntityTypeQualifierColumn = "DefinedTypeId";
-                    attribute.EntityTypeQualifierValue = hfDefinedTypeId.Value;
-                    attributeService.Add( attribute, CurrentPersonId );
-                }
-
-                AttributeCache.Flush( attribute.Id );
-                attributeService.Save( attribute, CurrentPersonId );
-            } );
-
             pnlDetails.Visible = true;
             pnlDefinedTypeAttributes.Visible = false;
 
-            BindDefinedTypeAttributesGrid();            
+            BindDefinedTypeAttributesGrid();
+
+            this.HideSecondaryBlocks( false );
         }
 
         /// <summary>
@@ -411,6 +393,8 @@ namespace RockWeb.Blocks.Administration
         {
             pnlDetails.Visible = true;
             pnlDefinedTypeAttributes.Visible = false;
+
+            this.HideSecondaryBlocks( false );
         }
 
         /// <summary>

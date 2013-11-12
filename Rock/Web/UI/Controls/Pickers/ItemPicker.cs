@@ -126,6 +126,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets an optional validation group to use.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get { return ViewState["ValidationGroup"] as string; }
+            set { ViewState["ValidationGroup"] = value; }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -421,7 +433,6 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            RegisterJavaScript();
             var sm = ScriptManager.GetCurrent( this.Page );
             EnsureChildControls();
 
@@ -433,12 +444,31 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            RegisterJavaScript();
+            base.OnLoad( e );
+        }
+
+        /// <summary>
         /// Registers the java script.
         /// </summary>
         protected virtual void RegisterJavaScript()
         {
-            const string treeViewScriptFormat = "Rock.controls.itemPicker.initialize({{ controlId: '{0}', restUrl: '{1}', allowMultiSelect: {2}, defaultText: '{3}' }});";
-            string treeViewScript = string.Format( treeViewScriptFormat, this.ID, this.ResolveUrl( ItemRestUrl ), this.AllowMultiSelect.ToString().ToLower(), this.DefaultText );
+            const string treeViewScriptFormat = 
+@"Rock.controls.itemPicker.initialize({{ 
+    controlId: '{0}',
+    restUrl: '{1}',
+    allowMultiSelect: {2},
+    defaultText: '{3}',
+    restParams: $('#{4}').val(),
+    expandedIds: [{5}]
+}});
+";
+            string treeViewScript = string.Format( treeViewScriptFormat, this.ID, this.ResolveUrl( ItemRestUrl ), this.AllowMultiSelect.ToString().ToLower(), this.DefaultText, _hfItemRestUrlExtraParams.ClientID, this.InitialItemParentIds );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "item_picker-treeviewscript_" + this.ID, treeViewScript, true );
         }
 
@@ -471,7 +501,7 @@ namespace Rock.Web.UI.Controls
 
             _btnSelect = new HtmlAnchor();
             _btnSelect.ClientIDMode = ClientIDMode.Static;
-            _btnSelect.Attributes["class"] = "btn btn-xs btn-primary";
+            _btnSelect.Attributes["class"] = "btn btn-xs btn-primary picker-btn";
             _btnSelect.ID = string.Format( "btnSelect_{0}", this.ID );
             _btnSelect.InnerText = "Select";
             _btnSelect.CausesValidation = false;
@@ -539,7 +569,7 @@ namespace Rock.Web.UI.Controls
                 writer.Write( @"
                     <a class='picker-label' href='#'>
                         <i class='{2}'></i>
-                        <span id='selectedItemLabel_{0}'>{1}</span>
+                        <span id='selectedItemLabel_{0}' class='selected-names'>{1}</span>
                         <b class='caret pull-right'></b>
                     </a>", this.ID, this.ItemName, this.IconCssClass );
                 writer.WriteLine();
@@ -582,7 +612,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "picker-actions" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _btnSelect.RenderControl( writer );
-                writer.Write( "<a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>", this.ID );
+                writer.Write( "<a class='btn btn-xs picker-cancel' id='btnCancel_{0}'>Cancel</a>", this.ID );
                 writer.WriteLine();
                 writer.RenderEndTag();
                 
@@ -676,7 +706,8 @@ namespace Rock.Web.UI.Controls
 
             foreach ( string keyVal in ItemIds )
             {
-                int id = int.MinValue;
+                int id;
+
                 if ( int.TryParse( keyVal, out id ) )
                 {
                     ids.Add( id );

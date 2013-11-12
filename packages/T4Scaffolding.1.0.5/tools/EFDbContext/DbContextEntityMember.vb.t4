@@ -1,2 +1,0 @@
-<#@ Template Language="C#" HostSpecific="True" Inherits="DynamicTransform" #>
-Public Property <#= Model.EntityTypeNamePluralized #> As DbSet(Of <#= ((EnvDTE.CodeType)Model.EntityType).FullName #>)

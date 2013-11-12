@@ -107,7 +107,29 @@ namespace Rock.Model
         public Location GetByGeoLocation( DbGeography value )
         {
             // get the first address that has a GeoPoint or GeoFence that matches the value
-            return Queryable().Where( a => a.GeoPoint == value || a.GeoFence == value ).FirstOrDefault();
+            var result = Queryable().Where( a => a.GeoPoint != null ).Where( a => a.GeoPoint.SpatialEquals(value)).FirstOrDefault();
+            
+            if ( result == null )
+            {
+                result = Queryable().Where( a => a.GeoFence != null ).Where( a => a.GeoFence.SpatialEquals( value ) ).FirstOrDefault();
+            }
+
+            if ( result == null )
+            {
+                // if the Location can't be found, save the new location to the database
+                Location newLocation = new Location
+                {
+                    GeoPoint = value,
+                    Guid = Guid.NewGuid()
+                };
+
+                Add( newLocation, null );
+                Save( newLocation, null );
+                return Get( newLocation.Guid );
+            }
+
+            return result;
+            
         }
 
         /// <summary>

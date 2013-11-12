@@ -81,24 +81,33 @@ namespace Rock.Model
             else
             {
                 var target = new Attendance();
-                target.LocationId = source.LocationId;
-                target.ScheduleId = source.ScheduleId;
-                target.GroupId = source.GroupId;
-                target.PersonId = source.PersonId;
-                target.DeviceId = source.DeviceId;
-                target.SearchTypeValueId = source.SearchTypeValueId;
-                target.AttendanceCodeId = source.AttendanceCodeId;
-                target.QualifierValueId = source.QualifierValueId;
-                target.StartDateTime = source.StartDateTime;
-                target.EndDateTime = source.EndDateTime;
-                target.DidAttend = source.DidAttend;
-                target.Note = source.Note;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another Attendance object to this Attendance object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this Attendance target, Attendance source )
+        {
+            target.LocationId = source.LocationId;
+            target.ScheduleId = source.ScheduleId;
+            target.GroupId = source.GroupId;
+            target.PersonId = source.PersonId;
+            target.DeviceId = source.DeviceId;
+            target.SearchTypeValueId = source.SearchTypeValueId;
+            target.AttendanceCodeId = source.AttendanceCodeId;
+            target.QualifierValueId = source.QualifierValueId;
+            target.StartDateTime = source.StartDateTime;
+            target.EndDateTime = source.EndDateTime;
+            target.DidAttend = source.DidAttend;
+            target.Note = source.Note;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

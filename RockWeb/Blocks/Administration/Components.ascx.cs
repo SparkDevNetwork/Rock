@@ -25,7 +25,7 @@ namespace RockWeb.Blocks.Administration
     /// of the attributes specified in each class
     /// </summary>
     [TextField( "Component Container", "The Rock Extension Managed Component Container to manage")]
-    public partial class Components : RockBlock, IDimmableBlock
+    public partial class Components : RockBlock
     {
         #region Private Variables
 
@@ -325,8 +325,6 @@ namespace RockWeb.Blocks.Administration
         {
             pnlDetails.Visible = editable;
             pnlList.Visible = !editable;
-
-            this.DimOtherBlocks( editable );
         }
 
         private void LoadEditControls()
@@ -334,7 +332,7 @@ namespace RockWeb.Blocks.Administration
             int serviceId = ( int )ViewState["serviceId"];
             Rock.Attribute.IHasAttributes component = _container.Dictionary[serviceId].Value;
 
-            Rock.Attribute.Helper.AddEditControls( component, phProperties, true, new List<string>() { "Order" }  );
+            Rock.Attribute.Helper.AddEditControls( component, phProperties, true, string.Empty, new List<string>() { "Order" }  );
         }
 
         private void DisplayError( string message )
@@ -342,21 +340,6 @@ namespace RockWeb.Blocks.Administration
             mdAlert.Show( message, ModalAlertType.Alert );
         }
 
-        #region IDimmableBlock
-
-        /// <summary>
-        /// Sets the dimmed.
-        /// </summary>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        public void SetDimmed( bool dimmed )
-        {
-            pnlList.Enabled = !dimmed;
-            pnlDetails.Enabled = !dimmed;
-            rGrid.Enabled = !dimmed;
-        }
-
-        #endregion
-        
         #endregion
     }
 }

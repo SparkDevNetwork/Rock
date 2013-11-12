@@ -116,6 +116,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets an optional validation group to use.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get { return ViewState["ValidationGroup"] as string; }
+            set { ViewState["ValidationGroup"] = value; }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -208,12 +220,24 @@ namespace Rock.Web.UI.Controls
             private set
             {
                 EnsureChildControls();
-                _hfLocationId.Value = value.Id.ToString();
-                _tbAddress1.Text = value.Street1;
-                _tbAddress2.Text = value.Street2;
-                _tbCity.Text = value.City;
-                _ddlState.SelectedValue = value.State;
-                _tbZip.Text = value.Zip;
+                if ( value != null )
+                {
+                    _hfLocationId.Value = value.Id.ToString();
+                    _tbAddress1.Text = value.Street1;
+                    _tbAddress2.Text = value.Street2;
+                    _tbCity.Text = value.City;
+                    _ddlState.SelectedValue = value.State;
+                    _tbZip.Text = value.Zip;
+                }
+                else
+                {
+                    _hfLocationId.Value = string.Empty;
+                    _tbAddress1.Text = string.Empty;
+                    _tbAddress2.Text = string.Empty;
+                    _tbCity.Text = string.Empty;
+                    _ddlState.SelectedValue = string.Empty;
+                    _tbZip.Text = string.Empty;
+                }
             }
         }
 

@@ -81,20 +81,29 @@ namespace Rock.Model
             else
             {
                 var target = new MarketingCampaignAd();
-                target.MarketingCampaignId = source.MarketingCampaignId;
-                target.MarketingCampaignAdTypeId = source.MarketingCampaignAdTypeId;
-                target.Priority = source.Priority;
-                target.MarketingCampaignAdStatus = source.MarketingCampaignAdStatus;
-                target.MarketingCampaignStatusPersonId = source.MarketingCampaignStatusPersonId;
-                target.StartDate = source.StartDate;
-                target.EndDate = source.EndDate;
-                target.Url = source.Url;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another MarketingCampaignAd object to this MarketingCampaignAd object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this MarketingCampaignAd target, MarketingCampaignAd source )
+        {
+            target.MarketingCampaignId = source.MarketingCampaignId;
+            target.MarketingCampaignAdTypeId = source.MarketingCampaignAdTypeId;
+            target.Priority = source.Priority;
+            target.MarketingCampaignAdStatus = source.MarketingCampaignAdStatus;
+            target.MarketingCampaignStatusPersonId = source.MarketingCampaignStatusPersonId;
+            target.StartDate = source.StartDate;
+            target.EndDate = source.EndDate;
+            target.Url = source.Url;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

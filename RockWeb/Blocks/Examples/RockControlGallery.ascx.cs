@@ -137,6 +137,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnShowAttributeEditor_Click( object sender, EventArgs e )
         {
+            aeExample.FieldTypeId = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
             aeExampleDiv.Visible = !aeExampleDiv.Visible;
         }
 
@@ -316,6 +317,16 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
+        /// Handles the SelectedBirthdayChanged event of the birthdayPicker control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void birthdayPicker_SelectedBirthdayChanged( object sender, EventArgs e )
+        {
+            var dateTime = birthdayPicker.SelectedDate;
+        }
+
+        /// <summary>
         /// Handles the SaveSchedule event of the scheduleBuilder control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -324,7 +335,5 @@ namespace RockWeb.Blocks.Examples
         {
             string debug = scheduleBuilder.iCalendarContent;
         }
-        
- 
-}
+    }
 }

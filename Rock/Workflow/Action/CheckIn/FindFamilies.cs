@@ -54,11 +54,11 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         errorMessages.Add( "Invalid Search Type" );
                         return false;
-                    }               
+                    }
 
-                    foreach( var person in people)
+                    foreach ( var person in people.ToList() )
                     {
-                        foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid == new Guid( SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Select( m => m.Group ) )
+                        foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid == new Guid( SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Select( m => m.Group ).ToList() )
                         {
                             var family = checkInState.CheckIn.Families.Where( f => f.Group.Id == group.Id ).FirstOrDefault();
                             if ( family == null )

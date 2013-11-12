@@ -29,6 +29,15 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets all jobs.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<ServiceJob> GetAllJobs()
+        {
+            return Repository.AsQueryable();
+        }
+
+        /// <summary>
         /// Builds the quartz job.
         /// </summary>
         /// <param name="job">The job.</param>

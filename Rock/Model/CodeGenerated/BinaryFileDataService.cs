@@ -81,13 +81,22 @@ namespace Rock.Model
             else
             {
                 var target = new BinaryFileData();
-                target.Content = source.Content;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another BinaryFileData object to this BinaryFileData object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this BinaryFileData target, BinaryFileData source )
+        {
+            target.Content = source.Content;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

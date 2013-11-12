@@ -25,7 +25,7 @@ namespace RockWeb.Blocks.Administration
     [BooleanField( "Show Marketing Campaign Title")]
     [ContextAware( typeof( MarketingCampaign ) )]
     [LinkedPage("Detail Page")]
-    public partial class MarketingCampaignAdList : RockBlock, IDimmableBlock
+    public partial class MarketingCampaignAdList : RockBlock, ISecondaryBlock
     {
         #region Control Methods
 
@@ -381,16 +381,16 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region IDimmableBlock
+        #region ISecondaryBlock
 
         /// <summary>
         /// Sets the dimmed.
         /// </summary>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        public void SetDimmed( bool dimmed )
+        /// <param name="visible">if set to <c>true</c> [dimmed].</param>
+        public void SetVisible( bool visible )
         {
-            pnlMarketingCampaignAds.Disabled = dimmed;
-            gMarketingCampaignAds.Enabled = !dimmed;
+            rFilter.Visible = visible;
+            pnlMarketingCampaignAds.Visible = visible;
         }
 
         #endregion

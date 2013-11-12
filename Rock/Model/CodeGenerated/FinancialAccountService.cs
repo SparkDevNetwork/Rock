@@ -105,24 +105,33 @@ namespace Rock.Model
             else
             {
                 var target = new FinancialAccount();
-                target.ParentAccountId = source.ParentAccountId;
-                target.CampusId = source.CampusId;
-                target.Name = source.Name;
-                target.PublicName = source.PublicName;
-                target.Description = source.Description;
-                target.IsTaxDeductible = source.IsTaxDeductible;
-                target.GlCode = source.GlCode;
-                target.Order = source.Order;
-                target.IsActive = source.IsActive;
-                target.StartDate = source.StartDate;
-                target.EndDate = source.EndDate;
-                target.AccountTypeValueId = source.AccountTypeValueId;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another FinancialAccount object to this FinancialAccount object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this FinancialAccount target, FinancialAccount source )
+        {
+            target.ParentAccountId = source.ParentAccountId;
+            target.CampusId = source.CampusId;
+            target.Name = source.Name;
+            target.PublicName = source.PublicName;
+            target.Description = source.Description;
+            target.IsTaxDeductible = source.IsTaxDeductible;
+            target.GlCode = source.GlCode;
+            target.Order = source.Order;
+            target.IsActive = source.IsActive;
+            target.StartDate = source.StartDate;
+            target.EndDate = source.EndDate;
+            target.AccountTypeValueId = source.AccountTypeValueId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

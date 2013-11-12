@@ -62,70 +62,78 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            DialogMasterPage masterPage = this.Page.Master as DialogMasterPage;
-            if ( masterPage != null )
-            {
-                masterPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
-            }
-
             try
             {
-                int pageId = Convert.ToInt32( PageParameter( "Page" ) );
-                _page = Rock.Web.Cache.PageCache.Read( pageId );
-
-                if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
+                int pageId = int.MinValue;
+                if ( int.TryParse( PageParameter( "Page" ), out pageId ) )
                 {
-                    ddlLayout.Items.Clear();
-                    var layoutService = new LayoutService();
-                    layoutService.RegisterLayouts( Request.MapPath( "~" ), _page.Layout.Site, CurrentPersonId );
-                    foreach(var layout in layoutService.GetBySiteId(_page.Layout.SiteId))
+                    _page = Rock.Web.Cache.PageCache.Read( pageId );
+
+                    DialogMasterPage masterPage = this.Page.Master as DialogMasterPage;
+                    if ( masterPage != null )
                     {
-                        ddlLayout.Items.Add( new ListItem( layout.Name, layout.Id.ToString() ) );
+                        masterPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
+                        masterPage.SubTitle = string.Format( "(Id: {0})", _page.Id );
                     }
-                    ddlMenuWhen.BindToEnum( typeof( DisplayInNavWhen ) );
 
-                    phAttributes.Controls.Clear();
-                    Rock.Attribute.Helper.AddEditControls( _page, phAttributes, !Page.IsPostBack );
-
-                    List<string> blockContexts = new List<string>();
-                    foreach ( var block in _page.Blocks )
+                    if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
                     {
-                        var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
-                        if ( blockControl != null )
+                        ddlLayout.Items.Clear();
+                        var layoutService = new LayoutService();
+                        layoutService.RegisterLayouts( Request.MapPath( "~" ), _page.Layout.Site, CurrentPersonId );
+                        foreach ( var layout in layoutService.GetBySiteId( _page.Layout.SiteId ) )
                         {
-                            blockControl.CurrentPage = _page;
-                            blockControl.CurrentBlock = block;
-                            foreach ( var context in blockControl.ContextTypesRequired )
+                            ddlLayout.Items.Add( new ListItem( layout.Name, layout.Id.ToString() ) );
+                        }
+                        ddlMenuWhen.BindToEnum( typeof( DisplayInNavWhen ) );
+
+                        phAttributes.Controls.Clear();
+                        Rock.Attribute.Helper.AddEditControls( _page, phAttributes, !Page.IsPostBack );
+
+                        List<string> blockContexts = new List<string>();
+                        foreach ( var block in _page.Blocks )
+                        {
+                            var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
+                            if ( blockControl != null )
                             {
-                                if ( !blockContexts.Contains( context ) )
+                                blockControl.CurrentPage = _page;
+                                blockControl.CurrentBlock = block;
+                                foreach ( var context in blockControl.ContextTypesRequired )
                                 {
-                                    blockContexts.Add( context );
+                                    if ( !blockContexts.Contains( context ) )
+                                    {
+                                        blockContexts.Add( context );
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    phContextPanel.Visible = blockContexts.Count > 0;
+                        phContextPanel.Visible = blockContexts.Count > 0;
 
-                    int i = 0;
-                    foreach ( string context in blockContexts )
-                    {
-                        var tbContext = new RockTextBox();
-                        tbContext.ID = string.Format( "context_{0}", i++ );
-                        tbContext.Required = true;
-                        tbContext.Label = context;
-
-                        if ( _page.PageContexts.ContainsKey( context ) )
+                        int i = 0;
+                        foreach ( string context in blockContexts )
                         {
-                            tbContext.Text = _page.PageContexts[context];
-                        }
+                            var tbContext = new RockTextBox();
+                            tbContext.ID = string.Format( "context_{0}", i++ );
+                            tbContext.Required = true;
+                            tbContext.Label = context;
 
-                        phContext.Controls.Add( tbContext );
+                            if ( _page.PageContexts.ContainsKey( context ) )
+                            {
+                                tbContext.Text = _page.PageContexts[context];
+                            }
+
+                            phContext.Controls.Add( tbContext );
+                        }
+                    }
+                    else
+                    {
+                        DisplayError( "You are not authorized to edit this page" );
                     }
                 }
                 else
                 {
-                    DisplayError( "You are not authorized to edit this page" );
+                    DisplayError( "Invalid Page Id value" );
                 }
             }
             catch ( SystemException ex )
@@ -309,19 +317,15 @@ namespace RockWeb.Blocks.Administration
                     }
 
                     page.PageContexts.Clear();
-
-                    if ( phContextPanel.Visible )
+                    foreach ( var control in phContext.Controls )
                     {
-                        foreach ( var control in phContext.Controls )
+                        if ( control is RockTextBox )
                         {
-                            if ( control is RockTextBox )
-                            {
-                                var tbContext = control as RockTextBox;
-                                var pageContext = new PageContext();
-                                pageContext.Entity = tbContext.Label;
-                                pageContext.IdParameter = tbContext.Text;
-                                page.PageContexts.Add( pageContext );
-                            }
+                            var tbContext = control as RockTextBox;
+                            var pageContext = new PageContext();
+                            pageContext.Entity = tbContext.Label;
+                            pageContext.IdParameter = tbContext.Text;
+                            page.PageContexts.Add( pageContext );
                         }
                     }
 

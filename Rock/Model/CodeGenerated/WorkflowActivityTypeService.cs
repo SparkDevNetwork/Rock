@@ -87,18 +87,27 @@ namespace Rock.Model
             else
             {
                 var target = new WorkflowActivityType();
-                target.IsActive = source.IsActive;
-                target.WorkflowTypeId = source.WorkflowTypeId;
-                target.Name = source.Name;
-                target.Description = source.Description;
-                target.IsActivatedWithWorkflow = source.IsActivatedWithWorkflow;
-                target.Order = source.Order;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another WorkflowActivityType object to this WorkflowActivityType object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this WorkflowActivityType target, WorkflowActivityType source )
+        {
+            target.IsActive = source.IsActive;
+            target.WorkflowTypeId = source.WorkflowTypeId;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.IsActivatedWithWorkflow = source.IsActivatedWithWorkflow;
+            target.Order = source.Order;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

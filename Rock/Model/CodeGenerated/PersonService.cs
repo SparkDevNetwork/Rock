@@ -147,39 +147,48 @@ namespace Rock.Model
             else
             {
                 var target = new Person();
-                target.IsSystem = source.IsSystem;
-                target.RecordTypeValueId = source.RecordTypeValueId;
-                target.RecordStatusValueId = source.RecordStatusValueId;
-                target.RecordStatusReasonValueId = source.RecordStatusReasonValueId;
-                target.PersonStatusValueId = source.PersonStatusValueId;
-                target.IsDeceased = source.IsDeceased;
-                target.TitleValueId = source.TitleValueId;
-                target.GivenName = source.GivenName;
-                target.NickName = source.NickName;
-                target.MiddleName = source.MiddleName;
-                target.LastName = source.LastName;
-                target.SuffixValueId = source.SuffixValueId;
-                target.PhotoId = source.PhotoId;
-                target.BirthDay = source.BirthDay;
-                target.BirthMonth = source.BirthMonth;
-                target.BirthYear = source.BirthYear;
-                target.Gender = source.Gender;
-                target.MaritalStatusValueId = source.MaritalStatusValueId;
-                target.AnniversaryDate = source.AnniversaryDate;
-                target.GraduationDate = source.GraduationDate;
-                target.GivingGroupId = source.GivingGroupId;
-                target.Email = source.Email;
-                target.IsEmailActive = source.IsEmailActive;
-                target.EmailNote = source.EmailNote;
-                target.DoNotEmail = source.DoNotEmail;
-                target.SystemNote = source.SystemNote;
-                target.ViewedCount = source.ViewedCount;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another Person object to this Person object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this Person target, Person source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.RecordTypeValueId = source.RecordTypeValueId;
+            target.RecordStatusValueId = source.RecordStatusValueId;
+            target.RecordStatusReasonValueId = source.RecordStatusReasonValueId;
+            target.PersonStatusValueId = source.PersonStatusValueId;
+            target.IsDeceased = source.IsDeceased;
+            target.TitleValueId = source.TitleValueId;
+            target.GivenName = source.GivenName;
+            target.NickName = source.NickName;
+            target.MiddleName = source.MiddleName;
+            target.LastName = source.LastName;
+            target.SuffixValueId = source.SuffixValueId;
+            target.PhotoId = source.PhotoId;
+            target.BirthDay = source.BirthDay;
+            target.BirthMonth = source.BirthMonth;
+            target.BirthYear = source.BirthYear;
+            target.Gender = source.Gender;
+            target.MaritalStatusValueId = source.MaritalStatusValueId;
+            target.AnniversaryDate = source.AnniversaryDate;
+            target.GraduationDate = source.GraduationDate;
+            target.GivingGroupId = source.GivingGroupId;
+            target.Email = source.Email;
+            target.IsEmailActive = source.IsEmailActive;
+            target.EmailNote = source.EmailNote;
+            target.DoNotEmail = source.DoNotEmail;
+            target.SystemNote = source.SystemNote;
+            target.ViewedCount = source.ViewedCount;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

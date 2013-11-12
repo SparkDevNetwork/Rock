@@ -81,18 +81,27 @@ namespace Rock.Model
             else
             {
                 var target = new Report();
-                target.IsSystem = source.IsSystem;
-                target.Name = source.Name;
-                target.Description = source.Description;
-                target.CategoryId = source.CategoryId;
-                target.EntityTypeId = source.EntityTypeId;
-                target.DataViewId = source.DataViewId;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another Report object to this Report object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this Report target, Report source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.CategoryId = source.CategoryId;
+            target.EntityTypeId = source.EntityTypeId;
+            target.DataViewId = source.DataViewId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

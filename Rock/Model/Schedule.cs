@@ -32,7 +32,6 @@ namespace Rock.Model
         /// File Name.
         /// </value>
         [Required]
-        [AlternateKey]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }

@@ -9,7 +9,6 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock;
 
 namespace Rock.Web.UI.Controls
 {
@@ -45,8 +44,8 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            string scriptKey = "grid-filter-script";
-            string script = @"
+            const string scriptKey = "grid-filter-script";
+            const string script = @"
 Sys.Application.add_load(function () {
 
     $('div.grid-filter header').click(function () {
@@ -93,7 +92,7 @@ Sys.Application.add_load(function () {
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
-        protected void lbFilter_Click( object sender, System.EventArgs e )
+        protected void lbFilter_Click( object sender, EventArgs e )
         {
             _hfVisible.Value = "false";
 
@@ -109,87 +108,91 @@ Sys.Application.add_load(function () {
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            bool visible = _hfVisible.Value == "true";
-
-            writer.AddAttribute( "class", "grid-filter" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            writer.Write( "<header>" );
-
-            writer.RenderBeginTag( HtmlTextWriterTag.H3 );
-            writer.Write( "Filter Options" );
-            writer.RenderEndTag();
-
-            _hfVisible.RenderControl( writer );
-
-            writer.AddAttribute( "class", visible ? "icon-chevron-up toggle-filter" : "icon-chevron-down toggle-filter" );
-            writer.RenderBeginTag( HtmlTextWriterTag.I );
-            writer.RenderEndTag();
-
-            writer.Write( "</header>" );
-
-            // Filter Overview
-            writer.AddAttribute( "class", "grid-filter-overview" );
-            if ( visible )
+            if ( this.Visible )
             {
-                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
-            }
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                bool visible = _hfVisible.Value == "true";
 
-            var nonEmptyValues = _userPreferences.Where( v => !string.IsNullOrEmpty( v.Value ) ).ToList();
-            StringBuilder filtersHtml = new StringBuilder();
-            if ( nonEmptyValues.Count > 0 )
-            {
-                foreach ( var userPreference in nonEmptyValues )
+                writer.AddAttribute( "class", "grid-filter" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.Write( "<header>" );
+
+                writer.RenderBeginTag( HtmlTextWriterTag.H3 );
+                writer.Write( "Filter Options" );
+                writer.RenderEndTag();
+
+                _hfVisible.RenderControl( writer );
+
+                writer.AddAttribute( "class", visible ? "icon-chevron-up toggle-filter" : "icon-chevron-down toggle-filter" );
+                writer.RenderBeginTag( HtmlTextWriterTag.I );
+                writer.RenderEndTag();
+
+                writer.Write( "</header>" );
+
+                // Filter Overview
+                writer.AddAttribute( "class", "grid-filter-overview" );
+                if ( visible )
                 {
-                    DisplayFilterValueArgs args = new DisplayFilterValueArgs( userPreference.Key, userPreference.Value );
-                    if ( DisplayFilterValue != null )
-                    {
-                        DisplayFilterValue( this, args );
-                    }
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+                }
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                    if ( !string.IsNullOrWhiteSpace( args.Value ) )
+                var nonEmptyValues = _userPreferences.Where( v => !string.IsNullOrEmpty( v.Value ) ).ToList();
+                StringBuilder filtersHtml = new StringBuilder();
+                if ( nonEmptyValues.Count > 0 )
+                {
+                    foreach ( var userPreference in nonEmptyValues )
                     {
-                        filtersHtml.AppendLine( "<div>" );
-                        filtersHtml.AppendLine( string.Format( "<label>{0}:</label> {1}", args.Key, args.Value ) );
-                        filtersHtml.AppendLine( "</div>" );
+                        DisplayFilterValueArgs args = new DisplayFilterValueArgs( userPreference.Key, userPreference.Value );
+                        if ( DisplayFilterValue != null )
+                        {
+                            DisplayFilterValue( this, args );
+                        }
+
+                        if ( !string.IsNullOrWhiteSpace( args.Value ) )
+                        {
+
+                            filtersHtml.AppendLine( "<div>" );
+                            filtersHtml.AppendLine( string.Format( "<label>{0}:</label> {1}", args.Key, args.Value ) );
+                            filtersHtml.AppendLine( "</div>" );
+                        }
                     }
                 }
-            }
 
-            if ( filtersHtml.Length > 0 )
-            {
-                writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
-                writer.Write( "<h4>Enabled Filters</h4>" );
-                writer.Write( filtersHtml.ToString() );
+                if ( filtersHtml.Length > 0 )
+                {
+                    writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
+                    writer.Write( "<h4>Enabled Filters</h4>" );
+                    writer.Write( filtersHtml.ToString() );
+                    writer.RenderEndTag();
+                }
+
                 writer.RenderEndTag();
+
+                // Filter Entry
+                writer.AddAttribute( "class", "grid-filter-entry" );
+                if ( !visible )
+                {
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+                }
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
+
+                writer.Write( "<h4>Filter Options</h4>" );
+
+                base.RenderControl( writer );
+
+                writer.RenderEndTag();
+
+                _lbFilter.RenderControl( writer );
+
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();
+
+                SaveUserPreferences();
             }
-
-            writer.RenderEndTag();
-
-            // Filter Entry
-            writer.AddAttribute( "class", "grid-filter-entry" );
-            if ( !visible )
-            {
-                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
-            }
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
-
-            writer.Write( "<h4>Filter Options</h4>" );
-
-            base.RenderControl( writer );
-
-            writer.RenderEndTag();
-
-            _lbFilter.RenderControl( writer );
-
-            writer.RenderEndTag();
-
-            writer.RenderEndTag();
-
-            SaveUserPreferences();
         }
 
         /// <summary>
@@ -202,7 +205,7 @@ Sys.Application.add_load(function () {
             {
                 // wrap filter items in bootstrap responsive grid
                 int cellCount = 0;
-                int cellsPerRow = 3;
+                const int cellsPerRow = 3;
 
                 // write first row
                 writer.AddAttribute("class", "row");
@@ -211,7 +214,7 @@ Sys.Application.add_load(function () {
                 foreach ( Control child in Controls )
                 {
                     // write new row
-                    if (cellCount >= cellsPerRow)
+                    if ( cellCount >= cellsPerRow )
                     {
                         writer.RenderEndTag();
                         writer.AddAttribute("class", "row");

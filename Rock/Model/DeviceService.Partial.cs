@@ -58,7 +58,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="ipAddress">A <see cref="System.String" /> representing the ip address.</param>
         /// <param name="deviceTypeValueId">A <see cref="System.Int32"/> representing the DeviceType <see cref="Rock.Model.DefinedValue"/> of the device that you are searching for.</param>
-        /// <param name="skipReverseLookup">A <see cref="Rock.Model.Boolean"/> indicating if a reverse lookup will be skipped. If <c>true</c> a DNS reverse lookup for the name of the system
+        /// <param name="skipReverseLookup">A <see cref="System.Boolean"/> indicating if a reverse lookup will be skipped. If <c>true</c> a DNS reverse lookup for the name of the system
         /// that belongs to the provided IP address will not be performed, otherwise <c>false</c> and a DNS reverse lookup will be performed.</param>
         /// <returns>
         /// A <see cref="Rock.Model.Device"/> that is associated with the provided IP address.

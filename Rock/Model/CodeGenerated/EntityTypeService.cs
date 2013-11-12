@@ -181,18 +181,27 @@ namespace Rock.Model
             else
             {
                 var target = new EntityType();
-                target.Name = source.Name;
-                target.AssemblyName = source.AssemblyName;
-                target.FriendlyName = source.FriendlyName;
-                target.IsEntity = source.IsEntity;
-                target.IsSecured = source.IsSecured;
-                target.IsCommon = source.IsCommon;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another EntityType object to this EntityType object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this EntityType target, EntityType source )
+        {
+            target.Name = source.Name;
+            target.AssemblyName = source.AssemblyName;
+            target.FriendlyName = source.FriendlyName;
+            target.IsEntity = source.IsEntity;
+            target.IsSecured = source.IsSecured;
+            target.IsCommon = source.IsCommon;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

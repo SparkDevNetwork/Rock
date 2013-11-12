@@ -15,8 +15,16 @@
 	@month int,
 	@day int,
 	@personCounter int = 0, 
-	@maxPerson int = 99999
-
+	@maxPerson int = 99999,
+    @createGroups int = 1,
+    @familyGroupType int = (SELECT id FROM GroupType WHERE guid = '790E3215-3B10-442B-AF69-616C0DCB998E'),
+    @adultRole int = (SELECT id FROM GroupTypeRole WHERE guid = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42'),
+    @groupId int,
+    @locationId int,
+    @locationTypeValueHome int = (select id from DefinedValue where guid = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC'),
+    @streetAddress int,
+    @zipCode int
+ 
 begin
 
 IF OBJECT_ID('tempdb..#fakenames') IS NOT NULL
@@ -5076,8 +5084,30 @@ while @personCounter < @maxPerson
 		VALUES (0, @firstName , @lastName, @day, @month, @year, @genderInt, @email, 1, 0, NEWID(), @personRecordType, @activeRecordStatus)
 		SET @personId = SCOPE_IDENTITY()
 
-		INSERT INTO [PhoneNumber] (IsSystem, PersonId, Number, IsMessagingEnabled, IsUnlisted, Guid, NumberTypeValueId)
+		INSERT INTO [PhoneNumber] (IsSystem, PersonId, Number, IsMessagingEnabled, IsUnlisted, [Guid], NumberTypeValueId)
 		VALUES (0, @personId, @phoneNumber, 1, 0, newid(), @primaryPhone);
+
+        if @createGroups = 1
+        begin
+            INSERT INTO [Group] (IsSystem, GroupTypeId, Name, IsSecurityRole, IsActive, [Guid], [Order])
+            VALUES (0, @familyGroupType, @lastName + ' Family', 0, 1, NEWID(), 0)
+            SET @groupId = SCOPE_IDENTITY()
+
+            INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, [Guid], GroupMemberStatus)
+            VALUES (0, @groupId, @personId, @adultRole, newid(), 0)
+
+            set @zipCode = ROUND(rand() * 9999, 0)+ 80000;
+            set @streetAddress = ROUND(rand() * 9999, 0)+ 100;
+
+            INSERT INTO [Location] (Street1, Street2, City, [State], Zip, IsActive, [Guid], IsNamedLocation)
+            VALUES ( CONVERT(varchar(max), @streetAddress) + ' Random Street', '', 'Phoenix', 'AZ', @zipCode, 1, NEWID(), 0)
+            SET @locationId = SCOPE_IDENTITY()
+
+            INSERT INTO [GroupLocation] (GroupId, LocationId, GroupLocationTypeValueId, [Guid], IsMailingLocation, IsMappedLocation)
+            VALUES (@groupId, @locationId, @locationTypeValueHome, NEWID(), 1, 0)             
+
+            
+        end
 
 		set @personCounter += 1;
 	end

@@ -81,15 +81,24 @@ namespace Rock.Model
             else
             {
                 var target = new WorkflowLog();
-                target.WorkflowId = source.WorkflowId;
-                target.LogDateTime = source.LogDateTime;
-                target.LogText = source.LogText;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another WorkflowLog object to this WorkflowLog object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this WorkflowLog target, WorkflowLog source )
+        {
+            target.WorkflowId = source.WorkflowId;
+            target.LogDateTime = source.LogDateTime;
+            target.LogText = source.LogText;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

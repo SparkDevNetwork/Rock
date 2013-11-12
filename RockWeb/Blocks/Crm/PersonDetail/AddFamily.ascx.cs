@@ -21,8 +21,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     /// <summary>
     /// Block for adding new families
     /// </summary>
-    [DefinedValueField( Rock.SystemGuid.DefinedType.LOCATION_LOCATION_TYPE, "Location Type",
-        "The type of location that address should use", false, Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME, "", 0 )]
+    [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Location Type",
+        "The type of location that address should use", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 0 )]
     [BooleanField( "Nick Name", "Show Nick Name column", "Hide Nick Name column", "Should the Nick Name field be displayed?", false, "", 1 )]
     [BooleanField( "Gender", "Require a gender for each person", "Don't require", "Should Gender be required for each person added?", false, "", 2 )]
     [BooleanField( "Grade", "Require a grade for each child", "Don't require", "Should Grade be required for each child added?", false, "", 3 )]
@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             cpCampus.Campuses = campusi;
             cpCampus.Visible = campusi.Any();
 
-            var childRole = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) );
+            var childRole = new GroupTypeRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) );
             if ( childRole != null )
             {
                 _childRoleId = childRole.Id;
@@ -274,6 +274,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     groupMember.GroupRoleId = row.RoleId.Value;
                 }
+
                 groupMember.Person.TitleValueId = row.TitleValueId;
                 groupMember.Person.GivenName = row.FirstName;
                 if ( nfmMembers.ShowNickName )
@@ -411,10 +412,21 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                                     groupService.Add( familyGroup, CurrentPersonId );
                                     groupService.Save( familyGroup, CurrentPersonId );
+                                    
+                                    var personService = new PersonService();
 
-                                    var groupMemberService = new GroupMemberService();
-                                    foreach ( var person in familyMembers.Select( m => m.Person ) )
+                                    foreach ( var groupMember in familyMembers )
                                     {
+                                        var person = personService.Get( groupMember.PersonId );
+                                        if ( person != null )
+                                        {
+                                            if ( groupMember.GroupRoleId != _childRoleId )
+                                            {
+                                                person.GivingGroupId = familyGroup.Id;
+                                                personService.Save( person, CurrentPersonId );
+                                            }
+                                        }
+
                                         foreach ( var attributeControl in attributeControls )
                                         {
                                             foreach ( var attribute in attributeControl.AttributeList )

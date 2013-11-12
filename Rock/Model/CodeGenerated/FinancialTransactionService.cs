@@ -87,25 +87,34 @@ namespace Rock.Model
             else
             {
                 var target = new FinancialTransaction();
-                target.AuthorizedPersonId = source.AuthorizedPersonId;
-                target.BatchId = source.BatchId;
-                target.GatewayEntityTypeId = source.GatewayEntityTypeId;
-                target.TransactionDateTime = source.TransactionDateTime;
-                target.Amount = source.Amount;
-                target.TransactionCode = source.TransactionCode;
-                target.Summary = source.Summary;
-                target.TransactionTypeValueId = source.TransactionTypeValueId;
-                target.CurrencyTypeValueId = source.CurrencyTypeValueId;
-                target.CreditCardTypeValueId = source.CreditCardTypeValueId;
-                target.SourceTypeValueId = source.SourceTypeValueId;
-                target.CheckMicrEncrypted = source.CheckMicrEncrypted;
-                target.ScheduledTransactionId = source.ScheduledTransactionId;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another FinancialTransaction object to this FinancialTransaction object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this FinancialTransaction target, FinancialTransaction source )
+        {
+            target.AuthorizedPersonId = source.AuthorizedPersonId;
+            target.BatchId = source.BatchId;
+            target.GatewayEntityTypeId = source.GatewayEntityTypeId;
+            target.TransactionDateTime = source.TransactionDateTime;
+            target.Amount = source.Amount;
+            target.TransactionCode = source.TransactionCode;
+            target.Summary = source.Summary;
+            target.TransactionTypeValueId = source.TransactionTypeValueId;
+            target.CurrencyTypeValueId = source.CurrencyTypeValueId;
+            target.CreditCardTypeValueId = source.CreditCardTypeValueId;
+            target.SourceTypeValueId = source.SourceTypeValueId;
+            target.CheckMicrEncrypted = source.CheckMicrEncrypted;
+            target.ScheduledTransactionId = source.ScheduledTransactionId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

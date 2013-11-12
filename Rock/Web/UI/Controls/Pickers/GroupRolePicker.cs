@@ -5,7 +5,6 @@
 //
 using System;
 using System.ComponentModel;
-using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -55,6 +54,7 @@ namespace Rock.Web.UI.Controls
             {
                 return HelpBlock != null ? HelpBlock.Text : string.Empty;
             }
+
             set
             {
                 if ( HelpBlock != null )
@@ -63,6 +63,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
+
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
         /// </summary>
@@ -93,6 +94,7 @@ namespace Rock.Web.UI.Controls
             {
                 return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
             }
+
             set
             {
                 if ( RequiredFieldValidator != null )
@@ -100,6 +102,18 @@ namespace Rock.Web.UI.Controls
                     RequiredFieldValidator.ErrorMessage = value;
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets or sets an optional validation group to use.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get { return ViewState["ValidationGroup"] as string; }
+            set { ViewState["ValidationGroup"] = value; }
         }
 
         /// <summary>
@@ -142,7 +156,7 @@ namespace Rock.Web.UI.Controls
         #endregion
 
         #region Properties
-        
+
         /// <summary>
         /// Gets or sets the group type id.
         /// </summary>
@@ -151,9 +165,13 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public int? GroupTypeId
         {
-            get { return ViewState["GroupTypeId"] as int?; }
-            set 
-            { 
+            get
+            {
+                return ViewState["GroupTypeId"] as int?;
+            }
+
+            set
+            {
                 ViewState["GroupTypeId"] = value;
                 LoadGroupRoles( value.Value );
             }
@@ -169,6 +187,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
+                EnsureChildControls();
                 int groupRoleId = int.MinValue;
                 if ( int.TryParse( _ddlGroupRole.SelectedValue, out groupRoleId ) && groupRoleId > 0 )
                 {
@@ -180,12 +199,13 @@ namespace Rock.Web.UI.Controls
 
             set
             {
+                EnsureChildControls();
                 int groupRoleId = value.HasValue ? value.Value : 0;
                 if ( _ddlGroupRole.SelectedValue != groupRoleId.ToString() )
                 {
                     if ( !GroupTypeId.HasValue )
                     {
-                        var groupRole = new Rock.Model.GroupRoleService().Get( groupRoleId );
+                        var groupRole = new Rock.Model.GroupTypeRoleService().Get( groupRoleId );
                         if ( groupRole != null &&
                             groupRole.GroupTypeId.HasValue &&
                             _ddlGroupType.SelectedValue != groupRole.GroupTypeId.ToString() )
@@ -196,11 +216,7 @@ namespace Rock.Web.UI.Controls
                         }
                     }
 
-                    var selectedItem = _ddlGroupRole.Items.FindByValue( groupRoleId.ToString() );
-                    if ( selectedItem != null )
-                    {
-                        selectedItem.Selected = true;
-                    }
+                    _ddlGroupRole.SelectedValue = groupRoleId.ToString();
                 }
             }
         }
@@ -213,10 +229,7 @@ namespace Rock.Web.UI.Controls
         public GroupRolePicker()
             : base()
         {
-            _ddlGroupType = new RockDropDownList();
-            LoadGroupTypes();
-
-            _ddlGroupRole = new RockDropDownList();
+            HelpBlock = new HelpBlock();
         }
 
         /// <summary>
@@ -228,13 +241,28 @@ namespace Rock.Web.UI.Controls
             Controls.Clear();
             RockControlHelper.CreateChildControls( this, Controls );
 
+            _ddlGroupType = new RockDropDownList();
             _ddlGroupType.ID = this.ID + "_ddlGroupType";
             _ddlGroupType.AutoPostBack = true;
             _ddlGroupType.SelectedIndexChanged += _ddlGroupType_SelectedIndexChanged;
             Controls.Add( _ddlGroupType );
 
-            _ddlGroupRole.ID = this.ID;
+            _ddlGroupRole = new RockDropDownList();
+            _ddlGroupRole.ID = this.ID + "_ddlGroupRole";
             Controls.Add( _ddlGroupRole );
+
+            LoadGroupTypes();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the _ddlGroupType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void _ddlGroupType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            int groupTypeId = _ddlGroupType.SelectedValue.AsInteger() ?? 0;
+            LoadGroupRoles( groupTypeId );
         }
 
         /// <summary>
@@ -245,21 +273,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                if ( !GroupTypeId.HasValue )
-                {
-                    _ddlGroupType.Label = this.Label;
-                    _ddlGroupType.Help = this.Help;
-                    _ddlGroupType.RenderControl( writer );
-
-                    _ddlGroupRole.Label = (_ddlGroupType.SelectedItem != null ? _ddlGroupType.SelectedItem.Text : this.Label) + " Role";
-                }
-                else
-                {
-                    _ddlGroupRole.Label = this.Label;
-                    _ddlGroupRole.Help = this.Help;
-                }
-
-                _ddlGroupRole.RenderControl( writer );
+                RockControlHelper.RenderControl( this, writer );
             }
         }
 
@@ -269,21 +283,43 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            if ( !GroupTypeId.HasValue )
+            {
+                _ddlGroupType.RenderControl( writer );
+                _ddlGroupRole.Label = ( _ddlGroupType.SelectedItem != null ? _ddlGroupType.SelectedItem.Text : this.Label ) + " Role";
+            }
+            else
+            {
+                _ddlGroupRole.Label = string.Empty;
+            }
+
+            _ddlGroupRole.RenderControl( writer );
         }
 
+        /// <summary>
+        /// Loads the group types.
+        /// </summary>
         private void LoadGroupTypes()
         {
             _ddlGroupType.Items.Clear();
 
             var groupTypeService = new Rock.Model.GroupTypeService();
             var groupTypes = groupTypeService.Queryable().OrderBy( a => a.Name ).ToList();
-            groupTypes.ForEach( g => 
-                _ddlGroupType.Items.Add( new ListItem( g.Name, g.Id.ToString().ToUpper() ))
-            );
+
+            foreach ( var g in groupTypes )
+            {
+                _ddlGroupType.Items.Add( new ListItem( g.Name, g.Id.ToString().ToUpper() ) );
+            }
         }
 
-        private void LoadGroupRoles(int? groupTypeId)
+        /// <summary>
+        /// Loads the group roles.
+        /// </summary>
+        /// <param name="groupTypeId">The group type unique identifier.</param>
+        private void LoadGroupRoles( int? groupTypeId )
         {
+            int? currentGroupRoleId = this.GroupRoleId;
+            _ddlGroupRole.SelectedValue = null;
             _ddlGroupRole.Items.Clear();
             if ( groupTypeId.HasValue )
             {
@@ -292,25 +328,14 @@ namespace Rock.Web.UI.Controls
                     _ddlGroupRole.Items.Add( new ListItem( string.Empty, Rock.Constants.None.IdValue ) );
                 }
 
-                var groupRoleService = new Rock.Model.GroupRoleService();
+                var groupRoleService = new Rock.Model.GroupTypeRoleService();
                 var groupRoles = groupRoleService.Queryable().Where( r => r.GroupTypeId == groupTypeId.Value ).OrderBy( a => a.Name ).ToList();
-                groupRoles.ForEach( r =>
-                    _ddlGroupRole.Items.Add( new ListItem( r.Name, r.Id.ToString().ToUpper() ) )
-                );
-            }
-        }
-
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the _ddlGroupType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void _ddlGroupType_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            int groupTypeId = int.MinValue;
-            if ( int.TryParse( _ddlGroupType.SelectedValue, out groupTypeId ) && groupTypeId > 0 )
-            {
-                LoadGroupRoles( groupTypeId );
+                foreach ( var r in groupRoles )
+                {
+                    var roleItem = new ListItem( r.Name, r.Id.ToString().ToUpper() );
+                    roleItem.Selected = r.Id == currentGroupRoleId;
+                    _ddlGroupRole.Items.Add( roleItem );
+                }
             }
         }
     }

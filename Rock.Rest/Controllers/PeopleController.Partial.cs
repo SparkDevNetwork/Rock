@@ -27,13 +27,21 @@ namespace Rock.Rest.Controllers
         public void AddRoutes( System.Web.Routing.RouteCollection routes )
         {
             routes.MapHttpRoute(
+                name: "PeopleSearchParam",
+                routeTemplate: "api/People/Search",
+                defaults: new
+                {
+                    controller = "People",
+                    action = "Search"
+                } );
+            
+            routes.MapHttpRoute(
                 name: "PeopleSearch",
                 routeTemplate: "api/People/Search/{name}/{includeHtml}",
                 defaults: new
                 {
                     controller = "People",
-                    action = "Search",
-                    includeHtml = RouteParameter.Optional
+                    action = "Search"
                 } );
 
             routes.MapHttpRoute(
@@ -62,7 +70,18 @@ namespace Rock.Rest.Controllers
         /// <param name="name">The name.</param>
         /// <returns></returns>
         [HttpGet]
-        public IQueryable<PersonSearchResult> Search( string name, bool includeHtml = true)
+        public IQueryable<PersonSearchResult> Search( string name)
+        {
+            return Search( name, false );
+        }
+
+        /// <summary>
+        /// Searches the specified name.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        [HttpGet]
+        public IQueryable<PersonSearchResult> Search( string name, bool includeHtml)
         {
             int count = 20;
             bool lastFirst;
@@ -190,7 +209,7 @@ namespace Rock.Rest.Controllers
 
                 searchResult.Add( personSearchResult );
             }
-
+            
             return searchResult.AsQueryable();
         }
 
@@ -230,7 +249,7 @@ namespace Rock.Rest.Controllers
                 var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
                 string imageUrlFormat = Path.Combine( appPath, "GetImage.ashx?id={0}&width=37&height=37" );
                 string imageNoPhoto = Path.Combine(appPath, "Assets/images/person-no-photo.svg");
-                html.AppendFormat( "<header><img src='{0}'/> <div>{1}<small>{2}</small></div></header>",
+                html.AppendFormat( "<header><img src='{0}'/> <h3>{1}<small>{2}</small></h3></header>",
                     person.PhotoId.HasValue ? string.Format( imageUrlFormat, person.PhotoId.Value ) : imageNoPhoto,
                     person.FullName,
                     person.PersonStatusValueId.HasValue ? person.PersonStatusValue.Name : string.Empty );
@@ -238,7 +257,7 @@ namespace Rock.Rest.Controllers
                 var spouse = person.GetSpouse();
                 if (spouse != null)
                 {
-                    html.AppendFormat("<br/><strong>Spouse</strong> {0}", 
+                    html.AppendFormat("<strong>Spouse</strong> {0}", 
                         spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName);
                 }
 
@@ -258,7 +277,7 @@ namespace Rock.Rest.Controllers
                     html.AppendFormat("<br/><strong>{0}</strong> {1}", phoneNumber.NumberTypeValue.Name, phoneNumber.NumberFormatted);
                 }
 
-                // TODO: Should also show area: <br /><strong>Area</strong> Westwing
+                // TODO: Should also show area: <br /><strong>Area</strong> WestwingS
 
                 result.PickerItemDetailsHtml = html.ToString();
             }

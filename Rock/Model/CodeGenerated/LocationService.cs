@@ -99,36 +99,44 @@ namespace Rock.Model
             else
             {
                 var target = new Location();
-                target.ParentLocationId = source.ParentLocationId;
-                target.Name = source.Name;
-                target.IsActive = source.IsActive;
-                target.GeoPoint = source.GeoPoint;
-                target.GeoFence = source.GeoFence;
-                target.LocationTypeValueId = source.LocationTypeValueId;
-                target.IsLocation = source.IsLocation;
-                target.Street1 = source.Street1;
-                target.Street2 = source.Street2;
-                target.City = source.City;
-                target.State = source.State;
-                target.Country = source.Country;
-                target.Zip = source.Zip;
-                target.FullAddress = source.FullAddress;
-                target.AssessorParcelId = source.AssessorParcelId;
-                target.StandardizeAttemptedDateTime = source.StandardizeAttemptedDateTime;
-                target.StandardizeAttemptedServiceType = source.StandardizeAttemptedServiceType;
-                target.StandardizeAttemptedResult = source.StandardizeAttemptedResult;
-                target.StandardizedDateTime = source.StandardizedDateTime;
-                target.GeocodeAttemptedDateTime = source.GeocodeAttemptedDateTime;
-                target.GeocodeAttemptedServiceType = source.GeocodeAttemptedServiceType;
-                target.GeocodeAttemptedResult = source.GeocodeAttemptedResult;
-                target.GeocodedDateTime = source.GeocodedDateTime;
-                target.PrinterDeviceId = source.PrinterDeviceId;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another Location object to this Location object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this Location target, Location source )
+        {
+            target.ParentLocationId = source.ParentLocationId;
+            target.Name = source.Name;
+            target.IsActive = source.IsActive;
+            target.GeoPoint = source.GeoPoint;
+            target.GeoFence = source.GeoFence;
+            target.IsNamedLocation = source.IsNamedLocation;
+            target.Street1 = source.Street1;
+            target.Street2 = source.Street2;
+            target.City = source.City;
+            target.State = source.State;
+            target.Country = source.Country;
+            target.Zip = source.Zip;
+            target.FullAddress = source.FullAddress;
+            target.AssessorParcelId = source.AssessorParcelId;
+            target.StandardizeAttemptedDateTime = source.StandardizeAttemptedDateTime;
+            target.StandardizeAttemptedServiceType = source.StandardizeAttemptedServiceType;
+            target.StandardizeAttemptedResult = source.StandardizeAttemptedResult;
+            target.StandardizedDateTime = source.StandardizedDateTime;
+            target.GeocodeAttemptedDateTime = source.GeocodeAttemptedDateTime;
+            target.GeocodeAttemptedServiceType = source.GeocodeAttemptedServiceType;
+            target.GeocodeAttemptedResult = source.GeocodeAttemptedResult;
+            target.GeocodedDateTime = source.GeocodedDateTime;
+            target.PrinterDeviceId = source.PrinterDeviceId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

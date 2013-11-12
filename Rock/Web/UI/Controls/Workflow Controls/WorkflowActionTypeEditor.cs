@@ -133,7 +133,7 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
                 }
 
                 _phActionAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( value, _phActionAttributes, true, new List<string>() { "Active", "Order" } );
+                Rock.Attribute.Helper.AddEditControls( value, _phActionAttributes, true, string.Empty, new List<string>() { "Active", "Order" } );
             }
         }
 

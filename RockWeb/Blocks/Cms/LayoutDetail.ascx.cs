@@ -27,15 +27,6 @@ namespace RockWeb.Blocks.Crm
         #region Control Methods
 
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-        }
-
-        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -101,31 +92,89 @@ namespace RockWeb.Blocks.Crm
 
         #region Edit Events
 
+ 
         /// <summary>
-        /// Loads the drop downs.
+        /// Handles the Click event of the btnSave control.
         /// </summary>
-        private void LoadDropDowns()
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnSave_Click( object sender, EventArgs e )
         {
-            ddlLayout.Items.Clear();
-            ddlLayout.Items.Add( new ListItem( string.Empty, None.IdValue ) );
-
-            var site = SiteCache.Read( hfSiteId.ValueAsInt() );
-            string virtualFolder = string.Format( "~/Themes/{0}/Layouts", site.Theme );
-            string physicalFolder = Request.MapPath( virtualFolder );
-
-            // search for all layouts (aspx files) under the physical path 
-            var layoutFiles = new List<string>();
-            DirectoryInfo di = new DirectoryInfo( physicalFolder );
-            if ( di.Exists )
+            if ( Page.IsValid )
             {
-                foreach ( var file in di.GetFiles( "*.aspx", SearchOption.AllDirectories ) )
-                {
-                    ddlLayout.Items.Add( new ListItem( file.FullName.Replace( physicalFolder, virtualFolder ).Replace(@"\", "/"), Path.GetFileNameWithoutExtension( file.Name ) ) );
-                }
-            }
+                LayoutService layoutService = new LayoutService();
+                Layout layout;
 
-            ddlLayout.Required = true;
+                int layoutId = int.Parse( hfLayoutId.Value );
+
+                // if adding a new layout 
+                if ( layoutId.Equals( 0 ) )
+                {
+                    layout = new Layout { Id = 0 };
+                    layout.SiteId = hfSiteId.ValueAsInt();
+                }
+                else
+                {
+                    //load existing group member
+                    layout = layoutService.Get( layoutId );
+                }
+
+                layout.Name = tbLayoutName.Text;
+                layout.Description = tbDescription.Text;
+                layout.FileName = ddlLayout.SelectedValue;
+
+                if ( !layout.IsValid )
+                {
+                    return;
+                }
+
+                RockTransactionScope.WrapTransaction( () =>
+                {
+                    if ( layout.Id.Equals( 0 ) )
+                    {
+                        layoutService.Add( layout, CurrentPersonId );
+                    }
+
+                    layoutService.Save( layout, CurrentPersonId );
+                } );
+
+                LayoutCache.Flush( layout.Id );
+
+                Dictionary<string, string> qryString = new Dictionary<string, string>();
+                qryString["siteId"] = hfSiteId.Value;
+                NavigateToParentPage( qryString );
+            }
         }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            if ( hfLayoutId.Value.Equals( "0" ) )
+            {
+                // Cancelling on Add
+                Dictionary<string, string> qryString = new Dictionary<string, string>();
+                qryString["siteId"] = hfSiteId.Value;
+                NavigateToParentPage( qryString );
+            }
+            else
+            {
+                // Cancelling on Edit
+                LayoutService layoutService = new LayoutService();
+                Layout layout = layoutService.Get( int.Parse( hfLayoutId.Value ) );
+
+                Dictionary<string, string> qryString = new Dictionary<string, string>();
+                qryString["siteId"] = layout.SiteId.ToString();
+                NavigateToParentPage( qryString );
+            }
+        }
+
+        #endregion
+
+        #region Internal Methods
 
         /// <summary>
         /// Shows the detail.
@@ -159,7 +208,7 @@ namespace RockWeb.Blocks.Crm
             else
             {
                 // only create a new one if parent was specified
-                if ( siteId != null )
+                if ( siteId.HasValue )
                 {
                     layout = new Layout { Id = 0 };
                     layout.SiteId = siteId.Value;
@@ -192,86 +241,31 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
-        /// Handles the Click event of the btnSave control.
+        /// Loads the drop downs.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnSave_Click( object sender, EventArgs e )
+        private void LoadDropDowns()
         {
-            int layoutId = int.Parse( hfLayoutId.Value );
+            ddlLayout.Items.Clear();
+            ddlLayout.Items.Add( new ListItem( string.Empty, None.IdValue ) );
 
-            LayoutService layoutService = new LayoutService();
-            Layout layout;
+            var site = SiteCache.Read( hfSiteId.ValueAsInt() );
+            string virtualFolder = string.Format( "~/Themes/{0}/Layouts", site.Theme );
+            string physicalFolder = Request.MapPath( virtualFolder );
 
-            // if adding a new layout 
-            if ( layoutId.Equals( 0 ) )
+            // search for all layouts (aspx files) under the physical path 
+            var layoutFiles = new List<string>();
+            DirectoryInfo di = new DirectoryInfo( physicalFolder );
+            if ( di.Exists )
             {
-                layout = new Layout { Id = 0 };
-                layout.SiteId = hfSiteId.ValueAsInt();
-            }
-            else
-            {
-                //load existing group member
-                layout = layoutService.Get( layoutId );
-            }
-
-            layout.Name = tbLayoutName.Text;
-            layout.Description = tbDescription.Text;
-            layout.FileName = ddlLayout.SelectedValue;
-
-            if ( !Page.IsValid )
-            {
-                return;
-            }
-
-            if ( !layout.IsValid )
-            {
-                return;
-            }
-
-            RockTransactionScope.WrapTransaction( () =>
-            {
-                if ( layout.Id.Equals( 0 ) )
+                foreach ( var file in di.GetFiles( "*.aspx", SearchOption.AllDirectories ) )
                 {
-                    layoutService.Add( layout, CurrentPersonId );
+                    ddlLayout.Items.Add( new ListItem( file.FullName.Replace( physicalFolder, virtualFolder ).Replace( @"\", "/" ), Path.GetFileNameWithoutExtension( file.Name ) ) );
                 }
+            }
 
-                layoutService.Save( layout, CurrentPersonId );
-            } );
-
-            Dictionary<string, string> qryString = new Dictionary<string, string>();
-            qryString["siteId"] = hfSiteId.Value;
-
-            LayoutCache.Flush( layout.Id );
-
-            NavigateToParentPage( qryString );
+            ddlLayout.Required = true;
         }
 
-        /// <summary>
-        /// Handles the Click event of the btnCancel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
-        {
-            if ( hfLayoutId.Value.Equals( "0" ) )
-            {
-                // Cancelling on Add
-                Dictionary<string, string> qryString = new Dictionary<string, string>();
-                qryString["siteId"] = hfSiteId.Value;
-                NavigateToParentPage( qryString );
-            }
-            else
-            {
-                // Cancelling on Edit
-                LayoutService layoutService = new LayoutService();
-                Layout layout = layoutService.Get( int.Parse( hfLayoutId.Value ) );
-
-                Dictionary<string, string> qryString = new Dictionary<string, string>();
-                qryString["siteId"] = layout.SiteId.ToString();
-                NavigateToParentPage( qryString );
-            }
-        }
 
         #endregion
     }

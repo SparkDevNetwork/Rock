@@ -66,7 +66,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this is the mailing address/location for this <see cref="Rock.Model.Group"/>.
         /// </value>
-        public bool IsMailing { get; set; }
+        public bool IsMailingLocation { get; set; }
 
         //TODO: Document
         /// <summary>
@@ -75,7 +75,7 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if this instance is location; otherwise, <c>false</c>.
         /// </value>
-        public bool IsLocation { get; set; }
+        public bool IsMappedLocation { get; set; }
 
         #endregion
 
@@ -112,7 +112,7 @@ namespace Rock.Model
         /// Gets or sets a collection containing the <see cref="Rock.Model.Schedule">Schedules</see> that are associated with this GroupLocation.
         /// </summary>
         /// <value>
-        /// A collection of <see cref="Rock.Model.Scheudles"/> that are associated with this GroupLocation.
+        /// A collection of <see cref="Rock.Model.Schedule"/> that are associated with this GroupLocation.
         /// </value>
         public virtual ICollection<Schedule> Schedules
         {
