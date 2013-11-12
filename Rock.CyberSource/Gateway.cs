@@ -102,73 +102,6 @@ namespace Rock.CyberSource
             request.purchaseTotals = GetTotals( paymentInfo );
             request.merchantReferenceCode = new Guid().ToString();
 
-
-            RequestMessage request = GetMerchantInfo();
-            request.billTo = GetBillTo( paymentInfo );
-
-            // put this somewhere to reference the financial transaction
-            request.merchantReferenceCode = "RockTransactionNumber";
-
-            if ( paymentInfo is CreditCardPaymentInfo )
-            {
-                request.ccAuthService = new CCAuthService();
-                request.ccAuthService.run = "true";
-                request.ccCaptureService = new CCCaptureService();
-                request.ccCaptureService.run = "true";
-            }
-            
-            if ( paymentInfo is ACHPaymentInfo )
-            {
-                var ach = paymentInfo as ACHPaymentInfo;
-                //var ppBankAccount = new BankAcct( ach.BankAccountNumber, ach.BankRoutingNumber );
-                //ppBankAccount.AcctType = ach.AccountType == BankAccountType.Checking ? "C" : "S";
-                // create ACH
-                //return new ACHTender( ppBankAccount );
-            }
-
-            if ( paymentInfo is SwipePaymentInfo )
-            {
-                var swipe = paymentInfo as SwipePaymentInfo;
-                //var ppSwipeCard = new SwipeCard( swipe.SwipeInfo );
-                //create swipe
-                //return new CardTender( ppSwipeCard );
-            }
-
-            /*
-            if ( paymentInfo is ReferencePaymentInfo )
-            {
-                var reference = paymentInfo as ReferencePaymentInfo;
-                if ( reference.CurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) ) )
-                {
-                    // ACH
-                    //return new ACHTender( (BankAcct)null );
-                }
-                else
-                {
-                    // card
-                    //return new CardTender( (CreditCard)null );
-                }
-            } */
-            
-
-
-            request.ccAuthService = new CCAuthService();
-            request.ccAuthService.run = "true";
-            request.ccCaptureService = new CCCaptureService();
-            request.ccCaptureService.run = "true";
-
-            
-
-            
-
-            Card card = new Card();
-            card.accountNumber = "4111111111111111";
-            card.cardType = "Visa";
-            card.expirationMonth = "12";
-            card.expirationYear = "2020";
-            request.card = card;
-
-
             if ( paymentInfo is CreditCardPaymentInfo )
             {
                 var cc = paymentInfo as CreditCardPaymentInfo;
@@ -242,7 +175,7 @@ namespace Rock.CyberSource
         {
             string merchantID = GetAttributeValue( "MerchantID" );
             string transactionkey = GetAttributeValue( "TransactionKey" );
-            EndpointAddress address = new EndpointAddress( new Uri( GatewayUrl ) );
+                        
             BasicHttpBinding binding = new BasicHttpBinding();
             binding.Name = "ITransactionProcessor";
             binding.MaxBufferSize = 2147483647;
@@ -262,15 +195,7 @@ namespace Rock.CyberSource
             proxy.Endpoint.Binding = binding;
        
             try            
-            {
-                TransactionProcessorClient proxy = new TransactionProcessorClient( binding, address );
-                proxy.Endpoint.Address = address;
-                proxy.Endpoint.Binding = binding;
-                
-                proxy.ClientCredentials.UserName.UserName = request.merchantID;
-                proxy.ClientCredentials.UserName.Password = transactionkey;                
-
-
+            {                
                 ReplyMessage reply = proxy.runTransaction( request );
                 return reply;
             }
@@ -300,48 +225,12 @@ namespace Rock.CyberSource
             return null;
         }
 
-        /// Processes the reply.
+        /// <summary>
+        /// Processes the error message.
         /// </summary>
         /// <param name="reply">The reply.</param>
         /// <returns></returns>
-        private static bool ProcessReply( ReplyMessage reply )
-        {
-            string template = GetTemplate( reply.decision.ToUpper() );
-            string content = GetContent( reply );
-            // This example writes the message to the console. Choose an appropriate display
-            // method for your own application.
-            Console.WriteLine( template, content );
-            return false;
-        }
-
-        /// <summary>
-        /// Gets the template.
-        /// </summary>
-        /// <param name="decision">The decision.</param>
-        /// <returns></returns>
-        private static string GetTemplate( string decision )
-        {
-            // Retrieves the text that corresponds to the decision.
-            if ( "ACCEPT".Equals( decision ) )
-            {
-                return ( "The order succeeded.{0}" );
-            }
-            if ( "REJECT".Equals( decision ) )
-            {
-                return ( "Your order was not approved.{0}" );
-            }
-
-            // ERROR, or an unknown decision
-            return ( "Your order could not be completed at this time.{0}" +
-                    "\nPlease try again later." );
-        }
-
-        /// <summary>
-        /// Gets the content.
-        /// </summary>
-        /// <param name="reply">The reply.</param>
-        /// <returns></returns>
-        private static string GetContent( ReplyMessage reply )
+        private string ProcessError( ReplyMessage reply )
         {
             int reasonCode = int.Parse( reply.reasonCode );
             switch ( reasonCode )
@@ -363,22 +252,6 @@ namespace Rock.CyberSource
                     return "\nPlease double check your payment details.";
             }
         }
-
-        /// <summary>
-        /// Enumerates the values.
-        /// </summary>
-        /// <param name="array">The array.</param>
-        /// <returns></returns>
-        private static string EnumerateValues( string[] array )
-        {
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            foreach ( string val in array )
-            {
-                sb.Append( val + "\n" );
-            }
-            return ( sb.ToString() );
-        }
-
 
         #region Scheduled Payments
 
@@ -745,92 +618,6 @@ namespace Rock.CyberSource
             }
         }
         
-
-            billingInfo.firstName = paymentInfo.FirstName;
-            billingInfo.lastName = paymentInfo.LastName;
-            billingInfo.email = paymentInfo.Email;
-            billingInfo.phoneNumber = paymentInfo.Phone;
-            billingInfo.street1 = paymentInfo.Street;
-            billingInfo.city = paymentInfo.City;
-            billingInfo.state = paymentInfo.State;
-            billingInfo.postalCode = paymentInfo.Zip;
-            billingInfo.country = "US";
-            billingInfo.ipAddress = "#TODO";
-
-            if ( paymentInfo is CreditCardPaymentInfo )
-            {
-                var cc = paymentInfo as CreditCardPaymentInfo;
-                billingInfo.street1 = cc.BillingStreet;
-                billingInfo.city = cc.BillingCity;
-                billingInfo.state = cc.BillingState;
-                billingInfo.postalCode = cc.BillingZip;
-            }
-
-            return billingInfo;
-        }
-
-        private void GetPaymentType( PaymentInfo paymentInfo )
-        {
-            if ( paymentInfo is CreditCardPaymentInfo )
-            {
-                var cc = paymentInfo as CreditCardPaymentInfo;
-                //var ppCreditCard = new CreditCard( cc.Number, cc.ExpirationDate.ToString( "MMyy" ) );
-                //create credit card
-                //return new CardTender( ppCreditCard );
-            }
-
-            if ( paymentInfo is ACHPaymentInfo )
-            {
-                var ach = paymentInfo as ACHPaymentInfo;
-                //var ppBankAccount = new BankAcct( ach.BankAccountNumber, ach.BankRoutingNumber );
-                //ppBankAccount.AcctType = ach.AccountType == BankAccountType.Checking ? "C" : "S";
-                // create ACH
-                //return new ACHTender( ppBankAccount );
-            }
-
-            if ( paymentInfo is SwipePaymentInfo )
-            {
-                var swipe = paymentInfo as SwipePaymentInfo;
-                //var ppSwipeCard = new SwipeCard( swipe.SwipeInfo );
-                //create swipe
-                //return new CardTender( ppSwipeCard );
-            }
-
-            if ( paymentInfo is ReferencePaymentInfo )
-            {
-                var reference = paymentInfo as ReferencePaymentInfo;
-                if ( reference.CurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) ) )
-                {
-                    // ACH
-                    //return new ACHTender( (BankAcct)null );
-                }
-                else
-                {
-                    // card
-                    //return new CardTender( (CreditCard)null );
-                }
-            }
-            //return null;
-        }
-
-        /// <summary>
-        /// Gets the merchant information.
-        /// </summary>
-        /// <returns></returns>
-        private RequestMessage GetMerchantInfo()
-        {
-            RequestMessage request = new RequestMessage();
-            
-            request.merchantID = GetAttributeValue( "MerchantID" );
-            request.clientLibraryVersion = Environment.Version.ToString();
-            request.clientEnvironment =
-                Environment.OSVersion.Platform +
-                Environment.OSVersion.Version.ToString() + "-CLR" +
-                Environment.Version.ToString();
-            
-            return request;
-        }
-
         #endregion
     }
 }
