@@ -1489,10 +1489,10 @@ td.grid-col-actions {
 .rock-modal .modal-body .nav-pills {
   margin: 6px 0 18px;
 }
-.rock-modal .modal-body .scroll-container {
+.rock-modal .modal-body > .scroll-container {
   width: 720px;
 }
-.rock-modal .modal-body .scroll-container .viewport {
+.rock-modal .modal-body > .scroll-container .viewport {
   width: 670px;
 }
 .rock-modal .modal-body.iframe {
