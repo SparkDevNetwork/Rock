@@ -92,12 +92,12 @@ namespace RockWeb.Blocks.Core
                 rGrid.GridRebind += rGrid_GridRebind;
                 rGrid.RowDataBound += rGrid_RowDataBound;
 
-                rGrid.Columns[1].Visible = !_configuredType;
-                rGrid.Columns[7].Visible = !_displayValueEdit;
-                rGrid.Columns[8].Visible = _displayValueEdit;
-                rGrid.Columns[9].Visible = _displayValueEdit;
+                rGrid.Columns[1].Visible = !_configuredType;   // qualifier
+                rGrid.Columns[4].Visible = !_displayValueEdit; // default value / value
+                rGrid.Columns[5].Visible = _displayValueEdit;  // edit
+                rGrid.Columns[6].Visible = _displayValueEdit;  // secure
 
-                SecurityField securityField = rGrid.Columns[10] as SecurityField;
+                SecurityField securityField = rGrid.Columns[7] as SecurityField;
                 securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
 
                 modalDetails.SaveClick += modalDetails_SaveClick;

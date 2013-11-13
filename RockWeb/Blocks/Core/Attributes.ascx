@@ -28,9 +28,6 @@
                             <asp:Literal ID="lCategories" runat="server"></asp:Literal>
                         </ItemTemplate>
                     </asp:TemplateField>
-                    <asp:BoundField DataField="FieldType" HeaderText="Type" />
-                    <Rock:BoolField DataField="IsMultiValue" HeaderText="Multi-Value" SortExpression="IsMultiValue" />
-                    <Rock:BoolField DataField="IsRequired" HeaderText="Required" SortExpression="IsRequired" />
                     <asp:TemplateField>
                         <HeaderTemplate>Default Value</HeaderTemplate>
                         <ItemTemplate>
