@@ -40,7 +40,7 @@
                     </div>
                 </div>
 
-                <Rock:WidgetPanel ID="wpBehavior" runat="server" Title="Behavior">
+                <Rock:PanelWidget ID="wpBehavior" runat="server" Title="Behavior">
                     <Rock:DataTextBox ID="tbGroupTerm" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="GroupTerm" Required="true" />
                     <Rock:DataTextBox ID="tbGroupMemberTerm" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="GroupMemberTerm" Required="true" />
                     <Rock:RockDropDownList ID="ddlGroupTypePurpose" runat="server" Label="Purpose" Help="Define a specific purpose for this group type" />
@@ -54,17 +54,17 @@
                             </Columns>
                         </Rock:Grid>
                     </Rock:RockControlWrapper>
-                </Rock:WidgetPanel>
+                </Rock:PanelWidget>
 
-                <Rock:WidgetPanel ID="wpDisplay" runat="server" Title="Display">
+                <Rock:PanelWidget ID="wpDisplay" runat="server" Title="Display">
                     <Rock:RockCheckBox ID="cbShowInGroupList" runat="server" Label="Show in Group Lists" Text="Yes" Help="Check this option to include groups of this type in the GroupList block's list of groups." />
                     <Rock:RockCheckBox ID="cbShowInNavigation" runat="server" Label="Show in Navigation" Text="Yes" Help="Check this option to include groups of this type in the GroupTreeView block's navigation control." />
                     <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="IconCssClass" />
                     <Rock:ImageUploader ID="imgIconSmall" runat="server" Label="Small Icon Image" />
                     <Rock:ImageUploader ID="imgIconLarge" runat="server" Label="Large Icon Image" />
-                </Rock:WidgetPanel>
+                </Rock:PanelWidget>
 
-                <Rock:WidgetPanel ID="wpLocations" runat="server" Title="Locations">
+                <Rock:PanelWidget ID="wpLocations" runat="server" Title="Locations">
                     <Rock:RockCheckBox ID="cbAllowMultipleLocations" runat="server" Label="Multiple Locations" Text="Allow" />
                     <Rock:RockDropDownList ID="ddlLocationSelectionMode" runat="server" Label="Location Selection Mode" Help="The selection mode to use when adding locations to groups of this type" />
                     <Rock:RockControlWrapper ID="rcLocationTypes" runat="server" Label="Location Types"
@@ -76,15 +76,15 @@
                             </Columns>
                         </Rock:Grid>
                     </Rock:RockControlWrapper>
-                </Rock:WidgetPanel>
+                </Rock:PanelWidget>
 
-                <Rock:WidgetPanel ID="wpCheckIn" runat="server" Title="Check In">
+                <Rock:PanelWidget ID="wpCheckIn" runat="server" Title="Check In">
                     <Rock:RockCheckBox ID="cbTakesAttendance" runat="server" Label="Takes Attendance" Text="Yes" Help="Check this option if groups of this type should allow taking of attendance." />
                     <Rock:RockDropDownList ID="ddlAttendanceRule" runat="server" Label="Attendance Rule" />
                     <Rock:RockDropDownList ID="ddlAttendancePrintTo" runat="server" Label="Attendance Print To" />
-                </Rock:WidgetPanel>
+                </Rock:PanelWidget>
 
-                <Rock:WidgetPanel ID="wpAttributes" runat="server" Title="Attributes">
+                <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Attributes">
                     <Rock:GroupTypePicker ID="gtpInheritedGroupType" runat="server" Label="Inherited Group Type" Help="Group Type to inherit attributes from" AutoPostBack="true" OnSelectedIndexChanged="gtpInheritedGroupType_SelectedIndexChanged" />
                     <div class="row">
                         <div class="col-md-4">
@@ -172,7 +172,7 @@
                             </Rock:RockControlWrapper>
                         </div>
                     </div>
-                </Rock:WidgetPanel>
+                </Rock:PanelWidget>
 
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
