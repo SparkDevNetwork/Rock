@@ -13,8 +13,8 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    [ToolboxData( "<{0}:WidgetPanel runat=server></{0}:WidgetPanel>" )]
-    public class WidgetPanel : PlaceHolder
+    [ToolboxData( "<{0}:PanelWidget runat=server></{0}:PanelWidget>" )]
+    public class PanelWidget : PlaceHolder
     {
         #region Properties
 
@@ -36,7 +36,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="WidgetPanel" /> is expanded.
+        /// Gets or sets a value indicating whether this <see cref="PanelWidget" /> is expanded.
         /// </summary>
         /// <value>
         ///   <c>true</c> if expanded; otherwise, <c>false</c>.
@@ -67,7 +67,7 @@ namespace Rock.Web.UI.Controls
 
             string script = @"
 // activity animation
-$('.rock-widget-panel > header').click(function () {
+$('.rock-panel-widget > header').click(function () {
     $(this).siblings('.panel-body').slideToggle();
 
     $expanded = $(this).children('input.filter-expanded');
@@ -77,7 +77,7 @@ $('.rock-widget-panel > header').click(function () {
     $('a.view-state > i', this).toggleClass('icon-chevron-up');
 });
 ";
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "RockWidgetPanelScript", script, true );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "RockPanelWidgetScript", script, true );
         }
 
         protected override void CreateChildControls()
@@ -95,7 +95,7 @@ $('.rock-widget-panel > header').click(function () {
             if ( this.Visible )
             {
                 // Section
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget rock-widget-panel" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget rock-panel-widget" );
                 writer.RenderBeginTag( "section" );
 
                 // Header
