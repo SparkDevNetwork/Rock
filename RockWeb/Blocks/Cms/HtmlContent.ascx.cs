@@ -369,7 +369,8 @@ namespace RockWeb.Blocks.Cms
                 var attributeCache = AttributeCache.Read( attribute.Key );
                 if ( attributeCache.IsAuthorized( "View", null ) )
                 {
-                    globalAttributeValues.Add( attributeCache.Key, globalAttributes.AttributeValues[attributeCache.Key].Value );
+                    globalAttributeValues.Add( attributeCache.Key,
+                        attributeCache.FieldType.Field.FormatValue( this, globalAttributes.AttributeValues[attributeCache.Key].Value, attributeCache.QualifierValues, false ) );
                 }
             }
 
