@@ -636,28 +636,40 @@ achieve our mission.  We are so grateful for your commitment.
                             email.Send( recipients );
                         }
 
+                        GatewayComponent gateway = hfPaymentTab.Value == "ACH" ? _achGateway : _ccGateway;
+                        string errorMessage = string.Empty;
                         var paymentInfo = GetPaymentInfo();
+                        
+                        var referenceId = gateway.GetReferenceId( transaction, out errorMessage );
+                        if ( referenceId > 0 )
+                        {
+                            var savedAccount = new FinancialPersonSavedAccount();
+                            savedAccount.PersonId = transaction.AuthorizedPersonId.Value;
+                            savedAccount.ReferenceId = referenceId;
+                            savedAccount.Name = txtSaveAccount.Text;
+                            savedAccount.MaskedAccountNumber = paymentInfo.MaskedNumber;
 
-                        var savedAccount = new FinancialPersonSavedAccount();
-                        savedAccount.PersonId = transaction.AuthorizedPersonId.Value;
-                        savedAccount.FinancialTransactionId = transaction.Id;
-                        savedAccount.Name = txtSaveAccount.Text;
-                        savedAccount.MaskedAccountNumber = paymentInfo.MaskedNumber;
+                            var savedAccountService = new FinancialPersonSavedAccountService();
+                            savedAccountService.Add( savedAccount, CurrentPersonId );
+                            savedAccountService.Save( savedAccount, CurrentPersonId );
 
-                        var savedAccountService = new FinancialPersonSavedAccountService();
-                        savedAccountService.Add( savedAccount, CurrentPersonId );
-                        savedAccountService.Save( savedAccount, CurrentPersonId );
+                            cbSaveAccount.Visible = false;
+                            txtSaveAccount.Visible = false;
+                            phCreateLogin.Visible = false;
+                            divSaveActions.Visible = false;
 
-                        cbSaveAccount.Visible = false;
-                        txtSaveAccount.Visible = false;
-                        phCreateLogin.Visible = false;
-                        divSaveActions.Visible = false;
-
-                        nbSaveAccount.Title = "Success";
-                        nbSaveAccount.Text = "The account has been saved for future use";
-                        nbSaveAccount.NotificationBoxType = NotificationBoxType.Success;
-                        nbSaveAccount.Visible = true;
-
+                            nbSaveAccount.Title = "Success";
+                            nbSaveAccount.Text = "The account has been saved for future use";
+                            nbSaveAccount.NotificationBoxType = NotificationBoxType.Success;
+                            nbSaveAccount.Visible = true;
+                        }
+                        else
+                        {
+                            nbSaveAccount.Title = "Invalid Transaction";
+                            nbSaveAccount.Text = "Sorry, the account information cannot be saved. " + errorMessage;
+                            nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
+                            nbSaveAccount.Visible = true;
+                        }
                     }
                     else
                     {
