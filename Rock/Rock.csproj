@@ -814,7 +814,6 @@
     <Compile Include="Model\FinancialTransactionDetail.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\TransactionSearchValue.cs" />
     <Compile Include="Model\Group.cs" />
     <Compile Include="Model\CodeGenerated\GroupTypeRoleService.cs" />
     <Compile Include="Model\CodeGenerated\GroupService.cs" />
