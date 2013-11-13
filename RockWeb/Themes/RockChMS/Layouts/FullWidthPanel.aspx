@@ -23,7 +23,7 @@
 
 			    </div>	
                 <div class="navbar-collapse collapse pageheader-collapse">   
-                    <div class="navbar-right navbar-text">
+                    <div class="navbar-right">
                         <Rock:Zone Name="Header" runat="server" />
                     </div>
                     <div class="navbar-right navbar-text">				
