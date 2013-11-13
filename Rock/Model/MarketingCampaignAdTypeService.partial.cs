@@ -11,14 +11,17 @@ using Rock.Data;
 
 namespace Rock.Model
 {
+    /// <summary>
+    /// Service/data access class for <see cref="MakretingCampaignAdType"/> entity objects
+    /// </summary>
     public partial class MarketingCampaignAdTypeService
     {
         /// <summary>
-        /// Deletes the specified item.
+        /// Deletes a specified <see cref="MarketingCampaignAdType"/>.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="personId">The person id.</param>
-        /// <returns></returns>
+        /// <param name="item">The <see cref="MarketingCampaignAdType"/> to delete</param>
+        /// <param name="personId">An <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> that is performing the deletion.</param>
+        /// <returns>A <see cref="System.Boolean"/> flag that indicates if the deletion was completed successfully.</returns>
         public override bool Delete( MarketingCampaignAdType item, int? personId )
         {
             string message;
