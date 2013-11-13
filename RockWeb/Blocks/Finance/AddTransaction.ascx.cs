@@ -645,7 +645,8 @@ achieve our mission.  We are so grateful for your commitment.
                         {
                             var savedAccount = new FinancialPersonSavedAccount();
                             savedAccount.PersonId = transaction.AuthorizedPersonId.Value;
-                            savedAccount.ReferenceId = referenceId;
+                            savedAccount.ReferenceId = transaction.Id;
+                            //savedAccount.ReferenceId = referenceId;
                             savedAccount.Name = txtSaveAccount.Text;
                             savedAccount.MaskedAccountNumber = paymentInfo.MaskedNumber;
 
