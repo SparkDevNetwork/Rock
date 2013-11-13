@@ -5,27 +5,55 @@
         <asp:Panel ID="pnlDetails" runat="server" Visible="false">
             <asp:HiddenField ID="hfReportId" runat="server" />
 
+            <div class="banner">
+                <h1>
+                    <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
+            </div>
+
             <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-danger" />
 
-            <div id="pnlEditDetails" runat="server" class="well">
+            <div id="pnlEditDetails" runat="server">
 
-                <fieldset>
-                    <h1 class="banner">
-                        <asp:Literal ID="lActionTitle" runat="server" />
-                    </h1>
-
-                    <div class="row-fluid">
-                        <div class="span6">
-                            <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" EntityTypeName="Rock.Model.Report" Label="Category" />
-                            <Rock:DataDropDownList ID="ddlEntityType" runat="server" SourceTypeName="Rock.Model.Report, Rock" PropertyName="EntityTypeId" DataTextField="FriendlyName" Label="Applies To" DataValueField="Id" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
-                            <Rock:DataDropDownList ID="ddlDataView" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" Label="Data View" />
-                        </div>
-                        <div class="span6">
-                            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Report, Rock" PropertyName="Name" CssClass="" />
-                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Report, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                        </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Report, Rock" PropertyName="Name" Label="Som Name" CssClass="" />
                     </div>
-                </fieldset>
+                    <div class="col-md-6">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Report, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" EntityTypeName="Rock.Model.Report" Label="Category" />
+                        <Rock:DataDropDownList ID="ddlEntityType" runat="server" SourceTypeName="Rock.Model.Report, Rock" PropertyName="EntityTypeId" DataTextField="FriendlyName" Label="Applies To" DataValueField="Id" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
+                        <Rock:DataDropDownList ID="ddlDataView" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" Label="Data View" />
+                    </div>
+                </div>
+
+                <section class="panel panel-widget">
+                    <header class="panel-heading clearfix">
+                        <div class="pull-left">
+                            <h3 class="panel-title">
+                                <span>Fields</span>
+                            </h3>
+                        </div>
+                        <div class="pull-right">
+                            <div class="form-control-group">
+                                <Rock:RockDropDownList ID="ddlFields" runat="server" CssClass="input-width-xl" />
+                                <asp:LinkButton runat="server" ID="btnAddField" CssClass="btn btn-primary btn-sm" Text="Add" OnClick="btnAddField_Click" /></td>
+                            </div>
+                        </div>
+                    </header>
+                    <div class="panel-body">
+                        <span>TODO!</span>
+                    </div>
+                </section>
 
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
@@ -34,27 +62,30 @@
 
             </div>
 
-            <fieldset id="fieldsetViewDetails" runat="server">
-                <h1 class="banner">
-                    <asp:Literal ID="lReadOnlyTitle" runat="server" />
-                </h1>
+            <div id="pnlViewDetails" runat="server">
 
-                <div class="row-fluid">
-                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                <p class="description">
+                    <asp:Literal ID="lReportDescription" runat="server"></asp:Literal>
+                </p>
+
+                <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+
+                <div class="row">
+                    <asp:Literal ID="lblMainDetails" runat="server" />
                 </div>
-                <div class="row-fluid">
-                        <asp:Literal ID="lblMainDetails" runat="server" />
-                </div>
+
                 <div class="actions">
-                    <asp:LinkButton ID="btnEdit"   runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />
+                    <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-sm" OnClick="btnEdit_Click" />
                     <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
-                    <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-mini" OnClick="btnDelete_Click" />
-                    <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-mini pull-right" />
+                    <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-action btn-sm" OnClick="btnDelete_Click" />
+                    <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm pull-right" />
                 </div>
 
-                <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
+                
+                
+                <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results"  />
 
-            </fieldset>
+            </div>
 
         </asp:Panel>
 
