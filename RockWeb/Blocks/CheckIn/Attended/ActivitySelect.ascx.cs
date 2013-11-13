@@ -109,6 +109,16 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     }
                 }
             }
+
+            // reload the attribute field.
+            var pId = Request.QueryString["personId"].AsType<int?>();
+            if ( pId > 0 )
+            {
+                var allergyAttributeId = new AttributeService().GetByEntityTypeId( new Person().TypeId )
+                    .Where( a => a.Name.ToUpper() == "ALLERGY" ).FirstOrDefault().Id;
+                LoadAttributeControl( allergyAttributeId, (int)pId );
+            }
+
         }
 
         #endregion
@@ -404,7 +414,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 var allergyAttributeId = new AttributeService().GetByEntityTypeId( new Person().TypeId )
                     .Where( a => a.Name.ToUpper() == "ALLERGY" ).FirstOrDefault().Id;
-                ShowNoteModal( allergyAttributeId, (int)personId );
+                LoadAttributeControl( allergyAttributeId, (int)personId );
+                mpeAddNote.Show();
             }
             else
             {
@@ -439,7 +450,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 .Where( a => a.Name.ToUpper() == "ALLERGY" ).FirstOrDefault().Id;
             var allergyAttribute = Rock.Web.Cache.AttributeCache.Read( allergyAttributeId );
 
-            Control allergyAttributeControl = fsNotes.FindControl( string.Format( "attribute_field_{0}", allergyAttributeId ) );
+            Control allergyAttributeControl = phAttributes.FindControl( string.Format( "attribute_field_{0}", allergyAttributeId ) );
             if ( allergyAttributeControl != null )
             {
                 person.Person.SetAttributeValue( "Allergy", allergyAttribute.FieldType.Field
@@ -672,19 +683,17 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         /// <param name="attributeId">The attribute id.</param>
         /// <param name="entityId">The entity id.</param>
-        protected void ShowNoteModal( int allergyAttributeId, int personId )
+        protected void LoadAttributeControl( int allergyAttributeId, int personId )
         {
             var attribute = AttributeCache.Read( allergyAttributeId );
             var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
                 .People.Where( p => p.Person.Id == personId ).FirstOrDefault();
-            
-            fsNotes.Controls.Clear();
+
+            phAttributes.Controls.Clear();
             person.Person.LoadAttributes();
             var attributeValue = person.Person.GetAttributeValue( attribute.Key );
-            attribute.AddControl( fsNotes.Controls, attributeValue, "", true, true );
+            attribute.AddControl( phAttributes.Controls, attributeValue, "", true, true );
             hfAllergyAttributeId.Value = attribute.Id.ToString();
-
-            mpeAddNote.Show();            
         }
         
         #endregion        

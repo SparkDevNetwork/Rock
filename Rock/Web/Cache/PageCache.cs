@@ -509,27 +509,23 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <returns></returns>
-        public Rock.Data.IEntity GetCurrentContext( string entity )
+        public Rock.Data.IEntity GetCurrentContext( EntityTypeCache entity )
         {
-            if ( this.Context.ContainsKey( entity ) )
+            if ( this.Context.ContainsKey( entity.Name ) )
             {
-                var keyModel = this.Context[entity];
+                var keyModel = this.Context[entity.Name];
 
                 if ( keyModel.Entity == null )
                 {
-                    Type modelType = Type.GetType( entity );
+                    Type modelType = entity.GetEntityType();
 
                     if ( modelType == null )
                     {
                         // if the Type isn't found in the Rock.dll (it might be from a Plugin), lookup which assessmbly it is in and look in there
-                        EntityTypeCache entityTypeInfo = EntityTypeCache.Read( entity, false );
-                        if ( entityTypeInfo != null )
+                        string[] assemblyNameParts = entity.AssemblyName.Split( new char[] { ',' } );
+                        if ( assemblyNameParts.Length > 1 )
                         {
-                            string[] assemblyNameParts = entityTypeInfo.AssemblyName.Split( new char[] { ',' } );
-                            if ( assemblyNameParts.Length > 1 )
-                            {
-                                modelType = Type.GetType( string.Format( "{0}, {1}", entityTypeInfo.Name, assemblyNameParts[1] ) );
-                            }
+                            modelType = Type.GetType( string.Format( "{0}, {1}", entity.Name, assemblyNameParts[1] ) );
                         }
                     }
 
