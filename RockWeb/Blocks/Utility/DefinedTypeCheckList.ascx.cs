@@ -40,7 +40,8 @@ namespace RockWeb.Blocks.Utility
                 hideCheckedItems = false;
             }
 
-            this.AttributesUpdated += DefinedTypeCheckList_AttributesUpdated;
+            this.BlockUpdated += DefinedTypeCheckList_BlockUpdated; 
+
             rptrValues.ItemDataBound += rptrValues_ItemDataBound;
             BindList();
         }
@@ -109,11 +110,11 @@ namespace RockWeb.Blocks.Utility
         }
 
         /// <summary>
-        /// Handles the AttributesUpdated event of the DefinedTypeCheckList control.
+        /// Handles the BlockUpdated event of the DefinedTypeCheckList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void DefinedTypeCheckList_AttributesUpdated( object sender, EventArgs e )
+        protected void DefinedTypeCheckList_BlockUpdated( object sender, EventArgs e )
         {
             BindList();
         }
