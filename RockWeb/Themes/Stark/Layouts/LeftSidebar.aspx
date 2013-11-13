@@ -20,6 +20,7 @@
 			    </div>	
                 <div class="navbar-collapse collapse">   
                     <!-- Main Navigation -->
+                    <Rock:Zone Name="Login" runat="server" />
                     <Rock:Zone Name="Navigation" runat="server" />
 			    </div>	
             </div>
@@ -30,10 +31,9 @@
     <main class="container">
                 
         <!-- Start Content Area -->
-
+        
         <!-- Page Title -->
         <Rock:PageIcon ID="PageIcon" runat="server" /> <h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1>
-
         <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
                     
         <!-- Ajax Error -->
@@ -87,12 +87,6 @@
             <div class="row">
                 <div class="col-md-12">
                     <Rock:Zone Name="Footer" runat="server" />
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-3 col-md-offset-8">
-                    <Rock:Zone ID="Login" runat="server" />
                 </div>
             </div>
 

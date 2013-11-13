@@ -22,9 +22,7 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Cms
 {
     [MemoField( "Template", "The liquid template to use for rendering. This template should be in the theme's 'Assets/Liquid' folder and should have an underscore prepended to the filename. ", true, @"
-<ul>
-    {% include 'PageNav' %}
-</ul>
+{% include 'PageNav' %}
 " )]
     [LinkedPage( "Root Page", "The root page to use for the page collection. Defaults to the current page instance if not set.", false, "" )]
     [TextField( "Number of Levels", "Number of parent-child page levels to display. Default 3.", false, "3" )]
