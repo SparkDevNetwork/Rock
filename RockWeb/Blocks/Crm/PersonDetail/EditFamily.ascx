@@ -3,23 +3,27 @@
 <asp:UpdatePanel ID="upEditFamily" runat="server">
     <ContentTemplate>
 
+        <div class="banner">
+            <h1><asp:Literal ID="lBanner" runat="server"></asp:Literal></h1>
+        </div>
+
         <asp:ValidationSummary ID="valSummaryTop" runat="server"
             HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
 
         <Rock:NotificationBox ID="nbNotice" runat="server" Visible="false" />
 
         <div class="row">
-            <div class="col-md-4 form-horizontal">
+            <div class="col-md-4">
                 <fieldset>
                     <Rock:RockTextBox ID="tbFamilyName" runat="server" Label="Family Name" Required="true" CssClass="input-meduim" AutoPostBack="true" OnTextChanged="tbFamilyName_TextChanged" />
                 </fieldset>
             </div>
-            <div class="col-md-4 form-horizontal">
+            <div class="col-md-4">
                 <fieldset>
                     <Rock:CampusPicker ID="cpCampus" runat="server" Required="true" AutoPostBack="true" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" />
                 </fieldset>
             </div>
-            <div class="col-md-4 form-horizontal">
+            <div class="col-md-4">
                 <fieldset>
                     <Rock:RockDropDownList ID="ddlRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" /><br />
                     <Rock:RockDropDownList ID="ddlReason" runat="server" Label="Reason" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="ddlReason_SelectedIndexChanged"></Rock:RockDropDownList>
@@ -42,23 +46,23 @@
                                 </a>
                                 <br />
                                 <div>
-                                    <asp:RadioButtonList ID="rblRole" runat="server" DataValueField="Id" DataTextField="Name" /></div>
+                                <asp:RadioButtonList ID="rblRole" runat="server" DataValueField="Id" DataTextField="Name" /></div>
                                 <asp:LinkButton ID="lbNewFamily" runat="server" CssClass="btn btn-mini" CommandName="Move"><i class="icon-external-link"></i> Move to New Family</asp:LinkButton>
                                 <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-mini" CommandName="Remove"><i class="icon-remove"></i> Remove from Family</asp:LinkButton>
                             </li>
                         </ItemTemplate>
                     </asp:ListView>
                 </ul>
+
+                <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddPerson_Click"><i class="icon-user"></i> Add Person</asp:LinkButton>
             </div>
         </div>
 
-        <p>
-            <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-link" OnClick="lbAddPerson_Click"><i class="icon-user"></i> Add Person</asp:LinkButton>
-        </p>
+        <hr />
 
         <h4>Addresses</h4>
         <p>
-            <asp:LinkButton ID="lbMoved" runat="server" CssClass="btn btn-link" OnClick="lbMoved_Click"><i class="icon-truck icon-flip-horizontal"></i> Family Moved</asp:LinkButton>
+            <asp:LinkButton ID="lbMoved" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbMoved_Click"><i class="icon-truck icon-flip-horizontal"></i> Family Moved</asp:LinkButton>
         </p>
 
         <Rock:Grid ID="gLocations" runat="server" AllowSorting="true" AllowPaging="false" DisplayType="Light">

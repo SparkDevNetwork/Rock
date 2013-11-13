@@ -176,6 +176,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 if ( _family != null )
                 {
                     tbFamilyName.Text = _family.Name;
+                    
+                    // add banner text
+                    if (_family.Name.Contains("family")) { 
+                        lBanner.Text = _family.Name.FormatAsHtmlTitle();
+                    }
+                    else
+                    {
+                        lBanner.Text = (_family.Name + " Family").FormatAsHtmlTitle();
+                    }
+
+
                     cpCampus.SelectedCampusId = _family.CampusId;
 
                     FamilyMembers = new List<FamilyMember>();
