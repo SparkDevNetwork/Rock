@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="error.aspx.cs" Inherits="error" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Error.aspx.cs" Inherits="error" %>
 
 <!DOCTYPE html>
 
@@ -7,8 +7,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>Rock ChMS - Error</title>
 
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Styles/bootstrap.css") %>" />
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Styles/theme.css") %>" />
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Stark/Styles/bootstrap.css") %>" />
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Stark/Styles/theme.css") %>" />
 
     <script src="<%= ResolveUrl("~/Scripts/jquery.js") %>" >
     <script>
@@ -27,8 +27,7 @@
     
         
         <div id="content">
-            <img alt="Rock ChMS" id="logoImg" runat="server" class="pageheader-logo" src="#" />
-
+            
             <div id="content-box">
                 <div class="row">
                     <div class="col-md-12">
