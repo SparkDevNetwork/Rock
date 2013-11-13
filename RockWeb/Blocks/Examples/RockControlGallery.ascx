@@ -324,6 +324,12 @@
                 <Rock:HtmlEditor ID="htmlEdit" runat="server" Label="HtmlEditor" />
             </div>
 
+            <h2>Rock:CodeEditor</h2>
+            <div runat="server" class="r-example">
+                <Rock:CodeEditor ID="ceScript" runat="server" Label="Script" EditorHeight="300" Text="console.log(test);" />
+            </div>
+            
+
         </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>
