@@ -28,26 +28,7 @@ namespace Rock.CyberSource
     [TimeField( "Batch Process Time", "The Batch processing cut-off time.  When batches are created by Rock, they will use this for the start/stop when creating new batches", false, "00:00:00", "", 5 )]
     public class Gateway : GatewayComponent
     {
-        /// <summary>
-        /// Gets the gateway URL.
-        /// </summary>
-        /// <value>
-        /// The gateway URL.
-        /// </value>
-        private string GatewayUrl
-        {
-            get
-            {
-                if ( GetAttributeValue( "Mode" ).Equals( "Live", StringComparison.CurrentCultureIgnoreCase ) )
-                {
-                    return "https://ics2ws.ic3.com/commerce/1.x/transactionProcessor/CyberSourceTransaction_1.93.wsdl";
-                }
-                else
-                {
-                    return "https://ics2wstest.ic3.com/commerce/1.x/transactionProcessor/CyberSourceTransaction_1.93.wsdl";
-                }
-            }
-        }
+        #region Gateway Component Implementation
 
         /// <summary>
         /// Gets the supported payment schedules.
@@ -100,8 +81,7 @@ namespace Rock.CyberSource
             request.billTo = GetBillTo( paymentInfo );            
             request.item = GetItems( paymentInfo );            
             request.purchaseTotals = GetTotals( paymentInfo );
-            request.merchantReferenceCode = Guid.NewGuid().ToString();
-
+            
             if ( paymentInfo is CreditCardPaymentInfo )
             {
                 var cc = paymentInfo as CreditCardPaymentInfo;
@@ -110,6 +90,7 @@ namespace Rock.CyberSource
                 request.ccAuthService = new CCAuthService();
                 request.ccAuthService.run = "true";
                 request.ccAuthService.commerceIndicator = "internet";
+                
                 request.ccCaptureService = new CCCaptureService();
                 request.ccCaptureService.run = "true";                         
             }            
@@ -120,24 +101,22 @@ namespace Rock.CyberSource
 
                 request.ecAuthenticateService = new ECAuthenticateService();
                 request.ecAuthenticateService.run = "true";
+                
                 request.ecDebitService = new ECDebitService();
                 request.ecDebitService.run = "true";
                 request.ecDebitService.commerceIndicator = "internet";
             }            
             else if ( paymentInfo is ReferencePaymentInfo )
             {
-                // if subscription doesn't already exist, create one
-                var reference = paymentInfo as ReferencePaymentInfo;
-                request.paySubscriptionCreateService = new PaySubscriptionCreateService();
-                request.paySubscriptionCreateService.run = "true";                
-                request.paySubscriptionCreateService.paymentRequestID = reference.ReferenceNumber;
-                request.subscription = new Subscription();
-                request.subscription.title = DateTime.Now + ": Code " + reference.ReferenceNumber  + " for " + paymentInfo.Amount.ToString();
-                request.subscription.paymentMethod = paymentInfo.CurrencyTypeValue.Name;
+                ReferencePaymentInfo reference = paymentInfo as ReferencePaymentInfo;                
+                request.paySubscriptionRetrieveService = new PaySubscriptionRetrieveService();
+                request.recurringSubscriptionInfo = new RecurringSubscriptionInfo();
+                request.recurringSubscriptionInfo.subscriptionID = reference.ReferenceNumber;
+                ReplyMessage verificationReply = SubmitTransaction( request );
                 
-                // subscription exists
-                //request.recurringSubscriptionInfo = new RecurringSubscriptionInfo();
-                //request.recurringSubscriptionInfo.subscriptionID = reference.ReferenceNumber;
+                // where is the authorize service?
+
+                
             }
             else if ( paymentInfo is SwipePaymentInfo )
             {
@@ -174,94 +153,6 @@ namespace Rock.CyberSource
             
             return null;
         }
-
-        /// <summary>
-        /// Submits the transaction.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns></returns>
-        private ReplyMessage SubmitTransaction( RequestMessage request )
-        {
-            string merchantID = GetAttributeValue( "MerchantID" );
-            string transactionkey = GetAttributeValue( "TransactionKey" );
-                        
-            BasicHttpBinding binding = new BasicHttpBinding();
-            binding.Name = "ITransactionProcessor";
-            binding.MaxBufferSize = 2147483647;
-            binding.MaxBufferPoolSize = 2147483647;
-            binding.MaxReceivedMessageSize = 2147483647;
-            binding.ReaderQuotas.MaxDepth = 2147483647;
-            binding.ReaderQuotas.MaxArrayLength = 2147483647;
-            binding.ReaderQuotas.MaxBytesPerRead = 2147483647;
-            binding.ReaderQuotas.MaxStringContentLength = 2147483647;
-            binding.Security.Mode = BasicHttpSecurityMode.TransportWithMessageCredential;
-            EndpointAddress address = new EndpointAddress( new Uri( GatewayUrl ) );
-
-            var proxy = new TransactionProcessorClient( binding, address );
-            proxy.ClientCredentials.UserName.UserName = merchantID;
-            proxy.ClientCredentials.UserName.Password = transactionkey;
-            proxy.Endpoint.Address = address;
-            proxy.Endpoint.Binding = binding;
-       
-            try            
-            {                
-                ReplyMessage reply = proxy.runTransaction( request );
-                return reply;
-            }
-            catch ( TimeoutException e )
-            {
-                //SaveOrderState();
-                Console.WriteLine( "TimeoutException: " + e.Message + "\n" + e.StackTrace );
-            }
-            catch ( FaultException e )
-            {
-                //SaveOrderState();
-                Console.WriteLine( "FaultException: " + e.Message + "\n" + e.StackTrace );
-            }            
-            catch ( WebException we )
-            {
-                //SaveOrderState();
-                /*
-                 * Some types of WebException indicate that the transaction may have been
-                 * completed by CyberSource. The sample code shows how to identify these exceptions.
-                 * If you receive such an exception, and your request included a payment service,
-                 * you should use the CyberSource transaction search screens to determine whether
-                 * the transaction was processed.
-                 */
-                Console.WriteLine( we.ToString() );
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Processes the error message.
-        /// </summary>
-        /// <param name="reply">The reply.</param>
-        /// <returns></returns>
-        private string ProcessError( ReplyMessage reply )
-        {
-            int reasonCode = int.Parse( reply.reasonCode );
-            switch ( reasonCode )
-            {
-                // Missing field or fields
-                case 101:
-                    return "\nThe following required fields are missing: " + string.Join( "\n", reply.missingField );
-                // Invalid field or fields
-                case 102:
-                    return "\nThe following fields are invalid: " + string.Join("\n", reply.invalidField);                        
-                // Insufficient funds
-                case 204:
-                    return "\nInsufficient funds in the account. Please use a different card or select another form of payment.";
-                // Add additional reason codes here that you must handle more specifically.
-                default:
-                    // For all other reason codes, such as unrecognized reason codes or codes
-                    // that do not require special handling, return an empty string.
-                    return "\nPlease double check your payment details.";
-            }
-        }
-
-        #region Scheduled Payments
 
         /// <summary>
         /// Adds the scheduled payment.
@@ -387,9 +278,234 @@ namespace Rock.CyberSource
             return null;
         }
 
+        /// <summary>
+        /// Gets the reference identifier for a saved transaction.
+        /// </summary>
+        /// <param name="transaction">The transaction.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override int GetReferenceId( FinancialTransaction transaction, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            RequestMessage request = GetMerchantInfo();
+            request.paySubscriptionCreateService = new PaySubscriptionCreateService();
+            request.paySubscriptionCreateService.run = "true";
+            request.paySubscriptionCreateService.paymentRequestID = transaction.TransactionCode;
+
+            //request.recurringSubscriptionInfo = new RecurringSubscriptionInfo();
+            //request.recurringSubscriptionInfo.subscriptionID = transaction.TransactionCode;
+            //request.recurringSubscriptionInfo.frequency = "ON-DEMAND";
+            //request.subscription = new Subscription();
+            //request.subscription.title = DateTime.Now + ": Code " + transaction.TransactionCode + " for " + transaction.Amount.ToString();
+            //request.subscription.paymentMethod = transaction.CurrencyTypeValue.Name.Equals("Check") ? "check" : "creditcard";
+            ReplyMessage reply = SubmitTransaction( request );
+
+            if ( reply.reasonCode == "100" )
+            {
+                return Int32.Parse( reply.paySubscriptionCreateReply.subscriptionID );
+            }
+            else
+            {
+                errorMessage = ProcessError( reply );
+
+            }
+
+            
+            return 0;
+        }
+
         #endregion
 
+        #region Process Transaction
+
+        /// <summary>
+        /// Submits the transaction.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        private ReplyMessage SubmitTransaction( RequestMessage request )
+        {
+            string merchantID = GetAttributeValue( "MerchantID" );
+            string transactionkey = GetAttributeValue( "TransactionKey" );
+                        
+            BasicHttpBinding binding = new BasicHttpBinding();
+            binding.Name = "ITransactionProcessor";
+            binding.MaxBufferSize = 2147483647;
+            binding.MaxBufferPoolSize = 2147483647;
+            binding.MaxReceivedMessageSize = 2147483647;
+            binding.ReaderQuotas.MaxDepth = 2147483647;
+            binding.ReaderQuotas.MaxArrayLength = 2147483647;
+            binding.ReaderQuotas.MaxBytesPerRead = 2147483647;
+            binding.ReaderQuotas.MaxStringContentLength = 2147483647;
+            binding.Security.Mode = BasicHttpSecurityMode.TransportWithMessageCredential;
+            EndpointAddress address = new EndpointAddress( new Uri( GatewayUrl ) );
+
+            var proxy = new TransactionProcessorClient( binding, address );
+            proxy.ClientCredentials.UserName.UserName = merchantID;
+            proxy.ClientCredentials.UserName.Password = transactionkey;
+            proxy.Endpoint.Address = address;
+            proxy.Endpoint.Binding = binding;
+       
+            try            
+            {                
+                ReplyMessage reply = proxy.runTransaction( request );
+                return reply;
+            }
+            catch ( TimeoutException e )
+            {
+                //SaveOrderState();
+                Console.WriteLine( "TimeoutException: " + e.Message + "\n" + e.StackTrace );
+            }
+            catch ( FaultException e )
+            {
+                //SaveOrderState();
+                Console.WriteLine( "FaultException: " + e.Message + "\n" + e.StackTrace );
+            }            
+            catch ( WebException we )
+            {
+                //SaveOrderState();
+                /*
+                 * Some types of WebException indicate that the transaction may have been
+                 * completed by CyberSource. The sample code shows how to identify these exceptions.
+                 * If you receive such an exception, and your request included a payment service,
+                 * you should use the CyberSource transaction search screens to determine whether
+                 * the transaction was processed.
+                 */
+                Console.WriteLine( we.ToString() );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Processes the error message.
+        /// </summary>
+        /// <param name="reply">The reply.</param>
+        /// <returns></returns>
+        private string ProcessError( ReplyMessage reply )
+        {
+            int reasonCode = int.Parse( reply.reasonCode );
+            switch ( reasonCode )
+            {
+                // Missing field or fields
+                case 101:
+                    return "\nThe following required fields are missing: " + string.Join( "\n", reply.missingField );
+                // Invalid field or fields
+                case 102:
+                    return "\nThe following fields are invalid: " + string.Join("\n", reply.invalidField);
+                // General system failure
+                case 150:
+                    return "\nThe payment processor did not process your payment.";
+                // System timeout
+                case 151:
+                    return "\nThe payment request timed out.";
+                // Service request timed out
+                case 152:
+                    return "\nThe payment service timed out.";
+                // AVS check failed
+                case 200:
+                    return "\nThe payment billing address did not match the bank's address on record. Please verify your address details.";
+                // Expired card
+                case 202:
+                    return "\nThe card has expired. Please use a different card or select another form of payment.";
+                // Card declined
+                case 203:
+                    return "\nThe card was declined without a reason given. Please use a different card or select another form of payment.";
+                // Insufficient funds
+                case 204:
+                    return "\nInsufficient funds in the account. Please use another form of payment.";
+                // Stolen card
+                case 205:
+                    return "\nThe card has been reported stolen. Please use a different card or select another form of payment.";
+                // Bank unavailable
+                case 207:
+                    return "\nThe bank processor is temporarily unavailable. Please try again in a few minutes.";
+                // Card not active
+                case 208:
+                    return "\nThe card is inactive or not authorized for internet transactions. Please use a different card or select another form of payment.";
+                // AmEx invalid CID
+                case 209:
+                    return "\nThe card identification digit did not match.  Please use a different card or select another form of payment.";
+                // Maxed out
+                case 210:
+                    return "\nThe card has reached its credit limit.  Please use a different card or select another form of payment.";
+                // Invalid verification #
+                case 211:
+                    return "\nThe card verification number is invalid. Please verify your 3 or 4 digit verification number.";
+                // Frozen account
+                case 222:
+                    return "\nThe selected account has been frozen. Please use another form of payment.";
+                // Invalid verification #
+                case 230:
+                    return "\nThe card verification number is invalid. Please verify your 3 or 4 digit verification number.";
+                // Invalid account #
+                case 231:
+                    return "\nThe account number is invalid. Please use another form of payment.";
+                // Invalid merchant config
+                case 234:
+                    return "\nThe merchant configuration is invalid. Please contact CyberSource customer support.";
+                // Processor failure
+                case 236:
+                    return "\nThe payment processor is offline. Please try again in a few minutes.";
+                // Card type not accepted
+                case 240:
+                    return "\nThe card type is not accepted by the merchant. Please use another form of payment.";
+                // Payment processor timeout
+                case 250:
+                    return "\nThe payment request was received but has not yet been processed.";
+                // Any others not identified
+                default:
+                    var asdf = reply;
+                    return "\nYour payment was not processed.  Please double check your payment details.";
+            }
+        }
+
+        #endregion  
+
         #region Helper Methods
+
+        /// <summary>
+        /// Gets the gateway URL.
+        /// </summary>
+        /// <value>
+        /// The gateway URL.
+        /// </value>
+        private string GatewayUrl
+        {
+            get
+            {
+                if ( GetAttributeValue( "Mode" ).Equals( "Live", StringComparison.CurrentCultureIgnoreCase ) )
+                {
+                    return "https://ics2ws.ic3.com/commerce/1.x/transactionProcessor/CyberSourceTransaction_1.93.wsdl";
+                }
+                else
+                {
+                    return "https://ics2wstest.ic3.com/commerce/1.x/transactionProcessor/CyberSourceTransaction_1.93.wsdl";
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the merchant information.
+        /// </summary>
+        /// <returns></returns>
+        private RequestMessage GetMerchantInfo()
+        {
+            RequestMessage request = new RequestMessage();
+
+            request.merchantID = GetAttributeValue( "MerchantID" );
+            request.merchantReferenceCode = Guid.NewGuid().ToString();
+            request.clientLibraryVersion = Environment.Version.ToString();
+            request.clientApplication = VersionInfo.VersionInfo.GetRockProductName();
+            request.clientApplicationVersion = VersionInfo.VersionInfo.GetRockProductVersion();
+            request.clientApplicationUser = GetAttributeValue( "OrganizationName" );
+            request.clientEnvironment =
+                Environment.OSVersion.Platform +
+                Environment.OSVersion.Version.ToString() + "-CLR" +
+                Environment.Version.ToString();
+
+            return request;
+        }
 
         /// <summary>
         /// Gets the billing details.
@@ -514,27 +630,6 @@ namespace Rock.CyberSource
             check.secCode = "WEB";
             
             return check;
-        }
-
-        /// <summary>
-        /// Gets the merchant information.
-        /// </summary>
-        /// <returns></returns>
-        private RequestMessage GetMerchantInfo()
-        {
-            RequestMessage request = new RequestMessage();
-            
-            request.merchantID = GetAttributeValue( "MerchantID" );
-            request.clientLibraryVersion = Environment.Version.ToString();
-            request.clientApplication = VersionInfo.VersionInfo.GetRockProductName();
-            request.clientApplicationVersion = VersionInfo.VersionInfo.GetRockProductVersion();
-            request.clientApplicationUser = GetAttributeValue( "OrganizationName" );            
-            request.clientEnvironment =
-                Environment.OSVersion.Platform +
-                Environment.OSVersion.Version.ToString() + "-CLR" +
-                Environment.Version.ToString();
-
-            return request;
         }
 
         /// <summary>
