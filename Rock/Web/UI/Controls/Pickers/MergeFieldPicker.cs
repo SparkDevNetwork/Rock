@@ -18,6 +18,12 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class MergeFieldPicker : ItemPicker
     {
+        protected override void OnInit(EventArgs e)
+        {
+ 	         base.OnInit(e);
+             base.DefaultText = "Add Merge Field";
+        }
+
         /// <summary>
         /// Gets or sets the merge fields.
         /// </summary>
@@ -138,7 +144,7 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public override string ItemRestUrl
         {
-            get { return "~/api/mergefields/getchildren/"; }
+            get { return "~/api/MergeFields/GetChildren/"; }
         }
 
     }

@@ -9,7 +9,7 @@
         <asp:Panel ID="pnlBatchList" runat="server">
 
             <Rock:GridFilter ID="rFBFilter" runat="server">
-                <Rock:DatePicker ID="dtBatchDate" runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDate" Label="Date" />
+                <Rock:DatePicker ID="dtBatchDate" runat="server" Label="Date" />
                 <Rock:RockTextBox ID="txtTitle" runat="server" Label="Title"></Rock:RockTextBox>
                 <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
                 <Rock:CampusPicker ID="ddlCampus" runat="server" />

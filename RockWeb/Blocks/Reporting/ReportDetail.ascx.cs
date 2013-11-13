@@ -49,17 +49,17 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "ReportId" );
+                string itemId = PageParameter( "reportId" );
                 string parentCategoryId = PageParameter( "parentCategoryId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
                     if ( string.IsNullOrWhiteSpace( parentCategoryId ) )
                     {
-                        ShowDetail( "ReportId", int.Parse( itemId ) );
+                        ShowDetail( "reportId", int.Parse( itemId ) );
                     }
                     else
                     {
-                        ShowDetail( "ReportId", int.Parse( itemId ), int.Parse( parentCategoryId ) );
+                        ShowDetail( "reportId", int.Parse( itemId ), int.Parse( parentCategoryId ) );
                     }
                 }
                 else
@@ -74,42 +74,13 @@ namespace RockWeb.Blocks.Reporting
         #region Edit Events
 
         /// <summary>
-        /// Handles the Click event of the btnCancel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
-        {
-            if ( hfReportId.Value.Equals( "0" ) )
-            {
-                // Cancelling on Add.  Return to tree view with parent category selected
-                var qryParams = new Dictionary<string, string>();
-
-                string parentCategoryId = PageParameter( "parentCategoryId" );
-                if ( !string.IsNullOrWhiteSpace( parentCategoryId ) )
-                {
-                    qryParams["CategoryId"] = parentCategoryId;
-                }
-                NavigateToPage( this.CurrentPage.Guid, qryParams );
-            }
-            else
-            {
-                // Cancelling on Edit.  Return to Details
-                ReportService service = new ReportService();
-                Report item = service.Get( int.Parse( hfReportId.Value ) );
-                ShowReadonlyDetails( item );
-            }
-        }
-
-        /// <summary>
         /// Handles the Click event of the btnEdit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            var service = new ReportService();
-            var item = service.Get( int.Parse( hfReportId.Value ) );
+            var item = new ReportService().Get( int.Parse( hfReportId.Value ) );
             ShowEditDetails( item );
         }
 
@@ -132,34 +103,28 @@ namespace RockWeb.Blocks.Reporting
                 {
                     ShowReadonlyDetails( report );
                     mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
                 else
                 {
                     categoryId = report.CategoryId;
 
-                    reportService.Delete( report, CurrentPersonId );
-                    reportService.Save( report, CurrentPersonId );
+                    RockTransactionScope.WrapTransaction( () =>
+                       {
+                           reportService.Delete( report, CurrentPersonId );
+                           reportService.Save( report, CurrentPersonId );
+                       } );
 
                     // reload page, selecting the deleted data view's parent
                     var qryParams = new Dictionary<string, string>();
                     if ( categoryId != null )
                     {
-                        qryParams["CategoryId"] = categoryId.ToString();
+                        qryParams["categoryId"] = categoryId.ToString();
                     }
 
                     NavigateToPage( this.CurrentPage.Guid, qryParams );
                 }
             }
-        }
-
-        /// <summary>
-        /// Sets the edit mode.
-        /// </summary>
-        /// <param name="editable">if set to <c>true</c> [editable].</param>
-        private void SetEditMode( bool editable )
-        {
-            pnlEditDetails.Visible = editable;
-            fieldsetViewDetails.Visible = !editable;
         }
 
         /// <summary>
@@ -221,6 +186,34 @@ namespace RockWeb.Blocks.Reporting
             NavigateToPage( this.CurrentPage.Guid, qryParams );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            if ( hfReportId.Value.Equals( "0" ) )
+            {
+                // Cancelling on Add.  Return to tree view with parent category selected
+                var qryParams = new Dictionary<string, string>();
+
+                string parentCategoryId = PageParameter( "parentCategoryId" );
+                if ( !string.IsNullOrWhiteSpace( parentCategoryId ) )
+                {
+                    qryParams["CategoryId"] = parentCategoryId;
+                }
+                NavigateToPage( this.CurrentPage.Guid, qryParams );
+            }
+            else
+            {
+                // Cancelling on Edit.  Return to Details
+                ReportService service = new ReportService();
+                Report item = service.Get( int.Parse( hfReportId.Value ) );
+                ShowReadonlyDetails( item );
+            }
+        }
+
         #endregion
 
         #region Internal Methods
@@ -235,21 +228,83 @@ namespace RockWeb.Blocks.Reporting
             ddlEntityType.Items.Insert( 0, new ListItem( string.Empty, "0" ) );
         }
 
+        private class FieldInfo
+        {
+
+        }
+
         /// <summary>
-        /// Loads the data view dropdown.
+        /// Loads the DataView and Fields dropdowns based on the selected EntityType
         /// </summary>
-        /// <param name="entityTypeId">The entity type id.</param>
-        private void LoadDataViewDropdown(int? entityTypeId)
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        private void LoadDropdownsForEntityType( int? entityTypeId )
         {
             if ( entityTypeId.HasValue )
             {
+                ddlDataView.Enabled = true;
                 ddlDataView.DataSource = new DataViewService().GetByEntityTypeId( entityTypeId.Value ).ToList();
                 ddlDataView.DataBind();
-                ddlDataView.Items.Insert(0, new ListItem( string.Empty, "0") );
+                ddlDataView.Items.Insert( 0, new ListItem( string.Empty, "0" ) );
+
+                Type entityType = EntityTypeCache.Read( entityTypeId.Value ).GetEntityType();
+
+                List<string> fieldNames = new List<string>();
+                List<string> otherFieldNames = new List<string>();
+                
+                // add the regular fieldnames of the Entity, ignoring Id,Guid, and Order
+                foreach ( var property in entityType.GetProperties() )
+                {
+                    if ( !property.GetGetMethod().IsVirtual || property.Name == "Id" || property.Name == "Guid" || property.Name == "Order" )
+                    {
+                        if ( property.GetCustomAttributes( typeof( PreviewableAttribute ), true ).Count() > 0)
+                        {
+                            fieldNames.Add( property.Name );
+                        }
+                        else
+                        {
+                            otherFieldNames.Add( property.Name );
+                        }
+                    }
+                }
+
+                // add any attributes of the Entity. (The User should think they are just regular fields and not be aware that they are attributes)
+                foreach ( var attribute in new AttributeService().Get( entityTypeId.Value, string.Empty, string.Empty ) )
+                {
+                    // Ensure prop name is unique
+                    string propName = attribute.Name;
+                    int i = 1;
+                    while ( otherFieldNames.Any( p => p.Equals( propName, StringComparison.CurrentCultureIgnoreCase ) ) )
+                    {
+                        propName = attribute.Name + i++.ToString();
+                    }
+
+                    otherFieldNames.Add( propName );
+                }
+
+                foreach ( var fieldName in fieldNames.OrderBy( a => a.ToUpper() ).ToList() )
+                {
+                    var listItem = new ListItem( fieldName.SplitCase(), fieldName );
+                    listItem.Attributes["optiongroup"] = "Common";
+                    ddlFields.Items.Add( listItem );
+                }
+
+                foreach( var fieldName in otherFieldNames.OrderBy( a => a.ToUpper() ).ToList())
+                {
+                    var listItem = new ListItem( fieldName.SplitCase(), fieldName );
+                    listItem.Attributes["optiongroup"] = "Other";
+                    ddlFields.Items.Add( listItem );
+                }
+                
+                
+                ddlFields.Items.Insert( 0, new ListItem( string.Empty, "0" ) );
             }
             else
             {
+                ddlDataView.Enabled = false;
                 ddlDataView.Items.Clear();
+
+                ddlFields.Enabled = false;
+                ddlFields.Items.Clear();
             }
         }
 
@@ -272,7 +327,7 @@ namespace RockWeb.Blocks.Reporting
         public void ShowDetail( string itemKey, int itemKeyValue, int? parentCategoryId )
         {
             pnlDetails.Visible = false;
-            if ( !itemKey.Equals( "ReportId" ) )
+            if ( !itemKey.Equals( "reportId" ) )
             {
                 return;
             }
@@ -289,7 +344,7 @@ namespace RockWeb.Blocks.Reporting
                 report = new Report { Id = 0, IsSystem = false, CategoryId = parentCategoryId };
             }
 
-            if ( report == null || !report.IsAuthorized( "View", CurrentPerson ) )
+            if ( report == null )
             {
                 return;
             }
@@ -345,17 +400,17 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="report">The data view.</param>
         public void ShowEditDetails( Report report )
         {
-            if ( report.Id > 0 )
+            if ( report.Id == 0 )
             {
-                lActionTitle.Text = ActionTitle.Edit( Report.FriendlyTypeName );
+                lReadOnlyTitle.Text = ActionTitle.Add( Report.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( Report.FriendlyTypeName );
+                lReadOnlyTitle.Text = report.Name.FormatAsHtmlTitle();
             }
 
             LoadDropDowns();
-            LoadDataViewDropdown( report.EntityTypeId );
+            LoadDropdownsForEntityType( report.EntityTypeId );
 
             SetEditMode( true );
 
@@ -374,10 +429,22 @@ namespace RockWeb.Blocks.Reporting
         {
             SetEditMode( false );
             hfReportId.SetValue( report.Id );
-            lReadOnlyTitle.Text = report.Name;
+            lReadOnlyTitle.Text = report.Name.FormatAsHtmlTitle();
             lblMainDetails.Text = report.Description;
 
             BindGrid( report );
+        }
+
+        /// <summary>
+        /// Sets the edit mode.
+        /// </summary>
+        /// <param name="editable">if set to <c>true</c> [editable].</param>
+        private void SetEditMode( bool editable )
+        {
+            pnlEditDetails.Visible = editable;
+            pnlViewDetails.Visible = !editable;
+
+            this.HideSecondaryBlocks( editable );
         }
 
         /// <summary>
@@ -387,7 +454,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="filter">The filter.</param>
         private void BindGrid( Report report )
         {
-            if (report != null && report.DataView != null)
+            if ( report != null && report.DataView != null )
             {
                 var errors = new List<string>();
                 gReport.DataSource = report.DataView.BindGrid( gReport, out errors, true );
@@ -412,7 +479,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void ddlEntityType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            LoadDataViewDropdown( ddlEntityType.SelectedValueAsInt() );
+            LoadDropdownsForEntityType( ddlEntityType.SelectedValueAsInt() );
         }
 
         /// <summary>
@@ -425,8 +492,11 @@ namespace RockWeb.Blocks.Reporting
             BindGrid( new ReportService().Get( hfReportId.ValueAsInt() ) );
         }
 
-
         #endregion
 
+        protected void btnAddField_Click( object sender, EventArgs e )
+        {
+            //TODO: do this
+        }
     }
 }
