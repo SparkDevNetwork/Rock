@@ -9,10 +9,8 @@
         <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
         <Rock:GridFilter ID="rFilter" runat="server">
-            <Rock:DatePicker ID="dtStartDate" runat="server" SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionDateTime" Label="From Date" />
-            <Rock:DatePicker ID="dtEndDate" runat="server"  SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionDateTime" Label="To Date" />
-            <Rock:RockTextBox ID="txtFromAmount" runat="server" Label="From Amount"></Rock:RockTextBox>
-            <Rock:RockTextBox ID="txtToAmount" runat="server" Label="To Amount"></Rock:RockTextBox>
+            <Rock:DateRangePicker ID="drpDates" runat="server" Label="Date Range" />
+            <Rock:NumberRangeEditor ID="nreAmount" runat="server" Label="Amount Range" NumberType="Double" />
             <Rock:RockTextBox ID="txtTransactionCode" runat="server" Label="Transaction Code"></Rock:RockTextBox>
             <Rock:RockDropDownList ID="ddlAccount" runat="server" Label="Account" />
             <Rock:RockDropDownList ID="ddlTransactionType" runat="server" Label="Transaction Type" />
@@ -21,12 +19,12 @@
             <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" />
         </Rock:GridFilter>
 
-        <Rock:Grid ID="rGridTransactions" runat="server" EmptyDataText="No Transactions Found" OnRowSelected="rGridTransactions_Edit" AllowSorting="true">
+        <Rock:Grid ID="rGridTransactions" runat="server" EmptyDataText="No Transactions Found" OnRowSelected="rGridTransactions_Edit" AllowSorting="true" ToolTip="Description">
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
                 <asp:BoundField DataField="TransactionDateTime" HeaderText="Date" SortExpression="TransactionDateTime" />                
-                <asp:BoundField DataField="Summary" HeaderText="Description" SortExpression="Summary" />
                 <asp:BoundField DataField="Amount" HeaderText="Amount" DataFormatString="{0:C}" SortExpression="Amount" />
+                <Rock:DefinedValueField DataField="TransactionTypeValueId" HeaderText="Transaction Type" SortExpression="TransactionTypeValue.Name" />
                 <Rock:DefinedValueField DataField="CurrencyTypeValueId" HeaderText="Currency Type" SortExpression="CurrencyTypeValue.Name" />
                 <Rock:DefinedValueField DataField="CreditCardTypeValueId" HeaderText="Credit Card Type" SortExpression="CreditCardTypeValue.Name" />
                 <Rock:DefinedValueField DataField="SourceTypeValueId" HeaderText="Source Type" SortExpression="SourceTypeValue.Name" />

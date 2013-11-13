@@ -18,7 +18,7 @@ namespace Rock.Attribute
     public class EntityTypeFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityTypeFieldAttribute" /> class.
+        /// Initializes a new instance of the <see cref="EntityTypeFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
@@ -26,7 +26,22 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public EntityTypeFieldAttribute(string name, string description = "", bool required = true, string category = "", int order = 0, string key = null, bool includeGlobalAttributeOption = true)
+        public EntityTypeFieldAttribute( string name, string description = "", bool required = true, string category = "", int order = 0, string key = null )
+            : this(name, true, description, required, category, order, key)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityTypeFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="includeGlobalAttributeOption">if set to <c>true</c> [include global attribute option].</param>
+        /// <param name="description">The description.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="category">The category.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="key">The key.</param>
+        public EntityTypeFieldAttribute(string name, bool includeGlobalAttributeOption, string description = "", bool required = true, string category = "", int order = 0, string key = null)
             : base( name, description, required, "", category, order, key, typeof( Rock.Field.Types.EntityTypeFieldType ).FullName )
         {
             var configValue = new Field.ConfigurationValue( includeGlobalAttributeOption.ToString() );

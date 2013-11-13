@@ -3,8 +3,14 @@
 <asp:UpdatePanel ID="upSettings" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlContent" runat="server" CssClass="defined-type-checklist">
-            <Rock:RockCheckBoxList ID="cblList" runat="server" AutoPostBack="true" DataTextField="Name" DataValueField="Id" 
-                OnSelectedIndexChanged="cblList_SelectedIndexChanged" RepeatDirection="Vertical" ></Rock:RockCheckBoxList>
+            <asp:Repeater ID="rptrValues" runat="server">
+                <ItemTemplate>
+                    <asp:Panel ID="pnlValue" runat="server">
+                        <asp:HiddenField ID="hfValue" runat="server" Value='<%# Eval("Id") %>' />
+                        <Rock:RockCheckBox ID="cbValue" runat="server" AutoPostBack="true" />
+                    </asp:Panel>
+                </ItemTemplate>
+            </asp:Repeater>
         </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>
