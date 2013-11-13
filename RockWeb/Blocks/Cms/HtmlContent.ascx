@@ -10,7 +10,7 @@
             versionId: '<%= hfVersion.ClientID %>',
             startDateId: '<%= tbStartDate.ClientID %>',
             expireDateId: '<%= tbExpireDate.ClientID %>',
-            ckEditorId: '<%= edtHtmlContent.ClientID %>',
+            ckEditorId: '<%= htmlContent.ClientID %>',
             approvalId: '<%= cbApprove.ClientID %>'
         });
     });
@@ -62,7 +62,8 @@
                 <div class="html-content-approve"><asp:CheckBox ID="cbApprove" runat="server" TextAlign="Right" Text="Approve" /></div>
             </asp:panel>
             <div class="modal-body">
-                <Rock:CKEditorControl ID="edtHtmlContent" runat="server" Visible="false"/>
+
+                <Rock:HtmlEditor ID="htmlContent" runat="server" Visible="false" />
 
                 <div class="">
                     <asp:CheckBox ID="cbOverwriteVersion" runat="server" TextAlign="Right" Text="don't save a new version" />
