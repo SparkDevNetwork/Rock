@@ -32,11 +32,14 @@ main {
 // 3. Theme Styling 
 // -------------------------
 
-#zone-Login, 
-#zone-Navigation {
-    float: right;
+header {
+    .page-menu,
+    .login-status {
+        float: right;
+    }
 }
 
+// homepage items
 #ad-rotator {
     .item {
         img {
@@ -64,6 +67,10 @@ main {
     li {
         border: 1px solid @gray-lighter;
         border-radius: @border-radius-base;
+
+        a:hover {
+            background-color: @gray-lighter;
+        }
     }
 }
 
