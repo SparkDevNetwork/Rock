@@ -40,7 +40,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( !Required )
                 {
-                    this.Items.Add( new ListItem( string.Empty, None.IdValue ) );
+                    this.Items.Add( new ListItem( string.Empty, string.Empty ) );
                 }
 
                 foreach ( Campus campus in value )

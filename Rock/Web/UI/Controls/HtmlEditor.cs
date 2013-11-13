@@ -240,41 +240,36 @@ namespace Rock.Web.UI.Controls
         {
             string scriptFormat = @"
         $('#btnSelectNone_{0}').click(function (e) {{
-
-            var selectedText = 'Add Merge Field';
-
-            var selectedItemLabel = $('#selectedItemLabel_{0}');
-            var hiddenItemName = $('#hfItemName_{0}');
-            
-            hiddenItemName.val(selectedText);
-            selectedItemLabel.text(selectedText);
-
+            clearSelection_{0}();
             return false;
-
         }});
 
         $('#btnSelect_{0}').click(function (e) {{
-
             var url = Rock.settings.get('baseUrl') + 'api/MergeFields/' +  $('#hfItemId_{0}').val();
-            
             $.get(url, function(data) {{ 
-
                 CKEDITOR.instances.{1}.insertHtml(data);
-
-                var selectedValue = '0';
-                var selectedText = 'Add Merge Field';
-
-                var selectedItemLabel = $('#selectedItemLabel_{0}');
-                var hiddenItemId = $('#hfItemId_{0}');
-                var hiddenItemName = $('#hfItemName_{0}');
-
-                hiddenItemId.val(selectedValue);
-                hiddenItemName.val(selectedText);
-                selectedItemLabel.val(selectedValue);
-                selectedItemLabel.text(selectedText);
-
+                clearSelection_{0}();
             }});
         }});
+
+        $('#btnCancel_{0}').click(function (e) {{
+            clearSelection_{0}();
+        }});
+
+        function clearSelection_{0}() {{
+            
+            var selectedValue = '0';
+            var selectedText = 'Add Merge Field';
+
+            var selectedItemLabel = $('#selectedItemLabel_{0}');
+            selectedItemLabel.val(selectedValue);
+            selectedItemLabel.text(selectedText);
+
+            $('#hfItemId_{0}').val(selectedValue);
+            $('#hfItemName_{0}').val(selectedText);
+            
+            $('#btnSelectNone_{0}').hide();
+        }}
 ";
             string script = string.Format( scriptFormat, _mergeFieldPicker.ID, this.ClientID );
             ScriptManager.RegisterStartupScript( _mergeFieldPicker, _mergeFieldPicker.GetType(), "merge_field_extension-" + _mergeFieldPicker.ID.ToString(), script, true );

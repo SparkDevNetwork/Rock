@@ -11,11 +11,12 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
+using CronExpressionDescriptor;
 
 namespace RockWeb.Blocks.Administration
 {
     /// <summary>
-    /// 
+    /// User controls for managing scheduled jobs.
     /// </summary>
     public partial class ScheduledJobDetail : RockBlock
     {
@@ -39,6 +40,17 @@ namespace RockWeb.Blocks.Administration
                 else
                 {
                     pnlDetails.Visible = false;
+                }
+            }
+
+            if ( pnlDetails.Visible )
+            {
+                var job = new ServiceJob { Id = int.Parse( hfId.Value ), Class = ddlJobTypes.SelectedValue ?? "Rock.Jobs.JobPulse" };
+                if ( job.Id > 0 )
+                {
+                    job.LoadAttributes();
+                    phAttributes.Controls.Clear();
+                    Rock.Attribute.Helper.AddEditControls( job, phAttributes, true );
                 }
             }
         }
@@ -84,7 +96,7 @@ namespace RockWeb.Blocks.Administration
             job.IsActive = cbActive.Checked;
             job.Class = ddlJobTypes.SelectedValue;
             job.NotificationEmails = tbNotificationEmails.Text;
-            job.NotificationStatus = (JobNotificationStatus)int.Parse( drpNotificationStatus.SelectedValue );
+            job.NotificationStatus = (JobNotificationStatus)int.Parse( ddlNotificationStatus.SelectedValue );
             job.CronExpression = tbCronExpression.Text;
 
             if ( !job.IsValid )
@@ -96,9 +108,32 @@ namespace RockWeb.Blocks.Administration
             RockTransactionScope.WrapTransaction( () =>
                 {
                     jobService.Save( job, CurrentPersonId );
+                    job.LoadAttributes();
+                    Rock.Attribute.Helper.GetEditValues( phAttributes, job );
+                    Rock.Attribute.Helper.SaveAttributeValues( job, CurrentPersonId );
                 } );
 
             NavigateToParentPage();
+        }
+
+        protected void ddlJobTypes_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ServiceJob job;
+            var itemId = int.Parse( PageParameter( "serviceJobId" ) );
+            if ( itemId == 0 )
+            {
+                job = new ServiceJob { Id = 0, IsActive = true };
+            }
+            else
+            {
+                job = new ServiceJobService().Get( itemId );
+            }
+
+            job.Class = ddlJobTypes.SelectedValue;
+            job.LoadAttributes();
+            phAttributes.Controls.Clear();
+            Rock.Attribute.Helper.AddEditControls( job, phAttributes, true );
+            
         }
 
         /// <summary>
@@ -118,7 +153,7 @@ namespace RockWeb.Blocks.Administration
             LoadDropDowns();
 
             // Load depending on Add(0) or Edit
-            ServiceJob job = null;
+            ServiceJob job;
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 job = new ServiceJobService().Get( itemKeyValue );
@@ -136,8 +171,17 @@ namespace RockWeb.Blocks.Administration
             cbActive.Checked = job.IsActive.HasValue ? job.IsActive.Value : false;
             ddlJobTypes.SelectedValue = job.Class;
             tbNotificationEmails.Text = job.NotificationEmails;
-            drpNotificationStatus.SetValue( (int)job.NotificationStatus );
+            ddlNotificationStatus.SetValue( (int)job.NotificationStatus );
             tbCronExpression.Text = job.CronExpression;
+
+            if (job.Id == 0)
+            {
+                job.Class = ddlJobTypes.SelectedValue;
+            }
+
+            job.LoadAttributes();
+            phAttributes.Controls.Clear();
+            Rock.Attribute.Helper.AddEditControls( job, phAttributes, true );
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -159,6 +203,10 @@ namespace RockWeb.Blocks.Administration
             {
                 lActionTitle.Text = ActionTitle.View( ServiceJob.FriendlyTypeName ).FormatAsHtmlTitle();
                 btnCancel.Text = "Close";
+                Rock.Attribute.Helper.AddDisplayControls( job, phAttributesReadOnly );
+                phAttributesReadOnly.Visible = true;
+                phAttributes.Visible = false;
+                tbCronExpression.Text = ExpressionDescriptor.GetDescription( job.CronExpression );
             }
 
             tbName.ReadOnly = readOnly;
@@ -166,7 +214,7 @@ namespace RockWeb.Blocks.Administration
             cbActive.Enabled = !readOnly;
             ddlJobTypes.Enabled = !readOnly;
             tbNotificationEmails.ReadOnly = readOnly;
-            drpNotificationStatus.Enabled = !readOnly;
+            ddlNotificationStatus.Enabled = !readOnly;
             tbCronExpression.ReadOnly = readOnly;
 
             btnSave.Visible = !readOnly;
@@ -177,11 +225,12 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void LoadDropDowns()
         {
-            drpNotificationStatus.BindToEnum( typeof( JobNotificationStatus ) );
+            ddlNotificationStatus.BindToEnum( typeof( JobNotificationStatus ) );
             ddlJobTypes.DataSource = Rock.Reflection.FindTypes( typeof( Quartz.IJob ) ).Values;
             ddlJobTypes.DataBind();
         }
 
         #endregion
+
     }
 }

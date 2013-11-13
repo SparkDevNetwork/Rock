@@ -349,6 +349,75 @@ namespace Rock
         }
 
         /// <summary>
+        /// Attempts to convert string to Guid.  Returns Guid.Empty if unsuccessful.
+        /// </summary>
+        /// <param name="str">The STR.</param>
+        /// <returns></returns>
+        public static Guid AsGuid( this string str)
+        {
+            Guid value;
+            if ( Guid.TryParse( str, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return Guid.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to convert string to decimal.  Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="emptyStringAsZero">if set to <c>true</c> [empty string as zero].</param>
+        /// <returns></returns>
+        public static decimal? AsDecimal( this string str, bool emptyStringAsZero = true )
+        {
+            if ( !emptyStringAsZero )
+            {
+                if ( string.IsNullOrWhiteSpace( str ) )
+                {
+                    return null;
+                }
+            }
+
+            if ( !string.IsNullOrWhiteSpace( str ) )
+            {
+                // strip off the currency symbol if there is one
+                str = str.Replace( "$", string.Empty );
+            }
+
+            decimal value;
+            if ( decimal.TryParse( str, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to convert string to DateTime.  Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static DateTime? AsDateTime( this string str )
+        {
+            DateTime value;
+            if ( DateTime.TryParse( str, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Use DotLiquid to resolve any merge codes within the content using the values 
         /// in the mergeObjects.
         /// </summary>
@@ -1138,10 +1207,26 @@ namespace Rock
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="enumValue">The enum value.</param>
+        /// <param name="defaultValue">The default value to use if the value cannot be parsed. Leave null to throw an exception if the value cannot be parsed. </param>
         /// <returns></returns>
-        public static T ConvertToEnum<T>( this String enumValue )
+        public static T ConvertToEnum<T>( this String enumValue, T? defaultValue = null ) where T : struct // actually limited to enum, but struct is the closest we can do
         {
-            return (T)Enum.Parse( typeof( T ), enumValue.Replace( " ", "" ) );
+            if ( defaultValue.HasValue )
+            {
+                T result;
+                if ( Enum.TryParse<T>( enumValue, out result ) )
+                {
+                    return result;
+                }
+                else
+                {
+                    return defaultValue.Value;
+                }
+            }
+            else
+            {
+                return (T)Enum.Parse( typeof( T ), enumValue.Replace( " ", "" ) );
+            }
         }
 
         #endregion

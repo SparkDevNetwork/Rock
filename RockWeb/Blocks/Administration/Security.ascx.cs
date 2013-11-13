@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Security;
@@ -120,7 +121,7 @@ namespace RockWeb.Blocks.Administration
                     Sys.Application.add_load(function () {{
                         $('#modal-popup div.modal-header h3 small', window.parent.document).html('{0}');
                     }});
-                ", iSecured.ToString() );
+                ", HttpUtility.JavaScriptStringEncode(iSecured.ToString()) );
 
                     this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "set-html-{0}", this.ClientID ), script, true );
 

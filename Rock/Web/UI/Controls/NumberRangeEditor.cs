@@ -1,4 +1,5 @@
-﻿//
+﻿using System;
+//
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
@@ -380,6 +381,100 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _tbUpperValue.Text = value.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the delimited values.
+        /// </summary>
+        /// <value>
+        /// The delimited values.
+        /// </value>
+        public string DelimitedValues
+        {
+            get
+            {
+                return string.Format( "{0},{1}", this.LowerValue, this.UpperValue );
+            }
+            set
+            {
+                if ( value != null )
+                {
+                    string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
+                    if ( valuePair.Length == 2 )
+                    {
+                        decimal result;
+
+                        if ( decimal.TryParse( valuePair[0], out result ) )
+                        {
+                            this.LowerValue = result;
+                        }
+                        else
+                        {
+                            this.LowerValue = null;
+                        }
+
+                        if ( decimal.TryParse( valuePair[1], out result ) )
+                        {
+                            this.UpperValue = result;
+                        }
+                        else
+                        {
+                            this.UpperValue = null;
+                        }
+                    }
+                    else
+                    {
+                        this.LowerValue = null;
+                        this.UpperValue = null;
+                    }
+                }
+                else
+                {
+                    this.LowerValue = null;
+                    this.UpperValue = null;
+                }
+            }
+        }
+        /// <summary>
+        /// Formats the delimited values.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="format">The format.</param>
+        /// <returns></returns>
+        public static string FormatDelimitedValues(string value, string format = "N0")
+        {
+            try
+            {
+                if ( value != null )
+                {
+                    if ( value.StartsWith( "," ) )
+                    {
+                        string upperValue = decimal.Parse( value.Substring( 1 ) ).ToString(format);
+                        return string.Format( "through {0}", upperValue );
+                    }
+                    else if ( value.EndsWith( "," ) )
+                    {
+                        string lowerValue = decimal.Parse( value.Substring( 0, value.Length - 1 ) ).ToString( format );
+                        return string.Format( "from {0}", lowerValue );
+                    }
+                    else
+                    {
+                        string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
+                        if ( valuePair.Length == 2 )
+                        {
+                            string lowerValue = decimal.Parse( valuePair[0] ).ToString( format );
+                            string upperValue = decimal.Parse( valuePair[1] ).ToString( format );
+                            return string.Format( "{0} to {1}", lowerValue, upperValue );
+                        }
+                    }
+                }
+
+                return null;
+            }
+            catch 
+            {
+                return null;  
             }
         }
     }

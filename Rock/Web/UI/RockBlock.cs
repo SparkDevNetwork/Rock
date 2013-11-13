@@ -137,46 +137,43 @@ namespace Rock.Web.UI
         /// <summary>
         /// Gets a list of any context entities that the block requires.
         /// </summary>
-        public virtual List<string> ContextTypesRequired
+        public virtual List<EntityTypeCache> ContextTypesRequired
         {
             get
             {
                 if ( _contextTypesRequired == null )
                 {
-                    _contextTypesRequired = new List<string>();
+                    _contextTypesRequired = new List<EntityTypeCache>();
 
                     int properties = 0;
                     foreach ( var attribute in this.GetType().GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
                     {
                         var contextAttribute = (ContextAwareAttribute)attribute;
-                        string contextType = string.Empty;
+                        var entityType = contextAttribute.EntityType;
 
-                        if ( String.IsNullOrEmpty( contextAttribute.EntityType ) )
+                        if ( contextAttribute.EntityType == null )
                         {
                             // If the entity type was not specified in the attibute, look for a property that defines it
                             string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
                             properties++;
 
-                            if ( !String.IsNullOrEmpty( GetAttributeValue( propertyKeyName ) ) )
+                            Guid guid = Guid.Empty;
+                            if ( Guid.TryParse( GetAttributeValue( propertyKeyName ), out guid ) )
                             {
-                                contextType = GetAttributeValue( propertyKeyName );
+                                entityType = EntityTypeCache.Read( guid );
                             }
                         }
-                        else
-                        {
-                            contextType = contextAttribute.EntityType;
-                        }
 
-                        if ( contextType != string.Empty && !_contextTypesRequired.Contains( contextType ) )
+                        if ( entityType != null && !_contextTypesRequired.Any( e => e.Guid.Equals( entityType.Guid ) ) )
                         {
-                            _contextTypesRequired.Add( contextType );
+                            _contextTypesRequired.Add( entityType );
                         }
                     }
                 }
                 return _contextTypesRequired;
             }
         }
-        private List<string> _contextTypesRequired;
+        private List<EntityTypeCache> _contextTypesRequired;
 
         /// <summary>
         /// Gets a dictionary of the current context entities.  The key is the type of context, and the value is the entity object
@@ -344,20 +341,21 @@ namespace Rock.Web.UI
             string param = PageParameter( "ContextEntityType" );
             if ( !String.IsNullOrWhiteSpace( param ) )
             {
-                requiredContext.Add( param );
+                var entityType = EntityTypeCache.Read( param, false );
+                if ( entityType != null )
+                {
+                    requiredContext.Add( entityType );
+                }
             }
 
             // Get the current context for each required context type
             ContextEntities = new Dictionary<string, Data.IEntity>();
             foreach ( var contextEntityType in requiredContext )
             {
-                if ( !String.IsNullOrWhiteSpace( contextEntityType ) )
+                Data.IEntity contextEntity = CurrentPage.GetCurrentContext( contextEntityType );
+                if ( contextEntity != null )
                 {
-                    Data.IEntity contextEntity = CurrentPage.GetCurrentContext( contextEntityType );
-                    if ( contextEntity != null )
-                    {
-                        ContextEntities.Add( contextEntityType, contextEntity );
-                    }
+                    ContextEntities.Add( contextEntityType.Name, contextEntity );
                 }
             }
 
@@ -679,6 +677,7 @@ namespace Rock.Web.UI
         /// Sets the validation group.
         /// </summary>
         /// <param name="controls">The controls.</param>
+        /// <param name="validationGroup">The validation group.</param>
         public void SetValidationGroup( ControlCollection controls, string validationGroup )
         {
             if ( controls != null )
@@ -916,6 +915,7 @@ namespace Rock.Web.UI
         /// Sets the validation group.
         /// </summary>
         /// <param name="existingValidationGroup">The existing validation group.</param>
+        /// <param name="validationGroup">The validation group.</param>
         /// <returns></returns>
         private string SetValidationGroup( string existingValidationGroup, string validationGroup )
         {
