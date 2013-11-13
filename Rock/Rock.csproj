@@ -580,6 +580,7 @@
     <Compile Include="Web\UI\Controls\Grid\LinkButtonField.cs" />
     <Compile Include="Web\UI\Controls\IHasValidationGroup.cs" />
     <Compile Include="Web\UI\Controls\Pickers\EntityTypePicker.cs" />
+    <Compile Include="Web\UI\Controls\PanelWidget.cs" />
     <Compile Include="Web\UI\Controls\RockControlWrapper.cs" />
     <Compile Include="Web\UI\Controls\HighlightLabel.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BirthdayPicker.cs" />
@@ -814,7 +815,6 @@
     <Compile Include="Model\FinancialTransactionDetail.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\TransactionSearchValue.cs" />
     <Compile Include="Model\Group.cs" />
     <Compile Include="Model\CodeGenerated\GroupTypeRoleService.cs" />
     <Compile Include="Model\CodeGenerated\GroupService.cs" />

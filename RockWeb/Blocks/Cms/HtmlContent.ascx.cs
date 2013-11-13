@@ -10,10 +10,12 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -94,12 +96,14 @@ namespace RockWeb.Blocks.Cms
                 cbOverwriteVersion.Visible = false;
             }
 
-            edtHtmlContent.Toolbar = "RockCustomConfigFull";
-            edtHtmlContent.Text = content.Content;
+            htmlContent.Toolbar = "RockCustomConfigFull";
+            htmlContent.Text = content.Content;
+            htmlContent.MergeFields.Clear();
+            htmlContent.MergeFields.Add( "GlobalAttribute" );
             mpeContent.Show();
-            edtHtmlContent.Visible = true;
+            htmlContent.Visible = true;
             HtmlContentModified = false;
-            edtHtmlContent.TextChanged += edtHtmlContent_TextChanged;
+            htmlContent.TextChanged += htmlContent_TextChanged;
 
             BindGrid();
 
@@ -107,11 +111,11 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Handles the TextChanged event of the edtHtmlContent control.
+        /// Handles the TextChanged event of the htmlContent control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void edtHtmlContent_TextChanged( object sender, EventArgs e )
+        void htmlContent_TextChanged( object sender, EventArgs e )
         {
             HtmlContentModified = true;
         }
@@ -149,7 +153,7 @@ namespace RockWeb.Blocks.Cms
                 // if the existing content changed, and the overwrite option was not checked, create a new version
                 if ( content != null &&
                     _supportVersioning &&
-                    content.Content != edtHtmlContent.Text &&
+                    content.Content != htmlContent.Text &&
                     !cbOverwriteVersion.Checked )
                     content = null;
 
@@ -205,7 +209,7 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
-                content.Content = edtHtmlContent.Text;
+                content.Content = htmlContent.Text;
 
                 if ( service.Save( content, CurrentPersonId ) )
                 {
@@ -268,7 +272,7 @@ namespace RockWeb.Blocks.Cms
                 Rock.Model.HtmlContent content = new HtmlContentService().GetActiveContent( CurrentBlock.Id, entityValue );
 
                 if ( content != null )
-                    html = content.Content;
+                    html = content.Content.ResolveMergeFields( GetGlobalMergeFields() );
                 else
                     html = string.Empty;
 
@@ -346,6 +350,26 @@ namespace RockWeb.Blocks.Cms
                 entityValue += "&ContextName=" + contextName;
 
             return entityValue;
+        }
+
+        public Dictionary<string, object> GetGlobalMergeFields()
+        {
+            var configValues = new Dictionary<string, object>();
+
+            var globalAttributeValues = new Dictionary<string, object>();
+            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+            foreach ( var attribute in globalAttributes.AttributeKeys.OrderBy( a => a.Value ) )
+            {
+                var attributeCache = AttributeCache.Read( attribute.Key );
+                if ( attributeCache.IsAuthorized( "View", null ) )
+                {
+                    globalAttributeValues.Add( attributeCache.Key, globalAttributes.AttributeValues[attributeCache.Key].Value );
+                }
+            }
+
+            configValues.Add( "GlobalAttribute", globalAttributeValues );
+
+            return configValues;
         }
 
         #endregion
