@@ -94,20 +94,23 @@ namespace RockWeb
                 {
                     reader.Read();
                     context.Response.Clear();
-                    var fileName = (string) reader["FileName"];
-                    context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", fileName ) );
-                    context.Response.ContentType = (string) reader["MimeType"];
 
-                    var entityTypeName = (string) reader["StorageTypeName"];
+                    // Columns must be read in Sequential Order
+                    string fileName = (string)reader["FileName"];
+                    string mimeType = (string)reader["MimeType"];
+                    string url = (string)reader["Url"];
+                    string entityTypeName = (string)reader["StorageTypeName"];
+
+                    context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", fileName ) );
+                    context.Response.ContentType = mimeType;
                     var provider = ProviderContainer.GetComponent( entityTypeName );
 
                     if ( provider is Database )
                     {
-                        context.Response.BinaryWrite( (byte[]) reader["Data"] );
+                        context.Response.BinaryWrite( (byte[])reader["Content"] );
                     }
                     else
                     {
-                        var url = (string) reader["Url"];
                         Stream stream;
 
                         if ( url.StartsWith( "~/" ) )

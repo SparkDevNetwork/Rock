@@ -26,77 +26,83 @@
         </div>
                 
         <div class="row checkin-body">
-            
-            <asp:UpdatePanel ID="pnlSelectFamily" runat="server" UpdateMode="Conditional" class="col-md-3">
-            <ContentTemplate>
-			    <h3>Families</h3>
-			    <asp:ListView ID="lvFamily" runat="server" OnPagePropertiesChanging="lvFamily_PagePropertiesChanging" 
-				    OnItemCommand="lvFamily_ItemCommand" OnItemDataBound="lvFamily_ItemDataBound" >
-			    <ItemTemplate>                            
-					    <asp:LinkButton ID="lbSelectFamily" runat="server" CommandArgument='<%# Eval("Group.Id") %>'
-						    CssClass="btn btn-primary btn-lg btn-block btn-checkin-select family" CausesValidation="false">
-						    <%# Eval("Caption") %><br /><span class='checkin-sub-title'><%# Eval("SubCaption") %></span>
-					    </asp:LinkButton>
-			    </ItemTemplate>                    
-			    </asp:ListView>
-			    <asp:DataPager ID="dpFamilyPager" runat="server" PageSize="5" PagedControlID="lvFamily">
-				    <Fields>
-					    <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-lg btn-primary btn-checkin-select" />
-				    </Fields>
-			    </asp:DataPager>
-            </ContentTemplate>
-            </asp:UpdatePanel>
+            <div class="col-md-3">
+                <asp:UpdatePanel ID="pnlFamily" runat="server" UpdateMode="Conditional">
+                <ContentTemplate>                
+			        <h3>Families</h3>
+			        <asp:ListView ID="lvFamily" runat="server" OnPagePropertiesChanging="lvFamily_PagePropertiesChanging" 
+				        OnItemCommand="lvFamily_ItemCommand" OnItemDataBound="lvFamily_ItemDataBound" >
+			        <ItemTemplate>                            
+					        <asp:LinkButton ID="lbSelectFamily" runat="server" CommandArgument='<%# Eval("Group.Id") %>'
+						        CssClass="btn btn-primary btn-lg btn-block btn-checkin-select family" CausesValidation="false">
+						        <%# Eval("Caption") %><br /><span class='checkin-sub-title'><%# Eval("SubCaption") %></span>
+					        </asp:LinkButton>
+			        </ItemTemplate>                    
+			        </asp:ListView>
+			        <asp:DataPager ID="dpFamilyPager" runat="server" PageSize="5" PagedControlID="lvFamily">
+				        <Fields>
+					        <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-lg btn-primary btn-checkin-select" />
+				        </Fields>
+			        </asp:DataPager>                
+                </ContentTemplate>
+                </asp:UpdatePanel>
+            </div>
 
-            <asp:UpdatePanel ID="pnlSelectPerson" runat="server" UpdateMode="Conditional" class="col-md-3">
-            <ContentTemplate>
-			    <asp:HiddenField ID="hfSelectedPerson" runat="server" ClientIDMode="Static" />
+            <div class="col-md-3">
+                <asp:UpdatePanel ID="pnlPerson" runat="server" UpdateMode="Conditional"> 
+                <ContentTemplate>
+			        <asp:HiddenField ID="hfSelectedPerson" runat="server" ClientIDMode="Static" />
 
-			    <h3>People</h3>                    
-			    <asp:ListView ID="lvPerson" runat="server" OnItemDataBound="lvPerson_ItemDataBound" OnPagePropertiesChanging="lvPerson_PagePropertiesChanging" >
-				    <ItemTemplate>                            
-					    <asp:LinkButton ID="lbSelectPerson" runat="server" data-id='<%# Eval("Person.Id") %>'
-						    CssClass="btn btn-primary btn-lg btn-block btn-checkin-select person">
-						    <%# Eval("Person.FullName") %><br />
-						    <span class='checkin-sub-title'>
-							    Birthday: <%# Eval("Person.BirthMonth") + "/" + Eval("Person.BirthDay") ?? "N/A" %> 
-						    </span>
-					    </asp:LinkButton>
-				    </ItemTemplate>    
-				    <EmptyDataTemplate>
-					    <div runat="server" class="nothing-eligible">
-						    <asp:Literal ID="lblPersonTitle" runat="server" Text="No one in this family is eligible to check-in." />
-					    </div>                            
-				    </EmptyDataTemplate>              
-			    </asp:ListView>
-			    <asp:DataPager ID="dpPersonPager" runat="server" PageSize="5" PagedControlID="lvPerson">
-				    <Fields>
-					    <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-lg btn-primary btn-checkin-select" />
-				    </Fields>
-			    </asp:DataPager>
-            </ContentTemplate>
-            </asp:UpdatePanel>
+			        <h3>People</h3>                    
+			        <asp:ListView ID="lvPerson" runat="server" OnItemDataBound="lvPerson_ItemDataBound" OnPagePropertiesChanging="lvPerson_PagePropertiesChanging" >
+				        <ItemTemplate>                            
+					        <asp:LinkButton ID="lbSelectPerson" runat="server" data-id='<%# Eval("Person.Id") %>'
+						        CssClass="btn btn-primary btn-lg btn-block btn-checkin-select person">
+						        <%# Eval("Person.FullName") %><br />
+						        <span class='checkin-sub-title'>
+							        Birthday: <%# Eval("Person.BirthMonth") + "/" + Eval("Person.BirthDay") + " " ?? "N/A " %> 
+                                    <%# Convert.ToInt32( Eval( "Person.Age" ) ) <= 18 ? "Age: " + Eval( "Person.Age" ) : string.Empty %>
+						        </span>
+					        </asp:LinkButton>
+				        </ItemTemplate>    
+				        <EmptyDataTemplate>
+					        <div runat="server" class="nothing-eligible">
+						        <asp:Literal ID="lblPersonTitle" runat="server" Text="No one in this family is eligible to check-in." />
+					        </div>                            
+				        </EmptyDataTemplate>              
+			        </asp:ListView>
+			        <asp:DataPager ID="dpPersonPager" runat="server" PageSize="5" PagedControlID="lvPerson">
+				        <Fields>
+					        <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-lg btn-primary btn-checkin-select" />
+				        </Fields>
+			        </asp:DataPager>
+                </ContentTemplate>
+                </asp:UpdatePanel>
+            </div>
 
-            <asp:UpdatePanel ID="pnlSelectVisitor" runat="server" UpdateMode="Conditional" class="col-md-3">
-            <ContentTemplate>
-                <asp:HiddenField ID="hfSelectedVisitor" runat="server" ClientIDMode="Static" />
+            <div class="col-md-3">
+                <asp:UpdatePanel ID="pnlVisitor" runat="server" UpdateMode="Conditional">
+                <ContentTemplate>
+                    <asp:HiddenField ID="hfSelectedVisitor" runat="server" ClientIDMode="Static" />
 
-			    <h3>Visitors</h3>
-			    <asp:ListView ID="lvVisitor" runat="server" OnItemDataBound="lvVisitor_ItemDataBound" OnPagePropertiesChanging="lvVisitor_PagePropertiesChanging">
-				    <ItemTemplate>
-					    <asp:LinkButton ID="lbSelectVisitor" runat="server" data-id='<%# Eval("Person.Id") %>' 
-						    CssClass="btn btn-primary btn-lg btn-block btn-checkin-select visitor">
-						    <%# Eval("Person.FullName") %><br />
-						    <span class='checkin-sub-title'>Birthday: <%# Eval("Person.BirthMonth") + "/" + Eval("Person.BirthDay") ?? "Not entered" %></span>
-					    </asp:LinkButton>
-				    </ItemTemplate>
-			    </asp:ListView>
-			    <asp:DataPager ID="dpVisitorPager" runat="server" PageSize="5" PagedControlID="lvVisitor">
-				    <Fields>
-					    <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-lg btn-primary btn-checkin-select" />
-				    </Fields>
-			    </asp:DataPager>
-            </ContentTemplate>
-            </asp:UpdatePanel>
+			        <h3>Visitors</h3>
+			        <asp:ListView ID="lvVisitor" runat="server" OnItemDataBound="lvVisitor_ItemDataBound" OnPagePropertiesChanging="lvVisitor_PagePropertiesChanging">
+				        <ItemTemplate>
+					        <asp:LinkButton ID="lbSelectVisitor" runat="server" data-id='<%# Eval("Person.Id") %>' 
+						        CssClass="btn btn-primary btn-lg btn-block btn-checkin-select visitor">
+						        <%# Eval("Person.FullName") %><br />
+						        <span class='checkin-sub-title'>Birthday: <%# Eval("Person.BirthMonth") + "/" + Eval("Person.BirthDay") ?? "N/A" %></span>
+					        </asp:LinkButton>
+				        </ItemTemplate>
+			        </asp:ListView>
+			        <asp:DataPager ID="dpVisitorPager" runat="server" PageSize="5" PagedControlID="lvVisitor">
+				        <Fields>
+					        <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-lg btn-primary btn-checkin-select" />
+				        </Fields>
+			        </asp:DataPager>
+                </ContentTemplate>
+                </asp:UpdatePanel>
+            </div>
 
             <div ID="divNothingFound" runat="server" class="col-md-9" visible="false">
                 <div class="col-md-3"></div>
@@ -202,7 +208,7 @@
             </div>
 
             <div class="col-sm-3 checkin-actions">
-                <Rock:BootstrapButton ID="lbSaveFamily" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbSaveFamily_Click" Text="Save" EnableViewState="false" />
+                <Rock:BootstrapButton ID="lbSaveFamily" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbSaveFamily_Click" Text="Save" EnableViewState="false" ValidationGroup="Family" />
             </div>
         </div>        
     
@@ -249,8 +255,6 @@
             </ItemTemplate>        
             </asp:ListView>        
 
-            
-
             <div class="row">
                 <asp:DataPager ID="dpAddFamily" runat="server" PageSize="5" PagedControlID="lvAddFamily">
                     <Fields>
@@ -293,7 +297,7 @@
             return false;
         });
 
-        $('#<%= pnlSelectFamily.ClientID %>').on('click', 'a', function () {
+        $('#<%= pnlFamily.ClientID %>').on('click', 'a', function () {
             $('.nothing-eligible').html("<i class='icon-spinner icon-spin icon-large'></i>");
         });
                 

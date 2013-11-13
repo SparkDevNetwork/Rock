@@ -28,6 +28,10 @@ namespace Rock.Model
             return Repository.AsQueryable().Where( t => t.IsActive == true );
         }
 
+        /// <summary>
+        /// Gets all jobs.
+        /// </summary>
+        /// <returns></returns>
         public IQueryable<ServiceJob> GetAllJobs()
         {
             return Repository.AsQueryable();
