@@ -51,14 +51,5 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets" />
-  <Target Name="BeforeBuild" Condition="'$(Configuration)' == 'Release'">
-    <Version VersionFile="Properties\version.txt" Major="0" Minor="1" Build="0" BuildType="None" RevisionType="Increment">
-      <Output TaskParameter="Major" PropertyName="Major" />
-      <Output TaskParameter="Minor" PropertyName="Minor" />
-      <Output TaskParameter="Build" PropertyName="Build" />
-      <Output TaskParameter="Revision" PropertyName="Revision" />
-    </Version>
-    <AssemblyInfo CodeLanguage="CS" OutputFile="Properties\AssemblyInfo.partial.cs" AssemblyFileVersion="$(Major).$(Minor).$(Build).$(Revision)" />
-  </Target>
+
 </Project>
