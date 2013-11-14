@@ -319,6 +319,10 @@
     <Compile Include="Migrations\201311081500222_RequireCategoryName.Designer.cs">
       <DependentUpon>201311081500222_RequireCategoryName.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201311141450379_RenameSavedAccountReferenceTransactionId.cs" />
+    <Compile Include="Migrations\201311141450379_RenameSavedAccountReferenceTransactionId.Designer.cs">
+      <DependentUpon>201311141450379_RenameSavedAccountReferenceTransactionId.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -1233,6 +1237,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201311081500222_RequireCategoryName.resx">
       <DependentUpon>201311081500222_RequireCategoryName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201311141450379_RenameSavedAccountReferenceTransactionId.resx">
+      <DependentUpon>201311141450379_RenameSavedAccountReferenceTransactionId.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
