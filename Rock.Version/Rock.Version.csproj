@@ -11,6 +11,7 @@
     <AssemblyName>Rock.Version</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <BuildServer>false</BuildServer>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -52,4 +53,23 @@
   </Target>
   -->
 
+	<PropertyGroup>
+    <MSBuildCommunityTasksPath Condition="'$(MSBuildCommunityTasksPath)' == ''">$(MSBuildProjectDirectory)\..\Build\MSBuildCommunityTasks</MSBuildCommunityTasksPath>
+	</PropertyGroup>
+
+  <Import Project="$(MSBuildProjectDirectory)\..\Build\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets" Condition=" '$(Configuration)' == 'Release' and '$(BuildServer)' == 'true' " />
+
+  <Target Name="BeforeBuild" Condition=" '$(Configuration)' == 'Release' and '$(BuildServer)' == 'true' ">
+    <Message Text="Incrementing version number for Rock.Version into Properties\AssemblyInfo.partial.cs" />
+    <Version VersionFile="Properties\version.txt" Major="0" Minor="1" Build="0" BuildType="None" RevisionType="Increment">
+      <Output TaskParameter="Major" PropertyName="Major" />
+      <Output TaskParameter="Minor" PropertyName="Minor" />
+      <Output TaskParameter="Build" PropertyName="Build" />
+      <Output TaskParameter="Revision" PropertyName="Revision" />
+    </Version>
+    <AssemblyInfo CodeLanguage="CS" OutputFile="Properties\AssemblyInfo.partial.cs" AssemblyFileVersion="$(Major).$(Minor).$(Build).$(Revision)" />
+  </Target>
+  
+  <!-- We'll also have a target that then invokes the package building tool here... -->
+  
 </Project>
