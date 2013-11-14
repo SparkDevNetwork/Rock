@@ -27,6 +27,26 @@ namespace RockWeb.Blocks.Reporting
         #region Control Methods
 
         /// <summary>
+        /// Gets or sets the report fields dictionary.
+        /// </summary>
+        /// <value>
+        /// The report fields dictionary.
+        /// </value>
+        protected Dictionary<int, string> ReportFieldsDictionary
+        {
+            get
+            {
+                Dictionary<int, string> childGroupTypesDictionary = ViewState["ReportFieldsDictionary"] as Dictionary<int, string>;
+                return childGroupTypesDictionary;
+            }
+
+            set
+            {
+                ViewState["ReportFieldsDictionary"] = value;
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -65,6 +85,14 @@ namespace RockWeb.Blocks.Reporting
                 else
                 {
                     pnlDetails.Visible = false;
+                }
+            }
+
+            if ( pnlEditDetails.Visible )
+            {
+                foreach ( var field in ReportFieldsDictionary.OrderBy( a => a.Key ) )
+                {
+                    AddFieldPanelWidget( field.Key, field.Value, false );
                 }
             }
         }
@@ -177,7 +205,6 @@ namespace RockWeb.Blocks.Reporting
                     }
 
                     service.Save( report, CurrentPersonId );
-
                 } );
             }
 
@@ -203,6 +230,7 @@ namespace RockWeb.Blocks.Reporting
                 {
                     qryParams["CategoryId"] = parentCategoryId;
                 }
+
                 NavigateToPage( this.CurrentPage.Guid, qryParams );
             }
             else
@@ -228,11 +256,6 @@ namespace RockWeb.Blocks.Reporting
             ddlEntityType.Items.Insert( 0, new ListItem( string.Empty, "0" ) );
         }
 
-        private class FieldInfo
-        {
-
-        }
-
         /// <summary>
         /// Loads the DataView and Fields dropdowns based on the selected EntityType
         /// </summary>
@@ -246,17 +269,19 @@ namespace RockWeb.Blocks.Reporting
                 ddlDataView.DataBind();
                 ddlDataView.Items.Insert( 0, new ListItem( string.Empty, "0" ) );
 
+                ddlFields.Enabled = true;
+
                 Type entityType = EntityTypeCache.Read( entityTypeId.Value ).GetEntityType();
 
                 List<string> fieldNames = new List<string>();
                 List<string> otherFieldNames = new List<string>();
-                
+
                 // add the regular fieldnames of the Entity, ignoring Id,Guid, and Order
                 foreach ( var property in entityType.GetProperties() )
                 {
                     if ( !property.GetGetMethod().IsVirtual || property.Name == "Id" || property.Name == "Guid" || property.Name == "Order" )
                     {
-                        if ( property.GetCustomAttributes( typeof( PreviewableAttribute ), true ).Count() > 0)
+                        if ( property.GetCustomAttributes( typeof( PreviewableAttribute ), true ).Count() > 0 )
                         {
                             fieldNames.Add( property.Name );
                         }
@@ -275,7 +300,7 @@ namespace RockWeb.Blocks.Reporting
                     int i = 1;
                     while ( otherFieldNames.Any( p => p.Equals( propName, StringComparison.CurrentCultureIgnoreCase ) ) )
                     {
-                        propName = attribute.Name + i++.ToString();
+                        propName = attribute.Name + ( i++ ).ToString();
                     }
 
                     otherFieldNames.Add( propName );
@@ -288,14 +313,13 @@ namespace RockWeb.Blocks.Reporting
                     ddlFields.Items.Add( listItem );
                 }
 
-                foreach( var fieldName in otherFieldNames.OrderBy( a => a.ToUpper() ).ToList())
+                foreach ( var fieldName in otherFieldNames.OrderBy( a => a.ToUpper() ).ToList() )
                 {
                     var listItem = new ListItem( fieldName.SplitCase(), fieldName );
                     listItem.Attributes["optiongroup"] = "Other";
                     ddlFields.Items.Add( listItem );
                 }
-                
-                
+
                 ddlFields.Items.Insert( 0, new ListItem( string.Empty, "0" ) );
             }
             else
@@ -419,6 +443,10 @@ namespace RockWeb.Blocks.Reporting
             cpCategory.SetValue( report.CategoryId );
             ddlEntityType.SetValue( report.EntityTypeId );
             ddlDataView.SetValue( report.DataViewId );
+
+            ReportFieldsDictionary = new Dictionary<int, string>();
+
+            // TODO, get ReportFields from the database
         }
 
         /// <summary>
@@ -494,9 +522,51 @@ namespace RockWeb.Blocks.Reporting
 
         #endregion
 
+        /// <summary>
+        /// Handles the Click event of the btnAddField control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddField_Click( object sender, EventArgs e )
         {
-            //TODO: do this
+            string fieldName = ddlFields.SelectedItem.Value;
+            int displayOrder = ReportFieldsDictionary.Count();
+            ReportFieldsDictionary.Add( displayOrder, fieldName );
+            AddFieldPanelWidget( displayOrder, fieldName, true );
+        }
+
+        /// <summary>
+        /// Adds the field panel widget.
+        /// </summary>
+        /// <param name="displayOrder">The display order.</param>
+        /// <param name="fieldName">Name of the field.</param>
+        private void AddFieldPanelWidget( int displayOrder, string fieldName, bool showExpanded )
+        {
+            PanelWidget panelWidget = new PanelWidget();
+            panelWidget.ID = "reportFieldWidget_" + fieldName + displayOrder.ToString();
+            panelWidget.Title = fieldName.SplitCase();
+            panelWidget.ShowDeleteButton = true;
+            panelWidget.DeleteClick += FieldsPanelWidget_DeleteClick;
+            panelWidget.ShowReorderIcon = true;
+            panelWidget.Expanded = showExpanded;
+
+            RockCheckBox showInGridCheckBox = new RockCheckBox();
+            showInGridCheckBox.ID = panelWidget.ID + "_showInGridCheckBox";
+            showInGridCheckBox.Label = "Show in Grid";
+            showInGridCheckBox.Checked = true;
+            panelWidget.Controls.Add( showInGridCheckBox );
+
+            phReportFields.Controls.Add( panelWidget );
+        }
+
+        /// <summary>
+        /// Handles the DeleteClick event of the FieldsPanelWidget control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void FieldsPanelWidget_DeleteClick( object sender, EventArgs e )
+        {
+            // TODO
         }
     }
 }

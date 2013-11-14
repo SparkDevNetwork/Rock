@@ -51,7 +51,7 @@
                         </div>
                     </header>
                     <div class="panel-body">
-                        <span>TODO!</span>
+                        <asp:PlaceHolder runat="server" ID="phReportFields" ViewStateMode="Disabled" />
                     </div>
                 </section>
 
@@ -81,9 +81,7 @@
                     <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm pull-right" />
                 </div>
 
-                
-                
-                <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results"  />
+                <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
 
             </div>
 
