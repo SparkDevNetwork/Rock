@@ -33,16 +33,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int PersonId { get; set; }
-
-
+        
         /// <summary>
-        /// Gets or sets the financial transaction id that the saved account was originated from
+        /// Gets or sets the reference transaction id that the saved account was originated from
         /// </summary>
         /// <value>
-        /// The financial transaction id.
+        /// The reference id.
         /// </value>
         [DataMember]
-        public int FinancialTransactionId { get; set; }
+        public int ReferenceId { get; set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -119,7 +118,7 @@ namespace Rock.Model
         public FinancialPersonSavedAccountConfiguration()
         {
             this.HasRequired( t => t.Person ).WithMany().HasForeignKey( t => t.PersonId ).WillCascadeOnDelete( true );
-            this.HasRequired( t => t.FinancialTransaction ).WithMany().HasForeignKey( t => t.FinancialTransactionId ).WillCascadeOnDelete( true );
+            this.HasRequired( t => t.FinancialTransaction ).WithMany().HasForeignKey( t => t.ReferenceId ).WillCascadeOnDelete( true );
         }
     }
 

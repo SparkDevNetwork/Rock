@@ -422,6 +422,18 @@ namespace Rock.PayFlowPro
             return null;
         }
 
+        /// <summary>
+        /// Gets the reference identifier for a saved transaction.
+        /// </summary>
+        /// <param name="transaction">The transaction.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override int GetReferenceId( FinancialTransaction transaction, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            return transaction.Id;
+        }
+
         #endregion
 
         #region PayFlowPro Object Helper Methods
