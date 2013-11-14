@@ -19,6 +19,7 @@
 	//
 	// some constants
 	//
+    const string dotNetVersionRequired = "4.5";
 	const string internetCheckSite = "www.google.com";
     const string rockZipAssemblyFile = "http://rockchms.blob.core.windows.net/install/Ionic.Zip.dll";
     const string rockInstallFile = "http://rockchms.blob.core.windows.net/install/Install.aspx";
@@ -130,9 +131,7 @@
 	</head>
 	<body>
 		<form runat="server">
-		<asp:ScriptManager ID="ScriptManager1" runat="server" EnablePartialRendering="true" />
-		<asp:UpdatePanel ID="GettingStartedUpdatePanel" runat="server" UpdateMode="Conditional">
-			<ContentTemplate>
+		
 				<div id="content">
 					<h1>Rock ChMS</h1>
 					
@@ -155,8 +154,6 @@
 
 					</div>
 				</div>
-			</ContentTemplate>
-		</asp:UpdatePanel>
 		</form>
 		
 		
@@ -257,8 +254,41 @@
             errorDetails += "<li><i class='icon-warning-sign fail'></i> The username " + userName + " does not have write access to the server's file system. <a class='btn btn-info btn-xs' href='TODO'>Let's Fix It Together</a> </li>";
         }
 
+        // check asp.net version
+        string checkResults = string.Empty;
+        
+        if (!CheckDotNetVersion(out checkResults))
+        {
+            checksFailed = true;
+            errorDetails += "<li><i class='icon-warning-sign fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/dotnet-version.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+        }
+        
+        
 		return checksFailed;
 	}
+
+    private bool CheckDotNetVersion(out string errorDetails)
+    {
+
+        bool checksFailed = false;
+        errorDetails = string.Empty;
+
+        // check .net
+        // ok this is not easy as .net 4.5 actually reports as 4.0.30319.269 so instead we need to search for the existence of an assembly that
+        // only exists in 4.5 (could also look for Environment.Version.Major == 4 && Environment.Version.Revision > 17000 but this is not future proof)
+        // sigh... Microsoft... :)
+        if (!(Type.GetType("System.Reflection.ReflectionContext", false) != null))
+        {
+            errorDetails = "The server does not have the correct .Net runtime.  You have .Net version " + System.Environment.Version.Major.ToString() + "." + System.Environment.Version.ToString() + " the Rock ChMS version requires " + dotNetVersionRequired + ".";
+        }
+        else
+        {
+            errorDetails += "You have the correct version of .Net (4.5+).";
+            checksFailed = true;
+        }
+
+        return checksFailed;
+    }
 
 
 </script>
