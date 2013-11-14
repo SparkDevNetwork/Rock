@@ -58,7 +58,7 @@ namespace Rock.Model
         /// Gets or sets the entity type qualifier column that contains the value (see <see cref="EntityTypeQualifierValue"/>) that is used to narrow the scope of the Category.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the name of the Qualifier Column/Property that contains the <see cref="EntityTypeQualiferValue"/> that is used to 
+        /// A <see cref="System.String"/> representing the name of the Qualifier Column/Property that contains the <see cref="EntityTypeQualifierValue"/> that is used to 
         /// narrow the scope of the Category.
         /// </value>
         [MaxLength( 50 )]

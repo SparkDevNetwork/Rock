@@ -12,7 +12,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Service/data access class for <see cref="MakretingCampaignAdType"/> entity objects
+    /// Service/data access class for <see cref="Rock.Model.MarketingCampaignAdType"/> entity objects
     /// </summary>
     public partial class MarketingCampaignAdTypeService
     {

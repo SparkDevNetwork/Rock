@@ -29,7 +29,7 @@ namespace Rock.Model
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.EmailTemplate">EmailTemplates</see> that are owned by a person. For public <see cref="Rock.Model.EmailTemplate">EmailTemplates</see> use null.
         /// </summary>
-        /// <param name="personId"/>A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> to search by. For public <see cref="Rock.Model.EmailTemplate">EmailTemplates</see> use null.</param>
+        /// <param name="personId">A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> to search by. For public <see cref="Rock.Model.EmailTemplate">EmailTemplates</see> use null.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.EmailTemplate">EmailTemplates</see> that are owned by the specified <see cref="Rock.Model.Person"/>.</returns>
         public IEnumerable<EmailTemplate> GetByPersonId( int? personId )
         {

@@ -101,7 +101,7 @@ namespace Rock.Model
         /// Gets or sets the <see cref="Rock.Model.Person"/> who is receiving the <see cref="Rock.Model.Communication"/>.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Person"/> who is receiving the <see cref="Rock.Model.Communication./>
+        /// The <see cref="Rock.Model.Person"/> who is receiving the <see cref="Rock.Model.Communication"/>.
         /// </value>
         [DataMember]
         public virtual Person Person { get; set; }
@@ -119,7 +119,7 @@ namespace Rock.Model
         /// Gets or sets a dictionary containing the Additional Merge values for this communication
         /// </summary>
         /// <value>
-        ///  A <see cref="System.Collection.Generic.Dictionary(String,String)"/> of <see cref="System.String"/> objects containing additional merge values for the <see cref="Rock.Model.Communication"/>
+        ///  A <see cref="System.Collections.Generic.Dictionary{String,String}"/> of <see cref="System.String"/> objects containing additional merge values for the <see cref="Rock.Model.Communication"/>
         /// </value>
         [DataMember]
         public virtual Dictionary<string, string> AdditionalMergeValues

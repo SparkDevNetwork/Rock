@@ -39,7 +39,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="groupId">A <see cref="System.Int32"/> representing the GroupId of the Security Role <see cref="Rock.Model.Group"/> to search by.</param>
         /// <returns>
-        /// An enumerable collection of <see cref="Rock.Model.Auth"/> entities that apply to the specified <see cref="Rock.Model.Group/>.
+        /// An enumerable collection of <see cref="Rock.Model.Auth"/> entities that apply to the specified <see cref="Rock.Model.Group"/>.
         /// </returns>
         public IEnumerable<Auth> GetByGroupId( int? groupId )
         {

@@ -168,10 +168,10 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets a collection containing the <see cref="Rock.Model.AttributeQualifer">AttributeQualifiers</see> for this Attribute.
+        /// Gets or sets a collection containing the <see cref="Rock.Model.AttributeQualifier">AttributeQualifiers</see> for this Attribute.
         /// </summary>
         /// <value>
-        /// Collection of <see cref="Rock.Model.AttributeQualifiers"/> for this attribute.
+        /// Collection of <see cref="Rock.Model.AttributeQualifier">AttributeQualifiers</see> for this Attribute.
         /// </value>
         [DataMember]
         public virtual ICollection<AttributeQualifier> AttributeQualifiers
