@@ -150,7 +150,7 @@ namespace Rock.Web.UI.Controls
         ]
         public string EditorHeight
         {
-            get { return ViewState["EditorHeight"] as string ?? string.Empty; }
+            get { return ViewState["EditorHeight"] as string ?? "200"; }
             set { ViewState["EditorHeight"] = value; }
         }
 
