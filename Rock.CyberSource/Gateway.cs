@@ -291,13 +291,14 @@ namespace Rock.CyberSource
             request.paySubscriptionCreateService = new PaySubscriptionCreateService();
             request.paySubscriptionCreateService.run = "true";
             request.paySubscriptionCreateService.paymentRequestID = transaction.TransactionCode;
-
-            //request.recurringSubscriptionInfo = new RecurringSubscriptionInfo();
+            
+            request.recurringSubscriptionInfo = new RecurringSubscriptionInfo();
             //request.recurringSubscriptionInfo.subscriptionID = transaction.TransactionCode;
-            //request.recurringSubscriptionInfo.frequency = "ON-DEMAND";
+            request.recurringSubscriptionInfo.frequency = "ON-DEMAND";
+            request.recurringSubscriptionInfo.amount = "0";
             //request.subscription = new Subscription();
             //request.subscription.title = DateTime.Now + ": Code " + transaction.TransactionCode + " for " + transaction.Amount.ToString();
-            //request.subscription.paymentMethod = transaction.CurrencyTypeValue.Name.Equals("Check") ? "check" : "creditcard";
+            //request.subscription.paymentMethod = transaction.CurrencyTypeValue.Name.Equals( "Check" ) ? "check" : "creditcard";
             ReplyMessage reply = SubmitTransaction( request );
 
             if ( reply.reasonCode == "100" )
