@@ -49,7 +49,7 @@ namespace Rock.Model
         public int? ParentId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId of the <see cref="RockModel.EntityType"/> that either is being filtered by or contains the property that the DataView is being filtered by.
+        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that either is being filtered by or contains the property that the DataView is being filtered by.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that is being used in the filter.
@@ -164,7 +164,7 @@ namespace Rock.Model
         /// <param name="filteredEntityType">The object type of the filtered entity.</param>
         /// <param name="serviceInstance">A <see cref="System.Object"/> that contains the service reference.</param>
         /// <param name="parameter">A <see cref="System.Linq.Expressions.ParameterExpression"/> containing the parameter for the expression.</param>
-        /// <param name="errorMessages">A <see cref="System.Collection.Generic.List<string>"/> that contains any error/exception messages that are returned.</param>
+        /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}"/> that contains any error/exception messages that are returned.</param>
         /// <returns></returns>
         public virtual Expression GetExpression( Type filteredEntityType, object serviceInstance, ParameterExpression parameter, List<string> errorMessages )
         {

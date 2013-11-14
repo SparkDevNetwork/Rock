@@ -33,7 +33,7 @@ namespace Rock.Model
         /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who is the sender of the Communication
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person/> who is the sender of the Communcation.
+        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person" /> who is the sender of the Communication.
         /// </value>
         [DataMember]
         public int? SenderPersonId { get; set; }
@@ -204,7 +204,7 @@ namespace Rock.Model
         /// Gets the <see cref="Rock.Communication.ChannelComponent"/> for the communication channel that is being used.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.ChannelComponent"/> for the communication channel that is being used.
+        /// The <see cref="Rock.Communication.ChannelComponent"/> for the communication channel that is being used.
         /// </value>
         public virtual ChannelComponent Channel
         {
@@ -238,7 +238,7 @@ namespace Rock.Model
         /// Gets or sets the data used by the selected communication channel.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Collections.Generic.Dictionary(String,String)"/> of <see cref="Rock.Model.String"/> key value pairs that contain channel specific data.
+        /// A <see cref="System.Collections.Generic.Dictionary{String,String}"/> of key value pairs that contain channel specific data.
         /// </value>
         [DataMember]
         public virtual Dictionary<string, string> ChannelData
@@ -254,7 +254,7 @@ namespace Rock.Model
         /// for the communication.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Collections.Generic.List(String)"/> of <see cref="Rock.Model.String"/> containing the additional merge field list.
+        /// A <see cref="System.Collections.Generic.List{String}"/> of values containing the additional merge field list.
         /// </value>
         [DataMember]
         public virtual List<string> AdditionalMergeFields

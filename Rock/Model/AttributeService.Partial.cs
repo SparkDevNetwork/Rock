@@ -21,7 +21,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityTypeId">A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType" /> to search by.</param>
         /// <returns>
-        /// A queryable collection of <see cref="Rock.Model.Attributes"/> that are related to the specified <see cref="Rock.Model.EntityType"/>.
+        /// A queryable collection of <see cref="Rock.Model.Attribute">Attributes</see> that are related to the specified <see cref="Rock.Model.EntityType"/>.
         /// </returns>
         public IQueryable<Attribute> GetByEntityTypeId( int? entityTypeId )
         {
@@ -91,10 +91,10 @@ namespace Rock.Model
         }
         
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.Attribute">Attributes</see> that uses the provided <see cref="Rock.Model.FileType"/>.
+        /// Returns an enumerable collection of <see cref="Rock.Model.Attribute">Attributes</see> that uses the provided <see cref="Rock.Model.BinaryFileType"/>.
         /// </summary>
-        /// <param name="fieldTypeId">A <see cref="System.Int32"/> that represents the FileTypeId of the <see cref="Rock.Model.FileType"/> to search by.</param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.Attribute">Attributes</see> that uses the specified <see cref="Rock.Model.FileType"/>.</returns>
+        /// <param name="fieldTypeId">A <see cref="System.Int32"/> that represents the FileTypeId of the <see cref="Rock.Model.BinaryFileType"/> to search by.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.Attribute">Attributes</see> that uses the specified <see cref="Rock.Model.BinaryFileType"/>.</returns>
         public IEnumerable<Attribute> GetByFieldTypeId( int fieldTypeId )
         {
             return Repository.Find( t => t.FieldTypeId == fieldTypeId ).OrderBy( t => t.Order );

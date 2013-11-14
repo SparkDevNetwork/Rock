@@ -29,39 +29,39 @@ namespace Rock.Model
     public partial class Metric : Model<Metric>, IOrdered
     {
         /// <summary>
-        /// Gets or sets the System.
+        /// Gets or sets a flag indicating if this Metric is part of the RockChMS core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// System.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if the Metric is part of the core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
-        /// Gets or sets the Type.
+        /// Gets or sets a flag indicating if this Metric supports multiple values.
         /// </summary>
         /// <value>
-        /// Type.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if it supports multiple values; otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool Type { get; set; }
         
         /// <summary>
-        /// Gets or sets the Category.
+        /// Gets or sets the category that this Metric belongs to.
         /// </summary>
         /// <value>
-        /// Category.
+        /// A <see cref="System.String"/> representing the category that this Metric belongs to.
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
         public string Category { get; set; }
         
         /// <summary>
-        /// Gets or sets the Title.
+        /// Gets or sets the Title of this Metric.
         /// </summary>
         /// <value>
-        /// Title.
+        /// A <see cref="System.String"/> representing the user defined title of this Metric. This property is required.
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -69,112 +69,114 @@ namespace Rock.Model
         public string Title { get; set; }
 
         /// <summary>
-        /// Gets or sets the Subtitle.
+        /// Gets or sets the Subtitle of the Metric.
         /// </summary>
         /// <value>
-        /// Subtitle.
+        /// A <see cref="System.String"/> representing the Subtitle of the Metric.
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
         public string Subtitle { get; set; }
     
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a user defined description of the Metric.
         /// </summary>
         /// <value>
-        /// Description.
+        /// A <see cref="System.String"/> representing the description of the Metric.
         /// </value>
         [DataMember]
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the MinValue.
+        /// Gets or sets the Minimum Value for the Metric.
         /// </summary>
         /// <value>
-        /// MinValue.
+        /// A <see cref="System.Int32"/> representing the minimum value for the Metric. If no minimum is provided, this value will be null.
         /// </value>
         [DataMember]
         public int? MinValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the MaxValue.
+        /// Gets or sets the Maximum Value for the Metric.
         /// </summary>
         /// <value>
-        /// MaxValue.
+        /// A <see cref="System.Int32"/> representing the Maximum Value for the Metric. If no maximum value is provided, this value will be null.
         /// </value>
         [DataMember]
         public int? MaxValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the CollectionFrequency.
+        /// Gets or sets the DefinedValueId of the CollectionFrequency <see cref="Rock.Model.DefinedValue"/> that indicates how often data for the Metric
+        /// will be collected.
         /// </summary>
         /// <value>
-        /// CollectionFrequency.
+        /// A <see cref="System.Int32"/> representing the DefinedValueId of the CollectionFrequency <see cref="Rock.Model.DefinedValue"/> that indicates how often 
+        /// data for the Metric is collected.
         /// </value>
         [DataMember]
         public int? CollectionFrequencyValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastCollected Date Time.
+        /// Gets or sets the date and time that data for this Metric was last collected 
         /// </summary>
         /// <value>
-        /// LastCollected Date Time.
+        /// A <see cref="System.DateTime"/> that represents the last time that data for this Metric was last collected.
         /// </value>
         [DataMember]
         public DateTime? LastCollectedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Source.
+        /// Gets or sets a value that describes the data source of the metric.
         /// </summary>
         /// <value>
-        /// Source.
+        /// A <see cref="System.String"/> that describes the data source of the metric.
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
         public string Source { get; set; }
 
         /// <summary>
-        /// Gets or sets the SourceSQL.
+        /// Gets or sets the SQL query that returns the data for the Metric.
         /// </summary>
         /// <value>
-        /// SourceSQL.
+        /// A <see cref="System.String"/> that represents the SQL Query that returns the data for the Metric.
         /// </value>
         [DataMember]
         public string SourceSQL { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the display order for the Metric. Metric order is in ascending order, so the lower the number the higher the display priority for the Metric. This value is required.
         /// </summary>
         /// <value>
-        /// Order.
+        /// A <see cref="System.Int32" /> representing the display order for this Metric.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the Metric Values.
+        /// Gets or sets a collection that contains all the <see cref="MetricValue">Metric Values</see> (values) for this Metric.
         /// </summary>
         /// <value>
-        /// Collection of Metric Values.
+        /// A collection of <see cref="Rock.Model.MetricValue">MetricValues</see> that are associated with this Metric.
         /// </value>
         [DataMember]
         public virtual ICollection<MetricValue> MetricValues { get; set; }
 
         /// <summary>
-        /// Gets or sets the CollectionFrequency.
+        /// Gets or sets the CollectionFrequency <see cref="Rock.Model.DefinedValue"/> that is associated with this Metric. How often the data for this Metric should be retrieved.
         /// </summary>
         /// <value>
-        /// A <see cref="Model.DefinedValue"/> object.
+        /// A <see cref="Rock.Model.DefinedValue"/> that represents how often the data for this Metric should be retrieved.
         /// </value>
         [DataMember]
         public virtual Model.DefinedValue CollectionFrequencyValue { get; set; }
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns a <see cref="System.String" /> that represents this Metric
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="System.String" /> that represents this Metric
         /// </returns>
         public override string ToString()
         {
