@@ -226,8 +226,7 @@
 		// check for write access to the file system
         
         // first get user that the server is running as
-        var user = System.Security.Principal.WindowsIdentity.GetCurrent().User;
-        string userName = user.Translate(typeof (System.Security.Principal.NTAccount)).ToString();
+        string userName = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
 
         bool canWrite = false;
 
