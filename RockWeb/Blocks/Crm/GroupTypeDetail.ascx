@@ -40,6 +40,20 @@
                     </div>
                 </div>
 
+                <Rock:PanelWidget ID="wpRoles" runat="server" Title="Roles">
+                    <Rock:Grid ID="gGroupTypeRoles" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Role">
+                        <Columns>
+                            <Rock:ReorderField />
+                            <asp:BoundField DataField="Name" HeaderText="Name" />
+                            <asp:BoundField DataField="Description" HeaderText="Description" />
+                            <asp:BoundField DataField="MinCount" HeaderText="Minimum Required" DataFormatString="{0:N0}" />
+                            <asp:BoundField DataField="MaxCount" HeaderText="Maximum Allowed" DataFormatString="{0:N0}" />
+                            <Rock:EditField OnClick="gGroupTypeRoles_Edit" />
+                            <Rock:DeleteField OnClick="gGroupTypeRoles_Delete" />
+                        </Columns>
+                    </Rock:Grid>
+                </Rock:PanelWidget>
+
                 <Rock:PanelWidget ID="wpBehavior" runat="server" Title="Behavior">
                     <Rock:DataTextBox ID="tbGroupTerm" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="GroupTerm" Required="true" />
                     <Rock:DataTextBox ID="tbGroupMemberTerm" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="GroupMemberTerm" Required="true" />
@@ -85,7 +99,13 @@
                 </Rock:PanelWidget>
 
                 <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Attributes">
-                    <Rock:GroupTypePicker ID="gtpInheritedGroupType" runat="server" Label="Inherited Group Type" Help="Group Type to inherit attributes from" AutoPostBack="true" OnSelectedIndexChanged="gtpInheritedGroupType_SelectedIndexChanged" />
+                   <div class="row">
+                        <div class="col-md-4">
+                            <Rock:GroupTypePicker ID="gtpInheritedGroupType" runat="server" Label="Inherited Group Type" Help="Group Type to inherit attributes from" AutoPostBack="true" OnSelectedIndexChanged="gtpInheritedGroupType_SelectedIndexChanged" />
+                        </div>
+                       <div class="col-md-8">
+                       </div>
+                    </div>
                     <div class="row">
                         <div class="col-md-4">
                             <Rock:RockControlWrapper ID="rcGroupTypeAttributesInherited" runat="server" Label="Inherited Group Type Attributes"
@@ -174,6 +194,7 @@
                     </div>
                 </Rock:PanelWidget>
 
+
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                     <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
@@ -204,6 +225,38 @@
         <Rock:ModalAlert ID="modalAlert" runat="server" />
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
+
+        <Rock:ModalDialog ID="dlgGroupTypeRoles" runat="server" OnSaveClick="gGroupTypeRoles_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Roles">
+            <Content>
+                <asp:HiddenField ID="hfRoleId" runat="server" />
+                <asp:HiddenField ID="hfRoleGuid" runat="server" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:DataTextBox ID="tbRoleName" runat="server" SourceTypeName="Rock.Model.GroupTypeRole, Rock" PropertyName="Name" ValidationGroup="Roles" />
+                    </div>
+                    <div class="col-md-6">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <Rock:DataTextBox ID="tbRoleDescription" runat="server" SourceTypeName="Rock.Model.GroupTypeRole, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" ValidationGroup="Roles" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:NumberBox ID="nbMinimumRequired" runat="server" NumberType="Integer" Label="Minimum Required" />
+                        <Rock:NumberBox ID="nbMaximumAllowed" runat="server" NumberType="Integer" Label="Maximum Allowed" />
+                        <asp:CustomValidator ID="cvAllowed" runat="server" Display="None" OnServerValidate="cvAllowed_ServerValidate" 
+                            ValidationGroup="Roles" ErrorMessage="The Minimum Required should be less than Maximum Allowed." />
+                     </div>
+                    <div class="col-md-6">
+                        <asp:PlaceHolder ID="phAttributes" runat="server" />
+                    </div>
+                </div>
+            </Content>
+        </Rock:ModalDialog>
 
         <Rock:ModalDialog ID="dlgChildGroupType" runat="server" OnSaveClick="dlgChildGroupType_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ChildGroupTypes">
             <Content>
