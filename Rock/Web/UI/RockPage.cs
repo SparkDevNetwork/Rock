@@ -589,8 +589,8 @@ namespace Rock.Web.UI
                                 catch ( Exception ex )
                                 {
                                     HtmlGenericControl div = new HtmlGenericControl( "div" );
-                                    div.Attributes.Add( "class", "alert-message block-message error" );
-                                    div.InnerHtml = string.Format( "Error Loading Block:<br/><br/><strong>{0}</strong>", ex.Message );
+                                    div.Attributes.Add( "class", "alert alert-danger" );
+                                    div.InnerHtml = string.Format( "<h4>Error Loading Block</h4><strong>{0}</strong> {1}", block.Name, ex.Message );
                                     control = div;
 
                                     if ( this.IsPostBack )
