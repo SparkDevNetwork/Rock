@@ -9,29 +9,31 @@ using System.Reflection;
 
 namespace Rock.VersionInfo
 {
-    /// <summary>
-    /// Returns current information about Rock
-    /// </summary>
     public static class VersionInfo
     {
         /// <summary>
-        /// Gets the rock product version.
+        /// Provides the full 'official' product name of the Rock version currently in use.
         /// </summary>
-        /// <returns></returns>
-        public static string GetRockProductVersion()
+        /// <returns>the full name of this Rock version (ex. "Rock McKinley 1.2.5" or "Rock Humphreys 0.1.0 (alpha)"</returns>
+        public static string GetRockProductVersionFullName()
         {
-            Assembly rockVersionDLL = Assembly.GetExecutingAssembly();
-            FileVersionInfo rockDLLfvi = FileVersionInfo.GetVersionInfo( rockVersionDLL.Location );
-            return rockDLLfvi.ProductVersion;
+            return GetFileVersionInfo().ProductVersion;
         }
 
         /// <summary>
-        /// Gets the rock product name.
+        /// Provides the full product version number of the Rock currently in use.
         /// </summary>
-        /// <returns></returns>
-        public static string GetRockProductName()
+        /// <returns>the full Rock version number (ex. 1.0.0.3)</returns>
+        public static string GetRockProductVersionNumber()
         {
-            return "Rock ChMS";
+            return GetFileVersionInfo().FileVersion;
+        }
+
+        private static FileVersionInfo GetFileVersionInfo()
+        {
+            Assembly rockVersionDLL = Assembly.GetExecutingAssembly();
+            FileVersionInfo rockDLLfvi = FileVersionInfo.GetVersionInfo( rockVersionDLL.Location );
+            return rockDLLfvi;
         }
     }
 }
