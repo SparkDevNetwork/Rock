@@ -326,9 +326,13 @@
 
             <h2>Rock:CodeEditor</h2>
             <div runat="server" class="r-example">
-                <Rock:CodeEditor ID="ceScript" runat="server" Label="Script" EditorHeight="300" Text="console.log(test);" />
+                <Rock:CodeEditor ID="ceScript" runat="server" EditorTheme="Rock" Label="Script" EditorMode="JavaScript" EditorHeight="300">
+var message='hello world';
+console.log(message);                
+                </Rock:CodeEditor>
             </div>
-            
+            <p>Alternately, you can provide the contents of the code to edit in the <code>Text</code> property of the control.  Be sure to UrlEncode it <code>HttpUtility.UrlEncode(code)</code>.</p>
+
 
         </asp:Panel>
     </ContentTemplate>
