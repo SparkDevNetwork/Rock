@@ -497,8 +497,8 @@ namespace Rock.CyberSource
             request.merchantID = GetAttributeValue( "MerchantID" );
             request.merchantReferenceCode = Guid.NewGuid().ToString();
             request.clientLibraryVersion = Environment.Version.ToString();
-            request.clientApplication = VersionInfo.VersionInfo.GetRockProductName();
-            request.clientApplicationVersion = VersionInfo.VersionInfo.GetRockProductVersion();
+            request.clientApplication = VersionInfo.VersionInfo.GetRockProductVersionFullName();
+            request.clientApplicationVersion = VersionInfo.VersionInfo.GetRockProductVersionNumber();
             request.clientApplicationUser = GetAttributeValue( "OrganizationName" );
             request.clientEnvironment =
                 Environment.OSVersion.Platform +
