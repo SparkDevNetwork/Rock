@@ -5,6 +5,7 @@
 //
 using System;
 using System.ComponentModel;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -154,15 +155,48 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the placeholder text to display inside textbox when it is empty
+        /// Gets or sets the editor mode (language).
         /// </summary>
         /// <value>
-        /// The placeholder text
+        /// The language of the editor.
         /// </value>
-        public string Placeholder
+        [
+        Bindable(false),
+        Category("Appearance"),
+        DefaultValue(""),
+        Description("The language of the code to be edited")
+        ]
+        public CodeEditorMode EditorMode
         {
-            get { return ViewState["Placeholder"] as string ?? string.Empty; }
-            set { ViewState["Placeholder"] = value; }
+            get {
+                if (ViewState["EditorMode"] != null)
+                    return (CodeEditorMode)Enum.Parse(typeof(CodeEditorMode), ViewState["EditorMode"].ToString());
+                return CodeEditorMode.Text; // Default value
+            }
+            set { ViewState["EditorMode"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the editor theme.
+        /// </summary>
+        /// <value>
+        /// The theme of the editor.
+        /// </value>
+        [
+        Bindable(false),
+        Category("Appearance"),
+        DefaultValue(""),
+        Description("The theme of the editor")
+        ]
+        public CodeEditorTheme EditorTheme
+        {
+            get
+            {
+                if (ViewState["EditorTheme"] != null)
+                    return (CodeEditorTheme)Enum.Parse(typeof(CodeEditorTheme), ViewState["EditorTheme"].ToString());
+                return CodeEditorTheme.Rock; // Default value
+            }
+            set { ViewState["EditorTheme"] = value; }
         }
 
         #endregion
@@ -229,7 +263,7 @@ namespace Rock.Web.UI.Controls
 
             string customDiv = @"<div class='code-editor-container' style='position:relative; height: {0}px'><div id='codeeditor-div-{1}'>{2}</div></div>";
 
-            writer.Write(string.Format(customDiv, this.EditorHeight, this.ClientID, this.Text));
+            writer.Write(string.Format(customDiv, this.EditorHeight, this.ClientID, HttpUtility.UrlDecode(this.Text)));
 
             // write custom css for the code editor
             string customStyle = @"
@@ -254,8 +288,8 @@ namespace Rock.Web.UI.Controls
 
             string scriptFormat = @"
                 var ce_{0} = ace.edit('codeeditor-div-{0}');
-                ce_{0}.setTheme('ace/theme/github');
-                ce_{0}.getSession().setMode('ace/mode/csharp');
+                ce_{0}.setTheme('ace/theme/{1}');
+                ce_{0}.getSession().setMode('ace/mode/{2}');
 
                 //var ce_{0}_dest = document.getElementById('{0}');
 
@@ -266,15 +300,9 @@ namespace Rock.Web.UI.Controls
                 
 
 ";
-            string script = string.Format(scriptFormat, this.ClientID);
+            string script = string.Format(scriptFormat, this.ClientID, EditorThemeAsString(this.EditorTheme), EditorModeAsString(this.EditorMode));
             ScriptManager.RegisterStartupScript(this, this.GetType(), "codeeditor_" + this.ID, script, true);
 
-
-            if (!string.IsNullOrWhiteSpace(Placeholder))
-            {
-                this.Attributes["placeholder"] = Placeholder;
-            }
-            
             base.RenderControl( writer );
 
             RenderDataValidator( writer );
@@ -312,5 +340,78 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the mode of the editor as text based on property
+        /// </summary>
+        /// <returns>The text value of the mode.</returns>
+        private string EditorModeAsString(CodeEditorMode mode)
+        {
+            string[] modeValues = new string[] { "text", "css", "html", "liquid", "javascript", "less", "powershell", "sql", "typescript", "csharp" };
+
+            return modeValues[(int)mode];
+        }
+
+        /// <summary>
+        /// Gets the theme of the editor as text based on property
+        /// </summary>
+        /// <returns>The text value of the mode.</returns>
+        private string EditorThemeAsString(CodeEditorTheme theme)
+        {
+            string[] themeValues = new string[] { "github", "chrome", "crimson_editor", "dawn", "dreamweaver", "eclipse", "solarized_light", "textmate", 
+                "tomorrow", "xcode", "github", "ambiance", "chaos", "clouds_midnight", "cobalt", "idle_fingers", "kr_theme", 
+                "merbivore", "merbivore_soft", "mono_industrial", "monokai", "pastel_on_dark", "solarized_dark", "terminal", "tomorrow_night", "tomorrow_night_blue",
+                "tomorrow_night_bright", "tomorrow_night_eighties", "twilight", "vibrant_ink"};
+
+            return themeValues[(int)theme];
+        }
+
+    }
+
+    public enum CodeEditorMode
+    {
+        Text = 0,
+        Css = 1,
+        Html = 2,
+        Liquid = 3,
+        JavaScript = 4,
+        Less = 5,
+        Powershell = 6,
+        Sql = 7,
+        TypeScript = 8,
+        CSharp = 9,
+    }
+
+    public enum CodeEditorTheme
+    {
+        Rock = 0,
+        Chrome = 1,
+        CrimsonEditor = 2,
+        Dawn = 3,
+        Dreamweaver = 4,
+        Eclipse = 5,
+        SolarizedLight = 6,
+        Textmate = 7,
+        Tomorrow = 8,
+        Xcode = 9,
+        Github = 10,
+        AmbianceDark = 11,
+        ChaosDark = 12,
+        CloudsMidnightDark = 13,
+        CobaltDark = 14,
+        IdleFingersDark = 15,
+        krThemeDark = 16,
+        MerbivoreDark = 17,
+        MerbivoreSoftDark = 18,
+        MonoIndustrialDark = 19,
+        MonokaiDark = 20,
+        PastelOnDark = 21,
+        SolarizedDark = 22,
+        TerminalDark = 23,
+        TomorrowNightDark = 24,
+        TomorrowNightBlueDark = 25,
+        TomorrowNightBrightDark = 26,
+        TomorrowNightEightiesDark = 27,
+        TwilightDark = 28,
+        VibrantInkDark = 29,
     }
 }
