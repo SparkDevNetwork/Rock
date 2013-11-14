@@ -54,10 +54,11 @@
   -->
 
 	<PropertyGroup>
-    <MSBuildCommunityTasksPath Condition="'$(MSBuildCommunityTasksPath)' == ''">$(MSBuildProjectDirectory)\..\Build\MSBuildCommunityTasks</MSBuildCommunityTasksPath>
+    <UnescapedMSBuildProjectDirectory>$([MSBuild]::Unescape('$(MSBuildProjectDirectory)'))</UnescapedMSBuildProjectDirectory>
+    <MSBuildCommunityTasksPath Condition="'$(MSBuildCommunityTasksPath)' == ''">$(UnescapedMSBuildProjectDirectory)\..\Build\MSBuildCommunityTasks</MSBuildCommunityTasksPath>
 	</PropertyGroup>
 
-  <Import Project="$(MSBuildProjectDirectory)\..\Build\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets" Condition=" '$(Configuration)' == 'Release' and '$(BuildServer)' == 'true' " />
+  <Import Project="$(UnescapedMSBuildProjectDirectory)\..\Build\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets" Condition=" '$(Configuration)' == 'Release' and '$(BuildServer)' == 'true' " />
 
   <Target Name="BeforeBuild" Condition=" '$(Configuration)' == 'Release' and '$(BuildServer)' == 'true' ">
     <Message Text="Incrementing version number for Rock.Version into Properties\AssemblyInfo.partial.cs" />
