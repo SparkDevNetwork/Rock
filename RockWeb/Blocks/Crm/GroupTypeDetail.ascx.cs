@@ -349,56 +349,12 @@ namespace RockWeb.Blocks.Crm
 
             return breadCrumbs;
         }
-        
+
         #endregion
 
         #region Events
 
         #region Action Events
-
-        /// <summary>
-        /// Handles the Click event of the btnEdit control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnEdit_Click( object sender, EventArgs e )
-        {
-            var groupType = new GroupTypeService().Get( int.Parse( hfGroupTypeId.Value ) );
-            ShowEditDetails( groupType );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnDelete control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnDelete_Click( object sender, EventArgs e )
-        {
-            RockTransactionScope.WrapTransaction( () =>
-            {
-                var groupTypeService = new GroupTypeService();
-                var groupType = groupTypeService.Get( int.Parse( hfGroupTypeId.Value ) );
-                if ( groupType != null )
-                {
-                    string errorMessage;
-                    if ( !groupTypeService.CanDelete( groupType, out errorMessage ) )
-                    {
-                        mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    groupTypeService.Delete( groupType, CurrentPersonId );
-                    groupTypeService.Save( groupType, CurrentPersonId );
-
-                    SiteCache.Flush( groupType.Id );
-                }
-            } );
-
-            NavigateToParentPage();
-
-        }
-
-
 
         /// <summary>
         /// Handles the Click event of the btnSave control.
@@ -429,20 +385,21 @@ namespace RockWeb.Blocks.Crm
                     groupType = groupTypeService.Get( groupTypeId );
 
                     // selected roles
-                    var selectedRoleGuids = GroupTypeRolesState.Select( r => r.Guid);
-                    foreach( var role in groupType.Roles.Where( r => !selectedRoleGuids.Contains( r.Guid)))
+                    var selectedRoleGuids = GroupTypeRolesState.Select( r => r.Guid );
+                    foreach ( var role in groupType.Roles.Where( r => !selectedRoleGuids.Contains( r.Guid ) ).ToList() )
                     {
-                        groupType.Roles.Remove(role);
+                        groupType.Roles.Remove( role );
+                        groupTypeRoleService.Delete( role, CurrentPersonId );
                     }
                 }
 
-                foreach( var roleState in GroupTypeRolesState)
+                foreach ( var roleState in GroupTypeRolesState )
                 {
-                    GroupTypeRole role = groupType.Roles.Where( r => r.Guid == roleState.Guid).FirstOrDefault();
-                    if (role == null)
+                    GroupTypeRole role = groupType.Roles.Where( r => r.Guid == roleState.Guid ).FirstOrDefault();
+                    if ( role == null )
                     {
                         role = new GroupTypeRole();
-                        groupType.Roles.Add(role);
+                        groupType.Roles.Add( role );
                     }
                     else
                     {
@@ -514,11 +471,11 @@ namespace RockWeb.Blocks.Crm
                         SaveAttributes( new GroupMember().TypeId, "GroupTypeId", qualifierValue, GroupMemberAttributesState, attributeService, qualifierService, categoryService );
 
                         // Reload the roles and apply their attribute values
-                        foreach(var role in groupTypeRoleService.GetByGroupTypeId( groupType.Id ))
+                        foreach ( var role in groupTypeRoleService.GetByGroupTypeId( groupType.Id ) )
                         {
                             role.LoadAttributes();
                             var roleState = GroupTypeRolesState.Where( r => r.Guid.Equals( role.Guid ) ).FirstOrDefault();
-                            if ( roleState != null )
+                            if ( roleState != null && roleState.AttributeValues != null )
                             {
                                 foreach ( var attributeValue in roleState.AttributeValues )
                                 {
@@ -527,15 +484,12 @@ namespace RockWeb.Blocks.Crm
                                 Helper.SaveAttributeValues( role, CurrentPersonId );
                             }
                         }
-                        
+
                     } );
 
             }
 
-            var qryParams = new Dictionary<string, string>();
-            qryParams["groupTypeId"] = groupType.Id.ToString();
-
-            NavigateToPage( this.CurrentPage.Guid, qryParams );
+            NavigateToParentPage();
         }
 
         /// <summary>
@@ -545,17 +499,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            if ( hfGroupTypeId.Value.Equals( "0" ) )
-            {
-                // Cancelling on Add return to list
-                NavigateToParentPage();
-            }
-            else
-            {
-                // Cancelling on Edit, return to details
-                var groupType = new GroupTypeService().Get( int.Parse( hfGroupTypeId.Value ) );
-                ShowReadonlyDetails( groupType );
-            }
+            NavigateToParentPage();
         }
 
         #endregion
@@ -604,7 +548,7 @@ namespace RockWeb.Blocks.Crm
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 groupType = new GroupTypeService().Get( itemKeyValue );
-                editAllowed = groupType.IsAuthorized("Edit", CurrentPerson);
+                editAllowed = groupType.IsAuthorized( "Edit", CurrentPerson );
             }
             else
             {
@@ -627,36 +571,25 @@ namespace RockWeb.Blocks.Crm
             if ( !editAllowed || !IsUserAuthorized( "Edit" ) )
             {
                 readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed(GroupType.FriendlyTypeName);
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( GroupType.FriendlyTypeName );
             }
 
-            if (groupType.IsSystem)
+            if ( groupType.IsSystem )
             {
-                nbEditModeMessage.Text = EditModeMessage.System(GroupType.FriendlyTypeName);
+                nbEditModeMessage.Text = EditModeMessage.System( GroupType.FriendlyTypeName );
             }
 
-            if (readOnly)
+            if ( readOnly )
             {
-                btnEdit.Visible = false;
-                btnDelete.Visible = false;
                 ShowReadonlyDetails( groupType );
             }
             else
             {
-                btnEdit.Visible = true;
-                btnDelete.Visible = !groupType.IsSystem;
-                if ( groupType.Id > 0 )
-                {
-                    ShowReadonlyDetails( groupType );
-                }
-                else
-                {
-                    ShowEditDetails( groupType );
-                }
+                ShowEditDetails( groupType );
             }
         }
 
-        private void ShowEditDetails( GroupType groupType)
+        private void ShowEditDetails( GroupType groupType )
         {
             hlType.Visible = false;
             if ( groupType.Id == 0 )
@@ -680,7 +613,7 @@ namespace RockWeb.Blocks.Crm
                 var groupTypeService = new GroupTypeService();
                 var attributeService = new AttributeService();
 
-                LoadDropDowns(groupType.Id);
+                LoadDropDowns( groupType.Id );
 
                 // Behavior
                 tbName.ReadOnly = groupType.IsSystem;
@@ -696,7 +629,7 @@ namespace RockWeb.Blocks.Crm
                 tbGroupMemberTerm.Text = groupType.GroupMemberTerm;
 
                 ddlGroupTypePurpose.Enabled = !groupType.IsSystem;
-                ddlGroupTypePurpose.SetValue(groupType.GroupTypePurposeValueId);
+                ddlGroupTypePurpose.SetValue( groupType.GroupTypePurposeValueId );
 
                 ddlDefaultGroupRole.Enabled = !groupType.IsSystem;
                 ddlDefaultGroupRole.SetValue( groupType.DefaultGroupRoleId );
@@ -733,7 +666,11 @@ namespace RockWeb.Blocks.Crm
                 gtpInheritedGroupType.SelectedGroupTypeId = groupType.InheritedGroupTypeId;
 
                 GroupTypeRolesState = new ViewStateList<GroupTypeRole>();
-                GroupTypeRolesState.AddAll( groupType.Roles.ToList() );
+                foreach(var role in groupType.Roles)
+                {
+                    role.LoadAttributes();
+                    GroupTypeRolesState.Add( role );
+                }
                 BindGroupTypeRolesGrid();
 
                 string qualifierValue = groupType.Id.ToString();
@@ -809,7 +746,7 @@ namespace RockWeb.Blocks.Crm
         private void SetEditMode( bool editable )
         {
             pnlEditDetails.Visible = editable;
-            fieldsetViewDetails.Visible = !editable;
+            pnlViewDetails.Visible = !editable;
 
             this.HideSecondaryBlocks( editable );
         }
@@ -842,35 +779,43 @@ namespace RockWeb.Blocks.Crm
             }
         }
 
-        private void ShowDialog( string dialog )
+        private void ShowDialog( string dialog, bool setValues = false )
         {
             hfActiveDialog.Value = dialog.ToUpper().Trim();
-            ShowDialog();
+            ShowDialog( setValues );
         }
 
-        private void ShowDialog()
+        private void ShowDialog( bool setValues = false )
         {
             switch ( hfActiveDialog.Value )
-                {
-                    case "GROUPTYPEROLES":
-                        dlgGroupTypeRoles.Show();
-                        break;
-                    case "CHILDGROUPTYPES":
-                        dlgChildGroupType.Show();
-                        break;
-                    case "LOCATIONTYPE":
-                        dlgLocationType.Show();
-                        break;
-                    case "GROUPTYPEATTRIBUTES":
-                        dlgGroupTypeAttribute.Show();
-                        break;
-                    case "GROUPATTRIBUTES":
-                        dlgGroupAttribute.Show();
-                        break;
-                    case "GROUPMEMBERATTRIBUTES":
-                        dlgGroupMemberAttribute.Show();
-                        break;
-                }
+            {
+                case "GROUPTYPEROLES":
+
+                    var role = GroupTypeRolesState.FirstOrDefault( r => r.Id == hfRoleId.ValueAsInt() );
+                    if ( role != null )
+                    {
+                        Helper.AddEditControls( role, phGroupTypeRoleAttributes, setValues );
+                        SetValidationGroup( phGroupTypeRoleAttributes.Controls, dlgGroupTypeRoles.ValidationGroup );
+                    }
+
+                    dlgGroupTypeRoles.Show();
+                    break;
+                case "CHILDGROUPTYPES":
+                    dlgChildGroupType.Show();
+                    break;
+                case "LOCATIONTYPE":
+                    dlgLocationType.Show();
+                    break;
+                case "GROUPTYPEATTRIBUTES":
+                    dlgGroupTypeAttribute.Show();
+                    break;
+                case "GROUPATTRIBUTES":
+                    dlgGroupAttribute.Show();
+                    break;
+                case "GROUPMEMBERATTRIBUTES":
+                    dlgGroupMemberAttribute.Show();
+                    break;
+            }
         }
 
         private void HideDialog()
@@ -921,7 +866,7 @@ namespace RockWeb.Blocks.Crm
                         .ThenBy( a => a.Name )
                         .ToList() )
                     {
-                        GroupTypeAttributesInheritedState.Add( new InheritedAttribute(attribute.Name,
+                        GroupTypeAttributesInheritedState.Add( new InheritedAttribute( attribute.Name,
                             Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ), inheritedGroupType.Name ) );
                     }
 
@@ -1001,7 +946,7 @@ namespace RockWeb.Blocks.Crm
 
         private void ReorderAttributeList( ViewStateList<Attribute> itemList, int oldIndex, int newIndex )
         {
-            var movedItem = itemList.Where( a => a.Order == oldIndex).FirstOrDefault();
+            var movedItem = itemList.Where( a => a.Order == oldIndex ).FirstOrDefault();
             if ( movedItem != null )
             {
                 if ( newIndex < oldIndex )
@@ -1084,10 +1029,14 @@ namespace RockWeb.Blocks.Crm
             if ( groupTypeRoleGuid.Equals( Guid.Empty ) )
             {
                 groupTypeRole = new GroupTypeRole();
+                groupTypeRole.GroupTypeId = hfGroupTypeId.ValueAsInt();
+                groupTypeRole.LoadAttributes();
+                dlgGroupTypeRoles.Title = "Add Role";
             }
             else
             {
                 groupTypeRole = GroupTypeRolesState.First( a => a.Guid.Equals( groupTypeRoleGuid ) );
+                dlgGroupTypeRoles.Title = "Edit Role";
             }
 
             hfRoleId.Value = groupTypeRole.Id.ToString();
@@ -1095,15 +1044,18 @@ namespace RockWeb.Blocks.Crm
             tbRoleName.Text = groupTypeRole.Name;
             tbRoleDescription.Text = groupTypeRole.Description;
 
+            string groupTerm = string.IsNullOrWhiteSpace( tbGroupTerm.Text ) ? "Group" : tbGroupTerm.Text;
+            string memberTerm = string.IsNullOrWhiteSpace( tbGroupMemberTerm.Text ) ? "Member" : tbGroupMemberTerm.Text;
+            
             nbMinimumRequired.Text = groupTypeRole.MinCount.HasValue ? groupTypeRole.MinCount.ToString() : "";
             nbMinimumRequired.Help = string.Format( "The minimum number of {0} in this {1} that are required to have this role.",
-                groupTypeRole.GroupType.GroupMemberTerm.Pluralize(), groupTypeRole.GroupType.GroupTerm );
+                memberTerm.Pluralize(), groupTerm );
 
             nbMaximumAllowed.Text = groupTypeRole.MaxCount.HasValue ? groupTypeRole.MaxCount.ToString() : "";
-            nbMinimumRequired.Help = string.Format( "The maximum number of {0} in this {1} that are allowed to have this role.",
-                groupTypeRole.GroupType.GroupMemberTerm.Pluralize(), groupTypeRole.GroupType.GroupTerm );
+            nbMaximumAllowed.Help = string.Format( "The maximum number of {0} in this {1} that are allowed to have this role.",
+                memberTerm.Pluralize(), groupTerm );
 
-            ShowDialog( "GroupTypeRoles" );
+            ShowDialog( "GroupTypeRoles", true );
         }
 
         /// <summary>
@@ -1150,11 +1102,20 @@ namespace RockWeb.Blocks.Crm
         {
             var groupTypeRole = new GroupTypeRole();
 
-            groupTypeRole.Id = hfRoleId.ValueAsInt();
-            groupTypeRole.Guid = hfRoleId.Value.AsGuid();
+            var groupTypeRoleState = GroupTypeRolesState.FirstOrDefault( r => r.Guid.Equals( hfRoleGuid.Value.AsGuid() ) );
+            if ( groupTypeRoleState != null )
+            {
+                groupTypeRole.CopyPropertiesFrom( groupTypeRoleState );
+                GroupTypeRolesState.RemoveEntity( groupTypeRoleState.Guid );
+            }
+            else
+            {
+                groupTypeRole.Order = GroupTypeRolesState.Any() ? GroupTypeRolesState.Max( a => a.Order ) + 1 : 0;
+                groupTypeRole.GroupTypeId = hfGroupTypeId.ValueAsInt();
+            }
 
-            groupTypeRole.Name = tbName.Text;
-            groupTypeRole.Description = tbDescription.Text;
+            groupTypeRole.Name = tbRoleName.Text;
+            groupTypeRole.Description = tbRoleDescription.Text;
 
             int result;
 
@@ -1170,14 +1131,15 @@ namespace RockWeb.Blocks.Crm
                 groupTypeRole.MaxCount = result;
             }
 
+            groupTypeRole.LoadAttributes();
+            Helper.GetEditValues( phGroupTypeRoleAttributes, groupTypeRole );
+
             // Controls will show warnings
             if ( !groupTypeRole.IsValid )
             {
                 return;
             }
 
-            GroupTypeRolesState.RemoveEntity( groupTypeRole.Guid );
-            groupTypeRole.Order = GroupTypeRolesState.Any() ? GroupTypeRolesState.Max( a => a.Order ) + 1 : 0;
             GroupTypeRolesState.Add( groupTypeRole );
 
             BindGroupTypeRolesGrid();
@@ -1221,8 +1183,6 @@ namespace RockWeb.Blocks.Crm
         }
 
         #endregion
-
-
 
         #region Child GroupType Grid and Picker
 
@@ -1320,7 +1280,7 @@ namespace RockWeb.Blocks.Crm
             List<DefinedValue> list = qry.ToList();
             if ( list.Count == 0 )
             {
-                modalAlert.Show("There are not any location types defined.  Before you can add location types to a group type, you will first need to add them using Defined Type/Values", ModalAlertType.Warning);
+                modalAlert.Show( "There are not any location types defined.  Before you can add location types to a group type, you will first need to add them using Defined Type/Values", ModalAlertType.Warning );
             }
             else
             {
@@ -1431,8 +1391,8 @@ namespace RockWeb.Blocks.Crm
         {
             ReorderAttributeList( GroupTypeAttributesState, e.OldIndex, e.NewIndex );
             BindGroupTypeAttributesGrid();
-        }        
-        
+        }
+
         /// <summary>
         /// Handles the Delete event of the gGroupTypeAttributes control.
         /// </summary>
@@ -1600,7 +1560,7 @@ namespace RockWeb.Blocks.Crm
         {
             BindGroupAttributesInheritedGrid();
         }
-        
+
         /// <summary>
         /// Handles the GridRebind event of the gGroupAttributes control.
         /// </summary>
@@ -1738,7 +1698,7 @@ namespace RockWeb.Blocks.Crm
         {
             BindGroupMemberAttributesInheritedGrid();
         }
-        
+
         /// <summary>
         /// Handles the GridRebind event of the gGroupMemberAttributes control.
         /// </summary>
