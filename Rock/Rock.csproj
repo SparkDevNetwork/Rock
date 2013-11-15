@@ -337,10 +337,13 @@
     <Compile Include="PersonProfile\Badge\NextSteps.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Reporting\DataSelectComponent.cs" />
     <Compile Include="Reporting\DataFilter\Person\GivingAmountFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\DistanceFromFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupFilter.cs" />
+    <Compile Include="Reporting\DataSelect\Person\LastContributionSelect.cs" />
+    <Compile Include="Reporting\DataSelectContainer.cs" />
     <Compile Include="Reporting\FilterExpressionExtractor.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
