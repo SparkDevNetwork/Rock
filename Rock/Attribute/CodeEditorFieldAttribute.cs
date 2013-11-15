@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Attribute
 {
@@ -16,6 +17,10 @@ namespace Rock.Attribute
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class CodeEditorFieldAttribute : FieldAttribute
     {
+
+        private const string EDITOR_MODE = "editorMode";
+        private const string EDITOR_THEME = "editorTheme";
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DateRangeFieldAttribute"/> class.
         /// </summary>
@@ -26,9 +31,11 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public CodeEditorFieldAttribute( string name, string description = "", bool required = true, string defaultValue = ",", string category = "", int order = 0, string key = null )
+        public CodeEditorFieldAttribute( string name, string description = "", CodeEditorMode mode = CodeEditorMode.Text, CodeEditorTheme theme = CodeEditorTheme.Rock, bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.CodeEditorFieldType ).FullName )
         {
+            FieldConfigurationValues.Add(EDITOR_MODE, new Field.ConfigurationValue(mode.ToString()));
+            FieldConfigurationValues.Add(EDITOR_THEME, new Field.ConfigurationValue(theme.ToString()));
         }
     }
 }

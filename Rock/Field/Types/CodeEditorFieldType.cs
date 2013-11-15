@@ -3,6 +3,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
 using System.Collections.Generic;
 using System.Web.UI;
 
@@ -15,6 +16,10 @@ namespace Rock.Field.Types
     /// </summary>
     public class CodeEditorFieldType : FieldType
     {
+
+        private const string EDITOR_MODE = "editorMode";
+        private const string EDITOR_THEME = "editorTheme";
+        
         /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
@@ -26,8 +31,16 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var editor = new CodeEditor { ID = id };
-            editor.EditorTheme = CodeEditorTheme.Rock;
-            editor.EditorMode = CodeEditorMode.CSharp;
+
+            if ( configurationValues != null && configurationValues.ContainsKey( EDITOR_MODE )) {
+                editor.EditorMode = (CodeEditorMode)Enum.Parse(typeof(CodeEditorMode), configurationValues[EDITOR_MODE].Value);
+            }
+
+            if (configurationValues != null && configurationValues.ContainsKey(EDITOR_THEME))
+            {
+                editor.EditorTheme = (CodeEditorTheme)Enum.Parse(typeof(CodeEditorTheme), configurationValues[EDITOR_THEME].Value);
+            }
+
             return editor;
         }
     }

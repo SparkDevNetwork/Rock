@@ -331,7 +331,9 @@ var message='hello world';
 console.log(message);                
                 </Rock:CodeEditor>
             </div>
-            <p>Alternately, you can provide the contents of the code to edit in the <code>Text</code> property of the control.  Be sure to UrlEncode it <code>HttpUtility.UrlEncode(code)</code>.</p>
+            <p>Alternately, you can provide the contents of the code to edit in the <code>Text</code> property of the control.  Be sure to UrlEncode it <code>HttpUtility.UrlEncode(code)</code>. To 
+                help get the UrlEncoded text for default values consider using <a href="http://meyerweb.com/eric/tools/dencoder/">http://meyerweb.com/eric/tools/dencoder/</a>.
+            </p>
 
 
         </asp:Panel>

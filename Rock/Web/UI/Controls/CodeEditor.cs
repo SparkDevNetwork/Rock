@@ -263,7 +263,7 @@ namespace Rock.Web.UI.Controls
 
             string customDiv = @"<div class='code-editor-container' style='position:relative; height: {0}px'><div id='codeeditor-div-{1}'>{2}</div></div>";
 
-            writer.Write(string.Format(customDiv, this.EditorHeight, this.ClientID, HttpUtility.UrlDecode(this.Text)));
+            writer.Write(string.Format(customDiv, this.EditorHeight, this.ClientID, HttpUtility.HtmlDecode(this.Text)));
 
             // write custom css for the code editor
             string customStyle = @"
