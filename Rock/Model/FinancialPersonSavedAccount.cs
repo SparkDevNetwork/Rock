@@ -35,13 +35,22 @@ namespace Rock.Model
         public int PersonId { get; set; }
         
         /// <summary>
-        /// Gets or sets the reference transaction id that the saved account was originated from
+        /// Gets or sets the financial transaction id that the saved account was originated from
         /// </summary>
         /// <value>
-        /// The reference id.
+        /// The transaction id.
         /// </value>
         [DataMember]
-        public int ReferenceId { get; set; }
+        public int FinancialTransactionId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a reference identifier needed by the payment provider to initiate a future transaction
+        /// </summary>
+        /// <value>
+        /// The reference identifier.
+        /// </value>
+        [DataMember]
+        public string ReferenceNumber { get; set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -118,7 +127,7 @@ namespace Rock.Model
         public FinancialPersonSavedAccountConfiguration()
         {
             this.HasRequired( t => t.Person ).WithMany().HasForeignKey( t => t.PersonId ).WillCascadeOnDelete( true );
-            this.HasRequired( t => t.FinancialTransaction ).WithMany().HasForeignKey( t => t.ReferenceId ).WillCascadeOnDelete( true );
+            this.HasRequired( t => t.FinancialTransaction ).WithMany().HasForeignKey( t => t.FinancialTransactionId ).WillCascadeOnDelete( true );
         }
     }
 
