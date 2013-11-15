@@ -636,17 +636,24 @@ achieve our mission.  We are so grateful for your commitment.
                             email.Send( recipients );
                         }
 
+                        var paymentInfo = GetPaymentInfo();
+
                         GatewayComponent gateway = hfPaymentTab.Value == "ACH" ? _achGateway : _ccGateway;
                         string errorMessage = string.Empty;
-                        var paymentInfo = GetPaymentInfo();
-                        
-                        var referenceId = gateway.GetReferenceId( transaction, out errorMessage );
-                        if ( referenceId > 0 )
+                        string referenceId = gateway.GetReferenceId( transaction, out errorMessage );
+                        if (errorMessage.Any())
+                        {
+                            nbSaveAccount.Title = "Invalid Transaction";
+                            nbSaveAccount.Text = "Sorry, the account information cannot be saved. " + errorMessage;
+                            nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
+                            nbSaveAccount.Visible = true;
+                        }
+                        else
                         {
                             var savedAccount = new FinancialPersonSavedAccount();
                             savedAccount.PersonId = transaction.AuthorizedPersonId.Value;
-                            savedAccount.ReferenceId = transaction.Id;
-                            //savedAccount.ReferenceId = referenceId;
+                            savedAccount.FinancialTransactionId = transaction.Id;
+                            savedAccount.ReferenceNumber = referenceId;
                             savedAccount.Name = txtSaveAccount.Text;
                             savedAccount.MaskedAccountNumber = paymentInfo.MaskedNumber;
 
@@ -662,13 +669,6 @@ achieve our mission.  We are so grateful for your commitment.
                             nbSaveAccount.Title = "Success";
                             nbSaveAccount.Text = "The account has been saved for future use";
                             nbSaveAccount.NotificationBoxType = NotificationBoxType.Success;
-                            nbSaveAccount.Visible = true;
-                        }
-                        else
-                        {
-                            nbSaveAccount.Title = "Invalid Transaction";
-                            nbSaveAccount.Text = "Sorry, the account information cannot be saved. " + errorMessage;
-                            nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                             nbSaveAccount.Visible = true;
                         }
                     }
@@ -1143,7 +1143,9 @@ achieve our mission.  We are so grateful for your commitment.
                 var savedAccount = new FinancialPersonSavedAccountService().Get( savedAccountId );
                 if ( savedAccount != null )
                 {
-                    var reference = new ReferencePaymentInfo( savedAccount.FinancialTransaction.TransactionCode );
+                    var reference = new ReferencePaymentInfo();
+                    reference.TransactionCode = savedAccount.FinancialTransaction.TransactionCode;
+                    reference.ReferenceNumber = savedAccount.ReferenceNumber;
                     reference.MaskedAccountNumber = savedAccount.MaskedAccountNumber;
                     reference.InitialCurrencyTypeValue = DefinedValueCache.Read( savedAccount.FinancialTransaction.CurrencyTypeValue );
                     reference.InitialCreditCardTypeValue = DefinedValueCache.Read( savedAccount.FinancialTransaction.CreditCardTypeValue );

@@ -93,7 +93,7 @@ namespace Rock.PayFlowPro
                 if ( paymentInfo is ReferencePaymentInfo )
                 {
                     var reference = paymentInfo as ReferencePaymentInfo;
-                    var ppTransaction = new ReferenceTransaction( "Sale", reference.ReferenceNumber, GetUserInfo(), GetConnection(), invoice, tender, PayflowUtility.RequestId );
+                    var ppTransaction = new ReferenceTransaction( "Sale", reference.TransactionCode, GetUserInfo(), GetConnection(), invoice, tender, PayflowUtility.RequestId );
                     ppResponse = ppTransaction.SubmitTransaction();
                 }
                 else
@@ -160,7 +160,7 @@ namespace Rock.PayFlowPro
             if ( paymentInfo is ReferencePaymentInfo )
             {
                 var reference = paymentInfo as ReferencePaymentInfo;
-                ppTransaction.OrigId = reference.ReferenceNumber;
+                ppTransaction.OrigId = reference.TransactionCode;
             }
             var ppResponse = ppTransaction.SubmitTransaction();
 
@@ -423,15 +423,15 @@ namespace Rock.PayFlowPro
         }
 
         /// <summary>
-        /// Gets the reference identifier for a saved transaction.
+        /// Gets an optional reference identifier needed to process future transaction from saved account.
         /// </summary>
         /// <param name="transaction">The transaction.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public override int GetReferenceId( FinancialTransaction transaction, out string errorMessage )
+        public override string GetReferenceId( FinancialTransaction transaction, out string errorMessage )
         {
             errorMessage = string.Empty;
-            return transaction.Id;
+            return string.Empty;
         }
 
         #endregion
