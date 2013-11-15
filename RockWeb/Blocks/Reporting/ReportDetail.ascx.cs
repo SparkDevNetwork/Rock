@@ -8,11 +8,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -306,6 +306,7 @@ namespace RockWeb.Blocks.Reporting
                     otherFieldNames.Add( propName );
                 }
 
+                // Add Common Field Names for the EntityType
                 foreach ( var fieldName in fieldNames.OrderBy( a => a.ToUpper() ).ToList() )
                 {
                     var listItem = new ListItem( fieldName.SplitCase(), fieldName );
@@ -313,10 +314,20 @@ namespace RockWeb.Blocks.Reporting
                     ddlFields.Items.Add( listItem );
                 }
 
+                // Add Other Field Names for the EntityType
                 foreach ( var fieldName in otherFieldNames.OrderBy( a => a.ToUpper() ).ToList() )
                 {
                     var listItem = new ListItem( fieldName.SplitCase(), fieldName );
                     listItem.Attributes["optiongroup"] = "Other";
+                    ddlFields.Items.Add( listItem );
+                }
+
+                // Add DataSelect MEF Components that apply to this EntityType
+                foreach ( var component in DataSelectContainer.GetComponentsBySelectedEntityTypeName( entityType.FullName ).OrderBy( c => c.Title ) )
+                {
+                    var selectEntityType = EntityTypeCache.Read( component.TypeName );
+                    var listItem = new ListItem( component.Title, selectEntityType.Id.ToString() );
+                    listItem.Attributes["optiongroup"] = component.Section;
                     ddlFields.Items.Add( listItem );
                 }
 
