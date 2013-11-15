@@ -939,14 +939,18 @@ div.tagsinput div {
 span.cke_skin_kama {
   padding: 0 !important;
 }
-.loginstatus .dropdown-toggle {
-  text-align: right;
-  font-size: 11px;
-}
-.loginstatus .dropdown-menu {
-  right: 0;
-  font-size: 11px;
-}
+/*.loginstatus { //todo is any of this needed? JME 11/6/2013
+
+    .dropdown-toggle {
+        text-align: right;
+        font-size: 11px;
+    }
+
+    .dropdown-menu {
+        right: 0;
+        font-size: 11px;
+    }
+}*/
 .alt-authentication {
   margin: 10px 0;
 }
