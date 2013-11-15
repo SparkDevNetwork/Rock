@@ -22,7 +22,7 @@ begin
 begin transaction
 
 delete from [Group] where [GroupTypeId] in (select id from GroupType where Guid in (@groupTypeNHRegionGuid, @groupTypeNHAreaGuid, @groupTypeNHGroupGuid))
-delete from [GroupRole] where [GroupTypeId] in (select id from GroupType where Guid in (@groupTypeNHRegionGuid, @groupTypeNHAreaGuid, @groupTypeNHGroupGuid))
+delete from [GroupTypeRole] where [GroupTypeId] in (select id from GroupType where Guid in (@groupTypeNHRegionGuid, @groupTypeNHAreaGuid, @groupTypeNHGroupGuid))
 delete from [GroupTypeAssociation] where [GroupTypeId] in (select id from GroupType where Guid in (@groupTypeNHRegionGuid, @groupTypeNHAreaGuid, @groupTypeNHGroupGuid))
 delete from [GroupType] where [Id] in (select id from GroupType where Guid in (@groupTypeNHRegionGuid, @groupTypeNHAreaGuid, @groupTypeNHGroupGuid))
 
@@ -34,6 +34,8 @@ INSERT INTO [dbo].[GroupType]
            ([IsSystem]
            ,[Name]
            ,[Description]
+           ,[GroupTerm]
+           ,[GroupMemberTerm]
            ,[DefaultGroupRoleId]
            ,[AllowMultipleLocations]
            ,[ShowInGroupList]
@@ -49,6 +51,8 @@ INSERT INTO [dbo].[GroupType]
            (0
            ,'Neighborhood Group Region'
            ,'The Neighborhood Group Regions'
+           ,'Group'
+           ,'Member' 
            ,null
            ,0
            ,1
@@ -67,6 +71,8 @@ INSERT INTO [dbo].[GroupType]
            ([IsSystem]
            ,[Name]
            ,[Description]
+           ,[GroupTerm]
+           ,[GroupMemberTerm]
            ,[DefaultGroupRoleId]
            ,[AllowMultipleLocations]
            ,[ShowInGroupList]
@@ -82,6 +88,8 @@ INSERT INTO [dbo].[GroupType]
            (0
            ,'Neighborhood Group Area'
            ,'The Neighborhood Group Areas'
+           ,'Group'
+           ,'Member' 
            ,null
            ,0
            ,1
@@ -100,6 +108,8 @@ INSERT INTO [dbo].[GroupType]
            ([IsSystem]
            ,[Name]
            ,[Description]
+           ,[GroupTerm]
+           ,[GroupMemberTerm]
            ,[DefaultGroupRoleId]
            ,[AllowMultipleLocations]
            ,[ShowInGroupList]
@@ -115,6 +125,8 @@ INSERT INTO [dbo].[GroupType]
            (0
            ,'Neighborhood Group'
            ,'The Neighborhood Groups'
+           ,'Group'
+           ,'Member' 
            ,null
            ,0
            ,1
@@ -129,8 +141,8 @@ INSERT INTO [dbo].[GroupType]
 
 select @groupTypeId = @@IDENTITY
 
-INSERT INTO [dbo].[GroupRole] 
-    ([IsSystem] ,[GroupTypeId] ,[Name] ,[Description] ,[SortOrder] ,[MaxCount] ,[MinCount] ,[Guid] ,[IsLeader])
+INSERT INTO [dbo].[GroupTypeRole] 
+    ([IsSystem] ,[GroupTypeId] ,[Name] ,[Description] ,[Order] ,[MaxCount] ,[MinCount] ,[Guid] ,[IsLeader])
      VALUES
     (0, @groupTypeId, 'Leader', '', 0, null, null, NEWID(), 1),
     (0, @groupTypeId, 'Assistant Leader', '', 0, null, null, NEWID(), 0),

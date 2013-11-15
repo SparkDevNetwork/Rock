@@ -22,8 +22,8 @@
 
         <div class="tabContent" >
 
-            <asp:ValidationSummary ID="valSummaryTop" runat="server"  
-                HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server"  HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+
             <asp:Panel ID="pnlError" runat="server" Visible="false" CssClass="alert alert-danger block-message error"/>
             
             <asp:Panel ID="pnlBasicProperty" runat="server" Visible="true" >

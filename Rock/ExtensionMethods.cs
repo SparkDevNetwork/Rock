@@ -233,6 +233,24 @@ namespace Rock
         }
 
         /// <summary>
+        /// Returns the specified number of characters, starting at the left side of the string.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="length">The desired length.</param>
+        /// <returns></returns>
+        public static string Left( this string str, int length )
+        {
+            if ( str.Length <= length )
+            {
+                return str;
+            }
+            else
+            {
+                return str.Substring( 0, length );
+            }
+        }
+
+        /// <summary>
         /// Truncates a string after a max length and adds ellipsis.  Truncation will occur at first space prior to maxLength
         /// </summary>
         /// <param name="str"></param>
