@@ -25,5 +25,12 @@ namespace Rock.Model
         {
             return Repository.Find( t => ( t.Order == sortOrder || ( sortOrder == null && t.Order == null ) ) );
         }
+
+        public IQueryable<GroupTypeRole> GetByGroupTypeId (int groupTypeId)
+        {
+            return Repository.AsQueryable()
+                .Where( r => r.GroupTypeId == groupTypeId )
+                .OrderBy( r => r.Order );
+        }
     }
 }

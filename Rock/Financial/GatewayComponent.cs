@@ -102,6 +102,14 @@ namespace Rock.Financial
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         public abstract List<Payment> GetPayments( DateTime startDate, DateTime endDate, out string errorMessage );
-    
+
+        /// <summary>
+        /// Gets an optional reference identifier needed to process future transaction from saved account.
+        /// </summary>
+        /// <param name="transaction">The transaction.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public abstract string GetReferenceId( FinancialTransaction transaction, out string errorMessage );
+        
     }
 }

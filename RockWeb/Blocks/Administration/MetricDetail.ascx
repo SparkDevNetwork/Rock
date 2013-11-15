@@ -6,7 +6,7 @@
             <asp:HiddenField ID="hfMetricId" runat="server" />
 
             <div id="pnlEditDetails" runat="server" class="well">
-                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                 <fieldset>    
                     <legend>

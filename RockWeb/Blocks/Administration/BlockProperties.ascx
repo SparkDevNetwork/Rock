@@ -9,7 +9,7 @@
 
             <asp:PlaceHolder ID="phContent" runat="server">
 
-                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                 <fieldset>
                     <legend>Settings</legend>
@@ -21,7 +21,7 @@
                     </fieldset>
                 </fieldset>
 
-                <asp:ValidationSummary ID="valSummaryBottom" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+                <asp:ValidationSummary ID="valSummaryBottom" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
             </asp:PlaceHolder>
         </ContentTemplate>

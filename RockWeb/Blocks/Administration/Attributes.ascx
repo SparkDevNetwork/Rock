@@ -5,7 +5,7 @@
         <asp:Panel ID="pnlList" runat="server">
 
             <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
-                <Rock:RockDropDownList ID="ddlEntityType" runat="server" Label="Entity Type" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
+                <Rock:EntityTypePicker ID="ddlEntityType" runat="server" Label="Entity Type" IncludeGlobalOption="true" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
                 <Rock:CategoryPicker ID="cpCategoriesFilter" runat="server" Label="Categories" AllowMultiSelect="true" />
             </Rock:GridFilter>
             <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" DescriptionField="Description" OnRowSelected="rGrid_Edit">
@@ -56,10 +56,9 @@
 
                 <div class="banner"><h1><asp:Literal ID="lAttributeTitle" runat="server"></asp:Literal></h1></div>
 
-                <asp:ValidationSummary ID="valSummaryTop" runat="server"  
-                    HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-                <Rock:RockDropDownList ID="ddlAttrEntityType" runat="server" Label="Entity Type" />
+                <Rock:EntityTypePicker ID="ddlAttrEntityType" runat="server" Label="Entity Type" IncludeGlobalOption="true" Required="true" />
                 <Rock:RockTextBox ID="tbAttrQualifierField" runat="server" Label="Qualifier Field" />
                 <Rock:RockTextBox ID="tbAttrQualifierValue" runat="server" Label="Qualifier Value" />
 
@@ -71,7 +70,7 @@
         <Rock:ModalDialog ID="modalDetails" runat="server" Title="Attribute" ValidationGroup="AttributeValue" >
             <Content>
                 <asp:HiddenField ID="hfIdValues" runat="server" />
-                <asp:ValidationSummary ID="ValidationSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" ValidationGroup="AttributeValue"  />
+                <asp:ValidationSummary ID="ValidationSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="AttributeValue"  />
                 <fieldset id="fsEditControl" runat="server"/>
             </Content>
         </Rock:ModalDialog>

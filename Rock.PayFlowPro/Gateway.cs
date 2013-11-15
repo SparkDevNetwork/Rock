@@ -93,7 +93,7 @@ namespace Rock.PayFlowPro
                 if ( paymentInfo is ReferencePaymentInfo )
                 {
                     var reference = paymentInfo as ReferencePaymentInfo;
-                    var ppTransaction = new ReferenceTransaction( "Sale", reference.ReferenceNumber, GetUserInfo(), GetConnection(), invoice, tender, PayflowUtility.RequestId );
+                    var ppTransaction = new ReferenceTransaction( "Sale", reference.TransactionCode, GetUserInfo(), GetConnection(), invoice, tender, PayflowUtility.RequestId );
                     ppResponse = ppTransaction.SubmitTransaction();
                 }
                 else
@@ -160,7 +160,7 @@ namespace Rock.PayFlowPro
             if ( paymentInfo is ReferencePaymentInfo )
             {
                 var reference = paymentInfo as ReferencePaymentInfo;
-                ppTransaction.OrigId = reference.ReferenceNumber;
+                ppTransaction.OrigId = reference.TransactionCode;
             }
             var ppResponse = ppTransaction.SubmitTransaction();
 
@@ -420,6 +420,18 @@ namespace Rock.PayFlowPro
 
             errorMessage = "The RecurringBillingReport report did not return any data";
             return null;
+        }
+
+        /// <summary>
+        /// Gets an optional reference identifier needed to process future transaction from saved account.
+        /// </summary>
+        /// <param name="transaction">The transaction.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override string GetReferenceId( FinancialTransaction transaction, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            return string.Empty;
         }
 
         #endregion

@@ -13,7 +13,7 @@ BEGIN
         bf.Url,
         /* if the BinaryFile as StorageEntityTypeId set, use that. Otherwise use the default StorageEntityTypeId from BinaryFileType  */
         COALESCE (bfse.Name,bftse.Name ) as StorageTypeName,
-        d.Content
+        bfd.Content
     FROM BinaryFile bf 
     LEFT JOIN BinaryFileData bfd
         ON bf.Id = bfd.Id

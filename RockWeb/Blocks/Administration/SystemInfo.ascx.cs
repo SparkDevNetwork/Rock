@@ -25,7 +25,7 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
-            lRockVersion.Text = VersionInfo.GetRockProductVersion();
+            lRockVersion.Text = VersionInfo.GetRockProductVersionFullName();
             lExecLocation.Text = Assembly.GetExecutingAssembly().Location;
 
             var cache = MemoryCache.Default;

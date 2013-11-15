@@ -17,7 +17,7 @@ namespace Rock.Web.UI
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public sealed class ViewStateList<T> : IEnumerable<T> where T : Model<T>, new()
+    public class ViewStateList<T> : IEnumerable<T> where T : Model<T>, new()
     {
         /// <summary>
         /// 
