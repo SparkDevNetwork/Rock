@@ -290,6 +290,7 @@ namespace Rock.Web.UI.Controls
                 var ce_{0} = ace.edit('codeeditor-div-{0}');
                 ce_{0}.setTheme('ace/theme/{1}');
                 ce_{0}.getSession().setMode('ace/mode/{2}');
+                ce_{0}.setShowPrintMargin(false);
 
                 //var ce_{0}_dest = document.getElementById('{0}');
 
