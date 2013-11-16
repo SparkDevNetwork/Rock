@@ -917,7 +917,7 @@ div.tagsinput div {
     
     1. SQL Command - block to query database directly
     2. HTML Content - block to edit HTML on a page
-    3. Login - block to allow logins
+    3. 
     4. Notes - block to display, add, edit, delete notes
     5. Add Family - block to add families to the database
     6. Contributions - block add a contribution transaction
@@ -939,18 +939,6 @@ div.tagsinput div {
 span.cke_skin_kama {
   padding: 0 !important;
 }
-/*.loginstatus { //todo is any of this needed? JME 11/6/2013
-
-    .dropdown-toggle {
-        text-align: right;
-        font-size: 11px;
-    }
-
-    .dropdown-menu {
-        right: 0;
-        font-size: 11px;
-    }
-}*/
 .alt-authentication {
   margin: 10px 0;
 }
