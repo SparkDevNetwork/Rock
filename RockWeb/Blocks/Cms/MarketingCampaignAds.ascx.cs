@@ -270,13 +270,13 @@ namespace RockWeb.Blocks.Cms
             }
             catch ( Exception ex )
             {
-                // xslt compile error
+                // liquid compile error
                 string exMessage = "An excception occurred while compiling the Liquid template.";
 
                 if ( ex.InnerException != null )
                     exMessage += "<br /><em>" + ex.InnerException.Message + "</em>";
 
-                content = "<div class='alert warning' style='margin: 24px auto 0 auto; max-width: 500px;' ><strong>XSLT Compile Error</strong><p>" + exMessage + "</p></div>";
+                content = "<div class='alert warning' style='margin: 24px auto 0 auto; max-width: 500px;' ><strong>Liquid Compile Error</strong><p>" + exMessage + "</p></div>";
             }
 
             // check for errors
