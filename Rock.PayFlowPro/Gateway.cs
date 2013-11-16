@@ -428,7 +428,7 @@ namespace Rock.PayFlowPro
         /// <param name="transaction">The transaction.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public override string GetReferenceId( FinancialTransaction transaction, out string errorMessage )
+        public override string GetReferenceNumber( FinancialTransaction transaction, out string errorMessage )
         {
             errorMessage = string.Empty;
             return string.Empty;
