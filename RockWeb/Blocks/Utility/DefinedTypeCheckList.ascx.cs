@@ -21,6 +21,8 @@ namespace RockWeb.Blocks.Utility
     [DefinedTypeField( "Defined Type", "The Defined Type to display values for." )]
     [TextField( "Attribute Key", "The attribute key on the Defined Type that is used to store whether item has been completed (should be a boolean field type)." )]
     [BooleanField( "Hide Checked Items", "Should checked items be hidden?", false )]
+    [TextField("Checklist Title", "Title for your checklist.",false,"","Description",1)]
+    [MemoField("Checklist Description", "Description for your checklist. Leave this blank and nothing will be displayed.",false,"","Description", 2)]
     public partial class DefinedTypeCheckList : RockBlock
     {
         private string attributeKey = string.Empty;
@@ -43,6 +45,10 @@ namespace RockWeb.Blocks.Utility
             this.BlockUpdated += DefinedTypeCheckList_BlockUpdated; 
 
             rptrValues.ItemDataBound += rptrValues_ItemDataBound;
+
+            lTitle.Text = "<h4>" + GetAttributeValue("ChecklistTitle") + "</h4>";
+            lDescription.Text = GetAttributeValue("ChecklistDescription");
+
             BindList();
         }
 
@@ -95,7 +101,7 @@ namespace RockWeb.Blocks.Utility
                 {
                     Helper.LoadAttributes( definedValue );
 
-                    cbValue.Text = string.Format( "{0}<br/><small>{1}</small>", definedValue.Name, definedValue.Description );
+                    cbValue.Text = string.Format( "<strong>{0}</strong><p>{1}</p>", definedValue.Name, definedValue.Description );
 
                     bool selected = false;
                     if ( !bool.TryParse( definedValue.GetAttributeValue( attributeKey ), out selected ) )
