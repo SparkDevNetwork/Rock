@@ -141,12 +141,20 @@ a.help {
     margin-left: 21px;
 }
 
-/* error page */
-#splash.error  #content {
-    width: 750px;
-}
-
 /* security window */
 .security-inherited {
 	margin-top: 12px;
 }
+
+/* additional typography components */
+
+.navigation-tip { // used to show the user directions to a page (e.g. 'Administration > General Settings')
+    font-family: @font-family-monospace;
+    padding: 2px 4px;
+    font-size: 90%;
+    color: @accent-text-color;
+    background-color: @accent-color;
+    white-space: nowrap;
+    border-radius: @border-radius-base;
+}
+
