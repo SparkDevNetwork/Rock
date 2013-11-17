@@ -44,8 +44,8 @@ namespace RockWeb.Blocks.Core
                 lPageTitle.Text = ("Exception Overview").FormatAsHtmlTitle();
 
                 //sets icon and text for cookies and server variables check boxes
-                chkShowCookies.Text = "<i class=\"icon-laptop\"> </i> Show Cookies";
-                chkShowServerVariables.Text = "<i class=\"icon-hdd\"></i> Show Server Variables";
+                chkShowCookies.Text = "<i class=\"fa fa-laptop\"> </i> Show Cookies";
+                chkShowServerVariables.Text = "<i class=\"fa fa-hdd-o\"></i> Show Server Variables";
 
                 //if ExceptionId is not null and is an integer
                 if ( !String.IsNullOrWhiteSpace( PageParameter( "ExceptionId" ) ) && int.TryParse( PageParameter( "ExceptionId" ), out exceptionId ) )
@@ -161,7 +161,7 @@ namespace RockWeb.Blocks.Core
             DescriptionList dl = new DescriptionList();
 
             dl.Add( "Site", baseException.Site != null ? baseException.Site.Name : String.Empty, true );
-            dl.Add( "Page", baseException.Page != null ? string.Format( "{0} <a href=\"{1}\" class=\"btn btn-mini\" target=\"_blank\"><i class=\"icon-arrow-right\"></i></a>", baseException.Page.Name, baseException.PageUrl ) : String.Empty, true );
+            dl.Add( "Page", baseException.Page != null ? string.Format( "{0} <a href=\"{1}\" class=\"btn btn-mini\" target=\"_blank\"><i class=\"fa fa-arrow-right\"></i></a>", baseException.Page.Name, baseException.PageUrl ) : String.Empty, true );
 
             //If query string is not empty build query string list
             if ( !String.IsNullOrWhiteSpace( baseException.QueryString ) )

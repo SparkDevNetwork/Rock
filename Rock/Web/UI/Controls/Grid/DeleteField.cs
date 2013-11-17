@@ -105,7 +105,7 @@ namespace Rock.Web.UI.Controls
                 lbDelete.ToolTip = "Delete";
 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
-                buttonIcon.Attributes.Add( "class", "icon-remove" );
+                buttonIcon.Attributes.Add( "class", "fa fa-times" );
                 lbDelete.Controls.Add( buttonIcon );
 
                 lbDelete.Click += lbDelete_Click;

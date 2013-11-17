@@ -9,10 +9,10 @@
         <div class="treeview treeview-group">
             <div class="treeview-actions pull-right">
                 <asp:LinkButton ID="lbAddCategory" runat="server" CssClass="add btn btn-mini" ToolTip="Add Category" CausesValidation="false" OnClick="lbAddCategory_Click">
-                        <i class="icon-plus-sign"></i> Add Category
+                        <i class="fa fa-plus"></i> Add Category
                 </asp:LinkButton>
                 <asp:LinkButton ID="lbAddItem" runat="server" CssClass="add btn btn-mini" ToolTip="Add Group" CausesValidation="false" OnClick="lbAddItem_Click">
-                        <i class="icon-plus-sign"></i> <asp:Literal ID="lAddItem" runat="server" Text="Add Group" />
+                        <i class="fa fa-plus"></i> <asp:Literal ID="lAddItem" runat="server" Text="Add Group" />
                 </asp:LinkButton>
             </div>
             <div id="treeview-content">

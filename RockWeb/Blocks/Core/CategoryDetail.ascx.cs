@@ -378,7 +378,7 @@ namespace RockWeb.Blocks.Core
             string categoryIconHtml = string.Empty;
             if ( !string.IsNullOrWhiteSpace( category.IconCssClass ) )
             {
-                categoryIconHtml = string.Format( "<i class='{0} icon-large' ></i>", category.IconCssClass );
+                categoryIconHtml = string.Format( "<i class='{0} fa-2x' ></i>", category.IconCssClass );
             }
             else
             {

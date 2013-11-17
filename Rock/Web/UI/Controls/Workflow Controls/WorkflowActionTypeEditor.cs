@@ -54,8 +54,8 @@ namespace Rock.Web.UI.Controls
 $('.workflow-action > header').click(function () {
     $(this).siblings('.panel-body').slideToggle();
 
-    $('i.workflow-action-state', this).toggleClass('icon-chevron-down');
-    $('i.workflow-action-state', this).toggleClass('icon-chevron-up');
+    $('i.workflow-action-state', this).toggleClass('fa-chevron-down');
+    $('i.workflow-action-state', this).toggleClass('fa-chevron-up');
 });
 
 // fix so that the Remove button will fire its event, but not the parent event 
@@ -159,7 +159,7 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
 
             var iDelete = new HtmlGenericControl( "i" );
             _lbDeleteActionType.Controls.Add( iDelete );
-            iDelete.AddCssClass( "icon-remove" );
+            iDelete.AddCssClass( "fa fa-times" );
 
             _tbActionTypeName = new DataTextBox();
             _tbActionTypeName.ID = this.ID + "_tbActionTypeName";
@@ -238,8 +238,8 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.WriteLine( "<a class='btn btn-xs workflow-action-reorder'><i class='icon-reorder'></i></a>" );
-            writer.WriteLine( "<a class='btn btn-xs'><i class='workflow-action-state icon-chevron-down'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs workflow-action-reorder'><i class='fa fa-bars'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs'><i class='workflow-action-state fa fa-chevron-down'></i></a>" );
 
             if ( IsDeleteEnabled )
             {

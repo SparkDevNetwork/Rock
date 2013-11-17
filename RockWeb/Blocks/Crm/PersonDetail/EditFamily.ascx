@@ -47,14 +47,14 @@
                                 <br />
                                 <div>
                                 <asp:RadioButtonList ID="rblRole" runat="server" DataValueField="Id" DataTextField="Name" /></div>
-                                <asp:LinkButton ID="lbNewFamily" runat="server" CssClass="btn btn-mini" CommandName="Move"><i class="icon-external-link"></i> Move to New Family</asp:LinkButton>
-                                <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-mini" CommandName="Remove"><i class="icon-remove"></i> Remove from Family</asp:LinkButton>
+                                <asp:LinkButton ID="lbNewFamily" runat="server" CssClass="btn btn-mini" CommandName="Move"><i class="fa fa-external-link"></i> Move to New Family</asp:LinkButton>
+                                <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-mini" CommandName="Remove"><i class="fa fa-times"></i> Remove from Family</asp:LinkButton>
                             </li>
                         </ItemTemplate>
                     </asp:ListView>
                 </ul>
 
-                <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddPerson_Click"><i class="icon-user"></i> Add Person</asp:LinkButton>
+                <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddPerson_Click"><i class="fa fa-user"></i> Add Person</asp:LinkButton>
             </div>
         </div>
 
@@ -62,7 +62,7 @@
 
         <h4>Addresses</h4>
         <p>
-            <asp:LinkButton ID="lbMoved" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbMoved_Click"><i class="icon-truck icon-flip-horizontal"></i> Family Moved</asp:LinkButton>
+            <asp:LinkButton ID="lbMoved" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbMoved_Click"><i class="fa fa-truck fa-flip-horizontal"></i> Family Moved</asp:LinkButton>
         </p>
 
         <Rock:Grid ID="gLocations" runat="server" AllowSorting="true" AllowPaging="false" DisplayType="Light">
@@ -111,7 +111,7 @@
                 </asp:TemplateField>
                 <asp:TemplateField HeaderText="Mailing" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
                     <ItemTemplate>
-                        <%# ((bool)Eval("IsMailing")) ? "<i class=\"icon-ok\"></i>" : "" %>
+                        <%# ((bool)Eval("IsMailing")) ? "<i class=\"fa fa-check\"></i>" : "" %>
                     </ItemTemplate>
                     <EditItemTemplate>
                         <asp:CheckBox ID="cbMailing" runat="server" Checked='<%# Eval("IsMailing") %>' />
@@ -119,7 +119,7 @@
                 </asp:TemplateField>
                 <asp:TemplateField HeaderText="Location" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
                     <ItemTemplate>
-                        <%# ((bool)Eval("IsLocation")) ? "<i class=\"icon-ok\"></i>" : "" %>
+                        <%# ((bool)Eval("IsLocation")) ? "<i class=\"fa fa-check\"></i>" : "" %>
                     </ItemTemplate>
                     <EditItemTemplate>
                         <asp:CheckBox ID="cbLocation" runat="server" Checked='<%# Eval("IsLocation") %>' />
@@ -127,11 +127,11 @@
                 </asp:TemplateField>
                 <asp:TemplateField ItemStyle-HorizontalAlign="Center" HeaderStyle-CssClass="span1" ItemStyle-Wrap="false">
                     <ItemTemplate>
-                        <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CommandName="Edit" CssClass="btn btn-mini"><i class="icon-edit"></i></asp:LinkButton>
+                        <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CommandName="Edit" CssClass="btn btn-mini"><i class="fa fa-pencil-square-o"></i></asp:LinkButton>
                     </ItemTemplate>
                     <EditItemTemplate>
-                        <asp:LinkButton ID="lbSave" runat="server" Text="Save" CommandName="Update" CssClass="btn btn-mini btn-success"><i class="icon-check"></i></asp:LinkButton>
-                        <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CommandName="Cancel" CssClass="btn btn-mini btn-warning" CausesValidation="false"><i class="icon-check-minus"></i></asp:LinkButton>
+                        <asp:LinkButton ID="lbSave" runat="server" Text="Save" CommandName="Update" CssClass="btn btn-mini btn-success"><i class="fa fa-check"></i></asp:LinkButton>
+                        <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CommandName="Cancel" CssClass="btn btn-mini btn-warning" CausesValidation="false"><i class="fa fa-minus-square-o"></i></asp:LinkButton>
                     </EditItemTemplate>
                 </asp:TemplateField>
                 <Rock:DeleteField OnClick="gLocation_RowDelete" />

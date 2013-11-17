@@ -67,7 +67,7 @@ namespace Rock.Rest.Controllers
                 int accountId = int.Parse( accountItem.Id );
 
                 accountItem.HasChildren = qryHasChildren.Any( f => f == accountId );
-                accountItem.IconCssClass = "icon-file-alt";
+                accountItem.IconCssClass = "fa fa-file-o";
             }
 
             return accountItemList.AsQueryable();

@@ -12,7 +12,7 @@
             <div class="row">
                 <div class="col-md-12 clearExceptionsLink">
                     <asp:LinkButton ID="btnClearExceptions" runat="server" CssClass="btn btn-action btn-sm" OnClientClick="return confirmExceptionListClear();" OnClick="btnClearExceptions_Click" CausesValidation="false">
-                        <i class="icon-repeat"></i> Clear All Exceptions
+                        <i class="fa fa-repeat"></i> Clear All Exceptions
                     </asp:LinkButton>
                 </div>
             </div>
@@ -60,7 +60,7 @@
             <div class="row">
                 <div class="col-md-1">
                     <asp:LinkButton ID="btnReturnToList" runat="server" CssClass="btn btn-action btn-sm" OnClick="btnReturnToList_Click" CausesValidation="false">
-                        <i class="icon-arrow-left"></i> Return to List
+                        <i class="fa fa-arrow-left"></i> Return to List
                     </asp:LinkButton>
                 </div>
             </div>

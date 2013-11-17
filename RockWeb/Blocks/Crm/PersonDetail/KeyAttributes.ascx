@@ -2,10 +2,10 @@
 
 <section class="panel panel-persondetails bookmarkattributes attributeholder">
     <div class="panel-heading rollover-container clearfix">
-        <h3 class="panel-title pull-left"><i class="icon-bookmark"></i> Bookmarked Attributes</h3> 
+        <h3 class="panel-title pull-left"><i class="fa fa-bookmark"></i> Bookmarked Attributes</h3> 
         <div class="actions rollover-item pull-right">
-            <a class="edit" href=""><i class="icon-pencil"></i></a>
-            <a class="edit" href=""><i class="icon-cog"></i></a>
+            <a class="edit" href=""><i class="fa fa-pencil"></i></a>
+            <a class="edit" href=""><i class="fa fa-cog"></i></a>
         </div></div>
     <div class="panel-body">
         <ul>

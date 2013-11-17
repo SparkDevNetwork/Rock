@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Cms
         {
             var sb = new StringBuilder();
 
-            sb.AppendFormat( "<li data-expanded='false' data-model='Page' data-id='{0}'><span><i class=\"icon-file-alt\">&nbsp;</i> <a href='{1}'>{2}</a></span>{3}", page.Id, new PageReference( page.Id ).BuildUrl(), page.Name, Environment.NewLine );
+            sb.AppendFormat( "<li data-expanded='false' data-model='Page' data-id='{0}'><span><i class=\"fa fa-file-o\">&nbsp;</i> <a href='{1}'>{2}</a></span>{3}", page.Id, new PageReference( page.Id ).BuildUrl(), page.Name, Environment.NewLine );
 
             if ( page.Pages.Any() || page.Blocks.Any() )
             {
@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Cms
         {
             var blockPropertyUrl = ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", block.Id ) );
 
-            return string.Format( "<i class=\"icon-th-large\">&nbsp;</i> <a href=\"javascript: Rock.controls.modal.show($(this), '{0}')\" title=\"Block Properties\"><i class=\"icon-cog\"></i>&nbsp;</a>",
+            return string.Format( "<i class=\"fa fa-th-large\">&nbsp;</i> <a href=\"javascript: Rock.controls.modal.show($(this), '{0}')\" title=\"Block Properties\"><i class=\"fa fa-cog\"></i>&nbsp;</a>",
                 blockPropertyUrl );
         }
     }

@@ -143,7 +143,7 @@ namespace Rock.Rest.Controllers
                             categoryItem.Id = categorizedItem.Id.ToString();
                             categoryItem.Name = categorizedItem.Name;
                             categoryItem.IsCategory = false;
-                            categoryItem.IconCssClass = "icon-list-ol";
+                            categoryItem.IconCssClass = "fa fa-list-ol";
                             categoryItem.IconSmallUrl = string.Empty;
                             categoryItemList.Add( categoryItem );
                         }

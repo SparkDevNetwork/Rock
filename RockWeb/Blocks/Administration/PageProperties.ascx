@@ -108,10 +108,10 @@
                             <legend>Import Pages</legend>
                             <asp:Panel runat="server" ID="pnlImportSuccess" CssClass="row" Visible="False">
                                 <div class="col-md-12 alert alert-success">
-                                    <p><i class="icon-bolt"></i> <strong>Sweet!</strong> Your package was imported successfully.</p>
+                                    <p><i class="fa fa-bolt"></i> <strong>Sweet!</strong> Your package was imported successfully.</p>
                                     <asp:Repeater ID="rptImportWarnings" runat="server" Visible="False">
                                         <HeaderTemplate>
-                                            <p><i class="icon-warning-sign"></i> Just a quick head's up...</p>
+                                            <p><i class="fa fa-exclamation-triangle"></i> Just a quick head's up...</p>
                                             <ul>
                                         </HeaderTemplate>
                                         <ItemTemplate>
@@ -141,7 +141,7 @@
                             </asp:Repeater>
                             <asp:FileUpload runat="server" ID="fuImport" CssClass="input-small" />
                             <asp:LinkButton runat="server" ID="lbImport" CssClass="btn btn-default btn-sm" OnClick="lbImport_Click">
-                                <i class="icon-arrow-up"></i> Import
+                                <i class="fa fa-arrow-up"></i> Import
                             </asp:LinkButton>
                         </fieldset>
                     </div>
@@ -153,7 +153,7 @@
                                 Export child pages?
                             </label>
                             <asp:LinkButton runat="server" ID="lbExport" OnClick="lbExport_Click" CssClass="btn btn-default btn-sm">
-                                <i class="icon-download-alt"></i> Export
+                                <i class="fa fa-download"></i> Export
                             </asp:LinkButton>
                         </fieldset>
                     </div>

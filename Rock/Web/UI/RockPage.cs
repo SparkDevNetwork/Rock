@@ -742,7 +742,7 @@ namespace Rock.Web.UI
                         aBlockConfig.Attributes.Add( "Title", "Block Configuration" );
                         HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
                         aBlockConfig.Controls.Add( iBlockConfig );
-                        iBlockConfig.Attributes.Add( "class", "icon-th-large" );
+                        iBlockConfig.Attributes.Add( "class", "fa fa-th-large" );
 
                         // RockPage Properties
                         HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
@@ -755,7 +755,7 @@ namespace Rock.Web.UI
                         aAttributes.Attributes.Add( "Title", "Page Properties" );
                         HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
                         aAttributes.Controls.Add( iAttributes );
-                        iAttributes.Attributes.Add( "class", "icon-cog" );
+                        iAttributes.Attributes.Add( "class", "fa fa-cog" );
 
                         // Child Pages
                         HtmlGenericControl aChildPages = new HtmlGenericControl( "a" );
@@ -768,7 +768,7 @@ namespace Rock.Web.UI
                         aChildPages.Attributes.Add( "Title", "Child Pages" );
                         HtmlGenericControl iChildPages = new HtmlGenericControl( "i" );
                         aChildPages.Controls.Add( iChildPages );
-                        iChildPages.Attributes.Add( "class", "icon-sitemap" );
+                        iChildPages.Attributes.Add( "class", "fa fa-sitemap" );
 
                         // RockPage Zones
                         HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
@@ -778,7 +778,7 @@ namespace Rock.Web.UI
                         aPageZones.Attributes.Add( "Title", "Page Zones" );
                         HtmlGenericControl iPageZones = new HtmlGenericControl( "i" );
                         aPageZones.Controls.Add( iPageZones );
-                        iPageZones.Attributes.Add( "class", "icon-columns" );
+                        iPageZones.Attributes.Add( "class", "fa fa-columns" );
 
                         // RockPage Security
                         HtmlGenericControl aPageSecurity = new HtmlGenericControl( "a" );
@@ -792,7 +792,7 @@ namespace Rock.Web.UI
                         aPageSecurity.Attributes.Add( "Title", "Page Security" );
                         HtmlGenericControl iPageSecurity = new HtmlGenericControl( "i" );
                         aPageSecurity.Controls.Add( iPageSecurity );
-                        iPageSecurity.Attributes.Add( "class", "icon-lock" );
+                        iPageSecurity.Attributes.Add( "class", "fa fa-lock" );
 
                         // System Info
                         HtmlGenericControl aSystemInfo = new HtmlGenericControl( "a" );
@@ -805,7 +805,7 @@ namespace Rock.Web.UI
                         aSystemInfo.Attributes.Add( "Title", "Rock Information" );
                         HtmlGenericControl iSystemInfo = new HtmlGenericControl( "i" );
                         aSystemInfo.Controls.Add( iSystemInfo );
-                        iSystemInfo.Attributes.Add( "class", "icon-info-sign" );
+                        iSystemInfo.Attributes.Add("class", "fa fa-info-circle");
 
                     }
 
@@ -1056,7 +1056,7 @@ namespace Rock.Web.UI
                 zoneConfigLink.Attributes.Add( "href", "#" );
                 zoneConfig.Controls.Add( zoneConfigLink );
                 HtmlGenericControl iZoneConfig = new HtmlGenericControl( "i" );
-                iZoneConfig.Attributes.Add( "class", "icon-circle-arrow-right" );
+                iZoneConfig.Attributes.Add("class", "fa fa-arrow-circle-right");
                 zoneConfigLink.Controls.Add( iZoneConfig );
 
                 HtmlGenericControl zoneConfigBar = new HtmlGenericControl( "div" );
@@ -1079,7 +1079,7 @@ namespace Rock.Web.UI
                 aBlockConfig.Attributes.Add( "zone", zoneControl.Key );
                 //aBlockConfig.InnerText = "Blocks";
                 HtmlGenericControl iZoneBlocks = new HtmlGenericControl( "i" );
-                iZoneBlocks.Attributes.Add( "class", "icon-th-large" );
+                iZoneBlocks.Attributes.Add( "class", "fa fa-th-large" );
                 aBlockConfig.Controls.Add( iZoneBlocks );
 
                 HtmlGenericContainer zoneContent = new HtmlGenericContainer( "div" );
@@ -1114,7 +1114,7 @@ namespace Rock.Web.UI
                 HtmlGenericControl blockConfigLink = new HtmlGenericControl( "a" );
                 blockConfigLink.Attributes.Add( "href", "#" );
                 HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
-                iBlockConfig.Attributes.Add( "class", "icon-circle-arrow-right" );
+                iBlockConfig.Attributes.Add("class", "fa fa-arrow-circle-right");
                 blockConfigLink.Controls.Add( iBlockConfig );
                 blockConfig.Controls.Add( blockConfigLink );
 

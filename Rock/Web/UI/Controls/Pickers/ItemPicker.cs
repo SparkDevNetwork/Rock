@@ -516,7 +516,7 @@ namespace Rock.Web.UI.Controls
             _btnSelectNone.ClientIDMode = ClientIDMode.Static;
             _btnSelectNone.Attributes["class"] = "picker-select-none";
             _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
-            _btnSelectNone.InnerHtml = "<i class='icon-remove'></i>";
+            _btnSelectNone.InnerHtml = "<i class='fa fa-times'></i>";
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
 

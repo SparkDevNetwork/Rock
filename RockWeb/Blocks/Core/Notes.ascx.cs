@@ -331,7 +331,7 @@ namespace RockWeb.Blocks.Core
                     }
                 }
             }
-            return "icon-comment";
+            return "fa fa-comment";
         }
     }
 }

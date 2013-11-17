@@ -185,7 +185,7 @@ namespace RockWeb.Blocks.CheckIn
             if ( guid == _personAbilityLevelGuid )
             {
                 var linkButton = e.Item.FindControl( "lbSelect" ) as LinkButton;
-                linkButton.Text = string.Format( "{0} {1}", "<i class='icon-check-sign'> </i>", linkButton.Text );
+                linkButton.Text = string.Format("{0} {1}", "<i class='fa fa-check-square'> </i>", linkButton.Text);
             }
         }
     }

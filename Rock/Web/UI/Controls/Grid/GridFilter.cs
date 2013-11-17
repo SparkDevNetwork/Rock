@@ -49,7 +49,7 @@ namespace Rock.Web.UI.Controls
 Sys.Application.add_load(function () {
 
     $('div.grid-filter header').click(function () {
-        $('i.toggle-filter', this).toggleClass('icon-chevron-down icon-chevron-up');
+        $('i.toggle-filter', this).toggleClass('fa-chevron-down fa-chevron-up');
         var $hf = $('input', this).first();
         if($hf.val() != 'true') {
             $hf.val('true');
@@ -123,7 +123,7 @@ Sys.Application.add_load(function () {
 
                 _hfVisible.RenderControl( writer );
 
-                writer.AddAttribute( "class", visible ? "icon-chevron-up toggle-filter" : "icon-chevron-down toggle-filter" );
+                writer.AddAttribute( "class", visible ? "fa-chevron-up toggle-filter" : "fa-chevron-down toggle-filter" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
 

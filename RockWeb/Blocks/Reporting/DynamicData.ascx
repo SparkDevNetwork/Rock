@@ -7,7 +7,7 @@
             
             <div class="dynamic-report-details" >
                 <asp:PlaceHolder ID="phEdit" runat="server">
-                    <p><a id="edit-report" class="report-add btn btn-default" onclick="return toggleDetails();" ><i class="icon-edit"></i></a></p>
+                    <p><a id="edit-report" class="report-add btn btn-default" onclick="return toggleDetails();" ><i class="fa fa-pencil-square-o"></i></a></p>
                 </asp:PlaceHolder>
             </div>
 

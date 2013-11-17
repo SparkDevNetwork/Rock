@@ -213,7 +213,7 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
-                return "icon-comment";
+                return "fa fa-comment";
             }
 
         }
@@ -279,7 +279,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add(_lbSaveNote);
 
             var iEdit = new HtmlGenericControl( "i" );
-            iEdit.Attributes["class"] = "icon-pencil";
+            iEdit.Attributes["class"] = "fa fa-pencil";
             _lbEditNote.Controls.Add( iEdit );
 
             _lbDeleteNote.ID = this.ID + "_lbDeleteNote";
@@ -288,7 +288,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _lbDeleteNote );
 
             var iDelete = new HtmlGenericControl( "i" );
-            iDelete.Attributes["class"] = "icon-remove";
+            iDelete.Attributes["class"] = "fa fa-times";
             _lbDeleteNote.Controls.Add( iDelete );
         }
 
@@ -375,7 +375,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-security btn-xs security pull-right" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Type, "button" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Button );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "icon-lock" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-lock" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.Write( " Security" );
@@ -434,7 +434,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "icon-pencil" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-pencil" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();  // A

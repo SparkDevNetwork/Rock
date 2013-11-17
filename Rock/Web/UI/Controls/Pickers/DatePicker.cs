@@ -21,7 +21,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
             this.CssClass = "input-width-md";
-            this.AppendText = "<i class='icon-calendar'></i>";
+            this.AppendText = "<i class='fa fa-calendar'></i>";
 
             if ( string.IsNullOrWhiteSpace( this.SourceTypeName ) )
             {
