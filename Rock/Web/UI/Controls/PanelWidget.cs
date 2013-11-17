@@ -73,8 +73,8 @@ $('.rock-panel-widget > header').click(function () {
     $expanded = $(this).children('input.filter-expanded');
     $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
 
-    $('a.view-state > i', this).toggleClass('icon-chevron-down');
-    $('a.view-state > i', this).toggleClass('icon-chevron-up');
+    $('a.view-state > i', this).toggleClass('fa-chevron-down');
+    $('a.view-state > i', this).toggleClass('fa-chevron-up');
 });
 ";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "RockPanelWidgetScript", script, true );
@@ -119,7 +119,7 @@ $('.rock-panel-widget > header').click(function () {
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs view-state" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "icon-chevron-up" : "icon-chevron-down" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "fa-chevron-up" : "fa-chevron-down" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();

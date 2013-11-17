@@ -10,8 +10,8 @@
                 <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
                 <asp:TemplateField ItemStyle-CssClass="grid-col-actions" HeaderStyle-CssClass="grid-col-actions" HeaderText="Actions">
                     <ItemTemplate>
-                        <asp:LinkButton runat="server" ID="btnSchedule" CssClass="btn btn-action" CausesValidation="false" CommandName="schedule" CommandArgument="<%# Container.DataItemIndex %>"><i class="icon-calendar"></i> Schedule</asp:LinkButton>
-                        <asp:LinkButton runat="server" ID="btnConfigure" CssClass="btn btn-action" CausesValidation="false" CommandName="configure" CommandArgument="<%# Container.DataItemIndex %>"><i class="icon-cog"></i> Groups/Locations</asp:LinkButton>
+                        <asp:LinkButton runat="server" ID="btnSchedule" CssClass="btn btn-action" CausesValidation="false" CommandName="schedule" CommandArgument="<%# Container.DataItemIndex %>"><i class="fa fa-calendar"></i> Schedule</asp:LinkButton>
+                        <asp:LinkButton runat="server" ID="btnConfigure" CssClass="btn btn-action" CausesValidation="false" CommandName="configure" CommandArgument="<%# Container.DataItemIndex %>"><i class="fa fa-cog"></i> Groups/Locations</asp:LinkButton>
                     </ItemTemplate>
                 </asp:TemplateField>
             </Columns>

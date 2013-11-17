@@ -207,7 +207,7 @@ ul.rock-tree ul {
 .personlist li {
   padding-left: 16px;
 }
-.personlist li i[class=icon-circle] {
+.personlist li i.fa-circle {
   font-size: 9px;
   color: #d0cfcf;
   margin-right: 6px;
@@ -257,12 +257,11 @@ ul.rock-tree ul {
   overflow: hidden;
   color: #333333;
   text-align: center;
-  height: 80px;
 }
 .page-list-as-blocks ul li a {
   display: block;
   color: inherit;
-  height: 65px;
+  height: 80px;
   padding: 12px;
 }
 div.tagsinput {
@@ -917,12 +916,13 @@ div.tagsinput div {
     
     1. SQL Command - block to query database directly
     2. HTML Content - block to edit HTML on a page
-    3. 
+    3. Login - Styles for the login control
     4. Notes - block to display, add, edit, delete notes
     5. Add Family - block to add families to the database
     6. Contributions - block add a contribution transaction
     7. Data Views - block for creating data views
     8. Schedule Builder - block for building schedules
+    9. Error Page - styles for the error page.
 
 */
 .sql-comand .panel {
@@ -1147,6 +1147,9 @@ span.cke_skin_kama {
   float: left;
   margin-top: 5px;
 }
+#splash.error #content {
+  width: 750px;
+}
 /*
     Used to manage styles related to the CMS admin UI for on page editing
     
@@ -1223,7 +1226,7 @@ span.cke_skin_kama {
 .config-bar > a {
   text-decoration: none;
 }
-.config-bar a i[class^="icon-"] {
+.config-bar a i.fa {
   float: left;
   margin-left: 5px;
   margin-top: 3px;
@@ -2079,8 +2082,8 @@ fieldset[disabled] .btn-edit.active {
   border-color: #e6e6e6;
 }
 /* modify BS3 to use fontawesome for carousel icons */
-.carousel-control .icon-chevron-left,
-.carousel-control .icon-chevron-right {
+.carousel-control .fa-chevron-left,
+.carousel-control .fa-chevron-right {
   position: absolute;
   top: 50%;
   z-index: 5;
@@ -2091,13 +2094,19 @@ fieldset[disabled] .btn-edit.active {
 .not-me {
   margin-left: 21px;
 }
-/* error page */
-#splash.error #content {
-  width: 750px;
-}
 /* security window */
 .security-inherited {
   margin-top: 12px;
+}
+/* additional typography components */
+.navigation-tip {
+  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+  padding: 2px 4px;
+  font-size: 90%;
+  color: #333333;
+  background-color: #d5d5d5;
+  white-space: nowrap;
+  border-radius: 4px;
 }
 /*
     Rock ChMS Theme Styles
@@ -2112,6 +2121,9 @@ main {
 }
 .navbar {
   position: static;
+}
+a:hover i.fs {
+  text-decoration: none;
 }
 header .page-menu,
 header .login-status {

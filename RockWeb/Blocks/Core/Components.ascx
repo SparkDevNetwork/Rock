@@ -27,7 +27,7 @@
                     <HeaderStyle CssClass="span1" />
                     <ItemStyle HorizontalAlign="Center"/>
                     <ItemTemplate>
-                        <a id="aSecure" runat="server" class="btn btn-sm btn-security" height="500px"><i class="icon-lock"></i></a>
+                        <a id="aSecure" runat="server" class="btn btn-sm btn-security" height="500px"><i class="fa fa-lock"></i></a>
                     </ItemTemplate>
                 </asp:TemplateField>
             </Columns>

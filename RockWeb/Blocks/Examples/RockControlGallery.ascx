@@ -279,7 +279,7 @@
                 a little easier just by setting the <code>IconCssClass</code> property.</p>
 
             <div runat="server" class="r-example">
-                <Rock:HighlightLabel ID="HighlightLabel2" runat="server" LabelType="Danger" IconCssClass="icon-flag" Text="errors" />
+                <Rock:HighlightLabel ID="HighlightLabel2" runat="server" LabelType="Danger" IconCssClass="fa fa-flag" Text="errors" />
             </div>
 
             <h2>Rock:Toggle</h2>
@@ -301,7 +301,7 @@
             <h2>Rock:BootstrapButton</h2>
             <div runat="server" class="r-example">
                 <Rock:BootstrapButton ID="lbSave" runat="server" Text="Click Me" CssClass="btn btn-primary"
-                    DataLoadingText="&lt;i class='icon-spinner icon-spin icon-large'&gt;&lt;/i&gt; Saving" />
+                    DataLoadingText="&lt;i class='fa fa-spinner fa-spin fa-2x'&gt;&lt;/i&gt; Saving" />
             </div>
 
             <h2>Rock:NoteEditor</h2>

@@ -771,7 +771,7 @@ namespace Rock.Web.UI
                 configControls.Add( aAttributes );
                 HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
                 aAttributes.Controls.Add( iAttributes );
-                iAttributes.Attributes.Add( "class", "icon-cog" );
+                iAttributes.Attributes.Add( "class", "fa fa-cog" );
             }
 
             if ( canConfig )
@@ -788,7 +788,7 @@ namespace Rock.Web.UI
                 configControls.Add( aSecureBlock );
                 HtmlGenericControl iSecureBlock = new HtmlGenericControl( "i" );
                 aSecureBlock.Controls.Add( iSecureBlock );
-                iSecureBlock.Attributes.Add( "class", "icon-lock" );
+                iSecureBlock.Attributes.Add( "class", "fa fa-lock" );
 
                 // Move
                 HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );
@@ -800,7 +800,7 @@ namespace Rock.Web.UI
                 configControls.Add( aMoveBlock );
                 HtmlGenericControl iMoveBlock = new HtmlGenericControl( "i" );
                 aMoveBlock.Controls.Add( iMoveBlock );
-                iMoveBlock.Attributes.Add( "class", "icon-external-link" );
+                iMoveBlock.Attributes.Add( "class", "fa fa-external-link" );
 
                 // Delete
                 HtmlGenericControl aDeleteBlock = new HtmlGenericControl( "a" );
@@ -810,7 +810,7 @@ namespace Rock.Web.UI
                 configControls.Add( aDeleteBlock );
                 HtmlGenericControl iDeleteBlock = new HtmlGenericControl( "i" );
                 aDeleteBlock.Controls.Add( iDeleteBlock );
-                iDeleteBlock.Attributes.Add( "class", "icon-remove-circle" );
+                iDeleteBlock.Attributes.Add("class", "fa fa-times-circle-o");
             }
 
             return configControls;

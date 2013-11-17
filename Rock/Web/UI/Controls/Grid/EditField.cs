@@ -103,7 +103,7 @@ namespace Rock.Web.UI.Controls
                 lbEdit.ToolTip = "Edit";
                 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
-                buttonIcon.Attributes.Add( "class", "icon-edit" );
+                buttonIcon.Attributes.Add("class", "fa fa-pencil-square-o");
                 lbEdit.Controls.Add( buttonIcon );
 
                 lbEdit.Click += lbEdit_Click;

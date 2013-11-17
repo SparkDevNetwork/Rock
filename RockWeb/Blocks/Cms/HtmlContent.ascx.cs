@@ -250,7 +250,7 @@ namespace RockWeb.Blocks.Cms
                 HtmlGenericControl iEdit = new HtmlGenericControl( "i" );
                 lbEdit.Controls.Add( iEdit );
                 lbEdit.CausesValidation = false;
-                iEdit.Attributes.Add( "class", "icon-edit" );
+                iEdit.Attributes.Add("class", "fa fa-pencil-square-o");
 
                 ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( lbEdit );
             }

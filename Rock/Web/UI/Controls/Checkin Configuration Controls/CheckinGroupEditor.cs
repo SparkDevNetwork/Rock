@@ -72,8 +72,8 @@ namespace Rock.Web.UI.Controls
 $('.checkin-group > header').click(function () {
     $(this).siblings('.panel-body').slideToggle();
 
-    $('i.checkin-group-state', this).toggleClass('icon-chevron-down');
-    $('i.checkin-group-state', this).toggleClass('icon-chevron-up');
+    $('i.checkin-group-state', this).toggleClass('fa-chevron-down');
+    $('i.checkin-group-state', this).toggleClass('fa-chevron-up');
 });
 
 // fix so that the Remove button will fire its event, but not the parent event 
@@ -315,7 +315,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
 
             var iDelete = new HtmlGenericControl( "i" );
             _lbDeleteGroup.Controls.Add( iDelete );
-            iDelete.AddCssClass( "icon-remove" );
+            iDelete.AddCssClass( "fa fa-times" );
 
             _tbGroupName = new DataTextBox();
             _tbGroupName.ID = this.ID + "_tbGroupName";
@@ -422,8 +422,8 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.WriteLine( "<a class='btn btn-xs checkin-group-reorder'><i class='icon-reorder'></i></a>" );
-            writer.WriteLine( "<a class='btn btn-xs'><i class='checkin-group-state icon-chevron-down'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs checkin-group-reorder'><i class='fa fa-bars'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs'><i class='checkin-group-state fa fa-chevron-down'></i></a>" );
 
             if ( IsDeleteEnabled )
             {

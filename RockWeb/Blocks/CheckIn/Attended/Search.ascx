@@ -43,7 +43,7 @@
                         <a href="#" class="btn btn-default btn-lg digit">9</a>
                     </div>
                     <div>
-                        <a href="#" class="btn btn-default btn-lg digit back"><i class='icon-arrow-left'></i></a>
+                        <a href="#" class="btn btn-default btn-lg digit back"><i class='fa fa-arrow-left'></i></a>
                         <a href="#" class="btn btn-default btn-lg digit">0</a>
                         <a href="#" class="btn btn-default btn-lg digit clear">C</a>
                     </div>

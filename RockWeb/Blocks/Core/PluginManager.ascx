@@ -2,7 +2,7 @@
 
 <asp:UpdateProgress id="updateProgress" runat="server">
 		<ProgressTemplate>
-		    <div id="updateProgress" class="modal-backdrop"> <i class="icon-spinner icon-4x icon-spin" style="color: white;"></i> 
+		    <div id="updateProgress" class="modal-backdrop"> <i class="fa fa-spinner fa-spin fa-2x" style="color: white;"></i> 
 		    </div>
 		</ProgressTemplate>
 </asp:UpdateProgress>
@@ -81,7 +81,7 @@
                     <p><asp:Literal runat="server" ID="lTags"><i>none</i></asp:Literal></p>
 
                     <asp:LinkButton CssClass="btn btn-warning" ID="lbPackageUninstall" 
-                        Text="<i class='icon-remove'></i> &nbsp; Uninstall" runat="server" 
+                        Text="<i class='fa fa-times'></i> &nbsp; Uninstall" runat="server" 
                         CommandName="uninstall" OnCommand="lbPackageUninstall_Click" OnClientClick="$(this).button('loading')" data-loading-text="Uninstalling..."/>
  
                     <Rock:Grid runat="server" DisplayType="Light" ID="gvPackageVersions" DataKeyNames="Id,Version" GridLines="None" AutoGenerateColumns="false"
@@ -91,9 +91,9 @@
                         <asp:BoundField HeaderText="Last updated" DataField="LastUpdated" DataFormatString="{0:MM/dd/yyyy}" />
                         <asp:TemplateField ShowHeader="False" ItemStyle-VerticalAlign="Top" >
                             <ItemTemplate>
-                                <i runat="server" ID="iInstalledIcon" visible="false" class="icon-ok" title="this version is installed"></i>
-                                <asp:LinkButton CssClass="btn btn-default" ID="lbInstall" CommandName="Install" Text="<i class='icon-download-alt'></i> &nbsp; Install" OnClientClick="$(this).button('loading')" data-loading-text="Installing..." runat="server" />
-                                <asp:LinkButton CssClass="btn btn-primary" ID="lbUpdate" CommandName="Update" Visible="false" Text="<i class='icon-download-alt'></i> &nbsp; Update" OnClientClick="$(this).button('loading')" data-loading-text="Updating..." runat="server" />
+                                <i runat="server" ID="iInstalledIcon" visible="false" class="fa fa-check" title="this version is installed"></i>
+                                <asp:LinkButton CssClass="btn btn-default" ID="lbInstall" CommandName="Install" Text="<i class='fa fa-download'></i> &nbsp; Install" OnClientClick="$(this).button('loading')" data-loading-text="Installing..." runat="server" />
+                                <asp:LinkButton CssClass="btn btn-primary" ID="lbUpdate" CommandName="Update" Visible="false" Text="<i class='fa fa-download'></i> &nbsp; Update" OnClientClick="$(this).button('loading')" data-loading-text="Updating..." runat="server" />
                             </ItemTemplate>
                         </asp:TemplateField> 
                     </Columns>

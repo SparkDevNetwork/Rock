@@ -14,7 +14,7 @@
             el.className += " disabled";
             if (el.getAttribute('requestSent') !== 'true') {
                 el.setAttribute('requestSent', 'true');
-                $(el).append(' <i class="icon-spinner icon-spin"></i> ');
+                $(el).append(' <i class="fa fa-spinner fa-spin"></i> ');
                 return true;
             } else {
                 el.disabled = true;

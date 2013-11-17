@@ -2,7 +2,7 @@
 <ul class="nav navbar-nav loginstatus">
     <li class="dropdown">
         <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
-            <i class="icon-user"></i>
+            <i class="fa fa-user"></i>
             <asp:PlaceHolder ID="phHello" runat="server"><asp:Literal ID="lHello" runat="server" /></asp:PlaceHolder>
             <b class="caret"></b>
         </a>

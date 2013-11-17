@@ -39,7 +39,7 @@
                             <asp:TemplateField HeaderText="Print">
                                 <ItemTemplate>
                                     <asp:LinkButton ID="btnPrint" runat="server" CssClass="btn btn-lg btn-primary" CommandName="Print" CommandArgument="<%# Container.DataItemIndex %>">
-                                        <i class="icon-print"></i>
+                                        <i class="fa fa-print"></i>
                                     </asp:LinkButton>
                                 </ItemTemplate> 
                             </asp:TemplateField>

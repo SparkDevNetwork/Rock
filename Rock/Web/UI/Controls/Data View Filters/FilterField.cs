@@ -62,8 +62,8 @@ $('.filter-item > header').click(function () {
     $expanded = $(this).children('input.filter-expanded');
     $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
 
-    $('a.filter-view-state > i', this).toggleClass('icon-chevron-down');
-    $('a.filter-view-state > i', this).toggleClass('icon-chevron-up');
+    $('a.filter-view-state > i', this).toggleClass('fa-chevron-down');
+    $('a.filter-view-state > i', this).toggleClass('fa-chevron-up');
 });
 
 // fix so that the Remove button will fire its event, but not the parent event 
@@ -288,7 +288,7 @@ $('.filter-item-select').click(function (event) {
 
             var iDelete = new HtmlGenericControl( "i" );
             lbDelete.Controls.Add( iDelete );
-            iDelete.AddCssClass( "icon-remove" );
+            iDelete.AddCssClass( "fa fa-times" );
         }
 
         /// <summary>
@@ -305,7 +305,7 @@ $('.filter-item-select').click(function (event) {
                 if ( component != null )
                 {
                     clientFormatString =
-                       string.Format( "if ($(this).find('.filter-view-state').children('i').attr('class') == 'icon-chevron-up') {{ var $article = $(this).parents('article:first'); var $content = $article.children('div.panel-body'); $article.find('div.filter-item-description:first').html({0}); }}", component.GetClientFormatSelection( FilteredEntityType ) );
+                       string.Format( "if ($(this).find('.filter-view-state').children('i').attr('class') == 'fa-chevron-up') {{ var $article = $(this).parents('article:first'); var $content = $article.children('div.panel-body'); $article.find('div.filter-item-description:first').html({0}); }}", component.GetClientFormatSelection( FilteredEntityType ) );
                 }
             }
 
@@ -361,7 +361,7 @@ $('.filter-item-select').click(function (event) {
             
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs filter-view-state" );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "icon-chevron-up" : "icon-chevron-down" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "fa-chevron-up" : "fa-chevron-down" );
             writer.RenderBeginTag( HtmlTextWriterTag.I );
             writer.RenderEndTag();
             writer.RenderEndTag();

@@ -12,7 +12,7 @@
         <div class="treeview treeview-group">
             <div class="treeview-actions pull-right">
                 <asp:LinkButton ID="lbAddGroup" runat="server" CssClass="add btn btn-mini" ToolTip="Add Group" CausesValidation="false" OnClick="lbAddGroup_Click">
-                        <i class="icon-plus-sign"></i> Add
+                        <i class="fa fa-plus-circle"></i> Add
                 </asp:LinkButton>
             </div>
 

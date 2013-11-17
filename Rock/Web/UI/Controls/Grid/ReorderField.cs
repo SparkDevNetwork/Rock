@@ -58,7 +58,7 @@ namespace Rock.Web.UI.Controls
     Sys.Application.add_load(function () {{
         $('#{0} tbody').sortable({{
             helper: fixHelper,
-            handle: '.icon-reorder',
+            handle: '.fa-bars',
             start: function(event, ui) {{
                 var start_pos = ui.item.index();
                 ui.item.data('start_pos', start_pos);
@@ -98,7 +98,7 @@ namespace Rock.Web.UI.Controls
                 a.AddCssClass( "minimal" );
                 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
-                buttonIcon.Attributes.Add( "class", "icon-reorder" );
+                buttonIcon.Attributes.Add( "class", "fa fa-bars" );
                 a.Controls.Add( buttonIcon );
 
                 cell.Controls.Add( a );

@@ -331,7 +331,7 @@ namespace Rock.Web.UI.Controls
 
             _btnPickerLabel = new HtmlAnchor { ID = "btnPickerLabel" };
             _btnPickerLabel.Attributes["class"] = "picker-label";
-            _btnPickerLabel.InnerHtml = string.Format( "<i class='icon-user'></i>{0}<b class='caret pull-right'></b>", this.AddressSummaryText );
+            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-user'></i>{0}<b class='caret pull-right'></b>", this.AddressSummaryText );
             this.Controls.Add( _btnPickerLabel );
 
             // PickerMenu (DropDown menu)
@@ -430,7 +430,7 @@ namespace Rock.Web.UI.Controls
             LocationService locationService = new LocationService();
             var location = locationService.Get( _tbAddress1.Text, _tbAddress2.Text, _tbCity.Text, _ddlState.SelectedItem.Text, _tbZip.Text );
             Location = location;
-            _btnPickerLabel.InnerHtml = string.Format( "<i class='icon-user'></i>{0}<b class='caret pull-right'></b>", this.AddressSummaryText );
+            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-user'></i>{0}<b class='caret pull-right'></b>", this.AddressSummaryText );
         }
 
         /// <summary>

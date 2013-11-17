@@ -2,7 +2,7 @@
 
 <div class="rollover-container">
     <div class="actions rollover-item">
-        <asp:LinkButton ID="lbEditPerson" runat="server" CssClass="edit btn btn-link btn-xs" OnClick="lbEditPerson_Click"><i class="icon-pencil"></i> Edit Individual</asp:LinkButton>
+        <asp:LinkButton ID="lbEditPerson" runat="server" CssClass="edit btn btn-link btn-xs" OnClick="lbEditPerson_Click"><i class="fa fa-pencil"></i> Edit Individual</asp:LinkButton>
     </div>
 
     <div class="row">
@@ -16,7 +16,7 @@
             <ul class="nav pull-right">
                 <li class="dropdown">
                     <a class="persondetails-actions dropdown-toggle" data-toggle="dropdown" href="#" tabindex="0">
-                        <i class="icon-cog"></i>
+                        <i class="fa fa-cog"></i>
                         <span>Actions</span>
                         <b class="caret"></b>
                     </a>

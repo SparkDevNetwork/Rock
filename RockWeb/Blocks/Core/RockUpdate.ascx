@@ -2,7 +2,7 @@
 
 <asp:UpdateProgress id="updateProgress" runat="server">
 		<ProgressTemplate>
-		    <div id="updateProgress"> <i class="icon-spinner icon-spin"></i> Processing...
+		    <div id="updateProgress"> <i class="fa fa-spinner fa-spin"></i> Processing...
 		    </div>
 		</ProgressTemplate>
 </asp:UpdateProgress>
@@ -21,8 +21,8 @@
         <div class="row-fluid">
 	        <div class="span12">
                 <asp:Literal ID="litMessage" runat="server"></asp:Literal>
-                <Rock:NotificationBox ID="nbSuccess" runat="server" NotificationBoxType="Success" Visible="false" Heading="<i class='icon-ok-circle'></i> Success" />
-                <Rock:NotificationBox ID="nbErrors" runat="server" NotificationBoxType="Danger" Visible="false" Heading="<i class='icon-frown'></i> Sorry..." />
+                <Rock:NotificationBox ID="nbSuccess" runat="server" NotificationBoxType="Success" Visible="false" Heading="<i class='fa check-circle-o'></i> Success" />
+                <Rock:NotificationBox ID="nbErrors" runat="server" NotificationBoxType="Danger" Visible="false" Heading="<i class='fa fa-frown-o'></i> Sorry..." />
             </div>
         </div>
 
@@ -31,8 +31,8 @@
                 <div class="panel" runat="server" id="divPackage" visible="false">
                     <div class="row-fluid">
                         <div class="span3">
-                            <asp:LinkButton ID="btnInstall" runat="server" Text="<i class='icon-cloud-download'></i> Update" Visible="false" CssClass="btn btn-primary" OnClick="btnInstall_Click" />
-                            <asp:LinkButton ID="btnUpdate" runat="server" Text="<i class='icon-cloud-download'></i> Update" Visible="false" CssClass="btn btn-primary" OnClick="btnUpdate_Click" />
+                            <asp:LinkButton ID="btnInstall" runat="server" Text="<i class='fa fa-cloud-download'></i> Update" Visible="false" CssClass="btn btn-primary" OnClick="btnInstall_Click" />
+                            <asp:LinkButton ID="btnUpdate" runat="server" Text="<i class='fa fa-cloud-download'></i> Update" Visible="false" CssClass="btn btn-primary" OnClick="btnUpdate_Click" />
                         </div>
                         <div class="span9">
                             <h3><asp:Literal ID="litPackageTitle" runat="server"></asp:Literal></h3>
