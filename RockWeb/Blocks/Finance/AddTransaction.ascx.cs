@@ -640,7 +640,7 @@ achieve our mission.  We are so grateful for your commitment.
 
                         GatewayComponent gateway = hfPaymentTab.Value == "ACH" ? _achGateway : _ccGateway;
                         string errorMessage = string.Empty;
-                        string referenceId = gateway.GetReferenceId( transaction, out errorMessage );
+                        string referenceNumber = gateway.GetReferenceNumber( transaction, out errorMessage );
                         if (errorMessage.Any())
                         {
                             nbSaveAccount.Title = "Invalid Transaction";
@@ -653,7 +653,7 @@ achieve our mission.  We are so grateful for your commitment.
                             var savedAccount = new FinancialPersonSavedAccount();
                             savedAccount.PersonId = transaction.AuthorizedPersonId.Value;
                             savedAccount.FinancialTransactionId = transaction.Id;
-                            savedAccount.ReferenceNumber = referenceId;
+                            savedAccount.ReferenceNumber = referenceNumber;
                             savedAccount.Name = txtSaveAccount.Text;
                             savedAccount.MaskedAccountNumber = paymentInfo.MaskedNumber;
 

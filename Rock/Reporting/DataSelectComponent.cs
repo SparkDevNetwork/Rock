@@ -71,7 +71,6 @@ namespace Rock.Reporting
         /// <summary>
         /// Formats the selection.
         /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
         public virtual string FormatSelection( string selection )
@@ -92,7 +91,7 @@ namespace Rock.Reporting
         /// Renders the controls.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
-        /// <param name="filterControl">The filter control.</param>
+        /// <param name="parentControl">The parent control.</param>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
         public virtual void RenderControls( Type entityType, Control parentControl, HtmlTextWriter writer, Control[] controls )
