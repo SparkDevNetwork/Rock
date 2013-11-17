@@ -32,7 +32,6 @@ using System.Runtime.InteropServices;
 // make sure you read "The bottom line:" in this article: 
 // http://stackoverflow.com/questions/64602/what-are-differences-between-assemblyversion-assemblyfileversion-and-assemblyin
 
-
 // Based on my analysis, the AssemblyVersion number should change only when we are
 // making a breaking change and need the runtime binding to fail if it does not
 // match the correct version exactly.
@@ -51,4 +50,7 @@ using System.Runtime.InteropServices;
 
 // This is the "official" product name that will be shown to people. 
 // It's shown in the SystemInfo details and perhaps the RockUpdate page.
-[assembly: AssemblyInformationalVersion( "Rock Humphreys 0.1.0 (alpha)" )]
+// JICK - J(on) / (N)ick versioning system.
+[assembly: AssemblyInformationalVersion( "Rock Humphrey 0.7 (alpha)" )]     // 0.0.7
+//[assembly: AssemblyInformationalVersion( "Rock McKinley 0.7 (beta)" )]    // 1.0.7
+//[assembly: AssemblyInformationalVersion( "Rock McKinley 1.0" )]           // 1.1.0
