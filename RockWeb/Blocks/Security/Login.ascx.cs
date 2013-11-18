@@ -200,28 +200,16 @@ namespace RockWeb.Blocks.Security
         {
             Rock.Security.Authorization.SetAuthCookie( userName, rememberMe, false );
 
-            if ( returnUrl != null )
+            if (!string.IsNullOrWhiteSpace(returnUrl))
             {
-                // if the url looks like it contains an account related route, redirect to the DefaultUrl
-                string[] accountRoutes = new string[] 
-                {
-                    "changepassword",
-                    "confirmaccount",
-                    helpUrl,
-                    newAccountUrl
-                };
-                
-                foreach (var accountRoute in accountRoutes)
-                {
-                    if ( returnUrl.IndexOf( accountRoute, StringComparison.OrdinalIgnoreCase ) >= 0 )
-                    {
-                        returnUrl = FormsAuthentication.DefaultUrl;
-                        break;
-                    }
-                }
+                Response.Redirect(returnUrl, false);
             }
-
-            Response.Redirect( returnUrl ?? FormsAuthentication.DefaultUrl, false );
+            else
+            {
+                var site = CurrentPage.Layout.Site;
+                var pageReference = new Rock.Web.PageReference(site.DefaultPageId ?? 0, site.DefaultPageRouteId ?? 0);
+                Response.Redirect(pageReference.BuildUrl(), false);
+            }
             Context.ApplicationInstance.CompleteRequest();
         }
     }
