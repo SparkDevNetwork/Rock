@@ -339,9 +339,8 @@
     <li>Stynax highlighting</li>
     <li>Tabs work great</li>
     <li>Code folding</li>
-</ol>  
-                                
-                </Rock:CodeEditor>
+</ol>             
+</Rock:CodeEditor>
             </div>
             <p>Alternately, you can provide the contents of the code to edit in the <code>Text</code> property of the control.
             </p>
