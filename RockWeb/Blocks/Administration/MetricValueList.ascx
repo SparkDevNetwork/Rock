@@ -28,7 +28,7 @@
             <Rock:ModalDialog ID="modalValue" runat="server" Title="Metric Value" ValidationGroup="Value"  >
                 <Content>
                     <asp:HiddenField ID="hfMetricValueId" runat="server" />
-                    <asp:ValidationSummary ID="valSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" ValidationGroup="Value" />
+                    <asp:ValidationSummary ID="valSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Value" />
 
                     <legend>
                         <asp:Literal ID="lActionTitle" runat="server" />

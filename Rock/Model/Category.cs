@@ -79,8 +79,9 @@ namespace Rock.Model
         /// <value>
         /// The name.
         /// </value>
-        [MaxLength(100)]
-        [DataMember]
+        [Required( ErrorMessage = "Name is required" )]
+        [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
         /// <summary>

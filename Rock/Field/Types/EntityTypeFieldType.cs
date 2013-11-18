@@ -46,6 +46,81 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            List<string> configKeys = new List<string>();
+            configKeys.Add( "includeglobal" );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            List<Control> controls = new List<Control>();
+
+            var cb = new RockCheckBox();
+            controls.Add( cb );
+            cb.Label = "Include Global Attributes Option";
+            cb.Text = "Yes";
+            cb.Help = "Should the 'Global Attributes' entity option be included.";
+            cb.CheckedChanged += OnQualifierUpdated;
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( "includeglobal", new ConfigurationValue( "Include Global Option",
+                "Should the 'Global Attributes' entity option be included.", "" ) );
+
+            if ( controls != null && controls.Count == 1 )
+            {
+                if ( controls[0] != null && controls[0] is RockCheckBox )
+                    configurationValues["includeglobal"].Value = ( (RockCheckBox)controls[0] ).Checked.ToString();
+
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count == 1 && configurationValues != null )
+            {
+                if ( controls[0] != null && controls[0] is RockCheckBox && configurationValues.ContainsKey( "includeglobal" ) )
+                {
+                    var cb = (RockCheckBox)controls[0];
+                    cb.Checked = true;
+
+                    bool includeGlobal = false;
+                    if ( configurationValues.ContainsKey( "includeglobal" ) &&
+                        bool.TryParse( configurationValues["includeglobal"].Value, out includeGlobal ) &&
+                        !includeGlobal )
+                    {
+                        cb.Checked = false;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
@@ -57,6 +132,17 @@ namespace Rock.Field.Types
         {
             var entityTypePicker = new EntityTypePicker { ID = id };
             entityTypePicker.IncludeGlobalOption = true;
+
+            if ( configurationValues != null )
+            {
+                bool includeGlobal = false;
+                if ( configurationValues.ContainsKey( "includeglobal" ) && 
+                    bool.TryParse(configurationValues["includeglobal"].Value, out includeGlobal) &&
+                    !includeGlobal)
+                {
+                    entityTypePicker.IncludeGlobalOption = false;
+                }
+            }
             entityTypePicker.EntityTypes = new EntityTypeService().GetEntities().ToList();
             return entityTypePicker;
         }

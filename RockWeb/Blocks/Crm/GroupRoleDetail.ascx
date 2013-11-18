@@ -12,7 +12,7 @@
 
         <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
-        <asp:ValidationSummary ID="valGroupRoleDetail" runat="server" CssClass="alert alert-danger" ValidationGroup="GroupRoleDetail" />
+        <asp:ValidationSummary ID="valGroupRoleDetail" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="GroupRoleDetail" />
 
         <div class="row">
             <div class="col-md-6">

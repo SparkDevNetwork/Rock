@@ -14,7 +14,7 @@
         </asp:Panel>
         <asp:Panel ID="pnlDetails" runat="server">
 
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
+            <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
             <h1>General Information</h1>
 
@@ -323,6 +323,17 @@
             <div runat="server" class="r-example">
                 <Rock:HtmlEditor ID="htmlEdit" runat="server" Label="HtmlEditor" />
             </div>
+
+            <h2>Rock:CodeEditor</h2>
+            <div runat="server" class="r-example">
+                <Rock:CodeEditor ID="ceScript" runat="server" EditorTheme="Rock" Label="Script" EditorMode="JavaScript" EditorHeight="300">
+var message='hello world';
+console.log(message);                
+                </Rock:CodeEditor>
+            </div>
+            <p>Alternately, you can provide the contents of the code to edit in the <code>Text</code> property of the control.
+            </p>
+
 
         </asp:Panel>
     </ContentTemplate>
