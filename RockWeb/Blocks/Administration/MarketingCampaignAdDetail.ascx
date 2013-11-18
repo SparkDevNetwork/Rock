@@ -4,7 +4,7 @@
     <ContentTemplate>
         <!-- Ad Details Controls -->
         <asp:Panel ID="pnlDetails" runat="server" Visible="false">
-            <asp:ValidationSummary ID="ValidationSummary2" runat="server" CssClass="alert alert-danger" />
+            <asp:ValidationSummary ID="ValidationSummary2" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
             <asp:HiddenField ID="hfMarketingCampaignId" runat="server" />
             <asp:HiddenField ID="hfMarketingCampaignAdId" runat="server" />
             <asp:UpdatePanel ID="upAdApproval" runat="server">

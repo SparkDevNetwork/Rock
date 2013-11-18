@@ -61,10 +61,10 @@ namespace Rock.Web.UI.Controls
             if ( renderLabel )
             {
                 var cssClass = new StringBuilder();
-                cssClass.AppendFormat( "form-group {0}", rockControl.GetType().Name.SplitCase().Replace(' ', '-').ToLower());
-                if ( !rockControl.IsValid )
+                cssClass.AppendFormat( "form-group {0}", rockControl.GetType().Name.SplitCase().Replace( ' ', '-' ).ToLower() );
+                if ( ( (Control)rockControl ).Page.IsPostBack && !rockControl.IsValid )
                 {
-                    cssClass.Append(" has-error" );
+                    cssClass.Append( " has-error" );
                 }
                 if ( rockControl.Required )
                 {

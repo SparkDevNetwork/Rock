@@ -247,6 +247,8 @@ namespace RockWeb.Blocks.Crm
             {
                 GroupService groupService = new GroupService();
                 AttributeService attributeService = new AttributeService();
+                AttributeQualifierService attributeQualifierService = new AttributeQualifierService();
+                CategoryService categoryService = new CategoryService();
 
                 int groupId = int.Parse( hfGroupId.Value );
 
@@ -309,52 +311,28 @@ namespace RockWeb.Blocks.Crm
 
                     /* Take care of Group Member Attributes */
 
+                    var entityTypeId = EntityTypeCache.Read( typeof( GroupMember ) ).Id;
+                    string qualifierColumn = "GroupId";
                     string qualifierValue = group.Id.ToString();
 
-                    // delete GroupMemberAttributes that are no longer configured in the UI
-                    var groupMemberAttributesQry = attributeService.Get( new GroupMember().TypeId, "GroupId", qualifierValue );
-                    var selectedAttributes = GroupMemberAttributesState.Select( a => a.Guid );
-                    foreach ( var attr in groupMemberAttributesQry.Where( a => !selectedAttributes.Contains( a.Guid)))
+                    // Get the existing attributes for this entity type and qualifier value
+                    var attributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
+
+                    // Delete any of those attributes that were removed in the UI
+                    var selectedAttributeGuids = GroupMemberAttributesState.Select( a => a.Guid );
+                    foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
                     {
                         Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+
                         attributeService.Delete( attr, CurrentPersonId );
                         attributeService.Save( attr, CurrentPersonId );
-                    } 
+                    }
 
-                    // add/update the GroupMemberAttributes that are assigned in the UI
+                    // Update the Attributes that were assigned in the UI
                     foreach ( var attributeState in GroupMemberAttributesState )
                     {
-                        // remove old qualifiers in case they changed
-                        var qualifierService = new AttributeQualifierService();
-                        foreach ( var oldQualifier in qualifierService.GetByAttributeId( attributeState.Id ).ToList() )
-                        {
-                            qualifierService.Delete( oldQualifier, CurrentPersonId );
-                            qualifierService.Save( oldQualifier, CurrentPersonId );
-                        }
-
-                        Attribute attribute = groupMemberAttributesQry.FirstOrDefault( a => a.Guid.Equals( attributeState.Guid ) );
-                        if ( attribute == null )
-                        {
-                            attribute = attributeState.Clone() as Rock.Model.Attribute;
-                            attributeService.Add( attribute, CurrentPersonId );
-                        }
-                        else
-                        {
-                            attributeState.Id = attribute.Id;
-                            attribute.FromDictionary( attributeState.ToDictionary() );
-
-                            foreach ( var qualifier in attributeState.AttributeQualifiers )
-                            {
-                                attribute.AttributeQualifiers.Add( qualifier.Clone() as AttributeQualifier );
-                            }
-
-                        }
-
-                        attribute.EntityTypeQualifierColumn = "GroupId";
-                        attribute.EntityTypeQualifierValue = group.Id.ToString();
-                        attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( GroupMember ) ).Id;
-                        Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
-                        attributeService.Save( attribute, CurrentPersonId );
+                        Rock.Attribute.Helper.SaveAttributeEdits( attributeState, attributeService, attributeQualifierService, categoryService,
+                            entityTypeId, qualifierColumn, qualifierValue, CurrentPersonId );
                     }
                 } );
 

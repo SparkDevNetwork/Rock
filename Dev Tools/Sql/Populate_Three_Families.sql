@@ -141,11 +141,11 @@ INSERT INTO [Group] (IsSystem, GroupTypeId, Name, IsSecurityRole, IsActive, Guid
 VALUES (0, @FamilyGroupType, 'Peterson Family', 0, 1, 'B9813A13-A5B3-47E3-AF32-208D785287F4', 0)
 SET @GroupId = SCOPE_IDENTITY()
 
-INSERT INTO [Location] (Street1, Street2, City, [State], Zip, LocationTypeValueId, IsActive, Guid, IsLocation)
-VALUES ('6515 W Lariat Ln', '', 'Phoenix', 'AZ', '85083', @LocationTypeValueHome, 1, NEWID(), 0)
+INSERT INTO [Location] (Street1, Street2, City, [State], Zip, IsActive, Guid, IsNamedLocation)
+VALUES ('6515 W Lariat Ln', '', 'Phoenix', 'AZ', '85083', 1, NEWID(), 0)
 SET @LocationId = SCOPE_IDENTITY()
 
-INSERT INTO [GroupLocation] (GroupId, LocationId, GroupLocationTypeValueId, Guid, IsMailing, IsLocation)
+INSERT INTO [GroupLocation] (GroupId, LocationId, GroupLocationTypeValueId, Guid, IsMailingLocation, IsMappedLocation)
 VALUES (@GroupId, @LocationId, @LocationTypeValueHome, NEWID(), 1, 1)
 
 INSERT INTO [Person] ([IsSystem],[GivenName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId], [MaritalStatusValueId],[GivingGroupId])

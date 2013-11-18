@@ -5,34 +5,26 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    IF @Id > 0
-    BEGIN
-        SELECT f.Id,
-            d.Content, 
-            f.[FileName], 
-            f.MimeType,
-            f.Url,
-            e.Name as StorageTypeName
-        FROM BinaryFile f 
-        LEFT JOIN BinaryFileData d
-            ON f.Id = d.Id
-        INNER JOIN EntityType e
-            ON f.StorageEntityTypeId = e.Id
-        WHERE f.[Id] = @Id
-    END
-    ELSE
-    BEGIN
-        SELECT f.Id,
-            d.Content, 
-            f.[FileName], 
-            f.MimeType,
-            f.Url,
-            e.Name as StorageTypeName
-        FROM BinaryFile f 
-        LEFT JOIN BinaryFileData d
-            ON f.Id = d.Id
-        INNER JOIN EntityType e
-            ON f.StorageEntityTypeId = e.Id
-        WHERE f.[Guid] = @Guid
-    END
+    /* NOTE!: Column Order cannot be changed without changing GetFile.ashx.cs due to CommandBehavior.SequentialAccess */
+    SELECT 
+        bf.Id,
+        bf.[FileName], 
+        bf.MimeType,
+        bf.Url,
+        /* if the BinaryFile as StorageEntityTypeId set, use that. Otherwise use the default StorageEntityTypeId from BinaryFileType  */
+        COALESCE (bfse.Name,bftse.Name ) as StorageTypeName,
+        bfd.Content
+    FROM BinaryFile bf 
+    LEFT JOIN BinaryFileData bfd
+        ON bf.Id = bfd.Id
+    LEFT JOIN EntityType bfse
+        ON bf.StorageEntityTypeId = bfse.Id
+    LEFT JOIN BinaryFileType bft
+        on bf.BinaryFileTypeId = bft.Id
+    LEFT JOIN EntityType bftse
+        ON bft.StorageEntityTypeId = bftse.Id
+    WHERE 
+        (@Id > 0 and bf.Id = @Id)
+        or
+        (bf.[Guid] = @Guid)
 END

@@ -64,7 +64,7 @@ update the transaction information at any time by returning to this website. Ple
 
     [MemoField( "Success Header", "The text (HTML) to display at the top of the success section.", true, @"
 <p>
-Thank-you for your generous contribution.  Your support is helping {{ OrganizationName }} actively 
+Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively 
 achieve our mission.  We are so grateful for your commitment. 
 </p>
 ", "Text Options", 15 )]
@@ -150,8 +150,7 @@ achieve our mission.  We are so grateful for your commitment.
             get { return ViewState["ScheduleId"] as string ?? string.Empty; }
             set { ViewState["ScheduleId"] = value; }
         }
-
-
+        
         #endregion
 
         #region overridden control methods
@@ -194,6 +193,7 @@ achieve our mission.  We are so grateful for your commitment.
                     txtCardFirstName.Visible = _ccGateway.SplitNameOnCard;
                     txtCardLastName.Visible = _ccGateway.SplitNameOnCard;
                     txtCardName.Visible = !_ccGateway.SplitNameOnCard;
+                    mypExpiration.MinimumYear = DateTime.Now.Year;
                 }
             }
 
@@ -275,10 +275,12 @@ achieve our mission.  We are so grateful for your commitment.
                 
                 bool.TryParse( GetAttributeValue( "DisplayEmail" ), out display );
                 txtEmail.Visible = display;
+                txtEmail.Required = display;
                 tdEmail.Visible = display;
 
                 bool.TryParse( GetAttributeValue( "DisplayPhone" ), out display );
                 txtPhone.Visible = display;
+                txtPhone.Required = display;
                 tdPhone.Visible = display;
 
                 FluidLayout = GetAttributeValue( "LayoutStyle" ) == "Fluid";
@@ -485,6 +487,11 @@ achieve our mission.  We are so grateful for your commitment.
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnPrev control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnPrev_Click( object sender, EventArgs e )
         {
             // Previous should only be enabled on the confirmation page (2)
@@ -510,7 +517,7 @@ achieve our mission.  We are so grateful for your commitment.
             {
                 case 1:
 
-                    if ( ProccessPaymentInfo( out errorMessage ) )
+                    if ( ProcessPaymentInfo( out errorMessage ) )
                     {
                         this.AddHistory( "GivingDetail", "1", null );
                         SetPage( 2 );
@@ -524,7 +531,7 @@ achieve our mission.  We are so grateful for your commitment.
 
                 case 2:
 
-                    if ( ProccessConfirmation( out errorMessage ) )
+                    if ( ProcessConfirmation( out errorMessage ) )
                     {
                         this.AddHistory( "GivingDetail", "2", null );
                         SetPage( 3 );
@@ -548,7 +555,7 @@ achieve our mission.  We are so grateful for your commitment.
             TransactionCode = string.Empty;
 
             string errorMessage = string.Empty;
-            if ( ProccessConfirmation( out errorMessage ) )
+            if ( ProcessConfirmation( out errorMessage ) )
             {
                 SetPage( 3 );
             }
@@ -631,26 +638,39 @@ achieve our mission.  We are so grateful for your commitment.
 
                         var paymentInfo = GetPaymentInfo();
 
-                        var savedAccount = new FinancialPersonSavedAccount();
-                        savedAccount.PersonId = transaction.AuthorizedPersonId.Value;
-                        savedAccount.FinancialTransactionId = transaction.Id;
-                        savedAccount.Name = txtSaveAccount.Text;
-                        savedAccount.MaskedAccountNumber = paymentInfo.MaskedNumber;
+                        GatewayComponent gateway = hfPaymentTab.Value == "ACH" ? _achGateway : _ccGateway;
+                        string errorMessage = string.Empty;
+                        string referenceNumber = gateway.GetReferenceNumber( transaction, out errorMessage );
+                        if (errorMessage.Any())
+                        {
+                            nbSaveAccount.Title = "Invalid Transaction";
+                            nbSaveAccount.Text = "Sorry, the account information cannot be saved. " + errorMessage;
+                            nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
+                            nbSaveAccount.Visible = true;
+                        }
+                        else
+                        {
+                            var savedAccount = new FinancialPersonSavedAccount();
+                            savedAccount.PersonId = transaction.AuthorizedPersonId.Value;
+                            savedAccount.FinancialTransactionId = transaction.Id;
+                            savedAccount.ReferenceNumber = referenceNumber;
+                            savedAccount.Name = txtSaveAccount.Text;
+                            savedAccount.MaskedAccountNumber = paymentInfo.MaskedNumber;
 
-                        var savedAccountService = new FinancialPersonSavedAccountService();
-                        savedAccountService.Add( savedAccount, CurrentPersonId );
-                        savedAccountService.Save( savedAccount, CurrentPersonId );
+                            var savedAccountService = new FinancialPersonSavedAccountService();
+                            savedAccountService.Add( savedAccount, CurrentPersonId );
+                            savedAccountService.Save( savedAccount, CurrentPersonId );
 
-                        cbSaveAccount.Visible = false;
-                        txtSaveAccount.Visible = false;
-                        phCreateLogin.Visible = false;
-                        divSaveActions.Visible = false;
+                            cbSaveAccount.Visible = false;
+                            txtSaveAccount.Visible = false;
+                            phCreateLogin.Visible = false;
+                            divSaveActions.Visible = false;
 
-                        nbSaveAccount.Title = "Success";
-                        nbSaveAccount.Text = "The account has been saved for future use";
-                        nbSaveAccount.NotificationBoxType = NotificationBoxType.Success;
-                        nbSaveAccount.Visible = true;
-
+                            nbSaveAccount.Title = "Success";
+                            nbSaveAccount.Text = "The account has been saved for future use";
+                            nbSaveAccount.NotificationBoxType = NotificationBoxType.Success;
+                            nbSaveAccount.Visible = true;
+                        }
                     }
                     else
                     {
@@ -676,6 +696,9 @@ achieve our mission.  We are so grateful for your commitment.
 
         #region Methods for the Payment Info Page (panel)
 
+        /// <summary>
+        /// Gets the accounts.
+        /// </summary>
         private void GetAccounts()
         {
             var selectedGuids = GetAttributeValues( "Accounts" ).Select( Guid.Parse ).ToList();
@@ -722,6 +745,9 @@ achieve our mission.  We are so grateful for your commitment.
             }
         }
 
+        /// <summary>
+        /// Binds the accounts.
+        /// </summary>
         private void BindAccounts()
         {
             rptAccountList.DataSource = SelectedAccounts;
@@ -732,6 +758,11 @@ achieve our mission.  We are so grateful for your commitment.
             btnAddAccount.DataBind();
         }
 
+        /// <summary>
+        /// Gets the person.
+        /// </summary>
+        /// <param name="create">if set to <c>true</c> [create].</param>
+        /// <returns></returns>
         private Person GetPerson( bool create )
         {
             Person person = null;
@@ -886,7 +917,12 @@ achieve our mission.  We are so grateful for your commitment.
             }
         }
 
-        private bool ProccessPaymentInfo( out string errorMessage )
+        /// <summary>
+        /// Processes the payment information.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        private bool ProcessPaymentInfo( out string errorMessage )
         {
             errorMessage = string.Empty;
 
@@ -1016,6 +1052,10 @@ achieve our mission.  We are so grateful for your commitment.
             return true;
         }
 
+        /// <summary>
+        /// Gets the payment information.
+        /// </summary>
+        /// <returns></returns>
         private PaymentInfo GetPaymentInfo()
         {
             PaymentInfo paymentInfo = null;
@@ -1053,6 +1093,10 @@ achieve our mission.  We are so grateful for your commitment.
             return paymentInfo;
         }
 
+        /// <summary>
+        /// Gets the credit card information.
+        /// </summary>
+        /// <returns></returns>
         private CreditCardPaymentInfo GetCCInfo()
         {
             var cc = new CreditCardPaymentInfo( txtCreditCard.Text, txtCVV.Text, mypExpiration.SelectedDate.Value );
@@ -1076,6 +1120,10 @@ achieve our mission.  We are so grateful for your commitment.
             return cc;
         }
 
+        /// <summary>
+        /// Gets the ACH information.
+        /// </summary>
+        /// <returns></returns>
         private ACHPaymentInfo GetACHInfo()
         {
             var ach = new ACHPaymentInfo( txtAccountNumber.Text, txtRoutingNumber.Text, rblAccountType.SelectedValue == "Savings" ? BankAccountType.Savings : BankAccountType.Checking );
@@ -1083,6 +1131,11 @@ achieve our mission.  We are so grateful for your commitment.
             return ach;
         }
 
+        /// <summary>
+        /// Gets the reference information.
+        /// </summary>
+        /// <param name="savedAccountId">The saved account unique identifier.</param>
+        /// <returns></returns>
         private ReferencePaymentInfo GetReferenceInfo( int savedAccountId )
         {
             using (new UnitOfWorkScope() )
@@ -1090,7 +1143,9 @@ achieve our mission.  We are so grateful for your commitment.
                 var savedAccount = new FinancialPersonSavedAccountService().Get( savedAccountId );
                 if ( savedAccount != null )
                 {
-                    var reference = new ReferencePaymentInfo( savedAccount.FinancialTransaction.TransactionCode );
+                    var reference = new ReferencePaymentInfo();
+                    reference.TransactionCode = savedAccount.FinancialTransaction.TransactionCode;
+                    reference.ReferenceNumber = savedAccount.ReferenceNumber;
                     reference.MaskedAccountNumber = savedAccount.MaskedAccountNumber;
                     reference.InitialCurrencyTypeValue = DefinedValueCache.Read( savedAccount.FinancialTransaction.CurrencyTypeValue );
                     reference.InitialCreditCardTypeValue = DefinedValueCache.Read( savedAccount.FinancialTransaction.CreditCardTypeValue );
@@ -1101,6 +1156,10 @@ achieve our mission.  We are so grateful for your commitment.
             return null;
         }
 
+        /// <summary>
+        /// Gets the payment schedule.
+        /// </summary>
+        /// <returns></returns>
         private PaymentSchedule GetSchedule()
         {
             // Figure out if this is a one-time transaction or a future scheduled transaction
@@ -1136,7 +1195,12 @@ achieve our mission.  We are so grateful for your commitment.
 
         #region Methods for the confirmation Page (panel)
 
-        private bool ProccessConfirmation( out string errorMessage )
+        /// <summary>
+        /// Processes the confirmation.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        private bool ProcessConfirmation( out string errorMessage )
         {
             if ( string.IsNullOrWhiteSpace( TransactionCode ) )
             {
@@ -1320,6 +1384,10 @@ achieve our mission.  We are so grateful for your commitment.
 
         #region Methods used globally
 
+        /// <summary>
+        /// Sets the page.
+        /// </summary>
+        /// <param name="page">The page.</param>
         private void SetPage( int page )
         {
             // Page 1 = Payment Info
@@ -1339,6 +1407,12 @@ achieve our mission.  We are so grateful for your commitment.
             hfCurrentPage.Value = page.ToString();
         }
 
+        /// <summary>
+        /// Shows the message.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="title">The title.</param>
+        /// <param name="text">The text.</param>
         private void ShowMessage( NotificationBoxType type, string title, string text )
         {
             if ( !string.IsNullOrWhiteSpace( text ) )
@@ -1350,6 +1424,9 @@ achieve our mission.  We are so grateful for your commitment.
             }
         }
 
+        /// <summary>
+        /// Registers the startup script.
+        /// </summary>
         private void RegisterScript()
         {
             CurrentPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.creditCardTypeDetector.js" ) );
@@ -1361,22 +1438,23 @@ achieve our mission.  We are so grateful for your commitment.
 
         // As amounts are entered, validate that they are numeric and recalc total
         $('.account-amount').on('change', function() {{
-            var totalAmt = Number(0);
-            $('input.account-amount').each(function (index) {{
+            var totalAmt = Number(0);   
+                 
+            $('.account-amount .form-control').each(function (index) {{
                 var itemValue = $(this).val();
                 if (itemValue != null && itemValue != '') {{
                     if (isNaN(itemValue)) {{
-                        $(this).parents('div.control-group').addClass('error');
+                        $(this).parents('div.input-group').addClass('has-error');
                     }}
                     else {{
-                        $(this).parents('div.control-group').removeClass('error');
+                        $(this).parents('div.input-group').removeClass('has-error');
                         var num = Number(itemValue);
                         $(this).val(num.toFixed(2));
                         totalAmt = totalAmt + num;
                     }}
                 }}
                 else {{
-                    $(this).parents('div.control-group').removeClass('error');
+                    $(this).parents('div.input-group').removeClass('has-error');
                 }}
             }});
             $('.total-amount').html('$ ' + totalAmt.toFixed(2));
@@ -1418,8 +1496,8 @@ achieve our mission.  We are so grateful for your commitment.
             }}
         }});
 
-        // detect credit card type
-        $('.credit-card').creditCardTypeDetector({{ 'credit_card_logos': '.card_logos' }});
+        // Detect credit card type
+        $('.credit-card').creditCardTypeDetector({{ 'credit_card_logos': '.card-logos' }});
 
         // Toggle credit card display if saved card option is available
         $('div.radio-content').prev('.form-group').find('input:radio').unbind('click').on('click', function () {{
@@ -1450,7 +1528,6 @@ achieve our mission.  We are so grateful for your commitment.
     }});
 
 ", divCCPaymentInfo.ClientID, hfPaymentTab.ClientID, oneTimeFrequencyId );
-
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
         }
 
@@ -1458,6 +1535,9 @@ achieve our mission.  We are so grateful for your commitment.
 
         #region Helper Classes 
 
+        /// <summary>
+        /// Lightweight object for each contribution item 
+        /// </summary>
         [Serializable]
         protected class AccountItem
         {

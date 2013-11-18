@@ -122,6 +122,7 @@ namespace RockWeb
                 : ProviderContainer.DefaultComponent;
             file.MimeType = uploadedFile.ContentType;
             file.FileName = Path.GetFileName( uploadedFile.FileName );
+            file.StorageEntityTypeId = fileType.StorageEntityTypeId;
             var bytes = new byte[uploadedFile.ContentLength];
             uploadedFile.InputStream.Read( bytes, 0, uploadedFile.ContentLength );
             file.Data = new BinaryFileData { Content = bytes };

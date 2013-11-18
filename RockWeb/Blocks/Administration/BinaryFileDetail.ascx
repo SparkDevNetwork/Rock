@@ -9,7 +9,7 @@
                 
                 <div class="banner"><h1><asp:Literal ID="lActionTitle" runat="server" /></h1></div>
                 
-                <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger"  />
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                 
