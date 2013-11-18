@@ -100,7 +100,6 @@
                 <dl>
                     <dt></dt>
                     <dd>
-                        <a class="show-action-list" href="#">...</a>
                         <asp:CheckBoxList ID="cblRoleActionList" runat="server" RepeatDirection="Horizontal" CssClass="inputs-list" ></asp:CheckBoxList>
                     </dd>
                 </dl>
