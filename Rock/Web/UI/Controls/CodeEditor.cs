@@ -9,6 +9,8 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock;
+
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
@@ -143,10 +145,10 @@ namespace Rock.Web.UI.Controls
         /// The height of the control.
         /// </value>
         [
-        Bindable(false),
-        Category("Appearance"),
-        DefaultValue(""),
-        Description("The height in pixels of the control")
+        Bindable( false ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The height in pixels of the control" )
         ]
         public string EditorHeight
         {
@@ -161,19 +163,30 @@ namespace Rock.Web.UI.Controls
         /// The language of the editor.
         /// </value>
         [
-        Bindable(false),
-        Category("Appearance"),
-        DefaultValue(""),
-        Description("The language of the code to be edited")
+        Bindable( false ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The language of the code to be edited" )
         ]
         public CodeEditorMode EditorMode
         {
-            get {
-                if (ViewState["EditorMode"] != null)
-                    return (CodeEditorMode)Enum.Parse(typeof(CodeEditorMode), ViewState["EditorMode"].ToString());
-                return CodeEditorMode.Text; // Default value
+            get
+            {
+                if ( ViewState["EditorMode"] != null )
+                {
+                    return ViewState["EditorMode"].ToString().ConvertToEnum<CodeEditorMode>( CodeEditorMode.Text );
+                }
+                else
+                {
+                    // Default value
+                    return CodeEditorMode.Text;
+                }
             }
-            set { ViewState["EditorMode"] = value; }
+
+            set
+            {
+                ViewState["EditorMode"] = value;
+            }
         }
 
         /// <summary>
@@ -183,20 +196,30 @@ namespace Rock.Web.UI.Controls
         /// The theme of the editor.
         /// </value>
         [
-        Bindable(false),
-        Category("Appearance"),
-        DefaultValue(""),
-        Description("The theme of the editor")
+        Bindable( false ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The theme of the editor" )
         ]
         public CodeEditorTheme EditorTheme
         {
             get
             {
-                if (ViewState["EditorTheme"] != null)
-                    return (CodeEditorTheme)Enum.Parse(typeof(CodeEditorTheme), ViewState["EditorTheme"].ToString());
-                return CodeEditorTheme.Rock; // Default value
+                if ( ViewState["EditorTheme"] != null )
+                {
+                    return ViewState["EditorTheme"].ToString().ConvertToEnum<CodeEditorTheme>( CodeEditorTheme.Rock );
+                }
+                else
+                {
+                    // Default value
+                    return CodeEditorTheme.Rock;
+                }
             }
-            set { ViewState["EditorTheme"] = value; }
+
+            set
+            {
+                ViewState["EditorTheme"] = value;
+            }
         }
 
         #endregion
@@ -215,10 +238,14 @@ namespace Rock.Web.UI.Controls
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit(EventArgs e)
+        protected override void OnInit( EventArgs e )
         {
-            base.OnInit(e);
-            RockPage.AddScriptLink(Page, ResolveUrl("~/Scripts/ace/ace.js"));
+            base.OnInit( e );
+
+            RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/ace/ace.js" ) );
+            // Note: AddScriptLink will not add a script during partial postback (i.e. inside an update panel)  Because of this, this script 
+            // is also added in the AttributeEditor's OnInit since in that scenario this controls OnInit may not get run on the initial page load
+
             this.TextMode = TextBoxMode.MultiLine;
         }
 
@@ -229,7 +256,7 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
             Controls.Clear();
-            RockControlHelper.CreateChildControls(this, Controls);
+            RockControlHelper.CreateChildControls( this, Controls );
         }
 
         /// <summary>
@@ -252,18 +279,9 @@ namespace Rock.Web.UI.Controls
         {
 
             // add editor div
-            if (!string.IsNullOrWhiteSpace(EditorHeight))
-            {
-                writer.AddAttribute(HtmlTextWriterAttribute.Style, "height:" + EditorHeight + "px;");
-            }
-            else
-            {
-                writer.AddAttribute(HtmlTextWriterAttribute.Style, "height: 200px;");
-            }
-
+            string height = string.IsNullOrWhiteSpace( EditorHeight ) ? "200" : EditorHeight;
             string customDiv = @"<div class='code-editor-container' style='position:relative; height: {0}px'><div id='codeeditor-div-{1}'>{2}</div></div>";
-
-            writer.Write(string.Format(customDiv, this.EditorHeight, this.ClientID, HttpUtility.HtmlDecode(this.Text)));
+            writer.Write( string.Format( customDiv, height, this.ClientID, HttpUtility.HtmlDecode( this.Text ) ) );
 
             // write custom css for the code editor
             string customStyle = @"
@@ -279,12 +297,11 @@ namespace Rock.Web.UI.Controls
                     
                 </style>     
 ";
-            string cssCode = string.Format(customStyle, this.ClientID);
-            writer.Write(cssCode);
+            string cssCode = string.Format( customStyle, this.ClientID );
+            writer.Write( cssCode );
 
             // make textbox hidden
-            ((WebControl)this).Style.Add(HtmlTextWriterStyle.Display, "none");
-            
+            ( (WebControl)this ).Style.Add( HtmlTextWriterStyle.Display, "none" );
 
             string scriptFormat = @"
                 var ce_{0} = ace.edit('codeeditor-div-{0}');
@@ -298,54 +315,19 @@ namespace Rock.Web.UI.Controls
                     document.getElementById('{0}').value = ce_{0}.getValue();
                     //ce_{0}_dest.value = ce_{0}.getValue();
                 }});
-                
-
 ";
-            string script = string.Format(scriptFormat, this.ClientID, EditorThemeAsString(this.EditorTheme), EditorModeAsString(this.EditorMode));
-            ScriptManager.RegisterStartupScript(this, this.GetType(), "codeeditor_" + this.ID, script, true);
+            string script = string.Format( scriptFormat, this.ClientID, EditorThemeAsString( this.EditorTheme ), EditorModeAsString( this.EditorMode ) );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "codeeditor_" + this.ID, script, true );
 
             base.RenderControl( writer );
 
-            RenderDataValidator( writer );
-
-        }
-
-        /// <summary>
-        /// Renders any data validator.
-        /// </summary>
-        /// <param name="writer">The writer.</param>
-        protected virtual void RenderDataValidator( HtmlTextWriter writer )
-        {
-        }
-
-        /// <summary>
-        /// Gets or sets the text content of the <see cref="T:System.Web.UI.WebControls.TextBox" /> control.
-        /// </summary>
-        /// <returns>The text displayed in the <see cref="T:System.Web.UI.WebControls.TextBox" /> control. The default is an empty string ("").</returns>
-        public override string Text
-        {
-            get
-            {
-                if ( base.Text == null )
-                {
-                    return null;
-                }
-                else
-                {
-                    return base.Text.Trim();
-                }
-            }
-            set
-            {
-                base.Text = value;
-            }
         }
 
         /// <summary>
         /// Gets the mode of the editor as text based on property
         /// </summary>
         /// <returns>The text value of the mode.</returns>
-        private string EditorModeAsString(CodeEditorMode mode)
+        private string EditorModeAsString( CodeEditorMode mode )
         {
             string[] modeValues = new string[] { "text", "css", "html", "liquid", "javascript", "less", "powershell", "sql", "typescript", "csharp", "markdown" };
 
@@ -356,7 +338,7 @@ namespace Rock.Web.UI.Controls
         /// Gets the theme of the editor as text based on property
         /// </summary>
         /// <returns>The text value of the mode.</returns>
-        private string EditorThemeAsString(CodeEditorTheme theme)
+        private string EditorThemeAsString( CodeEditorTheme theme )
         {
             string[] themeValues = new string[] { "github", "chrome", "crimson_editor", "dawn", "dreamweaver", "eclipse", "solarized_light", "textmate", 
                 "tomorrow", "xcode", "github", "ambiance", "chaos", "clouds_midnight", "cobalt", "idle_fingers", "kr_theme", 
