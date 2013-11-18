@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 using Rock.Data;
 using Rock.Security;
@@ -306,6 +307,45 @@ namespace Rock.Model
 
             return null;
         }
+
+        /// <summary>
+        /// Checks to see if the given password is valid according to the PasswordRegex (if defined).
+        /// </summary>
+        /// <param name="password">A password to verify.</param>
+        /// <returns>A <see cref="System.Boolean"/> value that indicates if the password is valid. <c>true</c> if valid; otherwise <c>false</c>.</returns>
+        public static bool IsPasswordValid( string password )
+        {
+            var globalAttributes = GlobalAttributesCache.Read();
+            string passwordRegex = globalAttributes.GetValue( "PasswordRegex" );
+            if ( string.IsNullOrEmpty( passwordRegex ) )
+            {
+                return true;
+            }
+            else
+            {
+                var regex = new Regex( passwordRegex );
+                return regex.IsMatch( password );
+            }
+        }
+
+        /// <summary>
+        /// Returns a user friendly description of the password rules.
+        /// </summary>
+        /// <returns>A user friendly description of the password rules.</returns>
+        public static string FriendlyPasswordRules()
+        {
+            var globalAttributes = GlobalAttributesCache.Read();
+            string passwordRegex = globalAttributes.GetValue( "PasswordRegexFriendlyDescription" );
+            if ( string.IsNullOrEmpty( passwordRegex ) )
+            {
+                return "";
+            }
+            else
+            {
+                return passwordRegex;
+            }
+        }
+
 
         #endregion
 
