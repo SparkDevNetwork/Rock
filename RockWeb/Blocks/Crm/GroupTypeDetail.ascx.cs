@@ -654,7 +654,7 @@ namespace RockWeb.Blocks.Crm
 
                 LoadDropDowns( groupType.Id );
 
-                // Behavior
+                // General
                 tbName.ReadOnly = groupType.IsSystem;
                 tbName.Text = groupType.Name;
 
@@ -741,10 +741,7 @@ namespace RockWeb.Blocks.Crm
                     .ToList() );
                 BindGroupMemberAttributesGrid();
 
-                if ( groupType.InheritedGroupTypeId.HasValue )
-                {
-                    BindInheritedAttributes( groupType.InheritedGroupTypeId, groupTypeService, attributeService );
-                }
+                BindInheritedAttributes( groupType.InheritedGroupTypeId, groupTypeService, attributeService );
             }
         }
 
@@ -896,7 +893,7 @@ namespace RockWeb.Blocks.Crm
                         .ThenBy( a => a.Name )
                         .ToList() )
                     {
-                        GroupTypeAttributesInheritedState.Add( new InheritedAttribute( attribute.Name,
+                        GroupTypeAttributesInheritedState.Add( new InheritedAttribute( attribute.Name, attribute.Description,
                             Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ), inheritedGroupType.Name ) );
                     }
 
@@ -908,7 +905,7 @@ namespace RockWeb.Blocks.Crm
                         .ThenBy( a => a.Name )
                         .ToList() )
                     {
-                        GroupAttributesInheritedState.Add( new InheritedAttribute( attribute.Name,
+                        GroupAttributesInheritedState.Add( new InheritedAttribute( attribute.Name, attribute.Description,
                             Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ), inheritedGroupType.Name ) );
                     }
 
@@ -920,7 +917,7 @@ namespace RockWeb.Blocks.Crm
                         .ThenBy( a => a.Name )
                         .ToList() )
                     {
-                        GroupMemberAttributesInheritedState.Add( new InheritedAttribute( attribute.Name,
+                        GroupMemberAttributesInheritedState.Add( new InheritedAttribute( attribute.Name, attribute.Description,
                             Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ), inheritedGroupType.Name ) );
                     }
 
@@ -1771,6 +1768,7 @@ namespace RockWeb.Blocks.Crm
             gGroupMemberAttributesInherited.DataSource = GroupMemberAttributesInheritedState;
             gGroupMemberAttributesInherited.DataBind();
             rcGroupMemberAttributesInherited.Visible = GroupMemberAttributesInheritedState.Any();
+
         }
 
         /// <summary>
