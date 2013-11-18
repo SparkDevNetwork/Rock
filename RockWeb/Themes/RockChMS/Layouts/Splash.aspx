@@ -14,6 +14,7 @@
     <meta name="viewport" content="width=device-width" />
 
     <!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Styles/bootstrap.css") %>"/>
 	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Styles/theme.css") %>"/>
 	<link rel="stylesheet" href="<%# ResolveUrl("~/Styles/developer.css") %>"/>
 
