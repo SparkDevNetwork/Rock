@@ -18,10 +18,12 @@ namespace RockWeb.Blocks.Security
     [TextField( "Delete Caption", "", false, "Are you sure you want to delete the '{0}' account?", "Captions", 3 )]
     [TextField( "Deleted Caption", "", false, "The account has been deleted.", "Captions", 4 )]
     [TextField( "Invalid Caption", "", false, "The confirmation code you've entered is not valid.  Please enter a valid confirmation code or <a href='{0}'>create a new account</a>", "Captions", 5 )]
+    [LinkedPage( "New Account Page", "Page to navigate to when user selects 'Create New Account' option" )]
     public partial class ConfirmAccount : Rock.Web.UI.RockBlock
     {
         private UserLoginService userLoginService = null;
         private UserLogin user = null;
+        string newAccountUrl = string.Empty;
 
         #region Properties
 
@@ -72,7 +74,11 @@ namespace RockWeb.Blocks.Security
 
                 string invalidCaption = GetAttributeValue( "InvalidCaption" );
                 if ( invalidCaption.Contains( "{0}" ) )
-                    invalidCaption = string.Format( invalidCaption, ResolveUrl( "~/NewAccount" ) );
+                {
+                    newAccountUrl = GetAttributeValue( "NewAccountPage" );
+                    newAccountUrl = string.IsNullOrWhiteSpace( newAccountUrl ) ? "~/NewAccount" : "~/Page/" + newAccountUrl.Trim();
+                    invalidCaption = string.Format( invalidCaption, ResolveUrl( newAccountUrl ) );
+                }
                 lInvalid.Text = invalidCaption;
 
                 ConfirmationCode = Request.QueryString["cc"];

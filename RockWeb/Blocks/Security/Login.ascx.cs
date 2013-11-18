@@ -9,6 +9,7 @@ using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
@@ -17,6 +18,8 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
 {
+    [LinkedPage( "New Account Page", "Page to navigate to when user selects 'Create New Account' (if blank will use 'NewAccountPage' page route)" )]
+    [LinkedPage( "Help Page", "Page to navigate to when user selects 'Help' option (if blank will use 'ForgotUserName' page route)" )]
     public partial class Login : Rock.Web.UI.RockBlock
     {
         /// <summary>
@@ -147,8 +150,15 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnNewAccount_Click( object sender, EventArgs e )
         {
-            Response.Redirect( "~/NewAccount", false );
-            Context.ApplicationInstance.CompleteRequest();
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "NewAccountPage" ) ) )
+            {
+                NavigateToLinkedPage( "NewAccountPage" );
+            }
+            else
+            {
+                Response.Redirect( "~/NewAccount", false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
         }
 
         /// <summary>
@@ -158,8 +168,15 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnHelp_Click( object sender, EventArgs e )
         {
-            Response.Redirect( "~/ForgotUserName", false );
-            Context.ApplicationInstance.CompleteRequest();
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "HelpPage" ) ) )
+            {
+                NavigateToLinkedPage( "HelpPage" );
+            }
+            else
+            {
+                Response.Redirect( "~/ForgotUserName", false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
         }
 
         /// <summary>
@@ -190,8 +207,8 @@ namespace RockWeb.Blocks.Security
                 {
                     "changepassword",
                     "confirmaccount",
-                    "forgotusername",
-                    "newaccount"
+                    helpUrl,
+                    newAccountUrl
                 };
                 
                 foreach (var accountRoute in accountRoutes)

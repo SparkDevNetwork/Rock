@@ -24,9 +24,11 @@ namespace RockWeb.Blocks.Security
     [TextField( "Sent Login Caption", "", false, "Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password.", "Captions", 2 )]
     [TextField( "Confirm Caption", "", false, "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.", "Captions", 3 )]
     [TextField( "Success Caption", "", false, "{0}, Your account has been created", "Captions", 4 )]
+    [LinkedPage("Login Page")]
     public partial class NewAccount : Rock.Web.UI.RockBlock
     {
         PlaceHolder[] PagePanels = new PlaceHolder[6];
+        string loginUrl = string.Empty;
 
         #region Properties
 
@@ -63,7 +65,10 @@ namespace RockWeb.Blocks.Security
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            
+
+            loginUrl = GetAttributeValue( "LoginPage" );
+            loginUrl = string.IsNullOrWhiteSpace( loginUrl ) ? "Login" : "Page/" + loginUrl.Trim();
+
             lFoundDuplicateCaption.Text = GetAttributeValue( "FoundDuplicateCaption" );
             lSentLoginCaption.Text = GetAttributeValue( "SentLoginCaption" );
             lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" );
@@ -164,7 +169,7 @@ namespace RockWeb.Blocks.Security
 
         protected void btnSendLogin_Click( object sender, EventArgs e )
         {
-            Response.Redirect( "~/Login", false );
+            Response.Redirect( "~/" + loginUrl, false );
             Context.ApplicationInstance.CompleteRequest();
         }
 
