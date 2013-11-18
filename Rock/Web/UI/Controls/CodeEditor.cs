@@ -281,7 +281,7 @@ namespace Rock.Web.UI.Controls
             // add editor div
             string height = string.IsNullOrWhiteSpace( EditorHeight ) ? "200" : EditorHeight;
             string customDiv = @"<div class='code-editor-container' style='position:relative; height: {0}px'><pre id='codeeditor-div-{1}'>{2}</pre></div>";
-            writer.Write( string.Format( customDiv, height, this.ClientID, HttpUtility.HtmlDecode( this.Text ) ) );
+            writer.Write( string.Format( customDiv, height, this.ClientID, HttpUtility.HtmlEncode( this.Text ) ) );
 
             // write custom css for the code editor
             string customStyle = @"
@@ -292,9 +292,7 @@ namespace Rock.Web.UI.Controls
                         right: 0;
                         bottom: 0;
                         left: 0;
-                    }}
-
-                    
+                    }}      
                 </style>     
 ";
             string cssCode = string.Format( customStyle, this.ClientID );
@@ -309,11 +307,8 @@ namespace Rock.Web.UI.Controls
                 ce_{0}.getSession().setMode('ace/mode/{2}');
                 ce_{0}.setShowPrintMargin(false);
 
-                //var ce_{0}_dest = document.getElementById('{0}');
-
                 ce_{0}.getSession().on('change', function(e) {{
                     document.getElementById('{0}').value = ce_{0}.getValue();
-                    //ce_{0}_dest.value = ce_{0}.getValue();
                 }});
 ";
             string script = string.Format( scriptFormat, this.ClientID, EditorThemeAsString( this.EditorTheme ), EditorModeAsString( this.EditorMode ) );
