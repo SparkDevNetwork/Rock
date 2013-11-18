@@ -347,7 +347,7 @@ namespace Rock.Web.UI.Controls
         /// <returns>The text value of the mode.</returns>
         private string EditorModeAsString(CodeEditorMode mode)
         {
-            string[] modeValues = new string[] { "text", "css", "html", "liquid", "javascript", "less", "powershell", "sql", "typescript", "csharp" };
+            string[] modeValues = new string[] { "text", "css", "html", "liquid", "javascript", "less", "powershell", "sql", "typescript", "csharp", "markdown" };
 
             return modeValues[(int)mode];
         }
@@ -380,6 +380,7 @@ namespace Rock.Web.UI.Controls
         Sql = 7,
         TypeScript = 8,
         CSharp = 9,
+        Markdown = 10
     }
 
     public enum CodeEditorTheme

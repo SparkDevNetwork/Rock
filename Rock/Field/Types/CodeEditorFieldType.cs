@@ -19,6 +19,7 @@ namespace Rock.Field.Types
 
         private const string EDITOR_MODE = "editorMode";
         private const string EDITOR_THEME = "editorTheme";
+        private const string EDITOR_HEIGHT = "editorHeight";
         
         /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
@@ -39,6 +40,11 @@ namespace Rock.Field.Types
             if (configurationValues != null && configurationValues.ContainsKey(EDITOR_THEME))
             {
                 editor.EditorTheme = (CodeEditorTheme)Enum.Parse(typeof(CodeEditorTheme), configurationValues[EDITOR_THEME].Value);
+            }
+
+            if (configurationValues != null && configurationValues.ContainsKey(EDITOR_HEIGHT))
+            {
+                editor.EditorHeight = configurationValues[EDITOR_HEIGHT].Value.ToString();
             }
 
             return editor;

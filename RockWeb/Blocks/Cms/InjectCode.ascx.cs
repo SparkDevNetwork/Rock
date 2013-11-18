@@ -12,7 +12,7 @@ using CSScriptLibrary;
 
 namespace RockWeb.Blocks.Cms
 {
-    [CodeEditorField("Code", "Source code to compile and put results on page.", CodeEditorMode.CSharp, CodeEditorTheme.Rock, true, @"
+    [CodeEditorField("Code", "Source code to compile and put results on page.", CodeEditorMode.CSharp, CodeEditorTheme.Rock, 600, true, @"
 using System;
 using System.Linq;
 using Rock;

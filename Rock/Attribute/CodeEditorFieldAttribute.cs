@@ -20,6 +20,7 @@ namespace Rock.Attribute
 
         private const string EDITOR_MODE = "editorMode";
         private const string EDITOR_THEME = "editorTheme";
+        private const string EDITOR_HEIGHT = "editorHeight";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DateRangeFieldAttribute"/> class.
@@ -31,11 +32,12 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public CodeEditorFieldAttribute( string name, string description = "", CodeEditorMode mode = CodeEditorMode.Text, CodeEditorTheme theme = CodeEditorTheme.Rock, bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
+        public CodeEditorFieldAttribute( string name, string description = "", CodeEditorMode mode = CodeEditorMode.Text, CodeEditorTheme theme = CodeEditorTheme.Rock, int height = 200, bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.CodeEditorFieldType ).FullName )
         {
             FieldConfigurationValues.Add(EDITOR_MODE, new Field.ConfigurationValue(mode.ToString()));
             FieldConfigurationValues.Add(EDITOR_THEME, new Field.ConfigurationValue(theme.ToString()));
+            FieldConfigurationValues.Add(EDITOR_HEIGHT, new Field.ConfigurationValue(height.ToString()));
         }
     }
 }
