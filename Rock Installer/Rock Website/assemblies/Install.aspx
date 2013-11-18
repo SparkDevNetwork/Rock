@@ -43,6 +43,16 @@
     {
     	pWelcome.Visible = false;
     	pDatabaseConfig.Visible = true;
+        
+        // show db settings if they are in session
+        if (Session["dbServer"] != null)
+        {
+            txtServerName.Text = Session["dbServer"].ToString();
+            txtDatabaseName.Text = Session["dbDatabasename"].ToString();
+            txtUsername.Text = Session["dbUsername"].ToString();
+            txtPassword.Text = Session["dbPassword"].ToString();
+        }
+        
     }
 	
 	void DbConfigNext_Click(Object sender, EventArgs e)
@@ -50,6 +60,12 @@
                
         // check settings
     	string databaseMessages = string.Empty; 
+        
+        // write database settings to ViewState
+        Session["dbServer"] = txtServerName.Text;
+        Session["dbDatabasename"] = txtDatabaseName.Text;
+        Session["dbUsername"] = txtUsername.Text;
+        Session["dbPassword"] = txtPassword.Text;
     	
         bool canConnect = CheckSqlServerConnection(txtServerName.Text, txtDatabaseName.Text, txtUsername.Text, txtPassword.Text, out databaseMessages);
 
