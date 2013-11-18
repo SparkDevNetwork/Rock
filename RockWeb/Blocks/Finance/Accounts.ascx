@@ -41,7 +41,7 @@
 
             <div class="banner"><h1><asp:Literal ID="lAction" runat="server"></asp:Literal></h1></div>
 
-            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
             <fieldset>
 
                 <div class="row">

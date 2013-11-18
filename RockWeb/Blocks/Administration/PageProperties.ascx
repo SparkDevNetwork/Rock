@@ -22,32 +22,28 @@
 
         <div class="tabContent" >
 
-            <asp:ValidationSummary ID="valSummaryTop" runat="server"  
-                HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server"  HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+
             <asp:Panel ID="pnlError" runat="server" Visible="false" CssClass="alert alert-danger block-message error"/>
             
             <asp:Panel ID="pnlBasicProperty" runat="server" Visible="true" >
                 <div class="row">
                     <div class="col-md-6">
-                        <fieldset>
-                            <Rock:PagePicker ID="ppParentPage" runat="server" Label="Parent Page" Required="false" />
-                            <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Name" Required="true" />
-                            <Rock:DataTextBox ID="tbPageTitle" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Title" Help="The text to be displayed in menus and page headings"/>
-                            <Rock:DataDropDownList ID="ddlLayout" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Layout"/>
-                            <Rock:RockCheckBox ID="cbMenuIcon" runat="server" Text="Show Icon"/>
-                            <div class="control-group">
-                                <label class="control-label">Icon Image</label>
-                                <div class="controls">
-                                    <Rock:ImageUploader ID="imgIcon" runat="server" />
-                                </div>
+                        <Rock:PagePicker ID="ppParentPage" runat="server" Label="Parent Page" Required="false" />
+                        <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Name" Required="true" />
+                        <Rock:DataTextBox ID="tbPageTitle" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Title" Help="The text to be displayed in menus and page headings"/>
+                        <Rock:DataDropDownList ID="ddlLayout" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Layout"/>
+                        <Rock:RockCheckBox ID="cbMenuIcon" runat="server" Text="Show Icon"/>
+                        <div class="control-group">
+                            <label class="control-label">Icon Image</label>
+                            <div class="controls">
+                                <Rock:ImageUploader ID="imgIcon" runat="server" />
                             </div>
-                            <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="IconCssClass" Label="Icon CSS Class"/>
-                        </fieldset>
+                        </div>
+                        <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="IconCssClass" Label="Icon CSS Class"/>
                     </div>
                     <div class="col-md-6">
-                        <fieldset>
-                            <Rock:DataTextBox ID="tbDescription" runat="server" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Description" />
-                        </fieldset>
+                        <Rock:DataTextBox ID="tbDescription" runat="server" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Description" />
                     </div>
                 </div>
             </asp:Panel>
@@ -76,12 +72,10 @@
             <asp:Panel ID="pnlAdvancedSettings" runat="server" Visible="false" >
                 <div class="row">
                     <div class="col-md-6">
-                        <fieldset>
-                            <Rock:RockCheckBox ID="cbRequiresEncryption" runat="server" Text="Force SSL"/>
-                            <Rock:RockCheckBox ID="cbEnableViewState" runat="server" Text="Enable ViewState"/>
-                            <Rock:RockCheckBox ID="cbIncludeAdminFooter" runat="server" Text="Allow Configuration"/>
-                            <Rock:DataTextBox ID="tbCacheDuration" runat="server" Label="Cache Duration" SourceTypeName="Rock.Model.Page, Rock" PropertyName="OutputCacheDuration"/>
-                        </fieldset>
+                        <Rock:RockCheckBox ID="cbRequiresEncryption" runat="server" Text="Force SSL"/>
+                        <Rock:RockCheckBox ID="cbEnableViewState" runat="server" Text="Enable ViewState"/>
+                        <Rock:RockCheckBox ID="cbIncludeAdminFooter" runat="server" Text="Allow Configuration"/>
+                        <Rock:DataTextBox ID="tbCacheDuration" runat="server" Label="Cache Duration" SourceTypeName="Rock.Model.Page, Rock" PropertyName="OutputCacheDuration"/>
                     </div>
                     <div class="col-md-6">
                         <fieldset>                

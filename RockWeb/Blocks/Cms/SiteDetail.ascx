@@ -11,7 +11,7 @@
                 <h1><asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
             </div>
 
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
+            <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
             <div id="pnlEditDetails" runat="server">
 

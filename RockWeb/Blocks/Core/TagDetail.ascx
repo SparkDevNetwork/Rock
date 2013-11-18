@@ -12,7 +12,7 @@
                 </h1>
                 <Rock:HighlightLabel ID="hlEntityType" runat="server" LabelType="Type" />
             </div>
-            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
             <div id="pnlEditDetails" runat="server">
 

@@ -33,16 +33,24 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int PersonId { get; set; }
-
-
+        
         /// <summary>
         /// Gets or sets the financial transaction id that the saved account was originated from
         /// </summary>
         /// <value>
-        /// The financial transaction id.
+        /// The transaction id.
         /// </value>
         [DataMember]
         public int FinancialTransactionId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a reference identifier needed by the payment provider to initiate a future transaction
+        /// </summary>
+        /// <value>
+        /// The reference identifier.
+        /// </value>
+        [DataMember]
+        public string ReferenceNumber { get; set; }
 
         /// <summary>
         /// Gets or sets the name.

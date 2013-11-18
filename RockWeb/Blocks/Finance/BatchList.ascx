@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upFinancialBatch" runat="server">
     <ContentTemplate>
 
-        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error alert" />
+        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
         <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
         <asp:Panel ID="pnlBatchList" runat="server">

@@ -37,7 +37,7 @@
 
     <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="panel panel-default">
         <div class="panel-body">
-            <asp:ValidationSummary runat="server" CssClass="alert alert-danger" />
+            <asp:ValidationSummary runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
             <div class="banner">
                 <h1><asp:Literal ID="lProperties" runat="server"></asp:Literal></h1>

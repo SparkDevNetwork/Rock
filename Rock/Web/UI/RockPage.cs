@@ -567,11 +567,12 @@ namespace Rock.Web.UI
                             blockWrapper.ClientIDMode = ClientIDMode.Static;
                             FindZone( block.Zone ).Controls.Add( blockWrapper );
                             blockWrapper.Attributes.Add( "class", "block-instance " +
+                                ( string.IsNullOrWhiteSpace( block.CssClass ) ? "" : block.CssClass.Trim() + " " ) +
                                 ( canAdministrate || canEdit ? "can-configure " : "" ) +
                                 block.BlockType.Name.ToLower().Replace( ' ', '-' ) );
 
                             // Check to see if block is configured to use a "Cache Duration'
-                            string blockCacheKey = string.Format( "Rock:BlockInstanceOutput:{0}", block.Id );
+                            string blockCacheKey = string.Format( "Rock:BlockOutput:{0}", block.Id );
                             if ( block.OutputCacheDuration > 0 && cache.Contains( blockCacheKey ) )
                             {
                                 // If the current block exists in our custom output cache, add the cached output instead of adding the control
@@ -591,8 +592,8 @@ namespace Rock.Web.UI
                                 catch ( Exception ex )
                                 {
                                     HtmlGenericControl div = new HtmlGenericControl( "div" );
-                                    div.Attributes.Add( "class", "alert-message block-message error" );
-                                    div.InnerHtml = string.Format( "Error Loading Block:<br/><br/><strong>{0}</strong>", ex.Message );
+                                    div.Attributes.Add( "class", "alert alert-danger" );
+                                    div.InnerHtml = string.Format( "<h4>Error Loading Block</h4><strong>{0}</strong> {1}", block.Name, ex.Message );
                                     control = div;
 
                                     if ( this.IsPostBack )

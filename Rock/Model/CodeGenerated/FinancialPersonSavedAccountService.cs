@@ -95,6 +95,7 @@ namespace Rock.Model
         {
             target.PersonId = source.PersonId;
             target.FinancialTransactionId = source.FinancialTransactionId;
+            target.ReferenceNumber = source.ReferenceNumber;
             target.Name = source.Name;
             target.MaskedAccountNumber = source.MaskedAccountNumber;
             target.Id = source.Id;

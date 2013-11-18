@@ -20,7 +20,7 @@
 
             <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
             <Rock:NotificationBox ID="nbRoleLimitWarning" runat="server" NotificationBoxType="Warning" Heading="Role Limit Warning" />
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
+            <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
             <div id="pnlEditDetails" runat="server">
 
