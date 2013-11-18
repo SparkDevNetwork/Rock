@@ -21,12 +21,12 @@ namespace Rock.Data
         /// <summary>
         /// The object context
         /// </summary>
-        public readonly RockContext DbContext;
+        public readonly DbContext DbContext;
 
         /// <summary>
         /// Gets the current object context.
         /// </summary>
-        internal static RockContext CurrentObjectContext
+        internal static DbContext CurrentObjectContext
         {
             get { return currentScope != null ? currentScope.DbContext : null; }
         }
@@ -39,6 +39,19 @@ namespace Rock.Data
             if ( currentScope == null )
             {
                 DbContext = new RockContext();
+                isDisposed = false;
+                currentScope = this;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UnitOfWorkScope"/> class using a custom dbContext
+        /// </summary>
+        public UnitOfWorkScope(DbContext context)
+        {
+            if ( currentScope == null )
+            {
+                DbContext = context;
                 isDisposed = false;
                 currentScope = this;
             }
