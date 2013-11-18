@@ -153,6 +153,7 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
+    <Compile Include="Attribute\CodeEditorFieldAttribute.cs" />
     <Compile Include="Attribute\DefinedTypeFieldAttribute.cs" />
     <Compile Include="Attribute\GroupLocationTypeFieldAttribute.cs" />
     <Compile Include="Attribute\InheritedAttribute.cs" />
@@ -184,6 +185,7 @@
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
     <Compile Include="Communication\Transport\Twilio.cs" />
     <Compile Include="Field\Types\GroupLocationTypeFieldType.cs" />
+    <Compile Include="Field\Types\CodeEditorFieldType.cs" />
     <Compile Include="Field\Types\TimeFieldType.cs" />
     <Compile Include="Field\Types\IntegerRangeFieldType.cs" />
     <Compile Include="Field\Types\DateRangeFieldType.cs" />
@@ -604,6 +606,7 @@
     <Compile Include="Web\UI\Controls\Pickers\LocationItemPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LocationAddressPicker.cs" />
     <Compile Include="Web\UI\Controls\RockControlHelper.cs" />
+    <Compile Include="Web\UI\Controls\CodeEditor.cs" />
     <Compile Include="Web\UI\Controls\TermDescription.cs" />
     <Compile Include="Web\UI\Controls\Grid\DefinedValueField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LocationPicker.cs" />
