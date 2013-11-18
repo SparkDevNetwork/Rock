@@ -62,8 +62,6 @@
                                 Help="The term to use for members in groups of this group type."/>
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockDropDownList ID="ddlDefaultGroupRole" runat="server" DataTextField="Name" DataValueField="Id" Label="Default Group Role" 
-                                Help="The default role to use when adding members to groups of this type."/>
                             <Rock:RockControlWrapper ID="rcGroupTypes" runat="server" Label="Child Group Types"
                                 Help="The types of child groups that can be added to groups of this type. This is used to define the group hierarchy. To allow an unlimited hierarchy add this type as an allowed child group type.">
                                 <Rock:Grid ID="gChildGroupTypes" runat="server" DisplayType="Light" ShowHeader="false" RowItemText="Group Type">
@@ -85,6 +83,11 @@
                             <asp:BoundField DataField="Description" HeaderText="Description" />
                             <asp:BoundField DataField="MinCount" HeaderText="Minimum Required" DataFormatString="{0:N0}" />
                             <asp:BoundField DataField="MaxCount" HeaderText="Maximum Allowed" DataFormatString="{0:N0}" />
+                            <asp:TemplateField HeaderText="Default">
+                                <ItemTemplate>
+                                    <input type="radio" value='<%# Eval( "Guid" ) %>' name="GroupTypeDefaultRole" <%# ((Guid)Eval("Guid")).Equals(DefaultRoleGuid) ? "checked" : "" %> />
+                                </ItemTemplate>
+                            </asp:TemplateField>
                             <Rock:EditField OnClick="gGroupTypeRoles_Edit" />
                             <Rock:DeleteField OnClick="gGroupTypeRoles_Delete" />
                         </Columns>

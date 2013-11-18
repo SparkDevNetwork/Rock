@@ -195,6 +195,26 @@ namespace RockWeb.Blocks.Crm
             }
         }
 
+        protected Guid DefaultRoleGuid
+        {
+            get 
+            { 
+                object value = ViewState["DefaultRoleGuid"];
+                if (value != null)
+                {
+                    return (Guid)value;
+                }
+                else
+                {
+                    return Guid.Empty;
+                }
+            }
+            set 
+            { 
+                ViewState["DefaultRoleGuid"] = value; 
+            }
+        }
+
         #endregion
 
         #region Control Methods
@@ -282,6 +302,12 @@ namespace RockWeb.Blocks.Crm
             }
             else
             {
+                Guid newDefaultRole = Guid.Empty;
+                if ( Guid.TryParse( Request.Form["GroupTypeDefaultRole"], out newDefaultRole ) )
+                {
+                    DefaultRoleGuid = newDefaultRole;
+                }
+
                 ShowDialog();
             }
         }
@@ -409,14 +435,11 @@ namespace RockWeb.Blocks.Crm
 
                     role.CopyPropertiesFrom( roleState );
                 }
-
-
+                
                 groupType.Name = tbName.Text;
-
                 groupType.Description = tbDescription.Text;
                 groupType.GroupTerm = tbGroupTerm.Text;
                 groupType.GroupMemberTerm = tbGroupMemberTerm.Text;
-                groupType.DefaultGroupRoleId = ddlDefaultGroupRole.SelectedValueAsInt();
                 groupType.ShowInGroupList = cbShowInGroupList.Checked;
                 groupType.ShowInNavigation = cbShowInNavigation.Checked;
                 groupType.IconCssClass = tbIconCssClass.Text;
@@ -469,6 +492,15 @@ namespace RockWeb.Blocks.Crm
                         SaveAttributes( new GroupType().TypeId, "Id", qualifierValue, GroupTypeAttributesState, attributeService, qualifierService, categoryService );
                         SaveAttributes( new Group().TypeId, "GroupTypeId", qualifierValue, GroupAttributesState, attributeService, qualifierService, categoryService );
                         SaveAttributes( new GroupMember().TypeId, "GroupTypeId", qualifierValue, GroupMemberAttributesState, attributeService, qualifierService, categoryService );
+
+                        // Reload to save default role
+                        groupType = groupTypeService.Get( groupType.Id );
+                        groupType.DefaultGroupRole = groupType.Roles.FirstOrDefault( r => r.Guid.Equals( DefaultRoleGuid ) );
+                        if ( groupType.DefaultGroupRole == null )
+                        {
+                            groupType.DefaultGroupRole = groupType.Roles.FirstOrDefault();
+                        }
+                        groupTypeService.Save( groupType, CurrentPersonId );
 
                         // Reload the roles and apply their attribute values
                         foreach ( var role in groupTypeRoleService.GetByGroupTypeId( groupType.Id ) )
@@ -555,12 +587,19 @@ namespace RockWeb.Blocks.Crm
                 groupType = new GroupType { Id = 0, ShowInGroupList = true, GroupTerm = "Group", GroupMemberTerm = "Member" };
                 groupType.ChildGroupTypes = new List<GroupType>();
                 groupType.LocationTypes = new List<GroupTypeLocationType>();
+
+                Guid defaultRoleGuid = Guid.NewGuid();
+                var memberRole = new GroupTypeRole { Guid = defaultRoleGuid, Name = "Member" };
+                groupType.Roles.Add( memberRole );
+                groupType.DefaultGroupRole = memberRole;
             }
 
             if ( groupType == null )
             {
                 return;
             }
+
+            DefaultRoleGuid = groupType.DefaultGroupRole != null ? groupType.DefaultGroupRole.Guid : Guid.Empty;
 
             pnlDetails.Visible = true;
             hfGroupTypeId.Value = groupType.Id.ToString();
@@ -630,9 +669,6 @@ namespace RockWeb.Blocks.Crm
 
                 ddlGroupTypePurpose.Enabled = !groupType.IsSystem;
                 ddlGroupTypePurpose.SetValue( groupType.GroupTypePurposeValueId );
-
-                ddlDefaultGroupRole.Enabled = !groupType.IsSystem;
-                ddlDefaultGroupRole.SetValue( groupType.DefaultGroupRoleId );
 
                 ChildGroupTypesDictionary = new Dictionary<int, string>();
                 groupType.ChildGroupTypes.ToList().ForEach( a => ChildGroupTypesDictionary.Add( a.Id, a.Name ) );
@@ -756,12 +792,6 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void LoadDropDowns( int? groupTypeId )
         {
-            GroupTypeRoleService groupRoleService = new GroupTypeRoleService();
-            List<GroupTypeRole> groupRoles = groupRoleService.Queryable().Where( a => a.GroupTypeId == groupTypeId ).OrderBy( a => a.Name ).ToList();
-            groupRoles.Insert( 0, new GroupTypeRole { Id = None.Id, Name = None.Text } );
-            ddlDefaultGroupRole.DataSource = groupRoles;
-            ddlDefaultGroupRole.DataBind();
-
             ddlAttendanceRule.BindToEnum( typeof( Rock.Model.AttendanceRule ) );
             ddlAttendancePrintTo.BindToEnum( typeof( Rock.Model.PrintTo ) );
             ddlLocationSelectionMode.BindToEnum( typeof( Rock.Model.LocationPickerMode ) );
@@ -1754,6 +1784,5 @@ namespace RockWeb.Blocks.Crm
         }
 
         #endregion
-
     }
 }
