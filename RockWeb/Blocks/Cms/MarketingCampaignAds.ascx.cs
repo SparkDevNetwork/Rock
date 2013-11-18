@@ -9,13 +9,16 @@ using System.Linq;
 using System.Runtime.Caching;
 using System.Web;
 using System.Web.UI;
+
 using DotLiquid;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -25,7 +28,7 @@ namespace RockWeb.Blocks.Cms
         "SELECT A.[name] AS [Text], A.[key] AS [Value] FROM [EntityType] E INNER JOIN [attribute] a ON A.[EntityTypeId] = E.[Id] INNER JOIN [FieldType] F ON F.Id = A.[FieldTypeId]	AND F.Guid = '" +
         Rock.SystemGuid.FieldType.IMAGE + "' WHERE E.Name = 'Rock.Model.MarketingCampaignAd' ORDER BY [Key]", false, "", "", 2 )]
 
-    [MemoField( "Template", "The liquid template to use for rendering", true, @"
+    [CodeEditorField( "Template", "The liquid template to use for rendering", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 600, true, @"
 <div class='ad-list'>
     {% include 'AdList' with Ads %}
 </div>

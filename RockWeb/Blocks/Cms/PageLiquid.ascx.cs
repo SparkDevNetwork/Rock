@@ -14,10 +14,11 @@ using DotLiquid;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Cms
 {
-    [MemoField( "Template", "The liquid template to use for rendering", true, @"
+    [CodeEditorField( "Template", "The liquid template to use for rendering", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 600, true, @"
 <ul>
     {% include 'PageMenu' with page.pages %}
 </ul>
