@@ -45,9 +45,12 @@ namespace RockWeb.Blocks.Security
         {
             var mergeObjects = new Dictionary<string, object>();
 
-            string confirmUrl = GetAttributeValue( "ConfirmationPage" );
-            confirmUrl = string.IsNullOrWhiteSpace( confirmUrl ) ? "ConfirmAccount" : "Page/" + confirmUrl.Trim();
-            mergeObjects.Add( "ConfirmAccountUrl", RootPath + confirmUrl );
+            var url = LinkedPageUrl( "ConfirmationPage" );
+            if ( string.IsNullOrWhiteSpace( url ) )
+            {
+                url = ResolveRockUrl( "~/ConfirmAccount" );
+            }
+            mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
 
             var personDictionaries = new List<IDictionary<string, object>>();
 

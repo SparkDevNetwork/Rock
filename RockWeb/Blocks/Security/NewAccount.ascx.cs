@@ -18,17 +18,16 @@ using Rock.Model;
 namespace RockWeb.Blocks.Security
 {
     [BooleanField( "Check for Duplicates", "Should people with the same email and last name be presented as a possible pre-existing record for user to choose from.", true, "", 0, "Duplicates")]
-    [TextField( "Confirm Route", "The URL Route for Confirming an account", true)]
     [TextField( "Found Duplicate Caption", "", false,"There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?", "Captions", 0 )]
     [TextField( "Existing Account Caption", "", false, "{0}, you already have an existing account.  Would you like us to email you the username?", "Captions", 1 )]
     [TextField( "Sent Login Caption", "", false, "Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password.", "Captions", 2 )]
     [TextField( "Confirm Caption", "", false, "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.", "Captions", 3 )]
     [TextField( "Success Caption", "", false, "{0}, Your account has been created", "Captions", 4 )]
-    [LinkedPage("Login Page")]
+    [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)" )]
+    [LinkedPage( "Login Page", "Page to navigate to when user elects to login (if blank will use 'Login' page route)" )]
     public partial class NewAccount : Rock.Web.UI.RockBlock
     {
         PlaceHolder[] PagePanels = new PlaceHolder[6];
-        string loginUrl = string.Empty;
 
         #region Properties
 
@@ -65,9 +64,6 @@ namespace RockWeb.Blocks.Security
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            loginUrl = GetAttributeValue( "LoginPage" );
-            loginUrl = string.IsNullOrWhiteSpace( loginUrl ) ? "Login" : "Page/" + loginUrl.Trim();
 
             lFoundDuplicateCaption.Text = GetAttributeValue( "FoundDuplicateCaption" );
             lSentLoginCaption.Text = GetAttributeValue( "SentLoginCaption" );
@@ -169,7 +165,13 @@ namespace RockWeb.Blocks.Security
 
         protected void btnSendLogin_Click( object sender, EventArgs e )
         {
-            Response.Redirect( "~/" + loginUrl, false );
+            string loginUrl = LinkedPageUrl( "LoginPage" );
+            if ( string.IsNullOrWhiteSpace( loginUrl ) )
+            {
+                loginUrl = ResolveRockUrl( "~/Login" );
+            }
+
+            Response.Redirect( loginUrl, false );
             Context.ApplicationInstance.CompleteRequest();
         }
 
@@ -254,8 +256,13 @@ namespace RockWeb.Blocks.Security
                 Person person = personService.Get( Int32.Parse( hfSendPersonId.Value ) );
                 if ( person != null )
                 {
+                    string url = LinkedPageUrl( "ConfirmationPage" );
+                    if (string.IsNullOrWhiteSpace(url))
+                    {
+                        url = ResolveRockUrl( "~/ConfirmAccount" );
+                    }
                     var mergeObjects = new Dictionary<string, object>();
-                    mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
+                    mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart(new char[]{'/'}) );
 
                     var personDictionaries = new List<IDictionary<string, object>>();
 
@@ -301,9 +308,14 @@ namespace RockWeb.Blocks.Security
             {
                 Rock.Model.UserLogin user = CreateUser( person, false );
 
+                string url = LinkedPageUrl( "ConfirmationPage" );
+                if ( string.IsNullOrWhiteSpace( url ) )
+                {
+                    url = ResolveRockUrl( "~/ConfirmAccount" );
+                }
                 var mergeObjects = new Dictionary<string, object>();
-                mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
-
+                mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) ); 
+                
                 var personDictionary = person.ToDictionary();
                 mergeObjects.Add( "Person", personDictionary );
 
@@ -333,8 +345,13 @@ namespace RockWeb.Blocks.Security
 
                 if ( person != null )
                 {
+                    string url = LinkedPageUrl( "ConfirmationPage" );
+                    if ( string.IsNullOrWhiteSpace( url ) )
+                    {
+                        url = ResolveRockUrl( "~/ConfirmAccount" );
+                    }
                     var mergeObjects = new Dictionary<string, object>();
-                    mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
+                    mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
 
                     var personDictionary = person.ToDictionary();
                     mergeObjects.Add( "Person", personDictionary );
