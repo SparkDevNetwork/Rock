@@ -17,7 +17,6 @@ namespace Rock.Attribute
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class CodeEditorFieldAttribute : FieldAttribute
     {
-
         private const string EDITOR_MODE = "editorMode";
         private const string EDITOR_THEME = "editorTheme";
         private const string EDITOR_HEIGHT = "editorHeight";
