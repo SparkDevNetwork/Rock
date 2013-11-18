@@ -195,6 +195,8 @@
     <Compile Include="Financial\Payment.cs" />
     <Compile Include="Financial\GatewayComponent.cs" />
     <Compile Include="Financial\GatewayContainer.cs" />
+    <Compile Include="Jobs\LaunchWorkflow.cs" />
+    <Compile Include="Jobs\RunSQL.cs" />
     <Compile Include="Migrations\201308232058045_CreateDatabase.cs" />
     <Compile Include="Migrations\201308232058045_CreateDatabase.Designer.cs">
       <DependentUpon>201308232058045_CreateDatabase.cs</DependentUpon>
@@ -319,6 +321,18 @@
     <Compile Include="Migrations\201311081500222_RequireCategoryName.Designer.cs">
       <DependentUpon>201311081500222_RequireCategoryName.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201311141450379_RenameSavedAccountReferenceTransactionId.cs" />
+    <Compile Include="Migrations\201311141450379_RenameSavedAccountReferenceTransactionId.Designer.cs">
+      <DependentUpon>201311141450379_RenameSavedAccountReferenceTransactionId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201311151429480_TransactionReferenceNumber.cs" />
+    <Compile Include="Migrations\201311151429480_TransactionReferenceNumber.Designer.cs">
+      <DependentUpon>201311151429480_TransactionReferenceNumber.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201311180029101_BlockCssClass.cs" />
+    <Compile Include="Migrations\201311180029101_BlockCssClass.Designer.cs">
+      <DependentUpon>201311180029101_BlockCssClass.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -332,10 +346,13 @@
     <Compile Include="PersonProfile\Badge\NextSteps.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Reporting\DataSelectComponent.cs" />
     <Compile Include="Reporting\DataFilter\Person\GivingAmountFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\DistanceFromFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupFilter.cs" />
+    <Compile Include="Reporting\DataSelect\Person\LastContributionSelect.cs" />
+    <Compile Include="Reporting\DataSelectContainer.cs" />
     <Compile Include="Reporting\FilterExpressionExtractor.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
@@ -694,6 +711,7 @@
     <Compile Include="Workflow\Action\CheckIn\SelectByBestFit.cs" />
     <Compile Include="Workflow\Action\CheckIn\SelectByLastAttended.cs" />
     <Compile Include="Workflow\Action\ParseZebraLabel.cs" />
+    <Compile Include="Workflow\Action\RunSQL.cs" />
     <Compile Include="Workflow\TriggerCache.cs" />
     <Compile Include="Model\WorkflowTriggerService.Partial.cs" />
     <Compile Include="Model\WorkflowTrigger.cs" />
@@ -889,7 +907,6 @@
     <Compile Include="Model\WorkflowType.cs" />
     <Compile Include="Model\ServiceJob.cs" />
     <Compile Include="Model\ServiceJobService.Partial.cs" />
-    <Compile Include="Version.cs" />
     <Compile Include="Web\Cache\AttributeCache.cs" />
     <Compile Include="Web\Cache\BlockTypeCache.cs" />
     <Compile Include="Web\Cache\BlockCache.cs" />
@@ -1234,6 +1251,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201311081500222_RequireCategoryName.resx">
       <DependentUpon>201311081500222_RequireCategoryName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201311141450379_RenameSavedAccountReferenceTransactionId.resx">
+      <DependentUpon>201311141450379_RenameSavedAccountReferenceTransactionId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201311151429480_TransactionReferenceNumber.resx">
+      <DependentUpon>201311151429480_TransactionReferenceNumber.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201311180029101_BlockCssClass.resx">
+      <DependentUpon>201311180029101_BlockCssClass.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

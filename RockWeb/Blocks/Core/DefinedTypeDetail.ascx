@@ -12,7 +12,7 @@
                     <h1><asp:Literal ID="lActionTitle" runat="server" /></h1>
                 </div>
 
-                <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                 <fieldset>
                     <div class="row">

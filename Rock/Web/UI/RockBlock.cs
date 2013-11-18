@@ -561,15 +561,25 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Linkeds the page URL.
+        /// </summary>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="queryParams">The query parameters.</param>
+        /// <returns></returns>
+        public string LinkedPageUrl( string attributeKey, Dictionary<string, string> queryParams = null )
+        {
+            var pageReference = new PageReference( GetAttributeValue( attributeKey ), queryParams );
+            return pageReference.BuildUrl();
+        }
+
+        /// <summary>
         /// Navigates to a linked page attribute.
         /// </summary>
         /// <param name="attributeKey">The attribute key.</param>
         /// <param name="queryParams">The query params.</param>
         public void NavigateToLinkedPage( string attributeKey, Dictionary<string, string> queryParams = null )
         {
-            var pageReference = new PageReference( GetAttributeValue( attributeKey ), queryParams );
-            string pageUrl = pageReference.BuildUrl();
-            Response.Redirect( pageUrl, false );
+            Response.Redirect( LinkedPageUrl( attributeKey, queryParams ), false );
             Context.ApplicationInstance.CompleteRequest();
         }
 

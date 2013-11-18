@@ -183,7 +183,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         protected void DisplayRockVersion()
         {
-            litRockVersion.Text = string.Format( "<b>Current Version: </b> {0}", VersionInfo.GetRockProductVersion() );
+            litRockVersion.Text = string.Format( "<b>Current Version: </b> {0}", VersionInfo.GetRockProductVersionFullName() );
         }
 
         /// <summary>

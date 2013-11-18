@@ -3,7 +3,7 @@
     <ContentTemplate>
         <asp:Panel runat="server" ID="pnlForm">
 
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
+            <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
             <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" Title="Warning" Visible="false" />
 
                 <fieldset>

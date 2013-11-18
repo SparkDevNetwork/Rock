@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlNotes" runat="server">
             <section class="panel panel-note">
 
-                <asp:ValidationSummary ID="vs1" runat="server" />
+                <asp:ValidationSummary ID="vs1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                 <div class="panel-heading clearfix">
                     <h3 class="panel-title">

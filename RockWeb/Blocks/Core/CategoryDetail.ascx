@@ -5,7 +5,7 @@
         <asp:Panel ID="pnlDetails" runat="server">
             <asp:HiddenField ID="hfCategoryId" runat="server" />
 
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
+            <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
             <div id="pnlEditDetails" runat="server">
                 <div class="banner">

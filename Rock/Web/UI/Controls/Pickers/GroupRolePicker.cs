@@ -78,8 +78,16 @@ namespace Rock.Web.UI.Controls
         ]
         public bool Required
         {
-            get { return _ddlGroupRole.Required; }
-            set { _ddlGroupRole.Required = value; }
+            get 
+            {
+                EnsureChildControls();
+                return _ddlGroupRole.Required; 
+            }
+            set 
+            {
+                EnsureChildControls();
+                _ddlGroupRole.Required = value; 
+            }
         }
 
         /// <summary>

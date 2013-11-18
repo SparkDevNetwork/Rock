@@ -7,8 +7,7 @@
             <h1><asp:Literal ID="lBanner" runat="server"></asp:Literal></h1>
         </div>
 
-        <asp:ValidationSummary ID="valSummaryTop" runat="server"
-            HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
         <Rock:NotificationBox ID="nbNotice" runat="server" Visible="false" />
 
@@ -155,8 +154,7 @@
                     <li id="liNewPerson" runat="server"><a href='#<%=divNewPerson.ClientID%>' data-toggle="pill">Add New Person</a></li>
                 </ul>
 
-                <asp:ValidationSummary ID="valSummaryAddPerson" runat="server" ValidationGroup="AddPerson"
-                    HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+                <asp:ValidationSummary ID="valSummaryAddPerson" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="AddPerson"/>
 
                 <div class="tab-content">
 

@@ -13,7 +13,7 @@
             </div>
 
             <asp:HiddenField ID="hfParentGroupTypeId" runat="server" />
-            <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-danger" />
+            <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
             <div class="clearfix">
                 <asp:LinkButton ID="lbAddCheckinArea" runat="server" CssClass="btn btn-default btn-mini pull-right" OnClick="lbAddCheckinArea_Click" CausesValidation="false"><i class="fa fa-plus"></i> Add Check-in Area</asp:LinkButton>

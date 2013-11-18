@@ -24,7 +24,7 @@
             </asp:Repeater>
         </ul>
         
-        <asp:ValidationSummary ID="ValidationSummary" runat="server" CssClass="alert alert-danger" />
+        <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
         <div class="form-group">
             <div class="control-label">
