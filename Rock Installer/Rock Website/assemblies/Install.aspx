@@ -203,6 +203,8 @@
 			
 			Configuration rockWebConfig  = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration("~");
 			rockWebConfig.AppSettings.Settings["PasswordKey"].Value = hexBytes;
+            rockWebConfig.AppSettings.Settings["DataEncryptionKey"].Value = GenerateRandomDataEncryptionKey();
+            
             //rockWebConfig.AppSettings.Settings["BaseUrl"].Value = Request.Url.Scheme + @"://" + Request.Url.Host + Request.ApplicationPath;  // not needed removed from web.config per https://github.com/SparkDevNetwork/Rock-ChMS/commit/17b0d30082f0b98bec8bc31d2034fb774690b2e1
 			rockWebConfig.Save();
 			
@@ -449,7 +451,16 @@
         // add error message
         lErrorDetails.Text = errorMessage;
 	}
-	
+
+    private string GenerateRandomDataEncryptionKey()
+    {
+        var rng = System.Security.Cryptography.RNGCryptoServiceProvider.Create();
+        byte[] randomBytes = new byte[128];
+        rng.GetNonZeroBytes(randomBytes);
+        string dataEncryptionKey = Convert.ToBase64String(randomBytes);
+
+        return dataEncryptionKey;
+    }
 	
 	private bool CheckRockNotInstalled(out string errorDetails) {
 		
