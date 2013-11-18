@@ -82,6 +82,8 @@
                             <li><a href="#twilio">Twilio</a> (Apache) - <a href="https://github.com/twilio/twilio-csharp">Project Site</a> </li>
                             <li><a href="#restsharp">RestSharp</a> (Apache) - <a href="http://restsharp.org/">Project Site</a> </li>
                             <li><a href="#cronexpressiondescriptor">Cron Expression Descriptor</a> (MIT) - <a href="https://github.com/bradyholt/cron-expression-descriptor">Project Site</a></li>
+                            <li><a href="#ace-editor">Ace Code Editor</a> (BSD) - <a href="http://ace.c9.io/#nav=about">Project Site</a></li>
+                            <li><a href="#csscript">CS Script</a> (Custom) - <a href="http://www.csscript.net/">Project Site</a></li>
                         </ul>
 
 
@@ -2091,6 +2093,53 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+</pre>
+
+                        <a name="ace-editor"></a><h3>Ace Code Editor</h3>
+                        <pre>
+Copyright (c) 2010, Ajax.org B.V.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of Ajax.org B.V. nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+</pre>
+
+                        <a name="csscript"></a><h3>CS Script</h3>
+                        <pre>
+Copyright (c) 2004-2012 Oleg Shilo
+
+
+All rights reserved.
+
+(The author reserves rights to change the licence for the future releases of CS-Script.) 
+
+Redistribution and use of this software for commercial and non-commercial purposes in source and binary forms are permitted provided that no modifications to the script engine and it's framework are made and the following conditions are met:
+
+1. Redistributions of the source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+2. Neither the name of an author nor the names of the contributors may be used to endorse or promote products bundled from this software without specific prior written permission.
+Redistribution and use of this software in source and binary forms, with modifications, are permitted provided that all above conditions are met and software is not used or sold for profit.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 </pre>
 
                     </div>
