@@ -280,7 +280,7 @@ namespace Rock.Web.UI.Controls
 
             // add editor div
             string height = string.IsNullOrWhiteSpace( EditorHeight ) ? "200" : EditorHeight;
-            string customDiv = @"<div class='code-editor-container' style='position:relative; height: {0}px'><div id='codeeditor-div-{1}'>{2}</div></div>";
+            string customDiv = @"<div class='code-editor-container' style='position:relative; height: {0}px'><pre id='codeeditor-div-{1}'>{2}</pre></div>";
             writer.Write( string.Format( customDiv, height, this.ClientID, HttpUtility.HtmlDecode( this.Text ) ) );
 
             // write custom css for the code editor
