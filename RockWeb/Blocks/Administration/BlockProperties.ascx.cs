@@ -5,8 +5,11 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -18,6 +21,32 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     public partial class BlockProperties : RockBlock
     {
+        #region Fields
+
+        private readonly List<string> _tabs = new List<string> { "Basic Settings", "Advanced Settings" };
+
+        /// <summary>
+        /// Gets or sets the current tab.
+        /// </summary>
+        /// <value>
+        /// The current tab.
+        /// </value>
+        protected string CurrentTab
+        {
+            get
+            {
+                object currentProperty = ViewState["CurrentTab"];
+                return currentProperty != null ? currentProperty.ToString() : "Basic Settings";
+            }
+
+            set
+            {
+                ViewState["CurrentTab"] = value;
+            }
+        }
+
+        #endregion
+
         /// <summary>
         /// Raises the <see cref="E:Init" /> event.
         /// </summary>
@@ -64,11 +93,34 @@ namespace RockWeb.Blocks.Administration
 
             if ( !Page.IsPostBack && _block.IsAuthorized( "Administrate", CurrentPerson ) )
             {
+                rptProperties.DataSource = _tabs;
+                rptProperties.DataBind();
+
                 tbBlockName.Text = _block.Name;
+                tbCssClass.Text = _block.CssClass;
                 tbCacheDuration.Text = _block.OutputCacheDuration.ToString();
             }
 
             base.OnLoad( e );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbProperty control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbProperty_Click( object sender, EventArgs e )
+        {
+            LinkButton lb = sender as LinkButton;
+            if ( lb != null )
+            {
+                CurrentTab = lb.Text;
+
+                rptProperties.DataSource = _tabs;
+                rptProperties.DataBind();
+            }
+
+            ShowSelectedPane();
         }
 
         /// <summary>
@@ -90,6 +142,7 @@ namespace RockWeb.Blocks.Administration
                     block.LoadAttributes();
 
                     block.Name = tbBlockName.Text;
+                    block.CssClass = tbCssClass.Text;
                     block.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );
                     blockService.Save( block, CurrentPersonId );
 
@@ -104,6 +157,8 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
+        #region Internal Methods
+
         /// <summary>
         /// Displays the error.
         /// </summary>
@@ -116,5 +171,42 @@ namespace RockWeb.Blocks.Administration
 
             phContent.Visible = false;
         }
+
+        /// <summary>
+        /// Gets the tab class.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns></returns>
+        protected string GetTabClass( object property )
+        {
+            if ( property.ToString() == CurrentTab )
+            {
+                return "active";
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Shows the selected pane.
+        /// </summary>
+        private void ShowSelectedPane()
+        {
+            if ( CurrentTab.Equals( "Basic Settings" ) )
+            {
+                pnlBasicProperty.Visible = true;
+                pnlAdvancedSettings.Visible = false;
+                pnlBasicProperty.DataBind();
+            }
+            else if ( CurrentTab.Equals( "Advanced Settings" ) )
+            {
+                pnlBasicProperty.Visible = false;
+                pnlAdvancedSettings.Visible = true;
+                pnlAdvancedSettings.DataBind();
+            }
+        }
+
+        #endregion
+        
     }
 }
