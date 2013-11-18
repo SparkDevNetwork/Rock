@@ -361,7 +361,7 @@ $('.filter-item-select').click(function (event) {
             
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs filter-view-state" );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "fa-chevron-up" : "fa-chevron-down" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" );
             writer.RenderBeginTag( HtmlTextWriterTag.I );
             writer.RenderEndTag();
             writer.RenderEndTag();
