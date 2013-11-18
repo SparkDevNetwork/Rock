@@ -7,8 +7,10 @@ using System;
 using System.Collections.Generic;
 using System.Web;
 using Quartz;
+using Rock;
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Web.UI;
 
 namespace Rock.Jobs
 {
@@ -17,8 +19,8 @@ namespace Rock.Jobs
     /// </summary>
     /// <author>Rich Dubay</author>
     /// <author>Spark Development Network</author>
-    [TextField( "Workflow Name", "The name of the workflow to launch", true, "", "General", 0, "WorkflowName" )]
-    public class LaunchWorkflow : IJob
+    [WorkflowTypeField( "Workflow", "The workflow this job should activate." )]
+    public class LaunchWorkflow : RockBlock, IJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -41,9 +43,8 @@ namespace Rock.Jobs
         public virtual void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
-            string workflowName = dataMap.GetString( "WorkflowName" );
+            string workflowName = dataMap.GetString( "Workflow" );
             LaunchTheWorkflow( workflowName );
-            //if ( ProcessActivity( "Family Search", out errors ) )
         }
 
         /// <summary>
@@ -51,75 +52,27 @@ namespace Rock.Jobs
         /// </summary>
         protected void LaunchTheWorkflow(string workflowName)
         {
-            var errorMessages = new List<string>();
-            var workflowTypeService = new WorkflowTypeService();
-            var workflowTypeId = 0;
-            foreach ( var wft in workflowTypeService.Queryable() )
+            Guid workflowTypeGuid = Guid.NewGuid();
+            if ( Guid.TryParse( workflowName, out workflowTypeGuid ) )
             {
-                if ( wft.Name == workflowName )
+                var workflowTypeService = new WorkflowTypeService();
+                var workflowType = workflowTypeService.Get( workflowTypeGuid );
+                if ( workflowType != null )
                 {
-                    workflowTypeId = wft.Id;
+                    var workflow = Rock.Model.Workflow.Activate( workflowType, workflowName );
+
+                    List<string> workflowErrors;
+                    if ( workflow.Process( out workflowErrors ) )
+                    {
+                        if ( workflowType.IsPersisted )
+                        {
+                            var workflowService = new Rock.Model.WorkflowService();
+                            workflowService.Add( workflow, CurrentPersonId );
+                            workflowService.Save( workflow, CurrentPersonId );
+                        }
+                    }
                 }
-            }
-            var workflowType = workflowTypeService.Get( workflowTypeId );
-            if ( workflowType != null )
-            {
-                var currentWorkflow = Rock.Model.Workflow.Activate( workflowType, workflowName );
-                foreach ( var activityType in workflowType.ActivityTypes )
-                {
-                    WorkflowActivity.Activate( activityType, currentWorkflow );
-                    currentWorkflow.Process( out errorMessages );
-                }
-            }
+            }     
         }
-
-        /// <summary>
-        /// Activates and processes a workflow activity.  If the workflow has not yet been activated, it will
-        /// also be activated
-        /// </summary>
-        /// <param name="activityName">Name of the activity.</param>
-        /// <param name="errorMessages">The error messages.</param>
-        /// <returns></returns>
-        /// <exception cref="System.Exception"></exception>
-        //protected bool ProcessActivity( string activityName, out List<string> errorMessages )
-        //{
-        //    errorMessages = new List<string>();
-
-        //    int workflowTypeId = 0;
-        //    if ( Int32.TryParse( GetAttributeValue( "WorkflowTypeId" ), out workflowTypeId ) )
-        //    {
-        //        var workflowTypeService = new WorkflowTypeService();
-        //        var workflowType = workflowTypeService.Get( workflowTypeId );
-        //        if ( workflowType != null )
-        //        {
-        //            if ( CurrentWorkflow == null )
-        //            {
-        //                CurrentWorkflow = Rock.Model.Workflow.Activate( workflowType, CurrentCheckInState.Kiosk.Device.Name );
-        //            }
-
-        //            var activityType = workflowType.ActivityTypes.Where( a => a.Name == activityName ).FirstOrDefault();
-        //            if ( activityType != null )
-        //            {
-        //                WorkflowActivity.Activate( activityType, CurrentWorkflow );
-        //                if ( CurrentWorkflow.Process( CurrentCheckInState, out errorMessages ) )
-        //                {
-        //                    return true;
-        //                }
-        //            }
-        //            else
-        //            {
-        //                errorMessages.Add( string.Format( "Workflow type does not have a '{0}' activity type", activityName ) );
-        //            }
-        //        }
-        //        else
-        //        {
-        //            errorMessages.Add( string.Format( "Invalid Workflow type Id", activityName ) );
-        //        }
-
-        //    }
-
-        //    return false;
-        //}
-
     }
 }
