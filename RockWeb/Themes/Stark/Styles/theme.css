@@ -17,6 +17,7 @@
     14. Timepicker - styles for the time picker
     15. File Upload / Image Upload - styles for the file / image uploader
     16. Rollover - Used to hide/show items in the UI has the mouse rolls-over a container.
+    17. Actions - used to hold buttons at the bottom of forms.
 */
 .picker {
   position: relative;
@@ -911,6 +912,9 @@ div.tagsinput div {
   color: #bbbbbb;
   width: 100%;
 }
+.actions {
+  margin-top: 12px;
+}
 /*
     Used to manage styles for specific blocks.
     
@@ -1156,8 +1160,6 @@ span.cke_skin_kama {
     1. Zone Configuration
     2. Module Configuration
     3. Admin Footer
-    4. Security Dialog
-
 */
 .zone-instance.outline {
   border: 1px dashed #909090;
@@ -1285,26 +1287,6 @@ span.cke_skin_kama {
   color: #ecf0f3;
   box-shadow: none;
   text-shadow: none;
-}
-.add-user fieldset,
-.add-role fieldset {
-  border: 1px solid #c4c4c4;
-  /* TODO */
-
-  border-radius: 4px;
-  margin-top: 22px;
-}
-.add-user legend,
-.add-role legend {
-  font-size: 16px;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-.add-user table {
-  margin-top: 10px;
-}
-.add-user table td {
-  padding: 0 10px 6px;
 }
 /*
     Used to manage styles related to Rock's internal grid component
@@ -1953,6 +1935,9 @@ a.help {
 .panel-widget > .panel-footer + .panel-collapse .panel-body {
   border-bottom-color: #d5d5d5;
 }
+.panel-info .panel-body {
+  background-color: #ffffff;
+}
 .panel-persondetails {
   border-color: #d5d5d5;
 }
@@ -2150,4 +2135,10 @@ header .login-status {
 }
 footer {
   margin-bottom: 50px;
+}
+footer .footer-message {
+  float: left;
+}
+footer .footer-address {
+  float: right;
 }
