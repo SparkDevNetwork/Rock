@@ -261,8 +261,8 @@ javascript:
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.WriteLine( "<a class='btn btn-xs workflow-activity-reorder'><i class='fa fa-bars'></i></a>" );
-            writer.WriteLine( "<a class='btn btn-xs'><i class='workflow-activity-state fa-chevron-down'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs btn-link workflow-activity-reorder'><i class='fa fa-bars'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs btn-link'><i class='workflow-activity-state fa fa-chevron-down'></i></a>" );
 
             if ( IsDeleteEnabled )
             {

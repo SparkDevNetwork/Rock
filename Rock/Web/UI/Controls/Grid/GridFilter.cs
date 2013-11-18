@@ -123,7 +123,7 @@ Sys.Application.add_load(function () {
 
                 _hfVisible.RenderControl( writer );
 
-                writer.AddAttribute( "class", visible ? "fa-chevron-up toggle-filter" : "fa-chevron-down toggle-filter" );
+                writer.AddAttribute( "class", visible ? "fa fa-chevron-up toggle-filter" : "fa fa-chevron-down toggle-filter" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
 

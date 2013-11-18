@@ -228,7 +228,7 @@ $('.rock-panel-widget a.panel-widget-reorder').click(function (event) {
                 // Chevron up/down Button
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs view-state" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "fa-chevron-up" : "fa-chevron-down" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();

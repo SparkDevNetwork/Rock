@@ -238,8 +238,8 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.WriteLine( "<a class='btn btn-xs workflow-action-reorder'><i class='fa fa-bars'></i></a>" );
-            writer.WriteLine( "<a class='btn btn-xs'><i class='workflow-action-state fa fa-chevron-down'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs btn-link workflow-action-reorder'><i class='fa fa-bars'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs btn-link'><i class='workflow-action-state fa fa-chevron-down'></i></a>" );
 
             if ( IsDeleteEnabled )
             {
