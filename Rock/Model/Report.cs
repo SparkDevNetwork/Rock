@@ -14,7 +14,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Campus POCO Entity.
+    /// Represents a Report (based off of a <see cref="Rock.Model.DataView"/> in RockChMS.
     /// </summary>
     [Table( "Report" )]
     [DataContract]
@@ -24,20 +24,20 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the System.
+        /// Gets or sets a flag indicating if this Report is part of the RockChMS core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// System indicates whether or not the campus is part of the core framework/system.
+        ///  A <see cref="System.Boolean"/> that is <c>true</c> if the Report is part of the RockChMS core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the Name of the Report. This property is required.
         /// </summary>
         /// <value>
-        /// Given Name.
+        /// A <see cref="System.String"/> that represents the Name of the Report.
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -45,37 +45,38 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the Report's Description.
         /// </summary>
         /// <value>
-        /// Notes about the job..
+        /// A <see cref="System.String"/> representing the Report's Description.
         /// </value>
         [DataMember]
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the category id.
+        /// Gets or sets the CategoryId of the <see cref="Rock.Model.Category"/> that the Report belongs to.
         /// </summary>
         /// <value>
-        /// The category id.
+        /// A <see cref="System.Int32"/> representing the CateogryId of the <see cref="Rock.Model.Category"/> that the report belongs to. If the Report does not belong to
+        /// a <see cref="Rock.Model.Category"/> this value will be null.
         /// </value>
         [DataMember]
         public int? CategoryId { get; set; }
 
         /// <summary>
-        /// Gets or sets the entity type that this view applies to.
+        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that is being reported on.
         /// </summary>
         /// <value>
-        /// The entity type id.
+        /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that is being reported on.
         /// </value>
         [DataMember]
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the root filter id.
+        /// Gets or the DataViewId of the root <see cref="Rock.Model.DataView"/> that this Report is based on.
         /// </summary>
         /// <value>
-        /// The root filter id.
+        /// A <see cref="System.Int32"/> representing the DataViewId of the root <see cref="Rock.Model.DataView"/> that this Report is based on.
         /// </value>
         [DataMember]
         public int? DataViewId { get; set; }
@@ -85,28 +86,28 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the category.
+        /// Gets or sets the <see cref="Rock.Model.Category"/> that this Report belongs to.
         /// </summary>
         /// <value>
-        /// The category.
+        /// The <see cref="Rock.Model.Category"/> that this Report belongs to. If the Report does not belong to a <see cref="Rock.Model.Category"/> this value will be null.
         /// </value>
         [DataMember]
         public virtual Category Category { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the entity.
+        /// Gets or sets the <see cref="Rock.Model.EntityType"/> that is being reported on. 
         /// </summary>
         /// <value>
-        /// The type of the entity.
+        /// The <see cref="Rock.Model.EntityType"/> that is being reported on.
         /// </value>
         [DataMember]
         public virtual EntityType EntityType { get; set; }
 
         /// <summary>
-        /// Gets or sets the data view for the report.
+        /// Gets or sets the base/root <see cref="Rock.Model.DataView"/> that this Report is based on.
         /// </summary>
         /// <value>
-        /// The report data view.
+        /// The <see cref="Rock.Model.DataView"/> that this Report is based on.
         /// </value>
         [DataMember]
         public virtual DataView DataView { get; set; }
