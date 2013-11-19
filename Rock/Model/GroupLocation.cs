@@ -47,17 +47,15 @@ namespace Rock.Model
         public int LocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the GroupLocationType <see cref="Rock.Model.DefinedValue"/> that is used to identify the type of <see cref="Rock.Model.Location"/>
+        /// Gets or sets the Id of the GroupLocationType <see cref="Rock.Model.DefinedValue"/> that is used to identify the type of <see cref="Rock.Model.GroupLocation"/>
         /// that this is.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> referencing the Id of the GroupLocaitonType <see cref="Rock.Model.DefinedValue"/> that identifies the type of location that this is.
+        /// An <see cref="System.Int32"/> referencing the Id of the GroupLocationType <see cref="Rock.Model.DefinedValue"/> that identifies the type of group location that this is.
         /// If a GroupLocationType <see cref="Rock.Model.DefinedValue"/> is not associated with this GroupLocation this value will be null.
         /// </value>
-        /// <remarks>
-        /// Examples of 
-        /// </remarks>
         [DataMember]
+        [DefinedValue(SystemGuid.DefinedType.GROUP_LOCATION_TYPE)]
         public int? GroupLocationTypeValueId { get; set; }
 
         /// <summary>
