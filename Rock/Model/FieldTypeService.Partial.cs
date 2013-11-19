@@ -56,8 +56,13 @@ namespace Rock.Model
                     f.Assembly == assemblyName &&
                     f.Class == className ).Any() )
                 {
+                    string fieldTypeName = type.Value.Name.SplitCase();
+                    if (fieldTypeName.EndsWith(" Field Type"))
+                    {
+                        fieldTypeName = fieldTypeName.Substring( 0, fieldTypeName.Length - 11 );
+                    }
                     var fieldType = new FieldType();
-                    fieldType.Name = type.Value.Name.SplitCase();
+                    fieldType.Name = fieldTypeName;
                     fieldType.Assembly = assemblyName;
                     fieldType.Class = className;
                     fieldType.IsSystem = false;
