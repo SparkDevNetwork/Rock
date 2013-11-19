@@ -107,12 +107,12 @@
             <div ID="divNothingFound" runat="server" class="col-md-9" visible="false">
                 <div class="col-md-3"></div>
                 <div class="col-md-9 nothing-eligible">
-                    <asp:Literal ID="lblNothingFound" runat="server" Text="Please add them using one of the buttons on the right:" EnableViewState="false" />
+                    <asp:Literal ID="lblNothingFound" runat="server" EnableViewState="false" />
                 </div>
             </div>
 
-            <div class="col-md-3">
-                <h3 id="actions" runat="server">Actions</h3>
+            <div ID="divActions" runat="server" class="col-md-3">
+                <h3 ID="actions" runat="server">Actions</h3>
                 <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-primary btn-lg btn-block btn-checkin-select" OnClick="lbAddPerson_Click" Text="Add Person" CausesValidation="false" EnableViewState="false" />
                 <asp:LinkButton ID="lbAddVisitor" runat="server" CssClass="btn btn-primary btn-lg btn-block btn-checkin-select" OnClick="lbAddVisitor_Click" Text="Add Visitor" CausesValidation="false" EnableViewState="false" />
                 <asp:LinkButton ID="lbAddFamily" runat="server" CssClass="btn btn-primary btn-lg btn-block btn-checkin-select" OnClick="lbAddFamily_Click" Text="Add Family" CausesValidation="false" EnableViewState="false" />

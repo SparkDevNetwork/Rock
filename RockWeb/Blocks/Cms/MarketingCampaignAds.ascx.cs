@@ -9,13 +9,16 @@ using System.Linq;
 using System.Runtime.Caching;
 using System.Web;
 using System.Web.UI;
+
 using DotLiquid;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 using System.Text;
 using System.Text.RegularExpressions;
@@ -28,14 +31,14 @@ namespace RockWeb.Blocks.Cms
         "SELECT A.[name] AS [Text], A.[key] AS [Value] FROM [EntityType] E INNER JOIN [attribute] a ON A.[EntityTypeId] = E.[Id] INNER JOIN [FieldType] F ON F.Id = A.[FieldTypeId]	AND F.Guid = '" +
         Rock.SystemGuid.FieldType.IMAGE + "' WHERE E.Name = 'Rock.Model.MarketingCampaignAd' ORDER BY [Key]", false, "", "", 2 )]
 
-    [MemoField( "Template", "The liquid template to use for rendering", true, @"
+    [CodeEditorField( "Template", "The liquid template to use for rendering", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 600, true, @"
     {% include 'AdList' with Ads %}
 ", "", 3 )]
 
     [CampusesField( "Campuses", "Display Ads for selected campus", false, "", "Filter", 4 )]
     [CustomCheckboxListField( "Ad Types", "Types of Ads to display",
         "SELECT [Name] AS [Text], [Id] AS [Value] FROM [MarketingCampaignAdType] ORDER BY [Name]", true, "", "Filter", 5 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE, "Audience", "The Audience", false, "", "Filter", 6 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE, "Audience", "The Audience", false, true, "", "Filter", 6 )]
     [CustomCheckboxListField( "Audience Primary Secondary", "Primary or Secondary Audience", "1:Primary,2:Secondary", false, "1,2", "Filter", 7 )]
 
     [IntegerField( "Image Width", "Width that the image should be resized to. Leave height/width blank to get original size.", false, int.MinValue, "", 8 )]

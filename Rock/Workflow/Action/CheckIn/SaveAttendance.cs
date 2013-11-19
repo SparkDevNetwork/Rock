@@ -82,7 +82,7 @@ namespace Rock.Workflow.Action.CheckIn
                                             var attendance = attendanceService.Get( startDateTime, location.Location.Id, schedule.Schedule.Id, group.Group.Id, person.Person.Id );
                                             if ( attendance == null )
                                             {
-                                                attendance = uow.DbContext.Attendances.Create();
+                                                attendance = ((Rock.Data.RockContext)uow.DbContext).Attendances.Create();
                                                 attendance.LocationId = location.Location.Id;
                                                 attendance.ScheduleId = schedule.Schedule.Id;
                                                 attendance.GroupId = group.Group.Id;

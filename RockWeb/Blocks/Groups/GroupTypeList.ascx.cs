@@ -39,12 +39,19 @@ namespace RockWeb.Blocks.Groups
             gGroupType.DataKeyNames = new string[] { "id" };
             gGroupType.Actions.ShowAdd = true;
             gGroupType.Actions.AddClick += gGroupType_Add;
+            gGroupType.GridReorder += gGroupType_GridReorder;
             gGroupType.GridRebind += gGroupType_GridRebind;
 
             // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
-            gGroupType.Actions.ShowAdd = canAddEditDelete;
-            gGroupType.IsDeleteEnabled = canAddEditDelete;
+            bool canEditBlock = IsUserAuthorized( "Edit" );
+            gGroupType.Actions.ShowAdd = canEditBlock;
+            gGroupType.IsDeleteEnabled = canEditBlock;
+
+            // Only display reordering column if user can edit the block
+            gGroupType.Columns[0].Visible = canEditBlock;
+
+            SecurityField securityField = gGroupType.Columns[5] as SecurityField;
+            securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.GroupType ) ).Id;
 
             BindFilter();
         }
@@ -139,10 +146,16 @@ namespace RockWeb.Blocks.Groups
 
                 if ( groupType != null )
                 {
+                    if ( !groupType.IsAuthorized("Administrate", CurrentPerson))
+                    {
+                        mdGridWarning.Show( "Sorry, you're not authorized to delete this group type.", ModalAlertType.Alert );
+                        return;
+                    }
+
                     string errorMessage;
                     if ( !groupTypeService.CanDelete( groupType, out errorMessage ) )
                     {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Alert );
                         return;
                     }
 
@@ -152,6 +165,25 @@ namespace RockWeb.Blocks.Groups
             } );
 
             BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridReorder event of the gGroupType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gGroupType_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            using ( new UnitOfWorkScope() )
+            {
+                var groupTypes = GetGroupTypes();
+                if (groupTypes != null)
+                {
+                    new GroupTypeService().Reorder( groupTypes.ToList(), e.OldIndex, e.NewIndex, CurrentPersonId);
+                }
+
+                BindGrid();
+            }
         }
 
         /// <summary>
@@ -182,16 +214,32 @@ namespace RockWeb.Blocks.Groups
             ddlIsSystem.SelectedValue = isSystem;
         }
 
-
         /// <summary>
         /// Binds the grid.
         /// </summary>
         private void BindGrid()
         {
-            GroupTypeService groupTypeService = new GroupTypeService();
-            SortProperty sortProperty = gGroupType.SortProperty;
+            var selectQry = GetGroupTypes()
+                .Select( a => new {
+                    a.Id,
+                    a.Name,
+                    a.Description,
+                    Purpose = a.GroupTypePurposeValue.Name,
+                    GroupsCount = a.Groups.Count(),
+                    a.IsSystem
+                } );
 
-            var qry = groupTypeService.Queryable();
+            gGroupType.DataSource = selectQry.ToList();
+            gGroupType.DataBind();
+        }
+
+        /// <summary>
+        /// Gets the group types.
+        /// </summary>
+        /// <returns></returns>
+        private IQueryable<GroupType> GetGroupTypes()
+        {
+            var qry = new GroupTypeService().Queryable();
 
             int purposeId = int.MinValue;
             if ( int.TryParse( rFilter.GetUserPreference( "Purpose" ), out purposeId ) )
@@ -209,27 +257,7 @@ namespace RockWeb.Blocks.Groups
                 qry = qry.Where( t => !t.IsSystem);
             }
 
-            var selectQry = qry.Select( a =>
-                new
-                {
-                    a.Id,
-                    a.Name,
-                    a.Description,
-                    Purpose = a.GroupTypePurposeValue.Name,
-                    GroupsCount = a.Groups.Count(),
-                    a.IsSystem
-                } );
-
-            if ( sortProperty != null )
-            {
-                gGroupType.DataSource = selectQry.Sort( sortProperty ).ToList();
-            }
-            else
-            {
-                gGroupType.DataSource = selectQry.OrderBy( p => p.Name ).ToList();
-            }
-
-            gGroupType.DataBind();
+            return qry.OrderBy( g => g.Order );
         }
 
         #endregion

@@ -1442,7 +1442,7 @@ namespace Rock.Web.UI
         {
             var scriptManager = ScriptManager.GetCurrent( page );
 
-            if ( scriptManager != null )
+            if ( scriptManager != null && !scriptManager.Scripts.Any( s => s.Path == path ) )
             {
                 scriptManager.Scripts.Add( new ScriptReference( path ) );
             }

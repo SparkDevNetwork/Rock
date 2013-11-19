@@ -7515,6 +7515,7 @@ td.visible-print {
     13. Datepicker - styles for the date picker
     14. Timepicker - styles for the time picker
     15. File Upload / Image Upload - styles for the file / image uploader
+    16. Code Editor - Styles for the code editor control
 
 */
 .picker {
@@ -8445,6 +8446,9 @@ div.tagsinput div {
   font-size: 11px;
   color: #a8bac9;
   width: 100%;
+}
+.code-editor {
+  position: relative;
 }
 /*
     Used to manage styles for specific blocks.

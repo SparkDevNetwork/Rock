@@ -3,7 +3,7 @@
 <%@ Import Namespace="System.Security.AccessControl"  %>
 <%@ Import Namespace="System.IO"  %>
 <%@ Import Namespace="System.Net"  %>
-
+<%@ Import Namespace="System"  %>
 
 <%@ Import Namespace="System.Web.Configuration"  %>
 <%@ Import Namespace="System.Configuration"  %>
@@ -11,6 +11,8 @@
 <%@ Import Namespace="System.Xml"  %>
 
 <%@ Import Namespace="Rock"  %>
+<%@ Import Namespace="Rock.Data"  %>
+<%@ Import Namespace="Rock.Model"  %>
 
 <script language="CS" runat="server">
 
@@ -38,6 +40,12 @@
 		
 		pAdminAccount.Visible = false;
 		pOrganization.Visible = true;
+
+        // add timezones to dropdown
+        foreach (TimeZoneInfo timeZone in TimeZoneInfo.GetSystemTimeZones())
+        {
+            ddTimeZone.Items.Add(new ListItem(timeZone.DisplayName, timeZone.Id));
+        }
     }
     
     void OrgNext_Click(Object sender, EventArgs e)
@@ -49,6 +57,17 @@
     	globalAttributesCache.SetValue("OrganizationEmail", txtOrgEmail.Text, null, true);
     	globalAttributesCache.SetValue("OrganizationPhone", txtOrgPhone.Text, null, true);
     	globalAttributesCache.SetValue("OrganizationWebsite", txtOrgWebsite.Text, null, true);
+
+        // update the external site domain with the value provided
+        SiteDomainService domainService = new SiteDomainService();
+        SiteDomain domain = domainService.Get(new Guid(Rock.SystemGuid.SiteDomain.SITEDOMAIN_EXTERNAL));
+        domain.Domain = txtOrgWebsite.Text;
+        domainService.Save(domain, null);
+        
+        // set timezone value
+        Configuration rockWebConfig = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration("~");
+        rockWebConfig.AppSettings.Settings["OrgTimeZone"].Value = ddTimeZone.SelectedValue;
+        rockWebConfig.Save();
     	
     	pOrganization.Visible = false;
     	pEmailSettings.Visible = true;
@@ -170,6 +189,11 @@
 							<div class="form-group">
 								<label class="control-label" for="inputEmail">Organization Website</label>
 								<asp:TextBox ID="txtOrgWebsite" placeholder="www.yourchurch.com" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
+							</div>
+
+                            <div class="form-group">
+								<label class="control-label" for="inputEmail">Organization Timezone</label>
+								<asp:DropDownList ID="ddTimeZone" runat="server" CssClass="form-control"></asp:DropDownList>
 							</div>
 						
                             <div class="btn-list">
