@@ -26,6 +26,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
     /// Family Select block for Attended Check-in
     /// </summary>
     [Description( "Attended Check-In Family Select Block" )]
+    [BooleanField( "Enable Add Buttons", "Show the add people/visitor/family buttons on the family select page?", true )]
+    [TextField("Not Found Text", "What text should display when the nothing is found?", true, "Please add them using one of the buttons on the right")]
     public partial class FamilySelect : CheckInBlock
     {
         #region Control Methods
@@ -60,6 +62,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
                 else
                 {
+                    bool showAddButtons = bool.Parse( GetAttributeValue( "EnableAddButtons" ) );
+                    string nothingFoundText = GetAttributeValue( "NotFoundText" );
                     lblFamilyTitle.InnerText = "No Search Results";
                     lbNext.Enabled = false;
                     lbNext.Visible = false;
@@ -68,6 +72,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     pnlVisitor.Visible = false;
                     actions.Visible = false;
                     divNothingFound.Visible = true;
+                    divNothingFound.InnerText = nothingFoundText;
+                    lbAddPerson.Visible = showAddButtons;
+                    lbAddVisitor.Visible = showAddButtons;
+                    lbAddFamily.Visible = showAddButtons;                    
                 }
 
                 rGridPersonResults.PageSize = 4;

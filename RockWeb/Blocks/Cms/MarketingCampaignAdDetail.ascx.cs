@@ -15,10 +15,15 @@ using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Cms
 {
-    [MemoField( "Layout", "The layout of the Ad details", true, @"<h1>{{ MarketingCampaign.Title }}</h1><br/><br/>{{ SummaryText }}<br/><br/>{{ DetailHtml }}" )]
+    [CodeEditorField( "Layout", "The layout of the Ad details", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 600, true, @"
+<h1>{{ MarketingCampaign.Title }}</h1><br/><br/>
+{{ SummaryText }}<br/><br/>
+{{ DetailHtml }}
+" )]
     public partial class MarketingCampaignAdDetail : Rock.Web.UI.RockBlock
     {
         protected override void OnLoad( EventArgs e )

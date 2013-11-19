@@ -153,6 +153,7 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
+    <Compile Include="Attribute\CodeEditorFieldAttribute.cs" />
     <Compile Include="Attribute\DefinedTypeFieldAttribute.cs" />
     <Compile Include="Attribute\GroupLocationTypeFieldAttribute.cs" />
     <Compile Include="Attribute\InheritedAttribute.cs" />
@@ -184,6 +185,7 @@
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
     <Compile Include="Communication\Transport\Twilio.cs" />
     <Compile Include="Field\Types\GroupLocationTypeFieldType.cs" />
+    <Compile Include="Field\Types\CodeEditorFieldType.cs" />
     <Compile Include="Field\Types\TimeFieldType.cs" />
     <Compile Include="Field\Types\IntegerRangeFieldType.cs" />
     <Compile Include="Field\Types\DateRangeFieldType.cs" />
@@ -195,6 +197,7 @@
     <Compile Include="Financial\Payment.cs" />
     <Compile Include="Financial\GatewayComponent.cs" />
     <Compile Include="Financial\GatewayContainer.cs" />
+    <Compile Include="Jobs\LaunchWorkflow.cs" />
     <Compile Include="Jobs\RunSQL.cs" />
     <Compile Include="Migrations\201308232058045_CreateDatabase.cs" />
     <Compile Include="Migrations\201308232058045_CreateDatabase.Designer.cs">
@@ -328,6 +331,10 @@
     <Compile Include="Migrations\201311151429480_TransactionReferenceNumber.Designer.cs">
       <DependentUpon>201311151429480_TransactionReferenceNumber.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201311180029101_BlockCssClass.cs" />
+    <Compile Include="Migrations\201311180029101_BlockCssClass.Designer.cs">
+      <DependentUpon>201311180029101_BlockCssClass.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -389,6 +396,7 @@
     <Compile Include="Search\Group\Name.cs" />
     <Compile Include="SystemGuid\Category.cs" />
     <Compile Include="SystemGuid\EntityType.cs" />
+    <Compile Include="SystemGuid\SiteDomain.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\Cache\CategoryCache.cs" />
     <Compile Include="Web\Cache\LayoutCache.cs" />
@@ -599,6 +607,7 @@
     <Compile Include="Web\UI\Controls\Pickers\LocationItemPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LocationAddressPicker.cs" />
     <Compile Include="Web\UI\Controls\RockControlHelper.cs" />
+    <Compile Include="Web\UI\Controls\CodeEditor.cs" />
     <Compile Include="Web\UI\Controls\TermDescription.cs" />
     <Compile Include="Web\UI\Controls\Grid\DefinedValueField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LocationPicker.cs" />
@@ -706,6 +715,7 @@
     <Compile Include="Workflow\Action\CheckIn\SelectByBestFit.cs" />
     <Compile Include="Workflow\Action\CheckIn\SelectByLastAttended.cs" />
     <Compile Include="Workflow\Action\ParseZebraLabel.cs" />
+    <Compile Include="Workflow\Action\RunSQL.cs" />
     <Compile Include="Workflow\TriggerCache.cs" />
     <Compile Include="Model\WorkflowTriggerService.Partial.cs" />
     <Compile Include="Model\WorkflowTrigger.cs" />
@@ -1251,6 +1261,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201311151429480_TransactionReferenceNumber.resx">
       <DependentUpon>201311151429480_TransactionReferenceNumber.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201311180029101_BlockCssClass.resx">
+      <DependentUpon>201311180029101_BlockCssClass.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

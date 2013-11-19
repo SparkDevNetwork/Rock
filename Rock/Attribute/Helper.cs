@@ -330,7 +330,7 @@ namespace Rock.Attribute
                 else if ( string.IsNullOrEmpty( attribute.EntityTypeQualifierColumn ) ||
                     ( properties.ContainsKey( attribute.EntityTypeQualifierColumn.ToLower() ) &&
                     ( string.IsNullOrEmpty( attribute.EntityTypeQualifierValue ) ||
-                    properties[attribute.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ).ToString() == attribute.EntityTypeQualifierValue ) ) )
+                    (properties[attribute.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ) ?? "").ToString() == attribute.EntityTypeQualifierValue ) ) )
                 {
                     attributes.Add( Rock.Web.Cache.AttributeCache.Read( attribute ) );
                 }
