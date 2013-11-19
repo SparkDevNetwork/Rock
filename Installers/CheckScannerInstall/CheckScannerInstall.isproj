@@ -29,7 +29,7 @@
 	</ItemGroup>
 	<Import Project="$(MSBuildExtensionsPath32)\InstallShield\2013Limited\InstallShield.targets"/>
 	<ItemGroup>
-		<ProjectReference Include="..\CheckScannerUtility\CheckScannerUtility\CheckScannerUtility.csproj">
+		<ProjectReference Include="..\..\Applications\Wpf\CheckScannerUtility\CheckScannerUtility\CheckScannerUtility.csproj">
 			<Name>CheckScannerUtility</Name>
 			<Project>{41D111D0-0579-45FF-9EC5-BEE6736C81D6}</Project>
 		</ProjectReference>
