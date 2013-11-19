@@ -9,7 +9,7 @@
         <ul class="dropdown-menu">
             <li>
                 <asp:PlaceHolder ID="phMyAccount" runat="server">
-                    <a href='<%= Page.ResolveUrl("~") + "MyAccount" %>'>My Account</a>
+                    <asp:HyperLink ID="hlMyAccount" runat="server" Text="My Account" />
                 </asp:PlaceHolder>
             </li>
             <li class="divider"></li>
