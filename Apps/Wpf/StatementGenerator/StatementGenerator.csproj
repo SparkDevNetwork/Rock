@@ -41,7 +41,7 @@
   <ItemGroup>
     <Reference Include="ceTe.DynamicPDF.40, Version=7.0.3.40, Culture=neutral, PublicKeyToken=09b5ce0d5c0a9d8b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\libs\DynamicPDF v7.0.3 for .NET\bin\ceTe.DynamicPDF.40.dll</HintPath>
+      <HintPath>..\..\..\..\Rock-StatementGenerator\libs\DynamicPDF v7.0.3 for .NET\bin\ceTe.DynamicPDF.40.dll</HintPath>
     </Reference>
     <Reference Include="DotLiquid, Version=1.7.0.0, Culture=neutral, PublicKeyToken=82e46016ecf9f07c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -181,11 +181,11 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Rock-ChMS\Rock\Rock.csproj">
+    <ProjectReference Include="..\..\..\Rock\Rock.csproj">
       <Project>{8f8c2a79-24f4-4157-8b99-45f75fa85799}</Project>
       <Name>Rock</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Rock-ChMS\Apps\Wpf\Rock.Wpf\Rock.Wpf.csproj">
+    <ProjectReference Include="..\Rock.Wpf\Rock.Wpf.csproj">
       <Project>{90440596-fa0a-45e7-8872-3da47786f6a7}</Project>
       <Name>Rock.Wpf</Name>
     </ProjectReference>
