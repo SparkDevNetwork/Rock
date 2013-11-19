@@ -73,7 +73,7 @@
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="DotLiquid">
-      <HintPath>..\..\..\Rock\bin\DotLiquid.dll</HintPath>
+      <HintPath>..\..\..\..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
     </Reference>
     <Reference Include="MTMicrImage, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

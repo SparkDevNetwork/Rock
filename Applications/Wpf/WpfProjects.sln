@@ -13,14 +13,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AXInteropBuilder", "CheckSc
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{94B3D962-26A7-4CD9-9D46-79E032CF1AB5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatementGenerator", "..\..\..\Rock-StatementGenerator\StatementGenerator\StatementGenerator.csproj", "{896F254D-0CEC-46D0-AD76-E95D43CC7B8D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatementGenerator", "StatementGenerator\StatementGenerator.csproj", "{896F254D-0CEC-46D0-AD76-E95D43CC7B8D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Wpf", "Rock.Wpf\Rock.Wpf.csproj", "{90440596-FA0A-45E7-8872-3DA47786F6A7}"
-EndProject
-Project("{6141683F-8A12-4E36-9623-2EB02B2C2303}") = "CheckScannerInstall", "CheckScannerInstall\CheckScannerInstall.isproj", "{E74C584C-A26E-4EA1-83E2-01955B5670F2}"
-	ProjectSection(ProjectDependencies) = postProject
-		{41D111D0-0579-45FF-9EC5-BEE6736C81D6} = {41D111D0-0579-45FF-9EC5-BEE6736C81D6}
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -91,16 +86,6 @@ Global
 		{90440596-FA0A-45E7-8872-3DA47786F6A7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{90440596-FA0A-45E7-8872-3DA47786F6A7}.SingleImage|Any CPU.ActiveCfg = Release|Any CPU
 		{90440596-FA0A-45E7-8872-3DA47786F6A7}.SingleImage|Any CPU.Build.0 = Release|Any CPU
-		{E74C584C-A26E-4EA1-83E2-01955B5670F2}.CD_ROM|Any CPU.ActiveCfg = CD_ROM
-		{E74C584C-A26E-4EA1-83E2-01955B5670F2}.CD_ROM|Any CPU.Build.0 = CD_ROM
-		{E74C584C-A26E-4EA1-83E2-01955B5670F2}.Debug|Any CPU.ActiveCfg = DVD-5
-		{E74C584C-A26E-4EA1-83E2-01955B5670F2}.Debug|Any CPU.Build.0 = DVD-5
-		{E74C584C-A26E-4EA1-83E2-01955B5670F2}.DVD-5|Any CPU.ActiveCfg = DVD-5
-		{E74C584C-A26E-4EA1-83E2-01955B5670F2}.DVD-5|Any CPU.Build.0 = DVD-5
-		{E74C584C-A26E-4EA1-83E2-01955B5670F2}.Release|Any CPU.ActiveCfg = SingleImage
-		{E74C584C-A26E-4EA1-83E2-01955B5670F2}.Release|Any CPU.Build.0 = SingleImage
-		{E74C584C-A26E-4EA1-83E2-01955B5670F2}.SingleImage|Any CPU.ActiveCfg = SingleImage
-		{E74C584C-A26E-4EA1-83E2-01955B5670F2}.SingleImage|Any CPU.Build.0 = SingleImage
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
