@@ -119,7 +119,7 @@
 
                         <div id="divACHPaymentInfo" runat="server" visible="false">
                             <fieldset>
-                                <Rock:RockRadioButtonList ID="rblSavedAch" runat="server" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
+                                <Rock:RockRadioButtonList ID="rblSavedAch" runat="server" Label=" " CssClass="radio-list" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
                                 <div id="divNewBank" runat="server" class="radio-content">                                    
                                     <Rock:RockTextBox ID="txtBankName" runat="server" Label="Bank Name" />
                                     <Rock:RockTextBox ID="txtRoutingNumber" runat="server" Label="Routing #" />
