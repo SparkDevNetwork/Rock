@@ -569,7 +569,14 @@ namespace Rock.Web.UI
         public string LinkedPageUrl( string attributeKey, Dictionary<string, string> queryParams = null )
         {
             var pageReference = new PageReference( GetAttributeValue( attributeKey ), queryParams );
-            return pageReference.BuildUrl();
+            if ( pageReference.PageId > 0 )
+            {
+                return pageReference.BuildUrl();
+            }
+            else
+            {
+                return string.Empty;
+            }
         }
 
         /// <summary>

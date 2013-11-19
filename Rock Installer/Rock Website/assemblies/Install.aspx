@@ -43,6 +43,16 @@
     {
     	pWelcome.Visible = false;
     	pDatabaseConfig.Visible = true;
+        
+        // show db settings if they are in session
+        if (Session["dbServer"] != null)
+        {
+            txtServerName.Text = Session["dbServer"].ToString();
+            txtDatabaseName.Text = Session["dbDatabasename"].ToString();
+            txtUsername.Text = Session["dbUsername"].ToString();
+            txtPassword.Text = Session["dbPassword"].ToString();
+        }
+        
     }
 	
 	void DbConfigNext_Click(Object sender, EventArgs e)
@@ -50,6 +60,12 @@
                
         // check settings
     	string databaseMessages = string.Empty; 
+        
+        // write database settings to ViewState
+        Session["dbServer"] = txtServerName.Text;
+        Session["dbDatabasename"] = txtDatabaseName.Text;
+        Session["dbUsername"] = txtUsername.Text;
+        Session["dbPassword"] = txtPassword.Text;
     	
         bool canConnect = CheckSqlServerConnection(txtServerName.Text, txtDatabaseName.Text, txtUsername.Text, txtPassword.Text, out databaseMessages);
 
@@ -203,6 +219,8 @@
 			
 			Configuration rockWebConfig  = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration("~");
 			rockWebConfig.AppSettings.Settings["PasswordKey"].Value = hexBytes;
+            rockWebConfig.AppSettings.Settings["DataEncryptionKey"].Value = GenerateRandomDataEncryptionKey();
+            
             //rockWebConfig.AppSettings.Settings["BaseUrl"].Value = Request.Url.Scheme + @"://" + Request.Url.Host + Request.ApplicationPath;  // not needed removed from web.config per https://github.com/SparkDevNetwork/Rock-ChMS/commit/17b0d30082f0b98bec8bc31d2034fb774690b2e1
 			rockWebConfig.Save();
 			
@@ -449,7 +467,16 @@
         // add error message
         lErrorDetails.Text = errorMessage;
 	}
-	
+
+    private string GenerateRandomDataEncryptionKey()
+    {
+        var rng = System.Security.Cryptography.RNGCryptoServiceProvider.Create();
+        byte[] randomBytes = new byte[128];
+        rng.GetNonZeroBytes(randomBytes);
+        string dataEncryptionKey = Convert.ToBase64String(randomBytes);
+
+        return dataEncryptionKey;
+    }
 	
 	private bool CheckRockNotInstalled(out string errorDetails) {
 		

@@ -324,6 +324,28 @@
                 <Rock:HtmlEditor ID="htmlEdit" runat="server" Label="HtmlEditor" />
             </div>
 
+            <h2>Rock:CodeEditor</h2>
+            <div runat="server" class="r-example">
+                <Rock:CodeEditor ID="ceScript" runat="server" EditorTheme="Rock" Label="Script" EditorMode="Html" EditorHeight="300">
+<h1>Hello!!!</h1> 
+<p>This is a great way to edit HTML! Reasons:</p>
+
+<!-- Comment 
+     We shouldn't have to explain why this is better than just a 
+     textarea but we will just for you...
+-->
+
+<ol class="reasons">
+    <li>Stynax highlighting</li>
+    <li>Tabs work great</li>
+    <li>Code folding</li>
+</ol>             
+</Rock:CodeEditor>
+            </div>
+            <p>Alternately, you can provide the contents of the code to edit in the <code>Text</code> property of the control.
+            </p>
+
+
             <a name="css-rollover" /><h2>CSS Rollovers</h2>
             You often run across situiations where you would like buttons or links to apprear when you hover over a selection of code. Instead of using jQuery toogles you can use the
             CSS classes below. These classes can be applied to any tags.  In order to support nested rollovers the actions must be direct decendents of their containers.  On touch enabled
@@ -337,6 +359,7 @@
                     </div>
                 </div>
             </div>
+
 
         </asp:Panel>
     </ContentTemplate>

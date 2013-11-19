@@ -795,7 +795,7 @@ namespace RockWeb.Blocks.Groups
                         .ThenBy( a => a.Name )
                         .ToList() )
                     {
-                        GroupMemberAttributesInheritedState.Add( new InheritedAttribute( attribute.Name,
+                        GroupMemberAttributesInheritedState.Add( new InheritedAttribute( attribute.Name, attribute.Description,
                             Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ), inheritedGroupType.Name ) );
                     }
 
