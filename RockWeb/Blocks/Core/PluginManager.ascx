@@ -1,12 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PluginManager.ascx.cs" Inherits="RockWeb.Blocks.Core.PluginManager" %>
 
-<asp:UpdateProgress id="updateProgress" runat="server">
-		<ProgressTemplate>
-		    <div id="updateProgress" class="modal-backdrop"> <i class="fa fa-spinner fa-spin fa-2x" style="color: white;"></i> 
-		    </div>
-		</ProgressTemplate>
-</asp:UpdateProgress>
-
 <asp:UpdatePanel ID="upRockPackages" runat="server">
 <ContentTemplate>
     <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Danger" Visible="false" />

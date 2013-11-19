@@ -1,12 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RockUpdate.ascx.cs" Inherits="RockWeb.Blocks.Core.RockUpdate" %>
 
-<asp:UpdateProgress id="updateProgress" runat="server">
-		<ProgressTemplate>
-		    <div id="updateProgress"> <i class="fa fa-spinner fa-spin"></i> Processing...
-		    </div>
-		</ProgressTemplate>
-</asp:UpdateProgress>
-
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
         <div class="row-fluid">
