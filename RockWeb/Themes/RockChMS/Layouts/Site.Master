@@ -50,8 +50,19 @@
     <form id="form1" runat="server">
         <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
         <ajaxToolkit:ToolkitScriptManager ID="sManager" runat="server"/>
+
+        <asp:UpdateProgress id="updateProgress" runat="server">
+		        <ProgressTemplate>
+		            <div id="updateProgress" class="modal-backdrop"> 
+                        <i class="fa fa-refresh fa-spin fa-3x" style="position: fixed; padding: 50px; color: #fff; left: 40%; top: 40%;"></i> 
+		            </div>
+		        </ProgressTemplate>
+        </asp:UpdateProgress>
+
     </form>
 
     
 </body>
 </html>
+
+        
