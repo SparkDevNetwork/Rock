@@ -33,22 +33,22 @@ namespace RockWeb.Blocks.Administration
         private readonly List<string> _tabs = new List<string> { "Basic Settings", "Display Settings", "Advanced Settings", "Import/Export"} ;
 
         /// <summary>
-        /// Gets or sets the current property.
+        /// Gets or sets the current tab.
         /// </summary>
         /// <value>
-        /// The current property.
+        /// The current tab.
         /// </value>
-        protected string CurrentProperty
+        protected string CurrentTab
         {
             get
             {
-                object currentProperty = ViewState["CurrentProperty"];
+                object currentProperty = ViewState["CurrentTab"];
                 return currentProperty != null ? currentProperty.ToString() : "Basic Settings";
             }
 
             set
             {
-                ViewState["CurrentProperty"] = value;
+                ViewState["CurrentTab"] = value;
             }
         }
 
@@ -164,8 +164,6 @@ namespace RockWeb.Blocks.Administration
                 rptProperties.DataSource = _tabs;
                 rptProperties.DataBind();
 
-                LoadDropdowns();
-
                 tbPageName.Text = _page.Name;
                 tbPageTitle.Text = _page.Title;
                 ppParentPage.SetValue( pageService.Get( page.ParentPageId ?? 0 ) );
@@ -215,7 +213,7 @@ namespace RockWeb.Blocks.Administration
             LinkButton lb = sender as LinkButton;
             if ( lb != null )
             {
-                CurrentProperty = lb.Text;
+                CurrentTab = lb.Text;
 
                 rptProperties.DataSource = _tabs;
                 rptProperties.DataBind();
@@ -415,13 +413,6 @@ namespace RockWeb.Blocks.Administration
         #region Internal Methods
 
         /// <summary>
-        /// Loads the dropdowns.
-        /// </summary>
-        private void LoadDropdowns()
-        {
-        }
-
-        /// <summary>
         /// Displays the error.
         /// </summary>
         /// <param name="message">The message.</param>
@@ -441,7 +432,7 @@ namespace RockWeb.Blocks.Administration
         /// <returns></returns>
         protected string GetTabClass( object property )
         {
-            if ( property.ToString() == CurrentProperty )
+            if ( property.ToString() == CurrentTab )
             {
                 return "active";
             }
@@ -454,7 +445,7 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void ShowSelectedPane()
         {
-            if ( CurrentProperty.Equals( "Basic Settings" ) )
+            if ( CurrentTab.Equals( "Basic Settings" ) )
             {
                 pnlBasicProperty.Visible = true;
                 pnlDisplaySettings.Visible = false;
@@ -462,7 +453,7 @@ namespace RockWeb.Blocks.Administration
                 pnlImportExport.Visible = false;
                 pnlBasicProperty.DataBind();
             }
-            else if ( CurrentProperty.Equals( "Display Settings" ) )
+            else if ( CurrentTab.Equals( "Display Settings" ) )
             {
                 pnlBasicProperty.Visible = false;
                 pnlDisplaySettings.Visible = true;
@@ -470,7 +461,7 @@ namespace RockWeb.Blocks.Administration
                 pnlImportExport.Visible = false;
                 pnlDisplaySettings.DataBind();
             }
-            else if ( CurrentProperty.Equals( "Advanced Settings" ) )
+            else if ( CurrentTab.Equals( "Advanced Settings" ) )
             {
                 pnlBasicProperty.Visible = false;
                 pnlDisplaySettings.Visible = false;
@@ -478,7 +469,7 @@ namespace RockWeb.Blocks.Administration
                 pnlImportExport.Visible = false;
                 pnlAdvancedSettings.DataBind();
             }
-            else if ( CurrentProperty.Equals( "Import/Export" ) )
+            else if ( CurrentTab.Equals( "Import/Export" ) )
             {
                 pnlBasicProperty.Visible = false;
                 pnlDisplaySettings.Visible = false;

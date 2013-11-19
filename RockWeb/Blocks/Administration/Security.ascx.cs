@@ -122,16 +122,21 @@ namespace RockWeb.Blocks.Administration
                         $('#modal-popup div.modal-header h3 small', window.parent.document).html('{0}');
                     }});
                 ", HttpUtility.JavaScriptStringEncode(iSecured.ToString()) );
-
                     this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "set-html-{0}", this.ClientID ), script, true );
-
+                }
+                else
+                {
+                    rGrid.Visible = false;
+                    rGridParentRules.Visible = false;
+                    nbMessage.Text = "Unfortunately, you are not able to edit security because you do not belong to a role that has been configured to allow administration of this item.";
+                    nbMessage.Visible = true;
                 }
             }
             else
             {
                 rGrid.Visible = false;
                 rGridParentRules.Visible = false;
-                nbMessage.Text = string.Format( "Could not load the requested entity type ('{0}') to determine security attributes", entityParam );
+                nbMessage.Text = string.Format( "The requested entity type ('{0}') could not be loaded to determine security attributes.", entityParam );
                 nbMessage.Visible = true;
             }
             base.OnInit( e );
