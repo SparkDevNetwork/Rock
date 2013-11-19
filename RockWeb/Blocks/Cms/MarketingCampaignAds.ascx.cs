@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Cms
     [CampusesField( "Campuses", "Display Ads for selected campus", false, "", "Filter", 4 )]
     [CustomCheckboxListField( "Ad Types", "Types of Ads to display",
         "SELECT [Name] AS [Text], [Id] AS [Value] FROM [MarketingCampaignAdType] ORDER BY [Name]", true, "", "Filter", 5 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE, "Audience", "The Audience", false, "", "Filter", 6 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE, "Audience", "The Audience", false, true, "", "Filter", 6 )]
     [CustomCheckboxListField( "Audience Primary Secondary", "Primary or Secondary Audience", "1:Primary,2:Secondary", false, "1,2", "Filter", 7 )]
 
     [IntegerField( "Image Width", "Width that the image should be resized to. Leave height/width blank to get original size.", false, int.MinValue, "", 8 )]
