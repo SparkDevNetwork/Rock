@@ -337,6 +337,10 @@
     <Compile Include="Migrations\201311180029101_BlockCssClass.Designer.cs">
       <DependentUpon>201311180029101_BlockCssClass.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201311191803239_AddLocationTypeBack.cs" />
+    <Compile Include="Migrations\201311191803239_AddLocationTypeBack.Designer.cs">
+      <DependentUpon>201311191803239_AddLocationTypeBack.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -1266,6 +1270,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201311180029101_BlockCssClass.resx">
       <DependentUpon>201311180029101_BlockCssClass.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201311191803239_AddLocationTypeBack.resx">
+      <DependentUpon>201311191803239_AddLocationTypeBack.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
