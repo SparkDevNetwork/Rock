@@ -18,11 +18,15 @@ using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Cms
 {
-    [MemoField( "Layout", "The layout of the Ad details", true, @"<h1>{{ MarketingCampaign.Title }}</h1><br/><br/>{{ SummaryText }}<br/><br/>{{ DetailHtml }}" )]
-    [BooleanField("Enable Debug", "Flag indicating that the control should output the ad data that will be passed to Liquid for parsing.", false)]
+    [CodeEditorField( "Layout", "The layout of the Ad details", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 600, true, @"
+<h1>{{ MarketingCampaign.Title }}</h1><br/><br/>
+{{ SummaryText }}<br/><br/>
+{{ DetailHtml }}
+" )]
     public partial class ViewAdDetail : Rock.Web.UI.RockBlock
     {
         protected override void OnLoad( EventArgs e )

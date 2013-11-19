@@ -202,7 +202,7 @@ namespace RockWeb.Blocks.Security
 
             if (!string.IsNullOrWhiteSpace(returnUrl))
             {
-                Response.Redirect(returnUrl, false);
+                Response.Redirect( Server.UrlDecode( returnUrl ), false );
             }
             else
             {
