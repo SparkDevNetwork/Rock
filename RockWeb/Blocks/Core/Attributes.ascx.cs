@@ -533,15 +533,16 @@ namespace RockWeb.Blocks.Core
                 int entityTypeId = int.MinValue; 
                 if (int.TryParse(rFilter.GetUserPreference("Entity Type"), out entityTypeId))
                 {
-                    if ( entityTypeId == 0 )
-                    {
-                        query = attributeService.GetByEntityTypeId( null );
-                    }
-                    else
+                    if ( entityTypeId > 0 )
                     {
                         query = attributeService.GetByEntityTypeId( entityTypeId );
                     }
                 }
+            }
+
+            if (query == null)
+            {
+                query = attributeService.GetByEntityTypeId( null );
             }
 
             var selectedCategoryIds = new List<int>();
