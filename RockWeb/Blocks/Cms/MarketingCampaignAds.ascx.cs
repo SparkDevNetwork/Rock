@@ -31,7 +31,7 @@ namespace RockWeb.Blocks.Cms
         "SELECT A.[name] AS [Text], A.[key] AS [Value] FROM [EntityType] E INNER JOIN [attribute] a ON A.[EntityTypeId] = E.[Id] INNER JOIN [FieldType] F ON F.Id = A.[FieldTypeId]	AND F.Guid = '" +
         Rock.SystemGuid.FieldType.IMAGE + "' WHERE E.Name = 'Rock.Model.MarketingCampaignAd' ORDER BY [Key]", false, "", "", 2 )]
 
-    [CodeEditorField( "Template", "The liquid template to use for rendering", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 600, true, @"
+    [CodeEditorField( "Template", "The liquid template to use for rendering", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, true, @"
     {% include 'AdList' with Ads %}
 ", "", 3 )]
 
