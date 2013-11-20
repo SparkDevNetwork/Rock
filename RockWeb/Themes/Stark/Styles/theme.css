@@ -5,7 +5,7 @@
     2. Banner - used as the primary heading for a page or large section
     3. Tree - used for tree control
     4. Person List - used to show a list of people
-    5. Notes - used to link notes to entities
+    5. Rollover - Used to hide/show items in the UI has the mouse rolls-over a container.
     6. Pagelist - used to list child pages; currently used in admin screens
     7. Tags - component that allows you to tag entities
     8. Switch - uses the Bootstrap Switch component
@@ -16,8 +16,8 @@
     13. Datepicker - styles for the date picker
     14. Timepicker - styles for the time picker
     15. File Upload / Image Upload - styles for the file / image uploader
-    16. Rollover - Used to hide/show items in the UI has the mouse rolls-over a container.
-    17. Actions - used to hold buttons at the bottom of forms.
+    16. Actions - used to hold buttons at the bottom of forms.
+    17. Code Editor - Styles for the code editor control
 */
 .picker {
   position: relative;
@@ -914,6 +914,9 @@ div.tagsinput div {
 }
 .actions {
   margin-top: 12px;
+}
+.code-editor {
+  position: relative;
 }
 /*
     Used to manage styles for specific blocks.
