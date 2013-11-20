@@ -2129,6 +2129,9 @@ header .login-status {
 .ad-list .ad-text {
   height: 110px;
 }
+.ad-detail img {
+  width: 100%;
+}
 .nav-sub li {
   border: 1px solid #eeeeee;
   border-radius: 4px;
