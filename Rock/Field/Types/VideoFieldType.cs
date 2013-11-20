@@ -26,8 +26,15 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            string formattedValue = string.Empty;
+
             if ( value.Trim() != string.Empty )
             {
+                if (condensed)
+                {
+                    return base.FormatValue( parentControl, value, configurationValues, true );
+                }
+
                 string poster = string.Empty;
                 string video = value;
 

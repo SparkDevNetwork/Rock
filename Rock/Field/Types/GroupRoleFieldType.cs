@@ -33,17 +33,19 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            string formattedValue = string.Empty;
+
             Guid guid = Guid.Empty;
             if ( Guid.TryParse( value, out guid ) )
             {
                 var groupRole = new Rock.Model.GroupTypeRoleService().Get( guid );
                 if ( groupRole != null )
                 {
-                    return groupRole.Name;
+                    formattedValue = groupRole.Name;
                 }
             }
 
-            return string.Empty;
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 
         /// <summary>

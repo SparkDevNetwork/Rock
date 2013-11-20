@@ -32,6 +32,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            string formattedValue = string.Empty;
+
             int id = int.MinValue;
             if (Int32.TryParse( value, out id ))
             {
@@ -42,12 +44,11 @@ namespace Rock.Field.Types
                     .FirstOrDefault();
                 if ( result != null )
                 {
-                    return result.FileName;
+                    formattedValue = result.FileName;
                 }
             }
-                
-            return string.Empty;
 
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 
         /// <summary>
