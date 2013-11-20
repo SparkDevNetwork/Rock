@@ -122,7 +122,7 @@
 		<title>Rock ChMS Installer...</title>
 		<link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css'>
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
-        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/2.0/css/font-awesome.css">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
         <link rel="stylesheet" href="<%=rockStyles %>">
 		
         <link href="<%=rockLogoIco %>" rel="shortcut icon">
@@ -212,12 +212,12 @@
 			
 			if (!tcpClient.Connected) {
 				checksFailed = true;
-				errorDetails += "<li><i class='icon-warning-sign fail'></i> You don't seem to be connected to the internet. The Rock installer requires an Internet connection.</li>";
+                errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i> You don't seem to be connected to the internet. The Rock installer requires an Internet connection.</li>";
 			}
 		}
 		catch(Exception ex) {
 			checksFailed = true;
-			errorDetails += "<li><i class='icon-warning-sign fail'></i> You don't seem to be connected to the internet. The Rock installer requires an Internet connection.</li>";
+            errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i> You don't seem to be connected to the internet. The Rock installer requires an Internet connection.</li>";
 		}
 		finally {
 			tcpClient = null;
@@ -250,7 +250,7 @@
         
         if (!canWrite) {
         	checksFailed = true;
-            errorDetails += "<li><i class='icon-warning-sign fail'></i> The username " + userName + " does not have write access to the server's file system. <a class='btn btn-info btn-xs' href='TODO'>Let's Fix It Together</a> </li>";
+            errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i> The username " + userName + " does not have write access to the server's file system. <a class='btn btn-info btn-xs' href='TODO'>Let's Fix It Together</a> </li>";
         }
 
         // check asp.net version
@@ -259,7 +259,7 @@
         if (!CheckDotNetVersion(out checkResults))
         {
             checksFailed = true;
-            errorDetails += "<li><i class='icon-warning-sign fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/dotnet-version.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+            errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/dotnet-version.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
         }
         
         
