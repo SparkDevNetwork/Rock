@@ -13,7 +13,7 @@
     
 </head>
 <body id="splash" class="error">
-    <form id="form1" runat="server"> 
+    <form id="form1" runat="server">
     
         
         <div id="content">
