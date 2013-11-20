@@ -153,6 +153,7 @@ namespace RockWeb.Blocks.Cms
                     a.Id,
                     a.Route,
                     PageName = a.Page.Name,
+                    PageId = a.Page.Id,
                     a.IsSystem
                 } );
 
