@@ -411,6 +411,7 @@ namespace Rock.Web.UI.Controls
                 Controls.Add( _tbName );
 
                 _tbDescription = new RockTextBox();
+                _tbDescription.Label = "Description";
                 _tbDescription.ID = "tbDescription";
                 _tbDescription.TextMode = TextBoxMode.MultiLine;
                 _tbDescription.Rows = 3;
