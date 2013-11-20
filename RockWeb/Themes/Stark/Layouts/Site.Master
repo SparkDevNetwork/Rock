@@ -3,6 +3,8 @@
 <!DOCTYPE html>
 
 <script runat="server">
+    
+    // keep code below to call base class init method
 
     /// <summary>
     /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -11,8 +13,6 @@
     protected override void OnInit( EventArgs e )
     {
         base.OnInit( e );
-        
-        //
     }    
     
 </script>
@@ -49,7 +49,17 @@
 <body>
     <form id="form1" runat="server">
         <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+        
+        <%-- controls for scriptmanager and update panel --%>
         <ajaxToolkit:ToolkitScriptManager ID="sManager" runat="server"/>
+        <asp:UpdateProgress id="updateProgress" runat="server">
+		        <ProgressTemplate>
+		            <div class="updateprogress-status">
+                        <i class="fa fa-refresh fa-spin fa-3x" ></i>
+                    </div>
+                    <div class="updateprogress-bg modal-backdrop"></div>
+		        </ProgressTemplate>
+        </asp:UpdateProgress>
     </form>
 
     

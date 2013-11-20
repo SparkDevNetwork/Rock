@@ -6329,7 +6329,7 @@ body.modal-open,
   bottom: 0;
   left: 0;
   z-index: 1030;
-  background-color: #000000;
+  background-color: rgba(217, 225, 232, 0.5);
 }
 .modal-backdrop.fade {
   opacity: 0;
