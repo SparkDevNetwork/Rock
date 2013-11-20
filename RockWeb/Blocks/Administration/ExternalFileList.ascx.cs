@@ -14,6 +14,7 @@ using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.Collections.Generic;
+using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -116,6 +117,19 @@ namespace RockWeb.Blocks.Administration
             string fileUrl = string.Format( "{0}GetFile.ashx?id={1}", ResolveUrl( "~" ), e.RowKeyId );
             Response.Redirect( fileUrl, false );
             Context.ApplicationInstance.CompleteRequest();
+        }
+
+        protected void gBinaryFile_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var downloadCellIndex = gBinaryFile.Columns.IndexOf( gBinaryFile.Columns.OfType<HyperLinkField>().First( a => a.Text == "Download" ) );
+                if ( downloadCellIndex >= 0 )
+                {
+                    string fileUrl = string.Format( "{0}GetFile.ashx?id={1}", ResolveUrl( "~" ), e.Row.DataItem.GetPropertyValue( "Id" ).ToString() );
+                    e.Row.Cells[downloadCellIndex].Text =  string.Format("<a href='{0}'>Download</a>", fileUrl);
+                }
+            }
         }
     }
 }
