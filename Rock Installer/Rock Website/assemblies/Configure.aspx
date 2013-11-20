@@ -98,11 +98,12 @@
     	pFinished.Visible = true;
     	
     	// delete install files
-    	File.Delete(Server.MapPath(".") + @"\waiting.gif");
-    	File.Delete(Server.MapPath(".") + @"\Install.aspx");
-    	File.Delete(Server.MapPath(".") + @"\Configure.aspx");
-    	File.Delete(Server.MapPath(".") + @"\RockInstall.zip");
-    	File.Delete(Server.MapPath(".") + @"\Start.aspx");
+        string installDirectory = Server.MapPath(".");
+        File.Delete(installDirectory + @"\waiting.gif");
+        File.Delete(installDirectory + @"\Install.aspx");
+        File.Delete(installDirectory + @"\Configure.aspx");
+        File.Delete(installDirectory + @"\RockInstall.zip");
+        File.Delete(installDirectory + @"\Start.aspx");
     }
     
     
@@ -113,8 +114,8 @@
 		<title>Rock ChMS Installer...</title>
 
 		<link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css'>
-		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/2.0/css/font-awesome.css">
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
         <link rel="stylesheet" href="<%=rockStyles %>">
 		
         <script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
@@ -160,7 +161,7 @@
 							</div>
 						
                             <div class="btn-list">
-							    <asp:LinkButton id="btnAdminNext" runat="server" OnClientClick="return validateAdminAccount();" Text="Next <i class='icon-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="AdminNext_Click"></asp:LinkButton>
+							    <asp:LinkButton id="btnAdminNext" runat="server" OnClientClick="return validateAdminAccount();" Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="AdminNext_Click"></asp:LinkButton>
 						    </div>
                         </asp:Panel>
 						
@@ -197,7 +198,7 @@
 							</div>
 						
                             <div class="btn-list">
-							    <asp:LinkButton id="btnOrgNext" runat="server" OnClientClick="return validateOrgSettings();" Text="Next <i class='icon-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="OrgNext_Click"></asp:LinkButton>
+							    <asp:LinkButton id="btnOrgNext" runat="server" OnClientClick="return validateOrgSettings();" Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="OrgNext_Click"></asp:LinkButton>
 						    </div>
                        </asp:Panel>
 						
@@ -245,7 +246,7 @@
 							</div>
 						
 							<div class="btn-list">
-                                <asp:LinkButton id="btnEmailNext" runat="server" OnClientClick="return validateEmailSettings();" Text="Next <i class='icon-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="EmailNext_Click"></asp:LinkButton>
+                                <asp:LinkButton id="btnEmailNext" runat="server" OnClientClick="return validateEmailSettings();" Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="EmailNext_Click"></asp:LinkButton>
 						    </div>
                         </asp:Panel>
 						
@@ -259,7 +260,7 @@
 							<p></p>
 
                             <div class="btn-list">
-							    <asp:LinkButton id="btnDone" runat="server" OnClientClick="return redirectHome();" Text="<i class='icon-road'></i> Let's Get This Show On The Road"  CssClass="btn btn-primary" ></asp:LinkButton>
+							    <a class="btn btn-primary" href="./"><i class='fa fa-road'></i> Let's Get This Show On The Road</a>
                             </div>
 						</asp:Panel>
 						
@@ -332,8 +333,9 @@
 				
 			    
 			    if (formValid) {
-				    return true;
-				      
+			        // add spinner to button to tell user something is happening
+			        $('#btnEmailNext i').attr("class", "fa fa-spinner fa-spin");
+			        return true;
 			    } else {
 				    return false;
 			    }
