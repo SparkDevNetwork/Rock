@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -20,13 +21,15 @@ namespace RockWeb.Blocks.Utility
     /// </summary>    
     [DefinedTypeField( "Defined Type", "The Defined Type to display values for." )]
     [TextField( "Attribute Key", "The attribute key on the Defined Type that is used to store whether item has been completed (should be a boolean field type)." )]
-    [BooleanField( "Hide Checked Items", "Should checked items be hidden?", false )]
+    [BooleanField( "Hide Checked Items", "Hide items that are already checked.", false )]
+    [BooleanField("Hide Block When Empty", "Hides entire block if no checklist items are available.", false)]
     [TextField("Checklist Title", "Title for your checklist.",false,"","Description",1)]
     [MemoField("Checklist Description", "Description for your checklist. Leave this blank and nothing will be displayed.",false,"","Description", 2)]
     public partial class DefinedTypeCheckList : RockBlock
     {
         private string attributeKey = string.Empty;
         private bool hideCheckedItems = false;
+        private bool hideBlockWhenEmpty = false;
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -40,6 +43,11 @@ namespace RockWeb.Blocks.Utility
             if ( !bool.TryParse( GetAttributeValue( "HideCheckedItems" ), out hideCheckedItems ) )
             {
                 hideCheckedItems = false;
+            }
+
+            if (!bool.TryParse(GetAttributeValue("HideBlockWhenEmpty"), out hideBlockWhenEmpty))
+            {
+                hideBlockWhenEmpty = false;
             }
 
             this.BlockUpdated += DefinedTypeCheckList_BlockUpdated; 
@@ -132,6 +140,20 @@ namespace RockWeb.Blocks.Utility
             {
                 var definedType = new DefinedTypeService().Get( guid );
                 rptrValues.DataSource = definedType.DefinedValues;
+
+                // determine if block should be hidden 
+                if (hideBlockWhenEmpty)
+                {
+                    if (definedType.DefinedValues.Count == 0)
+                    {
+                        pnlContent.Visible = false;
+                    }
+                    else
+                    {
+                        pnlContent.Visible = true;
+                    }
+                }
+
                 rptrValues.DataBind();
             }
         }
