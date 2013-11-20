@@ -18,6 +18,7 @@
     15. File Upload / Image Upload - styles for the file / image uploader
     16. Actions - used to hold buttons at the bottom of forms.
     17. Code Editor - Styles for the code editor control
+    18. Update Panel Status - Styles for the wait screen on an update panel
 */
 
 // 1. Pickers
@@ -1101,4 +1102,23 @@ div.tagsinput div
 // -------------------------
 .code-editor {
    position: relative; 
+}
+
+// 18. Update Panel Status
+// -------------------------
+
+//.updateprogress-bg {
+//
+//}
+
+.updateprogress-status {
+    position: fixed; 
+    padding: 50px; 
+    color: @accent-bold-text-color; 
+    left: 40%; 
+    top: 40%; 
+    opacity: 1; 
+    background-color: @accent-bold-color;
+    border-radius: @border-radius-base;
+    z-index: (@zindex-modal-background + 100);
 }
