@@ -87,49 +87,49 @@
 		    
 		    // check .Net version
 		    if (CheckDotNetVersion(out checkResults)) {
-    			outputMessages += "<li><i class='icon-ok-sign pass'></i>" + checkResults + "</li>";
+                outputMessages += "<li><i class='fa fa-check-circle pass'></i>" + checkResults + "</li>";
     		} else {
-                outputMessages += "<li><i class='icon-warning-sign fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/dotnet-version.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/dotnet-version.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
     			environmentClean = false;
     		}
 		    
 		    // check web server permissions
 		    if (CheckFileSystemPermissions(out checkResults)) {
-    			outputMessages += "<li><i class='icon-ok-sign pass'></i>" + checkResults + "</li>";
+                outputMessages += "<li><i class='fa fa-check-circle pass'></i>" + checkResults + "</li>";
     		} else {
-                outputMessages += "<li><i class='icon-warning-sign fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/filesystem-permissions.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/filesystem-permissions.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
     			environmentClean = false;
     		}
     		
     		// check IIS version
     		if (CheckIisVersion(out checkResults)) {
-    			outputMessages += "<li><i class='icon-ok-sign pass'></i>" + checkResults + "</li>";
+                outputMessages += "<li><i class='fa fa-check-circle pass'></i>" + checkResults + "</li>";
     		} else {
-                outputMessages += "<li><i class='icon-warning-sign fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/iis-version.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/iis-version.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
     			environmentClean = false;
     		}
 		    
 		    // check sql server version
     		if (CheckSqlServerVersion(txtServerName.Text, txtDatabaseName.Text, txtUsername.Text, txtPassword.Text, out checkResults)) {
-    			outputMessages += "<li><i class='icon-ok-sign pass'></i>" + checkResults + "</li>";
+                outputMessages += "<li><i class='fa fa-check-circle pass'></i>" + checkResults + "</li>";
     		} else {
-                outputMessages += "<li><i class='icon-warning-sign fail'></i>" + checkResults + "</li> <a href='http://www.rockchms.com/installer/help/sqlserver-version.html' class='btn btn-info btn-xs'>Let's Fix It Together</a>";
+                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i>" + checkResults + "</li> <a href='http://www.rockchms.com/installer/help/sqlserver-version.html' class='btn btn-info btn-xs'>Let's Fix It Together</a>";
     			environmentClean = false;
     		}
     		
     		// check sql server permissions
     		if (CheckSqlServerPermissions(txtServerName.Text, txtDatabaseName.Text, txtUsername.Text, txtPassword.Text, out checkResults)) {
-    			outputMessages += "<li><i class='icon-ok-sign pass'></i>" + checkResults + "</li>";
+                outputMessages += "<li><i class='fa fa-check-circle pass'></i>" + checkResults + "</li>";
     		} else {
-                outputMessages += "<li><i class='icon-warning-sign fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/sqlserver-permissions.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/sqlserver-permissions.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
     			environmentClean = false;
     		}
     		
     		// check sql server permissions
     		if (CheckSqlServerEmpty(txtServerName.Text, txtDatabaseName.Text, txtUsername.Text, txtPassword.Text, out checkResults)) {
-    			outputMessages += "<li><i class='icon-ok-sign pass'></i>" + checkResults + "</li>";
+                outputMessages += "<li><i class='fa fa-check-circle pass'></i>" + checkResults + "</li>";
     		} else {
-                outputMessages += "<li><i class='icon-warning-sign fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/sqlserver-empty.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/sqlserver-empty.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
     			environmentClean = false;
     		}
     		
@@ -137,7 +137,7 @@
     		if (CheckRockNotInstalled( out checkResults)) {
     			
     		} else {
-                outputMessages += "<li><i class='icon-warning-sign fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/rock-installed.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/rock-installed.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
     			environmentClean = false;
     		}
 
@@ -264,8 +264,8 @@
 	<head>
 		<title>Rock ChMS Installer...</title>
 		<link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css'>
-		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/2.0/css/font-awesome.css">
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
         <link rel="stylesheet" href="<%=rockStyles %>">
 		
         <script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
@@ -311,7 +311,7 @@
 							</asp:Literal>
 
 							<div class="btn-list">
-								<asp:LinkButton id="btnWelcome" runat="server" Text="Get Started <i class='icon-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="WelcomeNext_Click"></asp:LinkButton>
+								<asp:LinkButton id="btnWelcome" runat="server" Text="Get Started <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="WelcomeNext_Click"></asp:LinkButton>
 							</div>
 						</asp:Panel>
 						
@@ -354,7 +354,7 @@
 							<asp:Literal id="lDatabaseMessages" runat="server"></asp:Literal>
 							
 							<div class="btn-list">
-								<asp:LinkButton id="btnDbConfig" runat="server" OnClientClick="return validateDbConnection();" Text="Next <i class='icon-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="DbConfigNext_Click"></asp:LinkButton> 
+								<asp:LinkButton id="btnDbConfig" runat="server" OnClientClick="return validateDbConnection();" Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="DbConfigNext_Click"></asp:LinkButton> 
 							</div>
 						</asp:Panel>
 						
@@ -367,9 +367,9 @@
 							
 							<div class="btn-list">
 							
-								<asp:LinkButton id="btnEnvBack" runat="server"  Text="<i class='icon-chevron-left'></i> Back"  CssClass="btn btn-default" OnClick="EnvBack_Click"></asp:LinkButton>  
-								<asp:LinkButton id="btnTryAgain" runat="server"  Text="Try Again <i class='icon-refresh'></i>"  CssClass="btn btn-primary" OnClick="DbConfigNext_Click"></asp:LinkButton> 
-								<asp:LinkButton id="btnEnvNext" runat="server"  Text="Next <i class='icon-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="EnvNext_Click"></asp:LinkButton> 
+								<asp:LinkButton id="btnEnvBack" runat="server"  Text="<i class='fa fa-chevron-left'></i> Back"  CssClass="btn btn-default" OnClick="EnvBack_Click"></asp:LinkButton>  
+								<asp:LinkButton id="btnTryAgain" runat="server"  Text="Try Again <i class='fa fa-refresh'></i>"  CssClass="btn btn-primary" OnClick="DbConfigNext_Click"></asp:LinkButton> 
+								<asp:LinkButton id="btnEnvNext" runat="server"  Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="EnvNext_Click"></asp:LinkButton> 
 							</div>
 						</asp:Panel>
 						
@@ -379,7 +379,7 @@
 							<asp:Label id="lDownloadDetails" runat="server"></asp:Label>
 							
 							<div class="btn-list">		
-								<asp:LinkButton id="btnDownloadNext" runat="server" Text="Next <i class='icon-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="DownloadNext_Click"></asp:LinkButton> 
+								<asp:LinkButton id="btnDownloadNext" runat="server" Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="DownloadNext_Click"></asp:LinkButton> 
 							</div>
 						</asp:Panel>
 
