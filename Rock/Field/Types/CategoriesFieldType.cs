@@ -33,6 +33,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            string formattedValue = string.Empty;
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
@@ -40,12 +41,11 @@ namespace Rock.Field.Types
                 var categories = new CategoryService().Queryable().Where( a => guids.Contains( a.Guid.ToString() ) );
                 if ( categories.Any() )
                 {
-                    return string.Join( ", ", ( from category in categories select category.Name ).ToArray() );
+                    formattedValue = string.Join( ", ", ( from category in categories select category.Name ).ToArray() );
                 }
             }
 
-            return string.Empty;
-
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 
         /// <summary>
