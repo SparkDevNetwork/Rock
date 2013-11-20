@@ -28,17 +28,19 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            string formattedValue = string.Empty;
+
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 var guids = value.SplitDelimitedValues();
                 var accounts = new FinancialAccountService().Queryable().Where( a => guids.Contains( a.Guid.ToString() ) );
                 if ( accounts.Any() )
                 {
-                    return string.Join( ", ", ( from account in accounts select account.PublicName ).ToArray() );
+                    formattedValue = string.Join( ", ", ( from account in accounts select account.PublicName ).ToArray() );
                 }
             }
 
-            return string.Empty;
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 
         /// <summary>
