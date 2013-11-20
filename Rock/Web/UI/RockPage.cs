@@ -485,14 +485,7 @@ namespace Rock.Web.UI
 
                     // set page title
                     Page.Trace.Warn( "Setting page title" );
-                    if ( CurrentPage.Title != null && CurrentPage.Title != "" )
-                    {
-                        this.Title = CurrentPage.Title;
-                    }
-                    else
-                    {
-                        this.Title = CurrentPage.Name;
-                    }
+                    this.Title = CurrentPage.Title;
 
                     // set viewstate on/off
                     this.EnableViewState = CurrentPage.EnableViewState;

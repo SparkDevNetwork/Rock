@@ -31,7 +31,7 @@
                     <div class="col-md-6">
                         <Rock:PagePicker ID="ppParentPage" runat="server" Label="Parent Page" Required="false" />
                         <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Name" Required="true" />
-                        <Rock:DataTextBox ID="tbPageTitle" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Title" Help="The text to be displayed in menus and page headings"/>
+                        <Rock:DataTextBox ID="tbPageTitle" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Title" Help="The text to be displayed in menus, breadcrumbs and page headings"/>
                         <Rock:DataDropDownList ID="ddlLayout" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Layout"/>
                         <Rock:RockCheckBox ID="cbMenuIcon" runat="server" Text="Show Icon"/>
                         <div class="control-group">
