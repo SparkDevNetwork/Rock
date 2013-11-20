@@ -33,6 +33,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            string formattedValue = string.Empty;
+
             var names = new List<string>();
 
             if ( !string.IsNullOrWhiteSpace( value ) )
@@ -48,7 +50,8 @@ namespace Rock.Field.Types
                 }
             }
 
-            return names.AsDelimited( ", " );
+            formattedValue = names.AsDelimited( ", " );
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 
         /// <summary>

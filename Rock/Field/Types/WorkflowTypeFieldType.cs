@@ -32,17 +32,19 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            string formattedValue = string.Empty;
+            
             Guid workflowTypeGuid = Guid.Empty;
             if (Guid.TryParse( value, out workflowTypeGuid ))
             {
                 var workflowtype = new WorkflowTypeService().Get( workflowTypeGuid );
                 if ( workflowtype != null )
                 {
-                    return workflowtype.Name;
+                    formattedValue = workflowtype.Name;
                 }
             }
-                
-            return string.Empty;
+
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
 
         }
 
