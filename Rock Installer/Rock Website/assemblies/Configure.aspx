@@ -59,10 +59,10 @@
     	globalAttributesCache.SetValue("OrganizationWebsite", txtOrgWebsite.Text, null, true);
 
         // update the external site domain with the value provided
-        SiteDomainService domainService = new SiteDomainService();
+        /*SiteDomainService domainService = new SiteDomainService();
         SiteDomain domain = domainService.Get(new Guid(Rock.SystemGuid.SiteDomain.SITEDOMAIN_EXTERNAL));
         domain.Domain = txtOrgWebsite.Text;
-        domainService.Save(domain, null);
+        domainService.Save(domain, null);*/
         
         // set timezone value
         Configuration rockWebConfig = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration("~");
