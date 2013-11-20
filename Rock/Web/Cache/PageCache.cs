@@ -39,6 +39,8 @@ namespace Rock.Web.Cache
 
         #endregion
 
+        private string _title;
+
         #region Properties
 
         /// <summary>
@@ -63,7 +65,24 @@ namespace Rock.Web.Cache
         /// <value>
         /// The title.
         /// </value>
-        public string Title { get; set; }
+        public string Title {
+            get
+            {
+                if (_title != null && _title != string.Empty)
+                {
+                    return _title;
+                }
+                else
+                {
+                    return Name;
+                }
+            }
+
+            set
+            {
+                _title = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is system.
@@ -424,7 +443,7 @@ namespace Rock.Web.Cache
                 }
                 if ( BreadCrumbDisplayName )
                 {
-                    bcName += Name;
+                    bcName += Title;
                 }
 
                 return bcName;
