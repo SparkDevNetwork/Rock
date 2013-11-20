@@ -54,11 +54,11 @@ namespace Rock.Storage.Provider
 
                 var url = GetUrl( file );
                 var physicalPath = GetPhysicalPath( url );
-                var subPath = physicalPath.Replace( file.FileName, string.Empty );
+                var directoryName = Path.GetDirectoryName( physicalPath );
 
-                if ( !Directory.Exists( subPath ) )
+                if ( !Directory.Exists( directoryName ) )
                 {
-                    Directory.CreateDirectory( subPath );
+                    Directory.CreateDirectory( directoryName );
                 }
 
                 File.WriteAllBytes( physicalPath, file.Data.Content );
@@ -110,7 +110,7 @@ namespace Rock.Storage.Provider
                 urlBuilder.Append( "/" );
             }
 
-            urlBuilder.Append( file.FileName );
+            urlBuilder.Append(file.Guid + "_" + file.FileName );
             return urlBuilder.ToString();
         }
 
