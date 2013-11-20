@@ -23,6 +23,7 @@
 
     const string rockLogoIco = "http://rockchms.blob.core.windows.net/install/rock-chms.ico";
     const string rockStyles = "http://rockchms.blob.core.windows.net/install/install.css";
+    const string rockWelcomeImg = "http://rockchms.blob.core.windows.net/install/welcome.jpg";
 	
 	//
 	// page events
@@ -298,7 +299,7 @@
 						<asp:Panel id="pWelcome" Visible="true" runat="server">
 							<h1>Rock Installer</h1>
 							
-                            <img src="http://www.rockchms.com/installer/assets/images/welcome.jpg"  />
+                            <img src="<%=rockWelcomeImg %>"  />
 							<asp:Label id="lTest" runat="server"></asp:Label>
 							
                             <asp:Literal ID="lSslWarning" runat="server">
