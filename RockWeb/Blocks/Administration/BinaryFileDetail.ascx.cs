@@ -5,25 +5,21 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Administration
 {
-    [BooleanField("Show Binary File Type")]
-    [WorkflowTypeField("Workflow", "An optional workflow to activate for any new file uploaded")]
+    [BooleanField( "Show Binary File Type" )]
+    [WorkflowTypeField( "Workflow", "An optional workflow to activate for any new file uploaded" )]
     public partial class BinaryFileDetail : RockBlock, IDetailBlock
     {
-
         #region Control Methods
 
         protected override void OnInit( EventArgs e )
@@ -49,7 +45,6 @@ namespace RockWeb.Blocks.Administration
                 {
                     if ( string.IsNullOrWhiteSpace( typeId ) )
                     {
-
                         ShowDetail( "BinaryFileId", int.Parse( itemId ) );
                     }
                     else
@@ -62,15 +57,7 @@ namespace RockWeb.Blocks.Administration
                     pnlDetails.Visible = false;
                 }
 
-                bool showBinaryFileType = false;
-                if ( Boolean.TryParse( GetAttributeValue( "ShowBinaryFileType" ), out showBinaryFileType ) && showBinaryFileType )
-                {
-                    ddlBinaryFileType.Visible = true;
-                }
-                else
-                {
-                    ddlBinaryFileType.Visible = false;
-                }
+                ddlBinaryFileType.Visible = GetAttributeValue( "ShowBinaryFileType" ).AsBoolean();
             }
             else
             {
@@ -85,7 +72,6 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
             }
-
         }
 
         #endregion
@@ -116,21 +102,21 @@ namespace RockWeb.Blocks.Administration
             }
 
             var binaryFileService = new BinaryFileService();
-            BinaryFile BinaryFile = null;
+            BinaryFile binaryFile = null;
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                BinaryFile = binaryFileService.Get( itemKeyValue );
+                binaryFile = binaryFileService.Get( itemKeyValue );
             }
 
-            if (BinaryFile != null)
+            if ( binaryFile != null )
             {
-                lActionTitle.Text = ActionTitle.Edit( BinaryFile.BinaryFileType.Name ).FormatAsHtmlTitle();
+                lActionTitle.Text = ActionTitle.Edit( binaryFile.BinaryFileType.Name ).FormatAsHtmlTitle();
             }
             else
             {
-                BinaryFile = new BinaryFile { Id = 0, IsSystem = false, BinaryFileTypeId = binaryFileTypeId };
-                
+                binaryFile = new BinaryFile { Id = 0, IsSystem = false, BinaryFileTypeId = binaryFileTypeId };
+
                 string friendlyName = BinaryFile.FriendlyTypeName;
                 if ( binaryFileTypeId.HasValue )
                 {
@@ -144,21 +130,24 @@ namespace RockWeb.Blocks.Administration
                 lActionTitle.Text = ActionTitle.Add( friendlyName ).FormatAsHtmlTitle();
             }
 
-            ShowDetail( BinaryFile );
-
+            ShowDetail( binaryFile );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
         /// <param name="binaryFile">The binary file.</param>
-        public void ShowDetail(BinaryFile binaryFile)
+        public void ShowDetail( BinaryFile binaryFile )
         {
-
             pnlDetails.Visible = true;
             hfBinaryFileId.SetValue( binaryFile.Id );
 
             fsFile.BinaryFileId = binaryFile.Id;
+            if ( binaryFile.BinaryFileTypeId.HasValue )
+            {
+                fsFile.BinaryFileTypeGuid = new BinaryFileTypeService().Get( binaryFile.BinaryFileTypeId ?? 0).Guid;
+            }
+
             tbName.Text = binaryFile.FileName;
             tbDescription.Text = binaryFile.Description;
             tbMimeType.Text = binaryFile.MimeType;
@@ -194,7 +183,6 @@ namespace RockWeb.Blocks.Administration
             ddlBinaryFileType.Enabled = !readOnly;
 
             btnSave.Visible = !readOnly;
-
         }
 
         #endregion
@@ -218,37 +206,37 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            BinaryFile BinaryFile;
-            BinaryFileService BinaryFileService = new BinaryFileService();
+            BinaryFile binaryFile;
+            BinaryFileService binaryFileService = new BinaryFileService();
             AttributeService attributeService = new AttributeService();
 
-            int BinaryFileId = int.Parse( hfBinaryFileId.Value );
+            int binaryFileId = int.Parse( hfBinaryFileId.Value );
 
-            if ( BinaryFileId == 0 )
+            if ( binaryFileId == 0 )
             {
-                BinaryFile = new BinaryFile();
-                BinaryFileService.Add( BinaryFile, CurrentPersonId );
+                binaryFile = new BinaryFile();
+                binaryFileService.Add( binaryFile, CurrentPersonId );
             }
             else
             {
-                BinaryFile = BinaryFileService.Get( BinaryFileId );
+                binaryFile = binaryFileService.Get( binaryFileId );
             }
 
-            BinaryFile.IsTemporary = false;
-            BinaryFile.FileName = tbName.Text;
-            BinaryFile.Description = tbDescription.Text;
-            BinaryFile.MimeType = tbMimeType.Text;
-            BinaryFile.BinaryFileTypeId = ddlBinaryFileType.SelectedValueAsInt();
+            binaryFile.IsTemporary = false;
+            binaryFile.FileName = tbName.Text;
+            binaryFile.Description = tbDescription.Text;
+            binaryFile.MimeType = tbMimeType.Text;
+            binaryFile.BinaryFileTypeId = ddlBinaryFileType.SelectedValueAsInt();
 
-            BinaryFile.LoadAttributes();
-            Rock.Attribute.Helper.GetEditValues( phAttributes, BinaryFile );
+            binaryFile.LoadAttributes();
+            Rock.Attribute.Helper.GetEditValues( phAttributes, binaryFile );
 
             if ( !Page.IsValid )
             {
                 return;
             }
 
-            if ( !BinaryFile.IsValid )
+            if ( !binaryFile.IsValid )
             {
                 // Controls will render the error messages                    
                 return;
@@ -256,8 +244,8 @@ namespace RockWeb.Blocks.Administration
 
             RockTransactionScope.WrapTransaction( () =>
             {
-                BinaryFileService.Save( BinaryFile, CurrentPersonId );
-                Rock.Attribute.Helper.SaveAttributeValues( BinaryFile, CurrentPersonId );
+                binaryFileService.Save( binaryFile, CurrentPersonId );
+                Rock.Attribute.Helper.SaveAttributeValues( binaryFile, CurrentPersonId );
             } );
 
             NavigateToParentPage();
@@ -274,22 +262,29 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void fsFile_FileUploaded( object sender, EventArgs e )
         {
-            using (new Rock.Data.UnitOfWorkScope() )
+            using ( new Rock.Data.UnitOfWorkScope() )
             {
                 var binaryFileService = new BinaryFileService();
-                var binaryFile = binaryFileService.Get(fsFile.BinaryFileId.Value);
+                BinaryFile binaryFile = null;
+                if ( fsFile.BinaryFileId.HasValue )
+                {
+                    binaryFile = binaryFileService.Get( fsFile.BinaryFileId.Value );
+                }
+
                 if ( binaryFile != null )
                 {
-                    if ( !String.IsNullOrWhiteSpace( tbName.Text ) )
+                    if ( !string.IsNullOrWhiteSpace( tbName.Text ) )
                     {
                         binaryFile.FileName = tbName.Text;
                     }
+
                     binaryFile.Description = tbDescription.Text;
                     binaryFile.BinaryFileTypeId = ddlBinaryFileType.SelectedValueAsInt();
                     if ( binaryFile.BinaryFileTypeId.HasValue )
                     {
                         binaryFile.BinaryFileType = new BinaryFileTypeService().Get( binaryFile.BinaryFileTypeId.Value );
                     }
+
                     binaryFile.LoadAttributes();
                     Rock.Attribute.Helper.GetEditValues( phAttributes, binaryFile );
 
@@ -317,9 +312,9 @@ namespace RockWeb.Blocks.Administration
                             }
                         }
                     }
-                }
 
-                ShowDetail( binaryFile );
+                    ShowDetail( binaryFile );
+                }
             }
         }
 
