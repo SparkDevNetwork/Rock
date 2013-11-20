@@ -294,7 +294,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets the next Check-in start date for this Schedule.  
         /// </summary>
-        /// <param name="beginDateTime">A <see cref="DateTimeOffSet"/> representing the base date.</param>
+        /// <param name="beginDateTime">A <see cref="System.DateTimeOffset"/> representing the base date.</param>
         /// <returns>A <see cref="System.DateTime"/> containing the next time that Check-in begins for this schedule.</returns>
         public virtual DateTime? GetNextCheckInStartTime( DateTimeOffset beginDateTime )
         {
