@@ -104,6 +104,18 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the CSS class.
+        /// </summary>
+        /// <value>
+        /// The CSS class.
+        /// </value>
+        public string CssClass
+        {
+            get { return ViewState["CssClass"] as string ?? string.Empty; }
+            set {  ViewState["CssClass"] = value; }
+        }
+
         #endregion
 
         /// <summary>
@@ -191,7 +203,7 @@ $('.rock-panel-widget a.panel-widget-reorder').click(function (event) {
             if ( this.Visible )
             {
                 // Section
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget rock-panel-widget" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget rock-panel-widget " + CssClass );
                 writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
                 writer.RenderBeginTag( "section" );
 
