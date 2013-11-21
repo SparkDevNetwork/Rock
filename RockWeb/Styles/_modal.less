@@ -10,7 +10,11 @@
 
 .rock-modal {
 
-     background-color: @body-bg;
+    -moz-box-shadow:    @modal-dropshadow-color 18px 18px 80px 0px;
+    -webkit-box-shadow: @modal-dropshadow-color 18px 18px 80px 0px;
+    box-shadow: @modal-dropshadow-color 18px 18px 80px 0px; 
+    background-color: @body-bg;
+    border: 1px solid @modal-border-color;
 
     .modal-header {
         background-color: @modal-header-bg;  

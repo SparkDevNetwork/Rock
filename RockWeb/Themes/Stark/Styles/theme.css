@@ -18,6 +18,7 @@
     15. File Upload / Image Upload - styles for the file / image uploader
     16. Actions - used to hold buttons at the bottom of forms.
     17. Code Editor - Styles for the code editor control
+    18. Update Panel Status - Styles for the wait screen on an update panel
 */
 .picker {
   position: relative;
@@ -918,6 +919,17 @@ div.tagsinput div {
 .code-editor {
   position: relative;
 }
+.updateprogress-status {
+  position: fixed;
+  padding: 50px;
+  color: #ecf0f3;
+  left: 40%;
+  top: 40%;
+  opacity: 1;
+  background-color: #428bca;
+  border-radius: 4px;
+  z-index: 1140;
+}
 /*
     Used to manage styles for specific blocks.
     
@@ -1299,7 +1311,7 @@ span.cke_skin_kama {
     3. Column Header
     4. Footer
     5. Light Style - Used for small grids
-    5. Disabled Styles - Used when the entire grid should be shown in a disabled state
+    5. Reusable classes
 
 */
 .table-hover tbody tr:hover td,
@@ -1420,6 +1432,10 @@ td.grid-col-actions {
   box-shadow: none;
   border-color: none;
 }
+.table-padded td,
+.table-padded th {
+  padding: 12px !important;
+}
 /*
     Used to manage styles related to modal dialog.
 
@@ -1428,7 +1444,11 @@ td.grid-col-actions {
   width: 750px;
 }
 .rock-modal {
+  -moz-box-shadow: #464646 18px 18px 80px 0px;
+  -webkit-box-shadow: #464646 18px 18px 80px 0px;
+  box-shadow: #464646 18px 18px 80px 0px;
   background-color: #ffffff;
+  border: 1px solid #999999;
 }
 .rock-modal .modal-header {
   background-color: #3a3a3a;
@@ -1485,10 +1505,6 @@ td.grid-col-actions {
   padding: 8px;
   margin-top: 10px;
   background-color: #eeeeee;
-}
-.modal-backdrop {
-  background-color: #8b8b8b;
-  opacity: 0.7;
 }
 .modal {
   position: fixed;
@@ -1909,12 +1925,6 @@ dl dd {
 .popover-content header h3 small {
   display: block;
 }
-/* context help  */
-a.help {
-  margin-left: 6px;
-  outline: 0;
-  color: #bbbbbb;
-}
 /* extension of Bootstrap 3 panel */
 .panel legend {
   border-color: #d5d5d5;
@@ -2077,6 +2087,12 @@ fieldset[disabled] .btn-edit.active {
   z-index: 5;
   display: inline-block;
   margin-top: -10px;
+}
+/* context help  */
+a.help {
+  margin-left: 6px;
+  outline: 0;
+  color: #bbbbbb;
 }
 /* user registration styles */
 .not-me {

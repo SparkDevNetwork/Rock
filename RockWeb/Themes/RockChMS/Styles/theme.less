@@ -95,6 +95,11 @@ h2, h3, h4
     font-weight: @font-weight-semibold;
 }
 
+// get rid of the icon bootstrap adds to the h4's on alerts
+.alert h4:before {
+    content: '';
+}
+
 // get rid of dotted box around anchors with focus
 a {
    outline: 0;
