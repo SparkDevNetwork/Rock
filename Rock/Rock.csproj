@@ -348,6 +348,7 @@
     </Compile>
     <Compile Include="Migrations\RockMigration1.cs" />
     <Compile Include="Model\CodeGenerated\LayoutService.cs" />
+    <Compile Include="Model\CodeGenerated\ReportFieldService.cs" />
     <Compile Include="Model\LayoutService.Partial.cs" />
     <Compile Include="Model\Layout.cs" />
     <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
