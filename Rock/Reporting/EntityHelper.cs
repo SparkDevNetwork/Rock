@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -78,6 +79,7 @@ namespace Rock.Reporting
 
                     if ( entityProperty != null )
                     {
+                        entityProperty.IsPreviewable = property.GetCustomAttributes( typeof( PreviewableAttribute ), true ).Any();
                         entityFields.Add( entityProperty );
                     }
                 }
@@ -194,6 +196,8 @@ namespace Rock.Reporting
         public string FilterFieldType { get; set; }
 
         public int? DefinedTypeId { get; set; }
+
+        public bool IsPreviewable { get; set; }
 
         public EntityField( string name, FieldKind fieldKind, Type propertyType, int controlCount, int? attributeId = null )
         {

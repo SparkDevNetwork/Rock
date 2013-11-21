@@ -326,8 +326,8 @@ namespace RockWeb.Blocks.Reporting
                 Type entityType = EntityTypeCache.Read( entityTypeId.Value ).GetEntityType();
                 var entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType );
 
-                // Add Common Field Names for the EntityType
-                foreach ( var entityField in entityFields.OrderBy( a => a.Title ) )
+                // Add Fields for the EntityType
+                foreach ( var entityField in entityFields.OrderBy( a => !a.IsPreviewable ).ThenBy( a => a.Title ) )
                 {
                     var listItem = new ListItem();
                     listItem.Text = entityField.Title;
@@ -340,7 +340,15 @@ namespace RockWeb.Blocks.Reporting
                         listItem.Value = string.Format( "{0}|{1}", ReportFieldType.Attribute, entityField.AttributeId );
                     }
 
-                    listItem.Attributes["optiongroup"] = "Fields";
+                    if ( entityField.IsPreviewable )
+                    {
+                        listItem.Attributes["optiongroup"] = "Common";
+                    }
+                    else
+                    {
+                        listItem.Attributes["optiongroup"] = "Other";
+                    }
+
                     ddlFields.Items.Add( listItem );
                 }
 
@@ -496,7 +504,7 @@ namespace RockWeb.Blocks.Reporting
 
                 // use displayOrder instead of reportField.Order just in case there are gaps or duplicates in reportField.Orders
                 ReportFieldsDictionary.Add( displayOrder++, fieldSelection );
-                AddFieldPanelWidget( displayOrder, reportField.ReportFieldType, fieldSelection.Split( '|' )[1], false );
+                AddFieldPanelWidget( displayOrder, reportField.ReportFieldType, fieldSelection.Split( '|' )[1], false, true, reportField.Selection );
             }
 
             // TODO, set control values for DataSelectComponent
@@ -595,7 +603,8 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         /// <param name="displayOrder">The display order.</param>
         /// <param name="fieldName">Name of the field.</param>
-        private void AddFieldPanelWidget( int displayOrder, ReportFieldType reportFieldType, string fieldSelection, bool showExpanded )
+        private void AddFieldPanelWidget( int displayOrder, ReportFieldType reportFieldType, string fieldSelection, bool showExpanded,
+            bool setDataSelectComponentSelection = false, string dataSelectComponentSelection = null )
         {
             PanelWidget panelWidget = new PanelWidget();
             panelWidget.ID = string.Format( "reportFieldWidget_{0}", displayOrder );
@@ -666,7 +675,12 @@ namespace RockWeb.Blocks.Reporting
                 PlaceHolder phDataSelectControls = new PlaceHolder();
                 phDataSelectControls.ID = panelWidget.ID + "_phDataSelectControls";
                 panelWidget.Controls.Add( phDataSelectControls );
-                dataSelectComponent.CreateChildControls( phDataSelectControls );
+                var dataSelectControls = dataSelectComponent.CreateChildControls( phDataSelectControls );
+
+                if ( setDataSelectComponentSelection )
+                {
+                    dataSelectComponent.SetSelection( dataSelectControls, dataSelectComponentSelection );
+                }
             }
 
             phReportFields.Controls.Add( panelWidget );
