@@ -13,26 +13,26 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    /// Represents a Type of <see cref="Rock.Model.MarketingCampaignAd"/>.
     /// </summary>
     [Table( "MarketingCampaignAdType" )]
     [DataContract]
     public partial class MarketingCampaignAdType : Model<MarketingCampaignAdType>
     {
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is system.
+        /// Gets or sets a flag indicating if this MarketingCampaignAdType is part of the RockChMS core system/framework. 
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
+        ///   A <see cref="System.Boolean"/> flag that is <c>true</c> if this MarketingCAmpaignAdType is part of the RockChMS core system/framework; otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the name.
+        /// Gets or sets the name of the MarketingCampaignAdType. This property is required.
         /// </summary>
         /// <value>
-        /// The name.
+        /// A <see cref="System.String" /> representing the name of the MarketingCampaignAdType.
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -40,10 +40,11 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the date range.
+        /// Gets or sets an <see cref="DateRangeTypeEnum"/> enumeration that represents the type of date range that this DateRangeTypeEnum supports.
         /// </summary>
         /// <value>
-        /// The type of the date range.
+        /// A <see cref="Rock.Model.DateRangeTypeEnum"/> that represents the type of DateRangeTypeEnum is supported. When <c>DateRangeTypeEnum.SingleDate</c> a single date 
+        /// will be supported; when <c>DateRangeTypeEnum.DateRange</c> a date range will be supported.
         /// </value>
         [DataMember]
         public DateRangeTypeEnum DateRangeType { get; set; }
@@ -64,17 +65,17 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// 
+    /// Represents the type of DateRange that is supported.
     /// </summary>
     public enum DateRangeTypeEnum : byte
     {
         /// <summary>
-        /// 
+        /// Allows a single date.
         /// </summary>
         SingleDate = 1,
 
         /// <summary>
-        /// 
+        /// Allows a date range (start - end date)
         /// </summary>
         DateRange = 2
     }

@@ -18,32 +18,31 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a numerically measurable statistic or Metric in RockChMS.  An example of a metric can include 
-    /// weekly membership count, number of children who check-in to preschool, etc.
+    /// ReportField Service class
     /// </summary>
-    public partial class MetricService : Service<Metric>
+    public partial class ReportFieldService : Service<ReportField>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MetricService"/> class
+        /// Initializes a new instance of the <see cref="ReportFieldService"/> class
         /// </summary>
-        public MetricService()
+        public ReportFieldService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MetricService"/> class
+        /// Initializes a new instance of the <see cref="ReportFieldService"/> class
         /// </summary>
         /// <param name="repository">The repository.</param>
-        public MetricService(IRepository<Metric> repository) : base(repository)
+        public ReportFieldService(IRepository<ReportField> repository) : base(repository)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MetricService"/> class
+        /// Initializes a new instance of the <see cref="ReportFieldService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public MetricService(RockContext context) : base(context)
+        public ReportFieldService(RockContext context) : base(context)
         {
         }
 
@@ -55,7 +54,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( Metric item, out string errorMessage )
+        public bool CanDelete( ReportField item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -65,47 +64,40 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class MetricExtensionMethods
+    public static partial class ReportFieldExtensionMethods
     {
         /// <summary>
-        /// Clones this Metric object to a new Metric object
+        /// Clones this ReportField object to a new ReportField object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static Metric Clone( this Metric source, bool deepCopy )
+        public static ReportField Clone( this ReportField source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as Metric;
+                return source.Clone() as ReportField;
             }
             else
             {
-                var target = new Metric();
+                var target = new ReportField();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another Metric object to this Metric object
+        /// Copies the properties from another ReportField object to this ReportField object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this Metric target, Metric source )
+        public static void CopyPropertiesFrom( this ReportField target, ReportField source )
         {
-            target.IsSystem = source.IsSystem;
-            target.Type = source.Type;
-            target.Category = source.Category;
-            target.Title = source.Title;
-            target.Subtitle = source.Subtitle;
-            target.Description = source.Description;
-            target.MinValue = source.MinValue;
-            target.MaxValue = source.MaxValue;
-            target.CollectionFrequencyValueId = source.CollectionFrequencyValueId;
-            target.LastCollectedDateTime = source.LastCollectedDateTime;
-            target.Source = source.Source;
-            target.SourceSQL = source.SourceSQL;
+            target.ReportId = source.ReportId;
+            target.ReportFieldType = source.ReportFieldType;
+            target.ShowInGrid = source.ShowInGrid;
+            target.DataSelectComponentEntityTypeId = source.DataSelectComponentEntityTypeId;
+            target.Selection = source.Selection;
             target.Order = source.Order;
             target.Id = source.Id;
             target.Guid = source.Guid;

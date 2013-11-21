@@ -73,7 +73,8 @@ namespace RockWeb
                 ExceptionLogService.LogException( ex, context );
                 context.Response.StatusCode = 500;
                 context.Response.StatusDescription = ex.Message;
-                context.Response.End();
+                context.ApplicationInstance.CompleteRequest();
+
                 return null;
             }
         }
@@ -143,7 +144,7 @@ namespace RockWeb
                     }
 
                     context.Response.Flush();
-                    context.Response.End();
+                    context.ApplicationInstance.CompleteRequest();
                 }
             }
             catch ( Exception ex )
@@ -152,7 +153,7 @@ namespace RockWeb
                 context.Response.StatusCode = 500;
                 context.Response.StatusDescription = ex.Message;
                 context.Response.Flush();
-                context.Response.End();
+                context.ApplicationInstance.CompleteRequest();
             }
         }
 

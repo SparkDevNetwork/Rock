@@ -37,6 +37,7 @@ namespace RockWeb
             {
                 file.FileName = Path.GetFileName( uploadedFile.FileName );
                 file.MimeType = uploadedFile.ContentType;
+                file.StorageEntityTypeId = fileType.StorageEntityTypeId;
 
                 Bitmap bmp = new Bitmap( uploadedFile.InputStream );
                 var exif = new EXIFextractor( ref bmp, "\n" );

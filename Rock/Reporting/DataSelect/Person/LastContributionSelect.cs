@@ -5,6 +5,7 @@ using System.ComponentModel.Composition;
 using System.Data;
 using System.Linq;
 using Rock.Model;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Person
 {
@@ -70,14 +71,17 @@ namespace Rock.Reporting.DataSelect.Person
         /// <summary>
         /// Creates the child controls.
         /// </summary>
-        /// <param name="entityType"></param>
         /// <param name="parentControl"></param>
         /// <returns></returns>
-        public override System.Web.UI.Control[] CreateChildControls( Type entityType, System.Web.UI.Control parentControl )
+        public override System.Web.UI.Control[] CreateChildControls( System.Web.UI.Control parentControl )
         {
-            // TODO: Add Account Picker
-            
-            return base.CreateChildControls( entityType, parentControl );
+            AccountPicker accountPicker = new AccountPicker();
+            accountPicker.ID = "accountPicker";
+            accountPicker.Label = "Account";
+            accountPicker.Help = "Pick an account to show the last contribution amount and date/time for that account. Leave blank if you don't want to limit it to a specific account.";
+            parentControl.Controls.Add( accountPicker );
+
+            return new System.Web.UI.Control[] { accountPicker };
         }
 
         /// <summary>
@@ -97,40 +101,63 @@ namespace Rock.Reporting.DataSelect.Person
         /// controls parent container can be referenced through a '$content' variable that is set by the control before
         /// referencing this property.
         /// </summary>
-        /// <param name="entityType"></param>
         /// <returns></returns>
         /// <value>
         /// The client format script.
         ///   </value>
-        public override string GetClientFormatSelection( Type entityType )
+        public override string GetClientFormatSelection()
         {
             // TODO: 
-            return base.GetClientFormatSelection( entityType );
+            return base.GetClientFormatSelection();
         }
 
         /// <summary>
         /// Renders the controls.
         /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="parentControl"></param>
+        /// <param name="parentControl">The parent control.</param>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
-        public override void RenderControls( Type entityType, System.Web.UI.Control parentControl, System.Web.UI.HtmlTextWriter writer, System.Web.UI.Control[] controls )
+        public override void RenderControls( System.Web.UI.Control parentControl, System.Web.UI.HtmlTextWriter writer, System.Web.UI.Control[] controls )
         {
             // TODO: 
-            base.RenderControls( entityType, parentControl, writer, controls );
+            base.RenderControls( parentControl, writer, controls );
+        }
+
+        /// <summary>
+        /// Gets the selection.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override string GetSelection( System.Web.UI.Control[] controls )
+        {
+            if (controls.Count() == 1)
+            {
+                AccountPicker accountPicker = controls[0] as AccountPicker;
+                if (accountPicker != null)
+                {
+                    return accountPicker.SelectedValueAsId().ToString();
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
         /// Sets the selection.
         /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
         /// <param name="selection">The selection.</param>
-        public override void SetSelection( Type entityType, System.Web.UI.Control[] controls, string selection )
+        public override void SetSelection( System.Web.UI.Control[] controls, string selection )
         {
-            // TODO: 
-            base.SetSelection( entityType, controls, selection );
+            if ( controls.Count() == 1 )
+            {
+                AccountPicker accountPicker = controls[0] as AccountPicker;
+                if ( accountPicker != null )
+                {
+                   var account = new FinancialAccountService().Get(selection.AsInteger() ?? 0);
+                   accountPicker.SetValue( account );
+                }
+            }
         }
 
         #endregion
