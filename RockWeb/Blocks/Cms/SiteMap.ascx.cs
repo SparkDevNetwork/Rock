@@ -29,7 +29,8 @@ namespace RockWeb.Blocks.Cms
             var sb = new StringBuilder();
 
             sb.AppendLine( "<ul id=\"treeview\">" );
-            foreach ( var page in pageService.Queryable().Where( a => a.ParentPageId == null ).OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+            var allPages = pageService.Queryable( "Pages, Blocks" ).ToList();
+            foreach ( var page in allPages.Where( a => a.ParentPageId == null ).OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
                 sb.Append( PageNode( page ) );
             }
