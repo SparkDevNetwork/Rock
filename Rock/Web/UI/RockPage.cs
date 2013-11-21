@@ -1157,7 +1157,7 @@ namespace Rock.Web.UI
             ddlZones.ID = "block-move-zone";
             ddlZones.Label = "Zone";
             foreach ( var zone in Zones )
-                ddlZones.Items.Add( new ListItem( zone.Value.Key, zone.Key.ToLower() ) );
+                ddlZones.Items.Add( new ListItem( zone.Value.Key, zone.Key ) );
             fsZoneSelect.Controls.Add( ddlZones );
 
             RockRadioButtonList rblLocation = new RockRadioButtonList();
