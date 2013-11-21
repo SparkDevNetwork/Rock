@@ -101,7 +101,7 @@ namespace RockWeb
                 context.Response.StatusCode = 500;
                 context.Response.StatusDescription = ex.Message;
                 context.Response.Flush();
-                context.Response.End();
+                context.ApplicationInstance.CompleteRequest();
             }
         }
 
@@ -177,7 +177,7 @@ namespace RockWeb
         {
             context.Response.StatusCode = 404;
             context.Response.StatusDescription = "The requested image could not be found.";
-            context.Response.End();
+            context.ApplicationInstance.CompleteRequest();
         }
 
         /// <summary>

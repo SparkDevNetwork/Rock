@@ -26,6 +26,7 @@ namespace Rock.Attribute
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="allowMultiple">if set to <c>true</c> [allow multiple].</param>
         /// <param name="defaultValue">The default value.</param>
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>

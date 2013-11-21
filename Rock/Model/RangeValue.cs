@@ -7,16 +7,17 @@
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    /// Represents a Range of objects in RockChMS.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class RangeValue<T>
     {
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="RangeValue{T}" /> class.
-        /// </summary>
-        /// <param name="from">From.</param>
-        /// <param name="to">To.</param>
+        /// Initializes a new instanceof the <see cref="RangeValue{T}"/> class.
+        /// </summary> 
+        /// <param name="from">The From/minimum value of the range.</param>
+        /// <param name="to">The To/maximum value of the range.</param>
         public RangeValue(T from, T to)
         {
             this.From = from;
@@ -24,18 +25,18 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets from.
+        /// Gets or sets the From/mininimum value of the range.
         /// </summary>
         /// <value>
-        /// From.
+        /// The from/minimum value of the range.
         /// </value>
         public T From { get; set; }
 
         /// <summary>
-        /// Gets or sets to.
+        /// Gets or sets To/maximum value of the range.
         /// </summary>
         /// <value>
-        /// To.
+        /// The to/maximum value of the range.
         /// </value>
         public T To { get; set; }
     }
