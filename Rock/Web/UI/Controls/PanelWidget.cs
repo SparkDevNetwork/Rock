@@ -192,6 +192,7 @@ $('.rock-panel-widget a.panel-widget-reorder').click(function (event) {
             {
                 // Section
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget rock-panel-widget" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
                 writer.RenderBeginTag( "section" );
 
                 // Header
