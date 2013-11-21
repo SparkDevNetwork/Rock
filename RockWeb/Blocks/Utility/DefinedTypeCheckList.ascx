@@ -10,6 +10,7 @@
                     <asp:Panel ID="pnlValue" runat="server">
                         <asp:HiddenField ID="hfValue" runat="server" Value='<%# Eval("Id") %>' />
                         <Rock:RockCheckBox ID="cbValue" runat="server" AutoPostBack="true" />
+                        <div class="checklist-description"><%# Eval("Description") %></div>
                     </asp:Panel>
                 </ItemTemplate>
             </asp:Repeater>

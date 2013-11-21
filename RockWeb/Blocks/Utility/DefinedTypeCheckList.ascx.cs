@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Utility
                 {
                     Helper.LoadAttributes( definedValue );
 
-                    cbValue.Text = string.Format( "<strong>{0}</strong><p>{1}</p>", definedValue.Name, definedValue.Description );
+                    cbValue.Text = string.Format( "<strong>{0}</strong>", definedValue.Name );
 
                     bool selected = false;
                     if ( !bool.TryParse( definedValue.GetAttributeValue( attributeKey ), out selected ) )
@@ -139,7 +139,7 @@ namespace RockWeb.Blocks.Utility
             if ( Guid.TryParse( GetAttributeValue( "DefinedType" ), out guid ) )
             {
                 var definedType = new DefinedTypeService().Get( guid );
-                rptrValues.DataSource = definedType.DefinedValues;
+                rptrValues.DataSource = definedType.DefinedValues.OrderBy( v => v.Order ).ToList();
 
                 // determine if block should be hidden 
                 if (hideBlockWhenEmpty)
