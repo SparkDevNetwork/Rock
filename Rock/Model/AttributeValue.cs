@@ -13,64 +13,67 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Attribute Value POCO Entity.
+    /// Represents a value of an <see cref="Rock.Model.Attribute"/>. 
     /// </summary>
     [Table( "AttributeValue" )]
     [DataContract]
     public partial class AttributeValue : Model<AttributeValue>
     {
         /// <summary>
-        /// Gets or sets the System.
+        /// Gets or sets a flag indicating if this AttributeValue is part of the RockChMS core system/framework.
         /// </summary>
         /// <value>
-        /// System.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if is part of the RockChMS core system/framework.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
-        /// Gets or sets the Attribute Id.
+        /// Gets or sets the AttributeId of the <see cref="Rock.Model.Attribute"/> that this AttributeValue provides a value for.
         /// </summary>
         /// <value>
-        /// Attribute Id.
+        /// A <see cref="System.Int32"/> representing the AttributeId of the <see cref="Rock.Model.Attribute"/> that this AttributeValue provides a value for.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int AttributeId { get; set; }
         
         /// <summary>
-        /// Gets or sets the Entity Id.
+        /// Gets or sets the Id of the entity instance that uses this AttributeValue. An <see cref="Rock.Model.Attribute"/> is a configuration setting, so each 
+        /// instance of the Entity that uses the same Attribute can have a different value.  For instance a <see cref="Rock.Model.BlockType"/> has a declared attribute, and that attribute can be configured 
+        /// with a different value on each <see cref="Rock.Model.Block"/> that implements the <see cref="Rock.Model.BlockType"/>. This value will either be 0 or null for global attributes or attributes that have a 
+        /// constant across all instances of an EntityType.
         /// </summary>
         /// <value>
-        /// Entity Id.
+        /// A <see cref="System.Int32"/> that identifies the Id of the entity instance that uses this AttributeValue.
         /// </value>
         [DataMember]
         public int? EntityId { get; set; }
         
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the Order of the AttributeValue. 
         /// </summary>
         /// <value>
-        /// Order.
+        /// A <see cref="System.Int32"/> representing the order of AttributeValue.
         /// </value>
         [DataMember]
         public int? Order { get; set; }
         
         /// <summary>
-        /// Gets or sets the Value.
+        /// Gets or sets the value.
         /// </summary>
         /// <value>
-        /// Value.
+        /// A <see cref="System.String"/> representing the value.
         /// </value>
         [DataMember]
         public string Value {get; set;}
 
         /// <summary>
-        /// Gets the type of the field.
+        /// Gets the <see cref="Rock.Model.FieldType"/> that represents the type of value that is being represented by the AttributeValue, and provides a UI for the user to set the value.
         /// </summary>
         /// <value>
-        /// The type of the field.
+        /// The <see cref="Rock.Model.FieldType"/> that is represented by this Attribute Value.
         /// </value>
         private Rock.Field.IFieldType FieldType
         {
@@ -92,10 +95,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the Attribute.
+        /// Gets or sets the <see cref="Rock.Model.Attribute"/> that uses this AttributeValue.
         /// </summary>
         /// <value>
-        /// A <see cref="Attribute"/> object.
+        /// The <see cref="Rock.Model.Attribute"/> that uses this value.
         /// </value>
         [DataMember]
         public virtual Attribute Attribute { get; set; }

@@ -12,14 +12,14 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// DataView POCO Service class
+    /// DataView Service and Data access class
     /// </summary>
     public partial class DataViewService 
     {
         /// <summary>
-        /// Gets the entity types that have existing dataviews
+        /// Returns an enumerable collection of <see cref="Rock.Model.EntityType">EntityTypes</see> that have a DataView associated with them.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.EntityType">EntityTypes</see> that have a <see cref="Rock.Model.DataView" /> associated with them.</returns>
         public IEnumerable<Rock.Model.EntityType> GetAvailableEntityTypes()
         {
             return Repository.AsQueryable()
@@ -28,10 +28,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the by entity type id.
+        /// Returns an enumerable collection of <see cref="Rock.Model.DataView">DataViews</see> that are associated with a specified <see cref="Rock.Model.EntityType"/>.
         /// </summary>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <returns></returns>
+        /// <param name="entityTypeId">A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> to search by.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.DataView">DataViews</see> that are associated with the specified <see cref="Rock.Model.EntityType"/>.</returns>
         public IEnumerable<Rock.Model.DataView> GetByEntityTypeId( int entityTypeId )
         {
             return Repository.AsQueryable()

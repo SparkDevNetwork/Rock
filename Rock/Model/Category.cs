@@ -15,7 +15,8 @@ using Rock.Security;
 namespace Rock.Model
 {
     /// <summary>
-    /// Category POCO Entity.
+    /// Represents a category or group of entity objects in RockChMS. A category can be used to group entity instances of <see cref="Rock.Model.EntityType">EntityTypes</see>. 
+    /// For an EntityType to be categorizable the EntityType will need to implement the <see cref="Rock.Data.ICategorized"/> interface.
     /// </summary>
     [Table( "Category" )]
     [DataContract]
@@ -25,59 +26,60 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the System.
+        /// Gets or sets a flag indicating if this Category is part of the RockChMS core system/framework.
         /// </summary>
         /// <value>
-        /// System.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Category is part of the RockChMS core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the parent category id.
+        /// Gets or sets the CategoryId of the parent Category. 
         /// </summary>
         /// <value>
-        /// The parent category id.
+        /// A <see cref="System.Int32"/> representing the CategoryId of the parent Category.
         /// </value>
         [DataMember]
         public int? ParentCategoryId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Entity Type Id.
+        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that this Category belongs to.
         /// </summary>
         /// <value>
-        /// Entity Type Id.
+        /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that this Category belongs to.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Entity Qualifier Column.
+        /// Gets or sets the entity type qualifier column that contains the value (see <see cref="EntityTypeQualifierValue"/>) that is used to narrow the scope of the Category.
         /// </summary>
         /// <value>
-        /// Entity Qualifier Column.
+        /// A <see cref="System.String"/> representing the name of the Qualifier Column/Property that contains the <see cref="EntityTypeQualifierValue"/> that is used to 
+        /// narrow the scope of the Category.
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
-        /// Gets or sets the Entity Qualifier Value.
+        /// Gets or sets the entity type qualifier value that is used to narrow the scope of the Category to a subset or specific instance of an EntityType.
         /// </summary>
         /// <value>
-        /// Entity Qualifier Value.
+        /// A <see cref="System.String"/> that represents the value that is used to narrow the scope of the Category.
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the name.
+        /// Gets or sets the Name of the Category
         /// </summary>
         /// <value>
-        /// The name.
+        /// A <see cref="System.String"/> that represents the Name of the Category.
         /// </value>
         [Required( ErrorMessage = "Name is required" )]
         [MaxLength( 100 )]
@@ -85,28 +87,30 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the small icon.
+        /// Gets or sets the BinaryFileId of the <see cref="Rock.Model.BinaryFile"/> that is being used as the small icon. This property is only used for file based icons.
         /// </summary>
         /// <value>
-        /// The small icon.
+        /// A <see cref="System.Int32"/> representing the BinaryFileId of the <see cref="Rock.Model.BinaryFile"/> that is being used as the small icon. This value will be
+        /// null if a CSS based 
         /// </value>
         [DataMember]
         public int? IconSmallFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the large icon.
+        /// Gets or sets the BinaryFileId of the <see cref="Rock.Model.BinaryFile"/> that is being used as the large icon. This property is only used for file based icons.
         /// </summary>
         /// <value>
-        /// The large icon.
+        /// A <see cref="System.Int32"/> representing the BinaryFileId of the <see cref="Rock.Model.BinaryFile"/> that is being used as the large icon. This
+        /// property will be null if a CSS based icon is being used 
         /// </value>
         [DataMember]
         public int? IconLargeFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the icon CSS class.
+        /// Gets or sets the name of the icon CSS class. This property is only used for CSS based icons.
         /// </summary>
         /// <value>
-        /// The icon CSS class.
+        /// A <see cref="System.String"/> representing the name of the icon CSS class. This property will be null if a file based icon is being used.
         /// </value>
         [DataMember]
         public string IconCssClass { get; set; }
@@ -124,43 +128,43 @@ namespace Rock.Model
         public virtual Category ParentCategory { get; set; }
 
         /// <summary>
-        /// Gets or sets the child categories.
+        /// Gets or sets a collection of Categories that are children of the current Category.
         /// </summary>
         /// <value>
-        /// The child categories.
+        /// The Categories that are children of the current Category.
         /// </value>
         [DataMember]
         public virtual ICollection<Category> ChildCategories { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the entity.
+        /// Gets or sets the <see cref="Rock.Model.EntityType" /> that can use this Category.
         /// </summary>
         /// <value>
-        /// The type of the entity.
+        /// The <see cref="Rock.Model.EntityType"/> that can use this Category.
         /// </value>
         [DataMember]
         public virtual EntityType EntityType { get; set; }
 
         /// <summary>
-        /// Gets or sets the small icon.
+        /// Gets or sets the <see cref="Rock.Model.BinaryFile"/> that is being used as the small icon file.
         /// </summary>
         /// <value>
-        /// The small icon.
+        /// The <see cref="Rock.Model.BinaryFile"/> that is being used as the small icon file. If a CSS based icon is being used, this value will be null.
         /// </value>
         [DataMember]
         public virtual BinaryFile IconSmallFile { get; set; }
 
         /// <summary>
-        /// Gets or sets the large icon.
+        /// Gets or sets the <see cref="Rock.Model.BinaryFile"/> that is being used as the large icon file.
         /// </summary>
         /// <value>
-        /// The large icon.
+        /// The <see cref="Rock.Model.BinaryFile" /> that is being used as the large icon file. If a CSS based icon is being used, this value will be used.
         /// </value>
         [DataMember]
         public virtual BinaryFile IconLargeFile { get; set; }
 
         /// <summary>
-        /// Gets the parent authority.
+        /// Gets the parent authority where security authorizations are being inherited from.
         /// </summary>
         /// <value>
         /// The parent authority.
