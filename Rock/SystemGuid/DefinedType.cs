@@ -90,6 +90,11 @@ namespace Rock.SystemGuid
         public const string LOCATION_ADDRESS_STATE = "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB";
 
         /// <summary>
+        /// Guid for the types of named locations (such as Campus, Building, Room, etc)
+        /// </summary>
+        public const string LOCATION_TYPE = "3285DCEF-FAA4-43B9-9338-983F4A384ABA";
+
+        /// <summary>
         /// Guid for Marketing Campaign Audience Type
         /// </summary>
         public const string MARKETING_CAMPAIGN_AUDIENCE_TYPE =  "799301A3-2026-4977-994E-45DC68502559";

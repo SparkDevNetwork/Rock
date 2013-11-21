@@ -62,6 +62,18 @@ namespace Rock.Model
         private bool _isActive = true;
 
         /// <summary>
+        /// Gets or sets the Id of the LocationType <see cref="Rock.Model.DefinedValue"/> that is used to identify the type of <see cref="Rock.Model.Location"/>
+        /// that this is.
+        /// </summary>
+        /// <value>
+        /// An <see cref="System.Int32"/> referencing the Id of the LocationType <see cref="Rock.Model.DefinedValue"/> that identifies the type of group location that this is.
+        /// If a LocationType <see cref="Rock.Model.DefinedValue"/> is not associated with this GroupLocation this value will be null.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.LOCATION_TYPE )]
+        public int? LocationTypeValueId { get; set; }
+
+        /// <summary>
         /// Gets or sets the GeoPoint (geolocation) for the location
         /// </summary>
         /// <value>

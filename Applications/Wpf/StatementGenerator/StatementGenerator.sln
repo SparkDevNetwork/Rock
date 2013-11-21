@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatementGenerator", "StatementGenerator.csproj", "{896F254D-0CEC-46D0-AD76-E95D43CC7B8D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock", "..\..\Rock-ChMS\Rock\Rock.csproj", "{8F8C2A79-24F4-4157-8B99-45F75FA85799}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Wpf", "..\..\Rock-ChMS\Apps\Wpf\Rock.Wpf\Rock.Wpf.csproj", "{90440596-FA0A-45E7-8872-3DA47786F6A7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{896F254D-0CEC-46D0-AD76-E95D43CC7B8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{896F254D-0CEC-46D0-AD76-E95D43CC7B8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{896F254D-0CEC-46D0-AD76-E95D43CC7B8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{896F254D-0CEC-46D0-AD76-E95D43CC7B8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F8C2A79-24F4-4157-8B99-45F75FA85799}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F8C2A79-24F4-4157-8B99-45F75FA85799}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F8C2A79-24F4-4157-8B99-45F75FA85799}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F8C2A79-24F4-4157-8B99-45F75FA85799}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90440596-FA0A-45E7-8872-3DA47786F6A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90440596-FA0A-45E7-8872-3DA47786F6A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90440596-FA0A-45E7-8872-3DA47786F6A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90440596-FA0A-45E7-8872-3DA47786F6A7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

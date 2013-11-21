@@ -299,6 +299,18 @@ achieve our mission.  We are so grateful for your commitment.
                     divNewCard.Style[HtmlTextWriterStyle.Display] = "block";
                 }
 
+                if ( rblSavedAch.Items.Count > 0 )
+                {
+                    rblSavedAch.Items[0].Selected = true;
+                    rblSavedAch.Visible = true;
+                    divNewBank.Style[HtmlTextWriterStyle.Display] = "none";
+                }
+                else
+                {
+                    rblSavedAch.Visible = false;
+                    divNewCard.Style[HtmlTextWriterStyle.Display] = "block";
+                }
+
                 RegisterScript();
 
                 // Resolve the text field merge fields
@@ -968,6 +980,27 @@ achieve our mission.  We are so grateful for your commitment.
             if ( hfPaymentTab.Value == "ACH" )
             {
                 // Validate ach options
+                if ( rblSavedAch.Items.Count > 0 && ( rblSavedAch.SelectedValueAsInt() ?? 0 ) > 0 )
+                {
+                    // TODO: Find saved account
+                }
+                else
+                {
+                    if ( string.IsNullOrWhiteSpace( txtBankName.Text ) )
+                    {
+                        errorMessages.Add( "Make sure to enter a bank name" );
+                    }
+
+                    if ( string.IsNullOrWhiteSpace( txtRoutingNumber.Text ) )
+                    {
+                        errorMessages.Add( "Make sure to enter a valid routing number" );
+                    }
+
+                    if ( string.IsNullOrWhiteSpace( txtAccountNumber.Text ) )
+                    {
+                        errorMessages.Add( "Make sure to enter a valid account number" );
+                    }                
+                }                
             }
             else
             {
@@ -1148,7 +1181,10 @@ achieve our mission.  We are so grateful for your commitment.
                     reference.ReferenceNumber = savedAccount.ReferenceNumber;
                     reference.MaskedAccountNumber = savedAccount.MaskedAccountNumber;
                     reference.InitialCurrencyTypeValue = DefinedValueCache.Read( savedAccount.FinancialTransaction.CurrencyTypeValue );
-                    reference.InitialCreditCardTypeValue = DefinedValueCache.Read( savedAccount.FinancialTransaction.CreditCardTypeValue );
+                    if ( reference.InitialCurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) )
+                    { 
+                        reference.InitialCreditCardTypeValue = DefinedValueCache.Read( savedAccount.FinancialTransaction.CreditCardTypeValue );
+                    }
                     return reference;
                 }
             }

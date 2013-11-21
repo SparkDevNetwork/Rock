@@ -3,12 +3,12 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq.Expressions;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -111,6 +111,26 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual DataView DataView { get; set; }
+
+        /// <summary>
+        /// Gets or sets the report fields.
+        /// </summary>
+        /// <value>
+        /// The report fields.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<ReportField> ReportFields
+        {
+            get
+            {
+                return _reportFields ?? ( _reportFields = new Collection<ReportField>() );
+            }
+            set
+            {
+                _reportFields = value;
+            }
+        }
+        private ICollection<ReportField> _reportFields;
 
         #endregion
 

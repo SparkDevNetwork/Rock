@@ -32,6 +32,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            string formattedValue = string.Empty;
+
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 int entityTypeId = int.MinValue;
@@ -41,11 +43,12 @@ namespace Rock.Field.Types
                     var entityType = EntityTypeCache.Read( entityTypeId );
                     if ( entityType != null )
                     {
-                        return entityType.FriendlyName;
+                        formattedValue = entityType.FriendlyName;
                     }
                 }
             }
-            return string.Empty;
+
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 
         /// <summary>
