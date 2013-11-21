@@ -116,7 +116,7 @@ namespace RockWeb.Blocks.Administration
                             var tbContext = new RockTextBox();
                             tbContext.ID = string.Format( "context_{0}", i++ );
                             tbContext.Required = true;
-                            tbContext.Label = context.FriendlyName + " Parameter";
+                            tbContext.Label = context.FriendlyName + " Parameter Name";
                             tbContext.Help = "The page parameter name that contains the id of this context entity.";
                             if ( _page.PageContexts.ContainsKey( context.Name ) )
                             {
@@ -321,10 +321,13 @@ namespace RockWeb.Blocks.Administration
                         if ( control is RockTextBox )
                         {
                             var tbContext = control as RockTextBox;
-                            var pageContext = new PageContext();
-                            pageContext.Entity = tbContext.Label;
-                            pageContext.IdParameter = tbContext.Text;
-                            page.PageContexts.Add( pageContext );
+                            if ( !string.IsNullOrWhiteSpace( tbContext.Text ) )
+                            {
+                                var pageContext = new PageContext();
+                                pageContext.Entity = tbContext.Label;
+                                pageContext.IdParameter = tbContext.Text;
+                                page.PageContexts.Add( pageContext );
+                            }
                         }
                     }
 

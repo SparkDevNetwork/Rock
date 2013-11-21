@@ -85,7 +85,7 @@
                         <asp:PlaceHolder ID="phContextPanel" runat="server">
                             <fieldset>
                                 <legend>Context Parameters</legend>
-                                <p>There are one or more blocks on this page that need to load objects based on a 'context' parameter.  
+                                <p>There are one or more blocks on this page that can load content based on a 'context' parameter.  
                                 Please enter the route parameter name or query string parameter name that will contain the id for 
                                 each of the objects below.</p>
                                 <asp:PlaceHolder ID="phContext" runat="server"></asp:PlaceHolder>
