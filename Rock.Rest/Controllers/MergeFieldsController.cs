@@ -133,9 +133,8 @@ namespace Rock.Rest.Controllers
 
                     var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
 
-                    foreach ( var attribute in globalAttributes.AttributeKeys.OrderBy( a => a.Value ) )
+                    foreach ( var attributeCache in globalAttributes.Attributes.OrderBy( a => a.Key ) )
                     {
-                        var attributeCache = AttributeCache.Read( attribute.Key );
                         if ( attributeCache.IsAuthorized( "View", null ) )
                         {
                             items.Add( new TreeViewItem

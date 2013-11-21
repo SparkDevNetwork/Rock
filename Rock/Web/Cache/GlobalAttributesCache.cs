@@ -32,12 +32,12 @@ namespace Rock.Web.Cache
         #region Properties
 
         /// <summary>
-        /// Gets or sets the attribute keys.  Used to iterate all values when merging possible merge fields
+        /// Gets or sets the attributes.  Used to iterate all values when merging possible merge fields
         /// </summary>
         /// <value>
-        /// The attribute keys.
+        /// The attributes.
         /// </value>
-        public Dictionary<int, string> AttributeKeys { get; set; }
+        public List<AttributeCache> Attributes { get; set; }
 
         /// <summary>
         /// Gets or sets the attribute values.
@@ -64,23 +64,18 @@ namespace Rock.Web.Cache
             }
             else
             {
-                string name = key.SplitCase();
-                string value = string.Empty;
 
-                var attribute = new AttributeService().Get( null, string.Empty, string.Empty, key );
-                if ( attribute != null )
+                var attributeCache = Attributes.FirstOrDefault(a => a.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
+                if ( attributeCache != null )
                 {
-                    AttributeKeys.Add( attribute.Id, attribute.Key );
-                    name = attribute.Name;
+                    var attributeValue = new AttributeValueService().GetByAttributeIdAndEntityId( attributeCache.Id, null ).FirstOrDefault();
+                    string value = ( attributeValue != null && !string.IsNullOrEmpty( attributeValue.Value ) ) ? attributeValue.Value : attributeCache.DefaultValue;
+                    AttributeValues.Add( attributeCache.Key, new KeyValuePair<string, string>( attributeCache.Name, value ) );
 
-                    // TODO: Need to add support for multiple values
-                    var attributeValue = new AttributeValueService().GetByAttributeIdAndEntityId( attribute.Id, null ).FirstOrDefault();
-                    value = ( attributeValue != null && !string.IsNullOrEmpty( attributeValue.Value ) ) ? attributeValue.Value : attribute.DefaultValue;
+                    return value;
                 }
 
-                // Add value even if attribute name was not found to prevent repeatedly searching db for non-existent attribute
-                AttributeValues.Add( key, new KeyValuePair<string, string>( name, value ) );
-                return value;
+                return string.Empty;
             }
         }
 
@@ -116,7 +111,7 @@ namespace Rock.Web.Cache
                             attributeService.Add(attribute, currentPersonId);
                             attributeService.Save(attribute, currentPersonId);
 
-                            AttributeKeys.Add( attribute.Id, key );
+                            Attributes.Add( AttributeCache.Read( attribute.Id ) );
                         }
 
                         attributeValue = new AttributeValue();
@@ -135,15 +130,17 @@ namespace Rock.Web.Cache
                 }
             }
 
-            // Update cached value
-            if ( AttributeValues != null && AttributeValues.Keys.Contains( key ) )
+            var attributeCache = Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
+            if ( attributeCache != null ) // (Should never be null)
             {
-                string attributeName = AttributeValues[key].Key;
-                AttributeValues[key] = new KeyValuePair<string, string>( attributeName, value );
-            }
-            else if ( AttributeValues != null )
-            {
-                AttributeValues[key] = new KeyValuePair<string, string>( key, value );
+                if ( AttributeValues.Keys.Contains( key ) )
+                {
+                    AttributeValues[key] = new KeyValuePair<string, string>( attributeCache.Name, value );
+                }
+                else
+                {
+                    AttributeValues.Add( key, new KeyValuePair<string, string>( attributeCache.Name, value ) );
+                }
             }
         }
 
@@ -175,7 +172,7 @@ namespace Rock.Web.Cache
             else
             {
                 globalAttributes = new GlobalAttributesCache();
-                globalAttributes.AttributeKeys = new Dictionary<int, string>();
+                globalAttributes.Attributes = new List<AttributeCache>();
                 globalAttributes.AttributeValues = new Dictionary<string, KeyValuePair<string, string>>();
 
                 var attributeService = new Rock.Model.AttributeService();
@@ -183,12 +180,12 @@ namespace Rock.Web.Cache
 
                 foreach ( Rock.Model.Attribute attribute in attributeService.GetGlobalAttributes() )
                 {
-                    globalAttributes.AttributeKeys.Add( attribute.Id, attribute.Key );
+                    var attributeCache = AttributeCache.Read( attribute );
+                    globalAttributes.Attributes.Add( attributeCache );
 
-                    // TODO: Need to add support for multiple values
                     var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, null ).FirstOrDefault();
-                    globalAttributes.AttributeValues.Add( attribute.Key, new KeyValuePair<string, string>( attribute.Name, ( attributeValue != null && !string.IsNullOrEmpty( attributeValue.Value ) ) ? attributeValue.Value : attribute.DefaultValue ) );
-
+                    string value = ( attributeValue != null && !string.IsNullOrEmpty( attributeValue.Value ) ) ? attributeValue.Value : attributeCache.DefaultValue;
+                    globalAttributes.AttributeValues.Add( attributeCache.Key, new KeyValuePair<string, string>( attributeCache.Name, value ) );
                 }
 
                 cache.Set( cacheKey, globalAttributes, new CacheItemPolicy() );
