@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
@@ -32,11 +33,11 @@ namespace RockWeb.Blocks.Reporting
         /// <value>
         /// The report fields dictionary.
         /// </value>
-        protected Dictionary<int, string> ReportFieldsDictionary
+        protected List<ReportFieldInfo> ReportFieldsDictionary
         {
             get
             {
-                Dictionary<int, string> childGroupTypesDictionary = ViewState["ReportFieldsDictionary"] as Dictionary<int, string>;
+                List<ReportFieldInfo> childGroupTypesDictionary = ViewState["ReportFieldsDictionary"] as List<ReportFieldInfo>;
                 return childGroupTypesDictionary;
             }
 
@@ -44,6 +45,40 @@ namespace RockWeb.Blocks.Reporting
             {
                 ViewState["ReportFieldsDictionary"] = value;
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [Serializable]
+        protected class ReportFieldInfo
+        {
+            /// <summary>
+            /// Gets or sets the unique identifier.
+            /// </summary>
+            /// <value>
+            /// The unique identifier.
+            /// </value>
+            [DataMember]
+            public Guid Guid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the type of the report field.
+            /// </summary>
+            /// <value>
+            /// The type of the report field.
+            /// </value>
+            [DataMember]
+            public ReportFieldType ReportFieldType { get; set; }
+
+            /// <summary>
+            /// Gets or sets the selection.
+            /// </summary>
+            /// <value>
+            /// The selection.
+            /// </value>
+            [DataMember]
+            public string Selection { get; set; }
         }
 
         /// <summary>
@@ -90,15 +125,59 @@ namespace RockWeb.Blocks.Reporting
 
             if ( pnlEditDetails.Visible )
             {
-                foreach ( var field in ReportFieldsDictionary.OrderBy( a => a.Key ) )
+                foreach ( var field in ReportFieldsDictionary )
                 {
-                    string[] fieldSelectionValueParts = field.Value.Split( '|' );
-                    if ( fieldSelectionValueParts.Count() == 2 )
+                    AddFieldPanelWidget( field.Guid, field.ReportFieldType, field.Selection, true );
+                }
+            }
+
+            // handle sort events
+            string postbackArgs = Request.Params["__EVENTARGUMENT"];
+            if ( !string.IsNullOrWhiteSpace( postbackArgs ) )
+            {
+                string[] nameValue = postbackArgs.Split( new char[] { ':' } );
+                if ( nameValue.Count() == 2 )
+                {
+                    string eventParam = nameValue[0];
+                    if ( eventParam.Equals( "re-order-panel-widget" ) )
                     {
-                        ReportFieldType reportFieldType = fieldSelectionValueParts[0].ConvertToEnum<ReportFieldType>();
-                        string fieldSelection = fieldSelectionValueParts[1];
-                        AddFieldPanelWidget( field.Key, reportFieldType, fieldSelection, true );
+                        string[] values = nameValue[1].Split( new char[] { ';' } );
+                        if ( values.Count() == 2 )
+                        {
+                            SortPanelWidgets( eventParam, values );
+                        }
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sorts the panel widgets.
+        /// </summary>
+        /// <param name="eventParam">The event parameter.</param>
+        /// <param name="values">The values.</param>
+        private void SortPanelWidgets( string eventParam, string[] values )
+        {
+            var allPanelWidgets = phReportFields.ControlsOfTypeRecursive<PanelWidget>();
+            string panelWidgetClientId = values[0];
+            int newIndex = int.Parse( values[1] );
+
+            PanelWidget panelWidget = allPanelWidgets.FirstOrDefault( a => a.ClientID == panelWidgetClientId );
+            Guid reportFieldGuid = panelWidget.ID.Replace( "reportFieldWidget_", string.Empty ).AsGuid();
+            if ( panelWidget != null )
+            {
+                phReportFields.Controls.Remove( panelWidget );
+                var reportFieldInfo = ReportFieldsDictionary.Where( a => a.Guid == reportFieldGuid ).First();
+                ReportFieldsDictionary.Remove( reportFieldInfo );
+                if ( newIndex >= allPanelWidgets.Count() )
+                {
+                    phReportFields.Controls.Add( panelWidget );
+                    ReportFieldsDictionary.Add( reportFieldInfo );
+                }
+                else
+                {
+                    phReportFields.Controls.AddAt( newIndex, panelWidget );
+                    ReportFieldsDictionary.Insert( newIndex, reportFieldInfo );
                 }
             }
         }
@@ -216,39 +295,43 @@ namespace RockWeb.Blocks.Reporting
 
                     report.ReportFields.Clear();
 
-                    foreach ( var field in ReportFieldsDictionary.OrderBy( a => a.Key ) )
+                    var allPanelWidgets = phReportFields.ControlsOfTypeRecursive<PanelWidget>();
+                    int displayOrder = 0;
+                    foreach ( var panelWidget in allPanelWidgets )
                     {
-                        string[] fieldSelectionValueParts = field.Value.Split( '|' );
-                        if ( fieldSelectionValueParts.Count() == 2 )
+                        string hfReportFieldTypeID = panelWidget.ID + "_hfReportFieldType";
+                        HiddenField hfReportFieldType = phReportFields.ControlsOfTypeRecursive<HiddenField>().First( a => a.ID == hfReportFieldTypeID );
+
+                        string hfFieldSelectionID = panelWidget.ID + "_hfFieldSelection";
+                        HiddenField hfFieldSelection = phReportFields.ControlsOfTypeRecursive<HiddenField>().First( a => a.ID == hfFieldSelectionID );
+
+                        ReportFieldType reportFieldType = hfReportFieldType.Value.ConvertToEnum<ReportFieldType>();
+                        string fieldSelection = hfFieldSelection.Value;
+                        ReportField reportField = new ReportField();
+                        reportField.ReportFieldType = reportFieldType;
+
+                        string showInGridCheckBoxId = string.Format( "{0}_showInGridCheckBox", panelWidget.ID );
+                        RockCheckBox showInGridCheckBox = phReportFields.ControlsOfTypeRecursive<RockCheckBox>().First( a => a.ID == showInGridCheckBoxId );
+                        reportField.ShowInGrid = showInGridCheckBox.Checked;
+                        reportField.Order = displayOrder++;
+
+                        if ( reportFieldType == ReportFieldType.DataSelectComponent )
                         {
-                            ReportFieldType reportFieldType = fieldSelectionValueParts[0].ConvertToEnum<ReportFieldType>();
-                            string fieldSelection = fieldSelectionValueParts[1];
-                            ReportField reportField = new ReportField();
-                            reportField.ReportFieldType = reportFieldType;
+                            reportField.DataSelectComponentEntityTypeId = fieldSelection.AsInteger();
 
-                            string showInGridCheckBoxId = string.Format( "reportFieldWidget_{0}_showInGridCheckBox", field.Key );
-                            RockCheckBox showInGridCheckBox = phReportFields.ControlsOfTypeRecursive<RockCheckBox>().First( a => a.ID == showInGridCheckBoxId );
-                            reportField.ShowInGrid = showInGridCheckBox.Checked;
-                            reportField.Order = field.Key;
+                            string dataSelectComponentTypeName = EntityTypeCache.Read( reportField.DataSelectComponentEntityTypeId ?? 0 ).GetEntityType().FullName;
+                            DataSelectComponent dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );
 
-                            if ( reportFieldType == ReportFieldType.DataSelectComponent )
-                            {
-                                reportField.DataSelectComponentEntityTypeId = fieldSelection.AsInteger();
-
-                                string dataSelectComponentTypeName = EntityTypeCache.Read( reportField.DataSelectComponentEntityTypeId ?? 0 ).GetEntityType().FullName;
-                                DataSelectComponent dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );
-
-                                string placeHolderId = string.Format( "reportFieldWidget_{0}_phDataSelectControls", field.Key );
-                                var placeHolder = phReportFields.ControlsOfTypeRecursive<PlaceHolder>().Where( a => a.ID == placeHolderId ).FirstOrDefault();
-                                reportField.Selection = dataSelectComponent.GetSelection( placeHolder.Controls.OfType<Control>().ToArray() );
-                            }
-                            else
-                            {
-                                reportField.Selection = fieldSelection;
-                            }
-
-                            report.ReportFields.Add( reportField );
+                            string placeHolderId = string.Format( "{0}_phDataSelectControls", panelWidget.ID );
+                            var placeHolder = phReportFields.ControlsOfTypeRecursive<PlaceHolder>().Where( a => a.ID == placeHolderId ).FirstOrDefault();
+                            reportField.Selection = dataSelectComponent.GetSelection( placeHolder.Controls.OfType<Control>().ToArray() );
                         }
+                        else
+                        {
+                            reportField.Selection = fieldSelection;
+                        }
+
+                        report.ReportFields.Add( reportField );
                     }
 
                     if ( report.Id.Equals( 0 ) )
@@ -487,27 +570,23 @@ namespace RockWeb.Blocks.Reporting
             ddlEntityType.SetValue( report.EntityTypeId );
             ddlDataView.SetValue( report.DataViewId );
 
-            ReportFieldsDictionary = new Dictionary<int, string>();
+            ReportFieldsDictionary = new List<ReportFieldInfo>();
 
-            int displayOrder = 0;
             foreach ( var reportField in report.ReportFields.OrderBy( a => a.Order ) )
             {
                 string fieldSelection;
                 if ( reportField.ReportFieldType == ReportFieldType.DataSelectComponent )
                 {
-                    fieldSelection = string.Format( "{0}|{1}", reportField.ReportFieldType, reportField.DataSelectComponentEntityTypeId );
+                    fieldSelection = reportField.DataSelectComponentEntityTypeId.ToString();
                 }
                 else
                 {
-                    fieldSelection = string.Format( "{0}|{1}", reportField.ReportFieldType, reportField.Selection );
+                    fieldSelection = reportField.Selection;
                 }
 
-                // use displayOrder instead of reportField.Order just in case there are gaps or duplicates in reportField.Orders
-                ReportFieldsDictionary.Add( displayOrder++, fieldSelection );
-                AddFieldPanelWidget( displayOrder, reportField.ReportFieldType, fieldSelection.Split( '|' )[1], false, true, reportField.Selection );
+                ReportFieldsDictionary.Add( new ReportFieldInfo { Guid = reportField.Guid, ReportFieldType = reportField.ReportFieldType, Selection = fieldSelection } );
+                AddFieldPanelWidget( reportField.Guid, reportField.ReportFieldType, fieldSelection, false, true, reportField.Selection );
             }
-
-            // TODO, set control values for DataSelectComponent
         }
 
         /// <summary>
@@ -587,14 +666,14 @@ namespace RockWeb.Blocks.Reporting
         protected void btnAddField_Click( object sender, EventArgs e )
         {
             string fieldSelectionValue = ddlFields.SelectedItem.Value;
-            int displayOrder = ReportFieldsDictionary.Count();
-            ReportFieldsDictionary.Add( displayOrder, fieldSelectionValue );
+            Guid reportFieldGuid = Guid.NewGuid();
             string[] fieldSelectionValueParts = fieldSelectionValue.Split( '|' );
             if ( fieldSelectionValueParts.Count() == 2 )
             {
                 ReportFieldType reportFieldType = fieldSelectionValueParts[0].ConvertToEnum<ReportFieldType>();
                 string fieldSelection = fieldSelectionValueParts[1];
-                AddFieldPanelWidget( displayOrder, reportFieldType, fieldSelection, true );
+                ReportFieldsDictionary.Add( new ReportFieldInfo { Guid = reportFieldGuid, ReportFieldType = reportFieldType, Selection = fieldSelection } );
+                AddFieldPanelWidget( reportFieldGuid, reportFieldType, fieldSelection, true );
             }
         }
 
@@ -603,11 +682,10 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         /// <param name="displayOrder">The display order.</param>
         /// <param name="fieldName">Name of the field.</param>
-        private void AddFieldPanelWidget( int displayOrder, ReportFieldType reportFieldType, string fieldSelection, bool showExpanded,
-            bool setDataSelectComponentSelection = false, string dataSelectComponentSelection = null )
+        private void AddFieldPanelWidget( Guid reportFieldGuid, ReportFieldType reportFieldType, string fieldSelection, bool showExpanded, bool setDataSelectComponentSelection = false, string dataSelectComponentSelection = null )
         {
             PanelWidget panelWidget = new PanelWidget();
-            panelWidget.ID = string.Format( "reportFieldWidget_{0}", displayOrder );
+            panelWidget.ID = string.Format( "reportFieldWidget_{0}", reportFieldGuid.ToString( "N" ) );
 
             string fieldTitle = null;
             DataSelectComponent dataSelectComponent = null;
@@ -620,6 +698,7 @@ namespace RockWeb.Blocks.Reporting
                     {
                         fieldTitle = entityField.Title;
                     }
+
                     break;
 
                 case ReportFieldType.Attribute:
@@ -693,7 +772,14 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void FieldsPanelWidget_DeleteClick( object sender, EventArgs e )
         {
-            // TODO
+            PanelWidget panelWidget = sender as PanelWidget;
+            if ( panelWidget != null )
+            {
+                Guid reportFieldGuid = panelWidget.ID.Replace( "reportFieldWidget_", string.Empty ).AsGuid();
+                phReportFields.Controls.Remove( panelWidget );
+                var reportFieldInfo = ReportFieldsDictionary.First( a => a.Guid == reportFieldGuid );
+                ReportFieldsDictionary.Remove( reportFieldInfo );
+            }
         }
     }
 }
