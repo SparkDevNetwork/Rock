@@ -509,6 +509,14 @@ namespace Rock.Data
         public DbSet<Report> Reports { get; set; }
 
         /// <summary>
+        /// Gets or sets the report fields.
+        /// </summary>
+        /// <value>
+        /// The report fields.
+        /// </value>
+        public DbSet<ReportField> ReportFields { get; set; }
+
+        /// <summary>
         /// Gets or sets the schedules.
         /// </summary>
         /// <value>
