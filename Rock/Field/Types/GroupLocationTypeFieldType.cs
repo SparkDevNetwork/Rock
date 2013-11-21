@@ -35,6 +35,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            string formattedValue = string.Empty;
+
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 Guid guid = Guid.Empty;
@@ -43,13 +45,12 @@ namespace Rock.Field.Types
                     var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
                     if ( definedValue != null )
                     {
-                        return definedValue.Name;
+                        formattedValue = definedValue.Name;
                     }
                 }
             }
 
-            return string.Empty;
-
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 
         /// <summary>

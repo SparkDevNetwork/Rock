@@ -30,15 +30,19 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            string formattedValue = string.Empty;
+
             string[] KeyValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
             if ( KeyValues.Length == 1 )
             {
-                return "1 Key Value Pair";
+                formattedValue = "1 Key Value Pair";
             }
             else
             {
-                return string.Format( "{0:N0} Key Value Pairs", KeyValues.Length );
+                formattedValue = string.Format( "{0:N0} Key Value Pairs", KeyValues.Length );
             }
+
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 
         /// <summary>

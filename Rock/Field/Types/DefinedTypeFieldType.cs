@@ -30,17 +30,19 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            string formattedValue = string.Empty;
+
             Guid guid = Guid.Empty;
             if (Guid.TryParse(value, out guid))
             {
                 var definedType = new Model.DefinedTypeService().Get(guid);
                 if (definedType != null)
                 { 
-                    return definedType.Name;
+                    formattedValue = definedType.Name;
                 }
             }
 
-            return base.FormatValue( parentControl, value, configurationValues, condensed );
+            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
         }
 
         /// <summary>

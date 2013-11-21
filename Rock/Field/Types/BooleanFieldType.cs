@@ -29,21 +29,23 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            string formattedValue = string.Empty;
+
             if ( string.IsNullOrEmpty( value ) ? false : System.Boolean.Parse( value ) )
             {
                 if ( condensed )
                 {
-                    return "Y";
+                    formattedValue = "Y";
                 }
                 else
                 {
                     if ( configurationValues.ContainsKey( "truetext" ) )
                     {
-                        return configurationValues["truetext"].Value;
+                        formattedValue = configurationValues["truetext"].Value;
                     }
                     else
                     {
-                        return "Yes";
+                        formattedValue = "Yes";
                     }
                 }
             }
@@ -51,20 +53,22 @@ namespace Rock.Field.Types
             {
                 if ( condensed )
                 {
-                    return "N";
+                    formattedValue = "N";
                 }
                 else
                 {
                     if ( configurationValues.ContainsKey( "falsetext" ) )
                     {
-                        return configurationValues["falsetext"].Value;
+                        formattedValue = configurationValues["falsetext"].Value;
                     }
                     else
                     {
-                        return "No";
+                        formattedValue = "No";
                     }
                 }
             }
+
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 
         /// <summary>

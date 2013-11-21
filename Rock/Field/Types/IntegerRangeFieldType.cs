@@ -131,6 +131,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            string formattedValue = string.Empty;
+
             if ( value != null )
             {
                 string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
@@ -138,12 +140,12 @@ namespace Rock.Field.Types
                 {
                     string lowerValue = string.IsNullOrWhiteSpace( valuePair[0] ) ? Rock.Constants.None.TextHtml : valuePair[0];
                     string upperValue = string.IsNullOrWhiteSpace( valuePair[1] ) ? Rock.Constants.None.TextHtml : valuePair[1];
-                    return string.Format( "{0} to {1}", lowerValue, upperValue );
+                    formattedValue = string.Format( "{0} to {1}", lowerValue, upperValue );
                 }
             }
 
             // something unexpected.  Let the base format it
-            return base.FormatValue( parentControl, value, configurationValues, condensed );
+            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
         }
     }
 }
