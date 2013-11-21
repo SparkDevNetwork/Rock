@@ -339,6 +339,10 @@
     <Compile Include="Migrations\201311191803239_AddLocationTypeBack.Designer.cs">
       <DependentUpon>201311191803239_AddLocationTypeBack.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201311202303528_ReportFields.cs" />
+    <Compile Include="Migrations\201311202303528_ReportFields.Designer.cs">
+      <DependentUpon>201311202303528_ReportFields.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -347,6 +351,7 @@
     <Compile Include="Model\LayoutService.Partial.cs" />
     <Compile Include="Model\Layout.cs" />
     <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
+    <Compile Include="Model\ReportField.cs" />
     <Compile Include="Net\RestParameters\ContributionStatementOptions.cs" />
     <Compile Include="PersonProfile\Badge\Baptized.cs" />
     <Compile Include="PersonProfile\Badge\NextSteps.cs">
@@ -359,6 +364,7 @@
     <Compile Include="Reporting\DataFilter\Person\InGroupFilter.cs" />
     <Compile Include="Reporting\DataSelect\Person\LastContributionSelect.cs" />
     <Compile Include="Reporting\DataSelectContainer.cs" />
+    <Compile Include="Reporting\EntityHelper.cs" />
     <Compile Include="Reporting\FilterExpressionExtractor.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
@@ -1271,6 +1277,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201311191803239_AddLocationTypeBack.resx">
       <DependentUpon>201311191803239_AddLocationTypeBack.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201311202303528_ReportFields.resx">
+      <DependentUpon>201311202303528_ReportFields.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

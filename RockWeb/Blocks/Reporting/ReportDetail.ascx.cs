@@ -272,53 +272,23 @@ namespace RockWeb.Blocks.Reporting
                 ddlFields.Enabled = true;
 
                 Type entityType = EntityTypeCache.Read( entityTypeId.Value ).GetEntityType();
-
-                List<string> fieldNames = new List<string>();
-                List<string> otherFieldNames = new List<string>();
-
-                // add the regular fieldnames of the Entity, ignoring Id,Guid, and Order
-                foreach ( var property in entityType.GetProperties() )
-                {
-                    if ( !property.GetGetMethod().IsVirtual || property.Name == "Id" || property.Name == "Guid" || property.Name == "Order" )
-                    {
-                        if ( property.GetCustomAttributes( typeof( PreviewableAttribute ), true ).Count() > 0 )
-                        {
-                            fieldNames.Add( property.Name );
-                        }
-                        else
-                        {
-                            otherFieldNames.Add( property.Name );
-                        }
-                    }
-                }
-
-                // add any attributes of the Entity. (The User should think they are just regular fields and not be aware that they are attributes)
-                foreach ( var attribute in new AttributeService().Get( entityTypeId.Value, string.Empty, string.Empty ) )
-                {
-                    // Ensure prop name is unique
-                    string propName = attribute.Name;
-                    int i = 1;
-                    while ( otherFieldNames.Any( p => p.Equals( propName, StringComparison.CurrentCultureIgnoreCase ) ) )
-                    {
-                        propName = attribute.Name + ( i++ ).ToString();
-                    }
-
-                    otherFieldNames.Add( propName );
-                }
+                var entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType );
 
                 // Add Common Field Names for the EntityType
-                foreach ( var fieldName in fieldNames.OrderBy( a => a.ToUpper() ).ToList() )
+                foreach ( var entityField in entityFields.OrderBy( a => a.Title))
                 {
-                    var listItem = new ListItem( fieldName.SplitCase(), fieldName );
-                    listItem.Attributes["optiongroup"] = "Common";
-                    ddlFields.Items.Add( listItem );
-                }
+                    var listItem = new ListItem();
+                    listItem.Text = entityField.Title;
+                    if (entityField.FieldKind == FieldKind.Property)
+                    {
+                        listItem.Value = string.Format( "{0}|{1}", ReportFieldType.Property, entityField.Name );
+                    }
+                    else if ( entityField.FieldKind == FieldKind.Attribute )
+                    {
+                        listItem.Value = string.Format( "{0}|{1}", ReportFieldType.Attribute, entityField.AttributeId );
+                    }
 
-                // Add Other Field Names for the EntityType
-                foreach ( var fieldName in otherFieldNames.OrderBy( a => a.ToUpper() ).ToList() )
-                {
-                    var listItem = new ListItem( fieldName.SplitCase(), fieldName );
-                    listItem.Attributes["optiongroup"] = "Other";
+                    listItem.Attributes["optiongroup"] = "Fields";
                     ddlFields.Items.Add( listItem );
                 }
 
@@ -326,7 +296,9 @@ namespace RockWeb.Blocks.Reporting
                 foreach ( var component in DataSelectContainer.GetComponentsBySelectedEntityTypeName( entityType.FullName ).OrderBy( c => c.Title ) )
                 {
                     var selectEntityType = EntityTypeCache.Read( component.TypeName );
-                    var listItem = new ListItem( component.Title, selectEntityType.Id.ToString() );
+                    var listItem = new ListItem();
+                    listItem.Text = component.Title;
+                    listItem.Value = string.Format( "{0}|{1}", ReportFieldType.DataSelectComponent, component.TypeId );
                     listItem.Attributes["optiongroup"] = component.Section;
                     ddlFields.Items.Add( listItem );
                 }
@@ -509,8 +481,6 @@ namespace RockWeb.Blocks.Reporting
 
         #endregion
 
-        #region Activities and Actions
-
         /// <summary>
         /// Handles the SelectedIndexChanged event of the ddlEntityType control.
         /// </summary>
@@ -531,8 +501,6 @@ namespace RockWeb.Blocks.Reporting
             BindGrid( new ReportService().Get( hfReportId.ValueAsInt() ) );
         }
 
-        #endregion
-
         /// <summary>
         /// Handles the Click event of the btnAddField control.
         /// </summary>
@@ -540,10 +508,10 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddField_Click( object sender, EventArgs e )
         {
-            string fieldName = ddlFields.SelectedItem.Value;
+            string fieldValue = ddlFields.SelectedItem.Value;
             int displayOrder = ReportFieldsDictionary.Count();
-            ReportFieldsDictionary.Add( displayOrder, fieldName );
-            AddFieldPanelWidget( displayOrder, fieldName, true );
+            ReportFieldsDictionary.Add( displayOrder, fieldValue );
+            AddFieldPanelWidget( displayOrder, fieldValue, true );
         }
 
         /// <summary>
