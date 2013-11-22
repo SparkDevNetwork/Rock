@@ -23,11 +23,11 @@
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" CssClass="" />
                             <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                            <Rock:RockDropDownList ID="ddlTransform" runat="server" Label="Post-filter Transformation" />
-                        </div>
-                        <div class="col-md-6">
                             <Rock:DataDropDownList ID="ddlEntityType" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="EntityTypeId"
                                 Label="Applies To" DataTextField="FriendlyName" DataValueField="Id" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:RockDropDownList ID="ddlTransform" runat="server" Label="Post-filter Transformation" />
                             <Rock:CategoryPicker ID="cpCategory" runat="server" EntityTypeName="Rock.Model.DataView" Label="Category" Required="true" />
                         </div>
                     </div>
