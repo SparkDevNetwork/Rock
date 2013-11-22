@@ -25,6 +25,8 @@ namespace RockWeb.Blocks.Utility
     [BooleanField("Hide Block When Empty", "Hides entire block if no checklist items are available.", false)]
     [TextField("Checklist Title", "Title for your checklist.",false,"","Description",1)]
     [MemoField("Checklist Description", "Description for your checklist. Leave this blank and nothing will be displayed.",false,"","Description", 2)]
+    [CodeEditorField("Pre-Text", "Html to wrap the control in to provide advanced UI's like panels.", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 400, false, "", "Advanced", 0, "PreText")]
+    [CodeEditorField("Post-Text", "Html to wrap the control in to provide advanced UI's like panels.", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 400, false, "", "Advanced", 1, "PostText")]
     public partial class DefinedTypeCheckList : RockBlock
     {
         private string attributeKey = string.Empty;
@@ -57,7 +59,19 @@ namespace RockWeb.Blocks.Utility
             lTitle.Text = "<h4>" + GetAttributeValue("ChecklistTitle") + "</h4>";
             lDescription.Text = GetAttributeValue("ChecklistDescription");
 
+            lPreText.Text = GetAttributeValue("PreText");
+            lPostText.Text = GetAttributeValue("PostText");
+
             BindList();
+
+            string script = @"
+$('.checklist-item .checklist-desc-toggle').on('click', function (e) {
+    e.preventDefault();
+    $(this).parent('header').siblings('.panel-body').slideToggle();
+});
+";
+
+            ScriptManager.RegisterStartupScript(this.Page, this.Page.GetType(), "DefinedValueChecklistScript", script, true);
         }
 
         /// <summary>
@@ -118,7 +132,6 @@ namespace RockWeb.Blocks.Utility
                     }
                     cbValue.Checked = selected;
                     pnlValue.CssClass = selected ? "text-muted" : "";
-                    pnlValue.Visible = !hideCheckedItems || !selected;
                 }
             }
         }
@@ -141,18 +154,8 @@ namespace RockWeb.Blocks.Utility
                 var definedType = new DefinedTypeService().Get( guid );
                 rptrValues.DataSource = definedType.DefinedValues.OrderBy( v => v.Order ).ToList();
 
-                // determine if block should be hidden 
-                if (hideBlockWhenEmpty)
-                {
-                    if (definedType.DefinedValues.Count == 0)
-                    {
-                        pnlContent.Visible = false;
-                    }
-                    else
-                    {
-                        pnlContent.Visible = true;
-                    }
-                }
+                //var definedValueIdList = new AttributeValueService().GetByAttributeIdAndEntityId(1, 1).Where(a => a.Value.AsBoolean() == false).Select(a => a.EntityId);
+                //rptrValues.DataSource = definedType.DefinedValues.Where(a => definedValueIdList.Any(b => b == a.Id)).OrderBy(v => v.Order).ToList();
 
                 rptrValues.DataBind();
             }
