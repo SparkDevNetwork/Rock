@@ -302,16 +302,20 @@ namespace RockWeb
 
                 // string to send a message to the error page to prevent infinite loops
                 // of error reporting from incurring if there is an exception on the error page
-                string errorQueryParm = "?error=1";
+                string errorQueryParm = "?type=exception&error=1";
 
-                if ( context.Request.Url.ToString().Contains( "?error=1" ) )
+                string errorCount = context.Request["error"];
+                if ( !string.IsNullOrWhiteSpace( errorCount ) )
                 {
-                    errorQueryParm = "?error=2";
-                }
-                else if ( context.Request.Url.ToString().Contains( "?error=2" ) )
-                {
-                    // something really bad is occurring stop logging errors as we're in an infinate loop
-                    logException = false;
+                    if ( errorCount == "1" )
+                    {
+                        errorQueryParm = "?type=exception&error=2";
+                    }
+                    else if ( errorCount == "2" )
+                    {
+                        // something really bad is occurring stop logging errors as we're in an infinate loop
+                        logException = false;
+                    }
                 }
 
                 if ( logException )

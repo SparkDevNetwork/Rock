@@ -255,6 +255,50 @@ namespace Rock.Web.Cache
             return this.Name;
         }
 
+        /// <summary>
+        /// Redirects to default page.
+        /// </summary>
+        public void RedirectToDefaultPage()
+        {
+            var context = HttpContext.Current;
+
+            var pageReference = new Rock.Web.PageReference( DefaultPageId ?? 0, DefaultPageRouteId ?? 0 );
+            context.Response.Redirect( pageReference.BuildUrl(), false );
+            context.ApplicationInstance.CompleteRequest();
+        }
+
+        /// <summary>
+        /// Redirects to login page.
+        /// </summary>
+        public void RedirectToLoginPage(bool includeReturnUrl)
+        {
+            var context = HttpContext.Current;
+
+            var pageReference = new Rock.Web.PageReference( LoginPageId ?? 0, LoginPageRouteId ?? 0 );
+
+            if ( includeReturnUrl )
+            {
+                var parms = new Dictionary<string, string>();
+                parms.Add( "returnurl", context.Request.QueryString["returnUrl"] ?? context.Server.UrlEncode( context.Request.RawUrl ) );
+                pageReference.Parameters = parms;
+            }
+
+            context.Response.Redirect( pageReference.BuildUrl(), false );
+            context.ApplicationInstance.CompleteRequest();
+        }
+
+        /// <summary>
+        /// Redirects to registration page.
+        /// </summary>
+        public void RedirectToRegistrationPage()
+        {
+            var context = HttpContext.Current;
+
+            var pageReference = new Rock.Web.PageReference( RegistrationPageId ?? 0, RegistrationPageRouteId ?? 0 );
+            context.Response.Redirect( pageReference.BuildUrl(), false );
+            context.ApplicationInstance.CompleteRequest();
+        }
+        
         #endregion
 
         #region Static Methods

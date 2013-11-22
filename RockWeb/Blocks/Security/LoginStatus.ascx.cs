@@ -52,19 +52,7 @@ namespace RockWeb.Blocks.Security
                 var site = CurrentPage.Layout.Site;
                 if ( site.LoginPageId.HasValue )
                 {
-                    var pageReference = new PageReference( site.LoginPageId.Value );
-                    if ( site.LoginPageRouteId.HasValue )
-                    {
-                        pageReference.RouteId = site.LoginPageRouteId.Value;
-                    }
-
-                    var parms = new Dictionary<string, string>();
-
-                    // if the QueryString already has a returnUrl, use that, otherwise redirect to RawUrl
-                    parms.Add( "returnurl", Request.QueryString["returnUrl"] ?? Server.UrlEncode( Request.RawUrl ) );
-                    pageReference.Parameters = parms;
-
-                    Response.Redirect( pageReference.BuildUrl() );
+                    site.RedirectToLoginPage( true );
                 }
                 else
                 {
@@ -75,10 +63,19 @@ namespace RockWeb.Blocks.Security
             {
                 FormsAuthentication.SignOut();
 
-                Response.Redirect( CurrentPageReference.BuildUrl() );
-                Context.ApplicationInstance.CompleteRequest();
-            }
+                // After logging out check to see if an anonymous user is allowed to view the current page.  If so
+                // redirect back to the current page, otherwise redirect to the site's default page
+                if ( CurrentPage.IsAuthorized( "View", null ) )
+                {
+                    Response.Redirect( CurrentPageReference.BuildUrl() );
+                    Context.ApplicationInstance.CompleteRequest();
+                }
+                else
+                {
+                    CurrentPage.Layout.Site.RedirectToDefaultPage();
+                }
 
+            }
         }
     }
 }
