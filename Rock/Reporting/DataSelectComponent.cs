@@ -130,6 +130,13 @@ namespace Rock.Reporting
         /// The data columns.
         /// </value>
         public abstract List<DataColumn> DataColumns { get; }
+
+        /// <summary>
+        /// Gets the data column values.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns></returns>
+        public abstract List<object> GetDataColumnValues( Rock.Data.IEntity item );
     }
 
     /// <summary>
@@ -138,11 +145,6 @@ namespace Rock.Reporting
     /// <typeparam name="T"></typeparam>
     public abstract class DataSelectComponent<T> : DataSelectComponent
     {
-        /// <summary>
-        /// Gets the data column values.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns></returns>
-        public abstract List<object> GetDataColumnValues( T item );
+        
     }
 }

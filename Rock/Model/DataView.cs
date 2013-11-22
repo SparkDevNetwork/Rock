@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -167,7 +168,7 @@ namespace Rock.Model
         /// <param name="errorMessages">The error messages.</param>
         /// <param name="createColumns">if set to <c>true</c> [create columns].</param>
         /// <returns></returns>
-        public object BindGrid(Grid grid, out List<string> errorMessages, bool createColumns = false)
+        public List<IEntity> BindGrid( Grid grid, out List<string> errorMessages, bool createColumns = false )
         {
             errorMessages = new List<string>();
 
@@ -185,24 +186,59 @@ namespace Rock.Model
                             grid.CreatePreviewColumns( entityType );
                         }
 
+                        using ( new Rock.Data.UnitOfWorkScope() )
+                        {
+                            var qry = this.GetQuery( out errorMessages );
+                            if ( grid.SortProperty != null )
+                            {
+                                qry = qry.Sort( grid.SortProperty );
+                            }
+
+                            return qry.ToList();
+                        };
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the query.
+        /// </summary>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        public IQueryable<IEntity> GetQuery( out List<string> errorMessages )
+        {
+            errorMessages = new List<string>();
+
+            if ( EntityTypeId.HasValue )
+            {
+                var cachedEntityType = EntityTypeCache.Read( EntityTypeId.Value );
+                if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
+                {
+                    Type entityType = cachedEntityType.GetEntityType();
+
+                    if ( entityType != null )
+                    {
                         Type[] modelType = { entityType };
                         Type genericServiceType = typeof( Rock.Data.Service<> );
                         Type modelServiceType = genericServiceType.MakeGenericType( modelType );
 
-                        using ( new Rock.Data.UnitOfWorkScope() )
+                        object serviceInstance = Activator.CreateInstance( modelServiceType );
+
+                        if ( serviceInstance != null )
                         {
-                            object serviceInstance = Activator.CreateInstance( modelServiceType );
+                            ParameterExpression paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
+                            Expression whereExpression = GetExpression( serviceInstance, paramExpression, out errorMessages );
 
-                            if ( serviceInstance != null )
+                            MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
+                            if ( getMethod != null )
                             {
-                                ParameterExpression paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
-                                Expression whereExpression = GetExpression( serviceInstance, paramExpression, out errorMessages );
+                                var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression } );
+                                var qry = getResult as IQueryable<IEntity>;
 
-                                MethodInfo getListMethod = serviceInstance.GetType().GetMethod( "GetList", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
-                                if ( getListMethod != null )
-                                {
-                                    return getListMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, grid.SortProperty } );
-                                }
+                                return qry;
                             }
                         }
                     }
@@ -308,7 +344,7 @@ namespace Rock.Model
             this.HasOptional( v => v.Category ).WithMany().HasForeignKey( v => v.CategoryId ).WillCascadeOnDelete( false );
             this.HasOptional( v => v.DataViewFilter ).WithMany().HasForeignKey( v => v.DataViewFilterId ).WillCascadeOnDelete( true );
             this.HasRequired( v => v.EntityType ).WithMany().HasForeignKey( v => v.EntityTypeId ).WillCascadeOnDelete( false );
-            this.HasOptional( e => e.TransformEntityType ).WithMany().HasForeignKey( e => e.TransformEntityTypeId).WillCascadeOnDelete( false );
+            this.HasOptional( e => e.TransformEntityType ).WithMany().HasForeignKey( e => e.TransformEntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 

@@ -50,7 +50,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public override List<object> GetDataColumnValues( Rock.Model.Person person )
+        public override List<object> GetDataColumnValues( Rock.Data.IEntity person )
         {
             FinancialTransactionService financialTransactionService = new FinancialTransactionService();
             var lastContribution = financialTransactionService.Queryable().Where( a => a.AuthorizedPersonId == person.Id ).OrderByDescending( a => a.TransactionDateTime ).Take( 1 ).FirstOrDefault();
@@ -61,6 +61,11 @@ namespace Rock.Reporting.DataSelect.Person
             {
                 result.Add( lastContribution.Amount );
                 result.Add( lastContribution.TransactionDateTime );
+            }
+            else
+            {
+                result.Add( null );
+                result.Add( null );
             }
 
             return result;
