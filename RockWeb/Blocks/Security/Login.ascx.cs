@@ -203,14 +203,12 @@ namespace RockWeb.Blocks.Security
             if (!string.IsNullOrWhiteSpace(returnUrl))
             {
                 Response.Redirect( Server.UrlDecode( returnUrl ), false );
+                Context.ApplicationInstance.CompleteRequest();
             }
             else
             {
-                var site = CurrentPage.Layout.Site;
-                var pageReference = new Rock.Web.PageReference(site.DefaultPageId ?? 0, site.DefaultPageRouteId ?? 0);
-                Response.Redirect(pageReference.BuildUrl(), false);
+                CurrentPage.Layout.Site.RedirectToDefaultPage();
             }
-            Context.ApplicationInstance.CompleteRequest();
         }
     }
 

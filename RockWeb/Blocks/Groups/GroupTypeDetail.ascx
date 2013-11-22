@@ -111,7 +111,7 @@
                     </Rock:Grid>
                 </Rock:PanelWidget>
 
-                <Rock:PanelWidget ID="wpGroupMemberAttributes" runat="server" Title="Member Attributes">
+                <Rock:PanelWidget ID="wpGroupMemberAttributes" runat="server" Title="Member Attributes" CssClass="group-type-attribute-panel">
                     <Rock:NotificationBox ID="nbGroupMemberAttributes" runat="server" NotificationBoxType="Info" 
                         Text="Member Attributes apply to all of the group members in every group of this type.  Each member will have their own value for these attributes" />
                     <Rock:RockControlWrapper ID="rcGroupMemberAttributesInherited" runat="server" Label="Inherited Attribute(s)">
@@ -137,7 +137,7 @@
                     </Rock:Grid>
                 </Rock:PanelWidget>
 
-                <Rock:PanelWidget ID="wpGroupAttributes" runat="server" Title="Group Attributes">
+                <Rock:PanelWidget ID="wpGroupAttributes" runat="server" Title="Group Attributes" CssClass="group-type-attribute-panel">
                     <Rock:NotificationBox ID="NotificationBox1" runat="server" NotificationBoxType="Info" 
                         Text="Group Attributes apply to all of the groups of this type.  Each group will have its own value for these attributes" />
                     <Rock:RockControlWrapper ID="rcGroupAttributesInherited" runat="server" Label="Inherited Attribute(s)">
@@ -163,7 +163,7 @@
                     </Rock:Grid>
                 </Rock:PanelWidget>
 
-                <Rock:PanelWidget ID="wpGroupTypeAttributes" runat="server" Title="Group Type Attributes">
+                <Rock:PanelWidget ID="wpGroupTypeAttributes" runat="server" Title="Group Type Attributes" CssClass="group-type-attribute-panel">
                     <Rock:NotificationBox ID="NotificationBox2" runat="server" NotificationBoxType="Info" 
                         Text="Group Type Attributes apply to all of the groups of this type.  Each group will have the same value equal to what is set as the default value here." />
                     <Rock:RockControlWrapper ID="rcGroupTypeAttributesInherited" runat="server" Label="Inherited Attribute(s)">

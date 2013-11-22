@@ -146,6 +146,18 @@ namespace Rock.Web.UI.Controls
         #endregion
 
         /// <summary>
+        /// Gets or sets the CSS class.
+        /// </summary>
+        /// <value>
+        /// The CSS class.
+        /// </value>
+        public string CssClass
+        {
+            get { return ViewState["CssClass"] as string ?? string.Empty; }
+            set { ViewState["CssClass"] = value; }
+        }
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="RockControlWrapper" /> class.
         /// </summary>
         public RockControlWrapper()
@@ -170,7 +182,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                RockControlHelper.RenderControl( this, writer );
+                RockControlHelper.RenderControl( this, writer, CssClass );
             }
         }
 
