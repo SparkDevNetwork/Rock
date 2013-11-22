@@ -17,7 +17,7 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Administration
 {
     [BooleanField( "Show Binary File Type" )]
-    [WorkflowTypeField( "Workflow", "An optional workflow to activate for any new file uploaded" )]
+    [WorkflowTypeField( "Workflow", "An optional workflow to activate for any new file uploaded", false, "", "Advanced" )]
     public partial class BinaryFileDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
