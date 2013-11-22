@@ -68,6 +68,7 @@ namespace RockWeb.Blocks.Utility
 $('.checklist-item .checklist-desc-toggle').on('click', function (e) {
     e.preventDefault();
     $(this).parent('header').siblings('.panel-body').slideToggle();
+    $(this).find('i').toggleClass('fa-chevron-up fa-chevron-down');
 });
 ";
 
