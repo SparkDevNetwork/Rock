@@ -1442,13 +1442,12 @@ td.grid-col-actions {
 */
 .rock-modal-frame {
   width: 750px;
-}
-.rock-modal {
   -moz-box-shadow: #464646 18px 18px 80px 0px;
   -webkit-box-shadow: #464646 18px 18px 80px 0px;
   box-shadow: #464646 18px 18px 80px 0px;
+}
+.rock-modal {
   background-color: #ffffff;
-  border: 1px solid #999999;
 }
 .rock-modal .modal-header {
   background-color: #3a3a3a;
@@ -1948,7 +1947,16 @@ dl dd {
 .panel-widget > .panel-footer + .panel-collapse .panel-body {
   border-bottom-color: #d5d5d5;
 }
+.panel-widget .panel-heading .checkbox {
+  display: inline;
+  margin-top: 0;
+  margin-bottom: 0;
+  float: left;
+}
 .panel-info .panel-body {
+  background-color: #ffffff;
+}
+.panel-info .list-group-item {
   background-color: #ffffff;
 }
 .panel-persondetails {
