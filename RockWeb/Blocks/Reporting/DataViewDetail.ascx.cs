@@ -732,7 +732,7 @@ $(document).ready(function() {
             emptyFilter.ExpressionType = FilterExpressionType.Filter;
             dataViewFilter.ChildFilters.Add( emptyFilter );
 
-            CreateFilterControl( ddlEntityType.SelectedValueAsInt(), dataViewFilter, false );
+            CreateFilterControl( ddlEntityType.SelectedValueAsInt(), dataViewFilter, true );
         }
 
         #endregion
