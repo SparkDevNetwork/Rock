@@ -808,7 +808,7 @@ namespace Rock.Attribute
         /// <param name="validationGroup">The validation group.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="exclude">The exclude.</param>
-        private static void AddEditControls( string category, List<string> attributeKeys, IHasAttributes item, Control parentControl, string validationGroup, bool setValue, List<string> exclude )
+        public static void AddEditControls( string category, List<string> attributeKeys, IHasAttributes item, Control parentControl, string validationGroup, bool setValue, List<string> exclude )
         {
             HtmlGenericControl fieldSet = new HtmlGenericControl( "fieldset" );
             parentControl.Controls.Add( fieldSet );
