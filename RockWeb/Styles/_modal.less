@@ -3,18 +3,17 @@
 
 */
 
-.rock-modal-frame {
+.rock-modal-frame { // used by both the iframe modal and the in-window modal
     width: 750px;
-    
+    border: 1px solid @modal-border-color;
+    -moz-box-shadow:    @modal-dropshadow-color 18px 18px 80px 0px;
+    -webkit-box-shadow: @modal-dropshadow-color 18px 18px 80px 0px;
+    box-shadow: @modal-dropshadow-color 18px 18px 80px 0px; 
 }
 
 .rock-modal {
 
-    -moz-box-shadow:    @modal-dropshadow-color 18px 18px 80px 0px;
-    -webkit-box-shadow: @modal-dropshadow-color 18px 18px 80px 0px;
-    box-shadow: @modal-dropshadow-color 18px 18px 80px 0px; 
     background-color: @body-bg;
-    border: 1px solid @modal-border-color;
 
     .modal-header {
         background-color: @modal-header-bg;  

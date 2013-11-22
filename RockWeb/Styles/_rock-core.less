@@ -91,10 +91,23 @@
 //.panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
 .panel-widget {
     .panel-variant(@accent-color ; @accent-text-color; @accent-color; @accent-color;);
+
+    .panel-heading {
+        .checkbox {
+            display: inline;
+            margin-top: 0;
+            margin-bottom: 0;
+            float: left;
+        }
+    }
 }
 
 .panel-info {
     .panel-body {
+        background-color: @body-bg;
+    }
+
+    .list-group-item {
         background-color: @body-bg;
     }
 }
