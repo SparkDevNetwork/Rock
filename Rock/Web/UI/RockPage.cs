@@ -533,6 +533,12 @@ namespace Rock.Web.UI
                         CurrentPage.Layout.SiteId, CurrentPage.LayoutId, CurrentPage.Id, CurrentPage.Layout.FileName, AppPath );
                     ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "rock-js-object", script, true );
 
+                    // Add dummy default button to prevent modalPopupExtender dialogs from displaying when enter key is pressed
+                    var btnDummy = new Button();
+                    btnDummy.Attributes.Add( "style", "display:none" );
+                    this.Form.Controls.Add( btnDummy );
+                    this.Form.DefaultButton = btnDummy.UniqueID;
+
                     AddTriggerPanel();
 
                     // Add config elements
