@@ -22,7 +22,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Cms
 {
-    [CodeEditorField( "Layout", "The layout of the Ad details", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 600, true, @"
+    [CodeEditorField( "Layout", "The layout of the Ad details", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, true, @"
 <h1>{{ MarketingCampaign.Title }}</h1><br/><br/>
 {{ SummaryText }}<br/><br/>
 {{ DetailHtml }}

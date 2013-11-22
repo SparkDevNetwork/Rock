@@ -49,27 +49,27 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Prompt for Phone", "Should the user be prompted for their phone number?", false, "", 11, "DisplayPhone" )]
     [BooleanField( "Prompt for Email", "Should the user be prompted for their email address?", true, "", 12, "DisplayEmail" )]
 
-    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 600, true, @"
+    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <p>
 Please confirm the information below. Once you have confirmed that the information is accurate click the 'Finish' button to complete your transaction. 
 </p>
 ", "Text Options", 13 )]
 
-    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 600, true, @"
+    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <div class='alert alert-info'>
 By clicking the 'finish' button below I agree to allow {{ OrganizationName }} to debit the amount above from my account. I acknowledge that I may 
 update the transaction information at any time by returning to this website. Please call the Finance Office if you have any additional questions. 
 </div>
 ", "Text Options", 14 )]
 
-    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 600, true, @"
+    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <p>
 Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively 
 achieve our mission.  We are so grateful for your commitment. 
 </p>
 ", "Text Options", 15 )]
 
-    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 600, true, @"
+    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 ", "Text Options", 16 )]
 
     #endregion
