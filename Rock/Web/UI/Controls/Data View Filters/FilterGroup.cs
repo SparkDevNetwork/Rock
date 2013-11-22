@@ -108,7 +108,7 @@ namespace Rock.Web.UI.Controls
             btnAddGroup.CausesValidation = false;
 
             var iAddGroup = new HtmlGenericControl( "i" );
-            iAddGroup.AddCssClass( "fa-list-alt" );
+            iAddGroup.AddCssClass( "fa fa-list-alt" );
             btnAddGroup.Controls.Add( iAddGroup );
             btnAddGroup.Controls.Add( new LiteralControl( " Add Filter Group" ) );
 
@@ -120,7 +120,7 @@ namespace Rock.Web.UI.Controls
             btnAddFilter.CausesValidation = false;
 
             var iAddFilter = new HtmlGenericControl( "i" );
-            iAddFilter.AddCssClass( "fa-filter" );
+            iAddFilter.AddCssClass( "fa fa-filter" );
             btnAddFilter.Controls.Add( iAddFilter );
             btnAddFilter.Controls.Add( new LiteralControl( " Add Filter" ) );
 
