@@ -1077,11 +1077,11 @@ namespace Rock.Web.UI.Controls
                     {
                         if ( property.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() > 0 )
                         {
-                            displayColumns.Add( property.Name, GetGridField( property ) );
+                            displayColumns.Add( property.Name, GetGridField( property.PropertyType ) );
                         }
                         else if ( displayColumns.Count == 0 && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
                         {
-                            allColumns.Add( property.Name, GetGridField( property ) );
+                            allColumns.Add( property.Name, GetGridField( property.PropertyType ) );
                         }
                     }
                 }
@@ -1113,21 +1113,32 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="property">The property.</param>
         /// <returns></returns>
-        private BoundField GetGridField( PropertyInfo property )
+        public static BoundField GetGridField( Type propertyType )
         {
             BoundField bf = new BoundField();
+            Type baseType = propertyType;
 
-            if ( property.PropertyType == typeof( Boolean ) )
+            if (propertyType.IsGenericType)
+            {
+                baseType = propertyType.GetGenericArguments()[0];
+            }
+
+            if ( baseType == typeof( Boolean ) )
             {
                 bf = new BoolField();
             }
-            else if ( property.PropertyType == typeof( DateTime ) )
+            else if ( baseType == typeof( DateTime ) )
             {
                 bf = new DateField();
             }
-            else if ( property.PropertyType.IsEnum )
+            else if ( baseType.IsEnum )
             {
                 bf = new EnumField();
+            }
+            else if ( baseType == typeof( decimal ) || baseType == typeof( int ) )
+            {
+                bf = new BoundField();
+                bf.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
             }
 
             return bf;

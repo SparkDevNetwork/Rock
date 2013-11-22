@@ -412,3 +412,22 @@ span.data-view-filter-label {
 .tt-suggestion p {
   margin: 0;
 }
+
+/* Fixed column widths for attribute grids in the Group Type Detail block - DT */
+section.group-type-attribute-panel label {
+    padding-left: 36px;
+}
+table.inherited-attribute-grid tr td:first-child {
+    padding-left: 36px;
+    width: 131px;
+}
+table.attribute-grid tr th:first-child {
+    width: 31px;
+}
+table.attribute-grid tr th:nth-child(2) {
+    width: 100px;
+}
+table.inherited-attribute-grid tr td:nth-child(2),
+table.attribute-grid tr th:nth-child(3) {
+    width: 550px;
+}

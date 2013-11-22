@@ -50,7 +50,7 @@
                             </div>
                         </div>
                     </header>
-                    <div class="panel-body">
+                    <div class="panel-body panel-widget-sort-container">
                         <asp:PlaceHolder runat="server" ID="phReportFields" ViewStateMode="Disabled" />
                     </div>
                 </section>
@@ -86,6 +86,38 @@
             </div>
 
         </asp:Panel>
+        <script>
 
+            Sys.Application.add_load(function () {
+                var fixHelper = function (e, ui) {
+                    ui.children().each(function () {
+                        $(this).width($(this).width());
+                    });
+                    return ui;
+                };
+
+                // javascript to make the Reorder buttons work on the panel-widget controls
+                $('.panel-widget-sort-container').sortable({
+                    helper: fixHelper,
+                    handle: '.panel-widget-reorder',
+                    containment: 'parent',
+                    tolerance: 'pointer',
+                    start: function (event, ui) {
+                        {
+                            var start_pos = ui.item.index();
+                            ui.item.data('start_pos', start_pos);
+                        }
+                    },
+                    update: function (event, ui) {
+                        {
+                            $('#' + '<%=btnSave.ClientID %>').addClass('disabled');
+                            var newItemIndex = $(ui.item).prevAll('.panel-widget').length;
+                            __doPostBack('<%=upReport.ClientID %>', 're-order-panel-widget:' + ui.item.attr('id') + ';' + newItemIndex);
+                        }
+                    }
+                });
+
+            });
+        </script>
     </ContentTemplate>
 </asp:UpdatePanel>

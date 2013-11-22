@@ -22,12 +22,39 @@ public partial class error : System.Web.UI.Page
     protected void Page_Load( object sender, EventArgs e )
     {
         logoImg.Src = ResolveUrl( "~/Assets/Images/rock-logo.svg" );
-        
+
+        string errorType = Request["type"];
+        if (string.IsNullOrWhiteSpace(errorType))
+        {
+            errorType = "exception";
+        }
+
+        if (errorType.Equals("security", StringComparison.OrdinalIgnoreCase))
+        {
+            ShowSecurityError();
+        }
+        else
+        {
+            ShowException();
+        }
+    }
+
+    private void ShowSecurityError()
+    {
+        pnlSecurity.Visible = true;
+    }
+
+    private void ShowException()
+    {
+        pnlException.Visible = true;
+
         // get error level
         int errorLevel = 0;
 
         if ( Request["error"] != null )
+        {
             errorLevel = Int32.Parse( Request["error"].ToString() );
+        }
 
         if ( errorLevel == 1 )
         {

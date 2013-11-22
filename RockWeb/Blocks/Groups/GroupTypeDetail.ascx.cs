@@ -1489,6 +1489,7 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindGroupTypeAttributesInheritedGrid()
         {
+            gGroupTypeAttributesInherited.AddCssClass( "inherited-attribute-grid" );
             gGroupTypeAttributesInherited.DataSource = GroupTypeAttributesInheritedState;
             gGroupTypeAttributesInherited.DataBind();
             rcGroupTypeAttributesInherited.Visible = GroupTypeAttributesInheritedState.Any();
@@ -1499,6 +1500,7 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindGroupTypeAttributesGrid()
         {
+            gGroupTypeAttributes.AddCssClass( "attribute-grid" );
             SetAttributeListOrder( GroupTypeAttributesState );
             gGroupTypeAttributes.DataSource = GroupTypeAttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             gGroupTypeAttributes.DataBind();
@@ -1627,6 +1629,7 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindGroupAttributesInheritedGrid()
         {
+            gGroupAttributesInherited.AddCssClass( "inherited-attribute-grid" );
             gGroupAttributesInherited.DataSource = GroupAttributesInheritedState;
             gGroupAttributesInherited.DataBind();
             rcGroupAttributesInherited.Visible = GroupAttributesInheritedState.Any();
@@ -1637,6 +1640,7 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindGroupAttributesGrid()
         {
+            gGroupAttributes.AddCssClass( "attribute-grid" );
             SetAttributeListOrder( GroupAttributesState );
             gGroupAttributes.DataSource = GroupAttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             gGroupAttributes.DataBind();
@@ -1765,6 +1769,7 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindGroupMemberAttributesInheritedGrid()
         {
+            gGroupMemberAttributesInherited.AddCssClass( "inherited-attribute-grid" );
             gGroupMemberAttributesInherited.DataSource = GroupMemberAttributesInheritedState;
             gGroupMemberAttributesInherited.DataBind();
             rcGroupMemberAttributesInherited.Visible = GroupMemberAttributesInheritedState.Any();
@@ -1776,6 +1781,7 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindGroupMemberAttributesGrid()
         {
+            gGroupMemberAttributes.AddCssClass( "attribute-grid" );
             SetAttributeListOrder( GroupMemberAttributesState );
             gGroupMemberAttributes.DataSource = GroupMemberAttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             gGroupMemberAttributes.DataBind();

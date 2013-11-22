@@ -32,7 +32,16 @@
             <div id="content-box">
                 <div class="row">
                     <div class="col-md-12">
-                        <div class="error-wrap">
+                        
+                        <asp:Panel ID="pnlSecurity" runat="server" CssClass="error-wrap" Visible="false">
+                            <h1>Ah Man... You can't view that page...</h1>
+                            <p>Unfortunately, you are not authorized to view the page you requested.</p>
+
+                            <p><a onclick="history.go(-1);" class="btn btn-sm btn-primary">Go Back</a></p>
+
+                        </asp:Panel>
+                        
+                        <asp:Panel ID="pnlException" runat="server" CssClass="error-wrap" Visible="false">
                             <h1>Ah Man... An Error Occurred...</h1>
                             <p>An error has occurred while processing your request.  The Rock ChMS administrators have 
                             been notified of this problem.</p>
@@ -40,7 +49,8 @@
                             <p><a onclick="history.go(-1);" class="btn btn-sm btn-primary">Go Back</a></p>
 
                             <asp:Literal ID="lErrorInfo" runat="server"></asp:Literal>
-                        </div>
+                        </asp:Panel>
+
                     </div>
                 </div>
             </div>

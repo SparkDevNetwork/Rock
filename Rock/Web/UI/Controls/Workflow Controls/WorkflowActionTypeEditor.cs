@@ -175,8 +175,29 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
 
             foreach ( var item in WorkflowActionContainer.Instance.Components.Values.OrderBy( a => a.Value.EntityType.FriendlyName ) )
             {
-                var entityType = item.Value.EntityType;
-                _ddlEntityType.Items.Add( new ListItem( entityType.FriendlyName, entityType.Id.ToString() ) );
+                var type = item.Value.GetType();
+                if (type != null)
+                {
+                    var entityType = EntityTypeCache.Read( type );
+                    var li = new ListItem( entityType.FriendlyName, entityType.Id.ToString() );
+
+                    // Get description
+                    string description = string.Empty;
+                    var descAttributes = type.GetCustomAttributes( typeof( System.ComponentModel.DescriptionAttribute ), false );
+                    if ( descAttributes != null )
+                    {
+                        foreach ( System.ComponentModel.DescriptionAttribute descAttribute in descAttributes )
+                        {
+                            description = descAttribute.Description;
+                        }
+                    }
+                    if ( !string.IsNullOrWhiteSpace( description ) )
+                    {
+                        li.Attributes.Add( "title", description );
+                    }
+
+                    _ddlEntityType.Items.Add( li );
+                }
             }
 
             // set label when they exit the edit field
