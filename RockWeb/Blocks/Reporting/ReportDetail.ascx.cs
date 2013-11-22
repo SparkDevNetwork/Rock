@@ -5,7 +5,9 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.Serialization;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -625,7 +627,124 @@ namespace RockWeb.Blocks.Reporting
             if ( report != null && report.DataView != null )
             {
                 var errors = new List<string>();
-                gReport.DataSource = report.DataView.BindGrid( gReport, out errors, true );
+
+                
+                if ( !report.EntityTypeId.HasValue )
+                {
+                    return;
+                }
+
+                Type entityType = EntityTypeCache.Read( report.EntityTypeId.Value ).GetEntityType();
+
+                List<EntityField> entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType );
+
+                var dataSelectComponentDictionary = new Dictionary<string, DataSelectComponent>();
+                DataTable dataTable = new DataTable( "reportTable" );
+                dataTable.Columns.Add( "Id", typeof( int ) );
+
+                gReport.DataKeyNames = new string[] { "Id" };
+                
+                gReport.Columns.Clear();
+                foreach ( var reportField in report.ReportFields.OrderBy( a => a.Order ) )
+                {
+                    if ( reportField.ReportFieldType == ReportFieldType.Property )
+                    {
+                        var entityField = entityFields.FirstOrDefault( a => a.Name == reportField.Selection );
+                        if ( entityField != null )
+                        {
+                            BoundField boundField;
+                            if ( entityField.DefinedTypeId.HasValue )
+                            {
+                                boundField = new DefinedValueField();
+                                dataTable.Columns.Add( entityField.Name, typeof( int ) );
+                            }
+                            else
+                            {
+                                boundField = Grid.GetGridField( entityField.PropertyType );
+                                dataTable.Columns.Add( entityField.Name );
+                            }
+
+                            boundField.DataField = entityField.Name;
+                            boundField.HeaderText = entityField.Title;
+                            boundField.SortExpression = entityField.Name;
+
+                            gReport.Columns.Add( boundField );
+                        }
+                    }
+                    else if ( reportField.ReportFieldType == ReportFieldType.Attribute )
+                    {
+                        // TODO get more info about the Attribute (FieldType, Name, etc);
+                        AttributeField boundField = new AttributeField();
+                        boundField.DataField = reportField.Selection;
+                        boundField.HeaderText = reportField.Selection.SplitCase();
+                        boundField.SortExpression = null;
+                        dataTable.Columns.Add( boundField.DataField );
+                        gReport.Columns.Add( boundField );
+                    }
+                    else if ( reportField.ReportFieldType == ReportFieldType.DataSelectComponent )
+                    {
+                        DataSelectComponent dataSelectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
+
+                        foreach ( var dataColumn in dataSelectComponent.DataColumns )
+                        {
+                            BoundField boundField = Grid.GetGridField( dataColumn.DataType );
+                            if ( boundField != null )
+                            {
+                                boundField.HeaderText = dataColumn.ColumnName.SplitCase();
+                                boundField.DataField = dataColumn.ColumnName;
+                                boundField.SortExpression = null;
+                                dataTable.Columns.Add( dataColumn );
+                                gReport.Columns.Add( boundField );
+                                dataSelectComponentDictionary.Add( dataColumn.ColumnName, dataSelectComponent );
+                            }
+                        }
+                    }
+                }
+
+                using ( new UnitOfWorkScope() )
+                {
+                    IQueryable<IEntity> dataviewQry = report.DataView.GetQuery( out errors );
+                    var list = dataviewQry.ToList();
+                    var listItemType = EntityTypeCache.Read( report.EntityTypeId ?? 0 ).GetEntityType();
+                    var itemProperties = listItemType.GetProperties();
+                    foreach ( var item in list )
+                    {
+                        List<object> dataValues = new List<object>();
+                        dataValues.Add( item.Id );
+                        int reportFieldCount = 0;
+                        foreach ( var c in gReport.Columns.OfType<BoundField>() )
+                        {
+                            reportFieldCount++;
+                            var p = itemProperties.FirstOrDefault( a => a.Name == c.DataField );
+                            if ( p != null )
+                            {
+                                var val = p.GetValue( item );
+                                dataValues.Add( val );
+                            }
+                            else
+                            {
+                                //TODO: Get it from DataSelectComponent
+                                var dataSelect = dataSelectComponentDictionary[c.DataField];
+                                if ( dataSelect != null )
+                                {
+                                    if ( reportFieldCount >= dataValues.Count )
+                                    {
+                                        foreach ( var val in dataSelect.GetDataColumnValues( item ) )
+                                        {
+                                            dataValues.Add( val );
+                                        }
+                                    }
+                                    
+                                }
+                            }
+                        }
+
+                        dataTable.Rows.Add( dataValues.ToArray() );
+                    }
+
+
+                    gReport.DataSource = dataTable;
+                }
 
                 if ( errors.Any() )
                 {
