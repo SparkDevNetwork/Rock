@@ -206,9 +206,10 @@ span.cke_skin_kama
 /* data views */
 .filter-toogle {
 
+    padding-top: 6px;
+
     & > span {
         float: left;
-        padding-top: 6px;
     }
 
     .controls {
@@ -231,7 +232,13 @@ span.cke_skin_kama
         float: left;
         width: 250px;
     }
+}
 
+// add top margin to checkbox lists in filters
+.field-criteria {
+    .checkbox-inline {
+        margin-top: 8px;
+    }
 }
 
 // 8. Schedule Builder
