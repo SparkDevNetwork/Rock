@@ -572,7 +572,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "picker-actions" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _btnSelect.RenderControl( writer );
-                writer.Write( "<a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>", this.ClientID );
+                writer.Write( "<a class='btn btn-link btn-xs' id='btnCancel_{0}'>Cancel</a>", this.ClientID );
                 writer.WriteLine();
                 writer.RenderEndTag();
 
