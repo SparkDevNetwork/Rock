@@ -37,7 +37,7 @@
 
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-sm btn-primary" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-sm" CausesValidation="false" OnClick="btnCancel_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link btn-sm" CausesValidation="false" OnClick="btnCancel_Click" />
                     <asp:LinkButton ID="btnPreview" runat="server" Text="Preview" CssClass="btn btn-action btn-sm pull-right" CausesValidation="false" OnClick="btnPreview_Click" />
                 </div>
 

@@ -385,7 +385,7 @@ namespace Rock.Web.UI.Controls
             _btnSelect = new LinkButton { ID = "btnSelect", CssClass = "btn btn-xs btn-primary", Text = "Select", CausesValidation = false };
             _btnSelect.Click += _btnSelect_Click;
             _pnlPickerActions.Controls.Add( _btnSelect );
-            _btnCancel = new LinkButton { ID = "btnCancel", CssClass = "btn btn-xs", Text = "Cancel" };
+            _btnCancel = new LinkButton { ID = "btnCancel", CssClass = "btn btn-xs btn-link", Text = "Cancel" };
             _btnCancel.OnClientClick = string.Format( "$('#{0}').hide();", _pnlPickerMenu.ClientID );
             _pnlPickerActions.Controls.Add( _btnCancel );
         }

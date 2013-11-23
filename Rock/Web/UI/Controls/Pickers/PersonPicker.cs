@@ -419,7 +419,7 @@ namespace Rock.Web.UI.Controls
                 _btnSelect.RenderControl( writer );
 
                 string controlHtmlFormatEnd = @"
-            <a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>
+            <a class='btn btn-link btn-xs' id='btnCancel_{0}'>Cancel</a>
             </div>
          </div>
      </div>

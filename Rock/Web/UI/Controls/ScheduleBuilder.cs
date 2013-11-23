@@ -1336,7 +1336,7 @@ END:VCALENDAR
                     <a class='btn btn-primary btn-xs add-specific-date-ok'>
                         <span>OK</span>
                     </a>
-                    <a class='btn btn-xs add-specific-date-cancel'>
+                    <a class='btn btn-link btn-xs add-specific-date-cancel'>
                         <span>Cancel</span>
                     </a>
                 </div>
@@ -1515,7 +1515,7 @@ END:VCALENDAR
                     <a class='btn btn-primary btn-xs add-exclusion-daterange-ok'>
                         <span>OK</span>
                     </a>
-                    <a class='btn btn-xs add-exclusion-daterange-cancel'>
+                    <a class='btn btn-link btn-xs add-exclusion-daterange-cancel'>
                         <span>Cancel</span>
                     </a>
                 </div>");
