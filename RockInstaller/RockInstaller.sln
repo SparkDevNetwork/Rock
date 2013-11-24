@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InstallerWeb", "InstallerWeb\InstallerWeb.csproj", "{622C17FB-228A-48AC-944D-891FC8E7F9F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock", "..\Rock\Rock.csproj", "{8F8C2A79-24F4-4157-8B99-45F75FA85799}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{622C17FB-228A-48AC-944D-891FC8E7F9F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{622C17FB-228A-48AC-944D-891FC8E7F9F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{622C17FB-228A-48AC-944D-891FC8E7F9F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{622C17FB-228A-48AC-944D-891FC8E7F9F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F8C2A79-24F4-4157-8B99-45F75FA85799}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F8C2A79-24F4-4157-8B99-45F75FA85799}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F8C2A79-24F4-4157-8B99-45F75FA85799}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F8C2A79-24F4-4157-8B99-45F75FA85799}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
