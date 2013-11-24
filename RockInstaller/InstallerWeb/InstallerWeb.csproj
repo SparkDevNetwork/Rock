@@ -58,20 +58,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="wizard.aspx.cs">
-      <DependentUpon>wizard.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="wizard.aspx.designer.cs">
-      <DependentUpon>wizard.aspx</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Configure.aspx" />
     <Content Include="Install.aspx" />
     <Content Include="install.css" />
     <Content Include="Start.aspx" />
-    <Content Include="wizard.aspx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Rock\Rock.csproj">
@@ -90,7 +82,7 @@
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
         <WebProjectProperties>
-          <UseIIS>True</UseIIS>
+          <UseIIS>False</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>51023</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
