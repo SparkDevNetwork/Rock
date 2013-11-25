@@ -789,7 +789,6 @@
     <Compile Include="Extension\Component.cs" />
     <Compile Include="Extension\IComponentData.cs" />
     <Compile Include="Extension\Container.cs" />
-    <Compile Include="Address\Geocode\TeleAtlas.cs" />
     <Compile Include="Extension\ComponentDescription.cs" />
     <Compile Include="Address\Standardize\MelissaData.cs" />
     <Compile Include="Address\Standardize\StrikeIron.cs" />
