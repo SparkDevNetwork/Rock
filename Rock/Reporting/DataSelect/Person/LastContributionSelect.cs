@@ -50,7 +50,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public override List<object> GetDataColumnValues( Rock.Model.Person person )
+        public override List<object> GetDataColumnValues( Rock.Data.IEntity person )
         {
             FinancialTransactionService financialTransactionService = new FinancialTransactionService();
             var lastContribution = financialTransactionService.Queryable().Where( a => a.AuthorizedPersonId == person.Id ).OrderByDescending( a => a.TransactionDateTime ).Take( 1 ).FirstOrDefault();
@@ -61,6 +61,11 @@ namespace Rock.Reporting.DataSelect.Person
             {
                 result.Add( lastContribution.Amount );
                 result.Add( lastContribution.TransactionDateTime );
+            }
+            else
+            {
+                result.Add( null );
+                result.Add( null );
             }
 
             return result;
@@ -80,8 +85,8 @@ namespace Rock.Reporting.DataSelect.Person
             accountPicker.Label = "Account";
             accountPicker.Help = "Pick an account to show the last contribution amount and date/time for that account. Leave blank if you don't want to limit it to a specific account.";
             parentControl.Controls.Add( accountPicker );
-            
-            return base.CreateChildControls( parentControl );
+
+            return new System.Web.UI.Control[] { accountPicker };
         }
 
         /// <summary>
@@ -124,14 +129,40 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         /// <summary>
+        /// Gets the selection.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override string GetSelection( System.Web.UI.Control[] controls )
+        {
+            if (controls.Count() == 1)
+            {
+                AccountPicker accountPicker = controls[0] as AccountPicker;
+                if (accountPicker != null)
+                {
+                    return accountPicker.SelectedValueAsId().ToString();
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Sets the selection.
         /// </summary>
         /// <param name="controls">The controls.</param>
         /// <param name="selection">The selection.</param>
         public override void SetSelection( System.Web.UI.Control[] controls, string selection )
         {
-            // TODO: 
-            base.SetSelection( controls, selection );
+            if ( controls.Count() == 1 )
+            {
+                AccountPicker accountPicker = controls[0] as AccountPicker;
+                if ( accountPicker != null )
+                {
+                   var account = new FinancialAccountService().Get(selection.AsInteger() ?? 0);
+                   accountPicker.SetValue( account );
+                }
+            }
         }
 
         #endregion

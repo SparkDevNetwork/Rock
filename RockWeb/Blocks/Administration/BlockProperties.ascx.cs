@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -67,7 +68,27 @@ namespace RockWeb.Blocks.Administration
                 if ( _block.IsAuthorized( "Administrate", CurrentPerson ) )
                 {
                     phAttributes.Controls.Clear();
-                    Rock.Attribute.Helper.AddEditControls( _block, phAttributes, !Page.IsPostBack );
+                    phAdvancedAttributes.Controls.Clear();
+
+                    if ( _block.Attributes != null )
+                    {
+                        foreach ( var attributeCategory in Rock.Attribute.Helper.GetAttributeCategories( _block ) )
+                        { 
+                            if (attributeCategory.Category != null && attributeCategory.Category.Name.Equals("advanced", StringComparison.OrdinalIgnoreCase))
+                            {
+                                Rock.Attribute.Helper.AddEditControls(
+                                    string.Empty, attributeCategory.Attributes.Select( a => a.Key ).ToList(),
+                                    _block, phAdvancedAttributes, string.Empty, !Page.IsPostBack, new List<string>());
+                            }
+                            else
+                            {
+                                Rock.Attribute.Helper.AddEditControls(
+                                    attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty,
+                                    attributeCategory.Attributes.Select( a => a.Key ).ToList(),
+                                    _block, phAttributes, string.Empty, !Page.IsPostBack, new List<string>() );
+                            }
+                        }
+                    }
                 }
                 else
                 {
@@ -147,6 +168,10 @@ namespace RockWeb.Blocks.Administration
                     blockService.Save( block, CurrentPersonId );
 
                     Rock.Attribute.Helper.GetEditValues( phAttributes, _block );
+                    if ( phAdvancedAttributes.Controls.Count > 0 )
+                    {
+                        Rock.Attribute.Helper.GetEditValues( phAdvancedAttributes, _block );
+                    }
                     _block.SaveAttributeValues( CurrentPersonId );
 
                     Rock.Web.Cache.BlockCache.Flush( _block.Id );

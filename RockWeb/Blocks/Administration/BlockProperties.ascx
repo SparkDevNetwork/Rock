@@ -30,8 +30,9 @@
                     </asp:Panel>
 
                     <asp:Panel ID="pnlAdvancedSettings" runat="server" Visible="false" >
-                        <Rock:RockTextBox ID="tbCssClass" runat="server" Label="CSS Class" Help="An optional CSS class to include with this blocks containg div" />
+                        <Rock:RockTextBox ID="tbCssClass" runat="server" Label="CSS Class" Help="An optional CSS class to include with this block's containing div" />
                         <Rock:RockTextBox ID="tbCacheDuration" runat="server"  Label="Output Cache Duration (seconds)" Help="Number of seconds to cache the output of this block.  If a value is entered here, this block will only process data when the cache expires." />
+                        <asp:PlaceHolder ID="phAdvancedAttributes" runat="server"></asp:PlaceHolder>
                     </asp:Panel>
 
                 </div>
