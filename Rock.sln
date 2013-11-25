@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock", "Rock\Rock.csproj", "{8F8C2A79-24F4-4157-8B99-45F75FA85799}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quartz", "Quartz\Quartz.csproj", "{AEF8823B-E45B-4B35-A4D0-C08C1196D017}"
@@ -20,7 +22,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "http://localhost
 	ProjectSection(WebsiteProperties) = preProject
 		UseIISExpress = "true"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5"
-		ProjectReferences = "{8F8C2A79-24F4-4157-8B99-45F75FA85799}|Rock.dll;{AEF8823B-E45B-4B35-A4D0-C08C1196D017}|Quartz.dll;{b89dfd33-ce93-44e1-8616-c31acdfe89cb}|Rock.Rest.dll;{381a2fc8-6f4f-4b66-a9b4-14932d43b76a}|Rock.Version.dll;"
+		ProjectReferences = "{8F8C2A79-24F4-4157-8B99-45F75FA85799}|Rock.dll;{AEF8823B-E45B-4B35-A4D0-C08C1196D017}|Quartz.dll;{b89dfd33-ce93-44e1-8616-c31acdfe89cb}|Rock.Rest.dll;{381a2fc8-6f4f-4b66-a9b4-14932d43b76a}|Rock.Version.dll;{957b1dbe-b921-4fae-8e5e-b7ad7f01b161}|Rock.Migrations.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/RockWeb"
 		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\RockWeb\"
@@ -42,6 +44,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Version", "Rock.Version\Rock.Version.csproj", "{381A2FC8-6F4F-4B66-A9B4-14932D43B76A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.PayFlowPro", "Rock.PayFlowPro\Rock.PayFlowPro.csproj", "{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Migrations", "Rock.Migrations\Rock.Migrations.csproj", "{957B1DBE-B921-4FAE-8E5E-B7AD7F01B161}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -133,6 +137,16 @@ Global
 		{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}.Release|x86.ActiveCfg = Release|Any CPU
+		{957B1DBE-B921-4FAE-8E5E-B7AD7F01B161}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{957B1DBE-B921-4FAE-8E5E-B7AD7F01B161}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{957B1DBE-B921-4FAE-8E5E-B7AD7F01B161}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{957B1DBE-B921-4FAE-8E5E-B7AD7F01B161}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{957B1DBE-B921-4FAE-8E5E-B7AD7F01B161}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{957B1DBE-B921-4FAE-8E5E-B7AD7F01B161}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{957B1DBE-B921-4FAE-8E5E-B7AD7F01B161}.Release|Any CPU.Build.0 = Release|Any CPU
+		{957B1DBE-B921-4FAE-8E5E-B7AD7F01B161}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{957B1DBE-B921-4FAE-8E5E-B7AD7F01B161}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{957B1DBE-B921-4FAE-8E5E-B7AD7F01B161}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

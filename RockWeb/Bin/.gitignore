@@ -21,6 +21,8 @@
 /Newtonsoft.Json.xml
 /Quartz.dll
 /Quartz.pdb
+/Rock.Migrations.dll
+/Rock.Migrations.pdb
 /Rock.Rest.dll
 /Rock.Rest.pdb
 /Rock.Version.dll
