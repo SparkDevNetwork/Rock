@@ -16,7 +16,9 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Person Saved Account POCO class.
+    /// Represents an bank or debit/credit card that a <see cref="Rock.Model.Person"/> has saved to RockChMS for future reuse. Please
+    /// note that account number is not actually stored here. The reference/profile number is stored here as well as a masked 
+    /// version of the account number.
     /// </summary>
     [Table( "FinancialPersonSavedAccount" )]
     [DataContract]
@@ -26,19 +28,19 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the person id.
+        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who is the account owner.
         /// </summary>
         /// <value>
-        /// The person id.
+        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who is the account holder.
         /// </value>
         [DataMember]
         public int PersonId { get; set; }
         
         /// <summary>
-        /// Gets or sets the financial transaction id that the saved account was originated from
+        /// Gets or sets the FinancialTransactionId of the <see cref="Rock.Model.FinancialTransaction"/> that originated the save request.
         /// </summary>
         /// <value>
-        /// The transaction id.
+        /// A <see cref="System.String"/> that represented the TransactionId.
         /// </value>
         [DataMember]
         public int FinancialTransactionId { get; set; }
@@ -47,16 +49,16 @@ namespace Rock.Model
         /// Gets or sets a reference identifier needed by the payment provider to initiate a future transaction
         /// </summary>
         /// <value>
-        /// The reference identifier.
+        /// A <see cref="System.String"/> representing the reference identifier to initiate a future transaction.
         /// </value>
         [DataMember]
         public string ReferenceNumber { get; set; }
 
         /// <summary>
-        /// Gets or sets the name.
+        /// Gets or sets the name of the saved account. This property is required.
         /// </summary>
         /// <value>
-        /// The name.
+        /// A <see cref="System.String"/> representing the name of the account.
         /// </value>
         [Required]
         [MaxLength( 50 )]
@@ -64,10 +66,10 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the masked account number.
+        /// Gets or sets a masked version of the account number. This is a value with "*" and a partial account number (usually the last 4 digits).
         /// </summary>
         /// <value>
-        /// The masked account number.
+        /// A <see cref="System.String"/> representing the masked account number.
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
@@ -78,18 +80,18 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the person.
+        /// Gets or sets the <see cref="Rock.Model.Person"/> who is the account owner.
         /// </summary>
         /// <value>
-        /// The person.
+        /// The Account Owner's <see cref="Rock.Model.Person"/> entity.
         /// </value>
         public virtual Person Person { get; set; }
 
         /// <summary>
-        /// Gets or sets the financial transaction.
+        /// Gets or sets the financial transaction where the account was saved.
         /// </summary>
         /// <value>
-        /// The financial transaction.
+        /// The <see cref="Rock.Model.FinancialTransaction"/> where the account was saved.
         /// </value>
         [DataMember]
         public virtual FinancialTransaction FinancialTransaction { get; set; }
@@ -99,10 +101,10 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns a <see cref="System.String" /> that represents this FinancialPersonSavedAccount.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="System.String" /> that represents this FinancialPersonSavedAccount.
         /// </returns>
         public override string ToString()
         {
@@ -117,7 +119,7 @@ namespace Rock.Model
 
 
     /// <summary>
-    /// Transaction Configuration class.
+    /// FinancialPersonSavedAccount Configuration class.
     /// </summary>
     public partial class FinancialPersonSavedAccountConfiguration : EntityTypeConfiguration<FinancialPersonSavedAccount>
     {
