@@ -733,9 +733,9 @@ achieve our mission.  We are so grateful for your commitment.
                     f.PublicName.Trim() != "" &&
                     ( f.StartDate == null || f.StartDate <= DateTime.Today ) &&
                     ( f.EndDate == null || f.EndDate >= DateTime.Today ) )
-                .OrderBy( f => f.PublicName ) )
+                .OrderBy( f => f.Order ) )
             {
-                var accountItem = new AccountItem( account.Id, account.Name, account.CampusId );
+                var accountItem = new AccountItem( account.Id, account.Order, account.Name, account.CampusId );
                 if ( showAll )
                 {
                     SelectedAccounts.Add( accountItem );
@@ -762,7 +762,7 @@ achieve our mission.  We are so grateful for your commitment.
         /// </summary>
         private void BindAccounts()
         {
-            rptAccountList.DataSource = SelectedAccounts;
+            rptAccountList.DataSource = SelectedAccounts.OrderBy( a => a.Order ).ToList();
             rptAccountList.DataBind();
 
             btnAddAccount.Visible = AvailableAccounts.Any();
@@ -1578,6 +1578,7 @@ achieve our mission.  We are so grateful for your commitment.
         protected class AccountItem
         {
             public int Id { get; set; }
+            public int Order { get; set; }
             public string Name { get; set; }
             public int? CampusId { get; set; }
             public decimal Amount { get; set; }
@@ -1591,9 +1592,10 @@ achieve our mission.  We are so grateful for your commitment.
 
             }
 
-            public AccountItem( int id, string name, int? campusId )
+            public AccountItem( int id, int order, string name, int? campusId )
             {
                 Id = id;
+                Order = order;
                 Name = name;
                 CampusId = campusId;
             }
