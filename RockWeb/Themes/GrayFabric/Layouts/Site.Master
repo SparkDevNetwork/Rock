@@ -24,7 +24,7 @@
     <title></title>
     
     <!--[if lt IE 9]>
-        <script src="<%# ResolveUrl("~/Themes/GrayFabric/Scripts/html5.js") %>" ></script>
+        <script src="<%# ResolveRockUrl("~/Themes/GrayFabric/Scripts/html5.js") %>" ></script>
     <![endif]-->
 
     <!-- Set the viewport width to device width for mobile -->

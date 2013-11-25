@@ -33,6 +33,8 @@
 
 @modal-header-bg: @header-bg;
 @modal-header-text-color: @header-text-color;
+@modal-dropshadow-color: #464646;
+// see bootstrap variables for additional modal styles
 
 // Components
 // -------------------------
@@ -60,8 +62,8 @@
 @pagination-active-bg: @accent-semibold-color;
 
 // Admin Bar
-@adminbar-bg: @accent-bold-color;
-@adminbar-text-color: @accent-bold-text-color;
+@adminbar-bg: #445c72;
+@adminbar-text-color: #bccad7;
 
 // Tooltip
 @tooltip-header-bg: @accent-color;
@@ -390,8 +392,8 @@
 @navbar-default-link-color:                @header-text-color;
 @navbar-default-link-hover-color:          darken(@header-text-color, 10%);
 @navbar-default-link-hover-bg:             transparent;
-@navbar-default-link-active-color:         #555;
-@navbar-default-link-active-bg:            darken(@navbar-default-bg, 6.5%);
+@navbar-default-link-active-color:         @header-text-color;
+@navbar-default-link-active-bg:            lighten(@header-bg, 3%);
 @navbar-default-link-disabled-color:       #ccc;
 @navbar-default-link-disabled-bg:          transparent;
 
@@ -565,7 +567,7 @@
 @modal-content-border-color:                   rgba(0,0,0,.2);
 @modal-content-fallback-border-color:          #999;
 
-@modal-backdrop-bg:           #000;
+@modal-backdrop-bg:           fade(@accent-color, 50%); //#000;
 @modal-header-border-color:   #e5e5e5;
 @modal-footer-border-color:   @modal-header-border-color;
 
@@ -647,9 +649,9 @@
 @panel-danger-border:         @state-danger-border;
 @panel-danger-heading-bg:     @state-danger-bg;
 
-@panel-info-text:             @state-info-text;
-@panel-info-border:           @state-info-border;
-@panel-info-heading-bg:       @state-info-bg;
+@panel-info-text:             @accent-light-text-color;
+@panel-info-border:           @accent-color;
+@panel-info-heading-bg:       @accent-light-color;
 
 
 // Thumbnails

@@ -34,3 +34,5 @@
 /EntityFramework.SqlServer.xml
 /DDay.iCal.dll
 /System.Web.Optimization.dll
+/Microsoft.WindowsAzure.Storage.dll
+/Microsoft.WindowsAzure.Storage.xml

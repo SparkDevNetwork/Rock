@@ -126,6 +126,20 @@ namespace Rock.Web.Cache
         public int? DefaultPageRouteId { get; set; }
 
         /// <summary>
+        /// Gets the default page reference.
+        /// </summary>
+        /// <value>
+        /// The default page reference.
+        /// </value>
+        public PageReference DefaultPageReference
+        {
+            get
+            {
+                return new Rock.Web.PageReference( DefaultPageId ?? 0, DefaultPageRouteId ?? 0 );
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the login page id.
         /// </summary>
         /// <value>
@@ -142,6 +156,20 @@ namespace Rock.Web.Cache
         public int? LoginPageRouteId { get; set; }
 
         /// <summary>
+        /// Gets the login page reference.
+        /// </summary>
+        /// <value>
+        /// The login page reference.
+        /// </value>
+        public PageReference LoginPageReference
+        {
+            get
+            {
+                return new Rock.Web.PageReference( LoginPageId ?? 0, LoginPageRouteId ?? 0 );
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the registration page id.
         /// </summary>
         /// <value>
@@ -156,6 +184,20 @@ namespace Rock.Web.Cache
         /// The registration page route id.
         /// </value>
         public int? RegistrationPageRouteId { get; set; }
+
+        /// <summary>
+        /// Gets the registration page reference.
+        /// </summary>
+        /// <value>
+        /// The registration page reference.
+        /// </value>
+        public PageReference RegistrationPageReference
+        {
+            get
+            {
+                return new Rock.Web.PageReference( RegistrationPageId ?? 0, RegistrationPageRouteId ?? 0 );
+            }
+        }
 
         /// <summary>
         /// Gets or sets the favicon URL.
@@ -261,9 +303,7 @@ namespace Rock.Web.Cache
         public void RedirectToDefaultPage()
         {
             var context = HttpContext.Current;
-
-            var pageReference = new Rock.Web.PageReference( DefaultPageId ?? 0, DefaultPageRouteId ?? 0 );
-            context.Response.Redirect( pageReference.BuildUrl(), false );
+            context.Response.Redirect( DefaultPageReference.BuildUrl(), false );
             context.ApplicationInstance.CompleteRequest();
         }
 
@@ -274,7 +314,7 @@ namespace Rock.Web.Cache
         {
             var context = HttpContext.Current;
 
-            var pageReference = new Rock.Web.PageReference( LoginPageId ?? 0, LoginPageRouteId ?? 0 );
+            var pageReference = LoginPageReference;
 
             if ( includeReturnUrl )
             {
@@ -293,9 +333,7 @@ namespace Rock.Web.Cache
         public void RedirectToRegistrationPage()
         {
             var context = HttpContext.Current;
-
-            var pageReference = new Rock.Web.PageReference( RegistrationPageId ?? 0, RegistrationPageRouteId ?? 0 );
-            context.Response.Redirect( pageReference.BuildUrl(), false );
+            context.Response.Redirect( RegistrationPageReference.BuildUrl(), false );
             context.ApplicationInstance.CompleteRequest();
         }
         

@@ -11,13 +11,28 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
 using System.Web.Security;
+
+using Rock.Attribute;
 using Rock.Web;
 
 namespace RockWeb.Blocks.Security
 {
+    [LinkedPage( "My Account Page", "Page for user to manage their account (if blank will use 'MyAccount' page route)" )]
     public partial class LoginStatus : Rock.Web.UI.RockBlock
     {
         string action = string.Empty;
+
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            var url = LinkedPageUrl( "MyAccountPage" );
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                url = ResolveRockUrl( "~/MyAccount" );
+            }
+            hlMyAccount.NavigateUrl = url;
+        }
 
         protected override void OnLoad( EventArgs e )
         {

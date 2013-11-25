@@ -1,15 +1,15 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="LoginStatus.ascx.cs" Inherits="RockWeb.Blocks.Security.LoginStatus" %>
-<ul class="nav loginstatus">
+<ul class="nav navbar-nav loginstatus">
     <li class="dropdown">
         <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
-            <i class="icon-user"></i>
+            <i class="fa fa-user"></i>
             <asp:PlaceHolder ID="phHello" runat="server"><asp:Literal ID="lHello" runat="server" /></asp:PlaceHolder>
             <b class="caret"></b>
         </a>
         <ul class="dropdown-menu">
             <li>
                 <asp:PlaceHolder ID="phMyAccount" runat="server">
-                    <a href='<%= Page.ResolveUrl("~") + "MyAccount" %>'>My Account</a>
+                    <asp:HyperLink ID="hlMyAccount" runat="server" Text="My Account" />
                 </asp:PlaceHolder>
             </li>
             <li class="divider"></li>

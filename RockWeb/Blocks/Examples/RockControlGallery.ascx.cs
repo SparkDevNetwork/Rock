@@ -23,6 +23,8 @@ namespace RockWeb.Blocks.Examples
     /// </summary>
     public partial class RockControlGallery : RockBlock
     {
+        Regex specialCharsRegex = new Regex( "[^a-zA-Z0-9-]" );
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -37,14 +39,25 @@ namespace RockWeb.Blocks.Examples
 
             List<string> list = ReadExamples();
             int i = -1;
-            foreach ( var example in upDetail.ControlsOfTypeRecursive<HtmlControl>() )
+            foreach ( var example in pnlDetails.ControlsOfTypeRecursive<HtmlControl>() )
             {
                 if ( example.Attributes["class"] == "r-example" )
                 {
                     i++;
                     example.Controls.Add( new LiteralControl( string.Format( "<pre class='prettyprint'>{0}</pre>", Server.HtmlEncode( list[i] ) ) ) );
                 }
+
+                if ( example.TagName == "h1" || example.TagName == "h2" || example.TagName == "h3" )
+                {
+                    example.Attributes["class"] = "rollover-container";
+                    example.Controls.AddAt( 0, new LiteralControl( string.Format( "<a name='{0}' class='anchor rollover-item' href='#{0}'><i class='fa fa-link rlink icon-link'></i></a>", BuildAnchorForHref( (HtmlGenericControl)example ) ) ) );
+                }
             }
+        }
+
+        private string BuildAnchorForHref( HtmlGenericControl item )
+        {
+            return specialCharsRegex.Replace( item.InnerText, "-" ).ToLower();
         }
 
         /// <summary>
@@ -67,6 +80,7 @@ namespace RockWeb.Blocks.Examples
             var foundExample = false;
             var firstLine = false;
             int numSpaces = 0;
+            int examplesDivCount = 0;
             Regex rgx = new Regex( @"^\s+" );
             Regex divExample = new Regex( @"<div (id=.* )*runat=""server"" (id=.* )*class=""r-example"">", RegexOptions.IgnoreCase );
             StringBuilder sb = new StringBuilder();
@@ -80,9 +94,23 @@ namespace RockWeb.Blocks.Examples
                 }
                 else if ( foundExample && line.Contains( "</div>" ) )
                 {
-                    foundExample = false;
-                    list.Add( sb.ToString() );
-                    sb.Clear();
+                    // once we've eaten all the example's ending </div> tags then the example is over.
+                    if ( examplesDivCount == 0 )
+                    {
+                        foundExample = false;
+                        list.Add( sb.ToString() );
+                        sb.Clear();
+                    }
+                    else
+                    {
+                        // eat another example </div>
+                        examplesDivCount--;
+                    }
+                }
+                else if ( foundExample && line.Contains( "<div" ) )
+                {
+                    // keep track of each <div> we encounter while in the example
+                    examplesDivCount++;
                 }
 
                 if ( foundExample )

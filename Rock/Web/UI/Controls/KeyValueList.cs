@@ -110,7 +110,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn key-value-remove" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "icon-minus-sign" );
+                writer.AddAttribute(HtmlTextWriterAttribute.Class, "fa fa-minus-circle");
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();
@@ -127,7 +127,7 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn key-value-add" );
             writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "icon-plus-sign" );
+            writer.AddAttribute(HtmlTextWriterAttribute.Class, "fa fa-plus-circle");
             writer.RenderBeginTag( HtmlTextWriterTag.I );
             writer.RenderEndTag();
             writer.RenderEndTag();
@@ -175,7 +175,7 @@ namespace Rock.Web.UI.Controls
                 script.Append( @"<input class=""span4 key-value-value"" type=""text"" placeholder=""Value""></input>" );
             }
 
-            script.Append( @" <a href=""#"" class=""btn key-value-remove""><i class=""icon-minus-sign""></i></a></div>';
+            script.Append(@" <a href=""#"" class=""btn key-value-remove""><i class=""fa fa-minus-circle""></i></a></div>';
             $(this).prev().append(newKeyValue);
         }});
 

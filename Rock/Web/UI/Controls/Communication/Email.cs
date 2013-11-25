@@ -232,7 +232,7 @@ namespace Rock.Web.UI.Controls.Communication
                 writer.Write( " " );
 
                 removeButtons[attachment.Key].RenderBeginTag(writer);
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "icon-remove" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-times" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 removeButtons[attachment.Key].RenderEndTag( writer );

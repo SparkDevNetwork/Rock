@@ -14,6 +14,7 @@
     <meta name="viewport" content="width=device-width" />
 
     <!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Styles/bootstrap.css") %>"/>
 	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Styles/theme.css") %>"/>
 	<link rel="stylesheet" href="<%# ResolveUrl("~/Styles/developer.css") %>"/>
 
@@ -29,7 +30,7 @@
                 <asp:Image ID="Image1" runat="server" AlternateText="Rock ChMS" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="pageheader-logo" />
                 
                 <div id="content-box" class="clearfix">
-                    <Rock:Zone ID="Content" runat="server" />
+                    <Rock:Zone Name="Main" runat="server" />
                 </div>
             </div>
 

@@ -27,7 +27,7 @@
 
                             <div class="nav-collapse collapse">
 
-                                <Rock:Zone ID="Heading" Name="Header" runat="server" />
+                                <Rock:Zone Name="Heading" runat="server" />
 
                             </div>
                         </div>
@@ -49,7 +49,7 @@
         <div class="navbar-inner">
             <div class="container-fluid">
 
-                <Rock:Zone ID="Menu" runat="server" />
+                <Rock:Zone Name="Menu" runat="server" />
 
             </div>
         </div>
@@ -60,7 +60,7 @@
         <div class="navbar navbar-static-top persondetails-header">
             <div class="navbar-inner">
                 <div class="container-fluid">
-                    <Rock:Zone ID="HeaderZone" runat="server" />
+                    <Rock:Zone Name="HeaderZone" runat="server" />
                 </div>
             </div>
         </div>
@@ -70,13 +70,13 @@
                 <div class="container-fluid">
                     <div class="row-fluid">
                         <div class="badge-group span3">
-                            <Rock:Zone ID="BadgBarZone1" runat="server" />
+                            <Rock:Zone Name="Badg Bar Zone 1" runat="server" />
                         </div>
                         <div class="badge-group span3">
-                            <Rock:Zone ID="BadgBarZone2" runat="server" />
+                            <Rock:Zone Name="Badg Bar Zone 2" runat="server" />
                         </div>
                         <div class="badge-group span6">
-                            <Rock:Zone ID="BadgBarZone3" runat="server" />
+                            <Rock:Zone Name="Badg Bar Zone 3" runat="server" />
                         </div>
                     </div>
                 </div>
@@ -86,7 +86,7 @@
         <div class="navbar navbar-static-top persondetails-familybar">
 			<div class="navbar-inner">
 				<div class="container-fluid">    
-                    <Rock:Zone ID="FamilyZone" runat="server" />
+                    <Rock:Zone Name="Family Zone" runat="server" />
                 </div>
             </div>
         </div>
@@ -94,7 +94,7 @@
 		<div class="container-fluid pagetabs">
             <div class="row-fluid">
                 <div class="span12">
-                    <Rock:Zone ID="TabsZone" runat="server" />
+                    <Rock:Zone Name="Tabs Zone" runat="server" />
                 </div>
             </div> 
 		</div>
@@ -102,10 +102,10 @@
         <div class="container-fluid">
             <div class="row-fluid">
                 <div class="span8">
-                    <Rock:Zone ID="ContentZoneLeft" runat="server" />
+                    <Rock:Zone Name="Content Zone Left" runat="server" />
                 </div>
                 <div class="span4">
-                    <Rock:Zone ID="ContentZoneRight" runat="server" />
+                    <Rock:Zone Name="Content Zone Right" runat="server" />
                 </div>
             </div>
         </div>
@@ -116,7 +116,7 @@
         <div class="container-fluid">
             <div class="row-fluid">
                 <div class="span12">
-                    <Rock:Zone ID="Footer" runat="server" />
+                    <Rock:Zone Name="Footer" runat="server" />
                 </div>
             </div>
         </div>

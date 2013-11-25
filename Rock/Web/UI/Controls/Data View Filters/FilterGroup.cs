@@ -108,7 +108,7 @@ namespace Rock.Web.UI.Controls
             btnAddGroup.CausesValidation = false;
 
             var iAddGroup = new HtmlGenericControl( "i" );
-            iAddGroup.AddCssClass( "icon-list-alt" );
+            iAddGroup.AddCssClass( "fa fa-list-alt" );
             btnAddGroup.Controls.Add( iAddGroup );
             btnAddGroup.Controls.Add( new LiteralControl( " Add Filter Group" ) );
 
@@ -120,7 +120,7 @@ namespace Rock.Web.UI.Controls
             btnAddFilter.CausesValidation = false;
 
             var iAddFilter = new HtmlGenericControl( "i" );
-            iAddFilter.AddCssClass( "icon-filter" );
+            iAddFilter.AddCssClass( "fa fa-filter" );
             btnAddFilter.Controls.Add( iAddFilter );
             btnAddFilter.Controls.Add( new LiteralControl( " Add Filter" ) );
 
@@ -132,7 +132,7 @@ namespace Rock.Web.UI.Controls
             lbDelete.CausesValidation = false;
 
             var iDeleteGroup = new HtmlGenericControl( "i" );
-            iDeleteGroup.AddCssClass( "icon-remove" );
+            iDeleteGroup.AddCssClass( "fa fa-times" );
             lbDelete.Controls.Add( iDeleteGroup );
         }
 

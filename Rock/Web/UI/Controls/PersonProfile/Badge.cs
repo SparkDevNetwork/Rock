@@ -83,7 +83,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            string script = "$('.badge').tooltip();";
+            string script = "$('.badge').tooltip({html: true});";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "badge-popover", script, true );
 
         }

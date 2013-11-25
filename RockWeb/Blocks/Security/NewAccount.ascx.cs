@@ -113,12 +113,20 @@ namespace RockWeb.Blocks.Security
 
             if ( Page.IsValid )
             {
-                var userLoginService = new Rock.Model.UserLoginService();
-                var userLogin = userLoginService.GetByUserName( tbUserName.Text );
-                if ( userLogin == null )
-                    DisplayDuplicates( Direction.Forward );
+                if ( UserLoginService.IsPasswordValid( Password ) )
+                {
+                    var userLoginService = new Rock.Model.UserLoginService();
+                    var userLogin = userLoginService.GetByUserName( tbUserName.Text );
+
+                    if ( userLogin == null )
+                        DisplayDuplicates( Direction.Forward );
+                    else
+                        ShowErrorMessage( "Username already exists" );
+                }
                 else
-                    ShowErrorMessage( "Username already exists" );
+                {
+                    ShowErrorMessage( UserLoginService.FriendlyPasswordRules() );
+                }
             }
         }
 

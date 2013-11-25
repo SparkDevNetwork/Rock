@@ -46,10 +46,10 @@
                                 var $source = $('#bid_' + blockId);
 
                                 // Get a reference to the new zone's container
-                                var $target = $('#zone-' + $('#block-move-zone').val());
+                                var $target = $('#zone-' + zoneName.toLowerCase());
 
                                 // Update the move anchor with the new zone name
-                                $moveLink.attr('zone', $('#block-move-zone').val());
+                                $moveLink.attr('zone', zoneName);
 
                                 // If the block instance's parent is the page, move it to the new zone as the last
                                 // block in that zone.  If the parent is the layout, insert it as the last layout

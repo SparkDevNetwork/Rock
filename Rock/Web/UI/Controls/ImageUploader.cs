@@ -289,7 +289,7 @@ Rock.controls.imageUploader.initialize({{
 
             _aRemove = new HtmlAnchor();
             _aRemove.ID = "rmv";
-            _aRemove.InnerHtml = "<i class='icon-remove'></i>";
+            _aRemove.InnerHtml = "<i class='fa fa-times'></i>";
             Controls.Add( _aRemove );
 
             _fileUpload = new FileUpload();
