@@ -1245,6 +1245,11 @@ span.cke_skin_kama {
   display: block;
   position: relative;
 }
+.config-bar {
+  -moz-box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4);
+  box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4);
+}
 .config-bar > a {
   text-decoration: none;
 }

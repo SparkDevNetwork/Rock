@@ -1142,7 +1142,7 @@ namespace Rock.Web.UI
                 blockConfig.Controls.Add( blockConfigLink );
 
                 HtmlGenericControl blockConfigBar = new HtmlGenericControl( "div" );
-                blockConfigBar.Attributes.Add( "class", "block-configuration-bar config-bar" );
+                blockConfigBar.Attributes.Add( "class", "block-configuration-bar" );
                 blockConfig.Controls.Add( blockConfigBar );
 
                 HtmlGenericControl blockConfigTitle = new HtmlGenericControl( "span" );
