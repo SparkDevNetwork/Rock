@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Web.UI;
 using Rock.Extension;
 
@@ -28,6 +28,14 @@ namespace Rock.Reporting
         public abstract string EntityTypeName { get; }
 
         /// <summary>
+        /// Gets the default column header text.
+        /// </summary>
+        /// <value>
+        /// The default column header text.
+        /// </value>
+        public abstract string ColumnHeaderText { get; }
+
+        /// <summary>
         /// Gets the section.
         /// </summary>
         /// <value>
@@ -35,7 +43,7 @@ namespace Rock.Reporting
         /// </value>
         public virtual string Section
         {
-            get { return "Additional Columns"; }
+            get { return "Other"; }
         }
 
         /// <summary>
@@ -124,19 +132,12 @@ namespace Rock.Reporting
         }
 
         /// <summary>
-        /// Gets the data columns.
+        /// Returns an IQueryable that contains the additional column provided by this component
         /// </summary>
-        /// <value>
-        /// The data columns.
-        /// </value>
-        public abstract List<DataColumn> DataColumns { get; }
-
-        /// <summary>
-        /// Gets the data column values.
-        /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="query">The query.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
         /// <returns></returns>
-        public abstract List<object> GetDataColumnValues( Rock.Data.IEntity item );
+        public abstract IQueryable AddColumn(IQueryable query, ParameterExpression parameterExpression);
     }
 
     /// <summary>

@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -12,7 +10,7 @@ namespace Rock.Reporting.DataSelect.Person
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Selects Last Contribution Fields for a Person" )]
+    [Description( "Selects Last Contribution Date for a Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Last Contribution Fields" )]
     public class LastContributionSelect : DataSelectComponent<Rock.Model.Person>
@@ -46,31 +44,52 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         /// <summary>
-        /// Gets the data column values.
+        /// Gets the default column header text.
         /// </summary>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        public override List<object> GetDataColumnValues( Rock.Data.IEntity person )
+        /// <value>
+        /// The default column header text.
+        /// </value>
+        public override string ColumnHeaderText
         {
-            FinancialTransactionService financialTransactionService = new FinancialTransactionService();
-            var lastContribution = financialTransactionService.Queryable().Where( a => a.AuthorizedPersonId == person.Id ).OrderByDescending( a => a.TransactionDateTime ).Take( 1 ).FirstOrDefault();
-
-            List<object> result = new List<object>();
-
-            if ( lastContribution != null )
+            get
             {
-                result.Add( lastContribution.Amount );
-                result.Add( lastContribution.TransactionDateTime );
+                return "Last Contribution Date";
             }
-            else
-            {
-                result.Add( null );
-                result.Add( null );
-            }
-
-            return result;
         }
 
+        /*
+         -- Example1: turn something like this into Linq 
+         select 
+            p.FirstName, 
+           (select max(TransactionDateTime) from FinancialTransaction where AuthorizedPersonId = p.Id and AccountID in (3,4,5)) [LastDateTime]
+         from Person p
+         * 
+         
+         -- Example2: turn something like this into linq
+        select 
+            p.FirstName, 
+            g.Name [FamilyName]
+        from Person p
+            left outer join GroupMember gm on gm.PersonId = p.Id
+            left outer join Group g on gm.GroupId = g.Id
+            where g.GroupTypeId = :familyGroupTypeId
+         
+         */
+
+        /// <summary>
+        /// Returns an IQueryable that contains the additional column provided by this component
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <returns></returns>
+        public override IQueryable AddColumn( IQueryable query, ParameterExpression parameterExpression )
+        {
+            //var qry = new PersonService().Queryable();
+
+            // TODO
+            return null;
+        }
+      
         #region Controls methods
 
         /// <summary>
@@ -81,9 +100,10 @@ namespace Rock.Reporting.DataSelect.Person
         public override System.Web.UI.Control[] CreateChildControls( System.Web.UI.Control parentControl )
         {
             AccountPicker accountPicker = new AccountPicker();
+            accountPicker.AllowMultiSelect = true;
             accountPicker.ID = "accountPicker";
             accountPicker.Label = "Account";
-            accountPicker.Help = "Pick an account to show the last contribution amount and date/time for that account. Leave blank if you don't want to limit it to a specific account.";
+            accountPicker.Help = "Pick accounts to show the last time the person made a contribution into any of those accounts. Leave blank if you don't want to limit it to specific accounts.";
             parentControl.Controls.Add( accountPicker );
 
             return new System.Web.UI.Control[] { accountPicker };
@@ -135,10 +155,10 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override string GetSelection( System.Web.UI.Control[] controls )
         {
-            if (controls.Count() == 1)
+            if ( controls.Count() == 1 )
             {
                 AccountPicker accountPicker = controls[0] as AccountPicker;
-                if (accountPicker != null)
+                if ( accountPicker != null )
                 {
                     return accountPicker.SelectedValueAsId().ToString();
                 }
@@ -159,29 +179,12 @@ namespace Rock.Reporting.DataSelect.Person
                 AccountPicker accountPicker = controls[0] as AccountPicker;
                 if ( accountPicker != null )
                 {
-                   var account = new FinancialAccountService().Get(selection.AsInteger() ?? 0);
-                   accountPicker.SetValue( account );
+                    var account = new FinancialAccountService().Get( selection.AsInteger() ?? 0 );
+                    accountPicker.SetValue( account );
                 }
             }
         }
 
         #endregion
-
-        /// <summary>
-        /// Gets the data columns.
-        /// </summary>
-        /// <value>
-        /// The data columns.
-        /// </value>
-        public override List<System.Data.DataColumn> DataColumns
-        {
-            get
-            {
-                List<DataColumn> result = new List<DataColumn>();
-                result.Add( new DataColumn( "LastContributionAmount", typeof( decimal ) ) );
-                result.Add( new DataColumn( "LastContributionDateTime", typeof( DateTime ) ) );
-                return result;
-            }
-        }
     }
 }
