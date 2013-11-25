@@ -16,7 +16,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Report, Rock" PropertyName="Name" Label="Som Name" CssClass="" />
+                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Report, Rock" PropertyName="Name" Label="Name" />
                     </div>
                     <div class="col-md-6">
                     </div>
