@@ -685,6 +685,7 @@ namespace RockWeb.Blocks.Reporting
                     {
                         DataSelectComponent dataSelectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
 
+                        /*
                         foreach ( var dataColumn in dataSelectComponent.DataColumns )
                         {
                             BoundField boundField = Grid.GetGridField( dataColumn.DataType );
@@ -698,6 +699,7 @@ namespace RockWeb.Blocks.Reporting
                                 dataSelectComponentDictionary.Add( dataColumn.ColumnName, dataSelectComponent );
                             }
                         }
+                         */ 
                     }
                 }
 
@@ -724,6 +726,7 @@ namespace RockWeb.Blocks.Reporting
                             else
                             {
                                 //TODO: Get it from DataSelectComponent
+                                /*
                                 var dataSelect = dataSelectComponentDictionary[c.DataField];
                                 if ( dataSelect != null )
                                 {
@@ -736,6 +739,7 @@ namespace RockWeb.Blocks.Reporting
                                     }
                                     
                                 }
+                                 */ 
                             }
                         }
 
