@@ -137,9 +137,18 @@ namespace RockWeb.Blocks.Groups
                 var group = new Group { GroupTypeId = ddlGroupType.SelectedValueAsInt() ?? 0 };
                 if ( group.GroupTypeId > 0 )
                 {
-                    group.LoadAttributes();
                     phGroupAttributes.Controls.Clear();
-                    Rock.Attribute.Helper.AddEditControls( group, phGroupAttributes, false );
+                    group.LoadAttributes();
+
+                    if ( group.Attributes != null && group.Attributes.Any() )
+                    {
+                        wpGroupAttributes.Visible = true;
+                        Rock.Attribute.Helper.AddEditControls( group, phGroupAttributes, false );
+                    }
+                    else
+                    {
+                        wpGroupAttributes.Visible = false;
+                    }
                 }
             }
         }
@@ -632,18 +641,19 @@ namespace RockWeb.Blocks.Groups
 
                 ddlCampus.SetValue( group.CampusId );
 
-                phGroupTypeAttributes.Controls.Clear();
-                GroupType groupType = groupTypeService.Get( group.GroupTypeId );
-                if ( groupType != null )
-                {
-                    groupType.LoadAttributes();
-                    Rock.Attribute.Helper.AddDisplayControls( groupType, phGroupTypeAttributes );
-                }
-
                 phGroupAttributes.Controls.Clear();
                 group.LoadAttributes();
-                Rock.Attribute.Helper.AddEditControls( group, phGroupAttributes, true, "GroupDetail" );
 
+                if ( group.Attributes != null && group.Attributes.Any() )
+                {
+                    wpGroupAttributes.Visible = true;
+                    Rock.Attribute.Helper.AddEditControls( group, phGroupAttributes, true, "GroupDetail" );
+                }
+                else
+                {
+                    wpGroupAttributes.Visible = false;
+                }
+                
                 // if this block's attribute limit group to SecurityRoleGroups, don't let them edit the SecurityRole checkbox value
                 if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse() )
                 {
@@ -732,8 +742,8 @@ namespace RockWeb.Blocks.Groups
             group.LoadAttributes();
             attributes.AddRange( group.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ) );
 
-            // And only show those attributes that have the GridColumn flag set to true
-            var attributeCategories = Helper.GetAttributeCategories( attributes, true );
+            // display attribute values
+            var attributeCategories = Helper.GetAttributeCategories( attributes );
             Rock.Attribute.Helper.AddDisplayControls( group, attributeCategories, phAttributes );
         }
 
@@ -860,8 +870,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="attributeGuid">The attribute GUID.</param>
         protected void gGroupMemberAttributes_ShowEdit( Guid attributeGuid )
         {
-            edtGroupMemberAttributes.AttributeEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( GroupMember ) ).Id;
-
             Attribute attribute;
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
@@ -956,6 +964,7 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindGroupMemberAttributesInheritedGrid()
         {
+            gGroupMemberAttributesInherited.AddCssClass( "inherited-attribute-grid" );
             gGroupMemberAttributesInherited.DataSource = GroupMemberAttributesInheritedState;
             gGroupMemberAttributesInherited.DataBind();
             rcGroupMemberAttributesInherited.Visible = GroupMemberAttributesInheritedState.Any();
@@ -966,6 +975,7 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindGroupMemberAttributesGrid()
         {
+            gGroupMemberAttributes.AddCssClass( "attribute-grid" );
             SetAttributeListOrder( GroupMemberAttributesState );
             gGroupMemberAttributes.DataSource = GroupMemberAttributesState.OrderBy( a => a.Name ).ToList();
             gGroupMemberAttributes.DataBind();
