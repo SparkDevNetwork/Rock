@@ -1088,9 +1088,11 @@ span.cke_skin_kama {
   margin-top: 12px;
 }
 /* data views */
+.filter-toogle {
+  padding-top: 6px;
+}
 .filter-toogle > span {
   float: left;
-  padding-top: 6px;
 }
 .filter-toogle .controls {
   float: left;
@@ -1105,6 +1107,9 @@ span.cke_skin_kama {
 .filter-item-select select {
   float: left;
   width: 250px;
+}
+.field-criteria .checkbox-inline {
+  margin-top: 8px;
 }
 .recurrence-pattern-type {
   margin-top: 12px;
