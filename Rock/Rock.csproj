@@ -714,7 +714,6 @@
     <Compile Include="Model\CodeGenerated\GroupMemberService.cs" />
     <Compile Include="Model\GroupMemberService.Partial.cs" />
     <Compile Include="Model\GroupLocation.cs" />
-    <Compile Include="Jobs\SendGridProcess.cs" />
     <Compile Include="Jobs\RockCleanup.cs" />
     <Compile Include="Search\Person\Address.cs" />
     <Compile Include="Search\Person\Email.cs" />
@@ -857,7 +856,6 @@
     <Compile Include="Reflection.cs" />
     <Compile Include="Jobs\JobPulse.cs" />
     <Compile Include="Jobs\RockJobListener.cs" />
-    <Compile Include="Jobs\TestJob.cs" />
     <Compile Include="Attribute\IHasAttributes.cs" />
     <Compile Include="Data\IOrdered.cs" />
     <Compile Include="Data\Entity.cs" />
