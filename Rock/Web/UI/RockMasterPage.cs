@@ -45,7 +45,12 @@ namespace Rock.Web.UI
             string themeUrl = url;
             if ( url.StartsWith( "~~" ) )
             {
-                themeUrl = "~/Themes/" + CurrentPage.Layout.Site.Theme + ( url.Length > 2 ? url.Substring( 2 ) : string.Empty );
+                string theme = "RockChMS";
+                if ( CurrentPage != null )
+                {
+                    theme = CurrentPage.Layout.Site.Theme;
+                }
+                themeUrl = "~/Themes/" + theme + ( url.Length > 2 ? url.Substring( 2 ) : string.Empty );
             }
 
             return ResolveUrl( themeUrl );

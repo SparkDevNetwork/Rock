@@ -353,11 +353,36 @@ namespace Rock.Web.UI
             if ( PageParameter( "logout" ) != string.Empty )
             {
                 FormsAuthentication.SignOut();
-                CurrentPerson = null;
-                CurrentUser = null;
-                Response.Redirect( CurrentPageReference.BuildUrl() );
-                Context.ApplicationInstance.CompleteRequest();
-                return;
+
+                // After logging out check to see if an anonymous user is allowed to view the current page.  If so
+                // redirect back to the current page, otherwise redirect to the site's default page
+                if ( CurrentPage != null )
+                {
+                    if ( CurrentPage.IsAuthorized( "View", null ) )
+                    {
+                        // Remove the 'logout' queryparam before redirecting
+                        var pageReference = new PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, CurrentPageReference.Parameters );
+                        foreach(string key in CurrentPageReference.QueryString)
+                        {
+                            if (!key.Equals("logout", StringComparison.OrdinalIgnoreCase))
+                            {
+                                pageReference.Parameters.Add( key, CurrentPageReference.QueryString[key] );
+                            }
+                        }
+                        Response.Redirect( pageReference.BuildUrl(), false );
+                        Context.ApplicationInstance.CompleteRequest();
+                    }
+                    else
+                    {
+                        CurrentPage.Layout.Site.RedirectToDefaultPage();
+                    }
+                    return;
+                }
+                else
+                {
+                    CurrentPerson = null;
+                    CurrentUser = null;
+                }
             }
 
             // If the impersonated query key was included then set the current person
@@ -427,34 +452,32 @@ namespace Rock.Web.UI
                     return;
                 }
 
-                // Verify that the current user is allowed to view the page.  If not, and 
-                // the user hasn't logged in yet, redirect to the login page
+                // Verify that the current user is allowed to view the page.  
                 Page.Trace.Warn( "Checking if user is authorized" );
                 if ( !CurrentPage.IsAuthorized( "View", CurrentPerson ) )
                 {
                     if ( user == null )
                     {
+                        // If not authorized, and the user hasn't logged in yet, redirect to the login page
                         Page.Trace.Warn( "Redirecting to login page" );
 
                         var site = CurrentPage.Layout.Site;
                         if ( site.LoginPageId.HasValue )
                         {
-                            var pageReference = new PageReference( site.LoginPageId.Value );
-                            if ( site.LoginPageRouteId.HasValue )
-                            {
-                                pageReference.RouteId = site.LoginPageRouteId.Value;
-                            }
-
-                            var parms = new Dictionary<string, string>();
-                            parms.Add( "returnurl", Request.QueryString["returnUrl"] ?? Server.UrlEncode(Request.RawUrl) );
-                            pageReference.Parameters = parms;
-
-                            Response.Redirect( pageReference.BuildUrl() );
+                            site.RedirectToLoginPage( true );
                         }
                         else
                         {
                             FormsAuthentication.RedirectToLoginPage();
                         }
+                    }
+                    else
+                    {
+                        // If not authorized, and the user has logged in, redirect to error page
+                        Page.Trace.Warn( "Redirecting to error page" );
+
+                        Response.Redirect( "~/error.aspx?type=security", false );  
+                        Context.ApplicationInstance.CompleteRequest();
                     }
                 }
                 else

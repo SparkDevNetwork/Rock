@@ -53,7 +53,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="rockControl">The rock control.</param>
         /// <param name="writer">The writer.</param>
-        public static void RenderControl( IRockControl rockControl, HtmlTextWriter writer )
+        public static void RenderControl( IRockControl rockControl, HtmlTextWriter writer, string additionalCssClass = "" )
         {
             bool renderLabel = ( !string.IsNullOrEmpty( rockControl.Label ) );
             bool renderHelp = ( rockControl.HelpBlock != null && !string.IsNullOrWhiteSpace( rockControl.Help ) );
@@ -69,6 +69,10 @@ namespace Rock.Web.UI.Controls
                 if ( rockControl.Required )
                 {
                     cssClass.Append( " required" );
+                }
+                if (!string.IsNullOrWhiteSpace(additionalCssClass))
+                {
+                    cssClass.Append( additionalCssClass );
                 }
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, cssClass.ToString() );

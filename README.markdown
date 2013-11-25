@@ -12,4 +12,4 @@ Our main developer starting point site is [the wiki](https://github.com/SparkDev
 Sign up for the newsletter over on the [Spark Development Network](http://www.sparkdevelopmentnetwork.com/)
 home page and [read previous newsletters](http://sparkdevnetwork.github.com/Rock-ChMS/newsletter/index.html).
 
-You can also read [our press release](http://www.sparkdevelopmentnetwork.com/files/SparkAnnouncement.pdf) if you're into that sort of thing.
+You can also read [our press release](http://www.sparkdevnetwork.org/files/SparkAnnouncement.pdf) if you're into that sort of thing.
