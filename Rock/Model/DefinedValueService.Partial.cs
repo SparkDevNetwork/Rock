@@ -12,7 +12,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Defined Value POCO Service class
+    /// Service/Data Access class for <see cref="Rock.Model.DefinedValue"/> entity objects.
     /// </summary>
     public partial class DefinedValueService 
     {
