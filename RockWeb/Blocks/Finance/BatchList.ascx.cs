@@ -17,7 +17,7 @@ using Rock.Web.UI.Controls;
 using Rock.Web.Cache;
 using System.Collections.Generic;
 
-namespace RockWeb.Blocks.Finance.Administration
+namespace RockWeb.Blocks.Finance
 {
     [LinkedPage("Detail Page")]
     public partial class BatchList : Rock.Web.UI.RockBlock

@@ -76,7 +76,7 @@ namespace Rock.Web.UI.Controls
             _lbAddFamilyMember.CausesValidation = false;
 
             var iAddFilter = new HtmlGenericControl( "i" );
-            iAddFilter.AddCssClass( "icon-plus-sign" );
+            iAddFilter.AddCssClass("fa fa-plus-circle");
             _lbAddFamilyMember.Controls.Add( iAddFilter );
         }
 

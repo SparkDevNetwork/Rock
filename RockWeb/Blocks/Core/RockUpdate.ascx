@@ -1,0 +1,43 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RockUpdate.ascx.cs" Inherits="RockWeb.Blocks.Core.RockUpdate" %>
+
+<asp:UpdatePanel ID="upPanel" runat="server">
+    <ContentTemplate>
+        <div class="row-fluid">
+	        <div class="span6">
+		        <asp:Literal ID="litRockVersion" runat="server"></asp:Literal>
+	        </div>
+            <div class="span2 offset4">
+                <Rock:Badge ID="badge" runat="server" BadgeType="Important" Visible="false" ToolTip="There are one or more updates available.">updates available</Rock:Badge>
+            </div>
+        </div>
+
+        <div class="row-fluid">
+	        <div class="span12">
+                <asp:Literal ID="litMessage" runat="server"></asp:Literal>
+                <Rock:NotificationBox ID="nbSuccess" runat="server" NotificationBoxType="Success" Visible="false" Heading="<i class='fa check-circle-o'></i> Success" />
+                <Rock:NotificationBox ID="nbErrors" runat="server" NotificationBoxType="Danger" Visible="false" Heading="<i class='fa fa-frown-o'></i> Sorry..." />
+            </div>
+        </div>
+
+        <div class="row-fluid">
+            <div class="span12">
+                <div class="panel" runat="server" id="divPackage" visible="false">
+                    <div class="row-fluid">
+                        <div class="span3">
+                            <asp:LinkButton ID="btnInstall" runat="server" Text="<i class='fa fa-cloud-download'></i> Update" Visible="false" CssClass="btn btn-primary" OnClick="btnInstall_Click" />
+                            <asp:LinkButton ID="btnUpdate" runat="server" Text="<i class='fa fa-cloud-download'></i> Update" Visible="false" CssClass="btn btn-primary" OnClick="btnUpdate_Click" />
+                        </div>
+                        <div class="span9">
+                            <h3><asp:Literal ID="litPackageTitle" runat="server"></asp:Literal></h3>
+                            <asp:Literal ID="litPackageDescription" runat="server"></asp:Literal>
+                            <h4>Release Notes</h4>
+                            <asp:Literal ID="litReleaseNotes" runat="server"></asp:Literal>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </ContentTemplate>
+</asp:UpdatePanel>
+

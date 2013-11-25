@@ -127,8 +127,17 @@ namespace RockWeb.Blocks.Administration
                 if ( downloadCellIndex >= 0 )
                 {
                     string fileUrl = string.Format( "{0}GetFile.ashx?id={1}", ResolveUrl( "~" ), e.Row.DataItem.GetPropertyValue( "Id" ).ToString() );
-                    e.Row.Cells[downloadCellIndex].Text =  string.Format("<a href='{0}'>Download</a>", fileUrl);
+                    e.Row.Cells[downloadCellIndex].Text = string.Format("<a href='{0}' class='btn btn-action btn-xs'><i class='fa fa-download'></i> Download</a>", fileUrl);
                 }
+
+                Literal lAppName = e.Row.FindControl("lAppName") as Literal;
+                if (lAppName != null)
+                {
+                    var binaryFile = e.Row.DataItem as BinaryFile;
+                    binaryFile.LoadAttributes();
+                    lAppName.Text = binaryFile.GetAttributeValue("Name");
+                }
+                
             }
         }
     }

@@ -7,6 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>Rock ChMS - Error</title>
 
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Styles/bootstrap.css") %>" />
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Styles/theme.css") %>" />
 
     <script src="<%= ResolveUrl("~/Scripts/jquery.js") %>" >

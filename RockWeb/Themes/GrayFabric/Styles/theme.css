@@ -8478,7 +8478,7 @@ span.cke_skin_kama {
   padding: 0 !important;
 }
 .loginstatus {
-  width: 160px;
+  --width: 160px;
 }
 .loginstatus .dropdown-toggle {
   text-align: right;
@@ -9047,6 +9047,7 @@ td.grid-col-actions {
 }
 .rock-modal .modal-header h3 {
   float: left;
+  margin-right: 12px;
 }
 .rock-modal .modal-header .close {
   margin: 0;
@@ -9056,6 +9057,11 @@ td.grid-col-actions {
 }
 .rock-modal .modal-header .label {
   margin-top: 8px;
+}
+.rock-modal .modal-header small {
+  margin-top: 12px;
+  display: block;
+  color: #6e6e6e;
 }
 .rock-modal .modal-body .nav-pills {
   margin: 6px 0 18px;
@@ -9693,6 +9699,15 @@ fieldset[disabled] .btn-edit:active,
 fieldset[disabled] .btn-edit.active {
   background-color: #ffffff;
   border-color: #e6e6e6;
+}
+/* modify BS3 to use fontawesome for carousel icons */
+.carousel-control .icon-chevron-left,
+.carousel-control .icon-chevron-right {
+  position: absolute;
+  top: 50%;
+  z-index: 5;
+  display: inline-block;
+  margin-top: -10px;
 }
 /* user registration styles */
 .not-me {

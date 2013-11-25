@@ -19,7 +19,7 @@
                     <asp:Repeater ID="rSelection" runat="server">
                         <ItemTemplate>
                             <button type="button" schedule-id='<%# Eval("Schedule.Id") %>' class="btn btn-default btn-lg btn-checkbox">
-                                <i class="icon-check-empty"></i>
+                                <i class="fa fa-square-o"></i>
                                 
                                 <div><%# Container.DataItem.ToString() %></div>
                             </button>

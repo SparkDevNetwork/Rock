@@ -1,7 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ContactInfo.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.ContactInfo" %>
 
 <section class="contact-info group">
-    <header>Contact Information <a href="#" class="edit"><i class="icon-edit"></i></a></header>
+    <header>Contact Information <a href="#" class="edit"><i class="fa fa-pencil-square-o"></i></a></header>
                 
     <ul id="ulPhoneNumbers" runat="server" class="phone-numbers"></ul>
 

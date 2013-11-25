@@ -25,7 +25,7 @@
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIsActive" Text="Active " CssClass="checkbox inline" runat="server" />
                             <Rock:RockCheckBox ID="cbApproved" Text="Approved " CssClass="checkbox inline" runat="server" />
-                            <Rock:HighlightLabel ID="hlFlaggedMessage" IconCssClass="icon-flag" LabelType="warning" runat="server" Visible="false" ToolTip="re-approve the request to clear the flags" />
+                            <Rock:HighlightLabel ID="hlFlaggedMessage" IconCssClass="fa fa-flag" LabelType="warning" runat="server" Visible="false" ToolTip="re-approve the request to clear the flags" />
                             <Rock:RockCheckBox ID="cbIsPublic" Text="Public " CssClass="checkbox inline" runat="server" />
                             <Rock:RockCheckBox ID="cbIsUrgent" Text="Urgent " CssClass="checkbox inline" runat="server" />
                             <Rock:RockCheckBox ID="cbAllowComments" Text="Allow Comments " CssClass="checkbox inline" runat="server" />
@@ -56,9 +56,9 @@
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                 <div class="pull-right">
-                    <Rock:HighlightLabel ID="hlFlaggedMessageRO" LabelType="warning" runat="server" Visible="false" IconCssClass="icon-flag" ToolTip="To clear the flags you'll have to re-approve this request." />
+                    <Rock:HighlightLabel ID="hlFlaggedMessageRO" LabelType="warning" runat="server" Visible="false" IconCssClass="fa fa-flag" ToolTip="To clear the flags you'll have to re-approve this request." />
                     <Rock:HighlightLabel ID="hlStatus" runat="server" LabelType="Warning" Text="Unapproved"  Visible="false" />
-                    <Rock:HighlightLabel ID="hlUrgent" LabelType="Danger" runat="server" Visible="false" IconCssClass="icon-exclamation-sign" Text="Urgent" />
+                    <Rock:HighlightLabel ID="hlUrgent" LabelType="Danger" runat="server" Visible="false" IconCssClass="fa fa-exclamation-circle" Text="Urgent" />
                     <Rock:Badge ID="bPrayerCount" runat="server"></Rock:Badge>
                 </div>
 

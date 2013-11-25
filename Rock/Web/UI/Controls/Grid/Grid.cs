@@ -269,22 +269,22 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The description field.
         /// </value>
-        public string DescriptionField
+        public string TooltipField
         {
             get
             {
-                string descriptionField = ViewState["DescriptionField"] as string;
-                if ( string.IsNullOrWhiteSpace( descriptionField ) )
+                string tooltipField = ViewState["TooltipField"] as string;
+                if ( string.IsNullOrWhiteSpace( tooltipField ) )
                 {
-                    descriptionField = null;
+                    tooltipField = null;
                 }
 
-                return descriptionField;
+                return tooltipField;
             }
 
             set
             {
-                ViewState["DescriptionField"] = value;
+                ViewState["TooltipField"] = value;
             }
         }
 
@@ -790,6 +790,13 @@ namespace Rock.Web.UI.Controls
 
             this.PrepareControlHierarchy();
 
+            // render script for popovers
+            string script = @"
+    $('.grid-table tr').tooltip({html: true, container: 'body', delay: { show: 500, hide: 100 }});
+    $('.grid-table tr').click( function(){ $(this).tooltip('hide'); });;
+";
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "grid-popover", script, true);
+
             this.RenderContents( writer );
         }
 
@@ -899,9 +906,9 @@ namespace Rock.Web.UI.Controls
                         }
                     }
 
-                    if ( DescriptionField != null )
+                    if ( TooltipField != null )
                     {
-                        PropertyInfo pi = e.Row.DataItem.GetType().GetProperty( DescriptionField );
+                        PropertyInfo pi = e.Row.DataItem.GetType().GetProperty( TooltipField );
                         if ( pi != null )
                         {
                             var piv = pi.GetValue( e.Row.DataItem );

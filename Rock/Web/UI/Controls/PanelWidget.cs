@@ -135,8 +135,8 @@ $('.rock-panel-widget > header').click(function () {
     $expanded = $(this).children('input.filter-expanded');
     $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
 
-    $('a.view-state > i', this).toggleClass('icon-chevron-down');
-    $('a.view-state > i', this).toggleClass('icon-chevron-up');
+    $('a.view-state > i', this).toggleClass('fa-chevron-down');
+    $('a.view-state > i', this).toggleClass('fa-chevron-up');
 });
 
 
@@ -241,7 +241,7 @@ $('.rock-panel-widget a.panel-widget-reorder').click(function (event) {
                 // Chevron up/down Button
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs view-state" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "icon-chevron-up" : "icon-chevron-down" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();

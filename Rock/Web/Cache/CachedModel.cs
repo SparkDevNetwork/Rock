@@ -236,7 +236,10 @@ namespace Rock.Web.Cache
                 model.LoadAttributes();
                 foreach ( var attribute in model.Attributes )
                 {
-                    Rock.Attribute.Helper.SaveAttributeValues( model, attribute.Value, this.AttributeValues[attribute.Key], personId );
+                    if ( this.AttributeValues.ContainsKey( attribute.Key ) )
+                    {
+                        Rock.Attribute.Helper.SaveAttributeValues( model, attribute.Value, this.AttributeValues[attribute.Key], personId );
+                    }
                 }
             }
         }

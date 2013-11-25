@@ -114,7 +114,7 @@ namespace Rock.Web.UI.Controls
                 aSecure.Attributes.Add( "height", "500px" );
 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
-                buttonIcon.Attributes.Add( "class", "icon-lock" );
+                buttonIcon.Attributes.Add( "class", "fa fa-lock" );
                 aSecure.Controls.Add( buttonIcon );
 
                 aSecure.DataBinding += new EventHandler( aSecure_DataBinding );

@@ -51,7 +51,8 @@ namespace RockWeb.Blocks.Cms
             rGrid.DataKeyNames = new string[] { "id" };
             rGrid.ShowActionRow = false;
 
-            this.AttributesUpdated += HtmlContent_AttributesUpdated;
+            this.BlockUpdated += HtmlContent_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upPanel );
 
             ShowView();
         }
@@ -128,7 +129,7 @@ namespace RockWeb.Blocks.Cms
             base.OnPreRender( e );
         }
 
-        void HtmlContent_AttributesUpdated( object sender, EventArgs e )
+        protected void HtmlContent_BlockUpdated( object sender, EventArgs e )
         {
             lPreText.Text = GetAttributeValue( "PreText" );
             lPostText.Text = GetAttributeValue( "PostText" );
@@ -249,7 +250,7 @@ namespace RockWeb.Blocks.Cms
                 HtmlGenericControl iEdit = new HtmlGenericControl( "i" );
                 lbEdit.Controls.Add( iEdit );
                 lbEdit.CausesValidation = false;
-                iEdit.Attributes.Add( "class", "icon-edit" );
+                iEdit.Attributes.Add("class", "fa fa-pencil-square-o");
 
                 ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( lbEdit );
             }
@@ -275,6 +276,11 @@ namespace RockWeb.Blocks.Cms
                     html = content.Content.ResolveMergeFields( GetGlobalMergeFields() );
                 else
                     html = string.Empty;
+
+                // Resolve any dynamic url references
+                string appRoot = ResolveRockUrl("~/");
+                string themeRoot = ResolveRockUrl("~~/");
+                html = html.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
 
                 // cache content
                 int cacheDuration = 0;
@@ -362,7 +368,8 @@ namespace RockWeb.Blocks.Cms
             {
                 if ( attributeCache.IsAuthorized( "View", null ) )
                 {
-                    globalAttributeValues.Add( attributeCache.Key, globalAttributes.AttributeValues[attributeCache.Key].Value );
+                    globalAttributeValues.Add( attributeCache.Key,
+                        attributeCache.FieldType.Field.FormatValue( this, globalAttributes.AttributeValues[attributeCache.Key].Value, attributeCache.QualifierValues, false ) );
                 }
             }
 

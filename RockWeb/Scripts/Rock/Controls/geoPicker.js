@@ -93,7 +93,7 @@
                     obj.selectedShape = null;
                 }
                 $('#gmnoprint-delete-button_' + obj.controlId).attr('disabled', '')
-                $('#gmnoprint-delete-button_' + obj.controlId + ' .icon-remove').css("color", "#aaa");
+                $('#gmnoprint-delete-button_' + obj.controlId + ' .fa-times').css("color", "#aaa");
             }
 
             /**
@@ -107,7 +107,7 @@
                 // enable delete button
                 var $deleteButton = $('#gmnoprint-delete-button_' + obj.controlId);
                 $('#gmnoprint-delete-button_' + obj.controlId).removeAttr('disabled');
-                $('#gmnoprint-delete-button_' + obj.controlId + ' .icon-remove').css("color", "");
+                $('#gmnoprint-delete-button_' + obj.controlId + ' .fa-times').css("color", "");
 
                 obj.selectedShape = shape;
                 

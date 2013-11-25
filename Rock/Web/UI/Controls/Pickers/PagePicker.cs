@@ -78,7 +78,7 @@ namespace Rock.Web.UI.Controls
             ItemRestUrlExtraParams = string.Empty;
             base.OnInit( e );
 
-            this.IconCssClass = "icon-file";
+            this.IconCssClass = "fa fa-file";
 
             string scriptFormat = @"
 
@@ -354,7 +354,7 @@ namespace Rock.Web.UI.Controls
             _btnSelectPageRoute.Click += _btnSelectPageRoute_Click;
 
             _btnCancelPageRoute = new HyperLink();
-            _btnCancelPageRoute.CssClass = "btn btn-xs";
+            _btnCancelPageRoute.CssClass = "btn btn-link btn-xs";
             _btnCancelPageRoute.ID = string.Format( "btnCancelPageRoute_{0}", this.ID );
             _btnCancelPageRoute.Text = "Cancel";
 

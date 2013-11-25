@@ -7,26 +7,27 @@
     <header>
         
         <!-- Brand Bar -->
-        <nav class="navbar navbar-default navbar-static-top">
+        <nav class="navbar navbar-inverse navbar-static-top">
             <div class="container">
 			    <div class="navbar-header">
-                    <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".pageheader-collapse">
+                    <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse">
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="#">Stark Theme</a>
+                    <Rock:Zone Name="Header" runat="server" />
 			    </div>	
                 <div class="navbar-collapse collapse">   
                     <!-- Main Navigation -->
-                    <Rock:Zone ID="Navigation" runat="server" />
+                    <Rock:Zone Name="Login" runat="server" />
+                    <Rock:Zone Name="Navigation" runat="server" />
 			    </div>	
             </div>
         </nav>
 
     </header>
 		
-	<main>
+	<main class="container">
         
         <!-- Start Content Area -->
         
@@ -44,31 +45,31 @@
 
         <div class="row">
             <div class="col-md-12">
-                <Rock:Zone ID="Feature" runat="server" />
+                <Rock:Zone Name="Feature" runat="server" />
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-12">
-                <Rock:Zone ID="Main" runat="server" />
+                <Rock:Zone Name="Main" runat="server" />
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-12">
-                <Rock:Zone ID="SectionA" runat="server" />
+                <Rock:Zone Name="Section A" runat="server" />
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-4">
-                <Rock:Zone ID="SectionB" runat="server" />
+                <Rock:Zone Name="Section B" runat="server" />
             </div>
             <div class="col-md-4">
-                <Rock:Zone ID="SectionC" runat="server" />
+                <Rock:Zone Name="Section C" runat="server" />
             </div>
             <div class="col-md-4">
-                <Rock:Zone ID="SectionD" runat="server" />
+                <Rock:Zone Name="Section D" runat="server" />
             </div>
         </div>
 
@@ -76,12 +77,18 @@
 
 	</main>
 		
-	<footer class="page-footer">
-		<div class="row">
-			<div class="col-md-12">
-				<Rock:Zone ID="Footer" runat="server" />
-			</div>
-		</div>
+	<footer>
+        <div class="container">
+		    
+            <hr />
+
+            <div class="row">
+			    <div class="col-md-12">
+				    <Rock:Zone Name="Footer" runat="server" />
+			    </div>
+		    </div>
+
+        </div>
 	</footer>
         
 </asp:Content>
