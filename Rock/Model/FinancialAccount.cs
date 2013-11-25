@@ -43,7 +43,7 @@ namespace Rock.Model
         /// associated with a <see cref="Rock.Model.Campus"/> this property will be null.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int"/> representing the CampusId of the <see cref="Rock.Model.Campus"/> that the FinancialAccount is associated with.
+        /// A <see cref="System.Int32"/> representing the CampusId of the <see cref="Rock.Model.Campus"/> that the FinancialAccount is associated with.
         /// </value>
         [DataMember]
         public int? CampusId { get; set; }
