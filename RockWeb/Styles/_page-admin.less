@@ -84,18 +84,23 @@
     position: relative;
 }
 
-.config-bar > a 
-{
-    text-decoration: none;
-}
+.config-bar {
+    -moz-box-shadow: 3px 3px 3px 0px rgba(0,0,0, .4);
+    -webkit-box-shadow: 3px 3px 3px 0px rgba(0,0,0, .4);
+    box-shadow: 3px 3px 3px 0px rgba(0,0,0, .4);
 
-.config-bar  a i.fa {
-    float: left;
-    margin-left: 5px;
-    margin-top: 3px;
-    font-size: 18px;
-    color: @adminbar-text-color;
-    margin-right: 10px;
+    & > a {
+        text-decoration: none;
+    }
+
+    a i.fa {
+        float: left;
+        margin-left: 5px;
+        margin-top: 3px;
+        font-size: 18px;
+        color: @adminbar-text-color;
+        margin-right: 10px;
+    }
 }
 
 .block-configuration-bar {
