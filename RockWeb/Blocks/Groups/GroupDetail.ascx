@@ -39,51 +39,49 @@
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" />
-                        <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" Label="Group Type" />
-                        <Rock:DataDropDownList ID="ddlCampus" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" Label="Campus" />
-                        <Rock:RockCheckBox ID="cbIsSecurityRole" runat="server" Text="Security Role"  />
+                <Rock:PanelWidget ID="wpgeneral" runat="server" title="General">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" Label="Group Type" />
+                            <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:DataDropDownList ID="ddlCampus" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" Label="Campus" />
+                            <Rock:RockCheckBox ID="cbIsSecurityRole" runat="server" Label="Security Role" Text="Yes"  />
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <Rock:RockControlWrapper ID="rcGroupMemberAttributesInherited" runat="server" Label="Inherited Group Member Attributes" 
-                            Help="Inherited Attributes for members in this group.">
-                            <Rock:Grid ID="gGroupMemberAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Attribute">
-                                <Columns>
-                                    <asp:TemplateField>
-                                        <ItemTemplate>
-                                            <span class='text-muted'>
-                                                <%# Eval("Name") %><br/>
-                                                <small>(Inherited from <a href='<%# Eval("Url") %>' target='_blank'><%# Eval("GroupType") %></a> Group Type)</small>
-                                            </span>
-                                        </ItemTemplate>
-                                    </asp:TemplateField>
-                                </Columns>
-                            </Rock:Grid>
-                        </Rock:RockControlWrapper>
-                        <Rock:RockControlWrapper ID="rcGroupMemberAttributes" runat="server" Label="Group Member Attributes" 
-                            Help="Attributes for members in this group. Each member can have different values (i.e. Hours Serving) that are set on the member detail.">
-                            <Rock:Grid ID="gGroupMemberAttributes" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Attribute">
-                                <Columns>
-                                    <Rock:ReorderField />
-                                    <asp:BoundField DataField="Name" />
-                                    <Rock:EditField OnClick="gGroupMemberAttributes_Edit" />
-                                    <Rock:DeleteField OnClick="gGroupMemberAttributes_Delete" />
-                                </Columns>
-                            </Rock:Grid>
-                        </Rock:RockControlWrapper>
-                    </div>
-                </div>
+                </Rock:PanelWidget>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <asp:PlaceHolder ID="phGroupAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
-                    </div>
-                    <div class="col-md-6">
-                        <asp:PlaceHolder ID="phGroupTypeAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
-                    </div>
-                </div>
+                <Rock:PanelWidget ID="wpGroupAttributes" runat="server" Title="Group Attribute Values">
+                    <asp:PlaceHolder ID="phGroupAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                </Rock:PanelWidget>
+
+                <Rock:PanelWidget ID="wpGroupMemberAttributes" runat="server" Title="Member Attributes" CssClass="group-type-attribute-panel">
+                    <Rock:NotificationBox ID="nbGroupMemberAttributes" runat="server" NotificationBoxType="Info" 
+                        Text="Member Attributes apply to members in this group.  Each member will have their own value for these attributes" />
+                    <Rock:RockControlWrapper ID="rcGroupMemberAttributesInherited" runat="server" Label="Inherited Attribute(s)">
+                        <Rock:Grid ID="gGroupMemberAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Inherited Member Attribute">
+                            <Columns>
+                                <asp:BoundField DataField="Name" />
+                                <asp:BoundField DataField="Description" />
+                                <asp:TemplateField>
+                                    <ItemTemplate>(Inherited from <a href='<%# Eval("Url") %>' target='_blank'><%# Eval("GroupType") %></a>)</ItemTemplate>
+                                </asp:TemplateField>
+                            </Columns>
+                        </Rock:Grid>
+                    </Rock:RockControlWrapper>
+                    <Rock:Grid ID="gGroupMemberAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Member Attribute">
+                        <Columns>
+                            <Rock:ReorderField />
+                            <asp:BoundField DataField="Name" HeaderText="Attribute" />
+                            <asp:BoundField DataField="Description" HeaderText="Description" />
+                            <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
+                            <Rock:EditField OnClick="gGroupMemberAttributes_Edit" />
+                            <Rock:DeleteField OnClick="gGroupMemberAttributes_Delete" />
+                        </Columns>
+                    </Rock:Grid>
+                </Rock:PanelWidget>
+
 
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary btn-sm" OnClick="btnSave_Click" />
@@ -113,7 +111,7 @@
         </asp:Panel>
 
         <asp:HiddenField ID="hfAttributeId" runat="server" />
-        <Rock:ModalDialog ID="dlgGroupMemberAttribute" runat="server" OnSaveClick="dlgGroupMemberAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="GroupMemberAttribute">
+        <Rock:ModalDialog ID="dlgGroupMemberAttribute" runat="server" Title="Group Member Attributes" OnSaveClick="dlgGroupMemberAttribute_SaveClick" ValidationGroup="GroupMemberAttribute">
             <Content>
                 <Rock:AttributeEditor ID="edtGroupMemberAttributes" runat="server" ShowActions="false" ValidationGroup="GroupMemberAttribute" />
             </Content>
