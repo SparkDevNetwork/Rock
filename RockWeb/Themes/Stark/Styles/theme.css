@@ -1877,6 +1877,12 @@ dl dd {
 .scroll-container .disable {
   display: none;
 }
+::selection {
+  background: #5279a0;
+}
+::-moz-selection {
+  background: #5279a0;
+}
 /* global classes */
 .clickable {
   cursor: pointer;

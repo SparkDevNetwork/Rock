@@ -13,6 +13,16 @@
 // HTML Overrides
 //--------------------------------
 
+// text selection color
+::selection {
+	background: @text-selection-color;
+    color: @text-selection-text-color;
+}
+::-moz-selection {
+	background: @text-selection-color; 
+    color: @text-selection-text-color;
+}
+
 /* global classes */
 .clickable {
     cursor: pointer;
