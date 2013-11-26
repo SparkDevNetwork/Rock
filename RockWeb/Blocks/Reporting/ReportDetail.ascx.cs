@@ -19,6 +19,7 @@ using Rock.Reporting;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using System.Linq.Dynamic;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -628,11 +629,40 @@ namespace RockWeb.Blocks.Reporting
             {
                 var errors = new List<string>();
 
-                
+
                 if ( !report.EntityTypeId.HasValue )
                 {
                     return;
                 }
+
+                var financialTransactionsQry = new FinancialTransactionService().Queryable();
+
+                var qry = new PersonService().Queryable();//.Select( "New(Id as PersonId, FirstName as MyFirstName)" );
+
+                
+
+                var qry2 = qry.Select( a =>
+                    new
+                    {
+                        a.FirstName,
+                        a.LastName
+                    } );
+
+                var qry3 = qry.Select( a => 
+                    new 
+                    { 
+                        a.FirstName, 
+                        a.LastName, 
+                        LastTran = financialTransactionsQry.Where( f => f.AuthorizedPersonId == a.Id ).OrderByDescending( f => f.TransactionDateTime ).FirstOrDefault() 
+                    } );
+
+                var mce = SelectNewExpressionExtractor.ExtractMethodCallExpression( qry3 );
+
+                SelectNewExpressionExtractor.InjectMethodCallExpression( qry2, mce );
+                
+
+
+                /*
 
                 Type entityType = EntityTypeCache.Read( report.EntityTypeId.Value ).GetEntityType();
 
@@ -684,22 +714,9 @@ namespace RockWeb.Blocks.Reporting
                     else if ( reportField.ReportFieldType == ReportFieldType.DataSelectComponent )
                     {
                         DataSelectComponent dataSelectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
+                  
+                  //TODO
 
-                        /*
-                        foreach ( var dataColumn in dataSelectComponent.DataColumns )
-                        {
-                            BoundField boundField = Grid.GetGridField( dataColumn.DataType );
-                            if ( boundField != null )
-                            {
-                                boundField.HeaderText = dataColumn.ColumnName.SplitCase();
-                                boundField.DataField = dataColumn.ColumnName;
-                                boundField.SortExpression = null;
-                                dataTable.Columns.Add( dataColumn );
-                                gReport.Columns.Add( boundField );
-                                dataSelectComponentDictionary.Add( dataColumn.ColumnName, dataSelectComponent );
-                            }
-                        }
-                         */ 
                     }
                 }
 
@@ -726,20 +743,6 @@ namespace RockWeb.Blocks.Reporting
                             else
                             {
                                 //TODO: Get it from DataSelectComponent
-                                /*
-                                var dataSelect = dataSelectComponentDictionary[c.DataField];
-                                if ( dataSelect != null )
-                                {
-                                    if ( reportFieldCount >= dataValues.Count )
-                                    {
-                                        foreach ( var val in dataSelect.GetDataColumnValues( item ) )
-                                        {
-                                            dataValues.Add( val );
-                                        }
-                                    }
-                                    
-                                }
-                                 */ 
                             }
                         }
 
@@ -756,6 +759,7 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 gReport.DataBind();
+                 */
             }
         }
 

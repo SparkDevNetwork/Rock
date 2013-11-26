@@ -219,7 +219,9 @@
     <Compile Include="Reporting\DataFilter\Person\InGroupFilter.cs" />
     <Compile Include="Reporting\DataSelect\Person\LastContributionSelect.cs" />
     <Compile Include="Reporting\DataSelectContainer.cs" />
+    <Compile Include="Reporting\Dynamic.cs" />
     <Compile Include="Reporting\EntityHelper.cs" />
+    <Compile Include="Reporting\SelectNewExpressionExtractor.cs" />
     <Compile Include="Reporting\FilterExpressionExtractor.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
