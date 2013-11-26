@@ -15,7 +15,7 @@
                 <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
                 <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
                 <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
-
+                <a id="aSecure" runat="server" class="btn btn-sm btn-security" height="500px"><i class="fa fa-lock"></i></a>
             </div>
 
             <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />

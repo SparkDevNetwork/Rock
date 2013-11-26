@@ -554,6 +554,18 @@ namespace RockWeb.Blocks.Groups
             nbRoleLimitWarning.Text = roleLimitWarnings.ToString();
             nbRoleLimitWarning.Visible = roleLimitWarnings.Length > 0;
 
+            if ( group.IsAuthorized( "Administrate", CurrentPerson ) || IsUserAuthorized( "Administrate" ) )
+            {
+                aSecure.Visible = true;
+                string url = Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done", 
+                    EntityTypeCache.Read( typeof( Rock.Model.Group ) ).Id, group.Id, group.Name + " Security" ) );
+                aSecure.HRef = "javascript: Rock.controls.modal.show($(this), '" + url + "')";
+            }
+            else
+            {
+                aSecure.Visible = false;
+            }
+
             if ( readOnly )
             {
                 btnEdit.Visible = false;
@@ -728,6 +740,7 @@ namespace RockWeb.Blocks.Groups
             {
                 hlCampus.Visible = false;
             }
+
 
             lblMainDetails.Text = descriptionList.Html;
 
