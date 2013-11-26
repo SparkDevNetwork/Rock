@@ -164,8 +164,8 @@ achieve our mission.  We are so grateful for your commitment.
             base.OnInit( e );
 
             // If impersonation is allowed, and a valid person key was used, set the target to that person
-            bool allowInpersonation = false;
-            if ( bool.TryParse( GetAttributeValue( "Impersonation" ), out allowInpersonation ) && allowInpersonation )
+            bool allowImpersonation = false;
+            if ( bool.TryParse( GetAttributeValue( "Impersonation" ), out allowImpersonation ) && allowImpersonation )
             {
                 string personKey = PageParameter( "Person" );
                 if ( !string.IsNullOrWhiteSpace( personKey ) )
