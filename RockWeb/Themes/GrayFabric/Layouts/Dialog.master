@@ -45,12 +45,12 @@
     <title></title>
 
     <!--[if lt IE 9]>
-        <script src="<%# ResolveUrl("~/Themes/RockChMS/Scripts/html5.js") %>" ></script>
+        <script src="<%# ResolveRockUrl("~/Themes/RockChMS/Scripts/html5.js") %>" ></script>
     <![endif]-->
 
     <asp:ContentPlaceHolder ID="css" runat="server" />
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Styles/theme.css") %>" />
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Styles/developer.css") %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~/Themes/RockChMS/Styles/theme.css") %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css") %>" />
 
     <style>
         html, body {
@@ -100,7 +100,7 @@
                 </div>
 
                 <div id="footerPanel" class="modal-footer">
-                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" OnClientClick="window.parent.Rock.controls.modal.close();" CausesValidation="false" />
+                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClientClick="window.parent.Rock.controls.modal.close();" CausesValidation="false" />
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click " />
                 </div>
             </ContentTemplate>

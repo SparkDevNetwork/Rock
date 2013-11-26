@@ -185,7 +185,7 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                writer.WriteLine( string.Format( "<div><i class=\"{0}\"></i> {1}</div>", this.Checked ? "icon-check" : "icon-check-empty", this.Text ) );
+                writer.WriteLine(string.Format("<div><i class=\"{0}\"></i> {1}</div>", this.Checked ? "fa fa-check-square-o" : "fa fa-square-o", this.Text));
             }
         }
     }

@@ -362,6 +362,8 @@ namespace Rock.Web.UI
             base.OnInit( e );
 
             this.BlockValidationGroup = string.Format( "{0}_{1}", this.GetType().BaseType.Name, CurrentBlock.Id );
+
+            ( (RockPage)this.Page ).BlockUpdated += Page_BlockUpdated;
         }
 
         /// <summary>
@@ -508,18 +510,12 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Adds an update trigger for when the block instance properties are updated.
+        /// Adds an update trigger for when the block properties are updated.
         /// </summary>
         /// <param name="updatePanel">The update panel.</param>
-        public void AddAttributeUpdateTrigger( UpdatePanel updatePanel )
+        public void AddConfigurationUpdateTrigger( UpdatePanel updatePanel )
         {
-            if ( CurrentBlock.IsAuthorized( "Administrate", CurrentPerson ) )
-            {
-                AsyncPostBackTrigger trigger = new AsyncPostBackTrigger();
-                trigger.ControlID = string.Format( "blck-cnfg-trggr-{0}", CurrentBlock.Id );
-                trigger.EventName = "Click";
-                updatePanel.Triggers.Add( trigger );
-            }
+            ( (RockPage)Page ).AddConfigurationUpdateTrigger( updatePanel );
         }
 
         /// <summary>
@@ -674,7 +670,7 @@ namespace Rock.Web.UI
         /// <param name="key">The key to use for the history point</param>
         /// <param name="state">any state information to store for the history point</param>
         /// <param name="title">The title to be used by the browser</param>
-        public void AddHistory( string key, string state, string title )
+        public void AddHistory( string key, string state, string title = "" )
         {
             RockPage.AddHistory( key, state, title );
         }
@@ -780,28 +776,6 @@ namespace Rock.Web.UI
 
             if ( canConfig || canEdit )
             {
-                // Attributes
-                CompiledTemplateBuilder upContent = new CompiledTemplateBuilder(
-                    delegate( Control content )
-                    {
-                        Button trigger = new Button();
-                        trigger.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                        trigger.ID = string.Format( "blck-cnfg-trggr-{0}", CurrentBlock.Id.ToString() );
-                        trigger.Click += trigger_Click;
-                        content.Controls.Add( trigger );
-
-                        HiddenField triggerData = new HiddenField();
-                        triggerData.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                        triggerData.ID = string.Format( "blck-cnfg-trggr-data-{0}", CurrentBlock.Id.ToString() );
-                        content.Controls.Add( triggerData );
-                    }
-                );
-
-                UpdatePanel upTrigger = new UpdatePanel();
-                upTrigger.ContentTemplate = upContent;
-                configControls.Add( upTrigger );
-                upTrigger.Attributes.Add( "style", "display:none" );
-
                 // Icon to display block properties
                 HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                 aAttributes.ID = "aBlockProperties";
@@ -814,7 +788,7 @@ namespace Rock.Web.UI
                 configControls.Add( aAttributes );
                 HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
                 aAttributes.Controls.Add( iAttributes );
-                iAttributes.Attributes.Add( "class", "icon-cog" );
+                iAttributes.Attributes.Add( "class", "fa fa-cog" );
             }
 
             if ( canConfig )
@@ -831,7 +805,7 @@ namespace Rock.Web.UI
                 configControls.Add( aSecureBlock );
                 HtmlGenericControl iSecureBlock = new HtmlGenericControl( "i" );
                 aSecureBlock.Controls.Add( iSecureBlock );
-                iSecureBlock.Attributes.Add( "class", "icon-lock" );
+                iSecureBlock.Attributes.Add( "class", "fa fa-lock" );
 
                 // Move
                 HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );
@@ -843,7 +817,7 @@ namespace Rock.Web.UI
                 configControls.Add( aMoveBlock );
                 HtmlGenericControl iMoveBlock = new HtmlGenericControl( "i" );
                 aMoveBlock.Controls.Add( iMoveBlock );
-                iMoveBlock.Attributes.Add( "class", "icon-external-link" );
+                iMoveBlock.Attributes.Add( "class", "fa fa-external-link" );
 
                 // Delete
                 HtmlGenericControl aDeleteBlock = new HtmlGenericControl( "a" );
@@ -853,7 +827,7 @@ namespace Rock.Web.UI
                 configControls.Add( aDeleteBlock );
                 HtmlGenericControl iDeleteBlock = new HtmlGenericControl( "i" );
                 aDeleteBlock.Controls.Add( iDeleteBlock );
-                iDeleteBlock.Attributes.Add( "class", "icon-remove-circle" );
+                iDeleteBlock.Attributes.Add("class", "fa fa-times-circle-o");
             }
 
             return configControls;
@@ -958,27 +932,16 @@ namespace Rock.Web.UI
         #region Event Handlers
 
         /// <summary>
-        /// Handles the Click event of the trigger control.
+        /// Handles the BlockUpdated event of the Page control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        protected void trigger_Click( object sender, EventArgs e )
+        /// <param name="e">The <see cref="BlockUpdatedEventArgs"/> instance containing the event data.</param>
+        internal void Page_BlockUpdated( object sender, BlockUpdatedEventArgs e )
         {
-            if ( AttributesUpdated != null )
+            if (e.BlockID == CurrentBlock.Id && BlockUpdated != null)
             {
-                AttributesUpdated( sender, e );
+                BlockUpdated( sender, e );
             }
-        }
-
-        /// <summary>
-        /// Handles the BlockAttributesUpdated event of the CmsBlock control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.Web.UI.BlockAttributesUpdatedEventArgs"/> instance containing the event data.</param>
-        void CmsBlock_BlockAttributesUpdated( object sender, BlockAttributesUpdatedEventArgs e )
-        {
-            if ( e.BlockID == CurrentBlock.Id && AttributesUpdated != null )
-                AttributesUpdated( sender, e );
         }
 
         #endregion
@@ -986,9 +949,9 @@ namespace Rock.Web.UI
         #region Events
 
         /// <summary>
-        /// Occurs when the block instance properties are updated.
+        /// Occurs when the block properties are updated.
         /// </summary>
-        public event EventHandler<EventArgs> AttributesUpdated;
+        public event EventHandler<EventArgs> BlockUpdated;
 
         #endregion
 

@@ -92,7 +92,7 @@ namespace RockWeb.Blocks.Reporting
             base.OnInit( e );
 
             gReport.GridRebind += gReport_GridRebind;
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", Report.FriendlyTypeName );
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Report.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Report ) ).Id;
         }
 
@@ -685,6 +685,7 @@ namespace RockWeb.Blocks.Reporting
                     {
                         DataSelectComponent dataSelectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
 
+                        /*
                         foreach ( var dataColumn in dataSelectComponent.DataColumns )
                         {
                             BoundField boundField = Grid.GetGridField( dataColumn.DataType );
@@ -698,6 +699,7 @@ namespace RockWeb.Blocks.Reporting
                                 dataSelectComponentDictionary.Add( dataColumn.ColumnName, dataSelectComponent );
                             }
                         }
+                         */ 
                     }
                 }
 
@@ -724,6 +726,7 @@ namespace RockWeb.Blocks.Reporting
                             else
                             {
                                 //TODO: Get it from DataSelectComponent
+                                /*
                                 var dataSelect = dataSelectComponentDictionary[c.DataField];
                                 if ( dataSelect != null )
                                 {
@@ -736,6 +739,7 @@ namespace RockWeb.Blocks.Reporting
                                     }
                                     
                                 }
+                                 */ 
                             }
                         }
 

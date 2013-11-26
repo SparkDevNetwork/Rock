@@ -50,7 +50,7 @@ $(document).ready(function() {
 ";
             ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "toggle-switch-init", script, true );
 
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", DataView.FriendlyTypeName );
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", DataView.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.DataView ) ).Id;
 
             gReport.GridRebind += gReport_GridRebind;

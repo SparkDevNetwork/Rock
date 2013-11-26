@@ -22,7 +22,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
             this.CssClass = "input-width-md";
-            this.AppendText = "<span class='add-on'><i class='icon-time'></i></span>";
+            this.AppendText = "<span class='add-on'><i class='fa fa-clock-o'></i></span>";
 
             if ( string.IsNullOrWhiteSpace( this.SourceTypeName ) )
             {

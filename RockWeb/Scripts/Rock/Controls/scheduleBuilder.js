@@ -107,7 +107,7 @@
                 dateList.children().remove();
                 $.each(dateListValues, function (i, value) {
                     // add to ul
-                    var newLi = "<li><span>" + value + "</span> <a href='#' style='display: none'><i class='icon-remove'></i></a></li>";
+                    var newLi = "<li><span>" + value + "</span> <a href='#' style='display: none'><i class='fa fa-times'></i></a></li>";
                     dateList.append(newLi);
                 });
 
@@ -199,7 +199,7 @@
                 dateRangeList.children().remove();
                 $.each(dateRangeListValues, function (i, value) {
                     // add to ul
-                    var newLi = "<li><span>" + value + "</span><a href='#' style='display: none'><i class='icon-remove'></i></a></li>";
+                    var newLi = "<li><span>" + value + "</span><a href='#' style='display: none'><i class='fa fa-times'></i></a></li>";
                     dateRangeList.append(newLi);
                 });
 

@@ -221,7 +221,7 @@ namespace Rock.Web.UI.Controls
             _lbCommunicate.PreRender += lb_PreRender;
             Controls.Add( _lbCommunicate );
             HtmlGenericControl iCommunicate = new HtmlGenericControl( "i" );
-            iCommunicate.Attributes.Add( "class", "icon-comment" );
+            iCommunicate.Attributes.Add( "class", "fa fa-comment" );
             _lbCommunicate.Controls.Add( iCommunicate );
 
             // controls for add
@@ -242,7 +242,7 @@ namespace Rock.Web.UI.Controls
             _lbAdd.PreRender += lb_PreRender;
             Controls.Add( _lbAdd );
             HtmlGenericControl iAdd = new HtmlGenericControl( "i" );
-            iAdd.Attributes.Add( "class", "icon-plus-sign" );
+            iAdd.Attributes.Add("class", "fa fa-plus-circle");
             _lbAdd.Controls.Add( iAdd );
 
             // controls for excel export
@@ -262,7 +262,7 @@ namespace Rock.Web.UI.Controls
             _lbExcelExport.CausesValidation = false;
             Controls.Add( _lbExcelExport );
             HtmlGenericControl iExcelExport = new HtmlGenericControl( "i" );
-            iExcelExport.Attributes.Add( "class", "icon-table" );
+            iExcelExport.Attributes.Add( "class", "fa fa-table" );
             _lbExcelExport.Controls.Add( iExcelExport );
         }
 

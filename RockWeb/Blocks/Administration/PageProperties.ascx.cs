@@ -73,7 +73,7 @@ namespace RockWeb.Blocks.Administration
                     if ( masterPage != null )
                     {
                         masterPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
-                        masterPage.SubTitle = string.Format( "(Id: {0})", _page.Id );
+                        masterPage.SubTitle = string.Format( "Id: {0}", _page.Id );
                     }
 
                     if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
@@ -116,7 +116,7 @@ namespace RockWeb.Blocks.Administration
                             var tbContext = new RockTextBox();
                             tbContext.ID = string.Format( "context_{0}", i++ );
                             tbContext.Required = true;
-                            tbContext.Label = context.FriendlyName + " Parameter";
+                            tbContext.Label = context.FriendlyName + " Parameter Name";
                             tbContext.Help = "The page parameter name that contains the id of this context entity.";
                             if ( _page.PageContexts.ContainsKey( context.Name ) )
                             {
@@ -229,6 +229,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void masterPage_OnSave( object sender, EventArgs e )
         {
+            Page.Validate( BlockValidationGroup );
             if ( Page.IsValid )
             {
                 using ( new UnitOfWorkScope() )
@@ -320,28 +321,35 @@ namespace RockWeb.Blocks.Administration
                         if ( control is RockTextBox )
                         {
                             var tbContext = control as RockTextBox;
-                            var pageContext = new PageContext();
-                            pageContext.Entity = tbContext.Label;
-                            pageContext.IdParameter = tbContext.Text;
-                            page.PageContexts.Add( pageContext );
+                            if ( !string.IsNullOrWhiteSpace( tbContext.Text ) )
+                            {
+                                var pageContext = new PageContext();
+                                pageContext.Entity = tbContext.Label;
+                                pageContext.IdParameter = tbContext.Text;
+                                page.PageContexts.Add( pageContext );
+                            }
                         }
                     }
 
-                    pageService.Save( page, CurrentPersonId );
-
-                    foreach ( var pageRoute in new PageRouteService().GetByPageId( page.Id ) )
+                    if ( page.IsValid )
                     {
-                        RouteTable.Routes.AddPageRoute( pageRoute );
+                        pageService.Save( page, CurrentPersonId );
+
+                        foreach ( var pageRoute in new PageRouteService().GetByPageId( page.Id ) )
+                        {
+                            RouteTable.Routes.AddPageRoute( pageRoute );
+                        }
+
+                        Rock.Attribute.Helper.GetEditValues( phAttributes, _page );
+                        _page.SaveAttributeValues( CurrentPersonId );
+
+                        Rock.Web.Cache.PageCache.Flush( _page.Id );
+
+                        string script = "if (typeof window.parent.Rock.controls.modal.close === 'function') window.parent.Rock.controls.modal.close('PAGE_UPDATED');";
+                        ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
                     }
-
-                    Rock.Attribute.Helper.GetEditValues( phAttributes, _page );
-                    _page.SaveAttributeValues( CurrentPersonId );
-
-                    Rock.Web.Cache.PageCache.Flush( _page.Id );
                 }
 
-                string script = "if (typeof window.parent.Rock.controls.modal.close === 'function') window.parent.Rock.controls.modal.close();";
-                ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
             }
         }
 
@@ -482,5 +490,26 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
-    }
+
+        protected void cvPageRoute_ServerValidate( object source, ServerValidateEventArgs args )
+        {
+            var errorMessages = new List<string>();
+
+            foreach ( string route in tbPageRoute.Text.SplitDelimitedValues() )
+            {
+                var pageRoute = new PageRoute();
+                pageRoute.Route = route;
+                pageRoute.Guid = Guid.NewGuid();
+                if ( !pageRoute.IsValid )
+                {
+                    errorMessages.Add( string.Format( "The '{0}' route is invalid: {1}", route,
+                    pageRoute.ValidationResults.Select( r => r.ErrorMessage ).ToList().AsDelimited( "; " ) ) );
+                }
+            }
+
+            cvPageRoute.ErrorMessage = errorMessages.AsDelimited( "<br/>" );
+
+            args.IsValid = !errorMessages.Any();
+        }
+}
 }

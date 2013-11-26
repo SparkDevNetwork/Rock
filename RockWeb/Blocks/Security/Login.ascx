@@ -17,12 +17,12 @@
         </asp:PlaceHolder>
     </div>
 
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert block-message warning"/>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-warning block-message "/>
 
     <div class="form-actions">
         <asp:Button ID="LoginButton" runat="server" Text="Login" CssClass="btn btn-primary" OnClick="btnLogin_Click" />
         <asp:Button ID="NewAccountButton" runat="server" Text="Create New Account" CssClass="btn btn-default" OnClick="btnNewAccount_Click" CausesValidation="false" />
-        <asp:Button ID="Cancel" runat="server" Text="Help" CssClass="btn btn-default" OnClick="btnHelp_Click" CausesValidation="false" />
+        <asp:Button ID="Cancel" runat="server" Text="Forgot Account" CssClass="btn btn-default" OnClick="btnHelp_Click" CausesValidation="false" />
     </div>
 
     <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-info"/>

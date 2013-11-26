@@ -22,10 +22,13 @@ namespace Rock.Attribute
         private const string EDITOR_HEIGHT = "editorHeight";
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DateRangeFieldAttribute"/> class.
+        /// Initializes a new instance of the <see cref="DateRangeFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
+        /// <param name="mode">The mode.</param>
+        /// <param name="theme">The theme.</param>
+        /// <param name="height">The height.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="defaultValue">The default value.</param>
         /// <param name="category">The category.</param>

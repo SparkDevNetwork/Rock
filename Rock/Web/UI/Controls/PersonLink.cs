@@ -100,7 +100,7 @@ namespace Rock.Web.UI.Controls
 
             if ( PhotoId.HasValue && PhotoId.Value != 0 )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "icon-circle" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-circle" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
             }

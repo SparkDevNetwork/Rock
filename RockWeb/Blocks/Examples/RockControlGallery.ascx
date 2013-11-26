@@ -4,6 +4,10 @@
         prettyPrint();
     }
 </script>
+<style>
+    .rlink { font-size: 16px; margin-left: -16px; outline : none;}
+    .anchor { outline: none; }
+</style>
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlActions" runat="server">
@@ -16,9 +20,9 @@
 
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-            <h1>General Information</h1>
+            <h1 runat="server">General Information</h1>
 
-            <h2>Input Sizing Rules</h2>
+            <h2 runat="server">Input Sizing Rules</h2>
 
             <div class="alert alert-warning">
                 <p><strong>Warning!</strong></p>
@@ -56,7 +60,7 @@
 
 
 
-            <h2>Rock:Grid</h2>
+            <h2 runat="server">Rock:Grid</h2>
             <div runat="server" class="r-example">
                 <Rock:Grid ID="gExample" runat="server" AllowSorting="true">
                     <Columns>
@@ -72,8 +76,9 @@
                 </Rock:Grid>
             </div>
 
+
             <a id="DropDowns"></a>
-            <h1>DropDowns</h1>
+            <h1 runat="server">DropDowns</h1>
 
             <div runat="server" class="r-example">
                 <Rock:DataDropDownList ID="ddlDataExample" runat="server" Label="Rock:DataDropDownList/RockDropDownList" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
@@ -87,8 +92,9 @@
                 <Rock:ButtonDropDownList ID="bddlExample" runat="server" Label="Rock:ButtonDropDownList" />
             </div>
 
+
             <a id="Input"></a>
-            <h1>Input</h1>
+            <h1 runat="server">Input</h1>
 
             <div runat="server" class="r-example">
                 <Rock:DataTextBox ID="dt" runat="server" Label="Rock:DataTextBox" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Description" />
@@ -122,8 +128,9 @@
                 <Rock:NumberRangeEditor ID="NumberRangeEditor" runat="server" Label="Rock:NumberRangeEditor" LowerValue="10" UpperValue="25" />
             </div>
 
+
             <a id="Pickers"></a>
-            <h1>Pickers</h1>
+            <h1 runat="server">Pickers</h1>
 
             <div runat="server" class="r-example">
                 <Rock:DatePicker ID="datePicker" runat="server" Label="Rock:DatePicker" />
@@ -195,7 +202,7 @@
             </div>
 
             <a id="Other"></a>
-            <h1>Other</h1>
+            <h1 runat="server">Other</h1>
 
             <div runat="server" class="r-example">
                 <Rock:ScheduleBuilder ID="scheduleBuilder" runat="server" Label="Rock:ScheduleBuilder" OnSaveSchedule="scheduleBuilder_SaveSchedule" />
@@ -214,7 +221,7 @@
                 <Rock:MergeFieldPicker ID="LabeledCheckBox4" runat="server" Label="Rock:MergeFieldPicker" />
             --%>
 
-            <h2>BinaryFilePicker, BinaryFileTypePicker</h2>
+            <h2 runat="server">BinaryFilePicker, BinaryFileTypePicker</h2>
 
             <div runat="server" class="r-example">
                 <Rock:BinaryFileTypePicker ID="binaryFileTypePicker" runat="server" Label="Rock:BinaryFileTypePicker" OnSelectedIndexChanged="binaryFileTypePicker_SelectedIndexChanged" />
@@ -225,7 +232,7 @@
             </div>
 
             <a id="Misc"></a>
-            <h1>Misc</h1>
+            <h1 runat="server">Misc</h1>
 
             <div runat="server" class="r-example">
                 <Rock:FieldTypeList ID="FieldTypeList" runat="server" Label="Rock:FieldTypeList" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
@@ -243,7 +250,7 @@
                 <Rock:NotificationBox ID="notificationBox" runat="server" Title="Rock:NotificationBox" Text="Box Text" />
             </div>
 
-            <h2>Rock:Badge</h2>
+            <h2 runat="server">Rock:Badge</h2>
             <p>
                 This is a mostly standard Bootstrap badge. We say "mostly" because we added the ability to
                 control the color of the badge via the BadgeType property (danger, warning, success, info) similar
@@ -258,7 +265,7 @@
 
             </div>
 
-            <h2>Rock:HighlightLabel</h2>
+            <h2 runat="server">Rock:HighlightLabel</h2>
             <p>
                 This creates a <a href="http://getbootstrap.com/components/#labels">Bootstrap Label</a>
                 but we've added a few additional custom <code>LabelType</code> options to control the color.
@@ -279,10 +286,10 @@
                 a little easier just by setting the <code>IconCssClass</code> property.</p>
 
             <div runat="server" class="r-example">
-                <Rock:HighlightLabel ID="HighlightLabel2" runat="server" LabelType="Danger" IconCssClass="icon-flag" Text="errors" />
+                <Rock:HighlightLabel ID="HighlightLabel2" runat="server" LabelType="Danger" IconCssClass="fa fa-flag" Text="errors" />
             </div>
 
-            <h2>Rock:Toggle</h2>
+            <h2 runat="server">Rock:Toggle</h2>
             <p>A toggle switch for those cases when a simple checkbox just won't do.</p>
             <div runat="server" class="r-example">
                 <Rock:Toggle ID="toggleShowPreview" runat="server"
@@ -298,20 +305,20 @@
                 <Rock:Toggle ID="toggle3" runat="server" CssClass="switch-mini" />
             </div>
 
-            <h2>Rock:BootstrapButton</h2>
+            <h2 runat="server">Rock:BootstrapButton</h2>
             <div runat="server" class="r-example">
                 <Rock:BootstrapButton ID="lbSave" runat="server" Text="Click Me" CssClass="btn btn-primary"
-                    DataLoadingText="&lt;i class='icon-spinner icon-spin icon-large'&gt;&lt;/i&gt; Saving" />
+                    DataLoadingText="&lt;i class='fa fa-spinner fa-spin fa-2x'&gt;&lt;/i&gt; Saving" />
             </div>
 
-            <h2>Rock:NoteEditor</h2>
+            <h2 runat="server">Rock:NoteEditor</h2>
             <div id="Div3" runat="server" class="r-example">
                 <section class="panel-note">
                     <Rock:NoteEditor ID="noteExample" runat="server" IsAlert="false" IsPrivate="false" Text="Here is some example note text." CanEdit="true" />
                 </section>
             </div>
 
-            <h2>Rock:AttributeEditor</h2>
+            <h2 runat="server">Rock:AttributeEditor</h2>
             <div runat="server" class="r-example">
                 <asp:LinkButton ID="btnShowAttributeEditor" runat="server" CssClass="btn btn-link" Text="Attribute Editor..." OnClick="btnShowAttributeEditor_Click" CausesValidation="false" />
                 <asp:Panel ID="aeExampleDiv" runat="server" Visible="false" CssClass="well">
@@ -319,19 +326,19 @@
                 </asp:Panel>
             </div>
 
-            <h2>Rock:HtmlEditor</h2>
+            <h2 runat="server">Rock:HtmlEditor</h2>
             <div runat="server" class="r-example">
                 <Rock:HtmlEditor ID="htmlEdit" runat="server" Label="HtmlEditor" />
             </div>
 
-            <h2>Rock:CodeEditor</h2>
+            <h2 runat="server">Rock:CodeEditor</h2>
             <div runat="server" class="r-example">
                 <Rock:CodeEditor ID="ceScript" runat="server" EditorTheme="Rock" Label="Script" EditorMode="Html" EditorHeight="300">
 <h1>Hello!!!</h1> 
 <p>This is a great way to edit HTML! Reasons:</p>
 
 <!-- Comment 
-     We should have to explain why this is better than just a 
+     We shouldn't have to explain why this is better than just a 
      textarea but we will just for you...
 -->
 
@@ -344,6 +351,21 @@
             </div>
             <p>Alternately, you can provide the contents of the code to edit in the <code>Text</code> property of the control.
             </p>
+
+
+            <h2 runat="server">CSS Rollovers</h2>
+            You often run across situiations where you would like buttons or links to apprear when you hover over a selection of code. Instead of using jQuery toogles you can use the
+            CSS classes below. These classes can be applied to any tags.  In order to support nested rollovers the actions must be direct decendents of their containers.  On touch enabled
+            devices the rollover-items will always be displayed.
+            <div runat="server" class="r-example">
+                <div class="alert alert-info rollover-container">
+                    <em>(roll over the box to see effect)</em>
+                    <div class="rollover-item pull-right">
+                        <a class="btn btn-default btn-xs" href="#">Delete</a>
+                        <a class="btn btn-default btn-xs" href="#">Export</a>
+                    </div>
+                </div>
+            </div>
 
 
         </asp:Panel>
