@@ -7,9 +7,9 @@
             <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" Title="Warning" Visible="false" />
 
                 <fieldset>
-                    <Rock:DataTextBox ID="tbFirstName" runat="server" Label="First Name" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="FirstName" placeholder="first name"/>
-                    <Rock:DataTextBox ID="tbLastName" runat="server" Label="Last Name" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="LastName" placeholder="last name"/>
-                    <Rock:DataTextBox ID="tbEmail" runat="server" Label="Email" TextMode="Email" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="Email" placeholder="email"/>
+                    <Rock:DataTextBox ID="tbFirstName" runat="server" Label="First Name" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="FirstName"/>
+                    <Rock:DataTextBox ID="tbLastName" runat="server" Label="Last Name" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="LastName" />
+                    <Rock:DataTextBox ID="tbEmail" runat="server" Label="Email" TextMode="Email" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="Email" />
                     
                     <Rock:ButtonDropDownList ID="ddlCategory" runat="server" Label="Category"></Rock:ButtonDropDownList>
 

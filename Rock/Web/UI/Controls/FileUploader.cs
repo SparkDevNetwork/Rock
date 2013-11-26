@@ -287,7 +287,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _aRemove );
             _aRemove.ID = "rmv";
             _aRemove.HRef = "#";
-            _aRemove.InnerHtml = "<i class='icon-remove'></i>";
+            _aRemove.InnerHtml = "<i class='fa fa-times'></i>";
             _aRemove.Attributes["class"] = "remove-file";
 
             _fileUpload = new FileUpload();

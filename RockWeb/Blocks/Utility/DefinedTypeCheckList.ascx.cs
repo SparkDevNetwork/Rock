@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -20,11 +21,17 @@ namespace RockWeb.Blocks.Utility
     /// </summary>    
     [DefinedTypeField( "Defined Type", "The Defined Type to display values for." )]
     [TextField( "Attribute Key", "The attribute key on the Defined Type that is used to store whether item has been completed (should be a boolean field type)." )]
-    [BooleanField( "Hide Checked Items", "Should checked items be hidden?", false )]
+    [BooleanField( "Hide Checked Items", "Hide items that are already checked.", false )]
+    [BooleanField("Hide Block When Empty", "Hides entire block if no checklist items are available.", false)]
+    [TextField("Checklist Title", "Title for your checklist.",false,"","Description",1)]
+    [MemoField("Checklist Description", "Description for your checklist. Leave this blank and nothing will be displayed.",false,"","Description", 2)]
+    [CodeEditorField("Pre-Text", "Html to wrap the control in to provide advanced UI's like panels.", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 400, false, "", "Advanced", 0, "PreText")]
+    [CodeEditorField("Post-Text", "Html to wrap the control in to provide advanced UI's like panels.", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 400, false, "", "Advanced", 1, "PostText")]
     public partial class DefinedTypeCheckList : RockBlock
     {
         private string attributeKey = string.Empty;
         private bool hideCheckedItems = false;
+        private bool hideBlockWhenEmpty = false;
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -40,9 +47,32 @@ namespace RockWeb.Blocks.Utility
                 hideCheckedItems = false;
             }
 
-            this.AttributesUpdated += DefinedTypeCheckList_AttributesUpdated;
+            if (!bool.TryParse(GetAttributeValue("HideBlockWhenEmpty"), out hideBlockWhenEmpty))
+            {
+                hideBlockWhenEmpty = false;
+            }
+
+            this.BlockUpdated += DefinedTypeCheckList_BlockUpdated; 
+
             rptrValues.ItemDataBound += rptrValues_ItemDataBound;
+
+            lTitle.Text = "<h4>" + GetAttributeValue("ChecklistTitle") + "</h4>";
+            lDescription.Text = GetAttributeValue("ChecklistDescription");
+
+            lPreText.Text = GetAttributeValue("PreText");
+            lPostText.Text = GetAttributeValue("PostText");
+
             BindList();
+
+            string script = @"
+$('.checklist-item .checklist-desc-toggle').on('click', function (e) {
+    e.preventDefault();
+    $(this).parent('header').siblings('.panel-body').slideToggle();
+    $(this).find('i').toggleClass('fa-chevron-up fa-chevron-down');
+});
+";
+
+            ScriptManager.RegisterStartupScript(this.Page, this.Page.GetType(), "DefinedValueChecklistScript", script, true);
         }
 
         /// <summary>
@@ -94,7 +124,7 @@ namespace RockWeb.Blocks.Utility
                 {
                     Helper.LoadAttributes( definedValue );
 
-                    cbValue.Text = string.Format( "{0}<br/><small>{1}</small>", definedValue.Name, definedValue.Description );
+                    cbValue.Text = string.Format( "<strong>{0}</strong>", definedValue.Name );
 
                     bool selected = false;
                     if ( !bool.TryParse( definedValue.GetAttributeValue( attributeKey ), out selected ) )
@@ -103,17 +133,16 @@ namespace RockWeb.Blocks.Utility
                     }
                     cbValue.Checked = selected;
                     pnlValue.CssClass = selected ? "text-muted" : "";
-                    pnlValue.Visible = !hideCheckedItems || !selected;
                 }
             }
         }
 
         /// <summary>
-        /// Handles the AttributesUpdated event of the DefinedTypeCheckList control.
+        /// Handles the BlockUpdated event of the DefinedTypeCheckList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void DefinedTypeCheckList_AttributesUpdated( object sender, EventArgs e )
+        protected void DefinedTypeCheckList_BlockUpdated( object sender, EventArgs e )
         {
             BindList();
         }
@@ -124,7 +153,11 @@ namespace RockWeb.Blocks.Utility
             if ( Guid.TryParse( GetAttributeValue( "DefinedType" ), out guid ) )
             {
                 var definedType = new DefinedTypeService().Get( guid );
-                rptrValues.DataSource = definedType.DefinedValues;
+                rptrValues.DataSource = definedType.DefinedValues.OrderBy( v => v.Order ).ToList();
+
+                //var definedValueIdList = new AttributeValueService().GetByAttributeIdAndEntityId(1, 1).Where(a => a.Value.AsBoolean() == false).Select(a => a.EntityId);
+                //rptrValues.DataSource = definedType.DefinedValues.Where(a => definedValueIdList.Any(b => b == a.Id)).OrderBy(v => v.Order).ToList();
+
                 rptrValues.DataBind();
             }
         }

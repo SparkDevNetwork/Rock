@@ -210,7 +210,7 @@ namespace RockWeb.Blocks.Prayer
         /// <summary>
         /// Adds the note HTML in the form:
         ///    <article class="alert alert-info">
-        ///    <i class="icon-comment"></i>
+        ///    <i class="fa fa-comment"></i>
 	    ///      <div class="detail"> <strong>Name/Caption</strong> <span class="muted">relative date</span><br>
         ///          <p>text</p>
         ///      </div>
@@ -225,7 +225,7 @@ namespace RockWeb.Blocks.Prayer
             article.AddCssClass( "alert alert-info" );
 
             // The comment icon or possibly a picture of the person who made the comment...
-            article.Controls.Add( new LiteralControl( "<i class='icon-comment'></i> " ) );
+            article.Controls.Add( new LiteralControl( "<i class='fa fa-comment'></i> " ) );
 
             var divDetail = new HtmlGenericControl( "div" );
             article.Controls.Add( divDetail );

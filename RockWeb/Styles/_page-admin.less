@@ -4,8 +4,6 @@
     1. Zone Configuration
     2. Module Configuration
     3. Admin Footer
-    4. Security Dialog
-
 */
 
 
@@ -86,18 +84,23 @@
     position: relative;
 }
 
-.config-bar > a 
-{
-    text-decoration: none;
-}
+.config-bar {
+    -moz-box-shadow: 3px 3px 3px 0px rgba(0,0,0, .4);
+    -webkit-box-shadow: 3px 3px 3px 0px rgba(0,0,0, .4);
+    box-shadow: 3px 3px 3px 0px rgba(0,0,0, .4);
 
-.config-bar  a i[class^="icon-"] {
-    float: left;
-    margin-left: 5px;
-    margin-top: 3px;
-    font-size: 18px;
-    color: @adminbar-text-color;
-    margin-right: 10px;
+    & > a {
+        text-decoration: none;
+    }
+
+    a i.fa {
+        float: left;
+        margin-left: 5px;
+        margin-top: 3px;
+        font-size: 18px;
+        color: @adminbar-text-color;
+        margin-right: 10px;
+    }
 }
 
 .block-configuration-bar {
@@ -165,28 +168,3 @@
     text-shadow: none;
 }
 
-// 4. Security Dialog
-// -------------------------
-.add-user fieldset, .add-role fieldset 
-{
-    border: 1px solid #c4c4c4; /* TODO */
-    border-radius: 4px;   
-    margin-top: 22px;
-}
-
-.add-user legend, .add-role legend
-{
-    font-size: 16px;
-    padding-left: 15px;
-    padding-right: 15px;
-}
-
-.add-user table 
-{
-    margin-top: 10px;   
-}
-
-.add-user table td 
-{
-    padding: 0 10px 6px;   
-}

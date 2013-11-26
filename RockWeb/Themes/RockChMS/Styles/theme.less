@@ -1,13 +1,6 @@
-// Imports
-// -------------------------
-
-@FontAwesomePath: '../../../../Assets/Fonts';
-
 
 // Load Master Styles
 // -------------------------
-@import "../../../Styles/FontAwesome/font-awesome.less";
-@import "../../../Styles/Bootstrap/bootstrap.less"; 
 @import "../../../Styles/_rock-core.less";
 @import "_variables.less";
 
@@ -102,6 +95,11 @@ h2, h3, h4
     font-weight: @font-weight-semibold;
 }
 
+// get rid of the icon bootstrap adds to the h4's on alerts
+.alert h4:before {
+    content: '';
+}
+
 // get rid of dotted box around anchors with focus
 a {
    outline: 0;
@@ -111,7 +109,7 @@ a:hover {
     text-decoration: none;
 }
 
-a:hover i[class^="icon-"]
+a:hover i.fs
 {
     text-decoration: none;
 }
@@ -180,6 +178,11 @@ header {
         border-top-color: @navbar-default-link-hover-color;
         border-bottom-color: @navbar-default-link-hover-color;
     }
+
+    .loginstatus {
+        margin-top: 8px;
+        margin-left: 10px;
+    }
 }
 
 // brand bar
@@ -206,8 +209,8 @@ header {
 	background:-o-linear-gradient(top, darken( @header-bg, 3%) 0%,@header-bg 100%); /* Opera11.10+ */
 	background:-ms-linear-gradient(top, darken( @header-bg, 3%) 0%,@header-bg 100%); /* IE10+ */
 	background:linear-gradient(top, darken( @header-bg, 3%) 0%,@header-bg 100%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='darken( @header-bg, 3%)', endColorstr='@header-bg');
-	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='darken( @header-bg, 3%)', endColorstr='@header-bg')";
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=darken( @header-bg, 3%), endColorstr=@header-bg);
+	-ms-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=darken( @header-bg, 3%), endColorstr=@header-bg);
 
     .navbar-nav {
         margin: 0;
@@ -245,7 +248,7 @@ header {
                     margin: 0 auto;
                 }
 
-                i[class^='icon-'] {
+                i.fa {
                     display: block;
                     margin: 6px auto 2px;
                     font-size: 18px;
@@ -303,6 +306,7 @@ header {
 	border-bottom: 1px solid darken(@pagetitle-bg, 10%);
 	background-image: none;
     filter: initial;
+    margin-bottom: 12px;
 
     h1 {
         margin: 12px 0 0 0;
@@ -366,7 +370,7 @@ body#splash
 
 body#splash #content-box {
     background-color: @body-bg;
-    .border-radius(@border-radius-base);
+    border-radius: @border-radius-base;
     overflow: hidden;
 }
 
@@ -378,5 +382,3 @@ body#splash #content-box {
 #splash .login .form-actions {
     margin: 0 -15px -15px -15px;
 }
-
-

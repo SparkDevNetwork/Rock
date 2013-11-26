@@ -21,8 +21,8 @@
                     <asp:Panel ID="pnlConfirm" runat="server" CssClass="alert alert-info" Visible="False">
                         <p><strong>Information</strong> A pledge already exists for you.  Would your like to create an additional pledge?</p>
                         <div>
-                            <asp:LinkButton ID="btnConfirmYes" runat="server" CssClass="btn btn-success" OnClick="btnConfirmYes_Click" CausesValidation="True"><i class="icon-ok"></i> Yes</asp:LinkButton>
-                            <asp:LinkButton ID="btnConfirmNo" runat="server" CssClass="btn btn-link" OnClick="btnConfirmNo_Click"><i class="icon-remove"></i> No</asp:LinkButton>
+                            <asp:LinkButton ID="btnConfirmYes" runat="server" CssClass="btn btn-success" OnClick="btnConfirmYes_Click" CausesValidation="True"><i class="fa fa-check"></i> Yes</asp:LinkButton>
+                            <asp:LinkButton ID="btnConfirmNo" runat="server" CssClass="btn btn-link" OnClick="btnConfirmNo_Click"><i class="fa fa-times"></i> No</asp:LinkButton>
                         </div>
                     </asp:Panel>
                 </fieldset>
@@ -51,7 +51,7 @@
             </div>
             <div class="form-actions">
                 <asp:LinkButton runat="server" CssClass="btn btn-link" ID="btnGivingProfile" OnClick="btnGivingProfile_Click">
-                    <i class="icon-user"></i> Go to your giving profile
+                    <i class="fa fa-user"></i> Go to your giving profile
                 </asp:LinkButton>
             </div>
         </asp:Panel>

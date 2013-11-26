@@ -26,7 +26,7 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             SetExtraRestParams();
-            this.IconCssClass = "icon-folder-open";
+            this.IconCssClass = "fa fa-folder-open";
             base.OnInit( e );
         }
 

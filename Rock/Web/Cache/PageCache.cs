@@ -39,6 +39,8 @@ namespace Rock.Web.Cache
 
         #endregion
 
+        private string _title;
+
         #region Properties
 
         /// <summary>
@@ -63,7 +65,24 @@ namespace Rock.Web.Cache
         /// <value>
         /// The title.
         /// </value>
-        public string Title { get; set; }
+        public string Title {
+            get
+            {
+                if (_title != null && _title != string.Empty)
+                {
+                    return _title;
+                }
+                else
+                {
+                    return Name;
+                }
+            }
+
+            set
+            {
+                _title = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is system.
@@ -424,7 +443,7 @@ namespace Rock.Web.Cache
                 }
                 if ( BreadCrumbDisplayName )
                 {
-                    bcName += Name;
+                    bcName += Title;
                 }
 
                 return bcName;
@@ -828,11 +847,11 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="levelsDeep">The levels deep.</param>
         /// <param name="person">The person.</param>
-        /// <param name="currentPage">The current page.</param>
+        /// <param name="currentPageHeirarchy">The current page heirarchy.</param>
         /// <param name="parameters">The parameters.</param>
         /// <param name="queryString">The query string.</param>
         /// <returns></returns>
-        public Dictionary<string, object> GetMenuProperties( int levelsDeep, Person person, PageCache currentPage = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
+        public Dictionary<string, object> GetMenuProperties( int levelsDeep, Person person, List<int> currentPageHeirarchy = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
         {
             if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
             {
@@ -844,12 +863,19 @@ namespace Rock.Web.Cache
                         this.IconFileId.Value );
                 }
 
-                bool isCurrentPage = currentPage != null && currentPage.Id == this.Id;
+                bool isCurrentPage = false;
+                bool isParentOfCurrent = false;
+                if ( currentPageHeirarchy != null && currentPageHeirarchy.Any() )
+                {
+                    isCurrentPage = currentPageHeirarchy.First() == this.Id;
+                    isParentOfCurrent = currentPageHeirarchy.Skip( 1 ).Any( p => p == this.Id );
+                }
 
                 var properties = new Dictionary<string, object>();
                 properties.Add( "id", this.Id );
                 properties.Add( "title", this.Title ?? this.Name );
                 properties.Add( "current", isCurrentPage.ToString() );
+                properties.Add( "isParentOfCurrent", isParentOfCurrent.ToString() );
                 properties.Add( "url", new PageReference( this.Id, 0, parameters, queryString ).BuildUrl() );
                 properties.Add( "display-description", this.MenuDisplayDescription.ToString().ToLower() );
                 properties.Add( "display-icon", this.MenuDisplayIcon.ToString().ToLower() );
@@ -866,9 +892,11 @@ namespace Rock.Web.Cache
                     {
                         if ( page != null )
                         {
-                            var childPageElement = page.GetMenuProperties( levelsDeep - 1, person, currentPage, parameters, queryString );
+                            var childPageElement = page.GetMenuProperties( levelsDeep - 1, person, currentPageHeirarchy, parameters, queryString );
                             if ( childPageElement != null )
+                            {
                                 childPages.Add( childPageElement );
+                            }
                         }
                     }
 

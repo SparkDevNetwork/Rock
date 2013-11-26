@@ -177,7 +177,7 @@
                             <asp:TemplateField>
                                 <ItemTemplate>
                                     <asp:LinkButton ID="lbAdd" runat="server" CssClass="btn btn-lg btn-primary" CommandName="Add" 
-                                        Text="Add" CommandArgument="<%# ((GridViewRow) Container).RowIndex %>" CausesValidation="false"><i class="icon-plus"></i>
+                                        Text="Add" CommandArgument="<%# ((GridViewRow) Container).RowIndex %>" CausesValidation="false"><i class="fa fa-plus"></i>
                                     </asp:LinkButton>
                                 </ItemTemplate>
                             </asp:TemplateField>
@@ -298,7 +298,7 @@
         });
 
         $('#<%= pnlFamily.ClientID %>').on('click', 'a', function () {
-            $('.nothing-eligible').html("<i class='icon-spinner icon-spin icon-large'></i>");
+            $('.nothing-eligible').html("<i class='fa fa-spinner fa-spin fa-2x'></i>");
         });
                 
         $find("mpeAddPerson").add_shown(function () {

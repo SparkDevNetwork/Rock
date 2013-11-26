@@ -20,7 +20,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Prayer
 {
-    [CategoryField( "Category", "A top level category. This controls which categories are shown when entering new prayer requests.", false,"Rock.Model.PrayerRequest", "","", false, Rock.Constants.None.IdValue, "Filtering", 1, "GroupCategoryId" )]
+    [CategoryField( "Category", "A top level category. This controls which categories are shown when entering new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "", "Filtering", 1, "GroupCategoryId" )]
     // Behavior
     [BooleanField( "Enable Auto Approve", "If enabled, prayer requests are automatically approved; otherwise they must be approved by an admin before they can be seen by the prayer team.", true, "Behavior", 0 )]
     [BooleanField( "Default Allow Comments Setting", "Controls the default setting for 'Allow Comments' on new prayer requests.", false, "Behavior", 1 )]
