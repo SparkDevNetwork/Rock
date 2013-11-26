@@ -1111,7 +1111,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Gets the grid field.
         /// </summary>
-        /// <param name="property">The property.</param>
+        /// <param name="propertyType">Type of the property.</param>
         /// <returns></returns>
         public static BoundField GetGridField( Type propertyType )
         {

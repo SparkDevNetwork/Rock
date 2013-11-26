@@ -53,6 +53,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="rockControl">The rock control.</param>
         /// <param name="writer">The writer.</param>
+        /// <param name="additionalCssClass">The additional CSS class.</param>
         public static void RenderControl( IRockControl rockControl, HtmlTextWriter writer, string additionalCssClass = "" )
         {
             bool renderLabel = ( !string.IsNullOrEmpty( rockControl.Label ) );

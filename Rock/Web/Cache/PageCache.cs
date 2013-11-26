@@ -847,7 +847,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="levelsDeep">The levels deep.</param>
         /// <param name="person">The person.</param>
-        /// <param name="currentPage">The current page.</param>
+        /// <param name="currentPageHeirarchy">The current page heirarchy.</param>
         /// <param name="parameters">The parameters.</param>
         /// <param name="queryString">The query string.</param>
         /// <returns></returns>
