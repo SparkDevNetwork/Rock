@@ -18,16 +18,19 @@ namespace CheckVariableNaming
         /// <param name="args">The args.</param>
         static void Main( string[] args )
         {
+            bool outputDictionary = false;
+            bool reportOnly = false;
+
             Dictionary<string, string> validPrefixes = initValidControlPrefixDict();
-            Regex regex = new Regex( "(?<=<asp:).*?(?=>)" );
+            Regex regex = new Regex( "(?<=<(asp|Rock):).*?(?=>)" );
             Regex ucRegex = new Regex( "(\\S+) .*?id=\"(.*?)\"", RegexOptions.IgnoreCase );
 
-            //C:\Projects\Rock-ChMS\Dev Tools\Apps\EnsureCopyrightHeader\Program.cs
+            //Something like C:\Projects\Rock-ChMS\Dev Tools\Applications\CheckVariableNaming\
             string currentDirectory = Directory.GetCurrentDirectory();
             string rockDirectory = currentDirectory.Replace( "Dev Tools\\Applications\\CheckVariableNaming\\bin\\Debug", string.Empty );
 
             int violations = 0;
-            violations += AnalyzeVaribleNames( regex, ucRegex, validPrefixes, rockDirectory + "RockWeb\\" );
+            violations += AnalyzeVaribleNames( regex, ucRegex, validPrefixes, rockDirectory + "RockWeb\\", reportOnly, outputDictionary );
 
             Console.WriteLine( "Number of Violations: {0}\n\nPress any key to continue.", violations );
             Console.ReadLine();
@@ -37,34 +40,97 @@ namespace CheckVariableNaming
         {
             Dictionary<string, string> d = new Dictionary<string, string>()
 	        {
+                { "AccountPicker", "acctp" },
+                { "AttributeEditor", "edt" },
+                { "Badge", "badge" },
+                { "BinaryFilePicker", "bfp" },
+                { "BinaryFileTypePicker", "bftp" },
+                { "BirthdayPicker", "bdayp" },
+                { "BootstrapButton", "bbtn" },
                 { "Button", "btn" },
+                { "ButtonDropDownList", "bddl" },
+                { "CampusesPicker", "mcamp" },
+                { "CampusPicker", "camp" },
+                { "CategoryPicker", "catp" },
                 { "CheckBox", "cb" },
                 { "CheckBoxList", "cbl" },
-                //{ "CompareValidator", "cv" },
-                //{ "CustomValidator", "val" },
-                { "DataPager", "dp" },
+                { "CodeEditor", "ce" },
+                { "CompareValidator", "coval" },
+                { "ComponentPicker", "comp" },
+                { "ConfirmPageUnload", "conpu" },
+                { "CustomValidator", "cval" },
+                { "DataDropDownList", "ddl" },
+                { "DataPager", "dpgr" },
+                { "DataTextBox", "dtb" },
+                { "DatePicker", "dp" },
+                { "DateRangePicker", "drp" },
+                { "DateTimePicker", "dtp" },
                 { "DropDownList", "ddl" },
-                { "FileUpload", "fu" },
+                { "EntityTypePicker", "etp" },
+                { "FieldTypeList", "ftl" },
+                { "FileUpload", "fup" },
+                { "FileUploader", "fupr" },
+                { "GeoPicker", "geop" },
+                { "Grid", "g" },
+                { "GridFilter", "gf" },
+                { "GroupPicker", "gp" },
+                { "GroupRolePicker", "grp" },
+                { "GroupTypePicker", "gtp" },
+                { "HelpBlock", "hb" },
                 { "HiddenField", "hf" },
+                { "HighlightLabel", "hlbl" },
+                { "HtmlEditor", "html" },
                 { "HyperLink", "hl" },
                 { "Image", "img" },
-                { "ImageButton", "ib" },
+                { "ImageButton", "imb" },
+                { "ImageUploader", "imgup" },
                 { "Label", "lbl" },
                 { "LinkButton", "lb" },
                 { "ListView", "lv" },
                 { "Literal", "l" },
+                { "LocationItemPicker", "locip" },
+                { "LocationPicker", "locp" },
+                { "MergeFieldPicker", "mfp" },
+                { "ModalAlert", "ma" },
+                { "ModalDialog", "md" },
                 { "ModalPopupExtender", "mpe" },
+                { "MonthDayPicker", "mdp" },
+                { "MonthYearPicker", "myp" },
+                { "NewFamilyMembers", "nfm" },
+                { "NoteEditor", "note" },
+                { "NotificationBox", "nb" },
+                { "NumberBox", "numb" },
+                { "NumberRangeEditor", "nre" },
+                { "PagePicker", "pagep" },
                 { "Panel", "pnl" },
+                { "PanelWidget", "pnlw" },
+                { "PersonPicker", "pp" },
+                { "PersonPicker2", "pp2" },
+                { "PersonProfileBadgeList", "badgel" },
                 { "PlaceHolder", "ph" },
-                { "PostBackTrigger", "lb" },
+                { "PostBackTrigger", "trgr" },
                 { "RadioButtonList", "rbl" },
                 { "Repeater", "rpt" },
+                { "RockBulletedList", "blst" },
+                { "RockCheckBox", "cb" },
+                { "RockCheckBoxList", "cbl" },
+                { "RockControlWrapper", "wrap" },
+                { "RockDropDownList", "ddl" },
+                { "RockLiteral", "l" },
+                { "RockRadioButtonList", "rbl" },
+                { "RockTextBox", "tb" },
+                { "ScheduleBuilder", "schedb" },
+                { "SecurityButton", "sbtn" },
+                { "StateDropDownList", "statep" },
                 { "Table", "tbl" },
-                { "TextBox", "txt" },
-                { "UpdatePanel", "up" },
-                { "ValidationSummary", "val" }
-                //{ "ValidationSummary", "vs" },
-                //{ "Xml", "xml" }
+                { "TagList", "tagl" },
+                { "TermDescription", "termd" },
+                { "TextBox", "tb" },
+                { "TimePicker", "timep" },
+                { "Toggle", "tgl" },
+                { "UpdatePanel", "upnl" },
+                { "ValidationSummary", "val" },
+                { "Xml", "xml" }
             };
 
             return d;
@@ -74,7 +140,7 @@ namespace CheckVariableNaming
         /// Analyze variable names by type
         /// </summary>
         /// <param name="searchDirectory">The search directory.</param>
-        private static int AnalyzeVaribleNames( Regex regex, Regex ucRegex, Dictionary<string, string> validPrefixes, string searchDirectory )
+        private static int AnalyzeVaribleNames( Regex regex, Regex ucRegex, Dictionary<string, string> validPrefixes, string searchDirectory, bool reportOnly, bool outputDictionary )
         {
             int numberFiles = 0;
             int numberControls = 0;
@@ -102,7 +168,7 @@ namespace CheckVariableNaming
                         ControlInstance ci = new ControlInstance() { Type = controlType, FileName = fileName, VariableName = variable, Prefix = prefix };
 
                         // Check if this controlType's prefix is valid
-                        if ( validPrefixes.ContainsKey( controlType ) )
+                        if ( ! reportOnly && validPrefixes.ContainsKey( controlType ) )
                         {
                             if ( validPrefixes[controlType] != prefix )
                             {
@@ -123,19 +189,30 @@ namespace CheckVariableNaming
                 }
             }
 
-            //BuildReport( lookup );
+            if ( reportOnly )
+            {
+                BuildReport( lookup, outputDictionary );
+            }
             Console.WriteLine( "\nNumber of Files Checked: {0}", numberFiles );
             Console.WriteLine( "Number of Controls Checked: {0}", numberControls );
             return violation;
         }
 
-        private static void BuildReport( SortedDictionary<string, List<ControlInstance>> lookup )
+        private static void BuildReport( SortedDictionary<string, List<ControlInstance>> lookup, bool outputDictionary )
         {
             Console.WriteLine( "Report" );
 
+            if ( !outputDictionary )
+            {
+                Console.WriteLine( "    {0,-25} | {1,-12} | {2, -25} | {3, -10}", "Control Type", "Prefix", "Example", "# Times In Use");
+                Console.WriteLine( "    {0,-25} | {1,-12} | {2, -25} | {3, -10}", new String( '=', 25 ), new String( '=', 12 ), new String( '=', 25 ), new String( '=', 10 ) );
+            }
+
             foreach ( string controlType in lookup.Keys )
             {
-                //Console.WriteLine( string.Format( " - {0}", controlType ) );
+
+                    //Console.WriteLine( string.Format( " - {0}", controlType ) );
+
                 Dictionary<string, int> prefixTable = new Dictionary<string, int>();
                 string example = "";
                 foreach ( ControlInstance ci in lookup[controlType] )
@@ -158,9 +235,17 @@ namespace CheckVariableNaming
 
                 foreach ( string prefix in prefixTable.Keys )
                 {
-                    //Console.WriteLine( string.Format( "    {0,-20} | {1,-10} | {2, -20} | {3, -10}", controlType, prefix, example, prefixTable[prefix] ) );
-                    //Console.WriteLine( string.Format( "   -- {0,-10} {1,15}", prefix, prefixTable[prefix] ) );
-                    Console.WriteLine( string.Format( "{{ \"{0}\", \"{1}\" }},", controlType, prefix, example, prefixTable[prefix] ) );
+                    //Console.WriteLine( string.Format( "    {0,-25} | {1,-12} | {2, -25} | {3, -10}", controlType, prefix, example, prefixTable[prefix] ) );
+                    //Console.WriteLine( string.Format( "   -- {0,-10} {1,12}", prefix, prefixTable[prefix] ) );
+
+                    if ( outputDictionary )
+                    {
+                        Console.WriteLine( string.Format( "{{ \"{0}\", \"{1}\" }},", controlType, prefix, example, prefixTable[prefix] ) );
+                    }
+                    else
+                    {
+                        Console.WriteLine( string.Format( "    {0,-25} | {1,-12} | {2,-25} | {3,-10}", controlType, prefix, example, prefixTable[prefix] ) );
+                    }
                 }
             }
         }
