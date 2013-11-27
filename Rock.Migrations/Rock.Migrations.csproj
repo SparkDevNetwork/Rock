@@ -51,6 +51,10 @@
     <Compile Include="Migrations\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201311272223099_GroupLocationPersonId.cs" />
+    <Compile Include="Migrations\201311272223099_GroupLocationPersonId.Designer.cs">
+      <DependentUpon>201311272223099_GroupLocationPersonId.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -69,6 +73,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201311272223099_GroupLocationPersonId.resx">
+      <DependentUpon>201311272223099_GroupLocationPersonId.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
