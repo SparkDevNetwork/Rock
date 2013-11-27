@@ -435,7 +435,16 @@ namespace RockWeb.Blocks.Groups
 
                     role.CopyPropertiesFrom( roleState );
                 }
-                
+
+                GroupLocationPickerMode locationSelectionMode = GroupLocationPickerMode.None;
+                foreach(ListItem li in cblLocationSelectionModes.Items)
+                {
+                    if ( li.Selected )
+                    {
+                        locationSelectionMode = locationSelectionMode | (GroupLocationPickerMode)li.Value.AsInteger().Value;
+                    }
+                }
+
                 groupType.Name = tbName.Text;
                 groupType.Description = tbDescription.Text;
                 groupType.GroupTerm = tbGroupTerm.Text;
@@ -448,7 +457,7 @@ namespace RockWeb.Blocks.Groups
                 groupType.TakesAttendance = cbTakesAttendance.Checked;
                 groupType.AttendanceRule = ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
                 groupType.AttendancePrintTo = ddlAttendancePrintTo.SelectedValueAsEnum<PrintTo>();
-                groupType.LocationSelectionMode = ddlLocationSelectionMode.SelectedValueAsEnum<LocationPickerMode>();
+                groupType.LocationSelectionMode = locationSelectionMode;
                 groupType.GroupTypePurposeValueId = ddlGroupTypePurpose.SelectedValueAsInt();
                 groupType.AllowMultipleLocations = cbAllowMultipleLocations.Checked;
                 groupType.InheritedGroupTypeId = gtpInheritedGroupType.SelectedGroupTypeId;
@@ -592,6 +601,8 @@ namespace RockWeb.Blocks.Groups
                 var memberRole = new GroupTypeRole { Guid = defaultRoleGuid, Name = "Member" };
                 groupType.Roles.Add( memberRole );
                 groupType.DefaultGroupRole = memberRole;
+
+                groupType.LocationSelectionMode = GroupLocationPickerMode.None;
             }
 
             if ( groupType == null )
@@ -685,8 +696,13 @@ namespace RockWeb.Blocks.Groups
                 cbAllowMultipleLocations.Enabled = !groupType.IsSystem;
                 cbAllowMultipleLocations.Checked = groupType.AllowMultipleLocations;
 
-                ddlLocationSelectionMode.Enabled = !groupType.IsSystem;
-                ddlLocationSelectionMode.SetValue( (int)groupType.LocationSelectionMode );
+                cblLocationSelectionModes.Enabled = !groupType.IsSystem;
+                cblLocationSelectionModes.Enabled = true;
+                foreach(ListItem li in cblLocationSelectionModes.Items)
+                {
+                    GroupLocationPickerMode mode = (GroupLocationPickerMode)li.Value.AsInteger().Value;
+                    li.Selected = (groupType.LocationSelectionMode & mode) == mode;
+                }
 
                 LocationTypesDictionary = new Dictionary<int, string>();
                 groupType.LocationTypes.ToList().ForEach( a => LocationTypesDictionary.Add( a.LocationTypeValueId, a.LocationTypeValue.Name ) );
@@ -791,7 +807,14 @@ namespace RockWeb.Blocks.Groups
         {
             ddlAttendanceRule.BindToEnum( typeof( Rock.Model.AttendanceRule ) );
             ddlAttendancePrintTo.BindToEnum( typeof( Rock.Model.PrintTo ) );
-            ddlLocationSelectionMode.BindToEnum( typeof( Rock.Model.LocationPickerMode ) );
+
+            cblLocationSelectionModes.Items.Clear();
+            cblLocationSelectionModes.Items.Add( new ListItem( "Named", "2" ) );
+            cblLocationSelectionModes.Items.Add( new ListItem( "Address", "1" ) );
+            cblLocationSelectionModes.Items.Add( new ListItem( "Point", "4" ) );
+            cblLocationSelectionModes.Items.Add( new ListItem( "Polygon", "8" ) );
+            cblLocationSelectionModes.Items.Add( new ListItem( "Group Member Address", "16" ) );
+
             gtpInheritedGroupType.GroupTypes = new GroupTypeService().Queryable()
                 .Where( g => g.Id != groupTypeId )
                 .ToList();
