@@ -194,7 +194,7 @@
             </div>
 
             <div runat="server" class="r-example">
-                <Rock:LocationPicker ID="locationPicker" runat="server" Label="Rock:LocationPicker (Address Mode, Mode Selection disabled)" PickerMode="Address" AllowModeSelection="false" />
+                <Rock:LocationPicker ID="locationPicker" runat="server" Label="Rock:LocationPicker (Address Mode, Mode Selection disabled)" CurrentPickerMode="Address" AllowedPickerModes="Address" />
             </div>
 
             <div id="Div1" runat="server" class="r-example">
