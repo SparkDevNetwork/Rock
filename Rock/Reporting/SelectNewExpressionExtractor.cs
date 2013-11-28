@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Linq.Dynamic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -37,73 +36,62 @@ namespace Rock.Reporting
         private class SelectExpressionInjectorVisitor : ExpressionVisitor
         {
             private MethodCallExpression _methodCallExpression;
-
-            public MemberInitExpression Result { get; private set; }
+            private int _position;
             
-            public SelectExpressionInjectorVisitor(MethodCallExpression methodCallExpression)
+            public SelectExpressionInjectorVisitor(MethodCallExpression methodCallExpression, int position)
             {
                 _methodCallExpression = methodCallExpression;
-            }
-
-            protected override Expression VisitLambda<T>( Expression<T> node )
-            {
-                return base.VisitLambda<T>( node );
+                _position = position;
             }
 
             protected override Expression VisitNew( NewExpression nex )
             {
                 var args = nex.Arguments.ToList();
-                args.Add( _methodCallExpression );
+                //MethodCallExpression orig = args[_position] as MethodCallExpression;
+                //MethodCallExpression newMethodCallExpression = _methodCallExpression;
+                //orig.Update( newMethodCallExpression, _methodCallExpression.Arguments );
+                args[_position] = _methodCallExpression;
+                var result = nex.Update( args );
 
-                List<DynamicProperty> props = new List<DynamicProperty>();
-                MemberBinding[] bindings = new MemberBinding[args.Count];
+                var members = nex.Members.ToList();
+                members[_position] = _methodCallExpression.Type;
 
-                foreach (Expression arg in args)
-                {
-                    props.Add( new DynamicProperty( arg.ToString(), arg.Type ) );  
-                }
+                result = Expression.New( nex.Constructor, args, members );
 
-                var type = System.Linq.Dynamic.DynamicExpression.CreateClass( props );
+               
+                 return result;
+            }
 
-                for ( int i = 0; i < bindings.Length; i++ )
-                    bindings[i] = Expression.Bind( type.GetProperty( props[i].Name ), args[i] );
-                
-                Result = Expression.MemberInit( Expression.New( type ), bindings );
+            protected override Expression VisitMember( MemberExpression node )
+            {
+                return base.VisitMember( node );
+            }
 
-                return ( Result as MemberInitExpression ).NewExpression;
+            protected override MemberAssignment VisitMemberAssignment( MemberAssignment node )
+            {
+                return base.VisitMemberAssignment( node );
+            }
 
-                //return base.VisitNew( nex );
-
-                //nex = Expression.New()
-
-                //return base.VisitNew(nex);
-
+            protected override MemberBinding VisitMemberBinding( MemberBinding node )
+            {
+                return base.VisitMemberBinding( node );
             }
 
             protected override Expression VisitMemberInit( MemberInitExpression node )
             {
-                return Result;
-                //return base.VisitMemberInit( node );
+                return base.VisitMemberInit( node );
             }
 
-            protected override Expression VisitBlock( BlockExpression node )
+            protected override MemberListBinding VisitMemberListBinding( MemberListBinding node )
             {
-                return base.VisitBlock( node );
+                return base.VisitMemberListBinding( node );
             }
 
-            protected override Expression VisitMethodCall( MethodCallExpression node )
+            protected override MemberMemberBinding VisitMemberMemberBinding( MemberMemberBinding node )
             {
-                return base.VisitMethodCall( node );
-            }
-
-            protected override Expression VisitParameter( ParameterExpression node )
-            {
-                return base.VisitParameter( node );
+                return base.VisitMemberMemberBinding( node );
             }
         } 
-       
-        
-
         
         public static MethodCallExpression ExtractMethodCallExpression(IQueryable qry)
         {
@@ -112,16 +100,10 @@ namespace Rock.Reporting
             return selectExpressionVisitor.SelectArguments.OfType<MethodCallExpression>().FirstOrDefault();
         }
 
-        public static void InjectMethodCallExpression(IQueryable qry, MethodCallExpression methodCallExpression)
+        public static void InjectMethodCallExpression(IQueryable qry, MethodCallExpression methodCallExpression, int position)
         {
-            SelectExpressionInjectorVisitor selectExpressionVisitor = new SelectExpressionInjectorVisitor( methodCallExpression );
+            SelectExpressionInjectorVisitor selectExpressionVisitor = new SelectExpressionInjectorVisitor( methodCallExpression, position );
             selectExpressionVisitor.Visit( qry.Expression );
-
-            //var expression = selectExpressionVisitor.Result;
-
-            //qry = qry.OfType<object>().Select( expression as MethodCallExpression );
-
-            //TODO
         }
     }
 }
