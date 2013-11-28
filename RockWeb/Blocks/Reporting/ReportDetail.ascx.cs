@@ -6,8 +6,10 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -19,7 +21,6 @@ using Rock.Reporting;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using System.Linq.Dynamic;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -618,6 +619,20 @@ namespace RockWeb.Blocks.Reporting
             this.HideSecondaryBlocks( editable );
         }
 
+        public class EntityExtraData
+        {
+            public IEntity Entity { get; set; }
+            public object ExtraData { get; set; }
+            public object PrevExtraData { get; set; }
+        }
+
+        public class DataSelectResult
+        {
+            public int? EntityId { get; set; }
+            public string DataSelectComponentName { get; set; }
+            public string Result { get; set; }
+        }
+
         /// <summary>
         /// Shows the preview.
         /// </summary>
@@ -635,133 +650,244 @@ namespace RockWeb.Blocks.Reporting
                     return;
                 }
 
-                var financialTransactionsQry = new FinancialTransactionService().Queryable();
-
-                var qry = new PersonService().Queryable();//.Select( "New(Id as PersonId, FirstName as MyFirstName)" );
-
-                
-
-                var qry2 = qry.Select( a =>
-                    new
-                    {
-                        a.FirstName,
-                        a.LastName
-                    } );
-
-                var qry3 = qry.Select( a => 
-                    new 
-                    { 
-                        a.FirstName, 
-                        a.LastName, 
-                        LastTran = financialTransactionsQry.Where( f => f.AuthorizedPersonId == a.Id ).OrderByDescending( f => f.TransactionDateTime ).FirstOrDefault() 
-                    } );
-
-                var mce = SelectNewExpressionExtractor.ExtractMethodCallExpression( qry3 );
-
-                SelectNewExpressionExtractor.InjectMethodCallExpression( qry2, mce );
-                
-
-
-                /*
-
-                Type entityType = EntityTypeCache.Read( report.EntityTypeId.Value ).GetEntityType();
-
-                List<EntityField> entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType );
-
-                var dataSelectComponentDictionary = new Dictionary<string, DataSelectComponent>();
-                DataTable dataTable = new DataTable( "reportTable" );
-                dataTable.Columns.Add( "Id", typeof( int ) );
-
-                gReport.DataKeyNames = new string[] { "Id" };
-                
-                gReport.Columns.Clear();
-                foreach ( var reportField in report.ReportFields.OrderBy( a => a.Order ) )
-                {
-                    if ( reportField.ReportFieldType == ReportFieldType.Property )
-                    {
-                        var entityField = entityFields.FirstOrDefault( a => a.Name == reportField.Selection );
-                        if ( entityField != null )
-                        {
-                            BoundField boundField;
-                            if ( entityField.DefinedTypeId.HasValue )
-                            {
-                                boundField = new DefinedValueField();
-                                dataTable.Columns.Add( entityField.Name, typeof( int ) );
-                            }
-                            else
-                            {
-                                boundField = Grid.GetGridField( entityField.PropertyType );
-                                dataTable.Columns.Add( entityField.Name );
-                            }
-
-                            boundField.DataField = entityField.Name;
-                            boundField.HeaderText = entityField.Title;
-                            boundField.SortExpression = entityField.Name;
-
-                            gReport.Columns.Add( boundField );
-                        }
-                    }
-                    else if ( reportField.ReportFieldType == ReportFieldType.Attribute )
-                    {
-                        // TODO get more info about the Attribute (FieldType, Name, etc);
-                        AttributeField boundField = new AttributeField();
-                        boundField.DataField = reportField.Selection;
-                        boundField.HeaderText = reportField.Selection.SplitCase();
-                        boundField.SortExpression = null;
-                        dataTable.Columns.Add( boundField.DataField );
-                        gReport.Columns.Add( boundField );
-                    }
-                    else if ( reportField.ReportFieldType == ReportFieldType.DataSelectComponent )
-                    {
-                        DataSelectComponent dataSelectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
-                  
-                  //TODO
-
-                    }
-                }
-
+                // THIS WORKS: Adds AdditionalColumns in a "DataTree"
                 using ( new UnitOfWorkScope() )
                 {
-                    IQueryable<IEntity> dataviewQry = report.DataView.GetQuery( out errors );
-                    var list = dataviewQry.ToList();
-                    var listItemType = EntityTypeCache.Read( report.EntityTypeId ?? 0 ).GetEntityType();
-                    var itemProperties = listItemType.GetProperties();
-                    foreach ( var item in list )
-                    {
-                        List<object> dataValues = new List<object>();
-                        dataValues.Add( item.Id );
-                        int reportFieldCount = 0;
-                        foreach ( var c in gReport.Columns.OfType<BoundField>() )
+                    // mainPersonQry
+                    var personQry = new PersonService().Queryable().Take( 10 );
+
+                    // Sample DataSelect
+                    var lastTransactionQry = new FinancialTransactionService().Queryable()
+                        .OrderByDescending( o => o.TransactionDateTime )
+                        .Select( a => new DataSelectResult
                         {
-                            reportFieldCount++;
-                            var p = itemProperties.FirstOrDefault( a => a.Name == c.DataField );
-                            if ( p != null )
-                            {
-                                var val = p.GetValue( item );
-                                dataValues.Add( val );
-                            }
-                            else
-                            {
-                                //TODO: Get it from DataSelectComponent
-                            }
-                        }
+                            EntityId = a.AuthorizedPersonId,
+                            DataSelectComponentName = "LastTransactionDateTime",
+                            Result = SqlFunctions.DateName( "dayofyear", a.TransactionDateTime )
+                        } );
 
-                        dataTable.Rows.Add( dataValues.ToArray() );
-                    }
+                    // Sample DataSelect
+                    var firstTransactionQry = new FinancialTransactionService().Queryable()
+                        .OrderBy( o => o.TransactionDateTime )
+                        .Select( a => new DataSelectResult
+                        {
+                            EntityId = a.AuthorizedPersonId,
+                            DataSelectComponentName = "FirstTransactionDateTime",
+                            Result = SqlFunctions.DateName( "dayofyear", a.TransactionDateTime )
+                        } );
+
+                    // Sample DataSelect
+                    Guid groupTypeFamilyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+                    var groupMemberQry = new GroupMemberService().Queryable()
+                        .Where( a => a.Group.GroupType.Guid == groupTypeFamilyGuid )
+                        .Select( a => new DataSelectResult
+                        {
+                            EntityId = a.PersonId,
+                            DataSelectComponentName = "FamilyGroupName",
+                            Result = a.Group.Name
+                        } );
 
 
-                    gReport.DataSource = dataTable;
+                    var reportQry = personQry.Select( a => new EntityExtraData
+                        {
+                            Entity = a,
+                            ExtraData = "PersonEntity"
+                        } );
+
+                    var reportQry1 = ApplyDataSelect( reportQry, groupMemberQry );
+                    var reportQry2 = ApplyDataSelect( reportQry1, lastTransactionQry );
+                    var reportQry3 = ApplyDataSelect( reportQry2, firstTransactionQry );
+
+                    var sql = reportQry3.ToString();
+
+                    var list = reportQry3.ToList();
                 }
-
-                if ( errors.Any() )
-                {
-                    nbEditModeMessage.Text = "INFO: There was a problem with one or more of the report's data view filters...<br/><br/> " + errors.AsDelimited( "<br/>" );
-                }
-
-                gReport.DataBind();
-                 */
             }
         }
+
+        private static IEnumerable<EntityExtraData> ApplyDataSelect( IEnumerable<EntityExtraData> qry, IQueryable<DataSelectResult> dataSelectQuery )
+        {
+            return qry.Select( a => new EntityExtraData
+            {
+                Entity = a.Entity,
+                ExtraData = new EntityExtraData
+                {
+                    Entity = a.Entity,
+                    ExtraData = dataSelectQuery
+                        .Where( g => g.EntityId == a.Entity.Id )
+                        .Select( g => new DataSelectResult 
+                        { 
+                            EntityId = g.EntityId,
+                            DataSelectComponentName = g.DataSelectComponentName, 
+                            Result = g.Result 
+                        } ).FirstOrDefault(),
+                    PrevExtraData = a.ExtraData
+                }
+            } );
+        }
+
+
+
+
+            /*  THIS WORKS: Adds column data in an IEnumerable<string> populated with Union
+            var newList = new List<string>() as IEnumerable<string>;
+
+            var qry = new PersonService().Queryable().Take( 10 ).Select( a => new 
+                {
+                    Entity = a,
+                    ColumnDataList = newList
+                } );
+
+            qry = qry.Select( a => new 
+                {
+                    Entity = a.Entity,
+                    ColumnDataList = a.ColumnDataList
+                } );
+
+            qry = qry.Select( a => new 
+            {
+                Entity = a.Entity,
+                ColumnDataList = a.ColumnDataList.Union( groupMemberQry.Where( n => n.PersonId == a.Entity.Id).Select(n => n.Group.Name) )
+            } );
+             */
+
+            //var p = qry.Expression;
+
+            /* qry = qry.Select( a => new EntityPlus
+             {
+                 Entity = a.Entity,
+                 CommaDelimitedData = a.CommaDelimitedData
+                 + SqlFunctions.QuoteName(
+                  financialTransactionsQry.Where( f => f.AuthorizedPersonId == a.Entity.Id ).OrderByDescending( f => f.TransactionDateTime ).Select( s => SqlFunctions.StringConvert( (decimal)SqlFunctions.DatePart( "dayofyear", s.TransactionDateTime ) ) ).FirstOrDefault()
+                  ),
+                 ColumnData1 = ( columnIndex == 1 ) ? "278" : a.ColumnData1,
+                 ColumnData2 = ( columnIndex == 2 ) ? "278" : a.ColumnData2,
+                 ColumnData3 = ( columnIndex == 3 ) ? "278" : a.ColumnData3,
+                 ColumnData4 = ( columnIndex == 4 ) ? "278" : a.ColumnData4
+             } );
+             */
+
+            /*
+
+            var qryDataSelect1 = qry.Select( a => 
+                new 
+                { 
+                    Person = a,
+                    DataSelectField1 = financialTransactionsQry.Where( f => f.AuthorizedPersonId == a.Id ).OrderByDescending( f => f.TransactionDateTime ).Select( s => s.TransactionDateTime ).FirstOrDefault() 
+                } );
+
+            var qryDataSelect2 = qry.Select( a => 
+                new 
+                { 
+                    DataSelectField2 = groupMemberQry.Where( f => f.PersonId == a.Id ).Select( s => s.Group.Name).FirstOrDefault()
+                } );
+
+            var mce1 = SelectNewExpressionExtractor.ExtractMethodCallExpression( qryDataSelect1 );
+            var mce2 = SelectNewExpressionExtractor.ExtractMethodCallExpression( qryDataSelect2 );
+            */
+
+
+            /*
+
+            Type entityType = EntityTypeCache.Read( report.EntityTypeId.Value ).GetEntityType();
+
+            List<EntityField> entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType );
+
+            var dataSelectComponentDictionary = new Dictionary<string, DataSelectComponent>();
+            DataTable dataTable = new DataTable( "reportTable" );
+            dataTable.Columns.Add( "Id", typeof( int ) );
+
+            gReport.DataKeyNames = new string[] { "Id" };
+                
+            gReport.Columns.Clear();
+            foreach ( var reportField in report.ReportFields.OrderBy( a => a.Order ) )
+            {
+                if ( reportField.ReportFieldType == ReportFieldType.Property )
+                {
+                    var entityField = entityFields.FirstOrDefault( a => a.Name == reportField.Selection );
+                    if ( entityField != null )
+                    {
+                        BoundField boundField;
+                        if ( entityField.DefinedTypeId.HasValue )
+                        {
+                            boundField = new DefinedValueField();
+                            dataTable.Columns.Add( entityField.Name, typeof( int ) );
+                        }
+                        else
+                        {
+                            boundField = Grid.GetGridField( entityField.PropertyType );
+                            dataTable.Columns.Add( entityField.Name );
+                        }
+
+                        boundField.DataField = entityField.Name;
+                        boundField.HeaderText = entityField.Title;
+                        boundField.SortExpression = entityField.Name;
+
+                        gReport.Columns.Add( boundField );
+                    }
+                }
+                else if ( reportField.ReportFieldType == ReportFieldType.Attribute )
+                {
+                    // TODO get more info about the Attribute (FieldType, Name, etc);
+                    AttributeField boundField = new AttributeField();
+                    boundField.DataField = reportField.Selection;
+                    boundField.HeaderText = reportField.Selection.SplitCase();
+                    boundField.SortExpression = null;
+                    dataTable.Columns.Add( boundField.DataField );
+                    gReport.Columns.Add( boundField );
+                }
+                else if ( reportField.ReportFieldType == ReportFieldType.DataSelectComponent )
+                {
+                    DataSelectComponent dataSelectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
+                  
+              //TODO
+
+                }
+            }
+
+            using ( new UnitOfWorkScope() )
+            {
+                IQueryable<IEntity> dataviewQry = report.DataView.GetQuery( out errors );
+                var list = dataviewQry.ToList();
+                var listItemType = EntityTypeCache.Read( report.EntityTypeId ?? 0 ).GetEntityType();
+                var itemProperties = listItemType.GetProperties();
+                foreach ( var item in list )
+                {
+                    List<object> dataValues = new List<object>();
+                    dataValues.Add( item.Id );
+                    int reportFieldCount = 0;
+                    foreach ( var c in gReport.Columns.OfType<BoundField>() )
+                    {
+                        reportFieldCount++;
+                        var p = itemProperties.FirstOrDefault( a => a.Name == c.DataField );
+                        if ( p != null )
+                        {
+                            var val = p.GetValue( item );
+                            dataValues.Add( val );
+                        }
+                        else
+                        {
+                            //TODO: Get it from DataSelectComponent
+                        }
+                    }
+
+                    dataTable.Rows.Add( dataValues.ToArray() );
+                }
+
+
+                gReport.DataSource = dataTable;
+            }
+
+            if ( errors.Any() )
+            {
+                nbEditModeMessage.Text = "INFO: There was a problem with one or more of the report's data view filters...<br/><br/> " + errors.AsDelimited( "<br/>" );
+            }
+
+            gReport.DataBind();
+             */
+        
+
+       
 
         #endregion
 
