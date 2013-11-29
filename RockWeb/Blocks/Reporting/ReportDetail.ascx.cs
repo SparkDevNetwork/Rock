@@ -619,41 +619,26 @@ namespace RockWeb.Blocks.Reporting
             this.HideSecondaryBlocks( editable );
         }
 
-        public enum ResultDataType
+
+        interface IDataSelectData
         {
-            StringData,
-            DateTimeData
+            int EntityId { get; set; }
+            string StringData { get; set; }
         }
 
-        public class DataSelectData
+        public virtual class DataSelectData : IDataSelectData
+        {
+            public virtual int EntityId { get; set; }
+            public virtual string StringData { get; set; }
+        }
+
+        public class DataSelectRowContainer
         {
             public int EntityId { get; set; }
-            public ResultDataType ResultDataType { get; set; }
-            public string StringData { get; set; }
-            public DateTime? DateTimeData { get; set; }
-        }
-
-        public class DataSelectColumnData : DataSelectData
-        {
-            public int ColumnIndex { get; set; }
-            public string ColumnDisplayText
-            {
-                get
-                {
-                    switch ( ResultDataType )
-                    {
-                        case ReportDetail.ResultDataType.DateTimeData:
-                            {
-                                return DateTimeData.HasValue ? DateTimeData.Value.ToString( "g" ) : "";
-                            }
-                            break;
-                        default:
-                            {
-                                return StringData;
-                            }
-                    }
-                }
-            }
+            public string ColumnData1 { get; set; }
+            public string ColumnData2 { get; set; }
+            public string ColumnData3 { get; set; }
+            public string ColumnData4 { get; set; }
         }
 
         /// <summary>
@@ -683,43 +668,58 @@ namespace RockWeb.Blocks.Reporting
 
                     //.Where( a => hasTransQry.Any( t => t.AuthorizedPersonId == a.Id))
 
+                    DateTime epoch2000 = new DateTime( 2000, 1, 1 );
+
                     // Sample DataSelect
-                    IQueryable<DataSelectData> lastTransactionQry = new FinancialTransactionService().Queryable()
+                    IQueryable<IDataSelectData> lastTransactionQry = new FinancialTransactionService().Queryable()
                         .OrderByDescending( o => o.TransactionDateTime )
                         .Select( a => new DataSelectData
                     {
                         EntityId = a.AuthorizedPersonId ?? 0,
-                        ResultDataType = ReportDetail.ResultDataType.DateTimeData,
-                        StringData = null,
-                        DateTimeData = a.TransactionDateTime
+                        StringData = SqlFunctions.StringConvert( (double?)SqlFunctions.DateDiff( "minute", epoch2000, a.TransactionDateTime ) )
                     } );
 
+                    var testlist = lastTransactionQry.ToList();
 
+                    /*
                     // Sample DataSelect
                     IQueryable<DataSelectData> firstTransactionQry = new FinancialTransactionService().Queryable()
                         .OrderBy( o => o.TransactionDateTime )
                         .Select( a => new DataSelectData
                     {
                         EntityId = a.AuthorizedPersonId ?? 0,
-                        ResultDataType = ReportDetail.ResultDataType.DateTimeData,
-                        StringData = null,
-                        DateTimeData = a.TransactionDateTime
+                        //ResultDataType = ReportDetail.ResultDataType.DateTimeData,
+                        StringData = SqlFunctions.StringConvert( (double?)SqlFunctions.DateDiff( "minute", epoch2000, a.TransactionDateTime ) )
+                        //DateTimeData = a.TransactionDateTime
                     } );
 
                     // Sample DataSelect
                     Guid groupTypeFamilyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
-                    IQueryable<DataSelectData> groupMemberQry = new GroupMemberService().Queryable()
+                    IQueryable<string> groupMemberFamilyQry = new GroupMemberService().Queryable()
+                        .Where( a => a.Group.GroupType.Guid == groupTypeFamilyGuid ).Select( a => a.Group.Name );
+                    /*.Select( a => new DataSelectData
+                    {
+                        EntityId = a.PersonId,
+                        //ResultDataType = ReportDetail.ResultDataType.StringData,
+                        StringData = a.Group.Name
+                        //DateTimeData = null
+                    } )
+                    ;
+
+                    Guid groupTypeSecurityRole = Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
+                    IQueryable<DataSelectData> groupMemberSecurityGroupQry = new GroupMemberService().Queryable()
                         .Where( a => a.Group.GroupType.Guid == groupTypeFamilyGuid )
                         .Select( a => new DataSelectData
                         {
                             EntityId = a.PersonId,
-                            ResultDataType = ReportDetail.ResultDataType.StringData,
-                            StringData = a.Group.Name,
-                            DateTimeData = null
+                            //ResultDataType = ReportDetail.ResultDataType.StringData
+                            StringData = a.Group.Name
+                            //DateTimeData = null
                         } );
 
 
-                    var reportQry1 = ApplyDataSelect( personQry, groupMemberQry, 1 );
+                    /*
+                    var reportQry1 = ApplyDataSelect( personQry, groupMemberFamilyQry, 1 );
                     var reportQry2 = ApplyDataSelect( personQry, lastTransactionQry, 2 );
                     var reportQry3 = ApplyDataSelect( personQry, firstTransactionQry, 3 );
 
@@ -741,24 +741,73 @@ namespace RockWeb.Blocks.Reporting
                     {
                         string debug = item.ToString();
                     }
+                    
+                    List<IQueryable<DataSelectData>> dataSelectQueryList = new List<IQueryable<DataSelectData>>();
+                    dataSelectQueryList.Add( firstTransactionQry );
+                    dataSelectQueryList.Add( firstTransactionQry );
+                    dataSelectQueryList.Add( firstTransactionQry );
+                    dataSelectQueryList.Add( firstTransactionQry );
+
+
+                    CombineDataSelects( personQry.Select( s => s.Id ), dataSelectQueryList.ToArray() );
+                    */
+                    /*var list2 = reportQueryC.ToList();
+
+                    foreach ( var item in list2 )
+                    {
+                        string debug = item.ToString();
+                    }*/
                 }
             }
         }
 
+        /*
         private static IQueryable<DataSelectColumnData> ApplyDataSelect( IQueryable<IEntity> qry, IQueryable<DataSelectData> dataSelectQuery, int columnIndex )
         {
             return from e in qry
                    join d in dataSelectQuery on e.Id equals d.EntityId
                    select new DataSelectColumnData
                    {
-                       EntityId = e.Id,
+                       //EntityId = e.Id,
                        ColumnIndex = columnIndex,
-                       ResultDataType = d.ResultDataType,
-                       DateTimeData = d.DateTimeData,
-                       StringData = d.StringData
+                       //ResultDataType = d.ResultDataType,
+                       //DateTimeData = d.DateTimeData,
+                       //StringData = d.StringData
                    };
-        }
+        }*/
 
+        private void CombineDataSelects( IQueryable<int> qry, IQueryable[] dataSelectQueryList )
+        {
+            var qry1 = dataSelectQueryList[0];
+            var qry2 = dataSelectQueryList[1];
+            var qry3 = dataSelectQueryList[2];
+            var qry4 = dataSelectQueryList[3];
+
+            /*
+             
+             .Where( s => s.EntityId == a.Id ).Select( s => s.StringData )
+             .Where( s => s.EntityId == a.Id ).Select( s => s.StringData )
+             .Where( s => s.EntityId == a.Id ).Select( s => s.StringData )
+             
+             */
+
+            //var test = qry1.Provider.Execute(qry1.Expression);
+
+            var fqry = new FinancialTransactionService().Queryable().OrderByDescending( o => o.TransactionDateTime );
+
+            var result = new PersonService().Queryable().Select( a => new
+                {
+                    EntityId = a.Id,
+                    //ColumnData1 = qry1.Provider.
+                    ColumnData2 = fqry.Where( w => w.AuthorizedPersonId == a.Id ).Select( s => s.TransactionDateTime ).FirstOrDefault()
+                    //ColumnData3 = qry3.Where( s => s.EntityId == a ).Take( 1 ),
+                    //ColumnData4 = qry4.Where( s => s.EntityId == a ).Take( 1 ),
+                } );
+
+            var list = result.ToList();
+
+
+        }
 
 
 
