@@ -1,3 +1,4 @@
+using System;
 //
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
@@ -221,23 +222,22 @@ namespace Rock.Model
         public int? InheritedGroupTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of <see cref="Rock.Model.Location">Locations</see> that can be selected for <see cref="Rock.Model.Group">Groups</see> of this type and 
-        /// this property is also used to configure the Location Picker.
+        /// Gets or sets selection mode that the Location Picker should use when adding locations to groups of this type
         /// </summary>
         /// <value>
-        /// The <see cref="LocationPickerMode"/> that represents the type of <see cref="Rock.Model.Location">Locations</see> that can be selected for <see cref="Rock.Model.Group">Groups</see>
-        /// of this GroupType. This property is also used to configure the Location Picker.
+        /// The <see cref="Rock.Web.UI.Controls.LocationPickerMode"/> to use when adding location(s) to <see cref="Rock.Model.Group">Groups</see>
+        /// of this GroupType. This can be one or more of the following values
         /// </value>
         /// <remarks>
-        /// Available options include:
-        ///     LocationPickerMode.Any -> Use any Location Picker mode.
-        ///     LocationPickerMode.Address -> Selection by address (i.e. 7007 W Happy Valley Rd Peoria, AZ 85383)
-        ///     LocationPickerMode.Point -> A geographic point (i.e. 38.229336, -85.542045)
-        ///     LocationPickerMode.Polygon -> A geographic polygon.
-        ///     LocationPickerMode.PointofInterest -> A named location.
+        /// Available options include one or more of the following:
+        ///     GroupLocationPickerMode.Location -> A named location.
+        ///     GroupLocationPickerMode.Address -> Selection by address (i.e. 7007 W Happy Valley Rd Peoria, AZ 85383)
+        ///     GroupLocationPickerMode.Point -> A geographic point (i.e. 38.229336, -85.542045)
+        ///     GroupLocationPickerMode.Polygon -> A geographic polygon.
+        ///     GroupLocationPickerMode.GroupMember -> A group members's address
         /// </remarks>
         [DataMember]
-        public LocationPickerMode LocationSelectionMode { get; set; }
+        public GroupLocationPickerMode LocationSelectionMode { get; set; }
 
         /// <summary>
         /// Gets or sets Id of the <see cref="Rock.Model.DefinedValue"/> that represents the purpose of the GroupType.
@@ -467,16 +467,13 @@ namespace Rock.Model
         AlreadyBelongs = 2
     }
 
-    /// <summary>
-    /// Represents the type of <see cref="Rock.Model.Location">Locations</see> that should be allowed to be selected using the location picker.
-    /// TODO: Move this enum to the LocationPicker class when created
-    /// </summary>
-    public enum LocationPickerMode
+    [Flags]
+    public enum GroupLocationPickerMode
     {
         /// <summary>
-        /// Any location type.
+        /// The none
         /// </summary>
-        Any = 0,
+        None = 0,
 
         /// <summary>
         /// An Address
@@ -484,21 +481,31 @@ namespace Rock.Model
         Address = 1,
 
         /// <summary>
+        /// A Named location (Building, Room)
+        /// </summary>
+        Named = 2,
+
+        /// <summary>
         /// A Geographic point (Latitude/Longitude)
         /// </summary>
-        Point = 2,
+        Point = 4,
 
         /// <summary>
         /// A Geographic Polygon
         /// </summary>
-        Polygon = 3,
+        Polygon = 8,
 
         /// <summary>
-        /// A Named location (Building, Room)
+        /// A Group Member's address
         /// </summary>
-        PointOfInterest = 4
-    }
+        GroupMember = 16,
 
+        /// <summary>
+        /// All
+        /// </summary>
+        All = Address | Named | Point | Polygon | GroupMember
+
+    }
     #endregion
 
 }

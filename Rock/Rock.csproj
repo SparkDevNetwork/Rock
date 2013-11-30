@@ -266,6 +266,7 @@
     <Compile Include="Web\Cache\CategoryCache.cs" />
     <Compile Include="Web\Cache\LayoutCache.cs" />
     <Compile Include="Web\DescriptionList.cs" />
+    <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Controls\BootstrapButton.cs" />
     <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroupEditor.cs" />
     <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroupTypeEditor.cs" />
@@ -455,7 +456,6 @@
     <Compile Include="SystemGuid\BinaryFileType.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />
     <Compile Include="Web\UI\Adapters\CheckBoxAdapter.cs" />
-    <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\DropDownListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
     <Compile Include="Web\UI\Controls\Communication\Sms.cs" />
@@ -714,7 +714,6 @@
     <Compile Include="Model\CodeGenerated\GroupMemberService.cs" />
     <Compile Include="Model\GroupMemberService.Partial.cs" />
     <Compile Include="Model\GroupLocation.cs" />
-    <Compile Include="Jobs\SendGridProcess.cs" />
     <Compile Include="Jobs\RockCleanup.cs" />
     <Compile Include="Search\Person\Address.cs" />
     <Compile Include="Search\Person\Email.cs" />
@@ -857,7 +856,6 @@
     <Compile Include="Reflection.cs" />
     <Compile Include="Jobs\JobPulse.cs" />
     <Compile Include="Jobs\RockJobListener.cs" />
-    <Compile Include="Jobs\TestJob.cs" />
     <Compile Include="Attribute\IHasAttributes.cs" />
     <Compile Include="Data\IOrdered.cs" />
     <Compile Include="Data\Entity.cs" />

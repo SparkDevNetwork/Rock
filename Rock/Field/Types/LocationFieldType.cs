@@ -53,7 +53,9 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new LocationPicker { ID = id, PickerMode = LocationPicker.LocationPickerMode.Address, AllowModeSelection = true };
+            // TODO This field type should expose a CheckBoxList configuration control that allows one or more modes to be selected for the 
+            // location picker instead of always allowing all modes.
+            return new LocationPicker { ID = id, CurrentPickerMode = LocationPickerMode.Address, AllowedPickerModes = LocationPickerMode.All };
         }
 
         /// <summary>

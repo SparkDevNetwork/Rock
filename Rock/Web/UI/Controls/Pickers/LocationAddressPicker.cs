@@ -358,13 +358,13 @@ namespace Rock.Web.UI.Controls
             _divCityStateZipRow = new HtmlGenericContainer( "div", "row" );
             _pnlAddressEntry.Controls.Add( _divCityStateZipRow );
 
-            _divCityColumn = new HtmlGenericContainer( "div", "col-lg-7" );
+            _divCityColumn = new HtmlGenericContainer( "div", "col-lg-5" );
             _divCityStateZipRow.Controls.Add( _divCityColumn );
             _tbCity = new RockTextBox { ID = "tbCity" };
             _tbCity.Label = "City";
             _divCityColumn.Controls.Add( _tbCity );
 
-            _divStateColumn = new HtmlGenericContainer( "div", "col-lg-2" );
+            _divStateColumn = new HtmlGenericContainer( "div", "col-lg-3" );
             _divCityStateZipRow.Controls.Add( _divStateColumn );
             _ddlState = new StateDropDownList { ID = "ddlState" };
             _ddlState.UseAbbreviation = true;
@@ -372,7 +372,7 @@ namespace Rock.Web.UI.Controls
             _ddlState.Label = "State";
             _divStateColumn.Controls.Add( _ddlState );
 
-            _divZipColumn = new HtmlGenericContainer( "div", "col-lg-3" );
+            _divZipColumn = new HtmlGenericContainer( "div", "col-lg-4" );
             _divCityStateZipRow.Controls.Add( _divZipColumn );
             _tbZip = new RockTextBox { ID = "tbZip" };
             _tbZip.CssClass = "input-small";
