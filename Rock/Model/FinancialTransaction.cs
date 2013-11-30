@@ -235,11 +235,11 @@ namespace Rock.Model
         public virtual DefinedValue SourceTypeValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.FinancialTransactionRefund">refund</see> transaction that is associated with this transaction. If this transaction was not refunded, this value will be null.
+        /// Gets or sets the <see cref="Rock.Model.FinancialTransactionRefund">refund</see> transaction that is associated with this transaction. If this transaction is not a refund transaction this value will be null.
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.FinancialTransactionRefund">refund transaction</see> associated with this transaction. This will be null if the transaction
-        /// was not refunded.
+        /// is not a refund transaction.
         /// </value>
         [DataMember]
         public virtual FinancialTransactionRefund Refund { get; set; }
