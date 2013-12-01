@@ -14,7 +14,7 @@
                         <article class="panel panel-widget checklist-item">
                             <asp:HiddenField ID="hfValue" runat="server" Value='<%# Eval("Id") %>' />
                             <header class="panel-heading clearfix">
-                                <Rock:RockCheckBox ID="cbValue" runat="server" AutoPostBack="true" />
+                                <Rock:RockCheckBox ID="cbValue" runat="server" AutoPostBack="true" Checked='<%# Eval("Selected") %>' Text='<%# "<strong>" + Eval("Name") + "</strong>" %>' />
                                 <div class='btn btn-action btn-xs pull-right checklist-desc-toggle'><i class='fa fa-chevron-down'></i></div>
                             </header>
                             <div class="checklist-description panel-body" style="display: none;">
