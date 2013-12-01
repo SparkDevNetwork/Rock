@@ -644,10 +644,6 @@ namespace RockWeb.Blocks.Groups
             nbRoleLimitWarning.Text = roleLimitWarnings.ToString();
             nbRoleLimitWarning.Visible = roleLimitWarnings.Length > 0;
 
-            btnSecurity.Visible = group.IsAuthorized( "Administrate", CurrentPerson );
-            btnSecurity.Title = group.Name;
-            btnSecurity.EntityId = group.Id;
-
             if ( readOnly )
             {
                 btnEdit.Visible = false;
@@ -835,8 +831,8 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-                string imageUrlFormat = "<img src='" + appPath + "GetImage.ashx?id={0}&width=50&height=50' />";
+                var getImageUrl = ResolveRockUrl( "~/GetImage.ashx");
+                string imageUrlFormat = "<img src='" + getImageUrl + "GetImage.ashx?id={0}&width=50&height=50' />";
                 if ( group.GroupType.IconLargeFileId != null )
                 {
                     groupIconHtml = string.Format( imageUrlFormat, group.GroupType.IconLargeFileId );
@@ -890,6 +886,11 @@ namespace RockWeb.Blocks.Groups
             // display attribute values
             var attributeCategories = Helper.GetAttributeCategories( attributes );
             Rock.Attribute.Helper.AddDisplayControls( group, attributeCategories, phAttributes );
+
+            btnSecurity.Visible = group.IsAuthorized( "Administrate", CurrentPerson );
+            btnSecurity.Title = group.Name;
+            btnSecurity.EntityId = group.Id;
+
         }
 
         /// <summary>
@@ -1162,6 +1163,11 @@ namespace RockWeb.Blocks.Groups
             gLocations.DataBind();
         }
 
+        protected void ddlMember_SelectedIndexChanged( object sender, EventArgs e )
+        {
+
+        }
+
         #endregion
 
         #region GroupMemberAttributes Grid and Picker
@@ -1304,5 +1310,5 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
 
-    }
+}
 }

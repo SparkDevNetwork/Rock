@@ -155,7 +155,14 @@
 
                 <div class="tabContent" >
                     <asp:Panel ID="pnlMemberSelect" runat="server" Visible="true" >
-                        <Rock:RockDropDownList ID="ddlMember" runat="server" Label="Member" ValidationGroup="Location" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockDropDownList ID="ddlMember" runat="server" Label="Member" ValidationGroup="Location" AutoPostBack="true" OnSelectedIndexChanged="ddlMember_SelectedIndexChanged" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:RockDropDownList ID="ddlMemberLocation" runat="server" Label="Address" ValidationGroup="Location" />
+                            </div>
+                        </div>
                     </asp:Panel>
                     <asp:Panel ID="pnlLocationSelect" runat="server" Visible="false">
                         <Rock:LocationPicker ID="locpGroupLocation" runat="server" PickerMode="NamedLocation" AllowModeSelection="false" Label="Location" ValidationGroup="Location" />
