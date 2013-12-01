@@ -72,8 +72,14 @@
                 $find('modal-popup').hide();
 
                 if (msg && msg != '') {
-                    $('#rock-config-trigger-data').val(msg);
-                    $('#rock-config-trigger').click();
+
+                    if (msg == 'PAGE_UPDATED') {
+                        location.reload(true);
+                    }
+                    else {
+                        $('#rock-config-trigger-data').val(msg);
+                        $('#rock-config-trigger').click();
+                    }
                 }
             },
             show: function (sender, popupUrl, detailsId, postbackUrl ) {
