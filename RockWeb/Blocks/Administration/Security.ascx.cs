@@ -73,12 +73,30 @@ namespace RockWeb.Blocks.Administration
                 }
                 else
                 {
+                    // Get the context type since this may be for a non-rock core object
+                    Type contextType = null;
+                    var contexts = Rock.Reflection.SearchAssembly( type.Assembly, typeof( System.Data.Entity.DbContext ) );
+                    if ( contexts.Any() )
+                    {
+                        contextType = contexts.First().Value;
+                    } 
+                    
                     Type serviceType = typeof( Rock.Data.Service<> );
                     Type[] modelType = { type };
                     Type service = serviceType.MakeGenericType( modelType );
-                    var serviceInstance = Activator.CreateInstance( service );
                     var getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
-                    iSecured = getMethod.Invoke( serviceInstance, new object[] { entityId } ) as ISecured;
+
+                    if ( contextType != null )
+                    {
+                        var context = Activator.CreateInstance( contextType );
+                        var serviceInstance = Activator.CreateInstance( service, new object[] { context } );
+                        iSecured = getMethod.Invoke( serviceInstance, new object[] { entityId } ) as ISecured;
+                    }
+                    else
+                    {
+                        var serviceInstance = Activator.CreateInstance( service );
+                        iSecured = getMethod.Invoke( serviceInstance, new object[] { entityId } ) as ISecured;
+                    }
                 }
 
                 var block = iSecured as Rock.Model.Block;
