@@ -73,8 +73,9 @@ namespace Rock.Model
         /// An <see cref="System.Int32"/> containing the Id of the Site's default <see cref="Rock.Model.Page"/>. If the site doesn't have a default <see cref="Rock.Model.Page"/>
         /// this value will be null.
         /// </value>
+        [Required]
         [DataMember]
-        public int DefaultPageId { get; set; }
+        public int? DefaultPageId { get; set; }
 
         /// <summary>
         /// Gets or sets the default page route unique identifier.

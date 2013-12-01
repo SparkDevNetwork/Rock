@@ -117,86 +117,94 @@ namespace RockWeb.Blocks.Cms
         {
             Site site;
 
-            using ( new Rock.Data.UnitOfWorkScope() )
+            if ( Page.IsValid )
             {
-                SiteService siteService = new SiteService();
-                SiteDomainService siteDomainService = new SiteDomainService();
-                bool newSite = false;
-
-                int siteId = int.Parse( hfSiteId.Value );
-
-                if ( siteId == 0 )
+                using ( new Rock.Data.UnitOfWorkScope() )
                 {
-                    newSite = true;
-                    site = new Rock.Model.Site();
-                    siteService.Add( site, CurrentPersonId );
-                }
-                else
-                {
-                    site = siteService.Get( siteId );
-                }
+                    SiteService siteService = new SiteService();
+                    SiteDomainService siteDomainService = new SiteDomainService();
+                    bool newSite = false;
 
-                site.Name = tbSiteName.Text;
-                site.Description = tbDescription.Text;
-                site.Theme = ddlTheme.Text;
-                site.DefaultPageId = ppDefaultPage.PageId ?? 0;
-                site.DefaultPageRouteId = ppDefaultPage.PageRouteId;
-                site.LoginPageId = ppLoginPage.PageId;
-                site.LoginPageRouteId = ppLoginPage.PageRouteId;
-                site.RegistrationPageId = ppRegistrationPage.PageId;
-                site.RegistrationPageRouteId = ppRegistrationPage.PageRouteId;
-                site.ErrorPage = tbErrorPage.Text;
+                    int siteId = int.Parse( hfSiteId.Value );
 
-                var currentDomains = tbSiteDomains.Text.SplitDelimitedValues().ToList<string>();
-                site.SiteDomains = site.SiteDomains ?? new List<SiteDomain>();
-
-                // Remove any deleted domains
-                foreach ( var domain in site.SiteDomains.Where( w => !currentDomains.Contains( w.Domain ) ).ToList() )
-                {
-                    site.SiteDomains.Remove( domain );
-                    siteDomainService.Delete( domain, CurrentPersonId );
-                }
-
-                foreach ( string domain in currentDomains )
-                {
-                    SiteDomain sd = site.SiteDomains.Where( d => d.Domain == domain ).FirstOrDefault();
-                    if ( sd == null )
+                    if ( siteId == 0 )
                     {
-                        sd = new SiteDomain();
-                        sd.Domain = domain;
-                        sd.Guid = Guid.NewGuid();
-                        site.SiteDomains.Add( sd );
+                        newSite = true;
+                        site = new Rock.Model.Site();
+                        siteService.Add( site, CurrentPersonId );
                     }
-                }
-
-                site.FaviconUrl = tbFaviconUrl.Text;
-                site.AppleTouchIconUrl = tbAppleTouchIconUrl.Text;
-                site.FacebookAppId = tbFacebookAppId.Text;
-                site.FacebookAppSecret = tbFacebookAppSecret.Text;
-
-                if ( !site.IsValid )
-                {
-                    // Controls will render the error messages                    
-                    return;
-                }
-
-                RockTransactionScope.WrapTransaction( () =>
-                {
-                    siteService.Save( site, CurrentPersonId );
-
-                    if ( newSite )
+                    else
                     {
-                        Rock.Security.Authorization.CopyAuthorization( CurrentPage.Layout.Site, site, CurrentPersonId );
+                        site = siteService.Get( siteId );
                     }
-                } );
 
-                SiteCache.Flush( site.Id );
+                    site.Name = tbSiteName.Text;
+                    site.Description = tbDescription.Text;
+                    site.Theme = ddlTheme.Text;
+                    site.DefaultPageId = ppDefaultPage.PageId;
+                    site.DefaultPageRouteId = ppDefaultPage.PageRouteId;
+                    site.LoginPageId = ppLoginPage.PageId;
+                    site.LoginPageRouteId = ppLoginPage.PageRouteId;
+                    site.RegistrationPageId = ppRegistrationPage.PageId;
+                    site.RegistrationPageRouteId = ppRegistrationPage.PageRouteId;
+                    site.ErrorPage = tbErrorPage.Text;
+
+                    var currentDomains = tbSiteDomains.Text.SplitDelimitedValues().ToList<string>();
+                    site.SiteDomains = site.SiteDomains ?? new List<SiteDomain>();
+
+                    // Remove any deleted domains
+                    foreach ( var domain in site.SiteDomains.Where( w => !currentDomains.Contains( w.Domain ) ).ToList() )
+                    {
+                        site.SiteDomains.Remove( domain );
+                        siteDomainService.Delete( domain, CurrentPersonId );
+                    }
+
+                    foreach ( string domain in currentDomains )
+                    {
+                        SiteDomain sd = site.SiteDomains.Where( d => d.Domain == domain ).FirstOrDefault();
+                        if ( sd == null )
+                        {
+                            sd = new SiteDomain();
+                            sd.Domain = domain;
+                            sd.Guid = Guid.NewGuid();
+                            site.SiteDomains.Add( sd );
+                        }
+                    }
+
+                    site.FaviconUrl = tbFaviconUrl.Text;
+                    site.AppleTouchIconUrl = tbAppleTouchIconUrl.Text;
+                    site.FacebookAppId = tbFacebookAppId.Text;
+                    site.FacebookAppSecret = tbFacebookAppSecret.Text;
+
+                    if (!site.DefaultPageId.HasValue)
+                    {
+                        ppDefaultPage.ShowErrorMessage( "Default Page is required." );
+                    }
+
+                    if ( !site.IsValid )
+                    {
+                        // Controls will render the error messages                    
+                        return;
+                    }
+
+                    RockTransactionScope.WrapTransaction( () =>
+                    {
+                        siteService.Save( site, CurrentPersonId );
+
+                        if ( newSite )
+                        {
+                            Rock.Security.Authorization.CopyAuthorization( CurrentPage.Layout.Site, site, CurrentPersonId );
+                        }
+                    } );
+
+                    SiteCache.Flush( site.Id );
+                }
+
+                var qryParams = new Dictionary<string, string>();
+                qryParams["siteId"] = site.Id.ToString();
+
+                NavigateToPage( this.CurrentPage.Guid, qryParams );
             }
-
-            var qryParams = new Dictionary<string, string>();
-            qryParams["siteId"] = site.Id.ToString();
-
-            NavigateToPage( this.CurrentPage.Guid, qryParams );
         }
 
         /// <summary>
