@@ -15,7 +15,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// ActivityType POCO Entity.
+    /// Represents a WorkflowActivityType or set of <see cref="Rock.Model.WorkflowActionType">ActionsTypes</see> that are executed/performed as part of a <see cref="Rock.Model.WorkflowType"/>
     /// </summary>
     [Table( "WorkflowActivityType" )]
     [DataContract]
@@ -25,28 +25,28 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Active.
+        /// Gets or sets a flag indicating if this WorkflowActivityType is active.
         /// </summary>
         /// <value>
-        /// Determines is the job is currently active..
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the WorkflowActivityType is active; otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool? IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the workflow type id.
+        /// Gets or sets the WorkflowTypeId of the <see cref="Rock.Model.WorkflowType"/> that this WorkflowActivityType belongs to.
         /// </summary>
         /// <value>
-        /// The workflow type id.
+        /// A <see cref="System.Int32"/> representing the WorkflowTypeId of the <see cref="Rock.Model.WorkflowType"/> that this WorkflowActivityType belongs to.
         /// </value>
         [DataMember]
         public int WorkflowTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the friendly Name of this WorkflowActivityType. This property is required.
         /// </summary>
         /// <value>
-        /// Friendly name for the job..
+        /// A <see cref="System.String"/> representing the friendly name of this WorkflowActivityType
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -54,28 +54,28 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the description or summary about this WorkflowActivityType.
         /// </summary>
         /// <value>
-        /// Notes about the job..
+        /// A <see cref="System.String"/> containing a description or summary about this WorkflowActivityType.
         /// </value>
         [DataMember]
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is activatedd with workflow.
+        /// Gets or sets a value indicating if this WorkflowActivityType is activated with the workflow.
         /// </summary>
         /// <value>
-        /// <c>true</c> if this instance is activatedd with workflow; otherwise, <c>false</c>.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this instance is activated with workflow; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
         public bool IsActivatedWithWorkflow { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order that this WorkflowActivityType will be executed in the WorkflowType's process. 
         /// </summary>
         /// <value>
-        /// Order.
+        /// A <see cref="System.Int32"/> indicating the order that this Activity will be executed in the Workflow.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -86,16 +86,17 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the type of the workflow.
+        /// Gets or sets the <see cref="Rock.Model.WorkflowType"/> that runs this WorkflowActivityType.
         /// </summary>
         /// <value>
-        /// The type of the workflow.
+        /// The <see cref="Rock.Model.WorkflowType"/> that runs this WorkflowActivityType.
         /// </value>
         [DataMember]
         public virtual WorkflowType WorkflowType { get; set; }
 
         /// <summary>
-        /// Gets or sets the action types.
+        /// Gets or sets a collection containing the <see cref="Rock.Model.WorkflowActionType">WorkflowActionTypes</see> that are 
+        /// performed by this WorkflowActivityType.
         /// </summary>
         /// <value>
         /// The action types.
@@ -109,10 +110,10 @@ namespace Rock.Model
         private ICollection<WorkflowActionType> _actionTypes;
 
         /// <summary>
-        /// Gets the parent authority.
+        /// Gets the parent security authority for this WorkflowActivityType. 
         /// </summary>
         /// <value>
-        /// The parent authority.
+        /// An entity object implementing the  <see cref="Security.ISecured"/> interface, representing the parent security authority.
         /// </value>
         public override Security.ISecured ParentAuthority
         {
@@ -127,10 +128,10 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns a <see cref="System.String" /> that represents this WorkflowActivityType.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="System.String" /> that represents this WorkflowActivityType.
         /// </returns>
         public override string ToString()
         {

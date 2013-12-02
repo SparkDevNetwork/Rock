@@ -467,6 +467,9 @@ namespace Rock.Model
         AlreadyBelongs = 2
     }
 
+    /// <summary>
+    /// Represents and indicates the type of location picker to use when setting a location for a group and/or when searching for group(s)
+    /// </summary>
     [Flags]
     public enum GroupLocationPickerMode
     {

@@ -13,17 +13,18 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Workflow POCO Service class
+    /// Service/Data access class for <see cref="Rock.Model.Workflow"/> entity objects
     /// </summary>
     public partial class WorkflowService 
     {
         /// <summary>
-        /// Activates a new worflow instance
+        /// Activates a new <see cref="Rock.Model.Workflow"/> instance.
         /// </summary>
-        /// <param name="workflowType">Type of the workflow.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="currentPersonId">The current person id.</param>
-        /// <returns></returns>
+        /// <param name="workflowType">The <see cref="Rock.Model.WorkflowType"/> to be activated.</param>
+        /// <param name="name">A <see cref="System.String"/> representing the name of the <see cref="Rock.Model.Workflow"/> instance.</param>
+        /// <param name="currentPersonId">A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who is activating the 
+        /// <see cref="Rock.Model.Workflow"/> instance; this will be null if it was completed by the anonymous user.</param>
+        /// <returns>The activated <see cref="Rock.Model.Workflow"/> instance</returns>
         public Workflow Activate( WorkflowType workflowType, string name, int? currentPersonId )
         {
             var workflow = Workflow.Activate( workflowType, name );
@@ -35,26 +36,26 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Processes the specified workflow.
+        /// Processes the specified <see cref="Rock.Model.Workflow"/>
         /// </summary>
-        /// <param name="workflow">The workflow.</param>
-        /// <param name="CurrentPersonId">The current person id.</param>
-        /// <param name="errorMessages">The error messages.</param>
+        /// <param name="workflow">The <see cref="Rock.Model.Workflow"/> instance to process.</param>
+        /// <param name="CurrentPersonId">A <see cref="System.String"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who is processing the <see cref="Rock.Model.Workflow"/>.</param>
+        /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}"/> that contains any error messages that were returned while processing the <see cref="Rock.Model.Workflow"/>.</param>
         public void Process( Workflow workflow, int? CurrentPersonId, out List<string> errorMessages )
         {
             workflow.IsProcessing = true;
             this.Save( workflow, null );
 
-            workflow.Process(out errorMessages);
+            workflow.Process(out errorMessages); 
 
             workflow.IsProcessing = false;
             this.Save( workflow, null );
         }
 
         /// <summary>
-        /// Gets the active workflows.
+        /// Gets the active <see cref="Rock.Model.Workflow">Workflows</see>.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A queryable collection of active <see cref="Rock.Model.Workflow"/>entities ordered by LastProcessedDate.</returns>
         public IQueryable<Workflow> GetActive()
         {
             return Repository.AsQueryable()

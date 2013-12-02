@@ -13,47 +13,48 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Defined Value POCO Entity.
+    /// Represents a DefinedValue instance in RockChMS. These values are sortable and can be secured (based on their <see cref="ParentAuthority"/>). 
+    /// An example of a DefinedValue for a "State List" <see cref="Rock.Model.DefinedType"/> is Arizona.
     /// </summary>
     [Table( "DefinedValue" )]
     [DataContract]
     public partial class DefinedValue : Model<DefinedValue>, IOrdered
     {
         /// <summary>
-        /// Gets or sets the System.
+        /// Gets or sets a flag indicating if this DefinedValue is part of the RockChMS core system/framework. this property is required.
         /// </summary>
         /// <value>
-        /// System.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if it is part of the RockChMS core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Defined Type Id.
+        /// Gets or sets the DefinedTypeId of the <see cref="Rock.Model.DefinedType"/> that this DefinedValue belongs to. This property is required.
         /// </summary>
         /// <value>
-        /// Defined Type Id.
+        /// A <see cref="System.Int32"/> representing the DefinedTypeId of the <see cref="Rock.Model.DefinedType"/> that this DefinedValue belongs to.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int DefinedTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the sort and display order of the DefinedValue.  This is an ascending order, so the lower the value the higher the sort priority.
         /// </summary>
         /// <value>
-        /// Order.
+        /// A <see cref="System.Int32"/> representing the sort order of the DefinedValue.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the Name or the value of the DefinedValue. This property is required.
         /// </summary>
         /// <value>
-        /// Name.
+        /// A <see cref="System.String"/> that represents the Name or the value of the DefinedValue.
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -61,28 +62,28 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the Description of the DefinedValue.
         /// </summary>
         /// <value>
-        /// Description.
+        /// A <see cref="System.String"/> representing the description of the DefinedValue.
         /// </value>
         [DataMember]
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the Defined Type.
+        /// Gets or sets the Defined Type that this DefinedValue belongs to.
         /// </summary>
         /// <value>
-        /// A <see cref="DefinedType"/> object.
+        /// The <see cref="Rock.Model.DefinedType"/> that this DefinedValue belongs to.
         /// </value>
         [DataMember]
         public virtual DefinedType DefinedType { get; set; }
 
         /// <summary>
-        /// Gets the parent authority.
+        /// Gets the parent security authority for this DefinedValue.
         /// </summary>
         /// <value>
-        /// The parent authority.
+        /// An entity that implements the <see cref="Rock.Security.ISecured"/> interface that this DefinedValue inherits security authority from.
         /// </value>
         public override Security.ISecured ParentAuthority
         {
@@ -90,10 +91,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns a <see cref="System.String" /> that represents this DefinedValue.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="System.String" /> that represents this DefinedValue.
         /// </returns>
         public override string ToString()
         {

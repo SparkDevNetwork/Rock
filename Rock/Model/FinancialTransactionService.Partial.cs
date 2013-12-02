@@ -12,15 +12,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Service class for Transaction objects.
+    /// Service/Data access class for <see cref="Rock.Model.FinancialTransaction"/> entity objects.
     /// </summary>
     public partial class FinancialTransactionService 
     {
         /// <summary>
-        /// Gets the transaction by its TransactionCode.
+        /// Gets a transaction by it's transaction code.
         /// </summary>
-        /// <param name="transactionCode">The transaction code.</param>
-        /// <returns></returns>
+        /// <param name="transactionCode">A <see cref="System.String"/> representing the transaction code for the transaction</param>
+        /// <returns>The <see cref="Rock.Model.FinancialTransaction"/> that matches the transaction code, this value will be null if a match is not found.</returns>
         public FinancialTransaction GetByTransactionCode( string transactionCode )
         {
             if ( !string.IsNullOrWhiteSpace( transactionCode ) )
