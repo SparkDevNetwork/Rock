@@ -16,7 +16,8 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Person Bank Account POCO class.
+    /// Represents a relationship between a person and a bank account in RockChMS. A person can be related to multiple bank accounts 
+    /// but a bank account can only be related to an individual person in RockChMS.
     /// </summary>
     [Table( "FinancialPersonBankAccount" )]
     [DataContract]
@@ -26,10 +27,10 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the person id.
+        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who owns the account.
         /// </summary>
         /// <value>
-        /// The person id.
+        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who owns the account.
         /// </value>
         [DataMember]
         public int PersonId { get; set; }
@@ -52,10 +53,10 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the person.
+        /// Gets or sets the <see cref="Rock.Model.Person"/> who owns the account.
         /// </summary>
         /// <value>
-        /// The person.
+        /// The <see cref="Rock.Model.Person"/> who owns the account.
         /// </value>
         public virtual Person Person { get; set; }
 
@@ -82,7 +83,7 @@ namespace Rock.Model
 
 
     /// <summary>
-    /// Transaction Configuration class.
+    /// FinancialPersonBankAccount Configuration class.
     /// </summary>
     public partial class FinancialPersonBankAccountConfiguration : EntityTypeConfiguration<FinancialPersonBankAccount>
     {

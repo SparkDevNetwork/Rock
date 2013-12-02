@@ -59,21 +59,35 @@ namespace Rock.Model
         public int? GroupLocationTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets a flag indicating if the <see cref="Rock.Model.Location"/> referenced by this GroupLocation is the mailing address/location for the <see cref="Rock.Model.Group"/>.
+        /// Gets or sets a flag indicating if the <see cref="Rock.Model.Location"/> referenced by this GroupLocation is the mailing address/location for the <see cref="Rock.Model.Group"/>.  
+        /// This field is only supported in the UI for family groups
         /// </summary>
         /// <value>
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this is the mailing address/location for this <see cref="Rock.Model.Group"/>.
         /// </value>
+        [DataMember]
         public bool IsMailingLocation { get; set; }
 
         //TODO: Document
         /// <summary>
         /// Gets or sets a flag indicating if this is the mappable location for this 
+        /// This field is only supported in the UI for family groups
         /// </summary>
         /// <value>
         /// <c>true</c> if this instance is location; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsMappedLocation { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group member person identifier.  A GroupLocation can optionally be created by selecting one of the group member's locations.  If the GroupLocation is 
+        /// created this way, the member's person id is saved with the group location
+        /// </summary>
+        /// <value>
+        /// The group member person identifier.
+        /// </value>
+        [DataMember]
+        public int? GroupMemberPersonId { get; set; }
 
         #endregion
 
@@ -105,6 +119,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual DefinedValue LocationTypeValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group member person. A GroupLocation can optionally be created by selecting one of the group member's locations.  If the GroupLocation is 
+        /// created this way, the member is saved with the group location
+        /// </summary>
+        /// <value>
+        /// The group member person.
+        /// </value>
+        [DataMember]
+        public virtual Person GroupMemberPerson { get; set; }
 
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.Schedule">Schedules</see> that are associated with this GroupLocation.
@@ -153,6 +177,7 @@ namespace Rock.Model
             this.HasRequired( t => t.Group ).WithMany( t => t.GroupLocations ).HasForeignKey( t => t.GroupId );
             this.HasRequired( t => t.Location ).WithMany( l => l.GroupLocations).HasForeignKey( t => t.LocationId );
             this.HasOptional( t => t.LocationTypeValue ).WithMany().HasForeignKey( t => t.GroupLocationTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.GroupMemberPerson ).WithMany().HasForeignKey( t => t.GroupMemberPersonId ).WillCascadeOnDelete( true );
             this.HasMany( t => t.Schedules ).WithMany().Map( t => { t.MapLeftKey( "GroupLocationId" ); t.MapRightKey( "ScheduleId" ); t.ToTable( "GroupLocationSchedule" ); } );
         }
     }

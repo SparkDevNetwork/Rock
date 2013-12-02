@@ -44,6 +44,14 @@ public partial class EntityTypes : RockBlock
             gEntityTypes.GridRebind += gEntityTypes_GridRebind;
             gEntityTypes.RowDataBound += gEntityTypes_RowDataBound;
         }
+
+        // wire up page naviagte
+        RockPage page = Page as RockPage;
+        if ( page != null )
+        {
+            page.PageNavigate += page_PageNavigate;
+        }
+
     }
 
     /// <summary>
@@ -186,6 +194,13 @@ public partial class EntityTypes : RockBlock
         hfEntityTypeId.Value = string.Empty;
     }
 
+    void page_PageNavigate( object sender, HistoryEventArgs e )
+    {
+        pnlDetails.Visible = false;
+        pnlList.Visible = true;
+        hfEntityTypeId.Value = string.Empty;
+    }
+
     #endregion
 
     #region Internal Methods
@@ -227,6 +242,9 @@ public partial class EntityTypes : RockBlock
 
         EntityTypeService entityTypeService = new EntityTypeService();
         EntityType entityType = entityTypeService.Get( entityTypeId );
+
+        // set edit history marker
+        this.AddHistory( "edit", "", "Edit Entity Type" );
 
         if ( entityType != null )
         {

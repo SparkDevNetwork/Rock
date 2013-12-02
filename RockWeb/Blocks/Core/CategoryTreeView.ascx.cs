@@ -23,6 +23,7 @@ namespace RockWeb.Blocks.Core
     [TextField("Entity Type Qualifier Property", "", false)]
     [TextField("Entity type Qualifier Value", "", false)]
     [TextField( "Page Parameter Key", "The page parameter to look for" )]
+    [TextField("Title", "Title to put in the panel header")]
     public partial class CategoryTreeView : RockBlock
     {
         /// <summary>
@@ -42,6 +43,8 @@ namespace RockWeb.Blocks.Core
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            lTitle.Text = GetAttributeValue("Title");
 
             // Get EntityTypeName
             Guid entityTypeGuid = Guid.Empty;
@@ -69,7 +72,7 @@ namespace RockWeb.Blocks.Core
                 if ( cachedEntityType != null )
                 {
                     lbAddItem.ToolTip = "Add " + cachedEntityType.FriendlyName;
-                    lAddItem.Text = "Add " + cachedEntityType.FriendlyName;
+                    lAddItem.Text = cachedEntityType.FriendlyName;
                 }
 
                 PageParameterName = GetAttributeValue( "PageParameterKey" );

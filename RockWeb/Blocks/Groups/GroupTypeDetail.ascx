@@ -73,10 +73,10 @@
                                 Help="The location to print label(s) to when a person checks into a group of this type" />
                         </div>
                         <div class="col-md-6">
+                            <Rock:RockCheckBoxList ID="cblLocationSelectionModes" runat="server" Label="Location Selection Modes"
+                                Help="The location selection modes to allow when adding locations to groups of this type."/>
                             <Rock:RockCheckBox ID="cbAllowMultipleLocations" runat="server" Label="Multiple Locations" Text="Allow" 
                                 Help="Check this option if more than one location should be allowed for groups of this type." />
-                            <Rock:RockDropDownList ID="ddlLocationSelectionMode" runat="server" Label="Location Selection Mode" 
-                                Help="The location selection mode to use when adding locations to groups of this type." />
                             <Rock:RockControlWrapper ID="rcLocationTypes" runat="server" Label="Location Types"
                                 Help="Groups can have one or more location types attached to them.  For instance you may want to have a meeting location and an assignment target location.">
                                 <Rock:Grid ID="gLocationTypes" runat="server" DisplayType="Light" ShowHeader="false" RowItemText="Location Type">

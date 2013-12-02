@@ -55,11 +55,11 @@ namespace RockWeb.Blocks.Administration
         #region Events
 
         /// <summary>
-        /// Handles the Click event of the btnEdit control.
+        /// Handles the Click event of the lbEdit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnEdit_Click( object sender, EventArgs e )
+        protected void lbEdit_Click( object sender, EventArgs e )
         {
             var metricService = new MetricService();
             var metric = metricService.Get( hfMetricId.ValueAsInt() );
@@ -67,11 +67,11 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
-        /// Handles the Click event of the btnSave control.
+        /// Handles the Click event of the lbSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnSave_Click( object sender, EventArgs e )
+        protected void lbSave_Click( object sender, EventArgs e )
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
@@ -116,11 +116,11 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
-        /// Handles the Click event of the btnCancel control.
+        /// Handles the Click event of the lbCancel control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
+        protected void lbCancel_Click( object sender, EventArgs e )
         {
             var metric = new MetricService().Get( hfMetricId.ValueAsInt() );
             ShowReadOnly( metric );
@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.Administration
             SetEditMode( false );
 
             hfMetricId.SetValue( metric.Id );            
-            lblDetails.Text = new DescriptionList()
+            lDetails.Text = new DescriptionList()
                 .Add( "Title", metric.Title )                
                 .Add( "Description", metric.Description )
                 .Add( "Category", metric.Category )
@@ -243,7 +243,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( !readOnly )
             {
-                btnEdit.Visible = true;
+                lbEdit.Visible = true;
                 if ( metric.Id > 0 )
                 {
                     ShowReadOnly( metric );
@@ -255,11 +255,11 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                btnEdit.Visible = false;
+                lbEdit.Visible = false;
                 ShowReadOnly( metric );                
             }
                                     
-            btnSave.Visible = !readOnly;
+            lbSave.Visible = !readOnly;
         }        
 
         #endregion
