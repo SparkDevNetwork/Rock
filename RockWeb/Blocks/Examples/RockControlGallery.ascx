@@ -12,8 +12,12 @@
     <ContentTemplate>
         <asp:Panel ID="pnlActions" runat="server">
             <div class="pull-right">
-                <Rock:Toggle runat="server" ID="tglLabels" OnText="Yes" OffText="No" Checked="true" Label="Show Labels" CssClass="switch-mini" OnCheckedChanged="tglLabels_CheckedChanged" />
-                <Rock:Toggle runat="server" ID="tglEnabled" OnText="Yes" OffText="No" Checked="true" Label="Controls Enabled" CssClass="switch-mini" OnCheckedChanged="tglEnabled_CheckedChanged" />
+                <div class="pull-right">
+                    <Rock:Toggle runat="server" ID="tglLabels" OnText="Yes" OffText="No" Checked="true" Label="Show Labels" CssClass="switch-mini" OnCheckedChanged="tglLabels_CheckedChanged" />
+                </div>
+                <div class="pull-right" style="margin-right: 12px;">
+                    <Rock:Toggle runat="server" ID="tglEnabled" OnText="Yes" OffText="No" Checked="true" Label="Controls Enabled" CssClass="switch-mini" OnCheckedChanged="tglEnabled_CheckedChanged" />
+                </div>
             </div>
         </asp:Panel>
         <asp:Panel ID="pnlDetails" runat="server">
