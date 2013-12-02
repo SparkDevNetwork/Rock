@@ -115,58 +115,58 @@ namespace RockWeb.Blocks.Prayer
         private void BindFilter()
         {
             // Set the Approval Status
-            var item = ddlApprovedFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.ApprovalStatus ) );
+            var item = ddlApprovedFilter.Items.FindByValue( gfFilter.GetUserPreference( FilterSetting.ApprovalStatus ) );
             if ( item != null )
             {
                 item.Selected = true;
             }
 
             // Set the Public Status
-            var itemPublic = ddlPublicFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.PublicStatus ) );
+            var itemPublic = ddlPublicFilter.Items.FindByValue( gfFilter.GetUserPreference( FilterSetting.PublicStatus ) );
             if ( itemPublic != null )
             {
                 itemPublic.Selected = true;
             }
 
             // Set the Commenting Status
-            var itemAllowComments = ddlAllowCommentsFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.CommentingStatus ) );
+            var itemAllowComments = ddlAllowCommentsFilter.Items.FindByValue( gfFilter.GetUserPreference( FilterSetting.CommentingStatus ) );
             if ( itemAllowComments != null )
             {
                 itemAllowComments.Selected = true;
             }
 
             // Set the Active Status
-            var itemActiveStatus = ddlActiveFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.ActiveStatus ) );
+            var itemActiveStatus = ddlActiveFilter.Items.FindByValue( gfFilter.GetUserPreference( FilterSetting.ActiveStatus ) );
             if ( itemActiveStatus != null )
             {
                 itemActiveStatus.Selected = true;
             }
 
             // Set the Active Status
-            var itemUrgentStatus = ddlUrgentFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.UrgentStatus ) );
+            var itemUrgentStatus = ddlUrgentFilter.Items.FindByValue( gfFilter.GetUserPreference( FilterSetting.UrgentStatus ) );
             if ( itemUrgentStatus != null )
             {
                 itemUrgentStatus.Selected = true;
             }
 
-            string fromDate = rFilter.GetUserPreference( FilterSetting.FromDate );
+            string fromDate = gfFilter.GetUserPreference( FilterSetting.FromDate );
             if ( !string.IsNullOrWhiteSpace( fromDate ) )
             {
-                pDateRange.LowerValue = DateTime.Parse( fromDate );
+                drpDateRange.LowerValue = DateTime.Parse( fromDate );
             }
 
-            string toDate = rFilter.GetUserPreference( FilterSetting.ToDate );
+            string toDate = gfFilter.GetUserPreference( FilterSetting.ToDate );
             if ( !string.IsNullOrWhiteSpace( toDate ) )
             {
-                pDateRange.UpperValue = DateTime.Parse( toDate );
+                drpDateRange.UpperValue = DateTime.Parse( toDate );
             }
 
             // Set the category picker's selected value
             int selectedPrayerCategoryId = -1;
-            if ( int.TryParse( rFilter.GetUserPreference( FilterSetting.PrayerCategory ), out selectedPrayerCategoryId ) )
+            if ( int.TryParse( gfFilter.GetUserPreference( FilterSetting.PrayerCategory ), out selectedPrayerCategoryId ) )
             {
                 Category prayerCategory = new CategoryService().Get( selectedPrayerCategoryId );
-                cpPrayerCategoryFilter.SetValue( prayerCategory );
+                catpPrayerCategoryFilter.SetValue( prayerCategory );
             }
         }
 
@@ -175,56 +175,56 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( FilterSetting.PrayerCategory, cpPrayerCategoryFilter.SelectedValue == Rock.Constants.None.IdValue ? string.Empty :  cpPrayerCategoryFilter.SelectedValue  );
-            rFilter.SaveUserPreference( FilterSetting.FromDate, pDateRange.LowerValue.HasValue ? pDateRange.LowerValue.Value.ToString( "d" ) : string.Empty );
-            rFilter.SaveUserPreference( FilterSetting.ToDate, pDateRange.UpperValue.HasValue ? pDateRange.UpperValue.Value.ToString( "d" ) : string.Empty );
+            gfFilter.SaveUserPreference( FilterSetting.PrayerCategory, catpPrayerCategoryFilter.SelectedValue == Rock.Constants.None.IdValue ? string.Empty :  catpPrayerCategoryFilter.SelectedValue  );
+            gfFilter.SaveUserPreference( FilterSetting.FromDate, drpDateRange.LowerValue.HasValue ? drpDateRange.LowerValue.Value.ToString( "d" ) : string.Empty );
+            gfFilter.SaveUserPreference( FilterSetting.ToDate, drpDateRange.UpperValue.HasValue ? drpDateRange.UpperValue.Value.ToString( "d" ) : string.Empty );
 
             // only save settings that are not the default "all" preference...
             if ( ddlApprovedFilter.SelectedValue == "all" )
             {
-                rFilter.SaveUserPreference( FilterSetting.ApprovalStatus, "" );
+                gfFilter.SaveUserPreference( FilterSetting.ApprovalStatus, "" );
             }
             else
             {
-                rFilter.SaveUserPreference( FilterSetting.ApprovalStatus, ddlApprovedFilter.SelectedValue );
+                gfFilter.SaveUserPreference( FilterSetting.ApprovalStatus, ddlApprovedFilter.SelectedValue );
             }
 
             if ( ddlUrgentFilter.SelectedValue == "all" )
             {
-                rFilter.SaveUserPreference( FilterSetting.UrgentStatus, "" );
+                gfFilter.SaveUserPreference( FilterSetting.UrgentStatus, "" );
             }
             else
             {
-                rFilter.SaveUserPreference( FilterSetting.UrgentStatus, ddlUrgentFilter.SelectedValue );
+                gfFilter.SaveUserPreference( FilterSetting.UrgentStatus, ddlUrgentFilter.SelectedValue );
             }
 
             if ( ddlPublicFilter.SelectedValue == "all" )
             {
-                rFilter.SaveUserPreference( FilterSetting.PublicStatus, "" );
+                gfFilter.SaveUserPreference( FilterSetting.PublicStatus, "" );
             }
             else
             {
-                rFilter.SaveUserPreference( FilterSetting.PublicStatus, ddlPublicFilter.SelectedValue );
+                gfFilter.SaveUserPreference( FilterSetting.PublicStatus, ddlPublicFilter.SelectedValue );
             }
 
             if ( ddlActiveFilter.SelectedValue == "all" )
             {
-                rFilter.SaveUserPreference( FilterSetting.ActiveStatus, "" );
+                gfFilter.SaveUserPreference( FilterSetting.ActiveStatus, "" );
             }
             else
             {
-                rFilter.SaveUserPreference( FilterSetting.ActiveStatus, ddlActiveFilter.SelectedValue );
+                gfFilter.SaveUserPreference( FilterSetting.ActiveStatus, ddlActiveFilter.SelectedValue );
             }
 
             if ( ddlAllowCommentsFilter.SelectedValue == "all" )
             {
-                rFilter.SaveUserPreference( FilterSetting.CommentingStatus, "" );
+                gfFilter.SaveUserPreference( FilterSetting.CommentingStatus, "" );
             }
             else
             {
-                rFilter.SaveUserPreference( FilterSetting.CommentingStatus, ddlAllowCommentsFilter.SelectedValue );
+                gfFilter.SaveUserPreference( FilterSetting.CommentingStatus, ddlAllowCommentsFilter.SelectedValue );
             }
 
             BindGrid();
@@ -235,7 +235,7 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e as DisplayFilterValueArgs (hint: e.Key and e.Value).</param>
-        protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        protected void gfFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
             switch ( e.Key )
             {
@@ -294,7 +294,7 @@ namespace RockWeb.Blocks.Prayer
 
             // Filter by prayer category if one is selected...
             int selectedPrayerCategoryID = All.Id;
-            int.TryParse( cpPrayerCategoryFilter.SelectedValue, out selectedPrayerCategoryID );
+            int.TryParse( catpPrayerCategoryFilter.SelectedValue, out selectedPrayerCategoryID );
             if ( selectedPrayerCategoryID != All.Id && selectedPrayerCategoryID != None.Id )
             {
                 prayerRequests = prayerRequests.Where( c => c.CategoryId == selectedPrayerCategoryID
@@ -367,16 +367,16 @@ namespace RockWeb.Blocks.Prayer
             }
 
             // Filter by Date Range
-            if ( pDateRange.LowerValue.HasValue )
+            if ( drpDateRange.LowerValue.HasValue )
             {
-                DateTime startDate = pDateRange.LowerValue.Value.Date;
+                DateTime startDate = drpDateRange.LowerValue.Value.Date;
                 prayerRequests = prayerRequests.Where( a => a.EnteredDate >= startDate );
             }
 
-            if ( pDateRange.UpperValue.HasValue )
+            if ( drpDateRange.UpperValue.HasValue )
             {
                 // Add one day in order to include everything up to the end of the selected datetime.
-                var endDate = pDateRange.UpperValue.Value.AddDays( 1 );
+                var endDate = drpDateRange.UpperValue.Value.AddDays( 1 );
                 prayerRequests = prayerRequests.Where( a => a.EnteredDate < endDate );
             }
 
@@ -458,7 +458,7 @@ namespace RockWeb.Blocks.Prayer
 
             if ( failure )
             {
-                mdGridWarning.Show( "Unable to approve that prayer request", ModalAlertType.Warning );
+                maGridWarning.Show( "Unable to approve that prayer request", ModalAlertType.Warning );
             }
 
         }
@@ -480,7 +480,7 @@ namespace RockWeb.Blocks.Prayer
                     string errorMessage;
                     if ( !prayerRequestService.CanDelete( prayerRequest, out errorMessage ) )
                     {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                        maGridWarning.Show( errorMessage, ModalAlertType.Information );
                         return;
                     }
 
