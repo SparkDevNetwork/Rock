@@ -24,13 +24,13 @@
 
             <fieldset>
                 <legend><asp:Literal ID="lEditAction" runat="server"/> Child Page</legend>
-                <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Name" />
+                <Rock:DataTextBox ID="dtbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Name" />
                 <Rock:RockDropDownList ID="ddlLayout" runat="server" Label="Layout"></Rock:RockDropDownList>
             </fieldset>
 
             <div class="actions">
-                <asp:LinkButton ID="btnSave" runat="server" Text="Add" CssClass="btn btn-primary" onclick="btnSave_Click" />
-                <asp:LinkButton id="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false" />
+                <asp:LinkButton ID="lbSave" runat="server" Text="Add" CssClass="btn btn-primary" onclick="lbSave_Click" />
+                <asp:LinkButton id="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="lbCancel_Click" CausesValidation="false" />
             </div>
 
         </asp:Panel>

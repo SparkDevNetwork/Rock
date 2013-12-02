@@ -436,6 +436,28 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
+        /// Gets the first name of the last.
+        /// </summary>
+        /// <value>
+        /// The first name of the last.
+        /// </value>
+        public virtual string FirstLastName
+        {
+            get { return string.Format( "{0} {1}", FirstName, LastName ); }
+        }
+
+        /// <summary>
+        /// Gets the last name of the first.
+        /// </summary>
+        /// <value>
+        /// The last name of the first.
+        /// </value>
+        public virtual string LastFirstName
+        {
+            get { return string.Format( "{0}, {1}", LastName, FirstName ); }
+        }
+
+        /// <summary>
         /// Gets or sets a collection containing the Person's <see cref="Rock.Model.UserLogin">UserLogins</see>.
         /// </summary>
         /// <value>

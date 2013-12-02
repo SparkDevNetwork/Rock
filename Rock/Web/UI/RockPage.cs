@@ -1577,13 +1577,9 @@ namespace Rock.Web.UI
             var dataControl = this.Form.FindControl( "rock-config-trigger-data" );
             if ( dataControl != null && dataControl is HiddenField )
             {
-                string triggerData = ( (HiddenField)dataControl ).Value; 
+                string triggerData = ( (HiddenField)dataControl ).Value;
 
-                if ( triggerData.StartsWith( "PAGE_UPDATED"))
-                {
-                    Response.Redirect( Request.RawUrl );
-                }
-                else if ( triggerData.StartsWith( "BLOCK_UPDATED:" ) )
+                if ( triggerData.StartsWith( "BLOCK_UPDATED:" ) )
                 {
                     int blockId = int.MinValue;
                     if ( int.TryParse( triggerData.Replace( "BLOCK_UPDATED:", "" ), out blockId ) )
