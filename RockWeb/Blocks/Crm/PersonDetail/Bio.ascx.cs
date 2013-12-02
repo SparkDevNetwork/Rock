@@ -31,14 +31,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( Person != null )
             {
-                Page.Title = CurrentPage.Title + ": " + Person.FullName;
-                var fullName = new StringBuilder();
-
-                if ( Person.SuffixValue != null )
-                    fullName.AppendFormat( " {0}", Person.SuffixValue.Name );
-
-                fullName.Append( "</span>" );
-                lName.Text = Person.FullName.FormatAsHtmlTitle();
+                Page.Title = CurrentPage.Title + ": " + Person.FirstLastName;
+                lName.Text = Person.FirstLastName.FormatAsHtmlTitle();
 
                 if (Person.PhotoId.HasValue)
                 {
