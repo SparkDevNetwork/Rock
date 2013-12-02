@@ -52,7 +52,7 @@ namespace Rock.Model
         /// Gets or sets the friendly Name of the WorkflowType. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> 
+        /// A <see cref="System.String"/> representing the friendly Name of the WorkflowType.
         /// </value>
         [Required]
         [MaxLength( 100 )]
