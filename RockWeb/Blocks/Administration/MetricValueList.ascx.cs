@@ -42,8 +42,8 @@ namespace RockWeb.Blocks.Administration
             gMetricValues.Actions.ShowAdd = canAddEditDelete;
             gMetricValues.IsDeleteEnabled = canAddEditDelete;
 
-            modalValue.SaveClick += btnSaveValue_Click;
-            modalValue.OnCancelScript = string.Format( "$('#{0}').val('');", hfMetricValueId.ClientID );
+            mdValueDialog.SaveClick += btnSaveValue_Click;
+            mdValueDialog.OnCancelScript = string.Format( "$('#{0}').val('');", hfMetricValueId.ClientID );
         }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Administration
             {
                 if ( !string.IsNullOrWhiteSpace( hfMetricValueId.Value ) )
                 {
-                    modalValue.Show();
+                    mdValueDialog.Show();
                 }
             }
         }
@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.Administration
                     metricValueService.Save( metricValue, CurrentPersonId );
                     BindGrid();
                     hfMetricValueId.Value = string.Empty;
-                    modalValue.Hide();
+                    mdValueDialog.Hide();
                 }
             }
         }
@@ -251,7 +251,7 @@ namespace RockWeb.Blocks.Administration
             tbLabel.Text = metricValue.Label;
             cbIsDateBased.Checked = metricValue.isDateBased;
 
-            modalValue.Show();
+            mdValueDialog.Show();
         }
 
         #endregion
