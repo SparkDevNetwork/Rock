@@ -670,7 +670,7 @@ namespace Rock.Web.UI
         /// <param name="key">The key to use for the history point</param>
         /// <param name="state">any state information to store for the history point</param>
         /// <param name="title">The title to be used by the browser</param>
-        public void AddHistory( string key, string state, string title )
+        public void AddHistory( string key, string state, string title = "" )
         {
             RockPage.AddHistory( key, state, title );
         }

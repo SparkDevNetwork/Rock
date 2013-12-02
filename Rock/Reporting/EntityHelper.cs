@@ -179,26 +179,94 @@ namespace Rock.Reporting
     /// </summary>
     public class EntityField
     {
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the title.
+        /// </summary>
+        /// <value>
+        /// The title.
+        /// </value>
         public string Title { get; set; }
 
+        /// <summary>
+        /// Gets or sets the kind of the field.
+        /// </summary>
+        /// <value>
+        /// The kind of the field.
+        /// </value>
         public FieldKind FieldKind { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the property.
+        /// </summary>
+        /// <value>
+        /// The type of the property.
+        /// </value>
         public Type PropertyType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the index.
+        /// </summary>
+        /// <value>
+        /// The index.
+        /// </value>
         public int Index { get; set; }
 
+        /// <summary>
+        /// Gets or sets the control count.
+        /// </summary>
+        /// <value>
+        /// The control count.
+        /// </value>
         public int ControlCount { get; set; }
 
+        /// <summary>
+        /// Gets or sets the attribute identifier.
+        /// </summary>
+        /// <value>
+        /// The attribute identifier.
+        /// </value>
         public int? AttributeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the filter field.
+        /// </summary>
+        /// <value>
+        /// The type of the filter field.
+        /// </value>
         public string FilterFieldType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the defined type identifier.
+        /// </summary>
+        /// <value>
+        /// The defined type identifier.
+        /// </value>
         public int? DefinedTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [is previewable].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [is previewable]; otherwise, <c>false</c>.
+        /// </value>
         public bool IsPreviewable { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityField"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="fieldKind">Kind of the field.</param>
+        /// <param name="propertyType">Type of the property.</param>
+        /// <param name="controlCount">The control count.</param>
+        /// <param name="attributeId">The attribute identifier.</param>
         public EntityField( string name, FieldKind fieldKind, Type propertyType, int controlCount, int? attributeId = null )
         {
             Name = name;
@@ -214,9 +282,19 @@ namespace Rock.Reporting
 
     #region Private Enumerations
 
+    /// <summary>
+    /// 
+    /// </summary>
     public enum FieldKind
     {
+        /// <summary>
+        /// Property Field
+        /// </summary>
         Property,
+
+        /// <summary>
+        /// Attribute Field
+        /// </summary>
         Attribute,
     }
 

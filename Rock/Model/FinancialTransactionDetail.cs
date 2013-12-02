@@ -13,7 +13,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// TransactionDetail POCO class.
+    /// Represents a transaction detail line item for a <see cref="Rock.Model.FinancialTransaction"/> in RockChMS.
     /// </summary>
     [Table( "FinancialTransactionDetail" )]
     [DataContract]
@@ -22,37 +22,41 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the transaction id.
+        /// Gets or sets the TransactionId of the <see cref="Rock.Model.FinancialTransaction"/> that this 
+        /// detail item is a part of.
         /// </summary>
         /// <value>
-        /// The transaction id.
+        /// A <see cref="System.Int32"/> representing the TransactionDetailId of the <see cref="Rock.Model.FinancialTransaction"/>
+        /// that this detail item is a part of.
         /// </value>
         [DataMember]
         public int TransactionId { get; set; }
 
         /// <summary>
-        /// Gets or sets the account id.
+        /// Gets or sets the AccountId of the <see cref="Rock.Model.FinancialAccount"/>/fund that the <see cref="Amount"/> of this 
+        /// detail line item should be credited towards.
         /// </summary>
         /// <value>
-        /// The account id.
+        /// A <see cref="System.Int32"/> representing the <see cref="Rock.Model.FinancialAccount"/>/fund that is affected by this
+        /// transaction detail.
         /// </value>
         [DataMember]
         public int AccountId { get; set; }
 
         /// <summary>
-        /// Gets or sets the amount.
+        /// Gets or sets the amount of the transaction detail.
         /// </summary>
         /// <value>
-        /// The amount.
+        /// A <see cref="System.Decimal"/> representing the amount of the transaction detail.
         /// </value>
         [DataMember]
         public decimal Amount { get; set; }
 
         /// <summary>
-        /// Gets or sets the summary.
+        /// Gets or sets the summary of the transaction detail.
         /// </summary>
         /// <value>
-        /// The summary.
+        /// A <see cref="System.String"/> representing the summary of the transaction detail.
         /// </value>
         [MaxLength( 500 )]
         [DataMember]
@@ -81,19 +85,19 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the transaction.
+        /// Gets or sets the <see cref="Rock.Model.FinancialTransaction"/> that this detail item belongs to.
         /// </summary>
         /// <value>
-        /// The transaction.
+        /// The <see cref="Rock.Model.FinancialTransaction"/> that this detail item belongs to.
         /// </value>
         [DataMember]
         public virtual FinancialTransaction Transaction { get; set; }
 
         /// <summary>
-        /// Gets or sets the account.
+        /// Gets or sets the <see cref="Rock.Model.FinancialAccount"/> that is affected by this detail line item.
         /// </summary>
         /// <value>
-        /// The account.
+        /// The <see cref="Rock.Model.FinancialAccount"/> that is affected by this detail line item.
         /// </value>
         [DataMember]
         public virtual FinancialAccount Account { get; set; }
@@ -112,10 +116,10 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns a <see cref="System.String" /> that represents this detail item.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="System.String" /> that represents this detail item.
         /// </returns>
         public override string ToString()
         {

@@ -535,6 +535,8 @@ namespace Rock.Web.UI.Controls
 
             RequiredFieldValidator.InitialValue = "0";
             RockControlHelper.CreateChildControls( this, Controls );
+
+            RequiredFieldValidator.Display = ValidatorDisplay.None;
         }
 
         /// <summary>

@@ -13,6 +13,16 @@
 // HTML Overrides
 //--------------------------------
 
+// text selection color
+::selection {
+	background: @text-selection-color;
+    color: @text-selection-text-color;
+}
+::-moz-selection {
+	background: @text-selection-color; 
+    color: @text-selection-text-color;
+}
+
 /* global classes */
 .clickable {
     cursor: pointer;
@@ -99,6 +109,36 @@
             margin-bottom: 0;
             float: left;
         }
+    }
+}
+
+.panel-treeview {
+    .panel-variant(@accent-color; @accent-bold-text-color; @accent-bold-color; @accent-color;);
+
+    .panel-heading {
+        padding-bottom: 0;
+
+        .treeview-actions {
+            margin-top: 6px;
+            background-color: @accent-color;
+
+            .col {
+                padding-right: 0;
+                padding-left: 0;
+            }
+
+            .btn {
+                
+                border: 1px solid darken(@accent-color, 5%);
+                border-radius: 0;
+                width: 100%;
+                color: @accent-text-color;
+            }
+        }
+    }
+
+    .treeview-frame {
+        overflow-x: scroll;
     }
 }
 

@@ -180,8 +180,6 @@ namespace Rock.Web.UI.Controls
         private HiddenField _hfGeoPath;
         private HtmlAnchor _btnSelect;
         private HtmlAnchor _btnSelectNone;
-        private DbGeography _geoFence;
-        private DbGeography _geoPoint;
 
         #endregion
 
@@ -303,19 +301,14 @@ namespace Rock.Web.UI.Controls
                     // Now we split the lat1,long1|lat2,long2|... stored in the hidden
                     // into something that's usable by DbGeography's PolygonFromText
                     // Well Known Text (http://en.wikipedia.org/wiki/Well-known_text) representation.
-                    _geoFence = DbGeography.PolygonFromText( ConvertPolyToWellKnownText( _hfGeoPath.Value ), 4326 );
+                    return DbGeography.PolygonFromText( ConvertPolyToWellKnownText( _hfGeoPath.Value ), 4326 );
                 }
-
-                return _geoFence;
             }
 
             set
             {
                 EnsureChildControls();
-                if ( value == null )
-                    return;
-                _geoFence = value;
-                _hfGeoPath.Value = ConvertPolyFromWellKnownText( _geoFence.AsText() );
+                _hfGeoPath.Value = value != null ? ConvertPolyFromWellKnownText( value.AsText() ) : string.Empty;
             }
         }
 
@@ -339,19 +332,14 @@ namespace Rock.Web.UI.Controls
                     // Now split the lat1,long1 stored in the hidden into something
                     // that's usable by DbGeography's PolygonFromText Well Known Text (WKT)
                     // (http://en.wikipedia.org/wiki/Well-known_text) representation.
-                    _geoPoint = DbGeography.FromText( ConvertPointToWellKnownText( _hfGeoPath.Value ), 4326 );
+                    return DbGeography.FromText( ConvertPointToWellKnownText( _hfGeoPath.Value ), 4326 );
                 }
-
-                return _geoPoint;
             }
 
             set
             {
                 EnsureChildControls();
-                if ( value == null )
-                    return;
-                _geoPoint = value;
-                _hfGeoPath.Value = ConvertPointFromWellKnownText( _geoPoint.AsText() );
+                _hfGeoPath.Value = value != null ? ConvertPointFromWellKnownText( value.AsText() ) : string.Empty;
             }
         }
 

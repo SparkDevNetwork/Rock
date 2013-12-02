@@ -6,18 +6,32 @@
         <asp:HiddenField ID="hfInitialItemId" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfInitialCategoryParentIds" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfSelectedCategoryId" runat="server" ClientIDMode="Static" />
-        <div class="treeview treeview-group">
-            <div class="treeview-actions pull-right">
-                <asp:LinkButton ID="lbAddCategory" runat="server" CssClass="add btn btn-mini" ToolTip="Add Category" CausesValidation="false" OnClick="lbAddCategory_Click">
-                        <i class="fa fa-plus"></i> Add Category
-                </asp:LinkButton>
-                <asp:LinkButton ID="lbAddItem" runat="server" CssClass="add btn btn-mini" ToolTip="Add Group" CausesValidation="false" OnClick="lbAddItem_Click">
-                        <i class="fa fa-plus"></i> <asp:Literal ID="lAddItem" runat="server" Text="Add Group" />
-                </asp:LinkButton>
+        <div class="treeview treeview-group panel panel-treeview">
+            
+            <div class="panel-heading">
+                <h3 class="panel-title"><asp:Literal ID="lTitle" runat="server"></asp:Literal></h3>
+            
+            
+            <div class="treeview-actions row">
+                <div class="col-xs-6 col">
+                    <asp:LinkButton ID="lbAddCategory" runat="server" CssClass="add btn btn-mini" ToolTip="Add Category" CausesValidation="false" OnClick="lbAddCategory_Click">
+                            <i class="fa fa-plus"></i> Category
+                    </asp:LinkButton>
+                </div>
+                <div class="col-xs-6 col">
+                    <asp:LinkButton ID="lbAddItem" runat="server" CssClass="add btn btn-mini" ToolTip="Add Group" CausesValidation="false" OnClick="lbAddItem_Click">
+                            <i class="fa fa-plus"></i> <asp:Literal ID="lAddItem" runat="server" Text="Add Group" />
+                    </asp:LinkButton>
+                </div>
             </div>
-            <div id="treeview-content">
+                </div>
+
+            <div class="panel-body treeview-frame">
+                <div id="treeview-content"></div>
             </div>
+
             <script type="text/javascript">
+
                 $(function () {
                     var $selectedId = $('#hfSelectedCategoryId'),
                         $expandedIds = $('#hfInitialCategoryParentIds'),
@@ -51,6 +65,7 @@
                             if (window.location.search !== itemSearch) {
                                 window.location.search = itemSearch;
                             }
+
                         })
                         .rockTree({
                             restUrl: '<%= ResolveUrl( "~/api/categories/getchildren/" ) %>',

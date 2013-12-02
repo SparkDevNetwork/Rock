@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
-
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -27,8 +27,53 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Limit to Security Role Groups" )]
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
+        #region Constants
+
+        private const string MEMBER_LOCATION_TAB_TITLE = "Member Location";
+        private const string OTHER_LOCATION_TAB_TITLE = "Other Location";
+
+        #endregion
+
+        #region Fields
+
+        private readonly List<string> _tabs = new List<string> { MEMBER_LOCATION_TAB_TITLE, OTHER_LOCATION_TAB_TITLE };
+
+        private string LocationTypeTab
+        {
+            get
+            {
+                object currentProperty = ViewState["LocationTypeTab"];
+                return currentProperty != null ? currentProperty.ToString() : MEMBER_LOCATION_TAB_TITLE;
+            }
+
+            set
+            {
+                ViewState["LocationTypeTab"] = value;
+            }
+        }
+
+        #endregion
+
         #region Child Grid Dictionarys
 
+        /// <summary>
+        /// Gets or sets the state of the location.
+        /// </summary>
+        /// <value>
+        /// The state of the location.
+        /// </value>
+        private ViewStateList<GroupLocation> GroupLocationsState
+        {
+            get
+            {
+                return ViewState["GroupLocationsState"] as ViewStateList<GroupLocation>;
+            }
+
+            set
+            {
+                ViewState["GroupLocationsState"] = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the group member inherited attributes.
@@ -67,6 +112,12 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
+        private bool AllowMultipleLocations
+        {
+            get { return ViewState["AllowMultipleLocations"] as bool? ?? false; }
+            set { ViewState["AllowMultipleLocations"] = value; }
+        }
+
         #endregion
 
         #region Control Methods
@@ -79,6 +130,10 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnInit( e );
 
+            gLocations.DataKeyNames = new string[] { "Guid" };
+            gLocations.Actions.AddClick += gLocations_Add;
+            gLocations.GridRebind += gLocations_GridRebind;
+
             gGroupMemberAttributesInherited.Actions.ShowAdd = false;
             gGroupMemberAttributesInherited.EmptyDataText = Server.HtmlEncode( None.Text );
             gGroupMemberAttributesInherited.GridRebind += gGroupMemberAttributesInherited_GridRebind;
@@ -90,9 +145,8 @@ namespace RockWeb.Blocks.Groups
             gGroupMemberAttributes.GridRebind += gGroupMemberAttributes_GridRebind;
             gGroupMemberAttributes.GridReorder += gGroupMemberAttributes_GridReorder;
 
-            dlgGroupMemberAttribute.OnCancelScript = string.Format( "$('#{0}').val('');", hfAttributeId.ClientID );
-
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Group.FriendlyTypeName );
+            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Group ) ).Id;
         }
 
         /// <summary>
@@ -126,29 +180,17 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                if ( !string.IsNullOrWhiteSpace( hfAttributeId.Value ) )
-                {
-                    dlgGroupMemberAttribute.Show();
-                }
+                ShowDialog();
             }
 
+            // Rebuild the attribute controls on postback based on group type
             if ( pnlDetails.Visible )
             {
                 var group = new Group { GroupTypeId = ddlGroupType.SelectedValueAsInt() ?? 0 };
                 if ( group.GroupTypeId > 0 )
                 {
-                    phGroupAttributes.Controls.Clear();
-                    group.LoadAttributes();
-
-                    if ( group.Attributes != null && group.Attributes.Any() )
-                    {
-                        wpGroupAttributes.Visible = true;
-                        Rock.Attribute.Helper.AddEditControls( group, phGroupAttributes, false );
-                    }
-                    else
-                    {
-                        wpGroupAttributes.Visible = false;
-                    }
+                    group.GroupType = new GroupTypeService().Get( group.GroupTypeId );
+                    ShowGroupTypeEditDetails( group, false );
                 }
             }
         }
@@ -161,6 +203,11 @@ namespace RockWeb.Blocks.Groups
         /// </returns>
         protected override object SaveViewState()
         {
+            if ( GroupLocationsState != null)
+            {
+                GroupLocationsState.SaveViewState();
+            }
+
             if ( GroupMemberAttributesState != null )
             {
                 GroupMemberAttributesState.SaveViewState();
@@ -255,9 +302,16 @@ namespace RockWeb.Blocks.Groups
             using ( new UnitOfWorkScope() )
             {
                 GroupService groupService = new GroupService();
+                GroupLocationService groupLocationService = new GroupLocationService();
                 AttributeService attributeService = new AttributeService();
                 AttributeQualifierService attributeQualifierService = new AttributeQualifierService();
                 CategoryService categoryService = new CategoryService();
+
+                if ( ( ddlGroupType.SelectedValueAsInt() ?? 0 ) == 0 )
+                {
+                    ddlGroupType.ShowErrorMessage( Rock.Constants.WarningMessage.CannotBeBlank( GroupType.FriendlyTypeName ) );
+                    return;
+                }
 
                 int groupId = int.Parse( hfGroupId.Value );
 
@@ -271,12 +325,30 @@ namespace RockWeb.Blocks.Groups
                 {
                     group = groupService.Get( groupId );
                     wasSecurityRole = group.IsSecurityRole;
+
+                    var selectedLocations = GroupLocationsState.Select( l => l.Guid );
+                    foreach( var groupLocation in group.GroupLocations.Where( l => !selectedLocations.Contains( l.Guid)).ToList() )
+                    {
+                        group.GroupLocations.Remove( groupLocation );
+                        groupLocationService.Delete( groupLocation, CurrentPersonId );
+                    }
                 }
 
-                if ( ( ddlGroupType.SelectedValueAsInt() ?? 0 ) == 0 )
+                foreach ( var groupLocationState in GroupLocationsState )
                 {
-                    ddlGroupType.ShowErrorMessage( Rock.Constants.WarningMessage.CannotBeBlank( GroupType.FriendlyTypeName ) );
-                    return;
+                    GroupLocation groupLocation = group.GroupLocations.Where( l => l.Guid == groupLocationState.Guid).FirstOrDefault();
+                    if (groupLocation == null)
+                    {
+                        groupLocation = new GroupLocation();
+                        group.GroupLocations.Add( groupLocation );
+                    }
+                    else
+                    {
+                        groupLocationState.Id = groupLocation.Id;
+                        groupLocationState.Guid = groupLocation.Guid;
+                    }
+
+                    groupLocation.CopyPropertiesFrom( groupLocationState );
                 }
 
                 group.Name = tbName.Text;
@@ -319,7 +391,6 @@ namespace RockWeb.Blocks.Groups
                     Rock.Attribute.Helper.SaveAttributeValues( group, CurrentPersonId );
 
                     /* Take care of Group Member Attributes */
-
                     var entityTypeId = EntityTypeCache.Read( typeof( GroupMember ) ).Id;
                     string qualifierColumn = "GroupId";
                     string qualifierValue = group.Id.ToString();
@@ -459,6 +530,25 @@ namespace RockWeb.Blocks.Groups
             ddlGroupType.DataBind();
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbProperty control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbLocationType_Click( object sender, EventArgs e )
+        {
+            LinkButton lb = sender as LinkButton;
+            if ( lb != null )
+            {
+                LocationTypeTab = lb.Text;
+
+                rptLocationTypes.DataSource = _tabs;
+                rptLocationTypes.DataBind();
+            }
+
+            ShowSelectedPane();
+        }        
+        
         #endregion
 
         #region Internal Methods
@@ -501,7 +591,7 @@ namespace RockWeb.Blocks.Groups
                 group = new Group { Id = 0, IsActive = true, ParentGroupId = parentGroupId };
             }
 
-            if ( group == null ) 
+            if ( group == null )
             {
                 return;
             }
@@ -540,7 +630,7 @@ namespace RockWeb.Blocks.Groups
 
                     if ( role.MinCount.HasValue && role.MinCount.Value > curCount )
                     {
-                        roleLimitWarnings.AppendFormat("The <strong>{1}</strong> role is currently below its minimum requirement of {2:N0} active {3}.<br/>",
+                        roleLimitWarnings.AppendFormat( "The <strong>{1}</strong> role is currently below its minimum requirement of {2:N0} active {3}.<br/>",
                             role.Name.Pluralize(), role.Name, role.MinCount, role.MinCount == 1 ? group.GroupType.GroupMemberTerm : group.GroupType.GroupMemberTerm.Pluralize() );
                     }
                     if ( role.MaxCount.HasValue && role.MaxCount.Value < curCount )
@@ -553,6 +643,10 @@ namespace RockWeb.Blocks.Groups
 
             nbRoleLimitWarning.Text = roleLimitWarnings.ToString();
             nbRoleLimitWarning.Visible = roleLimitWarnings.Length > 0;
+
+            btnSecurity.Visible = group.IsAuthorized( "Administrate", CurrentPerson );
+            btnSecurity.Title = group.Name;
+            btnSecurity.EntityId = group.Id;
 
             if ( readOnly )
             {
@@ -582,16 +676,16 @@ namespace RockWeb.Blocks.Groups
         /// <param name="group">The group.</param>
         private void ShowEditDetails( Group group )
         {
-            if (group.Id == 0)
+            if ( group.Id == 0 )
             {
-                lReadOnlyTitle.Text = ActionTitle.Add(Group.FriendlyTypeName).FormatAsHtmlTitle();
+                lReadOnlyTitle.Text = ActionTitle.Add( Group.FriendlyTypeName ).FormatAsHtmlTitle();
                 hlInactive.Visible = false;
             }
             else
             {
                 lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
             }
-                       
+
             SetEditMode( true );
 
             tbName.Text = group.Name;
@@ -641,19 +735,27 @@ namespace RockWeb.Blocks.Groups
 
                 ddlCampus.SetValue( group.CampusId );
 
-                phGroupAttributes.Controls.Clear();
-                group.LoadAttributes();
+                GroupLocationsState = new ViewStateList<GroupLocation>();
+                foreach ( var groupLocation in group.GroupLocations )
+                {
+                    var groupLocationState = new GroupLocation();
+                    groupLocationState.CopyPropertiesFrom( groupLocation );
+                    if ( groupLocation.Location != null )
+                    {
+                        groupLocationState.Location = new Location();
+                        groupLocationState.Location.CopyPropertiesFrom( groupLocation.Location );
+                    }
+                    if ( groupLocation.LocationTypeValue != null)
+                    {
+                        groupLocationState.LocationTypeValue = new DefinedValue();
+                        groupLocationState.LocationTypeValue.CopyPropertiesFrom( groupLocation.LocationTypeValue );
+                    }
 
-                if ( group.Attributes != null && group.Attributes.Any() )
-                {
-                    wpGroupAttributes.Visible = true;
-                    Rock.Attribute.Helper.AddEditControls( group, phGroupAttributes, true, "GroupDetail" );
+                    GroupLocationsState.Add( groupLocationState );
                 }
-                else
-                {
-                    wpGroupAttributes.Visible = false;
-                }
-                
+
+                ShowGroupTypeEditDetails(group, true);
+
                 // if this block's attribute limit group to SecurityRoleGroups, don't let them edit the SecurityRole checkbox value
                 if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse() )
                 {
@@ -674,6 +776,48 @@ namespace RockWeb.Blocks.Groups
 
                 BindInheritedAttributes( group.GroupTypeId, groupTypeService, attributeService );
             }
+        }
+
+        private void ShowGroupTypeEditDetails(Group group, bool setValues)
+        {
+            if ( group != null )
+            {
+                if ( group.GroupType == null )
+                {
+                    if ( group.GroupTypeId > 0 )
+                    {
+                        group.GroupType = new GroupTypeService().Get( group.GroupTypeId );
+                    }
+                }
+
+                // Save value to viewstate for use later when binding location grid
+                AllowMultipleLocations = group.GroupType != null && group.GroupType.AllowMultipleLocations;
+
+                if ( group.GroupType != null && group.GroupType.LocationSelectionMode != GroupLocationPickerMode.None )
+                {
+                    wpLocations.Visible = true;
+                    wpLocations.Title = AllowMultipleLocations ? "Locations" : "Location";
+                    BindLocationsGrid();
+                }
+                else
+                {
+                    wpLocations.Visible = false;
+                }
+
+                phGroupAttributes.Controls.Clear();
+                group.LoadAttributes();
+
+                if ( group.Attributes != null && group.Attributes.Any() )
+                {
+                    wpGroupAttributes.Visible = true;
+                    Rock.Attribute.Helper.AddEditControls( group, phGroupAttributes, setValues, "GroupDetail" );
+                }
+                else
+                {
+                    wpGroupAttributes.Visible = false;
+                }
+            }
+
         }
 
         /// <summary>
@@ -706,12 +850,12 @@ namespace RockWeb.Blocks.Groups
             hfGroupId.SetValue( group.Id );
             lGroupIconHtml.Text = groupIconHtml;
             lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
-            
+
             hlInactive.Visible = !group.IsActive;
             hlType.Text = group.GroupType.Name;
 
             lGroupDescription.Text = group.Description;
-            
+
             DescriptionList descriptionList = new DescriptionList();
 
             if ( group.ParentGroup != null )
@@ -719,7 +863,7 @@ namespace RockWeb.Blocks.Groups
                 descriptionList.Add( "Parent Group", group.ParentGroup.Name );
             }
 
-            if (group.Campus != null)
+            if ( group.Campus != null )
             {
                 hlCampus.Visible = true;
                 hlCampus.Text = group.Campus.Name;
@@ -728,6 +872,7 @@ namespace RockWeb.Blocks.Groups
             {
                 hlCampus.Visible = false;
             }
+
 
             lblMainDetails.Text = descriptionList.Html;
 
@@ -771,6 +916,69 @@ namespace RockWeb.Blocks.Groups
             ddlCampus.DataBind();
         }
 
+        private void ShowDialog( string dialog, bool setValues = false )
+        {
+            hfActiveDialog.Value = dialog.ToUpper().Trim();
+            ShowDialog( setValues );
+        }
+
+        private void ShowDialog( bool setValues = false )
+        {
+            switch ( hfActiveDialog.Value )
+            {
+                case "LOCATIONS":
+                    dlgLocations.Show();
+                    break;
+                case "GROUPMEMBERATTRIBUTES":
+                    dlgGroupMemberAttribute.Show();
+                    break;
+            }
+        }
+
+        private void HideDialog()
+        {
+            switch ( hfActiveDialog.Value )
+            {
+                case "LOCATIONS":
+                    dlgLocations.Hide();
+                    break;
+                case "GROUPMEMBERATTRIBUTES":
+                    dlgGroupMemberAttribute.Hide();
+                    break;
+            }
+
+            hfActiveDialog.Value = string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the tab class.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns></returns>
+        protected string GetTabClass( object property )
+        {
+            if ( property.ToString() == LocationTypeTab )
+            {
+                return "active";
+            }
+
+            return string.Empty;
+        }
+
+        private void ShowSelectedPane()
+        {
+            if ( LocationTypeTab.Equals( MEMBER_LOCATION_TAB_TITLE ) )
+            {
+                pnlMemberSelect.Visible = true;
+                pnlLocationSelect.Visible = false;
+            }
+            else if ( LocationTypeTab.Equals( OTHER_LOCATION_TAB_TITLE ) )
+            {
+                pnlMemberSelect.Visible = false;
+                pnlLocationSelect.Visible = true;
+            }
+        }
+        
         /// <summary>
         /// Gets the number of active members in a group role.
         /// </summary>
@@ -841,6 +1049,121 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
 
+        #region Location Grid and Picker
+
+        void gLocations_Add( object sender, EventArgs e )
+        {
+            int? groupTypeId = ddlGroupType.SelectedValueAsId();
+            if ( groupTypeId.HasValue )
+            {
+                var groupType = new GroupTypeService().Get( groupTypeId.Value );
+                if ( groupType != null )
+                {
+                    GroupLocationPickerMode groupTypeModes = groupType.LocationSelectionMode;
+                    if ( groupTypeModes != GroupLocationPickerMode.None )
+                    {
+                        // Set the location picker modes allowed based on the group type's allowed modes
+                        LocationPickerMode modes = LocationPickerMode.None;
+                        if ( ( groupTypeModes & GroupLocationPickerMode.Named ) == GroupLocationPickerMode.Named )
+                        {
+                            modes = modes | LocationPickerMode.Named;
+                        }
+                        if ( ( groupTypeModes & GroupLocationPickerMode.Address ) == GroupLocationPickerMode.Address )
+                        {
+                            modes = modes | LocationPickerMode.Address;
+                        }
+                        if ( ( groupTypeModes & GroupLocationPickerMode.Point ) == GroupLocationPickerMode.Point )
+                        {
+                            modes = modes | LocationPickerMode.Point;
+                        }
+                        if ( ( groupTypeModes & GroupLocationPickerMode.Polygon ) == GroupLocationPickerMode.Polygon )
+                        {
+                            modes = modes | LocationPickerMode.Polygon;
+                        }
+                        locpGroupLocation.AllowedPickerModes = modes;
+
+                        bool displayOtherTab = modes != LocationPickerMode.None;
+                        bool displayMemberTab = ( groupTypeModes & GroupLocationPickerMode.GroupMember ) == GroupLocationPickerMode.GroupMember;
+
+                        ulNav.Visible = displayOtherTab && displayMemberTab;
+                        pnlMemberSelect.Visible = displayMemberTab;
+                        pnlLocationSelect.Visible = displayOtherTab && !displayMemberTab;
+
+                        ddlLocationType.DataSource = groupType.LocationTypes.Select( l => l.LocationTypeValue ).ToList();
+                        ddlLocationType.DataBind();
+
+                        LocationTypeTab = displayMemberTab ? MEMBER_LOCATION_TAB_TITLE : OTHER_LOCATION_TAB_TITLE;
+                        rptLocationTypes.DataSource = _tabs;
+                        rptLocationTypes.DataBind();
+                        ShowSelectedPane();
+
+                        ShowDialog( "Locations", true );
+                    }
+
+
+                }
+            }
+        }
+
+        protected void gLocations_Delete( object sender, RowEventArgs e )
+        {
+            Guid rowGuid = (Guid)e.RowKeyValue;
+            GroupLocationsState.RemoveEntity( rowGuid );
+
+            BindLocationsGrid();
+        }
+        
+        void gLocations_GridRebind( object sender, EventArgs e )
+        {
+            BindLocationsGrid();
+        }
+
+        protected void dlgLocations_SaveClick( object sender, EventArgs e )
+        {
+            // Add the location (ignore if they didn't pick one, or they picked one that already is selected)
+            if ( locpGroupLocation.Location != null )
+            {
+                if ( !GroupLocationsState.Any( a => a.LocationId == locpGroupLocation.Location.Id ) )
+                {
+                    var groupLocation = new GroupLocation();
+
+                    // Set location
+                    groupLocation.Location = new Location();
+                    groupLocation.Location.CopyPropertiesFrom( locpGroupLocation.Location );
+                    groupLocation.LocationId = locpGroupLocation.Location.Id;
+
+                    // Set Location Type
+                    groupLocation.GroupLocationTypeValueId = ddlLocationType.SelectedValueAsId();
+                    if ( groupLocation.GroupLocationTypeValueId.HasValue )
+                    {
+                        groupLocation.LocationTypeValue = new DefinedValue();
+                        var definedValue = new DefinedValueService().Get( groupLocation.GroupLocationTypeValueId.Value );
+                        if ( definedValue != null )
+                        {
+                            groupLocation.LocationTypeValue.CopyPropertiesFrom( definedValue );
+                        }
+                    }
+
+                    // Add to state
+                    GroupLocationsState.Add( groupLocation );
+                }
+            }
+
+            BindLocationsGrid();
+
+            HideDialog();
+        }
+
+        private void BindLocationsGrid()
+        {
+            gLocations.Actions.ShowAdd = AllowMultipleLocations || !GroupLocationsState.Any();
+
+            gLocations.DataSource = GroupLocationsState.ToList();
+            gLocations.DataBind();
+        }
+
+        #endregion
+
         #region GroupMemberAttributes Grid and Picker
 
         /// <summary>
@@ -885,8 +1208,7 @@ namespace RockWeb.Blocks.Groups
 
             edtGroupMemberAttributes.SetAttributeProperties( attribute, typeof( GroupMember ) );
 
-            hfAttributeId.Value = attribute.Id.ToString();
-            dlgGroupMemberAttribute.Show();
+            ShowDialog( "GroupMemberAttributes", true );
         }
 
         /// <summary>
@@ -955,8 +1277,7 @@ namespace RockWeb.Blocks.Groups
 
             BindGroupMemberAttributesGrid();
 
-            hfAttributeId.Value = string.Empty;
-            dlgGroupMemberAttribute.Hide();
+            HideDialog();
         }
 
         /// <summary>
@@ -982,5 +1303,6 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
+
     }
 }
