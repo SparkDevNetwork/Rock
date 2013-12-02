@@ -61,7 +61,7 @@
                 <Rock:PanelWidget ID="wpLocations" runat="server">
                     <Rock:Grid ID="gLocations" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Location">
                         <Columns>
-                            <asp:BoundField DataField="Location" HeaderText="Name" />
+                            <asp:BoundField DataField="Location" HeaderText="Location" />
                             <asp:BoundField DataField="LocationTypeValue.Name" HeaderText="Type" />
                             <Rock:DeleteField OnClick="gLocations_Delete"  />
                         </Columns>
@@ -86,7 +86,7 @@
                             </Columns>
                         </Rock:Grid>
                     </Rock:RockControlWrapper>
-                    <Rock:Grid ID="gGroupMemberAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Member Attribute">
+                    <Rock:Grid ID="gGroupMemberAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Member Attribute" ShowConfirmDeleteDialog="false">
                         <Columns>
                             <Rock:ReorderField />
                             <asp:BoundField DataField="Name" HeaderText="Attribute" />
@@ -112,10 +112,15 @@
                     <asp:Literal ID="lGroupDescription" runat="server"></asp:Literal></p>
 
                 <div class="row">
-                    <asp:Literal ID="lblMainDetails" runat="server" />
+                    <div class="col-md-6">
+                        <asp:Literal ID="lblMainDetails" runat="server" />
+                        <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
+                    </div>
+                    <div class="col-md-6 location-maps">
+                        <asp:PlaceHolder ID="phLocationMaps" runat="server"></asp:PlaceHolder>
+                    </div>
                 </div>
 
-                <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
 
                 <div class="actions">
                     <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-sm" OnClick="btnEdit_Click" CausesValidation="false" />
@@ -155,17 +160,10 @@
 
                 <div class="tabContent" >
                     <asp:Panel ID="pnlMemberSelect" runat="server" Visible="true" >
-                        <div class="row">
-                            <div class="col-md-6">
-                                <Rock:RockDropDownList ID="ddlMember" runat="server" Label="Member" ValidationGroup="Location" AutoPostBack="true" OnSelectedIndexChanged="ddlMember_SelectedIndexChanged" />
-                            </div>
-                            <div class="col-md-6">
-                                <Rock:RockDropDownList ID="ddlMemberLocation" runat="server" Label="Address" ValidationGroup="Location" />
-                            </div>
-                        </div>
+                        <Rock:RockDropDownList ID="ddlMember" runat="server" Label="Member" ValidationGroup="Location" />
                     </asp:Panel>
                     <asp:Panel ID="pnlLocationSelect" runat="server" Visible="false">
-                        <Rock:LocationPicker ID="locpGroupLocation" runat="server" PickerMode="NamedLocation" AllowModeSelection="false" Label="Location" ValidationGroup="Location" />
+                        <Rock:LocationPicker ID="locpGroupLocation" runat="server" Label="Location" ValidationGroup="Location" />
                     </asp:Panel>
                 </div>
 
