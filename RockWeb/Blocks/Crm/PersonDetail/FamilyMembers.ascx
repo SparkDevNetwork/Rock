@@ -14,18 +14,18 @@
 
                     <div class="row">
                 
-                        <div class="col-md-8 members clearfix">
+                        <div class="col-md-8 clearfix">
 
                             <header class="title"><span class="first-word"><%# Eval("Name") %></span> Family</header>
 
-                            <ul class="clearfix">
+                            <ul class="groupmembers">
 
                                 <asp:Repeater ID="rptrMembers" runat="server">
                                     <ItemTemplate>
-                                        <li>
+                                        <li class="member">
                                             <a href='<%# Eval("PersonId") %>'>
                                                 <asp:Image ID="imgPerson" runat="server" />
-                                                <div class="member">
+                                                <div>
                                                     <h4><%# Eval("Person.FirstName") %></h4>
                                                     <small class="age"><%# Eval("Person.Age")  %></small>
                                                 </div>
