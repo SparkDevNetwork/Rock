@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Prayer
             }
             else
             {
-                ddlCategory.Visible = false;
+                bddlCategory.Visible = false;
             }
 
             Type type = new PrayerRequest().GetType();
@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Prayer
             int charLimit;
             if ( Int32.TryParse( GetAttributeValue( "CharacterLimit" ), out charLimit ) && charLimit > 0 )
             {
-                txtRequest.Placeholder = string.Format( "Please pray that... (up to {0} characters)", charLimit );
+                dtbRequest.Placeholder = string.Format( "Please pray that... (up to {0} characters)", charLimit );
                 string script = string.Format( @"
     function SetCharacterLimit() {{
         $('#{0}').limit({{maxChars: {1}, counter:'#{2}', normalClass:'badge', warningClass:'badge-warning', overLimitClass: 'badge-danger'}});
@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Prayer
     }};
     $(document).ready(function () {{ SetCharacterLimit(); }});
     Sys.WebForms.PageRequestManager.getInstance().add_endRequest(SetCharacterLimit);
-", txtRequest.ClientID, charLimit, lblCount.ClientID, btnSave.ClientID );
+", dtbRequest.ClientID, charLimit, lblCount.ClientID, lbSave.ClientID );
                 ScriptManager.RegisterStartupScript( this.Page, this.GetType(), string.Format( "limit-{0}", this.ClientID ), script, true );
             }
         }
@@ -97,11 +97,11 @@ namespace RockWeb.Blocks.Prayer
         {
             Guid guid = new Guid( categoryGuid );
 
-            ddlCategory.DataSource = new CategoryService().GetByEntityTypeId( _prayerRequestEntityTypeId ).Where( c => c.Guid == guid ||
+            bddlCategory.DataSource = new CategoryService().GetByEntityTypeId( _prayerRequestEntityTypeId ).Where( c => c.Guid == guid ||
                 (c.ParentCategory != null && c.ParentCategory.Guid == guid ) ).AsQueryable().ToList();
-            ddlCategory.DataTextField = "Name";
-            ddlCategory.DataValueField = "Id";
-            ddlCategory.DataBind();
+            bddlCategory.DataTextField = "Name";
+            bddlCategory.DataValueField = "Id";
+            bddlCategory.DataBind();
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace RockWeb.Blocks.Prayer
             nbWarningMessage.Visible = false;
             int charLimit;
             if ( Int32.TryParse( GetAttributeValue( "CharacterLimit" ), out charLimit ) && charLimit > 0 
-                && txtRequest.Text.Length > charLimit )
+                && dtbRequest.Text.Length > charLimit )
             {
                 nbWarningMessage.Visible = true;
                 nbWarningMessage.Text = string.Format( "Whoops. Would you mind reducing the length of your prayer request to {0} characters?", charLimit );
@@ -139,10 +139,11 @@ namespace RockWeb.Blocks.Prayer
             }
 
             // Now record all the bits...
-            prayerRequest.CategoryId = ddlCategory.SelectedValueAsInt();
-            prayerRequest.FirstName = tbFirstName.Text;
-            prayerRequest.LastName = tbLastName.Text;
-            prayerRequest.Text = txtRequest.Text;
+            prayerRequest.CategoryId = bddlCategory.SelectedValueAsInt();
+            prayerRequest.FirstName = dtbFirstName.Text;
+            prayerRequest.LastName = dtbLastName.Text;
+            prayerRequest.Email = dtbEmail.Text;
+            prayerRequest.Text = dtbRequest.Text;
 
             if ( enableUrgentFlag )
             {
@@ -194,9 +195,9 @@ namespace RockWeb.Blocks.Prayer
         {
             pnlForm.Visible = true;
             pnlReceipt.Visible = false;
-            txtRequest.Text = "";
+            dtbRequest.Text = "";
             //rblCategory.SelectedIndex = -1;
-            txtRequest.Focus();
+            dtbRequest.Focus();
         }
 }
 }

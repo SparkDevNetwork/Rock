@@ -246,7 +246,7 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( DefaultPageId != null && DefaultPageId.Value != 0 )
+                if ( DefaultPageId.HasValue && DefaultPageId.Value != 0 )
                     return PageCache.Read( DefaultPageId.Value );
                 else
                     return null;

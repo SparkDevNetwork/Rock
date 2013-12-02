@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Administration
             gMetrics.Actions.AddClick += gMetrics_Add;
             gMetrics.GridRebind += gMetrics_GridRebind;                    
            
-            rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
+            gfFilter.ApplyFilterClick += gfFilter_ApplyFilterClick;
             BindCategoryFilter();                
                        
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
@@ -70,9 +70,9 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "Category", ddlCategoryFilter.SelectedValue );
+            gfFilter.SaveUserPreference( "Category", ddlCategoryFilter.SelectedValue );
             BindGrid();
         }
 
@@ -148,7 +148,7 @@ namespace RockWeb.Blocks.Administration
             foreach ( var item in items )
             {
                 var li = new ListItem( item );
-                li.Selected = ( !Page.IsPostBack && rFilter.GetUserPreference( "Category" ) == item );
+                li.Selected = ( !Page.IsPostBack && gfFilter.GetUserPreference( "Category" ) == item );
                 ddlCategoryFilter.Items.Add( li );
             }
         }

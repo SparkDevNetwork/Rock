@@ -133,16 +133,16 @@ namespace RockWeb.Blocks.Prayer
             //}
 
             // Filter by Date Range
-            if ( pDateRange.LowerValue.HasValue )
+            if ( drpDateRange.LowerValue.HasValue )
             {
-                DateTime startDate = pDateRange.LowerValue.Value.Date;
+                DateTime startDate = drpDateRange.LowerValue.Value.Date;
                 prayerComments = prayerComments.Where( a => a.CreationDateTime >= startDate );
             }
 
-            if ( pDateRange.UpperValue.HasValue )
+            if ( drpDateRange.UpperValue.HasValue )
             {
                 // Add one day in order to include everything up to the end of the selected datetime.
-                var endDate = pDateRange.UpperValue.Value.AddDays( 1 );
+                var endDate = drpDateRange.UpperValue.Value.AddDays( 1 );
                 prayerComments = prayerComments.Where( a => a.CreationDateTime < endDate );
             }
 
@@ -194,7 +194,7 @@ namespace RockWeb.Blocks.Prayer
 
             if ( failure )
             {
-                mdGridWarning.Show( "Unable to approve that prayer comment", ModalAlertType.Warning );
+                maGridWarning.Show( "Unable to approve that prayer comment", ModalAlertType.Warning );
             }
         }
 
@@ -215,7 +215,7 @@ namespace RockWeb.Blocks.Prayer
                     string errorMessage;
                     if ( !noteService.CanDelete( note, out errorMessage ) )
                     {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                        maGridWarning.Show( errorMessage, ModalAlertType.Information );
                         return;
                     }
 
@@ -271,16 +271,16 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         private void BindFilter()
         {
-            string fromDate = rFilter.GetUserPreference( FilterSetting.FromDate );
+            string fromDate = gfFilter.GetUserPreference( FilterSetting.FromDate );
             if ( !string.IsNullOrWhiteSpace( fromDate ) )
             {
-                pDateRange.LowerValue = DateTime.Parse( fromDate );
+                drpDateRange.LowerValue = DateTime.Parse( fromDate );
             }
 
-            string toDate = rFilter.GetUserPreference( FilterSetting.ToDate );
+            string toDate = gfFilter.GetUserPreference( FilterSetting.ToDate );
             if ( !string.IsNullOrWhiteSpace( toDate ) )
             {
-                pDateRange.UpperValue = DateTime.Parse( toDate );
+                drpDateRange.UpperValue = DateTime.Parse( toDate );
             }
         }
 
@@ -289,10 +289,10 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( FilterSetting.FromDate, pDateRange.LowerValue.HasValue ? pDateRange.LowerValue.Value.ToString( "d" ) : string.Empty );
-            rFilter.SaveUserPreference( FilterSetting.ToDate, pDateRange.UpperValue.HasValue ? pDateRange.UpperValue.Value.ToString( "d" ) : string.Empty );
+            gfFilter.SaveUserPreference( FilterSetting.FromDate, drpDateRange.LowerValue.HasValue ? drpDateRange.LowerValue.Value.ToString( "d" ) : string.Empty );
+            gfFilter.SaveUserPreference( FilterSetting.ToDate, drpDateRange.UpperValue.HasValue ? drpDateRange.UpperValue.Value.ToString( "d" ) : string.Empty );
 
             BindCommentsGrid();
         }
@@ -302,7 +302,7 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e as DisplayFilterValueArgs (hint: e.Key and e.Value).</param>
-        protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        protected void gfFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
             // not necessary yet.
         }
