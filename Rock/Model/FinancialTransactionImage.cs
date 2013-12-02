@@ -12,7 +12,8 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Transaction Image POCO class.
+    /// Represents an image that is associated with a <see cref="Rock.Model.FinancialTransaction"/>. Examples could be 
+    /// the front or back side of a check or an offering envelope.
     /// </summary>
     [Table( "FinancialTransactionImage" )]
     [DataContract]
@@ -22,28 +23,29 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the transaction id.
+        /// Gets or sets the TransactionId of the <see cref="Rock.Model.FinancialTransaction"/> that this image belongs to
         /// </summary>
         /// <value>
-        /// The transaction id.
+        /// A <see cref="System.Int32"/> representing the <see cref="Rock.Model.FinancialTransaction"/>that this image belongs to.
         /// </value>
         [DataMember]
         public int TransactionId { get; set; }
 
         /// <summary>
-        /// Gets or sets the binary file id.
+        /// Gets or sets the BinaryFileId of the image's <see cref="Rock.Model.BinaryFile"/> 
         /// </summary>
         /// <value>
-        /// The binary file id.
+        /// A <see cref="System.Int32"/> representing BinaryFileId of the image's <see cref="Rock.Model.BinaryFile"/>
         /// </value>
         [DataMember]
         public int BinaryFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the transaction image type value id.
+        /// Gets or sets DefinedValueId of the transaction image type <see cref="Rock.Model.DefinedValue"/> for this image.
         /// </summary>
         /// <value>
-        /// The transaction image type value id.
+        /// A <see cref="System.Int32"/> representing the DefinedValueId of the transaction image type <see cref="Rock.Model.DefinedValue"/>
+        /// for this image.
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.FINANCIAL_TRANSACTION_IMAGE_TYPE )]
@@ -54,26 +56,26 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the transaction.
+        /// Gets or sets the <see cref="Rock.Model.FinancialTransaction"/> that this image belongs to.
         /// </summary>
         /// <value>
-        /// The transaction.
+        /// The <see cref="Rock.Model.FinancialTransaction"/> that this image belongs to.
         /// </value>
         public virtual FinancialTransaction Transaction { get; set; }
 
         /// <summary>
-        /// Gets or sets the binary file.
+        /// Gets or sets the <see cref="Rock.Model.BinaryFile"/> of the image.
         /// </summary>
         /// <value>
-        /// The binary file.
+        /// The image's <see cref="Rock.Model.BinaryFile"/>
         /// </value>
         public virtual BinaryFile BinaryFile { get; set; }
 
         /// <summary>
-        /// Gets or sets the transaction image type value.
+        /// Gets or sets the transaction image type <see cref="Rock.Model.DefinedValue"/> of this image.
         /// </summary>
         /// <value>
-        /// The transaction image type value.
+        /// The transaction image type <see cref="Rock.Model.DefinedValue"/> of this image.
         /// </value>
         public virtual DefinedValue TransactionImageTypeValue { get; set; }
 
