@@ -874,8 +874,8 @@ namespace Rock.Web.Cache
                 var properties = new Dictionary<string, object>();
                 properties.Add( "id", this.Id );
                 properties.Add( "title", this.Title ?? this.Name );
-                properties.Add( "current", isCurrentPage.ToString() );
-                properties.Add( "isParentOfCurrent", isParentOfCurrent.ToString() );
+                properties.Add( "current", isCurrentPage.ToString().ToLower() );
+                properties.Add( "isParentOfCurrent", isParentOfCurrent.ToString().ToLower() );
                 properties.Add( "url", new PageReference( this.Id, 0, parameters, queryString ).BuildUrl() );
                 properties.Add( "display-description", this.MenuDisplayDescription.ToString().ToLower() );
                 properties.Add( "display-icon", this.MenuDisplayIcon.ToString().ToLower() );

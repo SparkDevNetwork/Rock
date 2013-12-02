@@ -124,13 +124,13 @@ namespace RockWeb.Blocks.Administration
 
         #region Edit Events
 
-        protected void btnCancel_Click( object sender, EventArgs e )
+        protected void lbCancel_Click( object sender, EventArgs e )
         {
             rGrid.Visible = true;
             pnlDetails.Visible = false;
         }
 
-        protected void btnSave_Click( object sender, EventArgs e )
+        protected void lbSave_Click( object sender, EventArgs e )
         {
             Rock.Model.Page page;
 
@@ -153,7 +153,7 @@ namespace RockWeb.Blocks.Administration
                     page.LayoutId = CurrentPage.LayoutId;
                 }
 
-                page.Title = tbPageName.Text;
+                page.Title = dtbPageName.Text;
                 page.EnableViewState = true;
                 page.IncludeAdminFooter = true;
 
@@ -173,7 +173,7 @@ namespace RockWeb.Blocks.Administration
                 page = pageService.Get( pageId );
 
             page.LayoutId = ddlLayout.SelectedValueAsInt().Value;
-            page.Name = tbPageName.Text;
+            page.Name = dtbPageName.Text;
 
             pageService.Save( page, CurrentPersonId );
 
@@ -221,10 +221,10 @@ namespace RockWeb.Blocks.Administration
                 hfPageId.Value = page.Id.ToString();
                 try { ddlLayout.SelectedValue = page.LayoutId.ToString(); }
                 catch { }
-                tbPageName.Text = page.Name;
+                dtbPageName.Text = page.Name;
 
                 lEditAction.Text = "Edit";
-                btnSave.Text = "Save";
+                lbSave.Text = "Save";
             }
             else
             {
@@ -239,10 +239,10 @@ namespace RockWeb.Blocks.Administration
                 }
                 catch { }
 
-                tbPageName.Text = string.Empty;
+                dtbPageName.Text = string.Empty;
 
                 lEditAction.Text = "Add";
-                btnSave.Text = "Add";
+                lbSave.Text = "Add";
             }
 
             rGrid.Visible = false;

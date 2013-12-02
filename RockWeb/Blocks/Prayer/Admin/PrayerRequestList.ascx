@@ -2,8 +2,8 @@
 <asp:UpdatePanel ID="upPrayerRequests" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlLists" runat="server" Visible="true">
-            <Rock:GridFilter ID="rFilter" runat="server" OnApplyFilterClick="rFilter_ApplyFilterClick" OnDisplayFilterValue="rFilter_DisplayFilterValue">
-                <Rock:DateRangePicker ID="pDateRange" runat="server" Label="Date Range" />
+            <Rock:GridFilter ID="gfFilter" runat="server" OnApplyFilterClick="gfFilter_ApplyFilterClick" OnDisplayFilterValue="gfFilter_DisplayFilterValue">
+                <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Date Range" />
 
                 <Rock:RockDropDownList ID="ddlApprovedFilter" runat="server" Label="Approval Status">
                     <asp:ListItem Text="[All]" Value="all"></asp:ListItem>
@@ -35,10 +35,10 @@
                     <asp:ListItem Text="Not Allowed" Value="unallow"></asp:ListItem>
                 </Rock:RockDropDownList>
 
-                <Rock:CategoryPicker ID="cpPrayerCategoryFilter" runat="server" Label="Category" Required="true" EntityTypeName="Rock.Model.PrayerRequest"/>
+                <Rock:CategoryPicker ID="catpPrayerCategoryFilter" runat="server" Label="Category" Required="true" EntityTypeName="Rock.Model.PrayerRequest"/>
             </Rock:GridFilter>
 
-            <Rock:ModalAlert ID="mdGridWarning" runat="server" />
+            <Rock:ModalAlert ID="maGridWarning" runat="server" />
 
             <Rock:Grid ID="gPrayerRequests" runat="server" AllowSorting="true" RowItemText="request" OnRowSelected="gPrayerRequests_Edit" OnRowDataBound="gPrayerRequests_RowDataBound" >
                 <Columns>
