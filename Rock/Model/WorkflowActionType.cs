@@ -14,7 +14,7 @@ using Rock.Workflow;
 namespace Rock.Model
 {
     /// <summary>
-    /// ActionType POCO Entity.
+    /// Represents an <see cref="Rock.Model.WorkflowActionType"/> (action or task) that is performed as part of a <see cref="Rock.Model.WorkflowActionType"/>.
     /// </summary>
     [Table( "WorkflowActionType" )]
     [DataContract]
@@ -24,7 +24,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the activity type id.
+        /// Gets or sets the ActivityTypeId of the <see cref="Rock.Model.WorkflowActivityType"/> that performs this Action Type.
         /// </summary>
         /// <value>
         /// The activity type id.
@@ -33,10 +33,10 @@ namespace Rock.Model
         public int ActivityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the friendly name of the ActionType
         /// </summary>
         /// <value>
-        /// Friendly name for the job..
+        /// A <see cref="System.String"/> representing the name of the ActionType.
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -44,7 +44,7 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order of the ActionType in the <see cref="Rock.Model.WorkflowActivityType" />
         /// </summary>
         /// <value>
         /// Order.
@@ -54,10 +54,10 @@ namespace Rock.Model
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the entity type id.
+        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that the action is operating against.
         /// </summary>
         /// <value>
-        /// The entity type id.
+        /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that the action is operating against.
         /// </value>
         [DataMember]
         public int EntityTypeId { get; set; }
@@ -66,7 +66,7 @@ namespace Rock.Model
         /// Gets or sets a value indicating whether this instance is action completed on success.
         /// </summary>
         /// <value>
-        /// <c>true</c> if this instance is action completed on success; otherwise, <c>false</c>.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this instance is action completed on success; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
         public bool IsActionCompletedOnSuccess { get; set; }
@@ -75,7 +75,7 @@ namespace Rock.Model
         /// Gets or sets a value indicating whether this instance is activity completed on success.
         /// </summary>
         /// <value>
-        /// <c>true</c> if this instance is activity completed on success; otherwise, <c>false</c>.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this instance is activity completed on success; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
         public bool IsActivityCompletedOnSuccess { get; set; }
@@ -85,16 +85,16 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the type of the activity.
+        /// Gets or sets the <see cref="Rock.Model.WorkflowActivityType"/> that performs this ActionType.
         /// </summary>
         /// <value>
-        /// The type of the activity.
+        /// The <see cref="Rock.Model.WorkflowActivityType" /> that performs this ActionType.
         /// </value>
         [DataMember]
         public virtual WorkflowActivityType ActivityType { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the entity.
+        /// Gets or sets the <see cref="Rock.Model.EntityType"/> of that this ActionType is running against.
         /// </summary>
         /// <value>
         /// The type of the entity.
@@ -103,10 +103,10 @@ namespace Rock.Model
         public virtual EntityType EntityType { get; set; }
 
         /// <summary>
-        /// Gets the workflow action.
+        /// Gets the <see cref="Rock.Workflow.ActionComponent"/>
         /// </summary>
         /// <value>
-        /// The workflow action.
+        /// The <see cref="Rock.Workflow.ActionComponent"/>
         /// </value>
         public virtual ActionComponent WorkflowAction
         {
@@ -129,10 +129,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the parent authority.
+        /// Gets the parent security authority for this ActionType.
         /// </summary>
         /// <value>
-        /// The parent authority.
+        /// The parent security authority for this ActionType.
         /// </value>
         public override Security.ISecured ParentAuthority
         {

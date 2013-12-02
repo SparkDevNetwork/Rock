@@ -15,7 +15,7 @@ using Rock.Workflow;
 namespace Rock.Model
 {
     /// <summary>
-    /// Action POCO Entity.
+    /// Represents a persisted WorkflowAction in RockChMS.
     /// </summary>
     [Table( "WorkflowAction" )]
     [DataContract]
@@ -25,37 +25,37 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the activity id.
+        /// Gets or sets the WorkflowActivityId of the <see cref="Rock.Model.WorkflowActivity"/> that this WorkflowAction is a part of.
         /// </summary>
         /// <value>
-        /// The activity id.
+        /// A <see cref="System.Int32"/> represents the WorflowActivityId that this WorkflowAction is a part of.
         /// </value>
         [DataMember]
         public int ActivityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the activity type id.
+        /// Gets or sets the ActionTypeId of the <see cref="Rock.Model.WorkflowAction"/> that is being executed by this instance.
         /// </summary>
         /// <value>
-        /// The activity type id.
+        /// A <see cref="System.Int32"/> representing the ActionTypeId of the <see cref="Rock.Model.WorkflowActionType"/> that is being executed on this instance.
         /// </value>
         [DataMember]
         public int ActionTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the last processed date time.
+        /// Gets or sets the date and time that this WorkflowAction was last processed.
         /// </summary>
         /// <value>
-        /// The last processed date time.
+        /// A <see cref="System.DateTime"/> representing the date and time that this WorkflowAction was last processed.
         /// </value>
         [DataMember]
         public DateTime? LastProcessedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the completed date time.
+        /// Gets or sets the date and time that the WorkflowAction completed.
         /// </summary>
         /// <value>
-        /// The completed date time.
+        /// A <see cref="System.DateTime"/> representing the date and time that the WorkflowAction completed.
         /// </value>
         [DataMember]
         public DateTime? CompletedDateTime { get; set; }
@@ -65,28 +65,28 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the  activity.
+        /// Gets or sets the <see cref="Rock.Model.WorkflowActivity"/> that contains the WorkflowAction.
         /// </summary>
         /// <value>
-        /// The activity.
+        /// The <see cref="Rock.Model.WorkflowActivity"/> that contains this WorkflowAction.
         /// </value>
         [DataMember]
         public virtual WorkflowActivity Activity { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the activity.
+        /// Gets or sets the <see cref="Rock.Model.WorkflowActionType"/> that is being executed by this WorkflowAction.
         /// </summary>
         /// <value>
-        /// The type of the activity.
+        /// The <see cref="Rock.Model.WorkflowActionType"/> that is being executed.
         /// </value>
         [DataMember]
         public virtual WorkflowActionType ActionType { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is active.
+        /// Gets a value indicating whether this WorkflowAction is active.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        ///   <c>true</c> if this WorkflowAction is active; otherwise, <c>false</c>.
         /// </value>
         public virtual bool IsActive
         {
@@ -97,10 +97,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the parent authority.
+        /// Gets the parent security authority for this WorkflowAction.
         /// </summary>
         /// <value>
-        /// The parent authority.
+        /// The parent security authority for this WorkflowAction.
         /// </value>
         public override Security.ISecured ParentAuthority
         {
@@ -115,11 +115,11 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
-        /// Processes this instance.
+        /// Processes this WorkflowAction.
         /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="errorMessages">The error messages.</param>
-        /// <returns></returns>
+        /// <param name="entity">The entity that the WorkflowAction is operating against.</param>
+        /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}"/> that will contain any error messages that occur while processing the WorkflowAction.</param>
+        /// <returns>A <see cref="System.Boolean"/> value that is <c>true</c> if the process completed successfully; otherwise <c>false</c>.</returns>
         /// <exception cref="System.SystemException"></exception>
         internal virtual bool Process( Object entity, out List<string> errorMessages )
         {
@@ -154,9 +154,9 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds a log entry.
+        /// Adds a <see cref="Rock.Model.WorkflowLog"/> entry.
         /// </summary>
-        /// <param name="logEntry">The log entry.</param>
+        /// <param name="logEntry">A <see cref="System.String"/> representing the  log entry.</param>
         public virtual void AddLogEntry( string logEntry )
         {
             if ( this.Activity != null &&
@@ -167,7 +167,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Marks this action as complete.
+        /// Marks this WorkflowAction as complete.
         /// </summary>
         public virtual void MarkComplete()
         {
@@ -176,10 +176,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns a <see cref="System.String" /> that represents this WorkflowAction.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="System.String" /> that represents this WorkflowAction..
         /// </returns>
         public override string ToString()
         {
@@ -193,7 +193,7 @@ namespace Rock.Model
         /// <summary>
         /// Logs a system event.
         /// </summary>
-        /// <param name="logEntry">The log entry.</param>
+        /// <param name="logEntry">A <see cref="System.String"/>representing the log entry.</param>
         private void AddSystemLogEntry( string logEntry )
         {
             if ( this.Activity != null &&
@@ -210,11 +210,11 @@ namespace Rock.Model
         #region Static Methods
 
         /// <summary>
-        /// Activates the specified action type.
+        /// Activates the specified <see cref="Rock.Model.WorkflowAction"/>.
         /// </summary>
-        /// <param name="actionType">Type of the action.</param>
-        /// <param name="activity">The activity.</param>
-        /// <returns></returns>
+        /// <param name="actionType">The <see cref="Rock.Model.WorkflowActionType"/> to be activated.</param>
+        /// <param name="activity">The <see cref="Rock.Model.WorkflowActivity"/> that this WorkflowAction belongs to..</param>
+        /// <returns>The <see cref="Rock.Model.WorkflowAction"/></returns>
         internal static WorkflowAction Activate( WorkflowActionType actionType, WorkflowActivity activity)
         {
             var action = new WorkflowAction();
