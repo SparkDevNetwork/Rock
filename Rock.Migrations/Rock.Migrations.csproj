@@ -62,6 +62,7 @@
     <Compile Include="Migrations\201312031820461_ExternalSiteSecurityTweak.cs" />
     <Compile Include="Migrations\201312031820461_ExternalSiteSecurityTweak.Designer.cs">
       <DependentUpon>201312031820461_ExternalSiteSecurityTweak.cs</DependentUpon>
+	</Compile>
     <Compile Include="Migrations\201312032109329_AddHtmlContentApprovalBlock.cs" />
     <Compile Include="Migrations\201312032109329_AddHtmlContentApprovalBlock.Designer.cs">
       <DependentUpon>201312032109329_AddHtmlContentApprovalBlock.cs</DependentUpon>
@@ -93,6 +94,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201312031820461_ExternalSiteSecurityTweak.resx">
       <DependentUpon>201312031820461_ExternalSiteSecurityTweak.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201312032109329_AddHtmlContentApprovalBlock.resx">
       <DependentUpon>201312032109329_AddHtmlContentApprovalBlock.cs</DependentUpon>
     </EmbeddedResource>
