@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Web.UI;
 using Rock.Extension;
 
@@ -28,6 +28,14 @@ namespace Rock.Reporting
         public abstract string EntityTypeName { get; }
 
         /// <summary>
+        /// Gets the default column header text.
+        /// </summary>
+        /// <value>
+        /// The default column header text.
+        /// </value>
+        public abstract string ColumnHeaderText { get; }
+
+        /// <summary>
         /// Gets the section.
         /// </summary>
         /// <value>
@@ -35,7 +43,7 @@ namespace Rock.Reporting
         /// </value>
         public virtual string Section
         {
-            get { return "Additional Columns"; }
+            get { return "Other"; }
         }
 
         /// <summary>
@@ -57,13 +65,14 @@ namespace Rock.Reporting
         /// <summary>
         /// Formats the selection on the client-side.  When the widget is collapsed by the user, the Filterfield control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before
         /// referencing this property.
         /// </summary>
+        /// <returns></returns>
         /// <value>
         /// The client format script.
-        /// </value>
-        public virtual string GetClientFormatSelection( Type entityType )
+        ///   </value>
+        public virtual string GetClientFormatSelection()
         {
             return this.Title;
         }
@@ -82,7 +91,7 @@ namespace Rock.Reporting
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
-        public virtual Control[] CreateChildControls( Type entityType, Control parentControl )
+        public virtual Control[] CreateChildControls( Control parentControl )
         {
             return new Control[0];
         }
@@ -90,11 +99,10 @@ namespace Rock.Reporting
         /// <summary>
         /// Renders the controls.
         /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
-        public virtual void RenderControls( Type entityType, Control parentControl, HtmlTextWriter writer, Control[] controls )
+        public virtual void RenderControls( Control parentControl, HtmlTextWriter writer, Control[] controls )
         {
             foreach ( var control in controls )
             {
@@ -106,10 +114,9 @@ namespace Rock.Reporting
         /// <summary>
         /// Gets the selection.
         /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
-        public virtual string GetSelection( Type entityType, Control[] controls )
+        public virtual string GetSelection( Control[] controls )
         {
             return string.Empty;
         }
@@ -117,21 +124,20 @@ namespace Rock.Reporting
         /// <summary>
         /// Sets the selection.
         /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
         /// <param name="selection">The selection.</param>
-        public virtual void SetSelection( Type entityType, Control[] controls, string selection )
+        public virtual void SetSelection( Control[] controls, string selection )
         {
             string[] selectionValues = selection.Split( '|' );
         }
 
         /// <summary>
-        /// Gets the data columns.
+        /// Returns an IQueryable that contains the additional column provided by this component
         /// </summary>
-        /// <value>
-        /// The data columns.
-        /// </value>
-        public abstract List<DataColumn> DataColumns { get; }
+        /// <param name="query">The query.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <returns></returns>
+        public abstract IQueryable AddColumn(IQueryable query, ParameterExpression parameterExpression);
     }
 
     /// <summary>
@@ -140,11 +146,6 @@ namespace Rock.Reporting
     /// <typeparam name="T"></typeparam>
     public abstract class DataSelectComponent<T> : DataSelectComponent
     {
-        /// <summary>
-        /// Gets the data column values.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns></returns>
-        public abstract List<object> GetDataColumnValues( T item );
+        
     }
 }

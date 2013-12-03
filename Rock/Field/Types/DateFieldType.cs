@@ -64,7 +64,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            return formattedValue;
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 
         /// <summary>

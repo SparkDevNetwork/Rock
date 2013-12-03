@@ -62,13 +62,25 @@ namespace Rock.Model
         private bool _isActive = true;
 
         /// <summary>
+        /// Gets or sets the Id of the LocationType <see cref="Rock.Model.DefinedValue"/> that is used to identify the type of <see cref="Rock.Model.Location"/>
+        /// that this is.
+        /// </summary>
+        /// <value>
+        /// An <see cref="System.Int32"/> referencing the Id of the LocationType <see cref="Rock.Model.DefinedValue"/> that identifies the type of group location that this is.
+        /// If a LocationType <see cref="Rock.Model.DefinedValue"/> is not associated with this GroupLocation this value will be null.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.LOCATION_TYPE )]
+        public int? LocationTypeValueId { get; set; }
+
+        /// <summary>
         /// Gets or sets the GeoPoint (geolocation) for the location
         /// </summary>
         /// <value>
         /// A <see cref="System.Data.Entity.Spatial.DbGeography"/> object that represents the geolocation of the Location.
         /// </value>
         [DataMember]
-        [Newtonsoft.Json.JsonIgnore]
+        [Newtonsoft.Json.JsonConverter(typeof(DbGeographyConverter))]
         public DbGeography GeoPoint { get; set; }
 
         /// <summary>
@@ -83,7 +95,7 @@ namespace Rock.Model
         /// A <see cref="System.Data.Entity.Spatial.DbGeography"/> object representing the parameter of a location.
         /// </value>
         [DataMember]
-        [Newtonsoft.Json.JsonIgnore]
+        [Newtonsoft.Json.JsonConverter( typeof( DbGeographyConverter ) )]
         public DbGeography GeoFence { get; set; }
 
         /// <summary>
@@ -392,6 +404,52 @@ namespace Rock.Model
         {
             return string.Format( "{0} {1} {2}, {3} {4}",
                 this.Street1, this.Street2, this.City, this.State, this.Zip ).ReplaceWhileExists( "  ", " " );
+        }
+
+        /// <summary>
+        /// Encodes the polygon for Google maps
+        /// </summary>
+        /// <returns></returns>
+        public virtual string EncodeGooglePolygon()
+        {
+            var str = new StringBuilder();
+
+            if ( this.GeoFence != null )
+            {
+                var encodeDiff = (Action<int>)( diff =>
+                {
+                    int shifted = diff << 1;
+                    if ( diff < 0 )
+                        shifted = ~shifted;
+                    int rem = shifted;
+                    while ( rem >= 0x20 )
+                    {
+                        str.Append( (char)( ( 0x20 | ( rem & 0x1f ) ) + 63 ) );
+                        rem >>= 5;
+                    }
+                    str.Append( (char)( rem + 63 ) );
+                } );
+
+                int lastLat = 0;
+                int lastLng = 0;
+
+                // AsText() returns coordinates as Well-Known-Text format (WKT).  Strip leading and closing text
+                string coordinates = this.GeoFence.AsText().Replace( "POLYGON ((", "" ).Replace( "))", "" );
+                string[] longSpaceLat = coordinates.Split( ',' );
+
+                for ( int i = 0; i < longSpaceLat.Length; i++ )
+                {
+                    string[] longLat = longSpaceLat[i].Trim().Split( ' ' );
+                    int lat = (int)Math.Round( double.Parse( longLat[1] ) * 1E5 );
+                    int lng = (int)Math.Round( double.Parse( longLat[0] ) * 1E5 );
+                    encodeDiff( lat - lastLat );
+                    encodeDiff( lng - lastLng );
+                    lastLat = lat;
+                    lastLng = lng;
+                }
+            }
+
+            return str.ToString();
         }
 
         #endregion

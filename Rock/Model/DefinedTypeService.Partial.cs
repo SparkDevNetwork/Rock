@@ -12,25 +12,27 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Defined Type POCO Service class
+    /// Service/Data Access class for <see cref="Rock.Model.DefinedType"/> entity objects.
     /// </summary>
     public partial class DefinedTypeService 
     {
         /// <summary>
-        /// Gets Defined Types by Field Type Id
+        /// Returns an enumerable collection of <see cref="Rock.Model.DefinedType">DefinedTypes</see> by FieldTypeId
         /// </summary>
-        /// <param name="fieldTypeId">Field Type Id.</param>
-        /// <returns>An enumerable list of DefinedType objects.</returns>
+        /// <param name="fieldTypeId">A <see cref="System.Int32"/> representing the FieldTypeId of the <see cref="Rock.Model.FieldType"/> that is used for the 
+        /// <see cref="Rock.Model.DefinedValue"/>
+        /// </param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.DefinedType">DefinedTypes</see> that use the specified <see cref="Rock.Model.FieldType"/>.</returns>
         public IEnumerable<Rock.Model.DefinedType> GetByFieldTypeId( int? fieldTypeId )
         {
             return Repository.Find( t => ( t.FieldTypeId == fieldTypeId || ( fieldTypeId == null && t.FieldTypeId == null ) ) ).OrderBy( t => t.Order );
         }
         
         /// <summary>
-        /// Gets Defined Type by Guid
+        /// Returns a <see cref="Rock.Model.DefinedType"/> by GUID identifier.
         /// </summary>
-        /// <param name="guid">Guid.</param>
-        /// <returns>DefinedType object.</returns>
+        /// <param name="guid">A <see cref="System.Guid"/> representing the Guid identifier of the <see cref="Rock.Model.DefinedType"/> to retrieve.</param>
+        /// <returns>The <see cref="Rock.Model.DefinedType"/> with a matching Guid identifier. If a match is not found, null is returned.</returns>
         public Rock.Model.DefinedType GetByGuid( Guid guid )
         {
             return Repository.FirstOrDefault( t => t.Guid == guid );

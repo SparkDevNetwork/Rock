@@ -354,7 +354,7 @@
         renderError: function (msg) {
             var $warning = $('<div class="alert alert-warning"/>').append('<p/>');
             $warning.find('p')
-                .append('<strong><i class="icon-warning-sign"></i> Uh oh! </strong>')
+                .append('<strong><i class="fa fa-exclamation-triangle"></i> Uh oh! </strong>')
                 .append(msg);
             this.$el.html($warning);
         },
@@ -503,10 +503,10 @@
         restParams: null,
         local: null,
         multiselect: false,
-        loadingHtml: '<span class="rock-tree-loading"><i class="icon-refresh icon-spin"></i></span>',
+        loadingHtml: '<span class="rock-tree-loading"><i class="fa fa-refresh fa-spin"></i></span>',
         iconClasses: {
-            branchOpen: 'icon-caret-down',
-            branchClosed: 'icon-caret-right',
+            branchOpen: 'fa fa-caret-down',
+            branchClosed: 'fa fa-caret-right',
             leaf: ''
         },
         mapping: {

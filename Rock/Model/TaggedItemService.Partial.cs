@@ -12,19 +12,22 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// MetricValue POCO Service class
+    /// Data access/service class for <see cref="Rock.Model.TaggedItem"/> entity objects.
     /// </summary>
     public partial class TaggedItemService
     {
         /// <summary>
-        /// Gets the tag by entity.
+        /// Returns a list of <see cref="Rock.Model.TaggedItem">TaggedItems</see> by EntityType, QualifierColumn, QualifierValue, OwnerId and EntityGuid.
         /// </summary>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="entityQualifierColumn">The entity qualifier column.</param>
-        /// <param name="entityQualifierValue">The entity qualifier value.</param>
-        /// <param name="ownerId">The owner id.</param>
-        /// <param name="entityGuid">The entity GUID.</param>
-        /// <returns></returns>
+        /// <param name="entityTypeId">A <see cref="System.Int32"/> representing the EntityTypeID of an <see cref="Rock.Model.EntityType"/> of the <see cref="Rock.Model.TaggedItem"/>. </param>
+        /// <param name="entityQualifierColumn">A <see cref="System.String"/> representing the EntityQualifierColumn of the <see cref="Rock.Model.Tag"/> that the <see cref="Rock.Model.TaggedItem"/>
+        /// belongs to. If a qualifier column was not used, this value can be null.</param>
+        /// <param name="entityQualifierValue">A <see cref="System.String"/> representing the EntityQualifierValue of the <see cref="Rock.Model.Tag"/> that the <see cref="Rock.Model.TaggedItem"/>
+        /// belongs to. If a qualifier value was not used, this  value can be null.</param>
+        /// <param name="ownerId">A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who is the owner of the <see cref="Rock.Model.Tag"/> that 
+        /// the <see cref="Rock.Model.TaggedItem"/> belongs to. </param>
+        /// <param name="entityGuid">A <see cref="System.Guid"/> representing the entity Guid of the <see cref="Rock.Model.TaggedItem"/></param>
+        /// <returns>A queryable collection of <see cref="Rock.Model.TaggedItem">TaggedItems</see> that match the provided criteria.</returns>
         public IQueryable<TaggedItem> Get( int entityTypeId, string entityQualifierColumn, string entityQualifierValue, int? ownerId, Guid entityGuid )
         {
             return Repository.AsQueryable()
@@ -38,11 +41,11 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets tag by tagId and entityId.
+        /// Returns a <see cref="Rock.Model.TaggedItem"/> by TagId and EntityGuid. 
         /// </summary>
-        /// <param name="tagId">The tag id.</param>
-        /// <param name="entityGuid">The entity GUID.</param>
-        /// <returns></returns>
+        /// <param name="tagId">A <see cref="System.Int32"/> representing the TagId of the <see cref="Rock.Model.Tag" /> that the <see cref="Rock.Model.TaggedItem"/> belongs to.</param>
+        /// <param name="entityGuid">A <see cref="System.Guid"/> representing the Guid identifier of an <see cref="Rock.Model.TaggedItem">TaggedItem's</see> Entity object.</param>
+        /// <returns>The <see cref="Rock.Model.TaggedItem"/> that matches the provided criteria. If a match is not found, null will be returned.</returns>
         public TaggedItem Get( int tagId, Guid entityGuid )
         {
             return Repository.AsQueryable()

@@ -105,7 +105,7 @@ namespace Rock.Web.UI.Controls
                 lbDelete.ToolTip = "Delete";
 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
-                buttonIcon.Attributes.Add( "class", "icon-remove" );
+                buttonIcon.Attributes.Add( "class", "fa fa-times" );
                 lbDelete.Controls.Add( buttonIcon );
 
                 lbDelete.Click += lbDelete_Click;
@@ -140,7 +140,7 @@ namespace Rock.Web.UI.Controls
                 ParentGrid.Enabled && 
                 ParentGrid.IsDeleteEnabled )
             {
-                lbDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.controls.grid.confirmDelete(event, '{0}');", ParentGrid.RowItemText );
+                lbDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", ParentGrid.RowItemText );
             }
             else
             {

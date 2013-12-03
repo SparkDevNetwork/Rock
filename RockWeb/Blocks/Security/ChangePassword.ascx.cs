@@ -43,19 +43,32 @@ namespace RockWeb.Blocks.Security
             var userLogin = userLoginService.GetByUserName( tbUserName.Text );
             if ( userLogin != null )
             {
-                if ( userLoginService.ChangePassword( userLogin, tbOldPassword.Text, tbPassword.Text ) )
+                if ( UserLoginService.IsPasswordValid( tbPassword.Text ) )
                 {
-                    userLoginService.Save( userLogin, CurrentPersonId );
+                    if ( userLoginService.ChangePassword( userLogin, tbOldPassword.Text, tbPassword.Text ) )
+                    {
+                        userLoginService.Save( userLogin, CurrentPersonId );
 
-                    lSuccess.Text = GetAttributeValue( "SuccessCaption" );
-                    pnlEntry.Visible = false;
-                    pnlSuccess.Visible = true;
+                        lSuccess.Text = GetAttributeValue( "SuccessCaption" );
+                        pnlEntry.Visible = false;
+                        pnlSuccess.Visible = true;
+                    }
+                    else
+                        DisplayError( "InvalidPasswordCaption" );
                 }
                 else
-                    DisplayError( "InvalidPasswordCaption" );
+                {
+                    InvalidPassword();
+                }
             }
             else
                 DisplayError( "InvalidUserNameCaption" );
+        }
+
+        private void InvalidPassword()
+        {
+            lInvalid.Text = UserLoginService.FriendlyPasswordRules();
+            pnlInvalid.Visible = true;
         }
 
         private void DisplayError( string message )

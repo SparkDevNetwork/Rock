@@ -11,14 +11,17 @@
 @font-weight-semibold:  600;
 
 // Standard Colors
-@accent-color: #d9e1e8;
+@accent-color: darken(@gray-lighter, 10%);
 @accent-text-color: @text-color;
-@accent-light-color: #e7ecf0;
+@accent-light-color: @gray-lighter;
 @accent-light-text-color: @text-color;
-@accent-semibold-color: #a4b4c4;
+@accent-semibold-color: @gray-light;
 @accent-semibold-text-color: #fff;
-@accent-bold-color: #8498ab; // overrides brand color
+@accent-bold-color: #428bca; // overrides brand color
 @accent-bold-text-color: #ecf0f3;
+
+@text-selection-color: #5279a0;
+@text-selection-text-color: #fff;
 
 // Page Styling
 // -------------------------
@@ -33,12 +36,14 @@
 
 @modal-header-bg: @header-bg;
 @modal-header-text-color: @header-text-color;
+@modal-dropshadow-color: #464646;
+// see bootstrap variables for additional modal styles
 
 // Components
 // -------------------------
 
 // Grid
-@grid-filter-bg: #d9e1e8;
+@grid-filter-bg: @accent-color;
 
 @grid-column-header-bg: @accent-bold-color;
 @grid-column-header-text-color: @accent-bold-text-color;
@@ -47,8 +52,9 @@
 
 @grid-hover-bg: @accent-light-color;
 
-@grid-footer-bg: #d9e1e8;
-@grid-footer-text-color: #444;
+@grid-filter-bg: @accent-color;
+@grid-footer-bg: @accent-color;
+@grid-footer-text-color: @accent-text-color;
 @grid-footer-font-size: 10px;
 @grid-footer-font-weight: 300;
 @grid-footer-button-bg: @accent-semibold-color;
@@ -437,7 +443,7 @@
 // -------------------------
 
 @nav-link-padding:                          10px 15px;
-@nav-link-hover-bg:                         transparent;
+@nav-link-hover-bg:                         lighten(@navbar-inverse-bg, 3%);
 
 @nav-disabled-link-color:                   @gray-light;
 @nav-disabled-link-hover-color:             @gray-light;

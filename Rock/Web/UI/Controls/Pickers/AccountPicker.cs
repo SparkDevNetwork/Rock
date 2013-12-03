@@ -25,7 +25,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit(e);
 
-            this.IconCssClass = "icon-building";
+            this.IconCssClass = "fa fa-building-o";
         }
         
         

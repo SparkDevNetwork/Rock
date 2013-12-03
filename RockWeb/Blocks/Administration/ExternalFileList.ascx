@@ -5,13 +5,16 @@
 
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
         
-        <Rock:Grid ID="gBinaryFile" runat="server" AllowSorting="true" DisplayType="Light" >
+        <Rock:Grid ShowHeader="false" ID="gBinaryFile" CssClass="table-padded" runat="server" AllowSorting="true" DisplayType="Light" OnRowDataBound="gBinaryFile_RowDataBound" >
             <Columns>
-                <Rock:AttributeField DataField="Icon" HeaderText="Icon" />
-                <Rock:AttributeField DataField="Name" HeaderText="Name" />
-                <asp:BoundField DataField="Description" HeaderText="Description" />
-                <asp:BoundField DataField="FileName" HeaderText="File Name" SortExpression="FileName" />
-                <Rock:LinkButtonField CssClass="" Text="Download" OnClick="Download_Click" />
+                <Rock:AttributeField DataField="Icon" HeaderText="" />
+                <asp:TemplateField SortExpression="Name" HeaderText="">
+                    <ItemTemplate>
+                       <h4><asp:Literal ID="lAppName" runat="server"></asp:Literal></h4>
+                        <%# Eval( "Description" ) %>
+                    </ItemTemplate>
+                </asp:TemplateField>
+                <asp:HyperLinkField Text="Download" />
             </Columns>
         </Rock:Grid>
 

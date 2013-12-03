@@ -113,8 +113,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            return DateRangePicker.FormatDelimitedValues( value ) ??
-                base.FormatValue( parentControl, value, configurationValues, condensed );
+            string formattedValue = DateRangePicker.FormatDelimitedValues( value ) ?? value;
+            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
         }
     }
 }

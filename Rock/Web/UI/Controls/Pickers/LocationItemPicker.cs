@@ -26,7 +26,7 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             this.ItemRestUrlExtraParams = "/0";
-            this.IconCssClass = "icon-home";
+            this.IconCssClass = "fa fa-home";
             base.OnInit( e );
         }
 

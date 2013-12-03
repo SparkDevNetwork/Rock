@@ -73,12 +73,30 @@ namespace RockWeb.Blocks.Administration
                 }
                 else
                 {
+                    // Get the context type since this may be for a non-rock core object
+                    Type contextType = null;
+                    var contexts = Rock.Reflection.SearchAssembly( type.Assembly, typeof( System.Data.Entity.DbContext ) );
+                    if ( contexts.Any() )
+                    {
+                        contextType = contexts.First().Value;
+                    } 
+                    
                     Type serviceType = typeof( Rock.Data.Service<> );
                     Type[] modelType = { type };
                     Type service = serviceType.MakeGenericType( modelType );
-                    var serviceInstance = Activator.CreateInstance( service );
                     var getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
-                    iSecured = getMethod.Invoke( serviceInstance, new object[] { entityId } ) as ISecured;
+
+                    if ( contextType != null )
+                    {
+                        var context = Activator.CreateInstance( contextType );
+                        var serviceInstance = Activator.CreateInstance( service, new object[] { context } );
+                        iSecured = getMethod.Invoke( serviceInstance, new object[] { entityId } ) as ISecured;
+                    }
+                    else
+                    {
+                        var serviceInstance = Activator.CreateInstance( service );
+                        iSecured = getMethod.Invoke( serviceInstance, new object[] { entityId } ) as ISecured;
+                    }
                 }
 
                 var block = iSecured as Rock.Model.Block;
@@ -122,16 +140,21 @@ namespace RockWeb.Blocks.Administration
                         $('#modal-popup div.modal-header h3 small', window.parent.document).html('{0}');
                     }});
                 ", HttpUtility.JavaScriptStringEncode(iSecured.ToString()) );
-
                     this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "set-html-{0}", this.ClientID ), script, true );
-
+                }
+                else
+                {
+                    rGrid.Visible = false;
+                    rGridParentRules.Visible = false;
+                    nbMessage.Text = "Unfortunately, you are not able to edit security because you do not belong to a role that has been configured to allow administration of this item.";
+                    nbMessage.Visible = true;
                 }
             }
             else
             {
                 rGrid.Visible = false;
                 rGridParentRules.Visible = false;
-                nbMessage.Text = string.Format( "Could not load the requested entity type ('{0}') to determine security attributes", entityParam );
+                nbMessage.Text = string.Format( "The requested entity type ('{0}') could not be loaded to determine security attributes.", entityParam );
                 nbMessage.Visible = true;
             }
             base.OnInit( e );

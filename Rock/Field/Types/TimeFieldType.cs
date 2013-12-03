@@ -39,7 +39,7 @@ namespace Rock.Field.Types
                 formattedValue = timeValue.ToString();
             }
 
-            return formattedValue;
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 
         /// <summary>

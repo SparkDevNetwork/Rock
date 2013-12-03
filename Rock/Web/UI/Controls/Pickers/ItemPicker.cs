@@ -516,7 +516,7 @@ namespace Rock.Web.UI.Controls
             _btnSelectNone.ClientIDMode = ClientIDMode.Static;
             _btnSelectNone.Attributes["class"] = "picker-select-none";
             _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
-            _btnSelectNone.InnerHtml = "<i class='icon-remove'></i>";
+            _btnSelectNone.InnerHtml = "<i class='fa fa-times'></i>";
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
 
@@ -535,6 +535,8 @@ namespace Rock.Web.UI.Controls
 
             RequiredFieldValidator.InitialValue = "0";
             RockControlHelper.CreateChildControls( this, Controls );
+
+            RequiredFieldValidator.Display = ValidatorDisplay.None;
         }
 
         /// <summary>
@@ -612,7 +614,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "picker-actions" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _btnSelect.RenderControl( writer );
-                writer.Write( "<a class='btn btn-xs picker-cancel' id='btnCancel_{0}'>Cancel</a>", this.ID );
+                writer.Write( "<a class='btn btn-xs btn-link picker-cancel' id='btnCancel_{0}'>Cancel</a>", this.ID );
                 writer.WriteLine();
                 writer.RenderEndTag();
                 

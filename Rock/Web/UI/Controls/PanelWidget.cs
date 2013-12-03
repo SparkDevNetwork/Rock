@@ -104,6 +104,18 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the CSS class.
+        /// </summary>
+        /// <value>
+        /// The CSS class.
+        /// </value>
+        public string CssClass
+        {
+            get { return ViewState["CssClass"] as string ?? string.Empty; }
+            set {  ViewState["CssClass"] = value; }
+        }
+
         #endregion
 
         /// <summary>
@@ -123,8 +135,8 @@ $('.rock-panel-widget > header').click(function () {
     $expanded = $(this).children('input.filter-expanded');
     $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
 
-    $('a.view-state > i', this).toggleClass('icon-chevron-down');
-    $('a.view-state > i', this).toggleClass('icon-chevron-up');
+    $('a.view-state > i', this).toggleClass('fa-chevron-down');
+    $('a.view-state > i', this).toggleClass('fa-chevron-up');
 });
 
 
@@ -191,7 +203,8 @@ $('.rock-panel-widget a.panel-widget-reorder').click(function (event) {
             if ( this.Visible )
             {
                 // Section
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget rock-panel-widget" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget rock-panel-widget " + CssClass );
+                writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
                 writer.RenderBeginTag( "section" );
 
                 // Header
@@ -228,7 +241,7 @@ $('.rock-panel-widget a.panel-widget-reorder').click(function (event) {
                 // Chevron up/down Button
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs view-state" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "icon-chevron-up" : "icon-chevron-down" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();

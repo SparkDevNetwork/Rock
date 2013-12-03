@@ -5,7 +5,7 @@
     2. Banner - used as the primary heading for a page or large section
     3. Tree - used for tree control
     4. Person List - used to show a list of people
-    5. 
+    5. Rollover - Used to hide/show items in the UI has the mouse rolls-over a container.
     6. Pagelist - used to list child pages; currently used in admin screens
     7. Tags - component that allows you to tag entities
     8. Switch - uses the Bootstrap Switch component
@@ -16,8 +16,10 @@
     13. Datepicker - styles for the date picker
     14. Timepicker - styles for the time picker
     15. File Upload / Image Upload - styles for the file / image uploader
-    16. Code Editor - Styles for the code editor control
-
+    16. Actions - used to hold buttons at the bottom of forms.
+    17. Code Editor - Styles for the code editor control
+    18. Update Panel Status - Styles for the wait screen on an update panel
+    19. Group List - styles a group of people in a ul -> li format
 */
 
 // 1. Pickers
@@ -106,7 +108,11 @@
 
         .contents {
             float: left;
-            margin-left: 5px;
+            margin-left: 10px;
+
+            h5 {
+                margin-bottom: 2px;
+            }
         }
     }
 
@@ -181,12 +187,15 @@ ul.rock-tree ul {
 }
 
 ul.rock-tree ul {
-	margin: 0px 0px 0px 25px;
+	margin: 0px 0px 0px 20px;
 }
 
 .rock-tree {
     
     .rock-tree-item {
+
+        white-space: nowrap;
+        
         & > i {
             cursor: pointer;
             padding: 4px;
@@ -233,7 +242,7 @@ ul.rock-tree ul {
     }
 
     .rock-tree-leaf {
-        padding-left: 12px;
+        padding-left: 14px;
     }
 }
 
@@ -248,7 +257,7 @@ ul.rock-tree ul {
         
         padding-left: 16px;
         
-        i[class=icon-circle] {
+        i.fa-circle {
             font-size: 9px;
             color: #d0cfcf;
             margin-right: 6px;
@@ -275,8 +284,31 @@ ul.rock-tree ul {
     }
 }
 
-// 5. 
+// 5. Rollover
 // -------------------------
+
+.rollover-container {
+
+    & > .rollover-item {
+        opacity: 0;
+        -webkit-transition: opacity .5s ease-out;
+        -moz-transition: opacity .5s ease-out;
+        -o-transition: opacity .5s ease-out;
+        transition: opacity .5s ease-out;
+    }
+
+    &:hover {
+        & > .rollover-item {
+            opacity: 1;
+        }
+    }
+}
+
+// always show item if on touch device
+.touch .rollover-item {
+    opacity: 1;
+}
+
 
 // 6. Pagelist
 // -------------------------
@@ -302,12 +334,11 @@ ul.rock-tree ul {
             overflow: hidden;
             color: @pagelist-text-color;
             text-align: center;
-            height: 80px;
 
             a {
                 display: block;
                 color: inherit;
-                height: 65px;
+                height: 80px;
                 padding: 12px;
             }
         }
@@ -656,7 +687,7 @@ div.tagsinput div
 	background-color: @smartsearch-bg;
 	border: 1px solid @smartsearch-border-color;
     height: 26px;
-    border-radius: 15px;
+    border-radius: @border-radius-base;
     padding: 0 6px;
 
     &:focus {
@@ -1068,8 +1099,70 @@ div.tagsinput div
     }
 }
 
-// 15. Code Editor
+// 16. Actions
+// -------------------------
+
+.actions {
+    margin-top: 12px;
+}
+
+// 17. Code Editor
 // -------------------------
 .code-editor {
    position: relative; 
 }
+
+// 18. Update Panel Status
+// -------------------------
+
+//.updateprogress-bg {
+//
+//}
+
+.updateprogress-status {
+    position: fixed; 
+    padding: 50px; 
+    color: @accent-bold-text-color; 
+    left: 40%; 
+    top: 40%; 
+    opacity: 1; 
+    background-color: @accent-bold-color;
+    border-radius: @border-radius-base;
+    z-index: (@zindex-modal-background + 100);
+}
+
+// 19. Group List
+// -------------------------
+    
+ul.groupmembers {
+    list-style: none;
+    margin: 6px 0;
+    padding: 0;
+
+    li.member {
+        float: left;
+        margin-right: 12px;
+        margin-bottom: 12px;
+        min-width: 150px;
+
+
+        img {
+            border: 3px solid #fff;
+        }
+
+        h4 {
+            font-size: 16px;
+            font-weight: @font-weight-semibold;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        small {
+            display: block;
+            line-height: 16px;
+            margin: 0;
+        }
+
+    }
+}
+    

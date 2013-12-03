@@ -16,6 +16,9 @@ namespace Rock.Attribute
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class DefinedValueFieldAttribute : FieldAttribute
     {
+        private const string DEFINED_TYPE_KEY = "definedtype";
+        private const string ALLOW_MULTIPLE_KEY = "allowmultiple";
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DefinedValueFieldAttribute" /> class.
         /// </summary>
@@ -23,16 +26,21 @@ namespace Rock.Attribute
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="allowMultiple">if set to <c>true</c> [allow multiple].</param>
         /// <param name="defaultValue">The default value.</param>
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public DefinedValueFieldAttribute( string definedTypeGuid, string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
+        public DefinedValueFieldAttribute( string definedTypeGuid, string name = "", string description = "", bool required = true, bool allowMultiple = false, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.DefinedValueFieldType ).FullName )
         {
             var definedType = Rock.Web.Cache.DefinedTypeCache.Read( new Guid( definedTypeGuid ) );
-            var configValue = new Field.ConfigurationValue( definedType.Id.ToString() );
-            FieldConfigurationValues.Add( "definedtype", configValue );
+
+            var definedTypeConfigValue = new Field.ConfigurationValue( definedType.Id.ToString() );
+            FieldConfigurationValues.Add( DEFINED_TYPE_KEY, definedTypeConfigValue );
+
+            var allowMultipleConfigValue = new Field.ConfigurationValue( allowMultiple.ToString() );
+            FieldConfigurationValues.Add( ALLOW_MULTIPLE_KEY, allowMultipleConfigValue );
 
             if ( string.IsNullOrWhiteSpace( Name ) )
             {

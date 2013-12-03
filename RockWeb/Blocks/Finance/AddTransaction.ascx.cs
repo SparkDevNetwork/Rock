@@ -30,7 +30,7 @@ namespace RockWeb.Blocks.Finance
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", false, "", "", 0, "CCGateway" )]
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "ACH Card Gateway", "The payment gateway to use for ACH (bank account) transactions", false, "", "", 1, "ACHGateway" )]
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving - ", "", 2 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, "", "", 3)]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false, "", "", 3)]
     [GroupLocationTypeField(Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Address Type", "The location type to use for the person's address", false,
         Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 4 )]
 
@@ -49,27 +49,27 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Prompt for Phone", "Should the user be prompted for their phone number?", false, "", 11, "DisplayPhone" )]
     [BooleanField( "Prompt for Email", "Should the user be prompted for their email address?", true, "", 12, "DisplayEmail" )]
 
-    [MemoField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.", true, @"
+    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <p>
 Please confirm the information below. Once you have confirmed that the information is accurate click the 'Finish' button to complete your transaction. 
 </p>
 ", "Text Options", 13 )]
 
-    [MemoField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section.", true, @"
+    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <div class='alert alert-info'>
 By clicking the 'finish' button below I agree to allow {{ OrganizationName }} to debit the amount above from my account. I acknowledge that I may 
 update the transaction information at any time by returning to this website. Please call the Finance Office if you have any additional questions. 
 </div>
 ", "Text Options", 14 )]
 
-    [MemoField( "Success Header", "The text (HTML) to display at the top of the success section.", true, @"
+    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <p>
 Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively 
 achieve our mission.  We are so grateful for your commitment. 
 </p>
 ", "Text Options", 15 )]
 
-    [MemoField( "Success Footer", "The text (HTML) to display at the bottom of the success section.", true, @"
+    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 ", "Text Options", 16 )]
 
     #endregion
@@ -164,8 +164,8 @@ achieve our mission.  We are so grateful for your commitment.
             base.OnInit( e );
 
             // If impersonation is allowed, and a valid person key was used, set the target to that person
-            bool allowInpersonation = false;
-            if ( bool.TryParse( GetAttributeValue( "Impersonation" ), out allowInpersonation ) && allowInpersonation )
+            bool allowImpersonation = false;
+            if ( bool.TryParse( GetAttributeValue( "Impersonation" ), out allowImpersonation ) && allowImpersonation )
             {
                 string personKey = PageParameter( "Person" );
                 if ( !string.IsNullOrWhiteSpace( personKey ) )
@@ -296,6 +296,18 @@ achieve our mission.  We are so grateful for your commitment.
                 else
                 {
                     rblSavedCC.Visible = false;
+                    divNewCard.Style[HtmlTextWriterStyle.Display] = "block";
+                }
+
+                if ( rblSavedAch.Items.Count > 0 )
+                {
+                    rblSavedAch.Items[0].Selected = true;
+                    rblSavedAch.Visible = true;
+                    divNewBank.Style[HtmlTextWriterStyle.Display] = "none";
+                }
+                else
+                {
+                    rblSavedAch.Visible = false;
                     divNewCard.Style[HtmlTextWriterStyle.Display] = "block";
                 }
 
@@ -721,9 +733,9 @@ achieve our mission.  We are so grateful for your commitment.
                     f.PublicName.Trim() != "" &&
                     ( f.StartDate == null || f.StartDate <= DateTime.Today ) &&
                     ( f.EndDate == null || f.EndDate >= DateTime.Today ) )
-                .OrderBy( f => f.PublicName ) )
+                .OrderBy( f => f.Order ) )
             {
-                var accountItem = new AccountItem( account.Id, account.Name, account.CampusId );
+                var accountItem = new AccountItem( account.Id, account.Order, account.Name, account.CampusId );
                 if ( showAll )
                 {
                     SelectedAccounts.Add( accountItem );
@@ -750,7 +762,7 @@ achieve our mission.  We are so grateful for your commitment.
         /// </summary>
         private void BindAccounts()
         {
-            rptAccountList.DataSource = SelectedAccounts;
+            rptAccountList.DataSource = SelectedAccounts.OrderBy( a => a.Order ).ToList();
             rptAccountList.DataBind();
 
             btnAddAccount.Visible = AvailableAccounts.Any();
@@ -968,6 +980,27 @@ achieve our mission.  We are so grateful for your commitment.
             if ( hfPaymentTab.Value == "ACH" )
             {
                 // Validate ach options
+                if ( rblSavedAch.Items.Count > 0 && ( rblSavedAch.SelectedValueAsInt() ?? 0 ) > 0 )
+                {
+                    // TODO: Find saved account
+                }
+                else
+                {
+                    if ( string.IsNullOrWhiteSpace( txtBankName.Text ) )
+                    {
+                        errorMessages.Add( "Make sure to enter a bank name" );
+                    }
+
+                    if ( string.IsNullOrWhiteSpace( txtRoutingNumber.Text ) )
+                    {
+                        errorMessages.Add( "Make sure to enter a valid routing number" );
+                    }
+
+                    if ( string.IsNullOrWhiteSpace( txtAccountNumber.Text ) )
+                    {
+                        errorMessages.Add( "Make sure to enter a valid account number" );
+                    }                
+                }                
             }
             else
             {
@@ -1148,7 +1181,10 @@ achieve our mission.  We are so grateful for your commitment.
                     reference.ReferenceNumber = savedAccount.ReferenceNumber;
                     reference.MaskedAccountNumber = savedAccount.MaskedAccountNumber;
                     reference.InitialCurrencyTypeValue = DefinedValueCache.Read( savedAccount.FinancialTransaction.CurrencyTypeValue );
-                    reference.InitialCreditCardTypeValue = DefinedValueCache.Read( savedAccount.FinancialTransaction.CreditCardTypeValue );
+                    if ( reference.InitialCurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) )
+                    { 
+                        reference.InitialCreditCardTypeValue = DefinedValueCache.Read( savedAccount.FinancialTransaction.CreditCardTypeValue );
+                    }
                     return reference;
                 }
             }
@@ -1542,6 +1578,7 @@ achieve our mission.  We are so grateful for your commitment.
         protected class AccountItem
         {
             public int Id { get; set; }
+            public int Order { get; set; }
             public string Name { get; set; }
             public int? CampusId { get; set; }
             public decimal Amount { get; set; }
@@ -1555,9 +1592,10 @@ achieve our mission.  We are so grateful for your commitment.
 
             }
 
-            public AccountItem( int id, string name, int? campusId )
+            public AccountItem( int id, int order, string name, int? campusId )
             {
                 Id = id;
+                Order = order;
                 Name = name;
                 CampusId = campusId;
             }
