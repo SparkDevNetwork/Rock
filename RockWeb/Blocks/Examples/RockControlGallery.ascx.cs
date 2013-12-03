@@ -37,6 +37,9 @@ namespace RockWeb.Blocks.Examples
             gExample.DataKeyNames = new string[] { "id" };
             gExample.GridRebind += gExample_GridRebind;
 
+            geoPicker.SelectGeography += geoPicker_SelectGeography;
+            geoPicker1.SelectGeography += geoPicker1_SelectGeography;
+
             List<string> list = ReadExamples();
             int i = -1;
             foreach ( var example in pnlDetails.ControlsOfTypeRecursive<HtmlControl>() )
@@ -363,5 +366,26 @@ namespace RockWeb.Blocks.Examples
         {
             string debug = scheduleBuilder.iCalendarContent;
         }
-    }
+
+        /// <summary>
+        /// Handles the SelectGeography event of the geoPicker1 control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void geoPicker1_SelectGeography( object sender, EventArgs e )
+        {
+            string debug = geoPicker1.SelectedValue.AsText();
+        }
+
+        /// <summary>
+        /// Handles the SelectGeography event of the geoPicker control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void geoPicker_SelectGeography( object sender, EventArgs e )
+        {
+            string debug = geoPicker.SelectedValue.AsText();
+
+        }
+}
 }
