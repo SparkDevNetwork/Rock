@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
+using Rock.Data;
 using Rock.Extension;
 
 namespace Rock.Reporting
@@ -113,6 +115,7 @@ namespace Rock.Reporting
 
         /// <summary>
         /// Gets the selection.
+        /// This is typically a string that contains the values selected with the Controls
         /// </summary>
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
@@ -132,12 +135,32 @@ namespace Rock.Reporting
         }
 
         /// <summary>
-        /// Returns an IQueryable that contains the additional column provided by this component
+        /// Returns an IQueryable that subquery of this DataSelectComponent
         /// </summary>
-        /// <param name="query">The query.</param>
-        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public abstract IQueryable AddColumn(IQueryable query, ParameterExpression parameterExpression);
+        /// <value>
+        /// The sub query.
+        ///   </value>
+        public abstract IQueryable<IEntity> SubQuery( string selection );
+
+        /// <summary>
+        /// The Linq Expression for the Select portion of the SubQuery
+        /// Note: This cannot include a WHERE expression, use WhereExpression for that
+        /// </summary>
+        /// <value>
+        /// The select expression.
+        /// </value>
+        /// <returns></returns>
+        public abstract Expression<Func<IEntity, DataSelectData>> SelectExpression { get; }
+
+        /// <summary>
+        /// The PropertyName of the property in the anonymous class returned by the SelectExpression
+        /// </summary>
+        /// <value>
+        /// The name of the column property.
+        /// </value>
+        public abstract string ColumnPropertyName { get; }
     }
 
     /// <summary>
@@ -146,6 +169,6 @@ namespace Rock.Reporting
     /// <typeparam name="T"></typeparam>
     public abstract class DataSelectComponent<T> : DataSelectComponent
     {
-        
+
     }
 }
