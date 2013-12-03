@@ -22,7 +22,7 @@ namespace Rock.Web.UI.Controls
             {
                 var rockPage = ( (RockPage)this.Page );
 
-                if ( rockPage.CurrentPage.PageDisplayTitle && !string.IsNullOrWhiteSpace( rockPage.Title ) )
+                if ( rockPage.DisplayTitle && !string.IsNullOrWhiteSpace( rockPage.Title ) )
                 {
                     writer.Write( rockPage.Title );
                 }

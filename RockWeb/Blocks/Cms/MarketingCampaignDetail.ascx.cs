@@ -300,7 +300,7 @@ namespace RockWeb.Blocks.Cms
 
             var qryParams = new Dictionary<string, string>();
             qryParams["marketingCampaignId"] = marketingCampaign.Id.ToString();
-            NavigateToPage( this.CurrentPage.Guid, qryParams );
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         #endregion

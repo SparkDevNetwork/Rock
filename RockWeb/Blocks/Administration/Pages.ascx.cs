@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Administration
                 if ( _page != null )
                     canConfigure = _page.IsAuthorized( "Administrate", CurrentPerson );
                 else
-                    canConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
+                    canConfigure = RockPage.IsAuthorized( "Administrate", CurrentPerson );
 
                 if ( canConfigure )
                 {
@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Administration
                 else
                 {
                     page.ParentPageId = null;
-                    page.LayoutId = CurrentPage.LayoutId;
+                    page.LayoutId = RockPage.LayoutId;
                 }
 
                 page.Title = dtbPageName.Text;
@@ -206,7 +206,7 @@ namespace RockWeb.Blocks.Administration
         private void LoadLayouts()
         {
             ddlLayout.Items.Clear();
-            int siteId = _page != null ? _page.Layout.SiteId : CurrentPage.Layout.SiteId;
+            int siteId = _page != null ? _page.Layout.SiteId : RockPage.Layout.SiteId;
             foreach(var layout in new LayoutService().GetBySiteId(siteId))
             {
                 ddlLayout.Items.Add( new ListItem( layout.Name, layout.Id.ToString() ) );
@@ -235,7 +235,7 @@ namespace RockWeb.Blocks.Administration
                     if ( _page != null )
                         ddlLayout.SelectedValue = _page.LayoutId.ToString();
                     else
-                        ddlLayout.Text = CurrentPage.LayoutId.ToString();
+                        ddlLayout.Text = RockPage.LayoutId.ToString();
                 }
                 catch { }
 

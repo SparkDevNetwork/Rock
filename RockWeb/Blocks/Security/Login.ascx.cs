@@ -207,7 +207,7 @@ namespace RockWeb.Blocks.Security
             }
             else
             {
-                CurrentPage.Layout.Site.RedirectToDefaultPage();
+                RockPage.Layout.Site.RedirectToDefaultPage();
             }
         }
     }

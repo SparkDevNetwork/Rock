@@ -20,13 +20,13 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Page is RockPage )
             {
-                var pageCache = ( (RockPage)this.Page ).CurrentPage;
+                var rockPage = (RockPage)this.Page;;
 
-                if ( pageCache.PageDisplayDescription && !string.IsNullOrWhiteSpace( pageCache.Description ) )
+                if ( rockPage.DisplayDescription && !string.IsNullOrWhiteSpace( rockPage.Description ) )
                 {
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "pageoverview-description" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    writer.Write( pageCache.Description );
+                    writer.Write( rockPage.Description );
                     writer.RenderEndTag();
                 }
             }

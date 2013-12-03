@@ -20,13 +20,13 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Page is RockPage )
             {
-                var pageCache = ( (RockPage)this.Page ).CurrentPage;
+                var rockPage = (RockPage)this.Page; ;
 
-                if ( pageCache.PageDisplayIcon && !string.IsNullOrWhiteSpace(pageCache.IconCssClass) )
+                if ( rockPage.DisplayIcon && !string.IsNullOrWhiteSpace( rockPage.IconCssClass ) )
                 {
                     writer.AddAttribute(HtmlTextWriterAttribute.Class, "page-icon");
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, pageCache.IconCssClass );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, rockPage.IconCssClass );
                     writer.RenderBeginTag( HtmlTextWriterTag.I );
                     writer.RenderEndTag();
                     writer.RenderEndTag();

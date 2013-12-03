@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Finance
         {
             get
             {
-                var cacheKey = string.Format( "FinancialAccountsForPage_{0}", CurrentPage.Id );
+                var cacheKey = string.Format( "FinancialAccountsForPage_{0}", RockPage.PageId );
                 var accounts = GetCacheItem( cacheKey ) as List<FinancialAccount>;
 
                 if ( accounts == null )

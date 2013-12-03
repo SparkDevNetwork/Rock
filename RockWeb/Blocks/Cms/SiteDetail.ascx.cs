@@ -193,7 +193,7 @@ namespace RockWeb.Blocks.Cms
 
                         if ( newSite )
                         {
-                            Rock.Security.Authorization.CopyAuthorization( CurrentPage.Layout.Site, site, CurrentPersonId );
+                            Rock.Security.Authorization.CopyAuthorization( RockPage.Layout.Site, site, CurrentPersonId );
                         }
                     } );
 
@@ -203,7 +203,7 @@ namespace RockWeb.Blocks.Cms
                 var qryParams = new Dictionary<string, string>();
                 qryParams["siteId"] = site.Id.ToString();
 
-                NavigateToPage( this.CurrentPage.Guid, qryParams );
+                NavigateToPage( RockPage.Guid, qryParams );
             }
         }
 
@@ -267,7 +267,7 @@ namespace RockWeb.Blocks.Cms
             {
                 site = new Site { Id = 0 };
                 site.SiteDomains = new List<SiteDomain>();
-                site.Theme = CurrentPage.Layout.Site.Theme;
+                site.Theme = RockPage.Layout.Site.Theme;
             }
 
             if ( site == null )

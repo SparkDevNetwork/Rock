@@ -87,8 +87,8 @@ namespace RockWeb.Blocks.Reporting
                     tbDesc.Visible = updatePage;
                     if ( updatePage )
                     {
-                        tbName.Text = CurrentPage.Title;
-                        tbDesc.Text = CurrentPage.Description;
+                        tbName.Text = RockPage.PageTitle;
+                        tbDesc.Text = RockPage.Description;
                     }
 
                     tbQuery.Text = GetAttributeValue( "Query" );
@@ -125,19 +125,18 @@ namespace RockWeb.Blocks.Reporting
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            if ( updatePage && ( CurrentPage.Title != tbName.Text ||
-                CurrentPage.Description != tbDesc.Text ) )
+            if ( updatePage && ( RockPage.PageTitle != tbName.Text ||
+                RockPage.Description != tbDesc.Text ) )
             {
                 var service = new PageService();
-                var page = service.Get( CurrentPage.Id );
+                var page = service.Get( RockPage.PageId );
                 page.Title = tbName.Text;
                 page.Description = tbDesc.Text;
                 service.Save( page, CurrentPersonId );
 
                 Rock.Web.Cache.PageCache.Flush( page.Id );
-
-                CurrentPage.Title = page.Title;
-                CurrentPage.Description = page.Description;
+                RockPage.PageTitle = page.Title;
+                RockPage.Description = page.Description;
 
                 Page.Title = page.Title;
             }
