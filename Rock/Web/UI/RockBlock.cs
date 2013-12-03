@@ -26,6 +26,12 @@ namespace Rock.Web.UI
     /// </summary>
     public abstract class RockBlock : UserControl
     {
+        #region Private Properties
+
+        private BlockCache _blockCache;
+
+        #endregion
+
         #region Public Properties
 
         /// <summary>
@@ -42,17 +48,10 @@ namespace Rock.Web.UI
             }
         }
 
-        /// <summary>
-        /// The current page.  This value is read and cached by the RockRouteHandler
-        /// and set by the layout's base class (Rock.Web.UI.RockPage) when loading the block instance
-        /// </summary>
-        public PageCache CurrentPage { get; set; }
-
-        /// <summary>
-        /// The current block.  This value is read and cached by the layout's 
-        /// base class (Rock.Web.UI.RockPage) when loading the block instance
-        /// </summary>
-        public BlockCache CurrentBlock { get; set; }
+        public int BlockId
+        {
+            get { return _blockCache.Id; }
+        }
 
         /// <summary>
         /// Gets the current page reference.
@@ -229,19 +228,6 @@ namespace Rock.Web.UI
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RockBlock" /> class.
-        /// </summary>
-        /// <param name="currentPage">The current page.</param>
-        /// <param name="currentBlock">The current block.</param>
-        /// <param name="currentPageReference">The current page reference.</param>
-        public RockBlock( PageCache currentPage, BlockCache currentBlock, PageReference currentPageReference )
-        {
-            CurrentPage = CurrentPage;
-            CurrentBlock = currentBlock;
-            CurrentPageReference = currentPageReference;
-        }
-
         #endregion
 
         #region Protected Caching Methods
@@ -321,7 +307,7 @@ namespace Rock.Web.UI
         private string ItemCacheKey( string key )
         {
             return string.Format( "Rock:Page:{0}:RockBlock:{1}:ItemCache:{2}",
-                this.CurrentPage.Id, CurrentBlock.Id, key );
+                RockPage.PageId, _blockCache.Id, key );
         }
 
         #endregion
@@ -352,7 +338,7 @@ namespace Rock.Web.UI
             ContextEntities = new Dictionary<string, Data.IEntity>();
             foreach ( var contextEntityType in requiredContext )
             {
-                Data.IEntity contextEntity = CurrentPage.GetCurrentContext( contextEntityType );
+                Data.IEntity contextEntity = RockPage.GetCurrentContext( contextEntityType );
                 if ( contextEntity != null )
                 {
                     ContextEntities.Add( contextEntityType.Name, contextEntity );
@@ -361,7 +347,7 @@ namespace Rock.Web.UI
 
             base.OnInit( e );
 
-            this.BlockValidationGroup = string.Format( "{0}_{1}", this.GetType().BaseType.Name, CurrentBlock.Id );
+            this.BlockValidationGroup = string.Format( "{0}_{1}", this.GetType().BaseType.Name, _blockCache.Id );
 
             ( (RockPage)this.Page ).BlockUpdated += Page_BlockUpdated;
         }
@@ -386,9 +372,9 @@ namespace Rock.Web.UI
         /// <param name="writer"></param>
         protected override void Render( HtmlTextWriter writer )
         {
-            if ( CurrentBlock.OutputCacheDuration > 0 )
+            if ( _blockCache.OutputCacheDuration > 0 )
             {
-                string blockCacheKey = string.Format( "Rock:BlockOutput:{0}", CurrentBlock.Id );
+                string blockCacheKey = string.Format( "Rock:BlockOutput:{0}", _blockCache.Id );
                 StringBuilder sbOutput = new StringBuilder();
                 StringWriter swOutput = new StringWriter( sbOutput );
                 HtmlTextWriter twOutput = new HtmlTextWriter( swOutput );
@@ -396,7 +382,7 @@ namespace Rock.Web.UI
                 base.Render( twOutput );
 
                 CacheItemPolicy cacheDuration = new CacheItemPolicy();
-                cacheDuration.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( CurrentBlock.OutputCacheDuration );
+                cacheDuration.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( _blockCache.OutputCacheDuration );
 
                 ObjectCache cache = MemoryCache.Default;
                 cache.Set( blockCacheKey, sbOutput.ToString(), cacheDuration );
@@ -420,38 +406,14 @@ namespace Rock.Web.UI
 
         #region Public Methods
 
-        ///// <summary>
-        ///// Clear all child controls and add a notification box with error or warning message
-        ///// </summary>
-        ///// <param name="title"></param>
-        ///// <param name="type"></param>
-        ///// <param name="message"></param>
-        //public void DisplayNotification( string title, NotificationBoxType type, string message )
-        //{
-        //    NotificationBox notification = new NotificationBox();
-        //    notification.Title = title;
-        //    notification.NotificationBoxType = type;
-        //    notification.Text = message;
-        //    this.Controls.Add( notification );
-        //}
-
-        ///// <summary>
-        ///// Clear all child controls and add a notification box with an error message
-        ///// </summary>
-        ///// <param name="message">The message.</param>
-        //public void DisplayError( string message )
-        //{
-        //    DisplayNotification( "Error", NotificationBoxType.Error, message );
-        //}
-
-        ///// <summary>
-        ///// Clear all child controls and add a notification box with a warning message
-        ///// </summary>
-        ///// <param name="message">The message.</param>
-        //public void DisplayWarning( string message )
-        //{
-        //    DisplayNotification( "Warning", NotificationBoxType.Warning, message );
-        //}
+        /// <summary>
+        /// Sets the block.
+        /// </summary>
+        /// <param name="blockCache">The block cache.</param>
+        public void SetBlock(BlockCache blockCache)
+        {
+            _blockCache = blockCache;
+        }
 
         /// <summary>
         /// Saves the attribute values.
@@ -459,9 +421,9 @@ namespace Rock.Web.UI
         /// <param name="personId">The person id.</param>
         public void SaveAttributeValues( int? personId )
         {
-            if ( CurrentBlock != null )
+            if ( _blockCache != null )
             {
-                CurrentBlock.SaveAttributeValues( personId );
+                _blockCache.SaveAttributeValues( personId );
             }
         }
 
@@ -473,9 +435,9 @@ namespace Rock.Web.UI
         /// <returns>the stored value as a string or null if none exists</returns>
         public string GetAttributeValue( string key )
         {
-            if ( CurrentBlock != null )
+            if ( _blockCache != null )
             {
-                return CurrentBlock.GetAttributeValue( key );
+                return _blockCache.GetAttributeValue( key );
             }
             return null;
         }
@@ -488,9 +450,9 @@ namespace Rock.Web.UI
         /// <returns>a list of strings or an empty list if none exists</returns>
         public List<string> GetAttributeValues( string key )
         {
-            if ( CurrentBlock != null )
+            if ( _blockCache != null )
             {
-                return CurrentBlock.GetAttributeValues( key );
+                return _blockCache.GetAttributeValues( key );
             }
 
             return new List<string>();
@@ -503,9 +465,9 @@ namespace Rock.Web.UI
         /// <param name="value">The value.</param>
         public void SetAttributeValue( string key, string value )
         {
-            if ( CurrentBlock != null )
+            if ( _blockCache != null )
             {
-                CurrentBlock.SetAttributeValue( key, value );
+                _blockCache.SetAttributeValue( key, value );
             }
         }
 
@@ -525,7 +487,7 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public bool IsUserAuthorized( string action )
         {
-            return CurrentBlock.IsAuthorized( action, CurrentPerson );
+            return _blockCache.IsAuthorized( action, CurrentPerson );
         }
 
         /// <summary>
@@ -615,7 +577,7 @@ namespace Rock.Web.UI
         /// </summary>
         public void NavigateToParentPage( Dictionary<string, string> queryString = null )
         {
-            NavigateToPage( this.CurrentPage.ParentPage.Guid, queryString );
+            NavigateToPage( RockPage.ParentPage.Guid, queryString );
         }
 
         /// <summary>
@@ -782,7 +744,7 @@ namespace Rock.Web.UI
                 aAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 aAttributes.Attributes.Add( "class", "properties" );
                 aAttributes.Attributes.Add( "height", "500px" );
-                aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", CurrentBlock.Id ) ) + "')" );
+                aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", _blockCache.Id ) ) + "')" );
                 aAttributes.Attributes.Add( "title", "Block Properties" );
                 //aAttributes.Attributes.Add( "instance-id", BlockInstance.Id.ToString() );
                 configControls.Add( aAttributes );
@@ -800,7 +762,7 @@ namespace Rock.Web.UI
                 aSecureBlock.Attributes.Add( "class", "security" );
                 aSecureBlock.Attributes.Add( "height", "500px" );
                 aSecureBlock.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Block Security&pb=&sb=Done",
-                    EntityTypeCache.Read( typeof( Block ) ).Id, CurrentBlock.Id ) ) + "')" );
+                    EntityTypeCache.Read( typeof( Block ) ).Id, _blockCache.Id ) ) + "')" );
                 aSecureBlock.Attributes.Add( "title", "Block Security" );
                 configControls.Add( aSecureBlock );
                 HtmlGenericControl iSecureBlock = new HtmlGenericControl( "i" );
@@ -810,9 +772,9 @@ namespace Rock.Web.UI
                 // Move
                 HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );
                 aMoveBlock.Attributes.Add( "class", "block-move block-move" );
-                aMoveBlock.Attributes.Add( "href", CurrentBlock.Id.ToString() );
-                aMoveBlock.Attributes.Add( "zone", CurrentBlock.Zone );
-                aMoveBlock.Attributes.Add( "zoneloc", CurrentBlock.BlockLocation.ToString() );
+                aMoveBlock.Attributes.Add( "href", _blockCache.Id.ToString() );
+                aMoveBlock.Attributes.Add( "zone", _blockCache.Zone );
+                aMoveBlock.Attributes.Add( "zoneloc", _blockCache.BlockLocation.ToString() );
                 aMoveBlock.Attributes.Add( "title", "Move Block" );
                 configControls.Add( aMoveBlock );
                 HtmlGenericControl iMoveBlock = new HtmlGenericControl( "i" );
@@ -822,7 +784,7 @@ namespace Rock.Web.UI
                 // Delete
                 HtmlGenericControl aDeleteBlock = new HtmlGenericControl( "a" );
                 aDeleteBlock.Attributes.Add( "class", "delete block-delete" );
-                aDeleteBlock.Attributes.Add( "href", CurrentBlock.Id.ToString() );
+                aDeleteBlock.Attributes.Add( "href", _blockCache.Id.ToString() );
                 aDeleteBlock.Attributes.Add( "title", "Delete Block" );
                 configControls.Add( aDeleteBlock );
                 HtmlGenericControl iDeleteBlock = new HtmlGenericControl( "i" );
@@ -851,15 +813,7 @@ namespace Rock.Web.UI
         /// <param name="ex">The System.Exception to log.</param>
         public void LogException( Exception ex )
         {
-            ExceptionLogService.LogException( ex, Context, CurrentPage.Id, CurrentPage.Layout.SiteId, CurrentPersonId );
-        }
-
-        /// <summary>
-        /// Contents the updated.
-        /// </summary>
-        protected virtual void ContentUpdated()
-        {
-            CurrentPage.BlockContentUpdated( this );
+            ExceptionLogService.LogException( ex, Context, RockPage.PageId, RockPage.Layout.SiteId, CurrentPersonId );
         }
 
         #endregion
@@ -876,9 +830,9 @@ namespace Rock.Web.UI
             using ( new Rock.Data.UnitOfWorkScope() )
             {
                 if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(), blockEntityTypeId, "BlockTypeId",
-                    this.CurrentBlock.BlockTypeId.ToString(), CurrentPersonId ) )
+                    this._blockCache.BlockTypeId.ToString(), CurrentPersonId ) )
                 {
-                    this.CurrentBlock.ReloadAttributeValues();
+                    this._blockCache.ReloadAttributeValues();
                 }
             }
         }
@@ -938,7 +892,7 @@ namespace Rock.Web.UI
         /// <param name="e">The <see cref="BlockUpdatedEventArgs"/> instance containing the event data.</param>
         internal void Page_BlockUpdated( object sender, BlockUpdatedEventArgs e )
         {
-            if (e.BlockID == CurrentBlock.Id && BlockUpdated != null)
+            if (e.BlockID == _blockCache.Id && BlockUpdated != null)
             {
                 BlockUpdated( sender, e );
             }

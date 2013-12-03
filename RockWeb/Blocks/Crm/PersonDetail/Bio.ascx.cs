@@ -31,7 +31,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( Person != null )
             {
-                Page.Title = CurrentPage.Title + ": " + Person.FirstLastName;
+                Page.Title = RockPage.PageTitle + ": " + Person.FirstLastName;
                 lName.Text = Person.FirstLastName.FormatAsHtmlTitle();
 
                 if (Person.PhotoId.HasValue)

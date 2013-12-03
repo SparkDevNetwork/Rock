@@ -289,7 +289,7 @@ namespace RockWeb.Blocks.Groups
                 qryParams["groupId"] = parentGroupId.ToString();
             }
 
-            NavigateToPage( this.CurrentPage.Guid, qryParams );
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>
@@ -442,7 +442,7 @@ namespace RockWeb.Blocks.Groups
             var qryParams = new Dictionary<string, string>();
             qryParams["groupId"] = group.Id.ToString();
 
-            NavigateToPage( this.CurrentPage.Guid, qryParams );
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>
@@ -454,7 +454,7 @@ namespace RockWeb.Blocks.Groups
         {
             if ( hfGroupId.Value.Equals( "0" ) )
             {
-                if ( this.CurrentPage.Layout.FileName.Equals( "TwoColumnLeft" ) )
+                if ( RockPage.Layout.FileName.Equals( "TwoColumnLeft" ) )
                 {
                     // Cancelling on Add.  Return to tree view with parent category selected
                     var qryParams = new Dictionary<string, string>();
@@ -465,7 +465,7 @@ namespace RockWeb.Blocks.Groups
                         qryParams["groupId"] = parentGroupId;
                     }
 
-                    NavigateToPage( this.CurrentPage.Guid, qryParams );
+                    NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
                 {

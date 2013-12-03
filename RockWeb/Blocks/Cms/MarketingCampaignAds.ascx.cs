@@ -323,7 +323,7 @@ namespace RockWeb.Blocks.Cms
 
         private string CacheKey()
         {
-            return string.Format( "Rock:MarketingCampaignAds:{0}", CurrentBlock.Id );
+            return string.Format( "Rock:MarketingCampaignAds:{0}", BlockId );
         }
 
         private Template GetTemplate()

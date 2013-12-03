@@ -194,7 +194,7 @@ $(document).ready(function() {
 
             var qryParams = new Dictionary<string, string>();
             qryParams["DataViewId"] = dataView.Id.ToString();
-            NavigateToPage( this.CurrentPage.Guid, qryParams );
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>
@@ -214,7 +214,7 @@ $(document).ready(function() {
                 {
                     qryParams["CategoryId"] = parentCategoryId;
                 }
-                NavigateToPage( this.CurrentPage.Guid, qryParams );
+                NavigateToPage( RockPage.Guid, qryParams );
             }
             else
             {
@@ -259,7 +259,7 @@ $(document).ready(function() {
                         qryParams["CategoryId"] = categoryId.ToString();
                     }
 
-                    NavigateToPage( this.CurrentPage.Guid, qryParams );
+                    NavigateToPage( RockPage.Guid, qryParams );
                 }
             }
         }

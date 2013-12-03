@@ -22,7 +22,7 @@ namespace Rock.Web.UI.Controls
             if ( this.Page is RockPage )
             {
                 var rockPage = (RockPage)this.Page;
-                if ( rockPage.CurrentPage.PageDisplayBreadCrumb )
+                if ( rockPage.DisplayBreadCrumb )
                 {
                     var crumbs = rockPage.BreadCrumbs;
                     if ( crumbs != null )

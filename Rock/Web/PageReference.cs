@@ -425,9 +425,8 @@ namespace Rock.Web
                                     if ( control is RockBlock )
                                     {
                                         RockBlock rockBlock = control as RockBlock;
-                                        rockBlock.CurrentPage = page;
                                         rockBlock.CurrentPageReference = parentPageReference;
-                                        rockBlock.CurrentBlock = block;
+                                        rockBlock.SetBlock( block );
                                         rockBlock.GetBreadCrumbs( parentPageReference ).ForEach( c => parentPageReference.BreadCrumbs.Add( c ) );
                                     }
                                     control = null;

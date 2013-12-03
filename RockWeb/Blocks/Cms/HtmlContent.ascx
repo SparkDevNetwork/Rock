@@ -4,7 +4,7 @@
 <script type="text/javascript">
     Sys.Application.add_load(function () {
         Rock.controls.htmlContentEditor.initialize({
-            blockId: <%= CurrentBlock.Id %>,
+            blockId: <%= BlockId %>,
             behaviorId: '<%= mpeContent.BehaviorID %>',
             hasBeenModified: <%= HtmlContentModified.ToString().ToLower() %>,
             versionId: '<%= hfVersion.ClientID %>',
@@ -27,17 +27,17 @@
         <div class="modal-header">
             <a id="aClose" runat="server" href="#" class="close">&times;</a>
             <h3 class="modal-title">HTML Content</h3>
-            <asp:PlaceHolder ID="phCurrentVersion" runat="server"><a id="html-content-version-<%=CurrentBlock.Id %>" 
+            <asp:PlaceHolder ID="phCurrentVersion" runat="server"><a id="html-content-version-<%=BlockId %>" 
                 class="label label-default pull-right">Version <asp:Literal ID="lVersion" runat="server"></asp:Literal></a></asp:PlaceHolder>
         </div>
 
-        <div id="html-content-versions-<%=CurrentBlock.Id %>" style="display:none">
+        <div id="html-content-versions-<%=BlockId %>" style="display:none">
             <div class="modal-body">
                 <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" >
                     <Columns>
                         <asp:TemplateField SortExpression="Version" HeaderText="Version">
                             <ItemTemplate>
-                                <a data-html-id='<%# Eval("Id") %>' class="html-content-show-version-<%=CurrentBlock.Id %>" href="#">Version <%# Eval("Version") %></a>
+                                <a data-html-id='<%# Eval("Id") %>' class="html-content-show-version-<%=BlockId %>" href="#">Version <%# Eval("Version") %></a>
                             </ItemTemplate>
                         </asp:TemplateField>
                         <asp:BoundField DataField="ModifiedDateTime" HeaderText="Modified" SortExpression="ModifiedDateTime" />
@@ -50,11 +50,11 @@
                 </Rock:Grid>
             </div>
             <div class="modal-footer">
-                <button id="html-content-versions-cancel-<%=CurrentBlock.Id %>" class="btn btn-link">Cancel</button>
+                <button id="html-content-versions-cancel-<%=BlockId %>" class="btn btn-link">Cancel</button>
             </div>
         </div>
 
-        <div id="html-content-edit-<%=CurrentBlock.Id %>">
+        <div id="html-content-edit-<%=BlockId %>">
             <asp:panel ID="pnlVersioningHeader" runat="server" class="htmlcontent-edit-header">
                 <asp:HiddenField ID="hfVersion" runat="server" />
                 Start: <asp:TextBox ID="tbStartDate" runat="server" CssClass="date-picker"></asp:TextBox>

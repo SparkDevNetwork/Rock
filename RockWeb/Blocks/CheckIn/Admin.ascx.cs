@@ -27,7 +27,7 @@ namespace RockWeb.Blocks.CheckIn
     {
         protected override void OnLoad( EventArgs e )
         {
-            CurrentPage.AddScriptLink( this.Page, "~/Blocks/CheckIn/Scripts/geo-min.js" );
+            RockPage.AddScriptLink( "~/Blocks/CheckIn/Scripts/geo-min.js" );
 
             if ( !Page.IsPostBack )
             {

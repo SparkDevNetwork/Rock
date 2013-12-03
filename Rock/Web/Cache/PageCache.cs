@@ -366,16 +366,6 @@ namespace Rock.Web.Cache
         public Dictionary<string, string> PageContexts { get; set; }
 
         /// <summary>
-        /// Gets a dictionary of the current context items (models).
-        /// </summary>
-        internal Dictionary<string, Rock.Data.KeyEntity> Context
-        {
-            get { return _context; }
-            set { _context = value; }
-        }
-        private Dictionary<string, Data.KeyEntity> _context;
-
-        /// <summary>
         /// Helper class for PageRoute information
         /// </summary>
         public class PageRouteInfo
@@ -524,82 +514,6 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the current context object for a given entity type.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <returns></returns>
-        public Rock.Data.IEntity GetCurrentContext( EntityTypeCache entity )
-        {
-            if ( this.Context.ContainsKey( entity.Name ) )
-            {
-                var keyModel = this.Context[entity.Name];
-
-                if ( keyModel.Entity == null )
-                {
-                    Type modelType = entity.GetEntityType();
-
-                    if ( modelType == null )
-                    {
-                        // if the Type isn't found in the Rock.dll (it might be from a Plugin), lookup which assessmbly it is in and look in there
-                        string[] assemblyNameParts = entity.AssemblyName.Split( new char[] { ',' } );
-                        if ( assemblyNameParts.Length > 1 )
-                        {
-                            modelType = Type.GetType( string.Format( "{0}, {1}", entity.Name, assemblyNameParts[1] ) );
-                        }
-                    }
-
-                    if ( modelType != null )
-                    {
-                        // In the case of core Rock.dll Types, we'll just use Rock.Data.Service<> and Rock.Data.RockContext<>
-                        // otherwise find the first (and hopefully only) Service<> and dbContext we can find in the Assembly.  
-                        Type serviceType = typeof( Rock.Data.Service<> );
-                        Type contextType = typeof( Rock.Data.RockContext );
-                        if ( modelType.Assembly != serviceType.Assembly )
-                        {
-                            var serviceTypeLookup = Reflection.SearchAssembly( modelType.Assembly, serviceType );
-                            if ( serviceTypeLookup.Any() )
-                            {
-                                serviceType = serviceTypeLookup.First().Value;
-                            }
-
-                            var contextTypeLookup = Reflection.SearchAssembly( modelType.Assembly, typeof( System.Data.Entity.DbContext ) );
-
-                            if ( contextTypeLookup.Any() )
-                            {
-                                contextType = contextTypeLookup.First().Value;
-                            }
-                        }
-
-                        System.Data.Entity.DbContext dbContext = Activator.CreateInstance( contextType ) as System.Data.Entity.DbContext;
-
-                        Type service = serviceType.MakeGenericType( new Type[] { modelType } );
-                        var serviceInstance = Activator.CreateInstance( service, dbContext );
-
-                        if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
-                        {
-                            MethodInfo getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
-                            keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Id } ) as Rock.Data.IEntity;
-                        }
-                        else
-                        {
-                            MethodInfo getMethod = service.GetMethod( "GetByPublicKey" );
-                            keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Key } ) as Rock.Data.IEntity;
-                        }
-
-                        if ( keyModel.Entity is Rock.Attribute.IHasAttributes )
-                        {
-                            Rock.Attribute.Helper.LoadAttributes( keyModel.Entity as Rock.Attribute.IHasAttributes );
-                        }
-                    }
-                }
-
-                return keyModel.Entity;
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Gets all the pages in the current hierarchy
         /// </summary>
         /// <returns></returns>
@@ -629,17 +543,6 @@ namespace Rock.Web.Cache
         public void FlushChildPages()
         {
             pageIds = null;
-        }
-
-        /// <summary>
-        /// Fires the block content updated event.
-        /// </summary>
-        public void BlockContentUpdated( object sender )
-        {
-            if ( OnBlockContentUpdated != null )
-            {
-                OnBlockContentUpdated( sender, new EventArgs() );
-            }
         }
 
         /// <summary>
@@ -688,59 +591,6 @@ namespace Rock.Web.Cache
                 return items[itemKey];
 
             return null;
-        }
-
-        #endregion
-
-        #region HtmlLinks
-
-        /// <summary>
-        /// Adds a new CSS link that will be added to the page header prior to the page being rendered
-        /// </summary>
-        /// <param name="page">Current System.Web.UI.Page</param>
-        /// <param name="href">Path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
-        public void AddCSSLink( System.Web.UI.Page page, string href )
-        {
-            RockPage.AddCSSLink( page, href );
-        }
-
-        /// <summary>
-        /// Adds a new CSS link that will be added to the page header prior to the page being rendered
-        /// </summary>
-        /// <param name="page">The page.</param>
-        /// <param name="href">The href.</param>
-        /// <param name="mediaType">MediaType to use in the css link.</param>
-        public void AddCSSLink( System.Web.UI.Page page, string href, string mediaType )
-        {
-            RockPage.AddCSSLink( page, href, mediaType );
-        }
-
-        /// <summary>
-        /// Adds a meta tag to the page header priore to the page being rendered
-        /// </summary>
-        /// <param name="page">The page.</param>
-        /// <param name="htmlMeta">The HTML meta tag.</param>
-        public void AddMetaTag( System.Web.UI.Page page, HtmlMeta htmlMeta )
-        {
-            RockPage.AddMetaTag( page, htmlMeta );
-        }
-
-        /// <summary>
-        /// Adds a new Html link that will be added to the page header prior to the page being rendered
-        /// </summary>
-        public void AddHtmlLink( System.Web.UI.Page page, HtmlLink htmlLink )
-        {
-            RockPage.AddHtmlLink( page, htmlLink );
-        }
-
-        /// <summary>
-        /// Adds a new script tag to the page header prior to the page being rendered
-        /// </summary>
-        /// <param name="page">Current System.Web.UI.Page</param>
-        /// <param name="path">Path to script file.  Should be relative to layout template.  Will be resolved at runtime</param>
-        public void AddScriptLink( System.Web.UI.Page page, string path )
-        {
-            RockPage.AddScriptLink( page, path );
         }
 
         #endregion
@@ -1091,13 +941,5 @@ namespace Rock.Web.Cache
 
         #endregion
 
-        #region Event Handlers
-
-        /// <summary>
-        /// Occurs when a block on the page updates content.
-        /// </summary>
-        public event EventHandler OnBlockContentUpdated;
-
-        #endregion
     }
 }

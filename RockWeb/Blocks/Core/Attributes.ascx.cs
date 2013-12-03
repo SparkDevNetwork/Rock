@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
-            _canConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
+            _canConfigure = RockPage.IsAuthorized( "Administrate", CurrentPerson );
 
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
 

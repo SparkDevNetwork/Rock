@@ -35,7 +35,7 @@ public partial class EntityTypes : RockBlock
     {
         base.OnInit( e );
 
-        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
+        if ( RockPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             gEntityTypes.DataKeyNames = new string[] { "id" };
             gEntityTypes.Actions.ShowAdd = true;
@@ -62,7 +62,7 @@ public partial class EntityTypes : RockBlock
     {
         nbWarning.Visible = false;
 
-        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
+        if ( RockPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             if ( !Page.IsPostBack )
             {

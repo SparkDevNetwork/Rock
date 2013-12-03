@@ -96,8 +96,7 @@ namespace RockWeb.Blocks.Administration
                             var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
                             if ( blockControl != null )
                             {
-                                blockControl.CurrentPage = _page;
-                                blockControl.CurrentBlock = block;
+                                blockControl.SetBlock( block );
                                 foreach ( var context in blockControl.ContextTypesRequired )
                                 {
                                     if ( !blockContexts.Contains( context ) )
