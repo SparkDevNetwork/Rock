@@ -7,16 +7,17 @@ using Rock.Model;
 using Rock.Web.UI.Controls;
 using Rock;
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Rock.Reporting.DataSelect.Person
 {
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Selects Last Contribution Date for a Person" )]
+    [Description( "Select the name of the Family that the Person belongs to" )]
     [Export( typeof( DataSelectComponent ) )]
-    [ExportMetadata( "ComponentName", "Select Person Last Contribution" )]
-    public class LastContributionSelect : DataSelectComponent<Rock.Model.Person>
+    [ExportMetadata( "ComponentName", "Select Person Family Name" )]
+    public class FamilyNameSelect : DataSelectComponent<Rock.Model.Person>
     {
         /// <summary>
         /// Gets the title.
@@ -28,7 +29,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "Last Contribution";
+                return "Family Name";
             }
         }
 
@@ -56,28 +57,9 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "Last Contribution Date";
+                return "Family Name";
             }
         }
-
-        /*
-         -- Example1: turn something like this into Linq 
-         select 
-            p.FirstName, 
-           (select max(TransactionDateTime) from FinancialTransaction where AuthorizedPersonId = p.Id and AccountID in (3,4,5)) [LastDateTime]
-         from Person p
-         * 
-         
-         -- Example2: turn something like this into linq
-        select 
-            p.FirstName, 
-            g.Name [FamilyName]
-        from Person p
-            left outer join GroupMember gm on gm.PersonId = p.Id
-            left outer join Group g on gm.GroupId = g.Id
-            where g.GroupTypeId = :familyGroupTypeId
-         
-         */
 
         #region Query
 
@@ -88,27 +70,13 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override IQueryable<IEntity> SubQuery( string selection )
         {
-            IQueryable<FinancialTransaction> lastTransactionQry = new FinancialTransactionService().Queryable().OrderByDescending( o => o.TransactionDateTime );
 
-            // split the selection into parts of Control Values (AccountIds will be the first one)
-            string[] controlValues = selection.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            Guid groupTypeFamily = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
 
-            if ( controlValues.Count() > 0 )
-            {
-                // get the selected AccountId(s).  If there are any, limit to transactions that for that Account
-                var selectedAccountIds = controlValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsInteger() ?? 0 ).ToList();
-                if ( selectedAccountIds.Count() > 0 )
-                {
-                    lastTransactionQry = lastTransactionQry
-                        .Where(a => selectedAccountIds
-                            .Contains( a.TransactionDetails.Select( s => s.AccountId ).FirstOrDefault() )
-                            );
-                }
-            }
+            IQueryable<IEntity> qry = new GroupMemberService().Queryable()
+                .Where( a => a.Group.GroupType.Guid == groupTypeFamily );
 
-
-            return lastTransactionQry;
-
+            return qry;
         }
 
         /// <summary>
@@ -119,17 +87,17 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                Expression<Func<IEntity, DataSelectData>> lastTranSelect = a => new DataSelectData
+                Expression<Func<IEntity, DataSelectData>> selectExpression = a => new DataSelectData
                 {
-                    PersonId = ( a as FinancialTransaction ).AuthorizedPersonId ?? 0,
+                    PersonId = ( a as GroupMember ).PersonId,
                     Data = new
                     {
                         // this should be the same as ColumnPropertyName
-                        LastTransactionDateTime = ( a as FinancialTransaction ).TransactionDateTime
+                        GroupName = ( a as GroupMember ).Group.Name
                     }
                 };
 
-                return lastTranSelect;
+                return selectExpression;
             }
         }
 
@@ -143,7 +111,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "LastTransactionDateTime";
+                return "GroupName";
             }
         }
 
@@ -158,14 +126,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override System.Web.UI.Control[] CreateChildControls( System.Web.UI.Control parentControl )
         {
-            AccountPicker accountPicker = new AccountPicker();
-            accountPicker.AllowMultiSelect = true;
-            accountPicker.ID = "accountPicker";
-            accountPicker.Label = "Account";
-            accountPicker.Help = "Pick accounts to show the last time the person made a contribution into any of those accounts. Leave blank if you don't want to limit it to specific accounts.";
-            parentControl.Controls.Add( accountPicker );
-
-            return new System.Web.UI.Control[] { accountPicker };
+            return new System.Web.UI.Control[] { };
         }
 
         /// <summary>
@@ -214,15 +175,6 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override string GetSelection( System.Web.UI.Control[] controls )
         {
-            if ( controls.Count() == 1 )
-            {
-                AccountPicker accountPicker = controls[0] as AccountPicker;
-                if ( accountPicker != null )
-                {
-                    return accountPicker.SelectedValueAsId().ToString();
-                }
-            }
-
             return null;
         }
 
@@ -233,15 +185,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="selection">The selection.</param>
         public override void SetSelection( System.Web.UI.Control[] controls, string selection )
         {
-            if ( controls.Count() == 1 )
-            {
-                AccountPicker accountPicker = controls[0] as AccountPicker;
-                if ( accountPicker != null )
-                {
-                    var account = new FinancialAccountService().Get( selection.AsInteger() ?? 0 );
-                    accountPicker.SetValue( account );
-                }
-            }
+            // nothing to do
         }
 
         #endregion

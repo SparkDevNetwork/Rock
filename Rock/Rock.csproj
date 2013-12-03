@@ -217,10 +217,12 @@
     <Compile Include="Reporting\DataFilter\Person\DistanceFromFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupFilter.cs" />
+    <Compile Include="Reporting\DataSelectData.cs" />
+    <Compile Include="Reporting\DataSelect\Person\FamilyNameSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\LastContributionSelect.cs" />
     <Compile Include="Reporting\DataSelectContainer.cs" />
     <Compile Include="Reporting\EntityHelper.cs" />
-    <Compile Include="Reporting\SelectNewExpressionExtractor.cs" />
+    <Compile Include="Reporting\ReportExpressionSelector.cs" />
     <Compile Include="Reporting\FilterExpressionExtractor.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
