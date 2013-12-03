@@ -19,6 +19,7 @@
     16. Actions - used to hold buttons at the bottom of forms.
     17. Code Editor - Styles for the code editor control
     18. Update Panel Status - Styles for the wait screen on an update panel
+    19. Group List - styles a group of people in a ul -> li format
 */
 
 // 1. Pickers
@@ -107,7 +108,11 @@
 
         .contents {
             float: left;
-            margin-left: 5px;
+            margin-left: 10px;
+
+            h5 {
+                margin-bottom: 2px;
+            }
         }
     }
 
@@ -1125,3 +1130,39 @@ div.tagsinput div
     border-radius: @border-radius-base;
     z-index: (@zindex-modal-background + 100);
 }
+
+// 19. Group List
+// -------------------------
+    
+ul.groupmembers {
+    list-style: none;
+    margin: 6px 0;
+    padding: 0;
+
+    li.member {
+        float: left;
+        margin-right: 12px;
+        margin-bottom: 12px;
+        min-width: 150px;
+
+
+        img {
+            border: 3px solid #fff;
+        }
+
+        h4 {
+            font-size: 16px;
+            font-weight: @font-weight-semibold;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        small {
+            display: block;
+            line-height: 16px;
+            margin: 0;
+        }
+
+    }
+}
+    
