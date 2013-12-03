@@ -104,22 +104,21 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public Location GetByGeoLocation( DbGeography value )
+        public Location GetByGeoPoint( DbGeography point )
         {
-            // get the first address that has a GeoPoint or GeoFence that matches the value
-            var result = Queryable().Where( a => a.GeoPoint != null ).Where( a => a.GeoPoint.SpatialEquals(value)).FirstOrDefault();
+            // get the first address that has a GeoPoint the value
+            var result = Queryable()
+                .Where( a => 
+                    a.GeoPoint != null &&
+                    a.GeoPoint.SpatialEquals(point))
+                .FirstOrDefault();
             
-            if ( result == null )
-            {
-                result = Queryable().Where( a => a.GeoFence != null ).Where( a => a.GeoFence.SpatialEquals( value ) ).FirstOrDefault();
-            }
-
             if ( result == null )
             {
                 // if the Location can't be found, save the new location to the database
                 Location newLocation = new Location
                 {
-                    GeoPoint = value,
+                    GeoPoint = point,
                     Guid = Guid.NewGuid()
                 };
 
@@ -129,7 +128,34 @@ namespace Rock.Model
             }
 
             return result;
-            
+        }
+
+        public Location GetByGeoFence( DbGeography fence )
+        {
+
+            // get the first address that has a GeoPoint or GeoFence that matches the value
+            var result = Queryable()
+                .Where( a => 
+                    a.GeoFence != null &&
+                    a.GeoFence.SpatialEquals( fence ) )
+                .FirstOrDefault();
+
+            if ( result == null )
+            {
+                // if the Location can't be found, save the new location to the database
+                Location newLocation = new Location
+                {
+                    GeoFence = fence,
+                    Guid = Guid.NewGuid()
+                };
+
+                Add( newLocation, null );
+                Save( newLocation, null );
+                return Get( newLocation.Guid );
+            }
+
+            return result;
+
         }
 
         /// <summary>

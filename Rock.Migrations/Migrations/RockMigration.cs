@@ -16,6 +16,37 @@ namespace Rock.Migrations
     {
         #region Entity Type Methods
 
+
+        /// <summary>
+        /// Updates the type of the entity.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="guid">The GUID.</param>
+        /// <param name="isEntity">if set to <c>true</c> [is entity].</param>
+        /// <param name="isSecured">if set to <c>true</c> [is secured].</param>
+        public void UpdateEntityType( string name, string guid, bool isEntity, bool isSecured )
+        {
+            Sql( string.Format( @"
+                IF EXISTS ( SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}' )
+                BEGIN
+                    UPDATE [EntityType] SET 
+                        [IsEntity] = {1},
+                        [IsSecured] = {2},
+                        [Guid] = '{3}'
+                    WHERE [Name] = '{0}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [EntityType] ([Name], [IsEntity], [IsSecured], [IsCommon], [Guid])
+                    VALUES ('{0}', {1}, {2}, '{3}')
+                END
+",
+                name,
+                isEntity ? "1" : "0",
+                isSecured ? "1" : "0",
+                guid ) );
+        }
+        
         /// <summary>
         /// Updates the type of the entity.
         /// </summary>
@@ -612,26 +643,6 @@ namespace Rock.Migrations
             );
         }
 
-        /// <summary>
-        /// Updates the type of the entity.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="guid">The GUID.</param>
-        public void UpdateEntityType(string name, string guid)
-        {
-            Sql( string.Format( @"
-                IF EXISTS ( SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}' )
-                BEGIN
-                    UPDATE [EntityType] SET [Guid] = '{1}' WHERE [Name] = '{0}'
-                END
-                ELSE
-                BEGIN
-                    INSERT INTO [EntityType] ([Name], [FriendlyName], [Guid])
-                    VALUES ('{0}', null, '{1}')
-                END
-", 
-                name, guid ) );
-        }
 
         /// <summary>
         /// Ensures the entity type exists.

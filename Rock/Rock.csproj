@@ -203,6 +203,7 @@
     <Compile Include="Jobs\RunSQL.cs" />
     <Compile Include="Model\CodeGenerated\LayoutService.cs" />
     <Compile Include="Model\CodeGenerated\ReportFieldService.cs" />
+    <Compile Include="Model\DbGeographyConverter.cs" />
     <Compile Include="Model\LayoutService.Partial.cs" />
     <Compile Include="Model\Layout.cs" />
     <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
