@@ -89,7 +89,7 @@ namespace Rock.Reporting.DataSelect.Person
             {
                 Expression<Func<IEntity, DataSelectData>> selectExpression = a => new DataSelectData
                 {
-                    PersonId = ( a as GroupMember ).PersonId,
+                    EntityId = ( a as GroupMember ).PersonId,
                     Data = new
                     {
                         // this should be the same as ColumnPropertyName

@@ -121,7 +121,7 @@ namespace Rock.Reporting.DataSelect.Person
             {
                 Expression<Func<IEntity, DataSelectData>> lastTranSelect = a => new DataSelectData
                 {
-                    PersonId = ( a as FinancialTransaction ).AuthorizedPersonId ?? 0,
+                    EntityId = ( a as FinancialTransaction ).AuthorizedPersonId ?? 0,
                     Data = new
                     {
                         // this should be the same as ColumnPropertyName
@@ -160,7 +160,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             AccountPicker accountPicker = new AccountPicker();
             accountPicker.AllowMultiSelect = true;
-            accountPicker.ID = "accountPicker";
+            accountPicker.ID = parentControl.ID + "_accountPicker";
             accountPicker.Label = "Account";
             accountPicker.Help = "Pick accounts to show the last time the person made a contribution into any of those accounts. Leave blank if you don't want to limit it to specific accounts.";
             parentControl.Controls.Add( accountPicker );
