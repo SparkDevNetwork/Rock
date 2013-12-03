@@ -22,7 +22,6 @@ namespace Rock.Jobs
     /// <author>Rich Dubay</author>
     /// <author>Spark Development Network</author>
     [TextField( "SQL Query", "SQL query to run", true, "", "General", 0, "SQLQuery" )]
-    //[TextField( "Base Cache Folder", "The base/starting Directory for the file cache (default is ~/Cache.)", false, "~/Cache", "General", 3, "BaseCacheDirectory" )]
     public class RunSQL : IJob
     {
         /// <summary> 
