@@ -1791,9 +1791,6 @@ dl dd {
   font-size: 14px;
   font-weight: 600;
 }
-.persondetails-familybar .addresses ul .address .actions {
-  display: none;
-}
 .persondetails-familybar .addresses ul .address .actions a {
   padding: 1px;
 }
