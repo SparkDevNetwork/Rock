@@ -347,7 +347,7 @@ namespace Rock.Web.UI.Controls
             _btnSelectNone.ClientIDMode = ClientIDMode.Static;
             _btnSelectNone.Attributes["class"] = "picker-select-none";
             _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
-            _btnSelectNone.InnerHtml = "<i class='icon-remove'></i>";
+            _btnSelectNone.InnerHtml = "<i class='fa fa-times'></i>";
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
             _btnSelectNone.ServerClick += btnSelect_Click;
@@ -390,7 +390,7 @@ namespace Rock.Web.UI.Controls
                 string controlHtmlFormatStart = @"
         <div id='{0}' class='picker picker-select picker-person' > 
             <a class='picker-label' href='#'>
-                <i class='icon-user'></i>
+                <i class='fa fa-user'></i>
                 <span id='selectedPersonLabel_{0}'>{1}</span>
                 <b class='caret pull-right'></b>
             </a>
@@ -419,7 +419,7 @@ namespace Rock.Web.UI.Controls
                 _btnSelect.RenderControl( writer );
 
                 string controlHtmlFormatEnd = @"
-            <a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>
+            <a class='btn btn-link btn-xs' id='btnCancel_{0}'>Cancel</a>
             </div>
          </div>
      </div>
@@ -434,7 +434,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 LinkButton linkButton = new LinkButton();
                 linkButton.CssClass = "picker-label";
-                linkButton.Text = string.Format( "<i class='{1}'></i><span>{0}</span>", this.PersonName, "icon-user" );
+                linkButton.Text = string.Format( "<i class='{1}'></i><span>{0}</span>", this.PersonName, "fa fa-user" );
                 linkButton.Enabled = false;
                 linkButton.RenderControl( writer );
                 writer.WriteLine();

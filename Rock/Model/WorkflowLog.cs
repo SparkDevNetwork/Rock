@@ -14,7 +14,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// WorkflowLog POCO Entity.
+    /// Represents a WorkflowLog entry of a <see cref="Rock.Model.Workflow"/> instance event.
     /// </summary>
     [Table( "WorkflowLog" )]
     [DataContract]
@@ -24,29 +24,29 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the workflow id.
+        /// Gets or sets the WorkflowId of the <see cref="Rock.Model.Workflow"/> instance that is being logged.
         /// </summary>
         /// <value>
-        /// The workflow id.
+        /// A <see cref="System.Int32"/> representing the WorkflowId of the <see cref="Rock.Model.Workflow"/> instance that is being logged.
         /// </value>
         [DataMember]
         public int WorkflowId { get; set; }
 
         /// <summary>
-        /// Gets or sets the log date time.
+        /// Gets or sets the date and time that the WorkflowLog entry was created. This property is required.
         /// </summary>
         /// <value>
-        /// The log date time.
+        /// A <see cref="System.DateTime"/> representing the date and time that this WorkflowLog entry was created.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public DateTime LogDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the log entry.
+        /// Gets or sets the body/text of the WorkflowLog entry. This property is required.
         /// </summary>
         /// <value>
-        /// The log entry.
+        /// A <see cref="System.String"/> representing the body/text of the WorkflowLog entry.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -57,10 +57,10 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the  workflow.
+        /// Gets or sets the <see cref="Rock.Model.Workflow"/> instance that is being logged.
         /// </summary>
         /// <value>
-        /// The workflow.
+        /// The <see cref="Rock.Model.Workflow"/> that is being logged.
         /// </value>
         [DataMember]
         public virtual Workflow Workflow { get; set; }
@@ -70,10 +70,10 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns a <see cref="System.String" /> that represents this WorkflowLog.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="System.String" /> that represents this WorkflowLog.
         /// </returns>
         public override string ToString()
         {

@@ -14,65 +14,65 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Service Log POCO Entity.
+    /// Represents a log entry from when RockChMS makes a call to an external service.
     /// </summary>
     [Table( "ServiceLog" )]
     [DataContract]
     public partial class ServiceLog : Model<ServiceLog>
     {
         /// <summary>
-        /// Gets or sets the Time.
+        /// Gets or sets the date and time that the log entry was created 
         /// </summary>
         /// <value>
-        /// Time.
+        /// A <see cref="System.DateTime" /> representing when the log entry was created.
         /// </value>
         [DataMember]
         public DateTime? LogDateTime { get; set; }
         
         /// <summary>
-        /// Gets or sets the Input.
+        /// Gets or sets the data that was sent to the service.
         /// </summary>
         /// <value>
-        /// Input.
+        /// A <see cref="System.String"/> containing the data that was sent to the service.
         /// </value>
         [DataMember]
         public string Input { get; set; }
         
         /// <summary>
-        /// Gets or sets the Type.
+        /// Gets or sets the type of service that was run
         /// </summary>
         /// <value>
-        /// Type.
+        /// A <see cref="System.String"/> representing the type of service that was run.
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
         public string Type { get; set; }
         
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the component name for the service.
         /// </summary>
         /// <value>
-        /// Name.
+        /// A <see cref="System.String"/> representing the component name for the service.
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
         public string Name { get; set; }
         
         /// <summary>
-        /// Gets or sets the Result.
+        /// Gets or sets the result that was returned from the service.
         /// </summary>
         /// <value>
-        /// Result.
+        /// A <see cref="System.String"/> representing the result that was returned from the service.
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
         public string Result { get; set; }
         
         /// <summary>
-        /// Gets or sets the Success.
+        /// Gets or sets a flag indicating if the service returned a successful result. This property is required.
         /// </summary>
         /// <value>
-        /// Success.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if the service returned a successful result; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]

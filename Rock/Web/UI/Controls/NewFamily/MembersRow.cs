@@ -407,7 +407,7 @@ namespace Rock.Web.UI.Controls
 
             var iDelete = new HtmlGenericControl( "i" );
             _lbDelete.Controls.Add( iDelete );
-            iDelete.AddCssClass( "icon-remove" );
+            iDelete.AddCssClass( "fa fa-times" );
         }
 
         /// <summary>

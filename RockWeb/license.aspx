@@ -9,37 +9,40 @@
 
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Styles/theme.css") %>" />
 
-    <script src="<%= ResolveUrl("~/Scripts/jquery.js") %>" ></script>
-    
+    <script src="<%= ResolveUrl("~/Scripts/jquery.js") %>"></script>
+
 </head>
 <body id="splash" class="error">
     <form id="form1" runat="server">
-    
-        
+
         <div id="content">
             <img alt="Rock ChMS" id="logoImg" runat="server" class="pageheader-logo" src="#" />
 
             <div id="content-box">
                 <div class="row">
                     <div class="col-md-12">
-                        
+
 
                         <h1>Rock Church Management System License</h1>
-                            
-                            <h3>Apache 2.0 License</h3>
-                            <p>Copyright 2013 Spark Development Network</p>
 
-                            <p>Licensed under the Apache License, Version 2.0 (the "License");
+                        <h3>Apache 2.0 License</h3>
+                        <p>Copyright 2013 Spark Development Network</p>
+
+                        <p>
+                            Licensed under the Apache License, Version 2.0 (the "License");
                             you may not use this file except in compliance with the License.
-                            You may obtain a copy of the License at</p>
+                            You may obtain a copy of the License at
+                        </p>
 
-                                <p style="text-align: center;"><a href="">http://www.apache.org/licenses/LICENSE-2.0</a></p>
+                        <p style="text-align: center;"><a href="">http://www.apache.org/licenses/LICENSE-2.0</a></p>
 
-                            <p>Unless required by applicable law or agreed to in writing, software
+                        <p>
+                            Unless required by applicable law or agreed to in writing, software
                             distributed under the License is distributed on an "AS IS" BASIS,
                             WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
                             See the License for the specific language governing permissions and
-                            limitations under the License.</p>
+                            limitations under the License.
+                        </p>
 
                         <h1>Component Licenses</h1>
                         The Rock ChMS was written using several other open-source projects and packages.  Each 
@@ -87,7 +90,8 @@
                         </ul>
 
 
-                        <a name="aspwebapi"></a><h3>ASP.net Web API</h3>
+                        <a name="aspwebapi"></a>
+                        <h3>ASP.net Web API</h3>
                         <pre>
 Apache License 2.0 (Apache)
 Apache License
@@ -161,7 +165,8 @@ In no event and under no legal theory, whether in tort (including negligence), c
 While redistributing the Work or Derivative Works thereof, You may choose to offer, and charge a fee for, acceptance of support, warranty, indemnity, or other liability obligations and/or rights consistent with this License. However, in accepting such obligations, You may act only on Your own behalf and on Your sole responsibility, not on behalf of any other Contributor, and only if You agree to indemnify, defend, and hold each Contributor harmless for any liability incurred by, or claims asserted against, such Contributor by reason of your accepting any such warranty or additional liability.
 </pre>
 
-                        <a name="ajaxtool"></a><h3>AJAX Control Toolkit</h3>
+                        <a name="ajaxtool"></a>
+                        <h3>AJAX Control Toolkit</h3>
                         <pre>
 New BSD License (BSD)
 Copyright (c) 2009, CodePlex Foundation
@@ -178,7 +183,8 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 </pre>
 
-                        <a name="bootstrap"></a><h3>Bootstrap</h3>
+                        <a name="bootstrap"></a>
+                        <h3>Bootstrap</h3>
                         <pre>
 Apache License
 
@@ -230,7 +236,8 @@ To apply the Apache License to your work, attach the following boilerplate notic
 
 </pre>
 
-                        <a name="ef"></a><h3>Entity Framework</h3>
+                        <a name="ef"></a>
+                        <h3>Entity Framework</h3>
                         <pre>
 Apache License 2.0 (Apache)
 Apache License
@@ -304,7 +311,8 @@ In no event and under no legal theory, whether in tort (including negligence), c
 While redistributing the Work or Derivative Works thereof, You may choose to offer, and charge a fee for, acceptance of support, warranty, indemnity, or other liability obligations and/or rights consistent with this License. However, in accepting such obligations, You may act only on Your own behalf and on Your sole responsibility, not on behalf of any other Contributor, and only if You agree to indemnify, defend, and hold each Contributor harmless for any liability incurred by, or claims asserted against, such Contributor by reason of your accepting any such warranty or additional liability.
 </pre>
 
-                        <a name="ckeditor"></a><h3>CK Editor</h3>
+                        <a name="ckeditor"></a>
+                        <h3>CK Editor</h3>
                         <pre>
 GNU LESSER GENERAL PUBLIC LICENSE
 
@@ -373,7 +381,8 @@ Each version is given a distinguishing version number. If the Library as you rec
 If the Library as you received it specifies that a proxy can decide whether future versions of the GNU Lesser General Public License shall apply, that proxy's public statement of acceptance of any version is permanent authorization for you to choose that version for the Library.
 </pre>
 
-                        <a name="facebook"></a><h3>Facebook C# SDK</h3>
+                        <a name="facebook"></a>
+                        <h3>Facebook C# SDK</h3>
                         <pre>
  Apache License
                            Version 2.0, January 2004
@@ -553,7 +562,8 @@ If the Library as you received it specifies that a proxy can decide whether futu
    END OF TERMS AND CONDITIONS
 </pre>
 
-                        <a name="fontawesome"></a><h3>Font Awesome</h3>
+                        <a name="fontawesome"></a>
+                        <h3>Font Awesome</h3>
                         <pre>
 The SIL Open Font License (OFL) is a free, libre and open source license specifically designed for fonts and related software based on our experience in font design and linguistic software engineering.
 The OFL provides a legal framework and infrastructure for worldwide development, sharing and improvement of fonts and related software in a collaborative manner. It enables font authors to release their work under a common license that allows use, bundling, modification and redistribution. It encourages shared value, is not limited to any specific computing platform or environment, and can be used by other organizations or individuals.
@@ -718,7 +728,8 @@ ________________________________________
 
 </pre>
 
-                        <a name="json"></a><h3>JSON.Net</h3>
+                        <a name="json"></a>
+                        <h3>JSON.Net</h3>
                         <pre>
 The MIT License (MIT)
 Copyright (c) 2007 James Newton-King
@@ -731,7 +742,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 </pre>
 
-                        <a name="nuget"></a><h3>Nuget</h3>
+                        <a name="nuget"></a>
+                        <h3>Nuget</h3>
                         <pre>
 Apache License 2.0 (Apache)
 Apache License
@@ -806,7 +818,8 @@ While redistributing the Work or Derivative Works thereof, You may choose to off
 
 </pre>
 
-                         <a name="nuget"></a><h3>Nunit</h3>
+                        <a name="nuget"></a>
+                        <h3>Nunit</h3>
                         <pre>
 Copyright © 2002-2012 Charlie Poole
 Copyright © 2002-2004 James W. Newkirk, Michael C. Two, Alexei A. Vorontsov
@@ -823,7 +836,8 @@ This license is based on the open source zlib/libpng license. The idea was to ke
 
 </pre>
 
-                        <a name="quartz"></a><h3>Quartz</h3>
+                        <a name="quartz"></a>
+                        <h3>Quartz</h3>
                         <pre>
 Apache License
 
@@ -873,7 +887,8 @@ To apply the Apache License to your work, attach the following boilerplate notic
 
 </pre>
 
-                        <a name="jquery"></a><h3>jQuery</h3>
+                        <a name="jquery"></a>
+                        <h3>jQuery</h3>
                         <pre>
 Copyright 2013 jQuery Foundation and other contributors
 http://jquery.com/
@@ -898,7 +913,8 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 </pre>
 
-                        <a name="idle"></a><h3>Idle Timer</h3>
+                        <a name="idle"></a>
+                        <h3>Idle Timer</h3>
                         <pre>
 Copyright (c) 2013 Paul Irish
 
@@ -911,7 +927,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
 
 </pre>
 
-                        <a name="countdown"></a><h3>Countdown</h3>
+                        <a name="countdown"></a>
+                        <h3>Countdown</h3>
                         <pre>
 MIT-License.txt
 Copyright 2013 jQuery Foundation and other contributors
@@ -926,7 +943,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 </pre>
 
-                        <a name="creditcard"></a><h3>jQuery Credit Card Type Detector</h3>
+                        <a name="creditcard"></a>
+                        <h3>jQuery Credit Card Type Detector</h3>
                         <pre>
  * jQuery Credit Card Type Detector plugin
  * version 0.9
@@ -955,7 +973,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
  * THE SOFTWARE.
 </pre>
 
-                        <a name="eventdrag"></a><h3>Event Drag</h3>
+                        <a name="eventdrag"></a>
+                        <h3>Event Drag</h3>
                         <pre>
  Software License
 Copyright (c) 2008-2013 ThreeDubMedia 
@@ -972,7 +991,8 @@ BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CON
 OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
 </pre>
 
-                        <a name="taginput"></a><h3>jQuery Tag Input</h3>
+                        <a name="taginput"></a>
+                        <h3>jQuery Tag Input</h3>
                         <pre>
 The MIT License (MIT)
 
@@ -997,7 +1017,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 </pre>
 
-                        <a name="tinyscrollbar"></a><h3>Tiny Scrollbar</h3>
+                        <a name="tinyscrollbar"></a>
+                        <h3>Tiny Scrollbar</h3>
                         <pre>
 The MIT License (MIT)
 
@@ -1022,7 +1043,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 </pre>
 
-                        <a name="epplus"></a><h3>EPPLus</h3>
+                        <a name="epplus"></a>
+                        <h3>EPPLus</h3>
                         <pre>
 GNU Library General Public License (LGPL)
 Version 2.1, February 1999
@@ -1171,7 +1193,8 @@ NO WARRANTY
 
 </pre>
 
-                        <a name="dotliquid"></a><h3>DotLiquid</h3>
+                        <a name="dotliquid"></a>
+                        <h3>DotLiquid</h3>
                         <pre>
 Apache License
 
@@ -1218,7 +1241,8 @@ To apply the Apache License to your work, attach the following boilerplate notic
 
 </pre>
 
-                         <a name="bootbox"></a><h3>Bootbox.js</h3>
+                        <a name="bootbox"></a>
+                        <h3>Bootbox.js</h3>
                         <pre>
 /**
  * bootbox.js v4.0.0
@@ -1247,7 +1271,8 @@ To apply the Apache License to your work, attach the following boilerplate notic
  */
 </pre>
 
-                        <a name="dday"></a><h3>DDay.iCal</h3>
+                        <a name="dday"></a>
+                        <h3>DDay.iCal</h3>
                         <pre>
 Copyright (c) <year> <copyright holder>.
 All rights reserved.
@@ -1265,7 +1290,8 @@ IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
 WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 </pre>
 
-                        <a name="exif"></a><h3>EXIFextractor</h3>
+                        <a name="exif"></a>
+                        <h3>EXIFextractor</h3>
                         <pre>
 
 Microsoft Reciprocal License (MS-RL)
@@ -1293,7 +1319,8 @@ A "contributor" is any person that distributes its contribution under this licen
 
 </pre>
 
-                        <a name="zip"></a><h3>DotNetZip</h3>
+                        <a name="zip"></a>
+                        <h3>DotNetZip</h3>
                         <pre>
 Microsoft Public License (Ms-PL)
 This license governs use of the accompanying software. If you use the software, you accept this license. If you do not accept the license, do not use the software.
@@ -1328,7 +1355,8 @@ A "contributor" is any person that distributes its contribution under this licen
 
 </pre>
 
-                        <a name="activator"></a><h3>WebActivatorEx</h3>
+                        <a name="activator"></a>
+                        <h3>WebActivatorEx</h3>
                         <pre>
 Microsoft Public License (Ms-PL)
 This license governs use of the accompanying software. If you use the software, you accept this license. If you do not accept the license, do not use the software.
@@ -1363,7 +1391,8 @@ A "contributor" is any person that distributes its contribution under this licen
 
 </pre>
 
-                        <a name="webgrease"></a><h3>WebGrease</h3>
+                        <a name="webgrease"></a>
+                        <h3>WebGrease</h3>
                         <pre>
 MICROSOFT SOFTWARE LICENSE TERMS
 
@@ -1529,7 +1558,8 @@ Elle s’applique également même si Microsoft connaissait l'éventualité d'un tel d
 
 </pre>
 
-                        <a name="limitboot"></a><h3>Limit Bootstrap</h3>
+                        <a name="limitboot"></a>
+                        <h3>Limit Bootstrap</h3>
                         <pre>
 Apache License
 
@@ -1578,7 +1608,8 @@ To apply the Apache License to your work, attach the following boilerplate notic
 
 </pre>
 
-                        <a name="datepicker"></a><h3>Bootstrap Datepicker</h3>
+                        <a name="datepicker"></a>
+                        <h3>Bootstrap Datepicker</h3>
                         <pre>
 Apache License
 
@@ -1627,7 +1658,8 @@ To apply the Apache License to your work, attach the following boilerplate notic
 
 </pre>
 
-                        <a name="imageresizer"></a><h3>ImageResizer</h3>
+                        <a name="imageresizer"></a>
+                        <h3>ImageResizer</h3>
                         <pre>
 License summary:
 No restrictions, except you can't use my own code to compete with my own products.
@@ -1663,7 +1695,8 @@ This clause does not apply if the author is deceased, or if said products are no
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 </pre>
 
-                        <a name="jqueryswitch"></a><h3>jQuery Switch</h3>
+                        <a name="jqueryswitch"></a>
+                        <h3>jQuery Switch</h3>
                         <pre>
 Apache License
                            Version 2.0, January 2004
@@ -1842,7 +1875,8 @@ Apache License
 
    END OF TERMS AND CONDITIONS</pre>
 
-                         <a name="fastclick"></a><h3>FastClick</h3>
+                        <a name="fastclick"></a>
+                        <h3>FastClick</h3>
                         <pre>
 Copyright (C) 2012 The Financial Times Ltd.
 
@@ -1852,7 +1886,8 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</pre>
 
-                        <a name="prettify"></a><h3>Prettify</h3>
+                        <a name="prettify"></a>
+                        <h3>Prettify</h3>
                         <pre>
 Apache License
 
@@ -1907,7 +1942,8 @@ You may add Your own copyright statement to Your modifications and may provide a
 9. Accepting Warranty or Additional Liability. While redistributing the Work or Derivative Works thereof, You may choose to offer, and charge a fee for, acceptance of support, warranty, indemnity, or other liability obligations and/or rights consistent with this License. However, in accepting such obligations, You may act only on Your own behalf and on Your sole responsibility, not on behalf of any other Contributor, and only if You agree to indemnify, defend, and hold each Contributor harmless for any liability incurred by, or claims asserted against, such Contributor by reason of your accepting any such warranty or additional liability.
 </pre>
 
-                        <a name="bootstraptimepicker"></a><h3>Bootstrap Timepicker</h3>
+                        <a name="bootstraptimepicker"></a>
+                        <h3>Bootstrap Timepicker</h3>
                         <pre>
 The MIT license
 
@@ -1930,7 +1966,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 </pre>
 
-                        <a name="twilio"></a><h3>Twilio</h3>
+                        <a name="twilio"></a>
+                        <h3>Twilio</h3>
                         <pre>
 Apache License
 Version 2.0, January 2004
@@ -2001,7 +2038,8 @@ While redistributing the Work or Derivative Works thereof, You may choose to off
 END OF TERMS AND CONDITIONS
 </pre>
 
-                        <a name="restsharp"></a><h3>RestSharp</h3>
+                        <a name="restsharp"></a>
+                        <h3>RestSharp</h3>
                         <pre>
 Apache License
 Version 2.0, January 2004
@@ -2072,7 +2110,8 @@ While redistributing the Work or Derivative Works thereof, You may choose to off
 END OF TERMS AND CONDITIONS
 </pre>
 
-                        <a name="cronexpressiondescriptor"></a><h3>Cron Expression Descriptor</h3>
+                        <a name="cronexpressiondescriptor"></a>
+                        <h3>Cron Expression Descriptor</h3>
                         <pre>
 The MIT license
 
@@ -2095,7 +2134,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 </pre>
 
-                        <a name="ace-editor"></a><h3>Ace Code Editor</h3>
+                        <a name="ace-editor"></a>
+                        <h3>Ace Code Editor</h3>
                         <pre>
 Copyright (c) 2010, Ajax.org B.V.
 All rights reserved.
@@ -2123,7 +2163,8 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 </pre>
 
-                        <a name="csscript"></a><h3>CS Script</h3>
+                        <a name="csscript"></a>
+                        <h3>CS Script</h3>
                         <pre>
 Copyright (c) 2004-2012 Oleg Shilo
 

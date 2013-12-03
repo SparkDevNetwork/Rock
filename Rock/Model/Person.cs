@@ -135,7 +135,6 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        [Previewable]
         [MergeField]
         public string GivenName { get; set; }
 
@@ -215,6 +214,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [Previewable]
         [MergeField]
         public string FirstName
         {
@@ -436,6 +436,28 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
+        /// Gets the first name of the last.
+        /// </summary>
+        /// <value>
+        /// The first name of the last.
+        /// </value>
+        public virtual string FirstLastName
+        {
+            get { return string.Format( "{0} {1}", FirstName, LastName ); }
+        }
+
+        /// <summary>
+        /// Gets the last name of the first.
+        /// </summary>
+        /// <value>
+        /// The last name of the first.
+        /// </value>
+        public virtual string LastFirstName
+        {
+            get { return string.Format( "{0}, {1}", LastName, FirstName ); }
+        }
+
+        /// <summary>
         /// Gets or sets a collection containing the Person's <see cref="Rock.Model.UserLogin">UserLogins</see>.
         /// </summary>
         /// <value>
@@ -443,7 +465,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MergeField]
-        public virtual ICollection<UserLogin> Users 
+        public virtual ICollection<UserLogin> Users
         {
             get { return _users ?? ( _users = new Collection<UserLogin>() ); }
             set { _users = value; }
@@ -952,7 +974,7 @@ namespace Rock.Model
         /// </summary>
         Female = 2
     }
-        
+
     /// <summary>
     /// A person's possible grade levels
     /// </summary>
@@ -967,13 +989,13 @@ namespace Rock.Model
         /// <summary>
         /// Kindergarten
         /// </summary>
-        [Description("Kindergarten")]
+        [Description( "Kindergarten" )]
         Kindergarten = 0,
 
         /// <summary>
         /// 1st Grade
         /// </summary>
-        [Description("1st Grade")]
+        [Description( "1st Grade" )]
         First = 1,
 
         /// <summary>
@@ -1081,7 +1103,7 @@ namespace Rock.Model
         }
 
     }
-    
+
     #endregion
 
 }

@@ -176,6 +176,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 if ( _family != null )
                 {
                     tbFamilyName.Text = _family.Name;
+                    
+                    // add banner text
+                    if (_family.Name.Contains("family")) { 
+                        lBanner.Text = _family.Name.FormatAsHtmlTitle();
+                    }
+                    else
+                    {
+                        lBanner.Text = (_family.Name + " Family").FormatAsHtmlTitle();
+                    }
+
+
                     cpCampus.SelectedCampusId = _family.CampusId;
 
                     FamilyMembers = new List<FamilyMember>();
@@ -262,10 +273,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     System.Web.UI.WebControls.Image imgPerson = e.Item.FindControl( "imgPerson" ) as System.Web.UI.WebControls.Image;
                     if ( imgPerson != null )
                     {
-                        imgPerson.Visible = familyMember.PhotoId.HasValue;
                         if ( familyMember.PhotoId.HasValue )
                         {
-                            imgPerson.ImageUrl = string.Format( "~/GetImage.ashx?id={0}", familyMember.PhotoId );
+                            imgPerson.ImageUrl = string.Format( "~/GetImage.ashx?id={0}&width=65&height=65", familyMember.PhotoId );
                         }
                     }
 

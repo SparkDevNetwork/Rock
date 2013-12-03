@@ -51,7 +51,7 @@ $(document).ready(function() {
                 writer.AddAttribute( "class", "help" );
                 writer.AddAttribute( "href", "#" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute( "class", "icon-question-sign" );
+                writer.AddAttribute("class", "fa fa-question-circle");
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();

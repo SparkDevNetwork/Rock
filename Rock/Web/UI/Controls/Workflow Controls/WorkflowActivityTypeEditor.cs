@@ -52,8 +52,8 @@ namespace Rock.Web.UI.Controls
 $('.workflow-activity > header').click(function () {
     $(this).siblings('.panel-body').slideToggle();
 
-    $('i.workflow-activity-state', this).toggleClass('icon-chevron-down');
-    $('i.workflow-activity-state', this).toggleClass('icon-chevron-up');
+    $('i.workflow-activity-state', this).toggleClass('fa-chevron-down');
+    $('i.workflow-activity-state', this).toggleClass('fa-chevron-up');
 });
 
 // fix so that the Remove button will fire its event, but not the parent event 
@@ -160,7 +160,7 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
             _lbDeleteActivityType.ID = this.ID + "_lbDeleteActivityType";
             _lbDeleteActivityType.CssClass = "btn btn-xs btn-danger";
             _lbDeleteActivityType.Click += lbDeleteActivityType_Click;
-            _lbDeleteActivityType.Controls.Add( new LiteralControl { Text = "<i class='icon-remove'></i>" } );
+            _lbDeleteActivityType.Controls.Add( new LiteralControl { Text = "<i class='fa fa-times'></i>" } );
 
             _cbActivityTypeIsActive = new RockCheckBox { Label = "Active" };
             _cbActivityTypeIsActive.ID = this.ID + "_cbActivityTypeIsActive";
@@ -206,7 +206,7 @@ javascript:
             _lbAddActionType.CssClass = "btn btn-xs btn-action";
             _lbAddActionType.Click += lbAddActionType_Click;
             _lbAddActionType.CausesValidation = false;
-            _lbAddActionType.Controls.Add( new LiteralControl { Text = "<i class='icon-plus'></i> Add Action" } );
+            _lbAddActionType.Controls.Add( new LiteralControl { Text = "<i class='fa fa-plus'></i> Add Action" } );
 
             Controls.Add( _hfActivityTypeGuid );
             Controls.Add( _lblActivityTypeName );
@@ -261,8 +261,8 @@ javascript:
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.WriteLine( "<a class='btn btn-xs workflow-activity-reorder'><i class='icon-reorder'></i></a>" );
-            writer.WriteLine( "<a class='btn btn-xs'><i class='workflow-activity-state icon-chevron-down'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs btn-link workflow-activity-reorder'><i class='fa fa-bars'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs btn-link'><i class='workflow-activity-state fa fa-chevron-down'></i></a>" );
 
             if ( IsDeleteEnabled )
             {

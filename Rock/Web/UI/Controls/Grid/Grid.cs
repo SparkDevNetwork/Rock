@@ -269,22 +269,22 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The description field.
         /// </value>
-        public string DescriptionField
+        public string TooltipField
         {
             get
             {
-                string descriptionField = ViewState["DescriptionField"] as string;
-                if ( string.IsNullOrWhiteSpace( descriptionField ) )
+                string tooltipField = ViewState["TooltipField"] as string;
+                if ( string.IsNullOrWhiteSpace( tooltipField ) )
                 {
-                    descriptionField = null;
+                    tooltipField = null;
                 }
 
-                return descriptionField;
+                return tooltipField;
             }
 
             set
             {
-                ViewState["DescriptionField"] = value;
+                ViewState["TooltipField"] = value;
             }
         }
 
@@ -790,6 +790,13 @@ namespace Rock.Web.UI.Controls
 
             this.PrepareControlHierarchy();
 
+            // render script for popovers
+            string script = @"
+    $('.grid-table tr').tooltip({html: true, container: 'body', delay: { show: 500, hide: 100 }});
+    $('.grid-table tr').click( function(){ $(this).tooltip('hide'); });;
+";
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "grid-popover", script, true);
+
             this.RenderContents( writer );
         }
 
@@ -899,9 +906,9 @@ namespace Rock.Web.UI.Controls
                         }
                     }
 
-                    if ( DescriptionField != null )
+                    if ( TooltipField != null )
                     {
-                        PropertyInfo pi = e.Row.DataItem.GetType().GetProperty( DescriptionField );
+                        PropertyInfo pi = e.Row.DataItem.GetType().GetProperty( TooltipField );
                         if ( pi != null )
                         {
                             var piv = pi.GetValue( e.Row.DataItem );
@@ -1070,11 +1077,11 @@ namespace Rock.Web.UI.Controls
                     {
                         if ( property.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() > 0 )
                         {
-                            displayColumns.Add( property.Name, GetGridField( property ) );
+                            displayColumns.Add( property.Name, GetGridField( property.PropertyType ) );
                         }
                         else if ( displayColumns.Count == 0 && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
                         {
-                            allColumns.Add( property.Name, GetGridField( property ) );
+                            allColumns.Add( property.Name, GetGridField( property.PropertyType ) );
                         }
                     }
                 }
@@ -1104,23 +1111,34 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Gets the grid field.
         /// </summary>
-        /// <param name="property">The property.</param>
+        /// <param name="propertyType">Type of the property.</param>
         /// <returns></returns>
-        private BoundField GetGridField( PropertyInfo property )
+        public static BoundField GetGridField( Type propertyType )
         {
             BoundField bf = new BoundField();
+            Type baseType = propertyType;
 
-            if ( property.PropertyType == typeof( Boolean ) )
+            if (propertyType.IsGenericType)
+            {
+                baseType = propertyType.GetGenericArguments()[0];
+            }
+
+            if ( baseType == typeof( Boolean ) )
             {
                 bf = new BoolField();
             }
-            else if ( property.PropertyType == typeof( DateTime ) )
+            else if ( baseType == typeof( DateTime ) )
             {
                 bf = new DateField();
             }
-            else if ( property.PropertyType.IsEnum )
+            else if ( baseType.IsEnum )
             {
                 bf = new EnumField();
+            }
+            else if ( baseType == typeof( decimal ) || baseType == typeof( int ) )
+            {
+                bf = new BoundField();
+                bf.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
             }
 
             return bf;

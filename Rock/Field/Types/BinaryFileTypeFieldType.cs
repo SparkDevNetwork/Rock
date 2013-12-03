@@ -32,17 +32,19 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            string formattedValue = string.Empty;
+
             Guid binaryFileTypeGuid = Guid.Empty;
             if (Guid.TryParse( value, out binaryFileTypeGuid ))
             {
                 var binaryFiletype = new BinaryFileTypeService().Get( binaryFileTypeGuid );
                 if ( binaryFiletype != null )
                 {
-                    return binaryFiletype.Name;
+                    formattedValue = binaryFiletype.Name;
                 }
             }
-                
-            return string.Empty;
+
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
 
         }
 

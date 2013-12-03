@@ -19,7 +19,7 @@ using Rock.Reporting;
 namespace Rock.Model
 {
     /// <summary>
-    /// DataViewFilter POCO Entity.
+    /// Represents a filter on a <see cref="Rock.Model.DataView"/> in RockChMS.
     /// </summary>
     [NotAudited]
     [Table( "DataViewFilter" )]
@@ -30,37 +30,38 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the type of the filter.
+        /// Gets or sets the expression type of this DataViewFilter.
         /// </summary>
         /// <value>
-        /// The type of the filter.
+        /// A <see cref="Rock.Model.FilterExpressionType" /> that represents the expression type for the filter.  When <c>FilterExpressionType.Filter</c> it represents a filter expression, when <c>FilterExpressionType.GroupAll</c> it means that 
+        /// all conditions found in child expressions must be met, when <c>FilterExpressionType.GroupOr</c> it means that at least one condition found in the child filter expressions must be met.
         /// </value>
         [DataMember]
         public FilterExpressionType ExpressionType { get; set; }
 
         /// <summary>
-        /// Gets or sets the parent id.
+        /// Gets or sets the DataViewFilterId of the parent DataViewFilter.
         /// </summary>
         /// <value>
-        /// The parent id.
+        /// A <see cref="System.Int32"/> representing the DataViewFilterId of the parent DataViewFilter. If this DataViewFilter does not have a parent, this value will be null.
         /// </value>
         [DataMember]
         public int? ParentId { get; set; }
 
         /// <summary>
-        /// Gets or sets the entity type id.
+        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that either is being filtered by or contains the property that the DataView is being filtered by.
         /// </summary>
         /// <value>
-        /// The entity type id.
+        /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that is being used in the filter.
         /// </value>
         [DataMember]
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the value.
+        /// Gets or sets the value that the DataViewFitler is filtering by.
         /// </summary>
         /// <value>
-        /// The value.
+        /// A <see cref="System.String"/> containing the value to be used as a filter.
         /// </value>
         [DataMember]
         public string Selection { get; set; }
@@ -70,18 +71,18 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the parent.
+        /// Gets or sets sets the parent DataViewFilter.
         /// </summary>
         /// <value>
-        /// The parent.
+        /// The parent DataViewFilter.
         /// </value>
         public virtual DataViewFilter Parent { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the entity.
+        /// Gets or sets the <see cref="Rock.Model.EntityType"/> that the DataView is being filtered by or that contains the property/properties that the DataView is being filtered by.
         /// </summary>
         /// <value>
-        /// The type of the entity.
+        /// The <see cref="Rock.Model.EntityType"/> that the DataView is being filtered by.
         /// </value>
         [DataMember]
         public virtual EntityType EntityType { get; set; }
@@ -99,10 +100,10 @@ namespace Rock.Model
         public virtual bool Expanded { get; set; }
 
         /// <summary>
-        /// Gets or sets the child filters.
+        /// Gets or sets the child DataViewFilters.
         /// </summary>
         /// <value>
-        /// The child filters.
+        /// The child DataViewFilters.
         /// </value>
         [DataMember]
         public virtual ICollection<DataViewFilter> ChildFilters
@@ -115,8 +116,8 @@ namespace Rock.Model
         /// <summary>
         /// Determines whether the specified action is authorized.
         /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
+        /// <param name="action">A <see cref="System.String"/> containing the action that is being performed.</param>
+        /// <param name="person">the <see cref="Rock.Model.Person"/> who is trying to perform the action.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
@@ -158,12 +159,12 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
-        /// Gets the expression.
+        /// Gets the Linq expression for the DataViewFilter.
         /// </summary>
-        /// <param name="filteredEntityType">Type of the filtered entity.</param>
-        /// <param name="serviceInstance">The service instance.</param>
-        /// <param name="parameter">The parameter.</param>
-        /// <param name="errorMessages">The error messages.</param>
+        /// <param name="filteredEntityType">The object type of the filtered entity.</param>
+        /// <param name="serviceInstance">A <see cref="System.Object"/> that contains the service reference.</param>
+        /// <param name="parameter">A <see cref="System.Linq.Expressions.ParameterExpression"/> containing the parameter for the expression.</param>
+        /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}"/> that contains any error/exception messages that are returned.</param>
         /// <returns></returns>
         public virtual Expression GetExpression( Type filteredEntityType, object serviceInstance, ParameterExpression parameter, List<string> errorMessages )
         {
@@ -323,12 +324,12 @@ namespace Rock.Model
         Filter = 0,
 
         /// <summary>
-        /// Collection of Expressions that should be and'd together
+        /// A collection of expressions/conditions that must match and should be "and'd" together.
         /// </summary>
         GroupAll = 1,
 
         /// <summary>
-        /// Collection of Expressions that should be or'd together
+        /// A collection of expressions/conditions where at least one condition/expression must match.  Expressions are "or'd" together.
         /// </summary>
         GroupAny = 2
     }

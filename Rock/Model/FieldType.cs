@@ -21,20 +21,20 @@ namespace Rock.Model
     public partial class FieldType : Model<FieldType>
     {
         /// <summary>
-        /// Gets or sets the System.
+        /// Gets or sets a flag indicating if this FieldType is part of of the RockChMS core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// System.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this FieldType is part of the RockChMS core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the Name of the FieldType. This property is required.
         /// </summary>
         /// <value>
-        /// Name.
+        /// A <see cref="System.String"/> that represents the Name of the FieldType.
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -42,19 +42,19 @@ namespace Rock.Model
         public string Name { get; set; }
         
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a user defined description of the FieldType.
         /// </summary>
         /// <value>
-        /// Description.
+        /// A <see cref="System.String"/> representing the description of the FieldType.
         /// </value>
         [DataMember]
         public string Description { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the Assembly.
+        /// Gets or sets the Assembly name of the .dll file that contains the FieldType class. This property is required.
         /// </summary>
         /// <value>
-        /// Assembly.
+        /// A <see cref="System.String"/> that contains the Assembly name of the .dll file that contains the FieldType class.
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -62,10 +62,10 @@ namespace Rock.Model
         public string Assembly { get; set; }
         
         /// <summary>
-        /// Gets or sets the Class.
+        /// Gets or sets the fully qualified name, with Namespace, of the FieldType class. This property is required.
         /// </summary>
         /// <value>
-        /// Class.
+        /// A <see cref="System.String"/> that contains the fully qualified name of the FieldType class.
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -73,10 +73,10 @@ namespace Rock.Model
         public string Class { get; set; }
         
         /// <summary>
-        /// Gets or sets the Defined Types.
+        /// Gets or sets a collection of <see cref="Rock.Model.DefinedType">DefinedTypes</see> that use this FieldType.
         /// </summary>
         /// <value>
-        /// Collection of Defined Types.
+        /// A collection of <see cref="Rock.Model.DefinedType">DefinedTypes</see> that use this FieldType.
         /// </value>
         [DataMember]
         public virtual ICollection<DefinedType> DefinedTypes { get; set; }
@@ -90,10 +90,10 @@ namespace Rock.Model
         //public virtual ICollection<Metric> Metrics { get; set; }
 
         /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// Returns a <see cref="System.String"/> that represents this FieldType.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
+        /// A <see cref="System.String"/> that represents this FieldType.
         /// </returns>
         public override string ToString()
         {

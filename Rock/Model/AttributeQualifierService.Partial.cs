@@ -12,15 +12,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Attribute Qualifier POCO Service class
+    /// Data access/service class for <see cref="Rock.Model.AttributeQualifier"/> entity objects.
     /// </summary>
     public partial class AttributeQualifierService
     {
         /// <summary>
-        /// Gets Attribute Qualifiers by Attribute Id
+        /// Returns an enumerable collection containing the <see cref="Rock.Model.AttributeQualifier">AttributeQualifiers</see> by <see cref="Rock.Model.Attribute"/>.
         /// </summary>
-        /// <param name="attributeId">Attribute Id.</param>
-        /// <returns>An enumerable list of AttributeQualifier objects.</returns>
+        /// <param name="attributeId">A <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Attribute"/> to retrieve <see cref="Rock.Model.AttributeQualifier"/>.</param>
+        /// <returns>An enumerable collection containing the <see cref="Rock.Model.AttributeQualifier">AttributeQualifiers</see> that the specified <see cref="Rock.Model.Attribute"/> uses.</returns>
         public IEnumerable<AttributeQualifier> GetByAttributeId( int attributeId )
         {
             return Repository.Find( t => t.AttributeId == attributeId );

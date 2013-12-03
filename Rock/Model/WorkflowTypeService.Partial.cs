@@ -13,7 +13,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Workflow POCO Service class
+    /// Service/Data access class for <see cref="Rock.Model.WorkflowType"/> entity objects.
     /// </summary>
     public partial class WorkflowTypeService 
     {

@@ -16,7 +16,8 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Refund Transaction POCO class.
+    /// Represents a transaction where a giver/purchaser was refunded a full or partial amount 
+    /// on a <see cref="Rock.Model.FinancialTransaction"/>.
     /// </summary>
     [Table( "FinancialTransactionRefund" )]
     [DataContract]
@@ -26,20 +27,22 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the refund reason value id.
+        /// Gets or sets the DefinedValueId of the return reason <see cref="Rock.Model.DefinedValue"/> indicating
+        /// the reason why a refund was issued for the the original transaction.
         /// </summary>
         /// <value>
-        /// The refund reason value id.
+        /// A <see cref="System.Int32"/> representing the DefinedValueId of the refund reason <see cref="Rock.Model.DefinedValue"/> 
+        /// indicating the reason for the refund.
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.FINANCIAL_TRANSACTION_REFUND_REASON )]
         public int? RefundReasonValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the refund reason summary.
+        /// Gets or sets a detailed summary of the circumstances surrounding why a refund was issued.
         /// </summary>
         /// <value>
-        /// The refund reason summary.
+        /// A <see cref="System.String"/> representing a summary of why the refund was issued.
         /// </value>
         [DataMember]
         public string RefundReasonSummary { get; set; }
@@ -49,10 +52,11 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the refund reason value.
+        /// Gets or sets the refund reason <see cref="Rock.Model.DefinedValue"/> indicating the reason 
+        /// for the refund.
         /// </summary>
         /// <value>
-        /// The refund reason value.
+        /// The refund reason <see cref="Rock.Model.DefinedValue"/>.
         /// </value>
         [DataMember]
         public virtual DefinedValue RefundReasonValue { get; set; }
@@ -65,7 +69,7 @@ namespace Rock.Model
 
 
     /// <summary>
-    /// Transaction Configuration class.
+    /// Refund Transaction Configuration class.
     /// </summary>
     public partial class FinancialTransactionRefundConfiguration : EntityTypeConfiguration<FinancialTransactionRefund>
     {

@@ -257,7 +257,7 @@ namespace Rock.Web.UI
                     {
                         Zone zone = control as Zone;
                         if ( zone != null )
-                            Zones.Add( zone.ID, new KeyValuePair<string, Zone>( zone.Name, zone ) );
+                            Zones.Add( zone.Name.Replace(" ", ""), new KeyValuePair<string, Zone>( zone.Name, zone ) );
                     }
 
                     FindRockControls( control.Controls );
@@ -353,11 +353,36 @@ namespace Rock.Web.UI
             if ( PageParameter( "logout" ) != string.Empty )
             {
                 FormsAuthentication.SignOut();
-                CurrentPerson = null;
-                CurrentUser = null;
-                Response.Redirect( CurrentPageReference.BuildUrl() );
-                Context.ApplicationInstance.CompleteRequest();
-                return;
+
+                // After logging out check to see if an anonymous user is allowed to view the current page.  If so
+                // redirect back to the current page, otherwise redirect to the site's default page
+                if ( CurrentPage != null )
+                {
+                    if ( CurrentPage.IsAuthorized( "View", null ) )
+                    {
+                        // Remove the 'logout' queryparam before redirecting
+                        var pageReference = new PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, CurrentPageReference.Parameters );
+                        foreach(string key in CurrentPageReference.QueryString)
+                        {
+                            if (!key.Equals("logout", StringComparison.OrdinalIgnoreCase))
+                            {
+                                pageReference.Parameters.Add( key, CurrentPageReference.QueryString[key] );
+                            }
+                        }
+                        Response.Redirect( pageReference.BuildUrl(), false );
+                        Context.ApplicationInstance.CompleteRequest();
+                    }
+                    else
+                    {
+                        CurrentPage.Layout.Site.RedirectToDefaultPage();
+                    }
+                    return;
+                }
+                else
+                {
+                    CurrentPerson = null;
+                    CurrentUser = null;
+                }
             }
 
             // If the impersonated query key was included then set the current person
@@ -427,34 +452,32 @@ namespace Rock.Web.UI
                     return;
                 }
 
-                // Verify that the current user is allowed to view the page.  If not, and 
-                // the user hasn't logged in yet, redirect to the login page
+                // Verify that the current user is allowed to view the page.  
                 Page.Trace.Warn( "Checking if user is authorized" );
                 if ( !CurrentPage.IsAuthorized( "View", CurrentPerson ) )
                 {
                     if ( user == null )
                     {
+                        // If not authorized, and the user hasn't logged in yet, redirect to the login page
                         Page.Trace.Warn( "Redirecting to login page" );
 
                         var site = CurrentPage.Layout.Site;
                         if ( site.LoginPageId.HasValue )
                         {
-                            var pageReference = new PageReference( site.LoginPageId.Value );
-                            if ( site.LoginPageRouteId.HasValue )
-                            {
-                                pageReference.RouteId = site.LoginPageRouteId.Value;
-                            }
-
-                            var parms = new Dictionary<string, string>();
-                            parms.Add( "returnurl", Request.QueryString["returnUrl"] ?? Server.UrlEncode(Request.RawUrl) );
-                            pageReference.Parameters = parms;
-
-                            Response.Redirect( pageReference.BuildUrl() );
+                            site.RedirectToLoginPage( true );
                         }
                         else
                         {
                             FormsAuthentication.RedirectToLoginPage();
                         }
+                    }
+                    else
+                    {
+                        // If not authorized, and the user has logged in, redirect to error page
+                        Page.Trace.Warn( "Redirecting to error page" );
+
+                        Response.Redirect( "~/error.aspx?type=security", false );  
+                        Context.ApplicationInstance.CompleteRequest();
                     }
                 }
                 else
@@ -485,14 +508,7 @@ namespace Rock.Web.UI
 
                     // set page title
                     Page.Trace.Warn( "Setting page title" );
-                    if ( CurrentPage.Title != null && CurrentPage.Title != "" )
-                    {
-                        this.Title = CurrentPage.Title;
-                    }
-                    else
-                    {
-                        this.Title = CurrentPage.Name;
-                    }
+                    this.Title = CurrentPage.Title;
 
                     // set viewstate on/off
                     this.EnableViewState = CurrentPage.EnableViewState;
@@ -516,6 +532,14 @@ namespace Rock.Web.UI
     }});",
                         CurrentPage.Layout.SiteId, CurrentPage.LayoutId, CurrentPage.Id, CurrentPage.Layout.FileName, AppPath );
                     ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "rock-js-object", script, true );
+
+                    // Add dummy default button to prevent modalPopupExtender dialogs from displaying when enter key is pressed
+                    var btnDummy = new Button();
+                    btnDummy.Attributes.Add( "style", "display:none" );
+                    this.Form.Controls.Add( btnDummy );
+                    this.Form.DefaultButton = btnDummy.UniqueID;
+
+                    AddTriggerPanel();
 
                     // Add config elements
                     if ( CurrentPage.IncludeAdminFooter )
@@ -741,7 +765,7 @@ namespace Rock.Web.UI
                         aBlockConfig.Attributes.Add( "Title", "Block Configuration" );
                         HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
                         aBlockConfig.Controls.Add( iBlockConfig );
-                        iBlockConfig.Attributes.Add( "class", "icon-th-large" );
+                        iBlockConfig.Attributes.Add( "class", "fa fa-th-large" );
 
                         // RockPage Properties
                         HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
@@ -754,7 +778,7 @@ namespace Rock.Web.UI
                         aAttributes.Attributes.Add( "Title", "Page Properties" );
                         HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
                         aAttributes.Controls.Add( iAttributes );
-                        iAttributes.Attributes.Add( "class", "icon-cog" );
+                        iAttributes.Attributes.Add( "class", "fa fa-cog" );
 
                         // Child Pages
                         HtmlGenericControl aChildPages = new HtmlGenericControl( "a" );
@@ -767,7 +791,7 @@ namespace Rock.Web.UI
                         aChildPages.Attributes.Add( "Title", "Child Pages" );
                         HtmlGenericControl iChildPages = new HtmlGenericControl( "i" );
                         aChildPages.Controls.Add( iChildPages );
-                        iChildPages.Attributes.Add( "class", "icon-sitemap" );
+                        iChildPages.Attributes.Add( "class", "fa fa-sitemap" );
 
                         // RockPage Zones
                         HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
@@ -777,7 +801,7 @@ namespace Rock.Web.UI
                         aPageZones.Attributes.Add( "Title", "Page Zones" );
                         HtmlGenericControl iPageZones = new HtmlGenericControl( "i" );
                         aPageZones.Controls.Add( iPageZones );
-                        iPageZones.Attributes.Add( "class", "icon-columns" );
+                        iPageZones.Attributes.Add( "class", "fa fa-columns" );
 
                         // RockPage Security
                         HtmlGenericControl aPageSecurity = new HtmlGenericControl( "a" );
@@ -791,7 +815,7 @@ namespace Rock.Web.UI
                         aPageSecurity.Attributes.Add( "Title", "Page Security" );
                         HtmlGenericControl iPageSecurity = new HtmlGenericControl( "i" );
                         aPageSecurity.Controls.Add( iPageSecurity );
-                        iPageSecurity.Attributes.Add( "class", "icon-lock" );
+                        iPageSecurity.Attributes.Add( "class", "fa fa-lock" );
 
                         // System Info
                         HtmlGenericControl aSystemInfo = new HtmlGenericControl( "a" );
@@ -804,7 +828,7 @@ namespace Rock.Web.UI
                         aSystemInfo.Attributes.Add( "Title", "Rock Information" );
                         HtmlGenericControl iSystemInfo = new HtmlGenericControl( "i" );
                         aSystemInfo.Controls.Add( iSystemInfo );
-                        iSystemInfo.Attributes.Add( "class", "icon-info-sign" );
+                        iSystemInfo.Attributes.Add("class", "fa fa-info-circle");
 
                     }
 
@@ -941,12 +965,19 @@ namespace Rock.Web.UI
         /// <param name="key">The key to use for the history point</param>
         /// <param name="state">any state information to store for the history point</param>
         /// <param name="title">The title to be used by the browser</param>
-        public void AddHistory(string key, string state, string title)
+        public void AddHistory(string key, string state, string title = "")
         {
             if (ScriptManager.GetCurrent(Page) != null)
             {
                 ScriptManager sManager = ScriptManager.GetCurrent(Page);
-                sManager.AddHistoryPoint(key, state, title);
+                if ( string.IsNullOrWhiteSpace( title ) )
+                {
+                    sManager.AddHistoryPoint( key, state );
+                }
+                else
+                {
+                    sManager.AddHistoryPoint( key, state, title );
+                }
             }
         }
 
@@ -967,6 +998,18 @@ namespace Rock.Web.UI
             return ResolveUrl( themeUrl );
         }
 
+        /// <summary>
+        /// Adds an update trigger for when the block instance properties are updated.
+        /// </summary>
+        /// <param name="updatePanel">The update panel.</param>
+        public void AddConfigurationUpdateTrigger( UpdatePanel updatePanel )
+        {
+            AsyncPostBackTrigger trigger = new AsyncPostBackTrigger();
+            trigger.ControlID = "rock-config-trigger";
+            trigger.EventName = "Click";
+            updatePanel.Triggers.Add( trigger );
+        }
+        
         #endregion
 
         #region Cms Admin Content
@@ -976,13 +1019,38 @@ namespace Rock.Web.UI
         /// </summary>
         private void AddPopupControls()
         {
-            // Add the page admin script
-            //AddScriptLink( Page, "~/Scripts/Rock/popup.js" );
-
             ModalIFrameDialog modalPopup = new ModalIFrameDialog();
             modalPopup.ID = "modal-popup";
             modalPopup.OnCancelScript = "window.parent.Rock.controls.modal.close();";
             this.Form.Controls.Add( modalPopup );
+        }
+
+        // Adds the neccessary script elements for managing the page/zone/blocks
+        /// <summary>
+        /// Adds the config elements.
+        /// </summary>
+        private void AddTriggerPanel()
+        {
+            CompiledTemplateBuilder upContent = new CompiledTemplateBuilder(
+                delegate( Control content )
+                {
+                    Button trigger = new Button();
+                    trigger.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                    trigger.ID = "rock-config-trigger";
+                    trigger.Click += trigger_Click;
+                    content.Controls.Add( trigger );
+
+                    HiddenField triggerData = new HiddenField();
+                    triggerData.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                    triggerData.ID = "rock-config-trigger-data";
+                    content.Controls.Add( triggerData );
+                }
+            );
+
+            UpdatePanel upTrigger = new UpdatePanel();
+            upTrigger.ContentTemplate = upContent;
+            this.Form.Controls.Add( upTrigger );
+            upTrigger.Attributes.Add( "style", "display:none" );
         }
 
         // Adds the neccessary script elements for managing the page/zone/blocks
@@ -995,6 +1063,7 @@ namespace Rock.Web.UI
             AddScriptLink( Page, "~/Scripts/Bundles/RockAdmin" );
 
             AddBlockMove();
+
             // Add Zone Wrappers
             foreach ( KeyValuePair<string, KeyValuePair<string, Zone>> zoneControl in this.Zones )
             {
@@ -1003,7 +1072,7 @@ namespace Rock.Web.UI
 
                 HtmlGenericControl zoneWrapper = new HtmlGenericControl( "div" );
                 parent.Controls.AddAt( parent.Controls.IndexOf( control ), zoneWrapper );
-                zoneWrapper.ID = string.Format( "zone-{0}", control.ID );
+                zoneWrapper.ID = string.Format( "zone-{0}", zoneControl.Key.ToLower() );
                 zoneWrapper.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 zoneWrapper.Attributes.Add( "class", "zone-instance can-configure" );
 
@@ -1017,7 +1086,7 @@ namespace Rock.Web.UI
                 zoneConfigLink.Attributes.Add( "href", "#" );
                 zoneConfig.Controls.Add( zoneConfigLink );
                 HtmlGenericControl iZoneConfig = new HtmlGenericControl( "i" );
-                iZoneConfig.Attributes.Add( "class", "icon-circle-arrow-right" );
+                iZoneConfig.Attributes.Add("class", "fa fa-arrow-circle-right");
                 zoneConfigLink.Controls.Add( iZoneConfig );
 
                 HtmlGenericControl zoneConfigBar = new HtmlGenericControl( "div" );
@@ -1031,16 +1100,16 @@ namespace Rock.Web.UI
                 // Configure Blocks icon
                 HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
                 zoneConfigBar.Controls.Add( aBlockConfig );
-                aBlockConfig.ID = string.Format( "aBlockConfig-{0}", control.ID );
+                aBlockConfig.ID = string.Format( "aBlockConfig-{0}", zoneControl.Key );
                 aBlockConfig.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 aBlockConfig.Attributes.Add( "class", "zone-blocks" );
                 aBlockConfig.Attributes.Add( "height", "500px" );
-                aBlockConfig.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", CurrentPage.Id, control.ID ) ) + "')" );
+                aBlockConfig.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", CurrentPage.Id, zoneControl.Key ) ) + "')" );
                 aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
                 aBlockConfig.Attributes.Add( "zone", zoneControl.Key );
                 //aBlockConfig.InnerText = "Blocks";
                 HtmlGenericControl iZoneBlocks = new HtmlGenericControl( "i" );
-                iZoneBlocks.Attributes.Add( "class", "icon-th-large" );
+                iZoneBlocks.Attributes.Add( "class", "fa fa-th-large" );
                 aBlockConfig.Controls.Add( iZoneBlocks );
 
                 HtmlGenericContainer zoneContent = new HtmlGenericContainer( "div" );
@@ -1073,16 +1142,14 @@ namespace Rock.Web.UI
                 blockWrapper.Controls.Add( blockConfig );
 
                 HtmlGenericControl blockConfigLink = new HtmlGenericControl( "a" );
-                //blockConfigLink.Attributes.Add( "class", "blockinstance-config" );
                 blockConfigLink.Attributes.Add( "href", "#" );
                 HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
-                iBlockConfig.Attributes.Add( "class", "icon-circle-arrow-right" );
+                iBlockConfig.Attributes.Add("class", "fa fa-arrow-circle-right");
                 blockConfigLink.Controls.Add( iBlockConfig );
-
                 blockConfig.Controls.Add( blockConfigLink );
 
                 HtmlGenericControl blockConfigBar = new HtmlGenericControl( "div" );
-                blockConfigBar.Attributes.Add( "class", "block-configuration-bar config-bar" );
+                blockConfigBar.Attributes.Add( "class", "block-configuration-bar" );
                 blockConfig.Controls.Add( blockConfigBar );
 
                 HtmlGenericControl blockConfigTitle = new HtmlGenericControl( "span" );
@@ -1126,7 +1193,7 @@ namespace Rock.Web.UI
             ddlZones.ID = "block-move-zone";
             ddlZones.Label = "Zone";
             foreach ( var zone in Zones )
-                ddlZones.Items.Add( new ListItem( zone.Value.Key, zone.Value.Value.ID ) );
+                ddlZones.Items.Add( new ListItem( zone.Value.Key, zone.Key ) );
             fsZoneSelect.Controls.Add( ddlZones );
 
             RockRadioButtonList rblLocation = new RockRadioButtonList();
@@ -1404,7 +1471,7 @@ namespace Rock.Web.UI
         {
             var scriptManager = ScriptManager.GetCurrent( page );
 
-            if ( scriptManager != null )
+            if ( scriptManager != null && !scriptManager.Scripts.Any( s => s.Path == path ) )
             {
                 scriptManager.Scripts.Add( new ScriptReference( path ) );
             }
@@ -1500,34 +1567,45 @@ namespace Rock.Web.UI
 
         #region Event Handlers
 
-        //void btnSaveAttributes_Click( object sender, EventArgs e )
-        //{
-        //    Button btnSave = ( Button )sender;
-        //    int blockInstanceId = Convert.ToInt32( btnSave.ID.Replace( "attributes-", "" ).Replace( "-hide", "" ) );
+        /// <summary>
+        /// Handles the Click event of the trigger control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void trigger_Click( object sender, EventArgs e )
+        {
+            var dataControl = this.Form.FindControl( "rock-config-trigger-data" );
+            if ( dataControl != null && dataControl is HiddenField )
+            {
+                string triggerData = ( (HiddenField)dataControl ).Value;
 
-        //    Cached.BlockInstance blockInstance = PageInstance.BlockInstances.Where( b => b.Id == blockInstanceId ).FirstOrDefault();
-        //    if ( blockInstance != null )
-        //    {
-        //        // Find the container control
-        //        Control blockWrapper = RecurseControls(this, string.Format("bid_{0}", blockInstance.Id));
-        //        if ( blockWrapper != null )
-        //        {
-        //            foreach ( Rock.Web.Cache.Attribute attribute in blockInstance.Attributes )
-        //            {
-        //                //HtmlGenericControl editCell = ( HtmlGenericControl )blockWrapper.FindControl( string.Format( "attribute-{0}", attribute.Id.ToString() ) );
-        //                Control control = blockWrapper.FindControl( string.Format( "attribute-field-{0}", attribute.Id.ToString() ) );
-        //                if ( control != null )
-        //                    blockInstance.AttributeValues[attribute.Key] = new KeyValuePair<string, string>( attribute.Name, attribute.FieldType.Field.ReadValue( control ) );
-        //            }
+                if ( triggerData.StartsWith( "BLOCK_UPDATED:" ) )
+                {
+                    int blockId = int.MinValue;
+                    if ( int.TryParse( triggerData.Replace( "BLOCK_UPDATED:", "" ), out blockId ) )
+                    {
+                        OnBlockUpdated( blockId );
+                    }
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Occurs when a block's properties are updated.
+        /// </summary>
+        internal event EventHandler<BlockUpdatedEventArgs> BlockUpdated;
 
-        //            blockInstance.SaveAttributeValues( CurrentPersonId );
-
-        //            if ( BlockInstanceAttributesUpdated != null )
-        //                BlockInstanceAttributesUpdated( sender, new BlockInstanceAttributesUpdatedEventArgs( blockInstanceId ) );
-        //        }
-        //    }
-        //}
-
+        /// <summary>
+        /// Called when a block's properties are updated.
+        /// </summary>
+        /// <param name="blockId">The block identifier.</param>
+        private void OnBlockUpdated (int blockId)
+        {
+            if ( BlockUpdated != null )
+            {
+                BlockUpdated( this, new BlockUpdatedEventArgs( blockId ) );
+            }
+        }
         /// <summary>
         /// Handles the Navigate event of the scriptManager control.
         /// </summary>
@@ -1548,6 +1626,7 @@ namespace Rock.Web.UI
         public event PageNavigateEventHandler PageNavigate;
 
         #endregion
+
     }
 
     #region Event Argument Classes
@@ -1560,13 +1639,13 @@ namespace Rock.Web.UI
     public delegate void PageNavigateEventHandler(object sender, HistoryEventArgs e);
 
     /// <summary>
-    /// Event Argument used when block instance properties are updated
+    /// Event Argument used when block properties are updated
     /// </summary>
-    internal class BlockAttributesUpdatedEventArgs : EventArgs
+    internal class BlockUpdatedEventArgs : EventArgs
     {
         public int BlockID { get; private set; }
 
-        public BlockAttributesUpdatedEventArgs( int blockId )
+        public BlockUpdatedEventArgs( int blockId )
         {
             BlockID = blockId;
         }

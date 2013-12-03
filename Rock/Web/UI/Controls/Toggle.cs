@@ -128,6 +128,10 @@ $(document).ready(function() {
                 postBackOption.AutoPostBack = true;
             }
             string onClick = this.Page.ClientScript.GetPostBackEventReference( postBackOption, true );
+            if ( onClick.EndsWith( ", 0)" ) )
+            {
+                onClick = onClick.Substring( 0, onClick.Length - 2 ) + "225)";
+            }
             writer.AddAttribute( HtmlTextWriterAttribute.Onchange, onClick );
             
             string accessKey = this.AccessKey;
