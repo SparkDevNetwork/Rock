@@ -24,9 +24,10 @@ namespace Rock.Web.UI.Controls
         private RadioButton _radPolygon;
 
         private Panel _pickersPanel;
-        private LocationItemPicker _locationItemPicker;
-        private LocationAddressPicker _locationAddressPicker;
-        private GeoPicker _locationGeoPicker;
+        private LocationItemPicker _namedPicker;
+        private LocationAddressPicker _addressPicker;
+        private GeoPicker _pointPicker;
+        private GeoPicker _polygonPicker;
 
         #endregion
 
@@ -42,7 +43,14 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["AllowedPickerModes"] as LocationPickerMode? ?? LocationPickerMode.All;
+                var allowedPickerModes = ViewState["AllowedPickerModes"] as LocationPickerMode?;
+                if ( !allowedPickerModes.HasValue)
+                {
+                    allowedPickerModes = LocationPickerMode.All;
+                    AllowedPickerModes = allowedPickerModes.Value;
+                }
+                
+                return allowedPickerModes.Value;
             }
 
             set
@@ -61,7 +69,30 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["CurrentPickerMode"] as LocationPickerMode? ?? LocationPickerMode.Named;
+                var pickerMode = ViewState["CurrentPickerMode"] as LocationPickerMode?;
+                if ( !pickerMode.HasValue )
+                {
+                    if ( ( this.AllowedPickerModes & LocationPickerMode.Address ) == LocationPickerMode.Address )
+                    {
+                        pickerMode = LocationPickerMode.Address;
+                    }
+                    else if ( ( this.AllowedPickerModes & LocationPickerMode.Point ) == LocationPickerMode.Point )
+                    {
+                        pickerMode = LocationPickerMode.Point;
+                    }
+                    else if ( ( this.AllowedPickerModes & LocationPickerMode.Polygon ) == LocationPickerMode.Polygon )
+                    {
+                        pickerMode = LocationPickerMode.Polygon;
+                    }
+                    else
+                    {
+                        pickerMode = LocationPickerMode.Named;
+                    }
+
+                    CurrentPickerMode = pickerMode.Value;
+                }
+
+                return pickerMode.Value;
             }
 
             set
@@ -85,14 +116,24 @@ namespace Rock.Web.UI.Controls
                 {
                     case LocationPickerMode.Address:
                         {
-                            return _locationAddressPicker.Location;
+                            return _addressPicker.Location;
                         }
                     case LocationPickerMode.Point:
+                        {
+                            if (_pointPicker.SelectedValue != null)
+                            {
+                                return new LocationService().GetByGeoPoint( _pointPicker.SelectedValue );
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
                     case LocationPickerMode.Polygon:
                         {
-                            if ( _locationGeoPicker.SelectedValue != null )
+                            if ( _polygonPicker.SelectedValue != null )
                             {
-                                return new LocationService().GetByGeoLocation( _locationGeoPicker.SelectedValue );
+                                return new LocationService().GetByGeoFence( _polygonPicker.SelectedValue );
                             }
                             else
                             {
@@ -101,7 +142,7 @@ namespace Rock.Web.UI.Controls
                         }
                     default:
                         {
-                            return new LocationService().Get( _locationItemPicker.SelectedValueAsId() ?? 0 );
+                            return new LocationService().Get( _namedPicker.SelectedValueAsId() ?? 0 );
                         }
                 }
             }
@@ -109,15 +150,34 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                _locationAddressPicker.SetValue( value );
-                _locationItemPicker.SetValue( value );
-                if ( value != null )
+                switch ( CurrentPickerMode )
                 {
-                    _locationGeoPicker.SetValue( value.GeoPoint ?? value.GeoFence );
-                }
-                else
-                {
-                    _locationGeoPicker.SetValue( null );
+                    case LocationPickerMode.Address:
+                        {
+                            _addressPicker.SetValue( value );
+                            break;
+                        }
+                    case LocationPickerMode.Point:
+                        {
+                            if ( value != null )
+                            {
+                                _pointPicker.SetValue( value.GeoPoint );
+                            }
+                            break;
+                        }
+                    case LocationPickerMode.Polygon:
+                        {
+                            if ( value != null )
+                            {
+                                _polygonPicker.SetValue( value.GeoFence );
+                            }
+                            break;
+                        }
+                    default:
+                        {
+                            _namedPicker.SetValue( value );
+                            break;
+                        }
                 }
             }
         }
@@ -188,8 +248,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnPreRender( EventArgs e )
         {
-            var addressEnabled = (this.AllowedPickerModes & LocationPickerMode.Named) == LocationPickerMode.Named;
-            var nameEnabled = ( this.AllowedPickerModes & LocationPickerMode.Address ) == LocationPickerMode.Address;
+            var nameEnabled = (this.AllowedPickerModes & LocationPickerMode.Named) == LocationPickerMode.Named;
+            var addressEnabled = ( this.AllowedPickerModes & LocationPickerMode.Address ) == LocationPickerMode.Address;
             var pointEnabled = ( this.AllowedPickerModes & LocationPickerMode.Point ) == LocationPickerMode.Point;
             var polygonEnabled = ( this.AllowedPickerModes & LocationPickerMode.Polygon ) == LocationPickerMode.Polygon;
 
@@ -205,14 +265,16 @@ namespace Rock.Web.UI.Controls
 
             _radPoint.Visible = pointEnabled;
             _radPoint.Checked = this.CurrentPickerMode == LocationPickerMode.Point;
+            modesEnabled = pointEnabled ? modesEnabled + 1 : modesEnabled;
 
             _radPolygon.Visible = polygonEnabled;
             _radPolygon.Checked = this.CurrentPickerMode == LocationPickerMode.Polygon;
-            modesEnabled = (pointEnabled || polygonEnabled) ? modesEnabled + 1 : modesEnabled;
+            modesEnabled = polygonEnabled ? modesEnabled + 1 : modesEnabled;
 
-            _locationItemPicker.Visible = nameEnabled && this.CurrentPickerMode == LocationPickerMode.Named;
-            _locationAddressPicker.Visible = addressEnabled && this.CurrentPickerMode == LocationPickerMode.Address;
-            _locationGeoPicker.Visible = (pointEnabled && this.CurrentPickerMode == LocationPickerMode.Point) || (polygonEnabled && this.CurrentPickerMode == LocationPickerMode.Polygon);
+            _namedPicker.Visible = nameEnabled && this.CurrentPickerMode == LocationPickerMode.Named;
+            _addressPicker.Visible = addressEnabled && this.CurrentPickerMode == LocationPickerMode.Address;
+            _pointPicker.Visible = pointEnabled && this.CurrentPickerMode == LocationPickerMode.Point;
+            _polygonPicker.Visible = polygonEnabled && this.CurrentPickerMode == LocationPickerMode.Polygon;
 
             _pnlModeSelection.Visible = modesEnabled > 1;
 
@@ -257,38 +319,51 @@ namespace Rock.Web.UI.Controls
             _pickersPanel.ViewStateMode = ViewStateMode.Disabled;
             this.Controls.Add( _pickersPanel );
 
-            _locationItemPicker = new LocationItemPicker();
-            _locationItemPicker.ID = this.ID + "_locationItemPicker";
-            _locationAddressPicker = new LocationAddressPicker();
-            _locationAddressPicker.ID = this.ID + "_locationAddressPicker";
+            _namedPicker = new LocationItemPicker();
+            _namedPicker.ID = this.ID + "_namedPicker";
 
-            _locationGeoPicker = new GeoPicker();
-            _locationGeoPicker.ID = this.ID + "_locationGeoPicker";
-            _locationGeoPicker.SelectGeography += _locationGeoPicker_SelectGeography;
+            _addressPicker = new LocationAddressPicker();
+            _addressPicker.ID = this.ID + "_addressPicker";
 
-            _locationItemPicker.ModePanel = _pnlModeSelection;
-            _locationGeoPicker.ModePanel = _pnlModeSelection;
-            _locationAddressPicker.ModePanel = _pnlModeSelection;
+            _pointPicker = new GeoPicker();
+            _pointPicker.ID = this.ID + "_pointPicker";
+            _pointPicker.DrawingMode = GeoPicker.ManagerDrawingMode.Point;
+            _pointPicker.SelectGeography += _pointPicker_SelectGeography;
 
-            _pickersPanel.Controls.Add( _locationItemPicker );
-            _pickersPanel.Controls.Add( _locationAddressPicker );
-            _pickersPanel.Controls.Add( _locationGeoPicker );
+            _polygonPicker = new GeoPicker();
+            _polygonPicker.ID = this.ID + "_polygonPicker";
+            _polygonPicker.DrawingMode = GeoPicker.ManagerDrawingMode.Polygon;
+            _polygonPicker.SelectGeography += _polygonPicker_SelectGeography;
+
+            _namedPicker.ModePanel = _pnlModeSelection;
+            _pointPicker.ModePanel = _pnlModeSelection;
+            _polygonPicker.ModePanel = _pnlModeSelection;
+            _addressPicker.ModePanel = _pnlModeSelection;
+
+            _pickersPanel.Controls.Add( _namedPicker );
+            _pickersPanel.Controls.Add( _addressPicker );
+            _pickersPanel.Controls.Add( _pointPicker );
+            _pickersPanel.Controls.Add( _polygonPicker );
         }
 
         /// <summary>
-        /// Handles the SelectGeography event of the _locationGeoPicker control.
+        /// Handles the SelectGeography event of the _pointPicker control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        protected void _locationGeoPicker_SelectGeography( object sender, EventArgs e )
+        protected void _pointPicker_SelectGeography( object sender, EventArgs e )
         {
-            // this will autosave the GeoPicker result as Location if it isn't in the database already
-            LocationService locationService = new LocationService();
-            Location location = null;
-            location = locationService.GetByGeoLocation( _locationGeoPicker.SelectedValue );
+            Location = new LocationService().GetByGeoPoint( _pointPicker.SelectedValue );
+        }
 
-            Location = location;
+        /// <summary>
+        /// Handles the SelectGeography event of the _polygonPicker control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void _polygonPicker_SelectGeography( object sender, EventArgs e )
+        {
+            Location = new LocationService().GetByGeoFence( _polygonPicker.SelectedValue );
         }
 
         /// <summary>
@@ -312,14 +387,17 @@ namespace Rock.Web.UI.Controls
             _radPoint.Checked = eventArgument == "PointMode";
             _radPolygon.Checked = eventArgument == "PolygonMode";
 
-            _locationItemPicker.Visible = _radNamed.Checked;
-            _locationItemPicker.ShowDropDown = _radNamed.Checked;
+            _namedPicker.Visible = _radNamed.Checked;
+            _namedPicker.ShowDropDown = _radNamed.Checked;
 
-            _locationAddressPicker.Visible = _radAddress.Checked;
-            _locationAddressPicker.ShowDropDown = _radAddress.Checked;
+            _addressPicker.Visible = _radAddress.Checked;
+            _addressPicker.ShowDropDown = _radAddress.Checked;
 
-            _locationGeoPicker.Visible = _radPoint.Checked || _radPolygon.Checked;
-            _locationGeoPicker.ShowDropDown = _radPoint.Checked || _radPolygon.Checked;
+            _pointPicker.Visible = _radPoint.Checked;
+            _pointPicker.ShowDropDown = _radPoint.Checked;
+
+            _polygonPicker.Visible = _radPolygon.Checked;
+            _polygonPicker.ShowDropDown = _radPolygon.Checked;
 
             if ( _radAddress.Checked )
             {
@@ -331,23 +409,11 @@ namespace Rock.Web.UI.Controls
             }
             else if ( _radPoint.Checked )
             {
-                if (this.CurrentPickerMode != LocationPickerMode.Point)
-                {
-                    _locationGeoPicker.SelectedValue = null;
-                }
-
                 this.CurrentPickerMode = LocationPickerMode.Point;
-                _locationGeoPicker.DrawingMode = GeoPicker.ManagerDrawingMode.Point;
             }
             else if (_radPolygon.Checked)
             {
-                if (this.CurrentPickerMode != LocationPickerMode.Polygon)
-                {
-                    _locationGeoPicker.SelectedValue = null;
-                }
-
                 this.CurrentPickerMode = LocationPickerMode.Polygon;
-                _locationGeoPicker.DrawingMode = GeoPicker.ManagerDrawingMode.Polygon;
             }
         }
 
@@ -375,14 +441,15 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _locationItemPicker.Label;
+                return _namedPicker.Label;
             }
             set
             {
                 EnsureChildControls();
-                _locationItemPicker.Label = value;
-                _locationAddressPicker.Label = value;
-                _locationGeoPicker.Label = value;
+                _namedPicker.Label = value;
+                _addressPicker.Label = value;
+                _pointPicker.Label = value;
+                _polygonPicker.Label = value;
             }
         }
 
@@ -397,14 +464,15 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _locationItemPicker.Help;
+                return _namedPicker.Help;
             }
             set
             {
                 EnsureChildControls();
-                _locationItemPicker.Help = value;
-                _locationAddressPicker.Help = value;
-                _locationGeoPicker.Help = value;
+                _namedPicker.Help = value;
+                _addressPicker.Help = value;
+                _pointPicker.Help = value;
+                _polygonPicker.Help = value;
             }
         }
 
@@ -419,14 +487,15 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _locationItemPicker.Required;
+                return _namedPicker.Required;
             }
             set
             {
                 EnsureChildControls();
-                _locationItemPicker.Required = value;
-                _locationAddressPicker.Required = value;
-                _locationGeoPicker.Required = value;
+                _namedPicker.Required = value;
+                _addressPicker.Required = value;
+                _pointPicker.Required = value;
+                _polygonPicker.Required = value;
             }
         }
 
@@ -441,14 +510,15 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _locationItemPicker.RequiredErrorMessage;
+                return _namedPicker.RequiredErrorMessage;
             }
             set
             {
                 EnsureChildControls();
-                _locationItemPicker.RequiredErrorMessage = value;
-                _locationAddressPicker.RequiredErrorMessage = value;
-                _locationGeoPicker.RequiredErrorMessage = value;
+                _namedPicker.RequiredErrorMessage = value;
+                _addressPicker.RequiredErrorMessage = value;
+                _pointPicker.RequiredErrorMessage = value;
+                _polygonPicker.RequiredErrorMessage = value;
             }
         }
 
@@ -463,14 +533,15 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _locationItemPicker.ValidationGroup;
+                return _namedPicker.ValidationGroup;
             }
             set
             {
                 EnsureChildControls();
-                _locationItemPicker.ValidationGroup = value;
-                _locationAddressPicker.ValidationGroup = value;
-                _locationGeoPicker.ValidationGroup = value;
+                _namedPicker.ValidationGroup = value;
+                _addressPicker.ValidationGroup = value;
+                _pointPicker.ValidationGroup = value;
+                _polygonPicker.ValidationGroup = value;
             }
         }
 
@@ -488,12 +559,13 @@ namespace Rock.Web.UI.Controls
                 switch ( CurrentPickerMode )
                 {
                     case LocationPickerMode.Address:
-                        return _locationAddressPicker.IsValid;
+                        return _addressPicker.IsValid;
                     case LocationPickerMode.Point:
+                        return _pointPicker.IsValid;
                     case LocationPickerMode.Polygon:
-                        return _locationGeoPicker.IsValid;
+                        return _polygonPicker.IsValid;
                     default:
-                        return _locationItemPicker.IsValid;
+                        return _namedPicker.IsValid;
                 }
             }
         }
@@ -509,14 +581,15 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _locationItemPicker.HelpBlock;
+                return _namedPicker.HelpBlock;
             }
             set
             {
                 EnsureChildControls();
-                _locationItemPicker.HelpBlock = value;
-                _locationAddressPicker.HelpBlock = value;
-                _locationGeoPicker.HelpBlock = value;
+                _namedPicker.HelpBlock = value;
+                _addressPicker.HelpBlock = value;
+                _pointPicker.HelpBlock = value;
+                _polygonPicker.HelpBlock = value;
             }
         }
 
@@ -531,14 +604,15 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _locationItemPicker.RequiredFieldValidator;
+                return _namedPicker.RequiredFieldValidator;
             }
             set
             {
                 EnsureChildControls();
-                _locationItemPicker.RequiredFieldValidator = value;
-                _locationAddressPicker.RequiredFieldValidator = value;
-                _locationGeoPicker.RequiredFieldValidator = value;
+                _namedPicker.RequiredFieldValidator = value;
+                _addressPicker.RequiredFieldValidator = value;
+                _pointPicker.RequiredFieldValidator = value;
+                _polygonPicker.RequiredFieldValidator = value;
             }
         }
 

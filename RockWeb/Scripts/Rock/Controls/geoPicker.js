@@ -341,7 +341,8 @@
             */
             this.toAddress = function (latlng, $labelElement) {
                 // only try if we have a valid latlng
-                if (!latlng || isNaN(latlng.lat()) || isNaN(latlng.lng()) ) {
+                if (!latlng || isNaN(latlng.lat()) || isNaN(latlng.lng())) {
+                    $labelElement.text('');
                     return;
                 }
                 var geocoder = new google.maps.Geocoder();
@@ -424,9 +425,17 @@
             $('#btnCancel_' + controlId).click(function () {
                 $(this).closest('.picker-menu').slideUp();
                 self.path = self.pathTemp;
+
                 if ( self.selectedShape ) {
                     self.selectedShape.setMap(null);
                     self.clearSelection();
+
+                    // enable the drawing controls again
+                    self.drawingManager.setOptions({
+                        drawingControlOptions: {
+                            drawingModes: self.getDrawingModes()
+                        }
+                    });
                 }
                 self.plotPath(self.map);
             });

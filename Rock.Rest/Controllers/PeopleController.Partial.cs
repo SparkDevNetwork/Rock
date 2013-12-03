@@ -91,7 +91,7 @@ namespace Rock.Rest.Controllers
             List<Person> sortedPersonList = topQry.ToList();
 
             var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-            string imageUrlFormat = string.Format( "<image src='{0}' />", Path.Combine( appPath, "GetImage.ashx?id={0}&width=25&height=25" ) );
+            string imageUrlFormat = string.Format( "<image src='{0}' />", Path.Combine( appPath, "GetImage.ashx?id={0}&width=65&height=65" ) );
             string imageNoPhoto = string.Format("<image src='{0}' />", Path.Combine(appPath, "/Assets/images/person-no-photo.svg"));
             string itemDetailFormat = @"
 <div class='picker-select-item-details clearfix' style='display: none;'>
@@ -155,7 +155,7 @@ namespace Rock.Rest.Controllers
                         personInfo += familyGroupMember.GroupRole.Name;
                         if ( person.Age != null )
                         {
-                            personInfo += " - " + person.Age.ToString() + " yrs old";
+                            personInfo += " <em>(" + person.Age.ToString() + " yrs old)</em>";
                         }
 
                         // Figure out spouse (Implied by "the other GROUPROLE_FAMILY_MEMBER_ADULT that is of the opposite gender")
@@ -198,7 +198,7 @@ namespace Rock.Rest.Controllers
                                     streetInfo = location.Street2;
                                 }
 
-                                string addressHtml = string.Format( "<h5>Address</h5>{0} {1}, {2}, {3}", streetInfo, location.City, location.State, location.Zip );
+                                string addressHtml = string.Format( "<h5>Address</h5>{0} <br />{1}, {2}, {3}", streetInfo, location.City, location.State, location.Zip );
                                 personInfo += addressHtml;
                             }
                         }
