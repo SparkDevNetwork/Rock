@@ -70,7 +70,7 @@ namespace RockWeb
         {
             if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
             {
-                System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", DateTime.Now ) );
+                System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", DateTime.Now.ToString("hh:mm:ss.FFF" ) ));
             }
 
             // Check if database should be auto-migrated for the core and plugins
@@ -126,8 +126,18 @@ namespace RockWeb
                 Database.SetInitializer<Rock.Data.RockContext>( null );
             }
 
+            if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+            {
+                new AttributeService().Get( 0 );
+                System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - Connected: {0}", DateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+            }
+
             // Preload the commonly used objects
             LoadCacheObjects();
+            if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+            {
+                System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - Done: {0}", DateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+            }
 
             // setup and launch the jobs infrastructure if running under IIS
             bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
