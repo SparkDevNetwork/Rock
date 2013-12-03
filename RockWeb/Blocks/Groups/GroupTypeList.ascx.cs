@@ -206,12 +206,8 @@ namespace RockWeb.Blocks.Groups
         private void BindFilter()
         {
             ddlPurpose.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE ) ), true );
-
-            var purpose = rFilter.GetUserPreference( "Purpose" );
-            ddlPurpose.SelectedValue = purpose;
-
-            var isSystem = rFilter.GetUserPreference( "System Group Types" );
-            ddlIsSystem.SelectedValue = isSystem;
+            ddlPurpose.SelectedValue = rFilter.GetUserPreference( "Purpose" );
+            ddlIsSystem.SelectedValue = rFilter.GetUserPreference( "System Group Types" );
         }
 
         /// <summary>

@@ -138,16 +138,16 @@ namespace RockWeb.Blocks.Cms
                 StringBuilder debugInfo = new StringBuilder();
                 debugInfo.Append( "<p /><div class='alert alert-info'><h4>Debug Info</h4>" );
 
-                debugInfo.Append( "<pre>" );
+                debugInfo.Append("<p><em>Note:</em> If a page or group of pages is not in the data above check the following: <ul>");
+                debugInfo.Append("<li>The parent page has 'Show Child Pages' enabled in the 'Page Properties' > 'Display Settings'</li>");
+                debugInfo.Append("<li>Check the 'Display Settings' on the child pages</li>");
+                debugInfo.Append("<li>Check the security of the child pages</li>");
+                debugInfo.Append("</ul><br /></p>");
 
+                debugInfo.Append( "<pre>" );
                 debugInfo.Append( "<p /><strong>Page Data</strong> (referenced as 'page.' in Liquid)<br>" );
                 debugInfo.Append( rootPage.GetMenuProperties( levelsDeep, CurrentPerson, pageHeirarchy, pageParameters, queryString ).ToJson() + "</pre>" );
 
-                debugInfo.Append( "<em>Note:</em> If a page or group of pages is not in the data above check the following: <ul>" );
-                debugInfo.Append( "<li>The parent page has 'Show Child Pages' enabled in the 'Page Properties' > 'Display Settings'</li>" );
-                debugInfo.Append( "<li>Check the 'Display Settings' on the child pages</li>" );
-                debugInfo.Append( "<li>Check the security of the child pages</li>" );
-                debugInfo.Append( "</ul>" );
                 debugInfo.Append( "</div>" );
                 phContent.Controls.Add( new LiteralControl( debugInfo.ToString() ) );
             }

@@ -161,7 +161,10 @@ ul.rock-tree ul {
   padding: 0px;
 }
 ul.rock-tree ul {
-  margin: 0px 0px 0px 25px;
+  margin: 0px 0px 0px 20px;
+}
+.rock-tree .rock-tree-item {
+  white-space: nowrap;
 }
 .rock-tree .rock-tree-item > i {
   cursor: pointer;
@@ -200,7 +203,7 @@ ul.rock-tree ul {
   margin-right: 5px;
 }
 .rock-tree .rock-tree-leaf {
-  padding-left: 12px;
+  padding-left: 14px;
 }
 .personlist {
   padding-left: 0;
@@ -1329,7 +1332,7 @@ span.cke_skin_kama {
   cursor: pointer;
 }
 .grid-filter {
-  background-color: #d9e1e8;
+  background-color: #d5d5d5;
   border-radius: 4px;
   padding: 0 6px 12px 6px;
   margin-bottom: -10px;
@@ -1417,7 +1420,7 @@ td.grid-col-actions {
 }
 .grid-actions {
   text-align: right;
-  background-color: #d9e1e8;
+  background-color: #d5d5d5;
 }
 .grid-actions .btn {
   margin-left: 8px;
@@ -1788,9 +1791,6 @@ dl dd {
   font-size: 14px;
   font-weight: 600;
 }
-.persondetails-familybar .addresses ul .address .actions {
-  display: none;
-}
 .persondetails-familybar .addresses ul .address .actions a {
   padding: 1px;
 }
@@ -1877,6 +1877,14 @@ dl dd {
 .scroll-container .disable {
   display: none;
 }
+::selection {
+  background: #5279a0;
+  color: #ffffff;
+}
+::-moz-selection {
+  background: #5279a0;
+  color: #ffffff;
+}
 /* global classes */
 .clickable {
   cursor: pointer;
@@ -1962,6 +1970,40 @@ dl dd {
   margin-top: 0;
   margin-bottom: 0;
   float: left;
+}
+.panel-treeview {
+  border-color: #d5d5d5;
+}
+.panel-treeview > .panel-heading {
+  color: #ecf0f3;
+  background-color: #428bca;
+  border-color: #d5d5d5;
+}
+.panel-treeview > .panel-heading + .panel-collapse .panel-body {
+  border-top-color: #d5d5d5;
+}
+.panel-treeview > .panel-footer + .panel-collapse .panel-body {
+  border-bottom-color: #d5d5d5;
+}
+.panel-treeview .panel-heading {
+  padding-bottom: 0;
+}
+.panel-treeview .panel-heading .treeview-actions {
+  margin-top: 6px;
+  background-color: #d5d5d5;
+}
+.panel-treeview .panel-heading .treeview-actions .col {
+  padding-right: 0;
+  padding-left: 0;
+}
+.panel-treeview .panel-heading .treeview-actions .btn {
+  border: 1px solid #c8c8c8;
+  border-radius: 0;
+  width: 100%;
+  color: #333333;
+}
+.panel-treeview .treeview-frame {
+  overflow-x: scroll;
 }
 .panel-info .panel-body {
   background-color: #ffffff;

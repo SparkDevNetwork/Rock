@@ -273,10 +273,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     System.Web.UI.WebControls.Image imgPerson = e.Item.FindControl( "imgPerson" ) as System.Web.UI.WebControls.Image;
                     if ( imgPerson != null )
                     {
-                        imgPerson.Visible = familyMember.PhotoId.HasValue;
                         if ( familyMember.PhotoId.HasValue )
                         {
-                            imgPerson.ImageUrl = string.Format( "~/GetImage.ashx?id={0}", familyMember.PhotoId );
+                            imgPerson.ImageUrl = string.Format( "~/GetImage.ashx?id={0}&width=65&height=65", familyMember.PhotoId );
                         }
                     }
 
