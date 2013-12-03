@@ -12,9 +12,9 @@ namespace Rock.Reporting
     public class DataSelectData
     {
         /// <summary>
-        /// The person identifier
+        /// The Id of whatever Entity. For example, Person.Id, Group.Id, etc
         /// </summary>
-        public int PersonId;
+        public int EntityId;
         
         /// <summary>
         /// This will contain an Anonymous class that the DataSelectComponent creates
