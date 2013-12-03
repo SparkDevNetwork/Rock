@@ -56,14 +56,6 @@ namespace Rock.Model
                 type = Type.GetType( thetype );
             }
 
-            // create attributes if needed 
-            // TODO: next line should be moved to Job creation UI, when it's created
-            int? jobEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Model.ServiceJob" ).Id;
-            using ( new UnitOfWorkScope() )
-            {
-                Rock.Attribute.Helper.UpdateAttributes( type, jobEntityTypeId, "Class", job.Class, null );
-            }
-
             // load up job attributes (parameters) 
             job.LoadAttributes();
 
