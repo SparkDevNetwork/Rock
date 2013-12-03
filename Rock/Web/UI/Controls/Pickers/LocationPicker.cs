@@ -46,8 +46,8 @@ namespace Rock.Web.UI.Controls
                 var allowedPickerModes = ViewState["AllowedPickerModes"] as LocationPickerMode?;
                 if ( !allowedPickerModes.HasValue)
                 {
-                    AllowedPickerModes = LocationPickerMode.All;
-                    ViewState["AllowedPickerModes"] = allowedPickerModes;
+                    allowedPickerModes = LocationPickerMode.All;
+                    AllowedPickerModes = allowedPickerModes.Value;
                 }
                 
                 return allowedPickerModes.Value;
@@ -248,8 +248,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnPreRender( EventArgs e )
         {
-            var nameEnabled = ( this.AllowedPickerModes & LocationPickerMode.Address ) == LocationPickerMode.Address;
-            var addressEnabled = (this.AllowedPickerModes & LocationPickerMode.Named) == LocationPickerMode.Named;
+            var nameEnabled = (this.AllowedPickerModes & LocationPickerMode.Named) == LocationPickerMode.Named;
+            var addressEnabled = ( this.AllowedPickerModes & LocationPickerMode.Address ) == LocationPickerMode.Address;
             var pointEnabled = ( this.AllowedPickerModes & LocationPickerMode.Point ) == LocationPickerMode.Point;
             var polygonEnabled = ( this.AllowedPickerModes & LocationPickerMode.Polygon ) == LocationPickerMode.Polygon;
 
