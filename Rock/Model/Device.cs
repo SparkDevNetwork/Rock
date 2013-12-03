@@ -120,8 +120,8 @@ namespace Rock.Model
         /// A physical location would signify where the device is at. A situation where a geographic fence could be used would be for mobile check in, 
         /// where if the device is within the fence, a user would be able to check in from their mobile device.
         /// </remarks>
+        [DataMember]
         public virtual Location Location { get; set; }
-
 
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.Location">Locations</see> that use this device.
