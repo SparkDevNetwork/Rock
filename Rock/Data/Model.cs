@@ -108,6 +108,17 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Adds an 'Allow' rule for the current person as the first rule for the selected action
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="personId">The person identifier.</param>
+        public virtual void AllowPerson( string action, Person person, int? personId )
+        {
+            Security.Authorization.AllowPerson( this, action, person, personId );
+        }
+
+        /// <summary>
         /// To the liquid.
         /// </summary>
         /// <returns></returns>
