@@ -385,13 +385,17 @@ namespace Rock.Model
 
             if ( string.IsNullOrWhiteSpace( result.Replace(",", string.Empty) ))
             {
-                DbGeography geo = this.GeoPoint ?? this.GeoFence;
-                if ( geo != null )
+                if ( this.GeoPoint != null )
                 {
-                    result = geo.AsText();   
+                    return string.Format( "A point at {0}, {1}", this.GeoPoint.Latitude, this.GeoPoint.Longitude );
+                }
+
+                if (this.GeoFence != null)
+                {
+                    int pointCount = this.GeoFence.PointCount ?? 0;
+                    return string.Format( "An area with {0} points", (pointCount > 0 ? pointCount - 1 : 0) );
                 }
             }
-            
 
             return result;
         }

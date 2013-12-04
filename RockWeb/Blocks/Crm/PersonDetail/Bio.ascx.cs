@@ -11,6 +11,7 @@ using System.Web.UI.HtmlControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
@@ -31,7 +32,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( Person != null )
             {
-                Page.Title = CurrentPage.Title + ": " + Person.FirstLastName;
+                // Set the browser page title to include person's name
+                var pageCache = PageCache.Read( RockPage.PageId );
+                if ( pageCache != null )
+                {
+                    Page.Title = pageCache.Title + ": " + Person.FirstLastName;
+                }
+                else
+                {
+                    Page.Title = Person.FirstLastName;
+                }
+
                 lName.Text = Person.FirstLastName.FormatAsHtmlTitle();
 
                 if (Person.PhotoId.HasValue)

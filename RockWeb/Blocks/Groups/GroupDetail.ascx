@@ -117,7 +117,7 @@
                         <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
                     </div>
                     <div class="col-md-6 location-maps">
-                        <asp:PlaceHolder ID="phLocationMaps" runat="server"></asp:PlaceHolder>
+                        <asp:PlaceHolder ID="phMaps" runat="server" />
                     </div>
                 </div>
 

@@ -78,13 +78,6 @@ namespace RockWeb.Blocks.Administration
 
                     if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
                     {
-                        ddlLayout.Items.Clear();
-                        var layoutService = new LayoutService();
-                        layoutService.RegisterLayouts( Request.MapPath( "~" ), _page.Layout.Site, CurrentPersonId );
-                        foreach ( var layout in layoutService.GetBySiteId( _page.Layout.SiteId ) )
-                        {
-                            ddlLayout.Items.Add( new ListItem( layout.Name, layout.Id.ToString() ) );
-                        }
                         ddlMenuWhen.BindToEnum( typeof( DisplayInNavWhen ) );
 
                         phAttributes.Controls.Clear();
@@ -96,8 +89,7 @@ namespace RockWeb.Blocks.Administration
                             var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
                             if ( blockControl != null )
                             {
-                                blockControl.CurrentPage = _page;
-                                blockControl.CurrentBlock = block;
+                                blockControl.SetBlock( block );
                                 foreach ( var context in blockControl.ContextTypesRequired )
                                 {
                                     if ( !blockContexts.Contains( context ) )
@@ -161,13 +153,20 @@ namespace RockWeb.Blocks.Administration
                 PageService pageService = new PageService();
                 Rock.Model.Page page = pageService.Get( _page.Id );
 
+                LoadSites();
+                if ( _page.Layout != null )
+                {
+                    ddlSite.SelectedValue = _page.Layout.SiteId.ToString();
+                    LoadLayouts( _page.Layout.Site );
+                    ddlLayout.SelectedValue = _page.Layout.Id.ToString();
+                }
+
                 rptProperties.DataSource = _tabs;
                 rptProperties.DataBind();
 
                 tbPageName.Text = _page.Name;
                 tbPageTitle.Text = _page.Title;
                 ppParentPage.SetValue( pageService.Get( page.ParentPageId ?? 0 ) );
-                ddlLayout.SelectedValue = _page.LayoutId.ToString();
                 imgIcon.BinaryFileId = page.IconFileId;
                 tbIconCssClass.Text = _page.IconCssClass;
 
@@ -222,6 +221,11 @@ namespace RockWeb.Blocks.Administration
             ShowSelectedPane();
         }
 
+        protected void ddlSite_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            LoadLayouts( SiteCache.Read( ddlSite.SelectedValueAsInt().Value ) );
+        }
+        
         /// <summary>
         /// Handles the OnSave event of the masterPage control.
         /// </summary>
@@ -420,6 +424,26 @@ namespace RockWeb.Blocks.Administration
 
         #region Internal Methods
 
+        private void LoadSites()
+        {
+            ddlSite.Items.Clear();
+            foreach(Site site in new SiteService().Queryable().OrderBy(s => s.Name))
+            {
+                ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
+            }
+        }
+
+        private void LoadLayouts(SiteCache Site)
+        {
+            ddlLayout.Items.Clear();
+            var layoutService = new LayoutService();
+            layoutService.RegisterLayouts( Request.MapPath( "~" ), Site, CurrentPersonId );
+            foreach ( var layout in layoutService.GetBySiteId( Site.Id ) )
+            {
+                ddlLayout.Items.Add( new ListItem( layout.Name, layout.Id.ToString() ) );
+            }
+        }
+
         /// <summary>
         /// Displays the error.
         /// </summary>
@@ -511,5 +535,5 @@ namespace RockWeb.Blocks.Administration
 
             args.IsValid = !errorMessages.Any();
         }
-}
+    }
 }

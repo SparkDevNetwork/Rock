@@ -133,7 +133,7 @@ namespace RockWeb.Blocks.Core
 
         protected string GetExceptionDetailUrl( int exceptionId )
         {
-            return string.Format( "/page/{0}?ExceptionId={1}", this.CurrentPage.Id, exceptionId );
+            return string.Format( "/page/{0}?ExceptionId={1}", RockPage.PageId, exceptionId );
         }
 
         /// <summary>

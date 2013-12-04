@@ -119,6 +119,7 @@
         File.Delete(installDirectory + @"\Configure.aspx");
         File.Delete(installDirectory + @"\RockInstall.zip");
         File.Delete(installDirectory + @"\Start.aspx");
+        File.Delete(installDirectory + @"\bin\Rock.Install.Utilities.dll");
     }
     
     

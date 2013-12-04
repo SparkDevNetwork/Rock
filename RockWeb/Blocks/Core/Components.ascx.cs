@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
-            _isAuthorizedToConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
+            _isAuthorizedToConfigure = RockPage.IsAuthorized( "Administrate", CurrentPerson );
 
             // wire up page naviagte
             RockPage page = Page as RockPage;

@@ -68,8 +68,8 @@ namespace RockWeb.Blocks.Examples
         /// </summary>
         private void InitSyntaxHighlighting()
         {
-            CurrentPage.AddCSSLink( Page, ResolveUrl( "~/Blocks/Examples/prettify.css" ) );
-            CurrentPage.AddScriptLink( Page, "//cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js" );
+            RockPage.AddCSSLink( ResolveUrl( "~/Blocks/Examples/prettify.css" ) );
+            RockPage.AddScriptLink( "//cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js" );
         }
 
         /// <summary>

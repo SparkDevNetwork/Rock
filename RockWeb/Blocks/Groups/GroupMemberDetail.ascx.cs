@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Groups
                             person.FullName,
                             ddlGroupRole.SelectedItem.Text,
                             role.GroupType.GroupTerm,
-                            CurrentPage.Id,
+                            RockPage.PageId,
                             existingGroupMember.Id
                             );
                         return;

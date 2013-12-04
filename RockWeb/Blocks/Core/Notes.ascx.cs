@@ -121,6 +121,8 @@ namespace RockWeb.Blocks.Core
                 service.Add( note, CurrentPersonId );
                 service.Save( note, CurrentPersonId );
 
+                note.AllowPerson("Edit", CurrentPerson, CurrentPersonId);
+
                 if ( cbPrivate.Checked )
                 {
                     note.MakePrivate( "View", CurrentPerson, CurrentPersonId );
@@ -143,7 +145,7 @@ namespace RockWeb.Blocks.Core
                     noteEditor.CanEdit = note.IsAuthorized( "Edit", CurrentPerson );
                     noteEditor.ShowAlertCheckBox = cbAlert.Visible;
                     noteEditor.ShowPrivateCheckBox = cbPrivate.Visible;
-                    noteEditor.ShowSecurityButton = btnSecurity.Visible;
+                    noteEditor.ShowSecurityButton = btnSecurity.Visible && note.IsAuthorized( "Administrate", CurrentPerson );
                 }
             }
         }

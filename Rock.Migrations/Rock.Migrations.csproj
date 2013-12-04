@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DotLiquid">
+      <HintPath>..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
+    </Reference>
     <Reference Include="EntityFramework">
       <HintPath>..\packages\EntityFramework.6.0.1\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
@@ -59,6 +62,18 @@
     <Compile Include="Migrations\201312022011416_RemoveClassVideoBlock.Designer.cs">
       <DependentUpon>201312022011416_RemoveClassVideoBlock.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201312031820461_ExternalSiteSecurityTweak.cs" />
+    <Compile Include="Migrations\201312031820461_ExternalSiteSecurityTweak.Designer.cs">
+      <DependentUpon>201312031820461_ExternalSiteSecurityTweak.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312032145250_AddHtmlContentApprovalBlock.cs" />
+    <Compile Include="Migrations\201312032145250_AddHtmlContentApprovalBlock.Designer.cs">
+      <DependentUpon>201312032145250_AddHtmlContentApprovalBlock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312041724297_DefaultPageNotRequired.cs" />
+    <Compile Include="Migrations\201312041724297_DefaultPageNotRequired.Designer.cs">
+      <DependentUpon>201312041724297_DefaultPageNotRequired.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -83,6 +98,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201312022011416_RemoveClassVideoBlock.resx">
       <DependentUpon>201312022011416_RemoveClassVideoBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312031820461_ExternalSiteSecurityTweak.resx">
+      <DependentUpon>201312031820461_ExternalSiteSecurityTweak.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312032145250_AddHtmlContentApprovalBlock.resx">
+      <DependentUpon>201312032145250_AddHtmlContentApprovalBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312041724297_DefaultPageNotRequired.resx">
+      <DependentUpon>201312041724297_DefaultPageNotRequired.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
