@@ -9,9 +9,9 @@ using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Administration
                 else
                 {
                     page.ParentPageId = null;
-                    page.LayoutId = RockPage.LayoutId;
+                    page.LayoutId = PageCache.Read( RockPage.PageId ).LayoutId;
                 }
 
                 page.Title = dtbPageName.Text;
@@ -235,7 +235,7 @@ namespace RockWeb.Blocks.Administration
                     if ( _page != null )
                         ddlLayout.SelectedValue = _page.LayoutId.ToString();
                     else
-                        ddlLayout.Text = RockPage.LayoutId.ToString();
+                        ddlLayout.Text = RockPage.Layout.Id.ToString();
                 }
                 catch { }
 

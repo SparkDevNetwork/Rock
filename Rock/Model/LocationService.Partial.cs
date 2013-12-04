@@ -100,9 +100,9 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the by geo location.
+        /// Gets the location by the specified geo point.
         /// </summary>
-        /// <param name="value">The value.</param>
+        /// <param name="point">The point.</param>
         /// <returns></returns>
         public Location GetByGeoPoint( DbGeography point )
         {
@@ -130,6 +130,11 @@ namespace Rock.Model
             return result;
         }
 
+        /// <summary>
+        /// Gets the location with the specified geo fence.
+        /// </summary>
+        /// <param name="fence">The fence.</param>
+        /// <returns></returns>
         public Location GetByGeoFence( DbGeography fence )
         {
 

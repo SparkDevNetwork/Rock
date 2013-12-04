@@ -121,6 +121,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void gBinaryFile_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
         {
+            var site = RockPage.Site;
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
                 var downloadCellIndex = gBinaryFile.Columns.IndexOf( gBinaryFile.Columns.OfType<HyperLinkField>().First( a => a.Text == "Download" ) );
