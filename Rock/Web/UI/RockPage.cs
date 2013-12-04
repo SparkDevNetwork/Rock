@@ -1378,6 +1378,45 @@ namespace Rock.Web.UI
 
         #endregion
 
+        #region SharedItemCaching
+
+        /// <summary>
+        /// Used to save an item to the current HTTPRequests items collection.  This is useful if multiple blocks
+        /// on the same page will need access to the same object.  The first block can read the object and save
+        /// it using this method for the other blocks to reference
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="item"></param>
+        public void SaveSharedItem( string key, object item )
+        {
+            string itemKey = string.Format( "{0}:Item:{1}", PageCache.CacheKey( PageId ), key );
+
+            System.Collections.IDictionary items = HttpContext.Current.Items;
+            if ( items.Contains( itemKey ) )
+                items[itemKey] = item;
+            else
+                items.Add( itemKey, item );
+        }
+
+        /// <summary>
+        /// Retrieves an item from the current HTTPRequest items collection.  This is useful to retrieve an object
+        /// that was saved by a previous block on the same page.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public object GetSharedItem( string key )
+        {
+            string itemKey = string.Format( "{0}:Item:{1}", PageCache.CacheKey( PageId ), key );
+
+            System.Collections.IDictionary items = HttpContext.Current.Items;
+            if ( items.Contains( itemKey ) )
+                return items[itemKey];
+
+            return null;
+        }
+
+        #endregion
+
         #region Static Helper Methods
 
         /// <summary>
