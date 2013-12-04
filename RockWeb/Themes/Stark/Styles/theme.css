@@ -19,6 +19,7 @@
     16. Actions - used to hold buttons at the bottom of forms.
     17. Code Editor - Styles for the code editor control
     18. Update Panel Status - Styles for the wait screen on an update panel
+    19. Group List - styles a group of people in a ul -> li format
 */
 .picker {
   position: relative;
@@ -100,7 +101,10 @@
 }
 .picker .picker-select-item-details .contents {
   float: left;
-  margin-left: 5px;
+  margin-left: 10px;
+}
+.picker .picker-select-item-details .contents h5 {
+  margin-bottom: 2px;
 }
 .picker.picker-geography .picker-menu {
   width: 520px;
@@ -933,6 +937,31 @@ div.tagsinput div {
   border-radius: 4px;
   z-index: 1140;
 }
+ul.groupmembers {
+  list-style: none;
+  margin: 6px 0;
+  padding: 0;
+}
+ul.groupmembers li.member {
+  float: left;
+  margin-right: 12px;
+  margin-bottom: 12px;
+  min-width: 150px;
+}
+ul.groupmembers li.member img {
+  border: 3px solid #fff;
+}
+ul.groupmembers li.member h4 {
+  font-size: 16px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+ul.groupmembers li.member small {
+  display: block;
+  line-height: 16px;
+  margin: 0;
+}
 /*
     Used to manage styles for specific blocks.
     
@@ -1736,45 +1765,18 @@ dl dd {
   right: 12px;
   z-order: 99;
 }
-.persondetails-familybar .members header {
+.persondetails-familybar header {
   font-size: 16px;
   margin-bottom: 12px;
 }
-.persondetails-familybar .members ul {
-  list-style: none;
-  margin: 6px 0;
-}
-.persondetails-familybar .members ul li {
-  float: left;
-  margin-right: 12px;
-  margin-bottom: 12px;
-  min-width: 150px;
-}
-.persondetails-familybar .members ul li a {
-  color: #515151;
-}
-.persondetails-familybar .members ul li img {
-  float: left;
-  border: 1px solid #fff;
+.persondetails-familybar ul li.member img {
   max-width: 37px;
   max-height: 37px;
-}
-.persondetails-familybar .members ul li .member {
   float: left;
-  margin-left: 4px;
+  margin-right: 8px;
+  border: 2px solid white;
 }
-.persondetails-familybar .members ul li .member h4 {
-  margin: 0;
-  font-size: 14px;
-  font-weight: normal;
-  float: left;
-  max-width: 88px;
-  text-overflow: ellipsis;
-  overflow: hidden;
-}
-.persondetails-familybar .members ul li .member small {
-  display: block;
-  line-height: 16px;
+.persondetails-familybar ul li.member h4 {
   margin: 0;
 }
 .persondetails-familybar .addresses ul {
@@ -1805,6 +1807,17 @@ dl dd {
 }
 .pagetabs .nav {
   margin: 10px 0;
+}
+.editfamily-list li.member {
+  max-width: 200px;
+}
+.editfamily-list li.member img {
+  max-width: 65px;
+}
+.editfamily-list li.member .radio {
+  width: 65px;
+  float: left;
+  margin-top: 0;
 }
 /*.persondetails small
 {
