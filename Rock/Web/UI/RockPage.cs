@@ -220,6 +220,7 @@ namespace Rock.Web.UI
                 if ( _CurrentPerson == null && Context.Items.Contains( "CurrentPerson" ) )
                 {
                     _CurrentPerson = Context.Items["CurrentPerson"] as Person;
+                    return _CurrentPerson;
                 }
                 
                 return null;
