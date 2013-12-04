@@ -379,7 +379,77 @@ namespace Rock.Security
                 }
             }
         }
-        
+
+
+        /// <summary>
+        /// Updates authorization rules for the entity so that the current person is allowed to perform the specified action.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="personId">The person identifier.</param>
+        public static void AllowPerson( ISecured entity, string action, Person person, int? personId )
+        {
+            if ( person != null )
+            {
+                // If there's no Authorizations object, create it
+                if ( Authorizations == null )
+                {
+                    Load();
+                }
+
+                var authService = new AuthService();
+
+                // If there are not entries in the Authorizations object for this entity type and entity instance, create
+                // the dictionary entries
+                if ( !Authorizations.Keys.Contains( entity.TypeId ) )
+                {
+                    Authorizations.Add( entity.TypeId, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
+                }
+
+                if ( !Authorizations[entity.TypeId].Keys.Contains( entity.Id ) )
+                {
+                    Authorizations[entity.TypeId].Add( entity.Id, new Dictionary<string, List<AuthRule>>() );
+                }
+
+                List<AuthRule> rules = null;
+                if ( Authorizations[entity.TypeId][entity.Id].Keys.Contains( action ) )
+                {
+                    rules = Authorizations[entity.TypeId][entity.Id][action];
+                }
+                else
+                {
+                    rules = new List<AuthRule>();
+                    Authorizations[entity.TypeId][entity.Id].Add( action, rules );
+                }
+
+                int order = 0;
+
+                Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                {
+                    Auth auth = new Auth();
+                    auth.EntityTypeId = entity.TypeId;
+                    auth.EntityId = entity.Id;
+                    auth.Order = order++;
+                    auth.Action = action;
+                    auth.AllowOrDeny = "A";
+                    auth.SpecialRole = SpecialRole.None;
+                    auth.PersonId = person.Id;
+                    authService.Add( auth, personId );
+                    authService.Save( auth, personId );
+
+                    foreach(var rule in rules)
+                    {
+                        var existingAuth = authService.Get( rule.Id );
+                        existingAuth.Order = order++;
+                        authService.Save( existingAuth, personId );
+                    }
+                
+                    rules.Insert(0, new AuthRule( auth ) );
+                } );
+            }
+        }
+
         /// <summary>
         /// Returns the authorization rules for the specified entity and action.
         /// </summary>

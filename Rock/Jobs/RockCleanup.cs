@@ -110,8 +110,11 @@ namespace Rock.Jobs
             BinaryFileService binaryFileService = new BinaryFileService();
             foreach( var binaryFile in binaryFileService.Queryable().Where( bf => bf.IsTemporary == true ).ToList() )
             {
-                binaryFileService.Delete( binaryFile, null );
-                binaryFileService.Save( binaryFile, null );
+                if ( binaryFile.LastModifiedDateTime < DateTime.Now.AddDays(-1) )
+                {
+                    binaryFileService.Delete( binaryFile, null );
+                    binaryFileService.Save( binaryFile, null );
+                }
             }
 
         }

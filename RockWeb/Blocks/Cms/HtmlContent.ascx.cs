@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Cms
             _supportVersioning = bool.Parse( GetAttributeValue( "SupportVersions" ) ?? "false" );
             _requireApproval = bool.Parse( GetAttributeValue( "RequireApproval" ) ?? "false" );
 
-            mpeContent.OnOkScript = string.Format( "Rock.controls.htmlContentEditor.saveHtmlContent({0});", CurrentBlock.Id );
+            mpeContent.OnOkScript = string.Format( "Rock.controls.htmlContentEditor.saveHtmlContent({0});", BlockId );
 
             rGrid.DataKeyNames = new string[] { "id" };
             rGrid.ShowActionRow = false;
@@ -66,7 +66,7 @@ namespace RockWeb.Blocks.Cms
         protected void lbEdit_Click( object sender, EventArgs e )
         {
             HtmlContentService service = new HtmlContentService();
-            Rock.Model.HtmlContent content = service.GetActiveContent( CurrentBlock.Id, EntityValue() );
+            Rock.Model.HtmlContent content = service.GetActiveContent( BlockId, EntityValue() );
             if ( content == null )
                 content = new Rock.Model.HtmlContent();
 
@@ -149,7 +149,7 @@ namespace RockWeb.Blocks.Cms
                 int version = 0;
                 if ( !Int32.TryParse( hfVersion.Value, out version ) )
                     version = 0;
-                content = service.GetByBlockIdAndEntityValueAndVersion( CurrentBlock.Id, entityValue, version );
+                content = service.GetByBlockIdAndEntityValueAndVersion( BlockId, entityValue, version );
 
                 // if the existing content changed, and the overwrite option was not checked, create a new version
                 if ( content != null &&
@@ -162,13 +162,13 @@ namespace RockWeb.Blocks.Cms
                 if ( content == null )
                 {
                     content = new Rock.Model.HtmlContent();
-                    content.BlockId = CurrentBlock.Id;
+                    content.BlockId = BlockId;
                     content.EntityValue = entityValue;
 
                     if ( _supportVersioning )
                     {
                         int? maxVersion = service.Queryable().
-                            Where( c => c.BlockId == CurrentBlock.Id &&
+                            Where( c => c.BlockId == BlockId &&
                                 c.EntityValue == entityValue ).
                             Select( c => (int?)c.Version ).Max();
 
@@ -270,7 +270,7 @@ namespace RockWeb.Blocks.Cms
             // if content not cached load it from DB
             if ( cachedContent == null )
             {
-                Rock.Model.HtmlContent content = new HtmlContentService().GetActiveContent( CurrentBlock.Id, entityValue );
+                Rock.Model.HtmlContent content = new HtmlContentService().GetActiveContent( BlockId, entityValue );
 
                 if ( content != null )
                     html = content.Content.ResolveMergeFields( GetGlobalMergeFields() );
@@ -299,7 +299,7 @@ namespace RockWeb.Blocks.Cms
         private void BindGrid()
         {
             var HtmlService = new HtmlContentService();
-            var content = HtmlService.GetContent( CurrentBlock.Id, EntityValue() );
+            var content = HtmlService.GetContent( BlockId, EntityValue() );
 
             var personService = new Rock.Model.PersonService();
             var versionAudits = new Dictionary<int, Rock.Model.Audit>();

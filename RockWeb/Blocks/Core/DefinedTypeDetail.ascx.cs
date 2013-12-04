@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Core
 
             var qryParams = new Dictionary<string, string>();
             qryParams["definedTypeId"] = definedType.Id.ToString();
-            NavigateToPage( this.CurrentPage.Guid, qryParams );
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>

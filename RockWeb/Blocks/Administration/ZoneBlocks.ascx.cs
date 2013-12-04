@@ -163,7 +163,7 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
 
             Rock.Model.Block block = blockService.Get( (int)gLayoutBlocks.DataKeys[e.RowIndex]["id"] );
-            if ( CurrentBlock != null )
+            if ( block != null )
             {
                 blockService.Delete( block, CurrentPersonId );
                 blockService.Save( block, CurrentPersonId );
@@ -233,7 +233,7 @@ namespace RockWeb.Blocks.Administration
             string zoneName = this.PageParameter( "ZoneName" );
 
             Rock.Model.Block block = blockService.Get( e.RowKeyId );
-            if ( CurrentBlock != null )
+            if ( block != null )
             {
                 blockService.Delete( block, CurrentPersonId );
                 blockService.Save( block, CurrentPersonId );

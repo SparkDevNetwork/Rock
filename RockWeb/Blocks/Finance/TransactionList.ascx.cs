@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Finance
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
             rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
 
-            _canConfigure = CurrentPage.IsAuthorized( "Edit", CurrentPerson );
+            _canConfigure = RockPage.IsAuthorized( "Edit", CurrentPerson );
 
             if ( _canConfigure )
             {

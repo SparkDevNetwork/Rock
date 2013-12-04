@@ -226,7 +226,19 @@ namespace RockWeb.Blocks.Administration
         private void LoadDropDowns()
         {
             ddlNotificationStatus.BindToEnum( typeof( JobNotificationStatus ) );
-            ddlJobTypes.DataSource = Rock.Reflection.FindTypes( typeof( Quartz.IJob ) ).Values;
+
+            int? jobEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Model.ServiceJob" ).Id;
+
+            var jobs = Rock.Reflection.FindTypes( typeof( Quartz.IJob ) ).Values;
+            using ( new UnitOfWorkScope() )
+            {
+                foreach(var job in jobs)
+                {
+                    Rock.Attribute.Helper.UpdateAttributes( job, jobEntityTypeId, "Class", job.FullName, null );
+                }
+            }
+
+            ddlJobTypes.DataSource = jobs;
             ddlJobTypes.DataBind();
         }
 

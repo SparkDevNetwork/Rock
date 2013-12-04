@@ -131,8 +131,8 @@ namespace Rock.Web
             {
                 // Return the page for the selected theme and layout
                 Rock.Web.UI.RockPage cmsPage = (Rock.Web.UI.RockPage)BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
-                cmsPage.CurrentPage = page;
-                cmsPage.CurrentPageReference = new PageReference( page.Id, routeId, parms, requestContext.HttpContext.Request.QueryString );
+                cmsPage.SetPage( page );
+                cmsPage.PageReference = new PageReference( page.Id, routeId, parms, requestContext.HttpContext.Request.QueryString );
                 return cmsPage;
             }
             catch ( System.Web.HttpException )
@@ -153,8 +153,8 @@ namespace Rock.Web
 
                 // Return the default layout and/or theme
                 Rock.Web.UI.RockPage cmsPage = (Rock.Web.UI.RockPage)BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
-                cmsPage.CurrentPage = page;
-                cmsPage.CurrentPageReference = new PageReference( page.Id, routeId, parms, requestContext.HttpContext.Request.QueryString );
+                cmsPage.SetPage( page );
+                cmsPage.PageReference = new PageReference( page.Id, routeId, parms, requestContext.HttpContext.Request.QueryString );
                 return cmsPage;
             }
         }

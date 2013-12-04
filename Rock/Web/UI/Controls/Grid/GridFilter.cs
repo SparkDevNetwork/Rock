@@ -36,7 +36,7 @@ namespace Rock.Web.UI.Controls
             RockBlock rockBlock = this.RockBlock();
             if ( rockBlock != null )
             {
-                string keyPrefix = string.Format( "grid-filter-{0}-", rockBlock.CurrentBlock.Id );
+                string keyPrefix = string.Format( "grid-filter-{0}-", rockBlock.BlockId );
 
                 foreach ( var userPreference in rockBlock.GetUserPreferences( keyPrefix ) )
                 {
@@ -283,7 +283,7 @@ Sys.Application.add_load(function () {
             RockBlock rockBlock = this.RockBlock();
             if ( rockBlock != null )
             {
-                string keyPrefix = string.Format( "grid-filter-{0}-", rockBlock.CurrentBlock.Id );
+                string keyPrefix = string.Format( "grid-filter-{0}-", rockBlock.BlockId );
 
                 foreach ( var userPreference in _userPreferences )
                 {

@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             if ( !Page.IsPostBack )
             {
-                CurrentPage.AddScriptLink( this.Page, "~/Blocks/CheckIn/Scripts/geo-min.js" );
+                RockPage.AddScriptLink( "~/Blocks/CheckIn/Scripts/geo-min.js" );
 
                 bool enableLocationSharing = bool.Parse( GetAttributeValue( "EnableLocationSharing" ) ?? "false" );
                 if ( enableLocationSharing )
