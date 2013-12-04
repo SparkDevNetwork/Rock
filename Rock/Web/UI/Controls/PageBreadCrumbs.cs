@@ -19,10 +19,11 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            if ( this.Page is RockPage )
+            var rockPage = this.Page as RockPage;
+            if ( rockPage != null )
             {
-                var rockPage = (RockPage)this.Page;
-                if ( rockPage.DisplayBreadCrumb )
+                var pageCache = Rock.Web.Cache.PageCache.Read( rockPage.PageId );
+                if ( pageCache != null && pageCache.PageDisplayBreadCrumb )
                 {
                     var crumbs = rockPage.BreadCrumbs;
                     if ( crumbs != null )

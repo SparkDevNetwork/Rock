@@ -48,6 +48,12 @@ namespace Rock.Web.UI
             }
         }
 
+        /// <summary>
+        /// Gets the current block's id.
+        /// </summary>
+        /// <value>
+        /// The block identifier.
+        /// </value>
         public int BlockId
         {
             get { return _blockCache.Id; }
@@ -108,17 +114,6 @@ namespace Rock.Web.UI
         public List<BreadCrumb> BreadCrumbs
         {
             get { return RockPage.BreadCrumbs; }
-        }
-
-        /// <summary>
-        /// Gets the app path.
-        /// </summary>
-        /// <value>
-        /// The app path.
-        /// </value>
-        public string AppPath
-        {
-            get { return RockPage.AppPath; }
         }
 
         /// <summary>
@@ -349,7 +344,7 @@ namespace Rock.Web.UI
 
             this.BlockValidationGroup = string.Format( "{0}_{1}", this.GetType().BaseType.Name, _blockCache.Id );
 
-            ( (RockPage)this.Page ).BlockUpdated += Page_BlockUpdated;
+            RockPage.BlockUpdated += Page_BlockUpdated;
         }
 
         /// <summary>
@@ -391,17 +386,6 @@ namespace Rock.Web.UI
             base.Render( writer );
         }
 
-        ///// <summary>
-        ///// When an unhandled error occurs in a module, a notification box will be displayed.
-        ///// </summary>
-        ///// <param name="e"></param>
-        //protected override void OnError( EventArgs e )
-        //{
-        //    DisplayNotification( "Exception", NotificationBoxType.Error,
-        //        HttpContext.Current.Server.GetLastError().Message );
-
-        //    base.OnError( e );
-        //}
         #endregion
 
         #region Public Methods
@@ -410,7 +394,7 @@ namespace Rock.Web.UI
         /// Sets the block.
         /// </summary>
         /// <param name="blockCache">The block cache.</param>
-        public void SetBlock(BlockCache blockCache)
+        public void SetBlock( BlockCache blockCache )
         {
             _blockCache = blockCache;
         }
@@ -477,7 +461,7 @@ namespace Rock.Web.UI
         /// <param name="updatePanel">The update panel.</param>
         public void AddConfigurationUpdateTrigger( UpdatePanel updatePanel )
         {
-            ( (RockPage)Page ).AddConfigurationUpdateTrigger( updatePanel );
+            RockPage.AddConfigurationUpdateTrigger( updatePanel );
         }
 
         /// <summary>
@@ -577,7 +561,15 @@ namespace Rock.Web.UI
         /// </summary>
         public void NavigateToParentPage( Dictionary<string, string> queryString = null )
         {
-            NavigateToPage( RockPage.ParentPage.Guid, queryString );
+            var pageCache = PageCache.Read( RockPage.PageId );
+            if ( pageCache != null )
+            {
+                var parentPage = pageCache.ParentPage;
+                if ( parentPage != null )
+                {
+                    NavigateToPage( parentPage.Guid, queryString );
+                }
+            }
         }
 
         /// <summary>
@@ -789,7 +781,7 @@ namespace Rock.Web.UI
                 configControls.Add( aDeleteBlock );
                 HtmlGenericControl iDeleteBlock = new HtmlGenericControl( "i" );
                 aDeleteBlock.Controls.Add( iDeleteBlock );
-                iDeleteBlock.Attributes.Add("class", "fa fa-times-circle-o");
+                iDeleteBlock.Attributes.Add( "class", "fa fa-times-circle-o" );
             }
 
             return configControls;
@@ -892,7 +884,7 @@ namespace Rock.Web.UI
         /// <param name="e">The <see cref="BlockUpdatedEventArgs"/> instance containing the event data.</param>
         internal void Page_BlockUpdated( object sender, BlockUpdatedEventArgs e )
         {
-            if (e.BlockID == _blockCache.Id && BlockUpdated != null)
+            if ( e.BlockID == _blockCache.Id && BlockUpdated != null )
             {
                 BlockUpdated( sender, e );
             }

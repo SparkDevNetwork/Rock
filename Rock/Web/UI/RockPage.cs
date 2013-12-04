@@ -15,10 +15,12 @@ using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock.Model;
 using Rock.Transactions;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+
 using Page = System.Web.UI.Page;
 
 namespace Rock.Web.UI
@@ -57,73 +59,48 @@ namespace Rock.Web.UI
 
         #region Public Properties
 
+        /// <summary>
+        /// Gets the current page's logical Rock Page Id.
+        /// </summary>
+        /// <value>
+        /// The page identifier.
+        /// </value>
         public int PageId
         {
             get { return _pageCache.Id; }
         }
 
+        /// <summary>
+        /// Gets the current page's logical Rock Page Guid.
+        /// </summary>
+        /// <value>
+        /// The unique identifier.
+        /// </value>
         public Guid Guid
         {
             get { return _pageCache.Guid; }
         }
-        public bool DisplayTitle
-        {
-            get { return _pageCache.PageDisplayTitle; }
-        }
-        
-        public string PageTitle
-        {
-            get { return _pageCache.Title; }
-            set { _pageCache.Title = value; }
-        }
 
-        public bool DisplayBreadCrumb
-        {
-            get { return _pageCache.PageDisplayBreadCrumb; }
-        }
-
-        public bool DisplayDescription
-        {
-            get { return _pageCache.PageDisplayDescription; }
-        }
-
-        public string Description
-        {
-            get { return _pageCache.Description; }
-            set { _pageCache.Description = value; }
-        }
-
-        public bool DisplayIcon
-        {
-            get { return _pageCache.PageDisplayIcon; }
-        }
-
-        public string IconCssClass
-        {
-            get { return _pageCache.IconCssClass; }
-        }
-
-        public int LayoutId
-        {
-            get { return _pageCache.LayoutId; }
-        }
-        
-        public PageCache ParentPage
-        {
-            get { return _pageCache.ParentPage; }
-        }
-
+        /// <summary>
+        /// Gets the current page's layout
+        /// </summary>
+        /// <value>
+        /// The layout.
+        /// </value>
         public LayoutCache Layout
         {
             get { return _pageCache.Layout; }
         }
 
-        public List<PageCache> PageHierarchy
+        /// <summary>
+        /// Gets the current page's site
+        /// </summary>
+        /// <value>
+        /// The site.
+        /// </value>
+        public new SiteCache Site
         {
-            get
-            {
-                return _pageCache.GetPageHierarchy();
-            }
+            get { return _pageCache.Layout.Site; }
         }
 
         /// <summary>
@@ -132,34 +109,30 @@ namespace Rock.Web.UI
         /// <value>
         /// The current page reference.
         /// </value>
-        public PageReference CurrentPageReference
+        public PageReference PageReference
         {
             get
             {
-                if ( _currentPageReference == null && Context.Items.Contains( "CurrentPageReference" ) )
+                if ( _PageReference == null && Context.Items.Contains( "PageReference" ) )
                 {
-                    _currentPageReference = Context.Items["CurrentPageReference"] as PageReference;
+                    _PageReference = Context.Items["PageReference"] as PageReference;
                 }
 
-                return _currentPageReference;
+                return _PageReference;
             }
 
             set
             {
-                Context.Items.Remove( "CurrentPageReference" );
-                _currentPageReference = value;
+                Context.Items.Remove( "PageReference" );
+                _PageReference = value;
 
-                if ( _currentPageReference != null )
+                if ( _PageReference != null )
                 {
-                    Context.Items.Add( "CurrentPageReference", _CurrentUser );
+                    Context.Items.Add( "PageReference", _CurrentUser );
                 }
             }
         }
-
-        /// <summary>
-        /// The _current page reference
-        /// </summary>
-        public PageReference _currentPageReference = null;
+        private PageReference _PageReference = null;
 
         /// <summary>
         /// The content areas on a layout page that blocks can be added to 
@@ -280,17 +253,6 @@ namespace Rock.Web.UI
                 {
                     return null;
                 }
-            }
-        }
-
-        /// <summary>
-        /// Gets the root url path
-        /// </summary>
-        public string AppPath
-        {
-            get
-            {
-                return ResolveUrl( "~" );
             }
         }
 
@@ -427,12 +389,12 @@ namespace Rock.Web.UI
                     if ( _pageCache.IsAuthorized( "View", null ) )
                     {
                         // Remove the 'logout' queryparam before redirecting
-                        var pageReference = new PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, CurrentPageReference.Parameters );
-                        foreach(string key in CurrentPageReference.QueryString)
+                        var pageReference = new PageReference( PageReference.PageId, PageReference.RouteId, PageReference.Parameters );
+                        foreach(string key in PageReference.QueryString)
                         {
                             if (!key.Equals("logout", StringComparison.OrdinalIgnoreCase))
                             {
-                                pageReference.Parameters.Add( key, CurrentPageReference.QueryString[key] );
+                                pageReference.Parameters.Add( key, PageReference.QueryString[key] );
                             }
                         }
                         Response.Redirect( pageReference.BuildUrl(), false );
@@ -596,7 +558,7 @@ namespace Rock.Web.UI
         layout: '{3}',
         baseUrl: '{4}' 
     }});",
-                        _pageCache.Layout.SiteId, _pageCache.LayoutId, _pageCache.Id, _pageCache.Layout.FileName, AppPath );
+                        _pageCache.Layout.SiteId, _pageCache.LayoutId, _pageCache.Id, _pageCache.Layout.FileName, ResolveUrl( "~" ) );
                     ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "rock-js-object", script, true );
 
                     // Add dummy default button to prevent modalPopupExtender dialogs from displaying when enter key is pressed
@@ -621,13 +583,13 @@ namespace Rock.Web.UI
 
                     // Initialize the list of breadcrumbs for the current page (and blocks on the page)
                     Page.Trace.Warn( "Setting breadcrumbs" );
-                    CurrentPageReference.BreadCrumbs = new List<BreadCrumb>();
+                    PageReference.BreadCrumbs = new List<BreadCrumb>();
 
                     // If the page is configured to display in the breadcrumbs...
                     string bcName = _pageCache.BreadCrumbText;
                     if (bcName != string.Empty)
                     {
-                        CurrentPageReference.BreadCrumbs.Add( new BreadCrumb( bcName, CurrentPageReference.BuildUrl() ) );
+                        PageReference.BreadCrumbs.Add( new BreadCrumb( bcName, PageReference.BuildUrl() ) );
                     }
 
                     // Load the blocks and insert them into page zones
@@ -710,14 +672,14 @@ namespace Rock.Web.UI
                                 {
                                     Page.Trace.Warn( "\tSetting block properties" );
 
-                                    blockControl.CurrentPageReference = CurrentPageReference;
+                                    blockControl.CurrentPageReference = PageReference;
                                     blockControl.SetBlock( block );
 
                                     // Add any breadcrumbs to current page reference that the block creates
                                     Page.Trace.Warn( "\tAdding any breadcrumbs from block" );
                                     if ( block.BlockLocation == BlockLocation.Page )
                                     {
-                                        blockControl.GetBreadCrumbs( CurrentPageReference ).ForEach( c => CurrentPageReference.BreadCrumbs.Add( c ) );
+                                        blockControl.GetBreadCrumbs( PageReference ).ForEach( c => PageReference.BreadCrumbs.Add( c ) );
                                     }
 
                                     // If the blocktype's additional actions have not yet been loaded, load them now
@@ -766,14 +728,14 @@ namespace Rock.Web.UI
 
                     // Make the last crumb for this page the active one
                     Page.Trace.Warn( "Setting active breadcrumb" );
-                    if ( CurrentPageReference.BreadCrumbs.Any() )
+                    if ( PageReference.BreadCrumbs.Any() )
                     {
-                        CurrentPageReference.BreadCrumbs.Last().Active = true;
+                        PageReference.BreadCrumbs.Last().Active = true;
                     }
 
                     Page.Trace.Warn( "Getting parent page references" );
-                    var pageReferences = PageReference.GetParentPageReferences( this, _pageCache, CurrentPageReference );
-                    pageReferences.Add( CurrentPageReference );
+                    var pageReferences = PageReference.GetParentPageReferences( this, _pageCache, PageReference );
+                    pageReferences.Add( PageReference );
                     PageReference.SavePageReferences( pageReferences );
 
                     // Update breadcrumbs
@@ -1002,6 +964,12 @@ namespace Rock.Web.UI
             return new List<string>();
         }
 
+        /// <summary>
+        /// Determines whether the specified action is authorized for the current page.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
         public bool IsAuthorized( string action, Person person )
         {
             return _pageCache.IsAuthorized( action, person );

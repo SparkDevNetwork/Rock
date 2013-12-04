@@ -17,6 +17,7 @@ using System.Text.RegularExpressions;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -76,17 +77,19 @@ namespace RockWeb.Blocks.Cms
 
         private void Render()
         {
-            Rock.Web.Cache.PageCache rootPage = null;
+            PageCache currentPage = PageCache.Read( RockPage.PageId );
+            PageCache rootPage = null;
 
             Guid pageGuid = Guid.Empty;
             if ( Guid.TryParse( GetAttributeValue( ROOT_PAGE ), out pageGuid ) )
             {
-                rootPage = Rock.Web.Cache.PageCache.Read( pageGuid );
+                rootPage = PageCache.Read( pageGuid );
             }
 
+            // If a root page was not found, use current page
             if ( rootPage == null )
             {
-                rootPage = Rock.Web.Cache.PageCache.Read( RockPage.Guid );
+                rootPage = currentPage;
             }
 
             int levelsDeep = Convert.ToInt32( GetAttributeValue( NUM_LEVELS ) );
@@ -103,7 +106,12 @@ namespace RockWeb.Blocks.Cms
                 queryString = CurrentPageReference.QueryString;
             }
 
-            var pageHeirarchy = RockPage.PageHierarchy.Select( p => p.Id ).ToList();
+            // Get list of pages in curren't page's heirarchy
+            var pageHeirarchy = new List<int>();
+            if ( currentPage != null )
+            {
+                pageHeirarchy = currentPage.GetPageHierarchy().Select( p => p.Id ).ToList();
+            }
 
             var pageProperties = new Dictionary<string, object>();
             pageProperties.Add( "page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, pageHeirarchy, pageParameters, queryString ) );

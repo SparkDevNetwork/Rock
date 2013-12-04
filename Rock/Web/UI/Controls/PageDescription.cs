@@ -18,15 +18,15 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            if ( this.Page is RockPage )
+            var rockPage = this.Page as RockPage;
+            if ( rockPage != null )
             {
-                var rockPage = (RockPage)this.Page;;
-
-                if ( rockPage.DisplayDescription && !string.IsNullOrWhiteSpace( rockPage.Description ) )
+                var pageCache = Rock.Web.Cache.PageCache.Read( rockPage.PageId );
+                if ( pageCache != null && pageCache.PageDisplayDescription && !string.IsNullOrWhiteSpace( pageCache.Description ) )
                 {
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "pageoverview-description" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    writer.Write( rockPage.Description );
+                    writer.Write( pageCache.Description );
                     writer.RenderEndTag();
                 }
             }
