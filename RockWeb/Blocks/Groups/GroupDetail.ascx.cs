@@ -22,12 +22,23 @@ using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Groups
 {
-    [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false )]
-    [BooleanField( "Show Edit", "", true )]
-    [BooleanField( "Limit to Security Role Groups" )]
-    [CodeEditorField( "Location Point Image", "The Image Url to use when displaying one or more group location points.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, "http://maps.googleapis.com/maps/api/staticmap?sensor=false&size=350x200{% if points.size <= 1 %}&zoom=13{% endif %}&format=png&style=feature:all|saturation:0|hue:0xe7ecf0&style=feature:road|saturation:-70&style=feature:transit|visibility:off&style=feature:poi|visibility:off&style=feature:water|visibility:simplified|saturation:-60{% for point in points %}&markers=color:0x779cb1|{{ point.latitude }},{{ point.longitude }}{% endfor %}&visual_refresh=true", "Location Map", 0 )]
-    [CodeEditorField( "Location Polygon Image", "The Image Url to use when displaying a group location polygon.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, "http://maps.googleapis.com/maps/api/staticmap?sensor=false&size=350x200&format=png&style=feature:all|saturation:0|hue:0xe7ecf0&style=feature:road|saturation:-70&style=feature:transit|visibility:off&style=feature:poi|visibility:off&style=feature:water|visibility:simplified|saturation:-60&visual_refresh=true&path=fillcolor:0x779cb155|color:0xFFFFFF00|enc:{{ encoded_polygon }}", "Location Map", 1 )]
-    [BooleanField( "Combine Points", "Should all locations points be combined on one map.", true, "Location Map", 2 )]
+    [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false, "", "", 0 )]
+    [BooleanField( "Show Edit", "", true, "", 1 )]
+    [BooleanField( "Limit to Security Role Groups", "", false, "", 2 )]
+    [CodeEditorField( "Map HTML", "The HTML to use for displaying group location maps. Liquid syntax is used to render data from the following data structure: points[type, latitude, longitude], polygons[type, polygon_wkt, google_encoded_polygon]", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, false, @"
+    {% for point in points %}
+        <div class='group-location-map'>
+            <h4>{{ point.type }}</h4>
+            <img src='http://maps.googleapis.com/maps/api/staticmap?sensor=false&size=350x200&zoom=13&format=png&style=feature:all|saturation:0|hue:0xe7ecf0&style=feature:road|saturation:-70&style=feature:transit|visibility:off&style=feature:poi|visibility:off&style=feature:water|visibility:simplified|saturation:-60&markers=color:0x779cb1|{{ point.latitude }},{{ point.longitude }}&visual_refresh=true'/>
+        </div>
+    {% endfor %}
+    {% for polygon in polygons %}
+        <div class='group-location-map'>
+            <h4>{{ polygon.type }}</h4>
+            <img src='http://maps.googleapis.com/maps/api/staticmap?sensor=false&size=350x200&format=png&style=feature:all|saturation:0|hue:0xe7ecf0&style=feature:road|saturation:-70&style=feature:transit|visibility:off&style=feature:poi|visibility:off&style=feature:water|visibility:simplified|saturation:-60&visual_refresh=true&path=fillcolor:0x779cb155|color:0xFFFFFF00|enc:{{ polygon.google_encoded_polygon }}'/>
+        </div>
+    {% endfor %}
+", "", 3 )]
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
         #region Constants
@@ -891,67 +902,54 @@ namespace RockWeb.Blocks.Groups
             Rock.Attribute.Helper.AddDisplayControls( group, attributeCategories, phAttributes );
 
             // Get all the group locations and group all those that have a geo-location into either points or polygons
-            var points = new List<Location>();
-            var polygons = new List<Location>();
+            var points = new List<GroupLocation>();
+            var polygons = new List<GroupLocation>();
             foreach ( GroupLocation groupLocation in group.GroupLocations )
             {
                 if ( groupLocation.Location != null )
                 {
                     if ( groupLocation.Location.GeoPoint != null )
                     {
-                        points.Add( groupLocation.Location );
+                        points.Add( groupLocation );
                     }
                     else if ( groupLocation.Location.GeoFence != null )
                     {
-                        polygons.Add( groupLocation.Location );
+                        polygons.Add( groupLocation );
                     }
                 }
             }
 
+            var dict = new Dictionary<string, object>();
             if ( points.Any() )
             {
                 var pointsList = new List<Dictionary<string, object>>();
-                foreach ( var locationPoint in points )
+                foreach ( var groupLocation in points)
                 {
                     var pointsDict = new Dictionary<string, object>();
-                    pointsDict.Add( "latitude", locationPoint.GeoPoint.Latitude );
-                    pointsDict.Add( "longitude", locationPoint.GeoPoint.Longitude );
+                    pointsDict.Add( "type", groupLocation.LocationTypeValue.Name );
+                    pointsDict.Add( "latitude", groupLocation.Location.GeoPoint.Latitude );
+                    pointsDict.Add( "longitude", groupLocation.Location.GeoPoint.Longitude );
                     pointsList.Add( pointsDict );
                 }
-
-                string locationPointImage = GetAttributeValue( "LocationPointImage" );
-
-                bool combinePoints = true;
-                if ( !bool.TryParse( GetAttributeValue( "CombinePoints" ), out combinePoints ) || combinePoints )
-                {
-                    var dict = new Dictionary<string, object>();
-                    dict.Add( "points", pointsList );
-                    phLocationMaps.Controls.Add( new LiteralControl( string.Format( "<img src='{0}'>", locationPointImage.ResolveMergeFields( dict ) ) ) );
-                }
-                else
-                {
-                    foreach ( var pointsDict in pointsList )
-                    {
-                        var singlePointsList = new List<Dictionary<string, object>>();
-                        singlePointsList.Add( pointsDict );
-
-                        var dict = new Dictionary<string, object>();
-                        dict.Add( "points", singlePointsList );
-                        phLocationMaps.Controls.Add( new LiteralControl( string.Format( "<img src='{0}'>", locationPointImage.ResolveMergeFields( dict ) ) ) );
-                    }
-                }
+                dict.Add( "points", pointsList );
             }
 
             if ( polygons.Any() )
             {
-                string locationPolygonImage = GetAttributeValue( "LocationPolygonImage" );
-                foreach ( var locationPolygon in polygons )
+                var polygonsList = new List<Dictionary<string, object>>();
+                foreach ( var groupLocation in polygons )
                 {
-                    var dict = new Dictionary<string, object>();
-                    dict.Add( "encoded_polygon", locationPolygon.EncodeGooglePolygon() );
-                    phLocationMaps.Controls.Add( new LiteralControl( string.Format( "<img src='{0}'>", locationPolygonImage.ResolveMergeFields( dict ) ) ) );
+                    var polygonDict = new Dictionary<string, object>();
+                    polygonDict.Add( "type", groupLocation.LocationTypeValue.Name);
+                    polygonDict.Add( "polygon_wkt", groupLocation.Location.GeoFence.AsText());
+                    polygonDict.Add( "google_encoded_polygon", groupLocation.Location.EncodeGooglePolygon() );
+                    polygonsList.Add( polygonDict );
                 }
+                dict.Add( "polygons", polygonsList );
             }
+
+            phMaps.Controls.Clear();
+            phMaps.Controls.Add( new LiteralControl( GetAttributeValue( "MapHTML" ).ResolveMergeFields( dict ) ) );
 
             btnSecurity.Visible = group.IsAuthorized( "Administrate", CurrentPerson );
             btnSecurity.Title = group.Name;
@@ -1175,7 +1173,7 @@ namespace RockWeb.Blocks.Groups
                                                 .Where( l => l.IsMappedLocation && !l.LocationTypeValue.Guid.Equals( previousLocationType ) ) )
                                             {
                                                 ddlMember.Items.Add( new ListItem(
-                                                    string.Format( "{0} ({1} {2})", familyGroupLocation.Location.ToString(), member.Person.FirstLastName, familyGroupLocation.LocationTypeValue.Name ),
+                                                    string.Format( "{0} {1} ({2})", member.Person.FirstLastName, familyGroupLocation.LocationTypeValue.Name, familyGroupLocation.Location.ToString() ),
                                                     string.Format( "{0}|{1}", familyGroupLocation.Location.Id, member.PersonId ) ) );
                                             }
                                         }
