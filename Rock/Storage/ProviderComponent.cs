@@ -38,28 +38,18 @@ namespace Rock.Storage
         }
 
         /// <summary>
-        /// Saves the file.
+        /// Saves the file to the external storage medium associated with the provider.
+        /// Note: This does not save the BinaryFile record to the database
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="personId">The person id.</param>
-        public virtual void SaveFile( BinaryFile file, int? personId )
-        {
-            SaveFiles( new List<BinaryFile> { file }, personId );
-        }
+        public abstract void SaveFile( BinaryFile file);
 
         /// <summary>
-        /// Saves the files.
-        /// </summary>
-        /// <param name="files">The files.</param>
-        /// <param name="personId"></param>
-        public abstract void SaveFiles( IEnumerable<BinaryFile> files, int? personId );
-
-        /// <summary>
-        /// Removes the file.
+        /// Removes the file from the external storage medium associated with the provider.
+        /// Note: This does not delete the BinaryFile record from the database
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="personId"></param>
-        public abstract void RemoveFile( BinaryFile file, int? personId );
+        public abstract void RemoveFile( BinaryFile file);
 
         /// <summary>
         /// Gets the URL.

@@ -8,7 +8,8 @@
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
             <div class="banner">
-                <h1><asp:Literal ID="lActionTitle" runat="server" /></h1>
+                <h1>
+                    <asp:Literal ID="lActionTitle" runat="server" /></h1>
             </div>
 
             <fieldset>
@@ -22,8 +23,8 @@
                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.BinaryFileType, Rock" PropertyName="IconCssClass" />
                         <Rock:ImageUploader ID="imgIconSmall" runat="server" Label="Small Icon Image" />
                         <Rock:ImageUploader ID="imgIconLarge" runat="server" Label="Large Icon Image" />
-                        <Rock:RockCheckBox ID="cbAllowCaching" runat="server" Label="Allows Caching" Help="If 'true' the file will be cached from the storage provider to the server's file system.  This is not recommended for files that need heightened security. "/>
-                        <Rock:ComponentPicker ID="cpStorageType" runat="server" ContainerType="Rock.Storage.ProviderContainer, Rock" Label="Storage Type" Required="true" />
+                        <Rock:RockCheckBox ID="cbAllowCaching" runat="server" Label="Allows Caching" Help="If 'true' the file will be cached from the storage provider to the server's file system.  This is not recommended for files that need heightened security. " />
+                        <Rock:ComponentPicker ID="cpStorageType" runat="server" ContainerType="Rock.Storage.ProviderContainer, Rock" Label="Storage Type" Required="true" AutoPostBack="true"/>
                     </div>
                     <div class="col-md-6">
 
@@ -39,6 +40,13 @@
                             </Columns>
                         </Rock:Grid>
 
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="attributes">
+                            <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                        </div>
                     </div>
                 </div>
             </fieldset>

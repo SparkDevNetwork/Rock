@@ -13,7 +13,6 @@ using System.Web.SessionState;
 
 using Rock;
 using Rock.Model;
-using Rock.Storage;
 
 namespace RockWeb
 {
@@ -36,14 +35,12 @@ namespace RockWeb
         /// </summary>
         /// <param name="context">An <see cref="T:System.Web.HttpContext" /> object that provides references to the intrinsic server objects (for example, Request, Response, Session, and Server) used to service HTTP requests.</param>
         /// <exception cref="WebFaultException">Must be logged in</exception>
-        public void ProcessRequest( HttpContext context )
+        public virtual void ProcessRequest( HttpContext context )
         {
-            // *********************************************
-            // TODO: verify user is authorized to save file!
-            // *********************************************
-
             if ( !context.User.Identity.IsAuthenticated )
+            {
                 throw new WebFaultException<string>( "Must be logged in", System.Net.HttpStatusCode.Forbidden );
+            }
 
             try
             {
@@ -97,7 +94,20 @@ namespace RockWeb
                     file.BinaryFileTypeId = fileType.Id;
                 }
 
-                SaveData( context, uploadedFile, file, fileType );
+                file.MimeType = uploadedFile.ContentType;
+                file.FileName = Path.GetFileName( uploadedFile.FileName );
+                file.StorageEntityTypeId = fileType.StorageEntityTypeId;
+
+                file.Data = GetFileData( context, uploadedFile );
+
+                // Save the file using the fileService
+                if ( file.Id == 0 )
+                {
+                    fileService.Add( file, null );
+                }
+
+                fileService.Save( file, null );
+
                 context.Response.Write( new { Id = file.Id, FileName = file.FileName }.ToJson() );
 
             }
@@ -109,24 +119,16 @@ namespace RockWeb
         }
 
         /// <summary>
-        /// Saves the data.
+        /// Gets the file data.
         /// </summary>
-        /// <param name="context">The current HTTP context.</param>
-        /// <param name="uploadedFile">The file that was uploaded</param>
-        /// <param name="file">The file.</param>
-        /// <param name="fileType">The file type.</param>
-        public virtual void SaveData( HttpContext context, HttpPostedFile uploadedFile, BinaryFile file, BinaryFileType fileType )
+        /// <param name="context">The context.</param>
+        /// <param name="uploadedFile">The uploaded file.</param>
+        /// <returns></returns>
+        public virtual BinaryFileData GetFileData( HttpContext context, HttpPostedFile uploadedFile)
         {
-            var provider = fileType != null
-                ? ProviderContainer.GetComponent( fileType.StorageEntityType.Name )
-                : ProviderContainer.DefaultComponent;
-            file.MimeType = uploadedFile.ContentType;
-            file.FileName = Path.GetFileName( uploadedFile.FileName );
-            file.StorageEntityTypeId = fileType.StorageEntityTypeId;
             var bytes = new byte[uploadedFile.ContentLength];
             uploadedFile.InputStream.Read( bytes, 0, uploadedFile.ContentLength );
-            file.Data = new BinaryFileData { Content = bytes };
-            provider.SaveFile( file, null );
+            return new BinaryFileData { Content = bytes };
         }
     }
 }
