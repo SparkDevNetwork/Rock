@@ -53,7 +53,7 @@ namespace Rock.Web.UI.Controls
             _dialogPanel = new Panel();
             base.Controls.Add( _dialogPanel );
             _dialogPanel.ID = "panel";
-            _dialogPanel.CssClass = "modal2";
+            _dialogPanel.CssClass = "rock-modal-frame";
             _dialogPanel.Attributes.Add("style","display:none");
 
             _contentPanel = new Panel();

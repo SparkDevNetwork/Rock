@@ -1,0 +1,12 @@
+﻿<div class="ad-content">
+    <div class="ad-url">
+        <a href="{{ AdList.Url }}">{{ AdList.Title }}</a>
+    </div>
+    <div class="ad-attributes">
+        {% for attribute in AdList.Attributes %}
+            <div>
+            {{ attribute.Value }}
+            </div>
+        {% endfor %}
+    </div>
+</div>

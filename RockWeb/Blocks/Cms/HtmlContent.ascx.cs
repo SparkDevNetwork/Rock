@@ -8,28 +8,32 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.CMS;
+using Rock.Attribute;
+using Rock.Model;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Cms
 {
-    [Rock.Security.AdditionalActions( new string[] { "Approve" } )]
-    [Rock.Attribute.Property( 0, "Pre-Text", "PreText", "", "HTML text to render before the blocks main content.", false, "" )]
-    [Rock.Attribute.Property( 1, "Post-Text", "PostText", "", "HTML text to render after the blocks main content.", false, "" )]
-    [Rock.Attribute.Property( 2, "Cache Duration", "CacheDuration", "", "Number of seconds to cache the content.", false, "0", "Rock", "Rock.FieldTypes.Integer" )]
-    [Rock.Attribute.Property( 3, "Context Parameter", "ContextParameter", "", "Query string parameter to use for 'personalizing' content based on unique values.", false, "" )]
-    [Rock.Attribute.Property( 4, "Context Name", "ContextName", "", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "" )]
-    [Rock.Attribute.Property( 5, "Support Versions", "Advanced", "Support content versioning?", false, "False", "Rock", "Rock.FieldTypes.Boolean" )]
-    [Rock.Attribute.Property( 6, "Require Approval", "Advanced", "Require that content be approved?", false, "False", "Rock", "Rock.FieldTypes.Boolean" )]
-
-    public partial class HtmlContent : Rock.Web.UI.Block
+    [AdditionalActions( new string[] { "Approve" } )]
+    [TextField( "Pre-Text", "HTML text to render before the blocks main content.", false, "", "", 0, "PreText" )]
+    [TextField( "Post-Text", "HTML text to render after the blocks main content.", false, "", "", 1, "PostText" )]
+    [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 0, "", 2 )]
+    [TextField( "Context Parameter", "Query string parameter to use for 'personalizing' content based on unique values.", false, "", "", 3 )]
+    [TextField( "Context Name", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false )]
+    [BooleanField( "Require Approval", "Require that content be approved?", false )]
+    [BooleanField( "Support Versions", "Support content versioning?", false )]
+    public partial class HtmlContent : Rock.Web.UI.RockBlock
     {
         #region Private Global Variables
 
         bool _supportVersioning = false;
         bool _requireApproval = false;
+        public bool HtmlContentModified = false;
 
         #endregion
 
@@ -37,29 +41,18 @@ namespace RockWeb.Blocks.Cms
 
         protected override void OnInit( EventArgs e )
         {
-            base.OnInit( e );
+            base.OnInit(e);
 
-            PageInstance.AddScriptLink( this.Page, "~/scripts/ckeditor/ckeditor.js" );
-            PageInstance.AddScriptLink( this.Page, "~/scripts/ckeditor/adapters/jquery.js" );
-            PageInstance.AddScriptLink( this.Page, "~/Scripts/Rock/htmlContentOptions.js" );
-            PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
-            PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.fx.min.js" );
-            PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.popup.min.js" );
-            PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.calendar.min.js" );
-            PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.datepicker.min.js" );
+            _supportVersioning = bool.Parse( GetAttributeValue( "SupportVersions" ) ?? "false" );
+            _requireApproval = bool.Parse( GetAttributeValue( "RequireApproval" ) ?? "false" );
 
-            PageInstance.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.common.min.css" );
-            PageInstance.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.rock.min.css" );
-
-            _supportVersioning = bool.Parse( AttributeValue( "SupportVersions" ) ?? "false" );
-            _requireApproval = bool.Parse( AttributeValue( "RequireApproval" ) ?? "false" );
-
-            mpeContent.OnOkScript = string.Format("saveHtmlContent_{0}();", BlockInstance.Id);
+            mpeContent.OnOkScript = string.Format( "Rock.controls.htmlContentEditor.saveHtmlContent({0});", BlockId );
 
             rGrid.DataKeyNames = new string[] { "id" };
             rGrid.ShowActionRow = false;
 
-            this.AttributesUpdated += HtmlContent_AttributesUpdated;
+            this.BlockUpdated += HtmlContent_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upPanel );
 
             ShowView();
         }
@@ -67,16 +60,15 @@ namespace RockWeb.Blocks.Cms
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
             hfAction.Value = string.Empty;
         }
 
         protected void lbEdit_Click( object sender, EventArgs e )
         {
             HtmlContentService service = new HtmlContentService();
-            Rock.CMS.HtmlContent content = service.GetActiveContent( BlockInstance.Id, EntityValue() );
+            Rock.Model.HtmlContent content = service.GetActiveContent( BlockId, EntityValue() );
             if ( content == null )
-                content = new Rock.CMS.HtmlContent();
+                content = new Rock.Model.HtmlContent();
 
             if ( _supportVersioning )
             {
@@ -91,8 +83,8 @@ namespace RockWeb.Blocks.Cms
 
                 if ( _requireApproval )
                 {
-                    cbApprove.Checked = content.Approved;
-                    cbApprove.Enabled = UserAuthorized( "Approve" );
+                    cbApprove.Checked = content.IsApproved;
+                    cbApprove.Enabled = IsUserAuthorized( "Approve" );
                     cbApprove.Visible = true;
                 }
                 else
@@ -105,11 +97,28 @@ namespace RockWeb.Blocks.Cms
                 cbOverwriteVersion.Visible = false;
             }
 
-            txtHtmlContentEditor.Text = content.Content;
+            htmlContent.Toolbar = "RockCustomConfigFull";
+            htmlContent.Text = content.Content;
+            htmlContent.MergeFields.Clear();
+            htmlContent.MergeFields.Add( "GlobalAttribute" );
+            mpeContent.Show();
+            htmlContent.Visible = true;
+            HtmlContentModified = false;
+            htmlContent.TextChanged += htmlContent_TextChanged;
 
             BindGrid();
 
             hfAction.Value = "Edit";
+        }
+
+        /// <summary>
+        /// Handles the TextChanged event of the htmlContent control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        void htmlContent_TextChanged( object sender, EventArgs e )
+        {
+            HtmlContentModified = true;
         }
 
         protected override void OnPreRender( EventArgs e )
@@ -120,17 +129,17 @@ namespace RockWeb.Blocks.Cms
             base.OnPreRender( e );
         }
 
-        void HtmlContent_AttributesUpdated( object sender, EventArgs e )
+        protected void HtmlContent_BlockUpdated( object sender, EventArgs e )
         {
-            lPreText.Text = AttributeValue( "PreText" );
-            lPostText.Text = AttributeValue( "PostText" );
+            lPreText.Text = GetAttributeValue( "PreText" );
+            lPostText.Text = GetAttributeValue( "PostText" );
         }
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            if ( UserAuthorized( "Edit" ) || UserAuthorized( "Configure" ) )
+            if ( IsUserAuthorized( "Edit" ) || IsUserAuthorized( "Administrate" ) )
             {
-                Rock.CMS.HtmlContent content = null;
+                Rock.Model.HtmlContent content = null;
                 HtmlContentService service = new HtmlContentService();
 
                 // get settings
@@ -140,28 +149,28 @@ namespace RockWeb.Blocks.Cms
                 int version = 0;
                 if ( !Int32.TryParse( hfVersion.Value, out version ) )
                     version = 0;
-                content = service.GetByBlockIdAndEntityValueAndVersion( BlockInstance.Id, entityValue, version );
+                content = service.GetByBlockIdAndEntityValueAndVersion( BlockId, entityValue, version );
 
                 // if the existing content changed, and the overwrite option was not checked, create a new version
                 if ( content != null &&
                     _supportVersioning &&
-                    content.Content != txtHtmlContentEditor.Text &&
+                    content.Content != htmlContent.Text &&
                     !cbOverwriteVersion.Checked )
                     content = null;
 
                 // if a record doesn't exist then  create one
                 if ( content == null )
                 {
-                    content = new Rock.CMS.HtmlContent();
-                    content.BlockId = BlockInstance.Id;
+                    content = new Rock.Model.HtmlContent();
+                    content.BlockId = BlockId;
                     content.EntityValue = entityValue;
 
                     if ( _supportVersioning )
                     {
                         int? maxVersion = service.Queryable().
-                            Where( c => c.BlockId == BlockInstance.Id &&
+                            Where( c => c.BlockId == BlockId &&
                                 c.EntityValue == entityValue ).
-                            Select( c => ( int? )c.Version ).Max();
+                            Select( c => (int?)c.Version ).Max();
 
                         content.Version = maxVersion.HasValue ? maxVersion.Value + 1 : 1;
                     }
@@ -191,33 +200,42 @@ namespace RockWeb.Blocks.Cms
                     content.ExpireDateTime = null;
                 }
 
-                if ( !_requireApproval || UserAuthorized( "Approve" ) )
+                if ( !_requireApproval || IsUserAuthorized( "Approve" ) )
                 {
-                    content.Approved = !_requireApproval || cbApprove.Checked;
-                    if ( content.Approved )
+                    content.IsApproved = !_requireApproval || cbApprove.Checked;
+                    if ( content.IsApproved )
                     {
                         content.ApprovedByPersonId = CurrentPersonId;
                         content.ApprovedDateTime = DateTime.Now;
                     }
                 }
 
-                content.Content = txtHtmlContentEditor.Text;
+                content.Content = htmlContent.Text;
 
-                service.Save( content, CurrentPersonId );
-
-                // flush cache content 
-                this.FlushCacheItem( entityValue );
+                if ( service.Save( content, CurrentPersonId ) )
+                {
+                    // flush cache content 
+                    this.FlushCacheItem( entityValue );
+                    ShowView();
+                }
+                else
+                {
+                    // TODO: service.ErrorMessages;
+                }
 
             }
 
-            ShowView();
+            else
+            {
+                ShowView();
+            }
         }
 
         #endregion
 
         #region Methods
 
-        public override List<Control> GetConfigurationControls( bool canConfig, bool canEdit )
+        public override List<Control> GetAdministrateControls( bool canConfig, bool canEdit )
         {
             List<Control> configControls = new List<Control>();
 
@@ -225,15 +243,19 @@ namespace RockWeb.Blocks.Cms
             if ( canConfig || canEdit )
             {
                 LinkButton lbEdit = new LinkButton();
-                lbEdit.CssClass = "edit icon-button";
+                lbEdit.CssClass = "edit";
                 lbEdit.ToolTip = "Edit HTML";
                 lbEdit.Click += new EventHandler( lbEdit_Click );
                 configControls.Add( lbEdit );
+                HtmlGenericControl iEdit = new HtmlGenericControl( "i" );
+                lbEdit.Controls.Add( iEdit );
+                lbEdit.CausesValidation = false;
+                iEdit.Attributes.Add("class", "fa fa-pencil-square-o");
 
                 ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( lbEdit );
             }
 
-            configControls.AddRange( base.GetConfigurationControls( canConfig, canEdit ) );
+            configControls.AddRange( base.GetAdministrateControls( canConfig, canEdit ) );
 
             return configControls;
         }
@@ -243,45 +265,75 @@ namespace RockWeb.Blocks.Cms
             string entityValue = EntityValue();
             string html = "";
 
-            int cacheDuration = Int32.Parse( AttributeValue( "CacheDuration" ) );
             string cachedContent = GetCacheItem( entityValue ) as string;
 
             // if content not cached load it from DB
             if ( cachedContent == null )
             {
-                Rock.CMS.HtmlContent content = new HtmlContentService().GetActiveContent( BlockInstance.Id, entityValue );
+                Rock.Model.HtmlContent content = new HtmlContentService().GetActiveContent( BlockId, entityValue );
 
                 if ( content != null )
-                {
-                    html = content.Content;
+                    html = content.Content.ResolveMergeFields( GetGlobalMergeFields() );
+                else
+                    html = string.Empty;
 
-                    // cache content
-                    if ( cacheDuration > 0 )
-                        AddCacheItem( entityValue, html, cacheDuration );
-                }
+                // Resolve any dynamic url references
+                string appRoot = ResolveRockUrl("~/");
+                string themeRoot = ResolveRockUrl("~~/");
+                html = html.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+
+                // cache content
+                int cacheDuration = 0;
+                if ( Int32.TryParse( GetAttributeValue( "CacheDuration" ), out cacheDuration ) && cacheDuration > 0 )
+                    AddCacheItem( entityValue, html, cacheDuration );
             }
             else
                 html = cachedContent;
 
             // add content to the content window
-            lPreText.Text = AttributeValue( "PreText" );
+            lPreText.Text = GetAttributeValue( "PreText" );
             lHtmlContent.Text = html;
-            lPostText.Text = AttributeValue( "PostText" );
+            lPostText.Text = GetAttributeValue( "PostText" );
         }
 
         private void BindGrid()
         {
-            HtmlContentService service = new HtmlContentService();
+            var HtmlService = new HtmlContentService();
+            var content = HtmlService.GetContent( BlockId, EntityValue() );
 
-            var versions = service.GetContent( BlockInstance.Id, EntityValue() ).
+            var personService = new Rock.Model.PersonService();
+            var versionAudits = new Dictionary<int, Rock.Model.Audit>();
+            var modifiedPersons = new Dictionary<int, string>();
+
+            foreach ( var version in content )
+            {
+                var lastAudit = HtmlService.Audits( version )
+                    .Where( a => a.AuditType == Rock.Model.AuditType.Add ||
+                        a.AuditType == Rock.Model.AuditType.Modify )
+                    .OrderByDescending( h => h.DateTime )
+                    .FirstOrDefault();
+                if ( lastAudit != null )
+                    versionAudits.Add( version.Id, lastAudit );
+            }
+
+            foreach ( var audit in versionAudits.Values )
+            {
+                if ( audit.PersonId.HasValue && !modifiedPersons.ContainsKey( audit.PersonId.Value ) )
+                {
+                    var modifiedPerson = personService.Get( audit.PersonId.Value, true );
+                    modifiedPersons.Add( audit.PersonId.Value, modifiedPerson != null ? modifiedPerson.FullName : string.Empty );
+                }
+            }
+
+            var versions = content.
                 Select( v => new
                 {
                     v.Id,
                     v.Version,
                     v.Content,
-                    ModifiedDateTime = v.ModifiedDateTime.ToElapsedString(),
-                    ModifiedByPerson = v.ModifiedByPerson != null ? v.ModifiedByPerson.FullName : "",
-                    v.Approved,
+                    ModifiedDateTime = versionAudits.ContainsKey( v.Id ) ? versionAudits[v.Id].DateTime.ToElapsedString() : string.Empty,
+                    ModifiedByPerson = versionAudits.ContainsKey( v.Id ) && versionAudits[v.Id].PersonId.HasValue ? modifiedPersons[versionAudits[v.Id].PersonId.Value] : string.Empty,
+                    Approved = v.IsApproved,
                     ApprovedByPerson = v.ApprovedByPerson != null ? v.ApprovedByPerson.FullName : "",
                     v.StartDateTime,
                     v.ExpireDateTime
@@ -295,15 +347,35 @@ namespace RockWeb.Blocks.Cms
         {
             string entityValue = string.Empty;
 
-            string contextParameter = AttributeValue( "ContextParameter" );
+            string contextParameter = GetAttributeValue( "ContextParameter" );
             if ( !string.IsNullOrEmpty( contextParameter ) )
                 entityValue = string.Format( "{0}={1}", contextParameter, PageParameter( contextParameter ) ?? string.Empty );
 
-            string contextParameterValue = PageParameter( contextParameter );
-            if ( !string.IsNullOrEmpty( contextParameterValue ) )
-                entityValue += "&ContextName=" + contextParameterValue;
+            string contextName = GetAttributeValue( "ContextName" );
+            if ( !string.IsNullOrEmpty( contextName ) )
+                entityValue += "&ContextName=" + contextName;
 
             return entityValue;
+        }
+
+        public Dictionary<string, object> GetGlobalMergeFields()
+        {
+            var configValues = new Dictionary<string, object>();
+
+            var globalAttributeValues = new Dictionary<string, object>();
+            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+            foreach ( var attributeCache in globalAttributes.Attributes.OrderBy( a => a.Key ) )
+            {
+                if ( attributeCache.IsAuthorized( "View", null ) )
+                {
+                    globalAttributeValues.Add( attributeCache.Key,
+                        attributeCache.FieldType.Field.FormatValue( this, globalAttributes.AttributeValues[attributeCache.Key].Value, attributeCache.QualifierValues, false ) );
+                }
+            }
+
+            configValues.Add( "GlobalAttribute", globalAttributeValues );
+
+            return configValues;
         }
 
         #endregion

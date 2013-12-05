@@ -17,19 +17,12 @@ namespace Rock.Web.UI.Controls
     public class BoolField : BoundField
     {
         /// <summary>
-        /// Initializes the <see cref="T:System.Web.UI.WebControls.BoundField"/> object.
+        /// Initializes a new instance of the <see cref="BoolField" /> class.
         /// </summary>
-        /// <param name="enableSorting">true if sorting is supported; otherwise, false.</param>
-        /// <param name="control">The data control that owns the <see cref="T:System.Web.UI.WebControls.BoundField"/>.</param>
-        /// <returns>
-        /// false in all cases.
-        /// </returns>
-        public override bool Initialize( bool enableSorting, Control control )
+        public BoolField()
+            : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            this.ItemStyle.CssClass = "grid-icon-cell bool";
-
-            return base.Initialize( enableSorting, control );
         }
 
         /// <summary>
@@ -52,8 +45,10 @@ namespace Rock.Web.UI.Controls
                     boolValue = intValue != 0;
             }
 
-            return string.Format( "<span class=\"{0}\">{1}</span>", 
-                boolValue.ToString().ToLower(), ( boolValue ? "X" : "" ) );
+            if ( boolValue )
+                return "<i class=\"fa fa-check\"></i>";
+            else
+                return "";
         }
     }
 }

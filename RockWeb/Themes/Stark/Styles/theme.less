@@ -1,0 +1,97 @@
+﻿
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/_rock-core.less";
+@import "_variables.less";
+
+
+/*
+    Rock ChMS Theme Styles
+
+    1. HTML Overrides
+    2. Bootstrap Overides
+    3. Theme Styling
+
+*/
+
+// 1. HTML Overrides
+// -------------------------
+
+main {
+    display:block;
+}
+
+
+// 2. Bootstrap Overrides 
+// ------------------------- 
+
+.navbar {
+    position: static; // default is relative which causes the dropdowns to go under the other navbars dispite having a higher z-index - JME 9/9/2013
+}
+
+a:hover i.fs
+{
+    text-decoration: none;
+}
+
+// 3. Theme Styling 
+// -------------------------
+
+header {
+    .page-menu,
+    .login-status {
+        float: right;
+    }
+}
+
+// homepage items
+#ad-rotator {
+    .item {
+        img {
+            width: 100%;
+        }
+    }
+}
+
+.ad-list {
+    img {
+        width: 100%;
+    }
+
+    h2 {
+        height: 70px;
+    }
+
+    .ad-text {
+        height: 110px;
+    }
+}
+
+.ad-detail {
+    img {
+        width: 100%;
+    }
+}
+
+.nav-sub {
+    li {
+        border: 1px solid @gray-lighter;
+        border-radius: @border-radius-base;
+
+        a:hover {
+            background-color: @gray-lighter;
+        }
+    }
+}
+
+footer {
+    margin-bottom: 50px;
+
+    .footer-message {
+        float: left;
+    }
+
+    .footer-address {
+        float: right;
+    }
+}

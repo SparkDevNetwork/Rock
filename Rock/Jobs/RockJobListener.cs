@@ -9,7 +9,7 @@ using System.Text;
 
 using Quartz;
 
-using Rock.Util;
+using Rock.Model;
 
 namespace Rock.Jobs
 {
@@ -80,8 +80,8 @@ namespace Rock.Jobs
             int jobId = Convert.ToInt16(context.JobDetail.Description);
 
             // load job
-            JobService jobService = new JobService();
-            Job job = jobService.Get(jobId);
+            ServiceJobService jobService = new ServiceJobService();
+            ServiceJob job = jobService.Get(jobId);
             
             // format the message
             message.Append( String.Format( "The job {0} ran for {1} seconds on {2}.  Below is the results:<p>" , job.Name, context.JobRunTime.TotalSeconds, context.FireTimeUtc.Value.DateTime.ToLocalTime()) );
@@ -91,10 +91,10 @@ namespace Rock.Jobs
                 sendMessage = true;
 
             // set last run date
-            job.LastRunDate = context.FireTimeUtc.Value.DateTime.ToLocalTime();
+            job.LastRunDateTime = context.FireTimeUtc.Value.DateTime.ToLocalTime();
 
             // set run time
-            job.LastRunDuration = Convert.ToInt32(context.JobRunTime.TotalSeconds);
+            job.LastRunDurationSeconds = Convert.ToInt32(context.JobRunTime.TotalSeconds);
 
             // set the scheduler name
             job.LastRunSchedulerName = context.Scheduler.SchedulerName;
@@ -102,7 +102,7 @@ namespace Rock.Jobs
             // determine if an error occured
             if ( jobException == null )
             {
-                job.LastSuccessfulRun = job.LastRunDate;
+                job.LastSuccessfulRunDateTime = job.LastRunDateTime;
                 job.LastStatus = "Success";
                 job.LastStatusMessage = "";
                 

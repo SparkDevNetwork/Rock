@@ -275,7 +275,7 @@ namespace Quartz.Core
                             }
                             lastAcquireFailed = true;
                         }
-                        catch (Exception e)
+                        catch (Exception)
                         {
                             if (!lastAcquireFailed)
                             {
@@ -479,7 +479,7 @@ namespace Quartz.Core
                         }
                     }
                 }
-                catch (Exception re)
+                catch (Exception)
                 {
                 }
             } // while (!halted)
@@ -509,7 +509,7 @@ namespace Quartz.Core
                         // retrying until it's up...
                         ReleaseTriggerRetryLoop(trigger);
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         // db connection must have failed... keep
                         // retrying until it's up...
@@ -611,11 +611,11 @@ namespace Quartz.Core
                                 jpe);
                         }
                     }
-                    catch (ThreadInterruptedException e)
+                    catch (ThreadInterruptedException)
                     {
                         
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         
                     }
@@ -658,11 +658,11 @@ namespace Quartz.Core
                                 string.Format(CultureInfo.InvariantCulture, "An error occurred while releasing trigger '{0}'", trigger.Key), jpe);
                         }
                     }
-                    catch (ThreadInterruptedException e)
+                    catch (ThreadInterruptedException)
                     {
                         
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                        
                     }

@@ -1,0 +1,219 @@
+@import "_components.less";
+@import "_block-specific.less";
+@import "_page-admin.less";
+@import "_grid.less";
+@import "_modal.less";
+@import "_forms.less";
+@import "_persondetails.less";
+@import "_scroll.less";
+@import "_global-variables.less";
+
+@import "./Bootstrap/mixins.less";
+
+// HTML Overrides
+//--------------------------------
+
+// text selection color
+::selection {
+	background: @text-selection-color;
+    color: @text-selection-text-color;
+}
+::-moz-selection {
+	background: @text-selection-color; 
+    color: @text-selection-text-color;
+}
+
+/* global classes */
+.clickable {
+    cursor: pointer;
+}
+
+/* bootstrap overrides */
+
+.control-label {
+    font-weight: @font-weight-semibold;
+}
+
+/* add badge colors back to BS3 */
+.badge-danger {
+    background-color: @label-danger-bg;
+}
+
+.badge-warning {
+    background-color: @label-warning-bg;
+}
+
+.badge-success {
+    background-color: @label-success-bg;
+}
+
+.badge-info {
+    background-color: @label-info-bg;
+}
+
+/* add alternate popover title style that exists inside of the popover-content to use ajax updates */
+.popover-content {
+    header {
+        .clearfix();
+        margin: -9px -14px 8px -14px;
+        padding: 8px 14px;
+        font-size: @font-size-base;
+        font-weight: normal;
+        line-height: 18px;
+        background-color: @popover-title-bg;
+        border-bottom: 1px solid darken(@popover-title-bg, 5%);
+        border-radius: 5px 5px 0 0;
+
+        img {
+            float: left;
+            margin-right: 6px;
+            width: 32px;
+        }
+
+        h3 {
+            float: left;
+            font-size: 18px;
+            margin-top: 2px;
+
+            small {
+                display: block;
+            }
+        }
+    }
+}
+
+
+
+/* extension of Bootstrap 3 panel */
+.panel {
+    legend {
+        border-color: @accent-color;
+    }
+
+    // adjust the background color of pickers on a panel
+    .picker .picker-label {
+        background-color: @accent-color;
+        color: @accent-text-color;
+        border-color: darken(@accent-color, 10%)
+    }
+}
+
+//.panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
+.panel-widget {
+    .panel-variant(@accent-color ; @accent-text-color; @accent-color; @accent-color;);
+
+    .panel-heading {
+        .checkbox {
+            display: inline;
+            margin-top: 0;
+            margin-bottom: 0;
+            float: left;
+        }
+    }
+}
+
+.panel-treeview {
+    .panel-variant(@accent-color; @accent-bold-text-color; @accent-bold-color; @accent-color;);
+
+    .panel-heading {
+        padding-bottom: 0;
+
+        .treeview-actions {
+            margin-top: 6px;
+            background-color: @accent-color;
+
+            .col {
+                padding-right: 0;
+                padding-left: 0;
+            }
+
+            .btn {
+                
+                border: 1px solid darken(@accent-color, 5%);
+                border-radius: 0;
+                width: 100%;
+                color: @accent-text-color;
+            }
+        }
+    }
+
+    .treeview-frame {
+        overflow-x: scroll;
+    }
+}
+
+.panel-info {
+    .panel-body {
+        background-color: @body-bg;
+    }
+
+    .list-group-item {
+        background-color: @body-bg;
+    }
+}
+
+.panel-persondetails {
+    .panel-variant(@accent-color ; @accent-text-color; @accent-color; @accent-color;);
+
+    .panel-body {
+        background-color: @body-bg;
+    }
+}
+
+// .panel-note {}  see _block-specific.less
+
+// extensions for buttons
+// .button-variant(@color; @background; @border) {}
+.btn-action {
+    .button-variant(@accent-semibold-text-color; @accent-semibold-color; darken(@accent-semibold-color, 10%))
+}
+
+.btn-security {
+    .button-variant(@accent-semibold-text-color; @accent-semibold-color; darken(@accent-semibold-color, 10%))
+}
+
+.btn-edit {
+    .button-variant(#222; white; darken(white, 10%))
+}
+
+/* modify BS3 to use fontawesome for carousel icons */
+.carousel-control .fa-chevron-left,
+.carousel-control .fa-chevron-right {
+    position: absolute;
+    top: 50%;
+    z-index: 5;
+    display: inline-block;
+    margin-top: -10px;
+}
+
+
+/* context help  */
+a.help {
+    margin-left: 6px;
+    outline: 0;
+    color: @header-text-color;
+}
+
+/* user registration styles */
+.not-me 
+{
+    margin-left: 21px;
+}
+
+/* security window */
+.security-inherited {
+	margin-top: 12px;
+}
+
+/* additional typography components */
+
+.navigation-tip { // used to show the user directions to a page (e.g. 'Administration > General Settings')
+    font-family: @font-family-monospace;
+    padding: 2px 4px;
+    font-size: 90%;
+    color: @accent-text-color;
+    background-color: @accent-color;
+    white-space: nowrap;
+    border-radius: @border-radius-base;
+} 
+

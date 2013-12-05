@@ -485,7 +485,7 @@ namespace Quartz.Simpl
 
                         }
                     }
-                    catch (Exception exceptionInRunnable)
+                    catch (Exception)
                     {
                     }
                     finally

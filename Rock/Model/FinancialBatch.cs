@@ -1,0 +1,208 @@
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
+using Rock.Data;
+
+namespace Rock.Model
+{
+    /// <summary>
+    /// Represents a batch or collection of <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> for a specified date-time range, campus (if applicable) and transaction type.  A batch 
+    /// has a known total value of all transactions that are included in the batch.
+    /// </summary>
+    [Table( "FinancialBatch" )]
+    [DataContract]
+    public partial class FinancialBatch : Model<FinancialBatch>
+    {
+
+        #region Entity Properties
+
+        /// <summary>
+        /// Gets or sets the name of the batch.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> that represents the name of the batch.
+        /// </value>
+        [Required]
+        [MaxLength( 50 )]
+        [DataMember( IsRequired = true )]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the start posting date and time range of <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> that are included in this batch.  
+        /// Transactions that post on or after this date and time and before the <see cref="BatchEndDateTime"/> can be included in this batch.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.DateTime"/> representing the posting start date for the batch.
+        /// </value>
+        [DataMember]
+        [Column( TypeName = "DateTime" )]
+        public DateTime? BatchStartDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets end of the posting date and time range for <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> that are included in this batch.
+        /// Transactions that post before or on this date and time and after the <see cref="BatchStartDateTime"/> can be included in this batch.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.DateTime"/> representing the posting end date for the batch.
+        /// </value>
+        [DataMember]
+        [Column( TypeName = "DateTime" )]
+        public DateTime? BatchEndDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who created the batch.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who created the batch.
+        /// </value>
+        [DataMember]
+        public int CreatedByPersonId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the status of the batch.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.BatchStatus"/> representing the status of the batch.
+        /// When this value is <c>BatchStatus.Pending</c>  it means that transactions are still being added to the batch.
+        /// When this value is <c>BatchStatus.Open</c> it means that all transactions have been added and are ready to be matched up.
+        /// When this value is <c>BatchStatus.Closed</c> it means that the batch has balanced and has been closed.
+        /// </value>
+        [DataMember]
+        public BatchStatus Status { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CampusId of the <see cref="Rock.Model.Campus"/> that this batch is associated with. If the batch is not linked
+        /// to a campus, this value will be null.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the CampusId of the <see cref="Rock.Model.Campus"/> that this batch is associated with.
+        /// </value>
+        [DataMember]
+        public int? CampusId { get; set; }
+
+        /// <summary>
+        /// Gets or sets an optional transaction code from an accounting system that batch is associated with
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the Accounting System transaction code for the batch.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string AccountingSystemCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the control amount. This should match the total value of all <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> that are 
+        /// included in the batch.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Decimal"/> representing the control amount of the batch.
+        /// </value>
+        [DataMember]
+        public decimal ControlAmount { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the campus that this batch is associated with.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.Campus"/> that the batch is associated with.
+        /// </value>
+        public virtual Campus Campus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.Person"/> who created the batch.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.Person"/> who created the batch.
+        /// </value>
+        public virtual Person CreateByPerson { get; set; }
+
+        /// <summary>
+        /// Gets or sets a collection that contains the <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> that are 
+        /// included in the batch.
+        /// </summary>
+        /// <value>
+        /// A collection that contains the <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> that are included in the batch.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<FinancialTransaction> Transactions { get; set; }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this FinancialBatch.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this FinancialBatch.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
+        #endregion
+    }
+
+    #region EntityConfiguration
+
+    /// <summary>
+    /// Batch Configuration class.
+    /// </summary>
+    public partial class FinancialBatchConfiguration : EntityTypeConfiguration<FinancialBatch>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FinancialBatchConfiguration"/> class.
+        /// </summary>
+        public FinancialBatchConfiguration()
+        {
+            this.HasOptional( b => b.Campus ).WithMany().HasForeignKey( b => b.CampusId ).WillCascadeOnDelete( false );
+            this.HasRequired( b => b.CreateByPerson ).WithMany().HasForeignKey( b => b.CreatedByPersonId ).WillCascadeOnDelete( false );
+        }
+    }
+
+    #endregion
+
+    #region Enumerations
+
+    /// <summary>
+    /// The status of a batch
+    /// </summary>
+    public enum BatchStatus
+    {
+        /// <summary>
+        /// Pending
+        /// In the process of scanning the checks to it
+        /// </summary>
+        Pending = 0,
+
+        /// <summary>
+        /// Open
+        /// Transactions are all entered and are ready to be matched
+        /// </summary>
+        Open = 1,
+
+        /// <summary>
+        /// Closed
+        /// All is well and good
+        /// </summary>
+        Closed = 2
+    }
+
+    #endregion
+
+
+}

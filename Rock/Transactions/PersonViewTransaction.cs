@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.IO;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System;
 
-using Rock.CRM;
+using Rock.Model;
 
 namespace Rock.Transactions
 {
@@ -15,18 +16,18 @@ namespace Rock.Transactions
     {
 
         /// <summary>
-        /// Gets or sets the Person Id of the viewer.
+        /// Gets or sets the viewer person id.
         /// </summary>
         /// <value>
-        /// Page Id.
+        /// The viewer person id.
         /// </value>
         public int ViewerPersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Person Id of the person who was viewed.
+        /// Gets or sets the target person id.
         /// </summary>
         /// <value>
-        /// Site Id.
+        /// The target person id.
         /// </value>
         public int TargetPersonId { get; set; }
 

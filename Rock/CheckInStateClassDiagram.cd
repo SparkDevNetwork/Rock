@@ -1,0 +1,169 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
+  <Comment CommentText="Locations: the locations for this group.">
+    <Position X="12" Y="7.75" Height="0.656" Width="1.012" />
+  </Comment>
+  <Comment CommentText="GroupTypes: the list of group types availble for the person.">
+    <Position X="8.931" Y="4.294" Height="0.635" Width="1.7" />
+  </Comment>
+  <Comment CommentText="- - - - - - - - - - - - - - &gt;">
+    <Position X="10.835" Y="5.155" Height="0.291" Width="1.578" />
+  </Comment>
+  <Class Name="Rock.CheckIn.CheckInState">
+    <Position X="0.5" Y="0.5" Width="2" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAABAAAAARIAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>CheckIn\CheckInState.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Rock.CheckIn.CheckInStatus">
+    <Position X="2.75" Y="0.5" Width="2.75" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAAAAEBJAAAAAAAAABAAAAAAAAAAAAAA=</HashCode>
+      <FileName>CheckIn\CheckInStatus.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Rock.CheckIn.KioskStatus">
+    <Position X="1" Y="3" Width="2.75" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAACAAAAAAAAhAAAAAAAAAAAAAAAAAAEAAAAAAAAAA=</HashCode>
+      <FileName>CheckIn\KioskStatus.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Rock.CheckIn.CheckInFamily">
+    <Position X="4.5" Y="2.25" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>gAAAAEAAAIAAAAAEABAAAAAAAAAAAAAACAAAAAAAAAI=</HashCode>
+      <FileName>CheckIn\CheckInFamily.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Rock.CheckIn.KioskGroupType">
+    <Position X="1.75" Y="4.75" Width="2.75" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAABAAAEAAAAAAAAAAAAAAAEAAAAgAAAAAA=</HashCode>
+      <FileName>CheckIn\KioskGroupType.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Rock.CheckIn.CheckInPerson">
+    <Position X="6.25" Y="3.75" Width="2.75" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>CKAAAAAAAAAAAAEEABAAAAAAAAAAAAAACAAAAAAAAAI=</HashCode>
+      <FileName>CheckIn\CheckInPerson.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Rock.CheckIn.KioskGroup">
+    <Position X="2.75" Y="6" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAEAAAAAAAAAEAAAAAAAAAEAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>CheckIn\KioskGroup.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Rock.CheckIn.CheckInGroupType">
+    <Position X="8.25" Y="5" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>CAAAAEAAEAAAAAAEABAAAAAAAAAAAAAAAAAAgAAAAAI=</HashCode>
+      <FileName>CheckIn\CheckInGroupType.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.783" Collapsed="true" />
+  </Class>
+  <Class Name="Rock.Model.GroupType">
+    <Position X="12.5" Y="0.5" Width="2.5" />
+    <Members>
+      <Field Name="_childGroupTypes" Hidden="true" />
+      <Field Name="_groups" Hidden="true" />
+      <Field Name="_locationTypes" Hidden="true" />
+      <Field Name="_parentGroupTypes" Hidden="true" />
+      <Field Name="_roles" Hidden="true" />
+    </Members>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>0AAAYMAACEAhEBAFABEAAKQgAwAwgAAAhAgBIAAMAAA=</HashCode>
+      <FileName>Model\GroupType.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Rock.CheckIn.CheckInGroup">
+    <Position X="9.5" Y="6.5" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>CAAAAEAAAAAAAAAEABIAAAAAAAAAAAAAAAAAAAAAAAI=</HashCode>
+      <FileName>CheckIn\CheckInGroup.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Rock.CheckIn.KioskLocation">
+    <Position X="3.5" Y="7.25" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAQAAAAAAAEAAIAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>CheckIn\KioskLocation.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Rock.CheckIn.KioskSchedule">
+    <Position X="4.5" Y="8.25" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAAAIEAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>CheckIn\KioskSchedule.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Rock.CheckIn.CheckInLocation">
+    <Position X="10.75" Y="8" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>CAAAAAAAAAAAAAAEABIAAAAAAEAAAAAAAAAAAAAAAAI=</HashCode>
+      <FileName>CheckIn\CheckInLocation.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Rock.CheckIn.CheckInSchedule">
+    <Position X="12" Y="9.5" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>CAAAAAAAAAAAAAAEABAAAAAAIEAAAAAAAAAAAAAAAAI=</HashCode>
+      <FileName>CheckIn\CheckInSchedule.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

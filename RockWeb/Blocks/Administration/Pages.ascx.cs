@@ -9,18 +9,20 @@ using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock;
+using Rock.Data;
+using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class Pages : Rock.Web.UI.Block
-	{
+    public partial class Pages : Rock.Web.UI.RockBlock
+    {
         #region Fields
 
         private bool canConfigure = false;
-        private Rock.Web.Cache.Page _page = null;
-        private Rock.CMS.PageService pageService = new Rock.CMS.PageService();
+        private Rock.Web.Cache.PageCache _page = null;
 
         #endregion
 
@@ -31,30 +33,20 @@ namespace RockWeb.Blocks.Administration
             try
             {
                 int pageId = Convert.ToInt32( PageParameter( "EditPage" ) );
-                _page = Rock.Web.Cache.Page.Read( pageId );
+                _page = Rock.Web.Cache.PageCache.Read( pageId );
 
                 if ( _page != null )
-                    canConfigure = _page.Authorized( "Configure", CurrentUser );
+                    canConfigure = _page.IsAuthorized( "Administrate", CurrentPerson );
                 else
-                    canConfigure = PageInstance.Authorized( "Configure", CurrentUser );
+                    canConfigure = RockPage.IsAuthorized( "Administrate", CurrentPerson );
 
                 if ( canConfigure )
                 {
                     rGrid.DataKeyNames = new string[] { "id" };
-                    rGrid.Actions.EnableAdd = true;
+                    rGrid.Actions.ShowAdd = true;
                     rGrid.Actions.AddClick += rGrid_GridAdd;
                     rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
                     rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
-
-                    string script = string.Format( @"
-        Sys.Application.add_load(function () {{
-            $('td.grid-icon-cell.delete a').click(function(){{
-                return confirm('Are you sure you want to delete this page?');
-                }});
-        }});
-    ", rGrid.ClientID );
-
-                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", rGrid.ClientID ), script, true );
                 }
                 else
                 {
@@ -90,6 +82,7 @@ namespace RockWeb.Blocks.Administration
             if (_page != null)
                 parentPageId = _page.Id;
 
+            var pageService = new PageService();
             pageService.Reorder( pageService.GetByParentPageId( parentPageId ).ToList(),
                 e.OldIndex, e.NewIndex, CurrentPersonId );
 
@@ -103,16 +96,53 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            Rock.CMS.Page page = pageService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
-            if ( page != null )
+            using ( new UnitOfWorkScope() )
             {
-                Rock.Web.Cache.Page.Flush( page.Id );
+                var pageService = new PageService();
+                var siteService = new SiteService();
 
-                pageService.Delete( page, CurrentPersonId );
-                pageService.Save( page, CurrentPersonId );
+                var page = pageService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
+                if ( page != null )
+                {
+                    RockTransactionScope.WrapTransaction( () =>
+                    {
+                        foreach ( var site in siteService.Queryable() )
+                        {
+                            bool updateSite = false;
+                            if (site.DefaultPageId == page.Id)
+                            {
+                                site.DefaultPageId = null;
+                                site.DefaultPageRouteId = null;
+                                updateSite = true;
+                            }
+                            if (site.LoginPageId == page.Id)
+                            {
+                                site.LoginPageId = null;
+                                site.LoginPageRouteId = null;
+                                updateSite = true;
+                            }
+                            if (site.RegistrationPageId == page.Id)
+                            {
+                                site.RegistrationPageId = null;
+                                site.RegistrationPageRouteId = null;
+                                updateSite = true;
+                            }
 
-                if (_page != null)
-                    _page.FlushChildPages();
+                            if (updateSite)
+                            {
+                                siteService.Save( site, CurrentPersonId );
+                            }
+                        }
+
+                        pageService.Delete( page, CurrentPersonId );
+                        pageService.Save( page, CurrentPersonId );
+
+                        Rock.Web.Cache.PageCache.Flush( page.Id );
+
+                        if ( _page != null )
+                            _page.FlushChildPages();
+                    } );
+                }
             }
 
             BindGrid();
@@ -132,15 +162,16 @@ namespace RockWeb.Blocks.Administration
 
         #region Edit Events
 
-        protected void btnCancel_Click( object sender, EventArgs e )
+        protected void lbCancel_Click( object sender, EventArgs e )
         {
             rGrid.Visible = true;
             pnlDetails.Visible = false;
         }
 
-        protected void btnSave_Click( object sender, EventArgs e )
+        protected void lbSave_Click( object sender, EventArgs e )
         {
-            Rock.CMS.Page page;
+            Rock.Model.Page page;
+            var pageService = new PageService();
 
             int pageId = 0;
             if ( !Int32.TryParse( hfPageId.Value, out pageId ) )
@@ -148,24 +179,24 @@ namespace RockWeb.Blocks.Administration
 
             if ( pageId == 0 )
             {
-                page = new Rock.CMS.Page();
+                page = new Rock.Model.Page();
 
                 if ( _page != null )
                 {
                     page.ParentPageId = _page.Id;
-                    page.SiteId = _page.Site.Id;
+                    page.LayoutId = _page.LayoutId;
                 }
                 else
                 {
                     page.ParentPageId = null;
-                    page.SiteId = PageInstance.Site.Id;
+                    page.LayoutId = PageCache.Read( RockPage.PageId ).LayoutId;
                 }
 
-                page.Title = tbPageName.Text;
+                page.Title = dtbPageName.Text;
                 page.EnableViewState = true;
                 page.IncludeAdminFooter = true;
 
-                Rock.CMS.Page lastPage =
+                Rock.Model.Page lastPage =
                     pageService.GetByParentPageId( _page.Id ).
                         OrderByDescending( b => b.Order ).FirstOrDefault();
 
@@ -180,8 +211,8 @@ namespace RockWeb.Blocks.Administration
             else
                 page = pageService.Get( pageId );
 
-            page.Layout = ddlLayout.Text;
-            page.Name = tbPageName.Text;
+            page.LayoutId = ddlLayout.SelectedValueAsInt().Value;
+            page.Name = dtbPageName.Text;
 
             pageService.Save( page, CurrentPersonId );
 
@@ -207,30 +238,32 @@ namespace RockWeb.Blocks.Administration
             if ( _page != null )
                 parentPageId = _page.Id;
 
-            rGrid.DataSource = pageService.GetByParentPageId( parentPageId ).ToList();
+            rGrid.DataSource = new PageService().GetByParentPageId( parentPageId ).ToList();
             rGrid.DataBind();
         }
 
         private void LoadLayouts()
         {
             ddlLayout.Items.Clear();
-            DirectoryInfo di = new DirectoryInfo( Path.Combine( this.Page.Request.MapPath( this.ThemePath ), "Layouts" ) );
-            foreach ( FileInfo fi in di.GetFiles( "*.aspx" ) )
-                ddlLayout.Items.Add( new ListItem( fi.Name.Remove( fi.Name.IndexOf( ".aspx" ) ) ) );
+            int siteId = _page != null ? _page.Layout.SiteId : RockPage.Layout.SiteId;
+            foreach(var layout in new LayoutService().GetBySiteId(siteId))
+            {
+                ddlLayout.Items.Add( new ListItem( layout.Name, layout.Id.ToString() ) );
+            }
         }
 
         protected void ShowEdit( int pageId )
         {
-            Rock.CMS.Page page = pageService.Get( pageId );
+            var page = new PageService().Get( pageId );
             if ( page != null )
             {
                 hfPageId.Value = page.Id.ToString();
-                try { ddlLayout.Text = page.Layout; }
+                try { ddlLayout.SelectedValue = page.LayoutId.ToString(); }
                 catch { }
-                tbPageName.Text = page.Name;
+                dtbPageName.Text = page.Name;
 
                 lEditAction.Text = "Edit";
-                btnSave.Text = "Save";
+                lbSave.Text = "Save";
             }
             else
             {
@@ -239,16 +272,16 @@ namespace RockWeb.Blocks.Administration
                 try
                 {
                     if ( _page != null )
-                        ddlLayout.Text = _page.Layout;
+                        ddlLayout.SelectedValue = _page.LayoutId.ToString();
                     else
-                        ddlLayout.Text = PageInstance.Layout;
+                        ddlLayout.Text = RockPage.Layout.Id.ToString();
                 }
                 catch { }
 
-                tbPageName.Text = string.Empty;
+                dtbPageName.Text = string.Empty;
 
                 lEditAction.Text = "Add";
-                btnSave.Text = "Add";
+                lbSave.Text = "Add";
             }
 
             rGrid.Visible = false;
