@@ -14,7 +14,6 @@ using System.Web;
 using Goheer.EXIF;
 
 using Rock.Model;
-using Rock.Storage;
 
 namespace RockWeb
 {
@@ -24,62 +23,42 @@ namespace RockWeb
     public class ImageUploader : FileUploader
     {
         /// <summary>
-        /// Saves the data.
+        /// Gets the file data.
         /// </summary>
         /// <param name="context">The context.</param>
-        /// <param name="uploadedFile"></param>
-        /// <param name="file">The file.</param>
-        /// <param name="fileType"></param>
-        public override void SaveData( HttpContext context, HttpPostedFile uploadedFile, BinaryFile file, BinaryFileType fileType)
+        /// <param name="uploadedFile">The uploaded file.</param>
+        /// <returns></returns>
+        public override BinaryFileData GetFileData( HttpContext context, HttpPostedFile uploadedFile )
         {
+            Bitmap bmp = new Bitmap( uploadedFile.InputStream );
+
             // Check to see if we should flip the image.
-            try
+            var exif = new EXIFextractor( ref bmp, "\n" );
+            if ( exif["Orientation"] != null )
             {
-                file.FileName = Path.GetFileName( uploadedFile.FileName );
-                file.MimeType = uploadedFile.ContentType;
-                file.StorageEntityTypeId = fileType.StorageEntityTypeId;
-
-                Bitmap bmp = new Bitmap( uploadedFile.InputStream );
-                var exif = new EXIFextractor( ref bmp, "\n" );
-                if ( exif["Orientation"] != null )
+                RotateFlipType flip = OrientationToFlipType( exif["Orientation"].ToString() );
+                if ( flip != RotateFlipType.RotateNoneFlipNone ) // don't flip if orientation is correct
                 {
-                    RotateFlipType flip = OrientationToFlipType( exif["Orientation"].ToString() );
-                    if ( flip != RotateFlipType.RotateNoneFlipNone ) // don't flip if orientation is correct
-                    {
-                        bmp.RotateFlip( flip );
-                        exif.setTag( 0x112, "1" ); // reset orientation tag
-                    }
+                    bmp.RotateFlip( flip );
+                    exif.setTag( 0x112, "1" ); // reset orientation tag
                 }
-
-                if ( context.Request.QueryString["enableResize"] != null )
-                {
-                    Bitmap resizedBmp = RoughResize( bmp, 1024, 768 );
-                    bmp = resizedBmp;
-                }
-
-                using ( var stream = new MemoryStream() )
-                {
-                    bmp.Save( stream, ContentTypeToImageFormat( file.MimeType ) );
-
-                    if ( file.Data == null )
-                    {
-                        file.Data = new BinaryFileData();
-                    }
-
-                    file.Data.Content = stream.ToArray();
-                }
-
-                // Use provider to persist file
-                var provider = fileType != null
-                    ? ProviderContainer.GetComponent( fileType.StorageEntityType.Name )
-                    : ProviderContainer.DefaultComponent;
-                provider.SaveFile( file, null );
-
             }
-            catch ( Exception ex )
+
+            if ( context.Request.QueryString["enableResize"] != null )
             {
-                ExceptionLogService.LogException( ex, context );
+                Bitmap resizedBmp = RoughResize( bmp, 1024, 768 );
+                bmp = resizedBmp;
             }
+
+            BinaryFileData result = new BinaryFileData();
+
+            using ( var stream = new MemoryStream() )
+            {
+                bmp.Save( stream, ContentTypeToImageFormat( uploadedFile.ContentType ) );
+                result.Content = stream.ToArray();
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -108,6 +87,11 @@ namespace RockWeb
             }
         }
 
+        /// <summary>
+        /// Orientations the type of to flip.
+        /// </summary>
+        /// <param name="orientation">The orientation.</param>
+        /// <returns></returns>
         private static RotateFlipType OrientationToFlipType( string orientation )
         {
             switch ( int.Parse( orientation ) )
@@ -133,6 +117,12 @@ namespace RockWeb
             }
         }
 
+        /// <summary>
+        /// Resizes the image.
+        /// </summary>
+        /// <param name="imgToResize">The img to resize.</param>
+        /// <param name="size">The size.</param>
+        /// <returns></returns>
         private static Image ResizeImage( Image imgToResize, Size size )
         {
             int sourceWidth = imgToResize.Width;
@@ -156,6 +146,13 @@ namespace RockWeb
             return (Image)b;
         }
 
+        /// <summary>
+        /// Roughes the resize.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="maxWidth">The maximum width.</param>
+        /// <param name="maxHeight">The maximum height.</param>
+        /// <returns></returns>
         private static Bitmap RoughResize( Bitmap input, int maxWidth, int maxHeight )
         {
             // ensure resize is even needed

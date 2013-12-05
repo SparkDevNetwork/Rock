@@ -11,7 +11,6 @@ using System.ComponentModel.Composition;
 using System.IO;
 using System.Text;
 using System.Web;
-using Rock.Attribute;
 using Rock.Model;
 
 namespace Rock.Storage.Provider
@@ -22,71 +21,62 @@ namespace Rock.Storage.Provider
     [Description( "File System-driven document storage" )]
     [Export( typeof( ProviderComponent ) )]
     [ExportMetadata( "ComponentName", "FileSystem" )]
-    [TextField( "Root Path", "Root path where the files will be stored on disk." )]
     public class FileSystem : ProviderComponent
     {
         /// <summary>
         /// Gets the root path.
         /// </summary>
+        /// <param name="binaryFileTypeId">The binary file type identifier.</param>
+        /// <returns></returns>
         /// <value>
         /// The root path.
-        /// </value>
-        public string RootPath
+        ///   </value>
+        public string RootPath( int binaryFileTypeId )
         {
-            get { return GetAttributeValue( "RootPath" ); }
+            BinaryFileType binaryFileType = new BinaryFileTypeService().Get( binaryFileTypeId );
+            binaryFileType.LoadAttributes();
+            string rootPath = binaryFileType.GetAttributeValue( "RootPath" );
+            return rootPath;
         }
 
         /// <summary>
-        /// Saves the files.
-        /// </summary>
-        /// <param name="files">The files.</param>
-        /// <param name="personId"></param>
-        public override void SaveFiles( IEnumerable<BinaryFile> files, int? personId )
-        {
-            var fileService = new BinaryFileService();
-
-            foreach ( var file in files )
-            {
-                if ( file.Data == null )
-                {
-                    throw new ArgumentException( "File Data must not be null." );
-                }
-
-                var url = GetUrl( file );
-                var physicalPath = GetPhysicalPath( url );
-                var directoryName = Path.GetDirectoryName( physicalPath );
-
-                if ( !Directory.Exists( directoryName ) )
-                {
-                    Directory.CreateDirectory( directoryName );
-                }
-
-                File.WriteAllBytes( physicalPath, file.Data.Content );
-
-                // Set Data to null after successful OS save so the the binary data is not 
-                // written into the database.
-                file.Data = null;
-                file.Url = url;
-
-                if ( file.Id == 0 )
-                {
-                    fileService.Add( file, personId );
-                }
-
-                fileService.Save( file, personId );
-            }
-        }
-
-        /// <summary>
-        /// Removes the file.
+        /// Saves the file to the external storage medium associated with the provider.
+        /// Note: This does not save the BinaryFile record to the database
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="personId"></param>
-        public override void RemoveFile( BinaryFile file, int? personId )
+        /// <exception cref="System.ArgumentException">File Data must not be null.</exception>
+        public override void SaveFile( BinaryFile file)
         {
-            var fileService = new BinaryFileService();
+            if ( file.Data == null )
+            {
+                throw new ArgumentException( "File Data must not be null." );
+            }
+
+            var url = GetUrl( file );
+            var physicalPath = GetPhysicalPath( url );
+            var directoryName = Path.GetDirectoryName( physicalPath );
+
+            if ( !Directory.Exists( directoryName ) )
+            {
+                Directory.CreateDirectory( directoryName );
+            }
+
+            File.WriteAllBytes( physicalPath, file.Data.Content );
+
+            // Set Data to null after successful OS save so the the binary data is not 
+            // written into the database.
+            file.Data = null;
+            file.Url = url;
+        }
+
+        /// <summary>
+        /// Removes the file from the external storage medium associated with the provider.
+        /// Note: This does not delete the BinaryFile record from the database
+        /// </summary>
+        /// <param name="file">The file.</param>
+        public override void RemoveFile( BinaryFile file)
+        {
             File.Delete( HttpContext.Current.Server.MapPath( file.Url ) );
-            fileService.Delete( file, personId );
         }
 
         /// <summary>
@@ -103,17 +93,25 @@ namespace Rock.Storage.Provider
 
             var urlBuilder = new StringBuilder();
 
-            urlBuilder.Append( RootPath );
+            string rootPath = RootPath( file.BinaryFileTypeId ?? 0 );
 
-            if ( !RootPath.EndsWith( "/" ) )
+            urlBuilder.Append( rootPath );
+
+            if ( !rootPath.EndsWith( "/" ) )
             {
                 urlBuilder.Append( "/" );
             }
 
-            urlBuilder.Append(file.Guid + "_" + file.FileName );
+            // Prefix the FileName on disk with the Guid so that we can have multiple files with the same name (for example, setup.exe and setup.exe)
+            urlBuilder.Append( file.Guid + "_" + file.FileName );
             return urlBuilder.ToString();
         }
 
+        /// <summary>
+        /// Gets the physical path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns></returns>
         private string GetPhysicalPath( string path )
         {
             if ( path.StartsWith( "C:" ) || path.StartsWith( "\\\\" ) )

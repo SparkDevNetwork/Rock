@@ -243,7 +243,7 @@
             </div>
 
             <div runat="server" class="r-example">
-                <Rock:FileUploader ID="fup" runat="server" Label="Rock:FileUploader" />
+                <Rock:FileUploader ID="fup" runat="server" Label="Rock:FileUploader" BinaryFileTypeGuid="29EFF9B7-6814-4B9F-A922-77FA0448EBFA" />
             </div>
 
             <div runat="server" class="r-example">

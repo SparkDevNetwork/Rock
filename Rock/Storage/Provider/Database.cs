@@ -20,60 +20,19 @@ namespace Rock.Storage.Provider
     [ExportMetadata( "ComponentName", "Database" )]
     public class Database : ProviderComponent
     {
-
         /// <summary>
-        /// Saves the files.
-        /// </summary>
-        /// <param name="files">The files.</param>
-        /// <param name="personId"></param>
-        public override void SaveFiles( IEnumerable<BinaryFile> files, int? personId )
-        {
-            var fileService = new BinaryFileService();
-
-            foreach ( var fileItem in files )
-            {
-                var file = fileItem;
-                
-                if ( file.Id == 0 )
-                {
-                    fileService.Add( file, personId );
-                }
-                else
-                {
-                    // get it fresh from the database so EF change tracking works and saves it
-                    file = fileService.Get( file.Id );
-                    file.MimeType = fileItem.MimeType;
-                    file.FileName = fileItem.FileName;
-                    file.Data.Content = fileItem.Data.Content;
-                }
-
-                // Since we're expecting a hydrated model, throw if no binary
-                // data is included.
-                if ( file.Data == null )
-                {
-                    throw new ArgumentException( "File Data must not be null." );
-                }
-
-                // Save once to persist data...
-                fileService.Save( file, personId );
-
-                // Set the URL now that we have a Guid...
-                file.Url = GetUrl( file );
-
-                // Then save again to persist the URL
-                fileService.Save( file, personId );
-            }
-        }
-
-        /// <summary>
-        /// Removes the file.
+        /// Removes the file from the external storage medium associated with the provider.
+        /// Note: This does not delete the BinaryFile record from the database
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="personId"></param>
-        public override void RemoveFile( BinaryFile file, int? personId )
+        public override void RemoveFile( BinaryFile file)
         {
-            var fileService = new BinaryFileService();
-            fileService.Delete( file, personId );
+            // Database storage just stores everything in the BinaryFile table, so there is no external file data to delete
+        }
+
+        public override void SaveFile( BinaryFile file )
+        {
+            // Database storage just stores everything in the BinaryFile table, so there is no external file data to save
         }
 
         /// <summary>
