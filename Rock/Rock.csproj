@@ -184,6 +184,7 @@
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
     <Compile Include="Communication\Transport\Twilio.cs" />
+    <Compile Include="Data\LinqRuntimeTypeBuilder.cs" />
     <Compile Include="Field\Types\GroupLocationTypeFieldType.cs" />
     <Compile Include="Field\Types\CodeEditorFieldType.cs" />
     <Compile Include="Field\Types\TimeFieldType.cs" />
