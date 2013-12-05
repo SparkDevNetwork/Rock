@@ -26,7 +26,7 @@ using Page = System.Web.UI.Page;
 namespace Rock.Web.UI
 {
     /// <summary>
-    /// RockPage is the base abstract class that all page templates should inherit from
+    /// RockPage is the base abstract class that all page templates in RockChMS should inherit from
     /// </summary>
     public abstract class RockPage : Page
     {
@@ -60,10 +60,10 @@ namespace Rock.Web.UI
         #region Public Properties
 
         /// <summary>
-        /// Gets the current page's logical Rock Page Id.
+        /// Gets the current <see cref="Rock.Model.Page">Page's</see> logical Rock Page Id.
         /// </summary>
         /// <value>
-        /// The page identifier.
+        /// A <see cref="System.Int32"/> representing the PageId of the current logical <see cref="Rock.Model.Page"/>.
         /// </value>
         public int PageId
         {
@@ -71,10 +71,10 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Gets the current page's logical Rock Page Guid.
+        /// Gets the current <see cref="Rock.Model.Page">Page's</see> logical Rock Page Guid.
         /// </summary>
         /// <value>
-        /// The unique identifier.
+        /// A <see cref="System.Guid"/> representing the Guid identifier for the current logical <see cref="Rock.Model.Page"/>
         /// </value>
         public Guid Guid
         {
@@ -82,10 +82,10 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Gets the current page's layout
+        /// Gets the current <see cref="Rock.Model.Page">Page's</see> layout.
         /// </summary>
         /// <value>
-        /// The layout.
+        /// The <see cref="Rock.Web.Cache.LayoutCache"/> representing the current <see cref="Rock.Model.Page">Page's</see> layout.
         /// </value>
         public LayoutCache Layout
         {
@@ -93,10 +93,11 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Gets the current page's site
+        /// Gets the <see cref="Rock.Model.Site"/> that the current <see cref="Rock.Model.Page"/> is on.
         /// </summary>
         /// <value>
-        /// The site.
+        /// A <see cref="Rock.Web.Cache.SiteCache"/> representing the <see cref="Rock.Model.Site"/> that the current <see cref="Rock.Model.Page"/>
+        /// is on.
         /// </value>
         public new SiteCache Site
         {
@@ -104,10 +105,10 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Gets the current page reference.
+        /// Gets or sets the current <see cref="Rock.Web.PageReference"/>
         /// </summary>
         /// <value>
-        /// The current page reference.
+        /// The current <see cref="Rock.Web.PageReference"/>.
         /// </value>
         public PageReference PageReference
         {
@@ -135,25 +136,36 @@ namespace Rock.Web.UI
         private PageReference _PageReference = null;
 
         /// <summary>
-        /// The content areas on a layout page that blocks can be added to 
+        /// Public gets and privately sets the content areas on a layout page that blocks can be added to.
         /// </summary>
+        /// <value>
+        /// A <see cref="System.Collections.Generic.Dictionary{String, KeyValuePair}"/> representing the content
+        /// areas on the page that content can be added to. Each <see cref="System.Collections.Generic.KeyValuePair{String, KeyValuePair}"/>
+        /// has a Key representing the <see cref="Rock.Web.UI.Controls.Zone">Zone's</see> ZoneKey and a value containing
+        /// a <see cref="System.Collections.Generic.Dictionary{String, Zone}"/> with the key referencing the <see cref="Rock.Web.UI.Controls.Zone">Zone's</see>
+        /// friendly name and the <see cref="Rock.Web.UI.Controls.Zone"/>.
+        /// </value>
         /// <remarks>
-        /// The Dictionary's key is the zonekey and the KeyValuePair is a combination 
+        /// The Dictionary's key is the zonekey and the KeyValuePair is a combination
         /// of the friendly zone name and the zone control
         /// </remarks>
         public Dictionary<string, KeyValuePair<string, Zone>> Zones { get; private set; }
 
         /// <summary>
-        /// Gets the bread crumbs.
+        /// Publicly Gets and privately sets a list containing the Page's <see cref="Rock.Web.UI.BreadCrumb">BreadCrumbs</see>
         /// </summary>
         /// <value>
-        /// The bread crumbs.
+        /// A <see cref="System.Collections.Generic.List{BreakdCrumb}"/> containing the <see cref="Rock.Web.UI.BreadCrumb">BreadCrumbs</see>
+        /// for this Page.
         /// </value>
         public List<BreadCrumb> BreadCrumbs { get; private set; }
 
         /// <summary>
-        /// The currently logged in user
+        /// Publicly gets and privately sets the currently logged in user.
         /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.UserLogin"/> of the currently logged in user.
+        /// </value>
         public Rock.Model.UserLogin CurrentUser
         {
             get
@@ -204,10 +216,13 @@ namespace Rock.Web.UI
         private Rock.Model.UserLogin _CurrentUser;
 
         /// <summary>
-        /// Returns the current person.  This is either the currently logged in user, or if the user
+        /// Publicly gets the current <see cref="Rock.Model.Person"/>.  This is either the currently logged in user, or if the user
         /// has not logged in, it may also be an impersonated person determined from using the encrypted
-        /// person key
+        /// person key.
         /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.Person"/> representing the currently logged in person or impersonated person.
+        /// </value>
         public Person CurrentPerson
         {
             get
@@ -242,6 +257,10 @@ namespace Rock.Web.UI
         /// <summary>
         /// The Person ID of the currently logged in user.  Returns null if there is not a user logged in
         /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32" /> representing the PersonId of the <see cref="Rock.Model.Person"/> 
+        /// who is logged in as the current user. If a user is not logged in.
+        /// </value>
         public int? CurrentPersonId
         {
             get
@@ -258,8 +277,11 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// 
+        /// Gets the all the <see cref="Rock.Web.UI.RockBlock">RockBlocks</see> on the Page.
         /// </summary>
+        /// <value>
+        /// A <see cref="System.Collections.Generic.List{RockBlock}"/> containing all the <see cref="Rock.Web.UI.RockBlock">RockBlocks</see> on the page.
+        /// </value>
         public List<RockBlock> RockBlocks
         {
             get
@@ -273,9 +295,9 @@ namespace Rock.Web.UI
         #region Protected Methods
 
         /// <summary>
-        /// Recurses a control collection looking for any zone controls
+        /// Recurses the page's <see cref="System.Web.UI.ControlCollection"/> looking for any <see cref="Rock.Web.UI.Controls.Zone"/> controls
         /// </summary>
-        /// <param name="controls">The controls.</param>
+        /// <param name="controls">A <see cref="System.Web.UI.ControlCollection"/> containing the page's controls.</param>
         protected virtual void FindRockControls( ControlCollection controls )
         {
             if ( controls != null )
@@ -300,8 +322,8 @@ namespace Rock.Web.UI
         /// <see cref="Rock.Web.UI.Controls.Zone"/> cannot be found, the <see cref="HtmlForm"/> control
         /// is returned
         /// </summary>
-        /// <param name="zoneName">Name of the zone.</param>
-        /// <returns></returns>
+        /// <param name="zoneName">A <see cref="System.String"/> representing the name of the zone.</param>
+        /// <returns>The <see cref="System.Web.UI.Control"/> for the zone, if the zone is not found, the form control is returned.</returns>
         protected virtual Control FindZone( string zoneName )
         {
             // First look in the Zones dictionary
@@ -919,6 +941,10 @@ namespace Rock.Web.UI
 
         #region Public Methods
 
+        /// <summary>
+        /// Sets the page.
+        /// </summary>
+        /// <param name="pageCache">The <see cref="Rock.Web.Cache.PageCache"/>.</param>
         internal void SetPage( PageCache pageCache )
         {
             _pageCache = pageCache;
@@ -938,8 +964,8 @@ namespace Rock.Web.UI
         /// Returns the current page's first value for the selected attribute
         /// If the attribute doesn't exist, null is returned
         /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
+        /// <param name="key">A <see cref="System.String"/> representing the argument key.</param>
+        /// <returns>A <see cref="System.String" /> representing the first attribute value, if the attribute doesn't exist, null is returned.</returns>
         public string GetAttributeValue( string key )
         {
             if ( _pageCache != null )
@@ -953,8 +979,9 @@ namespace Rock.Web.UI
         /// Returns the current page's values for the selected attribute.
         /// If the attribute doesn't exist an empty list is returned.
         /// </summary>
-        /// <param name="key">the block attribute key</param>
-        /// <returns>a list of strings or an empty list if none exists</returns>
+        /// <param name="key"> A <see cref="System.String"/> representing the key of the selected attribute
+        /// </param>
+        /// <returns>A <see cref="System.Collections.Generic.List{String}"/> containing the attribute values for specified key or an empty list if none exists</returns>
         public List<string> GetAttributeValues( string key )
         {
             if ( _pageCache != null )
@@ -981,44 +1008,44 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds a new CSS link that will be added to the page header prior to the page being rendered
         /// </summary>
-        /// <param name="href">Path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
+        /// <param name="href">A <see cref="System.String"/> representing the path to css file.  Should be relative to layout template.  Will be resolved at runtime.</param>
         public void AddCSSLink( string href )
         {
             RockPage.AddCSSLink( this, href );
         }
 
         /// <summary>
-        /// Adds a new CSS link that will be added to the page header prior to the page being rendered
+        /// Adds the CSS link to the page
         /// </summary>
-        /// <param name="href">The href.</param>
-        /// <param name="mediaType">MediaType to use in the css link.</param>
+        /// <param name="href">A <see cref="System.String"/> representing the path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
+        /// <param name="mediaType">A <see cref="System.String"/> representing the type of the media to use for the css link.</param>
         public void AddCSSLink( string href, string mediaType )
         {
             RockPage.AddCSSLink( this, href, mediaType );
         }
 
         /// <summary>
-        /// Adds a meta tag to the page header priore to the page being rendered
+        /// Adds a meta tag to the page header prior to the page being rendered
         /// </summary>
-        /// <param name="htmlMeta">The HTML meta tag.</param>
+        /// <param name="htmlMeta">The <see cref="System.Web.UI.HtmlControls.HtmlMeta"/> tag.</param>
         public void AddMetaTag( HtmlMeta htmlMeta )
         {
             RockPage.AddMetaTag( this, htmlMeta );
         }
 
         /// <summary>
-        /// Adds a new Html link that will be added to the page header prior to the page being rendered
+        /// Adds a new Html link that will be added to the page header prior to the page being rendered.
         /// </summary>
-        /// <param name="htmlLink">The HTML link.</param>
+        /// <param name="htmlLink">The <see cref="System.Web.UI.HtmlControls.HtmlLink"/>.</param>
         public void AddHtmlLink( HtmlLink htmlLink )
         {
             RockPage.AddHtmlLink( this, htmlLink );
         }
 
         /// <summary>
-        /// Adds a new script tag to the page header prior to the page being rendered
+        /// Adds a new script tag to the page header prior to the page being rendered.
         /// </summary>
-        /// <param name="path">The path.</param>
+        /// <param name="path">A <see cref="System.String"/> representing the path to the script link.</param>
         public void AddScriptLink(string path)
         {
             RockPage.AddScriptLink( this, path );
@@ -1029,8 +1056,8 @@ namespace Rock.Web.UI
         /// <summary>
         /// Hides any secondary blocks.
         /// </summary>
-        /// <param name="caller">The caller.</param>
-        /// <param name="hidden">if set to <c>true</c> [hidden].</param>
+        /// <param name="caller">The <see cref="Rock.Web.UI.RockBlock"/> that is the caller</param>
+        /// <param name="hidden">A <see cref="System.Boolean"/> value that signifies if secondary blocks should be hidden.</param>
         public void HideSecondaryBlocks( RockBlock caller, bool hidden )
         {
             foreach ( ISecondaryBlock secondaryBlock in this.RockBlocks.Where( a => a is ISecondaryBlock ) )
@@ -1045,7 +1072,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// Logs the exception.
         /// </summary>
-        /// <param name="ex">The System.Exception to log.</param>
+        /// <param name="ex">The <see cref="System.Exception"/> to log.</param>
         public void LogException( Exception ex )
         {
             ExceptionLogService.LogException( ex, Context, _pageCache.Id, _pageCache.Layout.SiteId, CurrentPersonId );
@@ -1055,9 +1082,9 @@ namespace Rock.Web.UI
         /// Adds a history point to the ScriptManager.
         /// Note: ScriptManager's EnableHistory property must be set to True
         /// </summary>
-        /// <param name="key">The key to use for the history point</param>
-        /// <param name="state">any state information to store for the history point</param>
-        /// <param name="title">The title to be used by the browser</param>
+        /// <param name="key">A <see cref="System.String"/> representing the key to use for the history point.</param>
+        /// <param name="state">A <see cref="System.String"/> representing any state information to store for the history point.</param>
+        /// <param name="title">A <see cref="System.String"/> representing the title to be used by the browser, will use an empty string by default.</param>
         public void AddHistory(string key, string state, string title = "")
         {
             if (ScriptManager.GetCurrent(Page) != null)
@@ -1075,11 +1102,11 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Resolves a rock URL.  Similiar to the System.Web.Control.ResolveUrl method except that you can prefix 
-        /// a url with '~~' to indicate a virtual path to Rock's current theme root folder
+        /// Returns a resolved Rock URL.  Similar to <see cref="System.Web.UI.Control">System.Web.UI.Control's</see> <c>ResolveUrl</c> method except that you can prefix 
+        /// a url with '~~' to indicate a virtual path to Rock's current theme root folder.
         /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <returns></returns>
+        /// <param name="url">A <see cref="System.String"/> representing the URL to resolve.</param>
+        /// <returns>A <see cref="System.String"/> with the resolved URL.</returns>
         public string ResolveRockUrl( string url )
         {
             string themeUrl = url;
@@ -1094,8 +1121,8 @@ namespace Rock.Web.UI
         /// <summary>
         /// Gets the current context object for a given entity type.
         /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <returns></returns>
+        /// <param name="entity">The <see cref="Rock.Web.Cache.EntityTypeCache"/> containing a reference to the entity.</param>
+        /// <returns>An object that implements the <see cref="Rock.Data.IEntity"/> interface referencing the context object. </returns>
         public Rock.Data.IEntity GetCurrentContext( EntityTypeCache entity )
         {
             if ( this.ModelContext.ContainsKey( entity.Name ) )
@@ -1171,7 +1198,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds an update trigger for when the block instance properties are updated.
         /// </summary>
-        /// <param name="updatePanel">The update panel.</param>
+        /// <param name="updatePanel">The <see cref="System.Web.UI.UpdatePanel"/> to add the <see cref="System.Web.UI.AsyncPostBackTrigger"/> to.</param>
         public void AddConfigurationUpdateTrigger( UpdatePanel updatePanel )
         {
             AsyncPostBackTrigger trigger = new AsyncPostBackTrigger();
@@ -1195,7 +1222,7 @@ namespace Rock.Web.UI
             this.Form.Controls.Add( modalPopup );
         }
 
-        // Adds the neccessary script elements for managing the page/zone/blocks
+        // Adds the necessary script elements for managing the page/zone/blocks
         /// <summary>
         /// Adds the config elements.
         /// </summary>
@@ -1223,7 +1250,7 @@ namespace Rock.Web.UI
             upTrigger.Attributes.Add( "style", "display:none" );
         }
 
-        // Adds the neccessary script elements for managing the page/zone/blocks
+        // Adds the necessary script elements for managing the page/zone/blocks
         /// <summary>
         /// Adds the config elements.
         /// </summary>
@@ -1295,11 +1322,13 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds the block config.
         /// </summary>
-        /// <param name="blockWrapper">The block wrapper.</param>
-        /// <param name="blockControl">The block control.</param>
+        /// <param name="blockWrapper">A <see cref="Rock.Web.UI.Controls.HtmlGenericContainer"/> representing the block wrapper.</param>
+        /// <param name="blockControl">The <see cref="Rock.Web.UI.RockBlock">block</see> control.</param>
         /// <param name="block">The block.</param>
-        /// <param name="canAdministrate">if set to <c>true</c> [can config].</param>
-        /// <param name="canEdit">if set to <c>true</c> [can edit].</param>
+        /// <param name="canAdministrate">
+        ///     A <see cref="System.Boolean"/> value that is <c>true</c> if the block can be administered/configured; otherwise <c>false</c>.
+        /// </param>
+        /// <param name="canEdit">A <see cref="System.Boolean"/> that is <c>true</c> if the block can be edited; otherwise <c>false</c>.</param>
         private void AddBlockConfig( HtmlGenericContainer blockWrapper, RockBlock blockControl,
             Rock.Web.Cache.BlockCache block, bool canAdministrate, bool canEdit )
         {
@@ -1338,7 +1367,7 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Adds the block move.
+        /// Adds a control to move the block to another zone on the page.
         /// </summary>
         private void AddBlockMove()
         {
@@ -1386,8 +1415,8 @@ namespace Rock.Web.UI
         /// on the same page will need access to the same object.  The first block can read the object and save
         /// it using this method for the other blocks to reference
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="item"></param>
+        /// <param name="key">A <see cref="System.String"/> representing the item's key</param>
+        /// <param name="item">The <see cref="System.Object"/> to save.</param>
         public void SaveSharedItem( string key, object item )
         {
             string itemKey = string.Format( "{0}:Item:{1}", PageCache.CacheKey( PageId ), key );
@@ -1403,8 +1432,8 @@ namespace Rock.Web.UI
         /// Retrieves an item from the current HTTPRequest items collection.  This is useful to retrieve an object
         /// that was saved by a previous block on the same page.
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
+        /// <param name="key">A <see cref="System.String"/> representing the object's key value.</param>
+        /// <returns>The shared <see cref="System.Object"/>, if a match for the key is not found, a null value will be returned.</returns>
         public object GetSharedItem( string key )
         {
             string itemKey = string.Format( "{0}:Item:{1}", PageCache.CacheKey( PageId ), key );
@@ -1425,8 +1454,8 @@ namespace Rock.Web.UI
         /// parameter matching the specified name, and if found returns the string
         /// value
         /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns></returns>
+        /// <param name="name">A <see cref="System.String" /> representing the name of the page parameter.</param>
+        /// <returns>A <see cref="System.String"/> containing the parameter value; otherwise an empty string.</returns>
         public string PageParameter( string name )
         {
             if ( String.IsNullOrEmpty( name ) )
@@ -1445,9 +1474,9 @@ namespace Rock.Web.UI
         /// Checks the page reference's parms and querystring for a
         /// parameter matching the specified name, and if found returns the string
         /// </summary>
-        /// <param name="pageReference">The page reference.</param>
-        /// <param name="name">The name.</param>
-        /// <returns></returns>
+        /// <param name="pageReference">The <see cref="Rock.Web.PageReference"/>.</param>
+        /// <param name="name">A <see cref="System.String"/> containing the name of the parameter.</param>
+        /// <returns>A <see cref="System.String"/> containing the value.</returns>
         public string PageParameter( PageReference pageReference, string name )
         {
             if ( String.IsNullOrEmpty( name ) )
@@ -1465,7 +1494,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// Gets the page route and query string parameters
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A <see cref="System.Collections.Generic.Dictionary{String, Object}"/> containing the page route and query string value, the Key is the is the paramter name/key and the object is the value.</returns>
         public Dictionary<string, object> PageParameters()
         {
             var parameters = new Dictionary<string, object>();
@@ -1486,19 +1515,19 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds a new CSS link that will be added to the page header prior to the page being rendered
         /// </summary>
-        /// <param name="page">The page.</param>
-        /// <param name="href">Path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
+        /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
+        /// <param name="href">A <see cref="System.String"/> representing the path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
         public static void AddCSSLink( Page page, string href )
         {
             AddCSSLink( page, href, string.Empty );
         }
 
         /// <summary>
-        /// Adds the CSS link.
+        /// Adds the CSS link to the page
         /// </summary>
-        /// <param name="page">The page.</param>
-        /// <param name="href">Path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
-        /// <param name="mediaType">Type of the media to use for the css link.</param>
+        /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
+        /// <param name="href">A <see cref="System.String"/> representing the path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
+        /// <param name="mediaType">A <see cref="System.String"/> representing the type of the media to use for the css link.</param>
         public static void AddCSSLink( Page page, string href, string mediaType )
         {
             HtmlLink htmlLink = new HtmlLink();
@@ -1513,10 +1542,10 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Adds a meta tag.
+        /// Adds a meta tag to the page
         /// </summary>
-        /// <param name="page">The page.</param>
-        /// <param name="htmlMeta">The HTML meta tag.</param>
+        /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
+        /// <param name="htmlMeta">A <see cref="System.String"/>representing the HTML meta tag.</param>
         public static void AddMetaTag( Page page, HtmlMeta htmlMeta )
         {
             if ( page != null && page.Header != null )
@@ -1545,11 +1574,11 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// HTMLs the meta exists.
+        /// Returns a flag indicating if a meta tag exists on the page.
         /// </summary>
-        /// <param name="page">The page.</param>
-        /// <param name="newMeta">The new meta.</param>
-        /// <returns></returns>
+        /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
+        /// <param name="newMeta">The <see cref="System.Web.UI.HtmlControls.HtmlMeta"/> tag to check for..</param>
+        /// <returns>A <see cref="System.Boolean"/> that is <c>true</c> if the meta tag already exists; otherwise <c>false</c>.</returns>
         private static bool HtmlMetaExists( Page page, HtmlMeta newMeta )
         {
             bool existsAlready = false;
@@ -1582,9 +1611,9 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds a new Html link that will be added to the page header prior to the page being rendered
         /// </summary>
-        /// <param name="page">The page.</param>
-        /// <param name="htmlLink">The HTML link.</param>
-        /// <param name="contentPlaceHolderId">The content place holder id.</param>
+        /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
+        /// <param name="htmlLink">The <see cref="System.Web.UI.HtmlControls.HtmlLink"/> to add to the page.</param>
+        /// <param name="contentPlaceHolderId">A <see cref="System.String"/> representing the Id of the content placeholder to add the link to.</param>
         public static void AddHtmlLink( Page page, HtmlLink htmlLink, string contentPlaceHolderId = "" )
         {
             if ( page != null && page.Header != null )
@@ -1624,11 +1653,11 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// HTMLs the link exists.
+        /// Returns a <see cref="System.Boolean"/> flag indicating if a specified parent control contains the specified HtmlLink.
         /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="newLink">The new link.</param>
-        /// <returns></returns>
+        /// <param name="parentControl">The <see cref="System.Web.UI.Control"/> to search for the HtmlLink.</param>
+        /// <param name="newLink">The <see cref="System.Web.UI.HtmlControls.HtmlLink"/> to search for.</param>
+        /// <returns>A <see cref="System.Boolean"/> value that is <c>true</c> if if the HtmlLink exists in the parent control; otherwise <c>false</c>.</returns>
         private static bool HtmlLinkExists( Control parentControl, HtmlLink newLink )
         {
             bool existsAlready = false;
@@ -1674,8 +1703,8 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds a new script tag to the page header prior to the page being rendered
         /// </summary>
-        /// <param name="page">The page.</param>
-        /// <param name="path">Path to script file.  Should be relative to layout template.  Will be resolved at runtime</param>
+        /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
+        /// <param name="path">A <see cref="System.String"/> representing the path to script file.  Should be relative to layout template.  Will be resolved at runtime.</param>
         public static void AddScriptLink( Page page, string path )
         {
             var scriptManager = ScriptManager.GetCurrent( page );
@@ -1689,10 +1718,10 @@ namespace Rock.Web.UI
         #region User Preferences
 
         /// <summary>
-        /// Gets the value for the current user for a given key
+        /// Returns a user preference for the current user and given key.
         /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
+        /// <param name="key">A <see cref="System.String" /> representing the key to the user preference.</param>
+        /// <returns>A <see cref="System.String" /> representing the specified user preference value, if a match is not found an empty string will be returned.</returns>
         public string GetUserPreference( string key )
         {
             var values = SessionUserPreferences();
@@ -1703,10 +1732,13 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Gets the values for the current user that start with a given key.
+        /// Returns the preference values for the current user that start with a given key.
         /// </summary>
-        /// <param name="keyPrefix">The key prefix.</param>
-        /// <returns></returns>
+        /// <param name="keyPrefix">A <see cref="System.String"/> representing the key prefix. Preference values, for the current user, with a key that begins with this value will be included.</param>
+        /// <returns>A <see cref="System.Collections.Generic.Dictionary{String,String}"/> containing  the current user's preference values containing a key that begins with the specified value. 
+        /// Each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> contains a key that represents the user preference key and a value that contains the user preference value associated 
+        /// with that key.
+        /// </returns>
         public Dictionary<string, string> GetUserPreferences( string keyPrefix )
         {
             var selectedValues = new Dictionary<string,string>();
@@ -1728,10 +1760,11 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Sets a value for the current user for a given key
+        /// Sets a user preference value for the specified key. If the key already exists, the value will be updated,
+        /// if it is a new key it will be added.
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
+        /// <param name="key">A <see cref="System.String"/> representing the name of the key.</param>
+        /// <param name="value">A <see cref="System.String"/> representing the preference value.</param>
         public void SetUserPreference( string key, string value )
         {
             var newValues = new List<string>();
@@ -1748,9 +1781,12 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Sessions the user values.
+        /// Returns the current user's preferences, if they have previously been loaded into the session, they
+        /// will be retrieved from there, otherwise they will be retrieved from the database, added to session and 
+        /// then returned
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A <see cref="System.Collections.Generic.Dictionary{String, List}"/> containing the user preferences 
+        /// for the current user. If the current user is anonymous or unknown an empty dictionary will be returned.</returns>
         private Dictionary<string, List<string>> SessionUserPreferences()
         {
             string sessionKey = string.Format( "{0}_{1}",
@@ -1869,7 +1905,7 @@ namespace Rock.Web.UI
         /// Gets or sets the action.
         /// </summary>
         /// <value>
-        /// The action.
+        /// A <see cref="System.String"/> representing the Action.
         /// </value>
         public string Action { get; set; }
 
@@ -1877,15 +1913,15 @@ namespace Rock.Web.UI
         /// Gets or sets the result.
         /// </summary>
         /// <value>
-        /// The result.
+        /// The return <see cref="System.Object"/>
         /// </value>
         public object Result { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JsonResult"/> class.
         /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="result">The result.</param>
+        /// <param name="action">A <see cref="System.String"/>representing the action.</param>
+        /// <param name="result">A <see cref="System.Object"/> representing the result.</param>
         public JsonResult( string action, object result )
         {
             Action = action;
@@ -1895,7 +1931,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// Serializes this instance.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A <see cref="System.String"/> representing a serialized version of this instance.</returns>
         public string Serialize()
         {
             System.Web.Script.Serialization.JavaScriptSerializer serializer =
