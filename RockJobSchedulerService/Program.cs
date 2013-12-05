@@ -15,9 +15,9 @@ namespace RockJobSchedulerService
         {
             ServiceBase[] ServicesToRun;
             ServicesToRun = new ServiceBase[] 
-			{ 
-				new JobScheduler() 
-			};
+            { 
+                new JobScheduler() 
+            };
             ServiceBase.Run( ServicesToRun );
         }
     }

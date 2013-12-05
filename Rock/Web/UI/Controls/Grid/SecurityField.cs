@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -14,28 +15,34 @@ namespace Rock.Web.UI.Controls
     /// <see cref="Grid"/> Column for editing the security of an item in a row in a grid
     /// </summary>
     [ToolboxData( "<{0}:SecurityField BoundField=server></{0}:SecurityField>" )]
-    public class SecurityField : TemplateField
+    public class SecurityField : TemplateField, INotRowSelectedField
     {
         /// <summary>
-        /// Gets or sets the type of the entity being secured
+        /// Initializes a new instance of the <see cref="SecurityField" /> class.
         /// </summary>
-        /// <value>
-        /// The type of the entity.
-        /// </value>
-        public string EntityType { get; set; }
+        public SecurityField()
+            : base()
+        {
+            this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+            this.HeaderStyle.CssClass = "grid-columncommand";
+            this.ItemStyle.CssClass = "grid-columncommand";
+        }
 
         /// <summary>
-        /// Gets or sets the title.
+        /// Gets or sets the entity type id.
+        /// </summary>
+        /// <value>
+        /// The entity type id.
+        /// </value>
+        public int EntityTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the field that contains the title.
         /// </summary>
         /// <value>
         /// The title.
         /// </value>
-        public string Title
-        {
-            get { return title; }
-            set { title = value; }
-        }
-        private string title = "Security";
+        public string TitleField { get; set; }
 
         /// <summary>
         /// Performs basic instance initialization for a data control field.
@@ -47,10 +54,7 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         public override bool Initialize( bool sortingEnabled, Control control )
         {
-            this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            this.ItemStyle.CssClass = "grid-icon-cell security";
-
-            SecurityFieldTemplate editFieldTemplate = new SecurityFieldTemplate(EntityType, Title);
+            SecurityFieldTemplate editFieldTemplate = new SecurityFieldTemplate(control.Page, EntityTypeId, TitleField);
             this.ItemTemplate = editFieldTemplate;
 
             return base.Initialize( sortingEnabled, control );
@@ -62,31 +66,35 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class SecurityFieldTemplate : ITemplate
     {
-        /// <summary>
-        /// Gets or sets the title.
-        /// </summary>
-        /// <value>
-        /// The title.
-        /// </value>
-        public string Title { get; set; }
+        private System.Web.UI.Page page;
 
         /// <summary>
-        /// Gets or sets the type of the entity.
+        /// Gets or sets the title field
         /// </summary>
         /// <value>
-        /// The type of the entity.
+        /// The title field
         /// </value>
-        public string EntityType { get; set; }
+        public string TitleField { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SecurityFieldTemplate"/> class.
+        /// Gets or sets the entity type id.
         /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="title">The title.</param>
-        public SecurityFieldTemplate( string entityType, string title )
+        /// <value>
+        /// The entity type id.
+        /// </value>
+        public int EntityTypeId { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SecurityFieldTemplate" /> class.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
+        /// <param name="titleField">The title field.</param>
+        public SecurityFieldTemplate(System.Web.UI.Page page, int entityTypeId, string titleField )
         {
-            this.EntityType = entityType;
-            this.Title = title;
+            this.page = page;
+            this.EntityTypeId = entityTypeId;
+            this.TitleField = titleField;
         }
 
         /// <summary>
@@ -99,11 +107,43 @@ namespace Rock.Web.UI.Controls
             if ( cell != null )
             {
                 HtmlGenericControl aSecure = new HtmlGenericControl( "a" );
-                aSecure.Attributes.Add( "class", "show-modal-iframe" );
-                aSecure.Attributes.Add( "height", "500px" );
-                aSecure.Attributes.Add( "href", container.Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}",
-                    Security.Authorization.EncodeEntityTypeName( EntityType ), "1", Title ) ) );
                 cell.Controls.Add( aSecure );
+                aSecure.Attributes.Add("class", "btn btn-security btn-sm");
+
+                // height attribute is used by the modal that pops up when the button is clicked
+                aSecure.Attributes.Add( "height", "500px" );
+
+                HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
+                buttonIcon.Attributes.Add( "class", "fa fa-lock" );
+                aSecure.Controls.Add( buttonIcon );
+
+                aSecure.DataBinding += new EventHandler( aSecure_DataBinding );
+            }
+        }
+
+        void aSecure_DataBinding( object sender, EventArgs e )
+        {
+            HtmlGenericControl lnk = ( HtmlGenericControl )sender;
+            GridViewRow container = ( GridViewRow )lnk.NamingContainer;
+
+            // Get title
+            string title = "Security";
+            if ( !string.IsNullOrWhiteSpace( TitleField ) )
+            {
+                object titleValue = DataBinder.Eval( container.DataItem, TitleField );
+                if ( titleValue != DBNull.Value )
+                {
+                    title = titleValue.ToString();
+                }
+            }
+
+            // Get Id
+            object dataValue = DataBinder.Eval( container.DataItem, "id" );
+            if ( dataValue != DBNull.Value )
+            {
+                string url = page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done",
+                    EntityTypeId, dataValue.ToString(), title ) );
+                lnk.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + url + "')" );
             }
         }
     }

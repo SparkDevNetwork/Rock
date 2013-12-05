@@ -1,4 +1,9 @@
-﻿using System;
+//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -7,16 +12,22 @@ using System.Xml.Linq;
 
 namespace Rock.Communication
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class SendGridEmailProvider: IEmailProvider
     {
         private string _userName = string.Empty;
         private string _password = string.Empty;
         private string _urlBase = "https://sendgrid.com";
-        
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SendGridEmailProvider" /> class.
+        /// </summary>
         public SendGridEmailProvider()
         {
             // load up parameters from global settings
-            var globalAttributes = Rock.Web.Cache.GlobalAttributes.Read();
+            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
 
             if ( globalAttributes.AttributeValues.ContainsKey("SendGridUsername") )
                 _userName = globalAttributes.AttributeValues["SendGridUsername"].Value;

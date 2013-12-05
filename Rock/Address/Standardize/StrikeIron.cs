@@ -7,8 +7,9 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-
+using Rock.Attribute;
 using Rock.StrikeIron.USAddressVerification;
+using Rock.Web.UI;
 
 namespace Rock.Address.Standardize
 {
@@ -18,8 +19,8 @@ namespace Rock.Address.Standardize
     [Description( "Address Standardization and Geocoding service from StrikeIron" )]
     [Export( typeof( StandardizeComponent ) )]
     [ExportMetadata( "ComponentName", "StrikeIron" )]
-    [Rock.Attribute.Property( 1, "User ID", "Security", "The Strike Iron User ID", true, "" )]
-    [Rock.Attribute.Property( 2, "Password", "Security", "The Strike Iron Password", true, "" )]
+    [TextField( "User ID", "The Strike Iron User ID", true, "", "Security", 0 )]
+    [TextField( "Password", "The Strike Iron Password", true, "", "Security", 1 )]
     public class StrikeIron : StandardizeComponent
     {
         /// <summary>
@@ -29,18 +30,18 @@ namespace Rock.Address.Standardize
         /// The StrikeIron address verification will also attempt to geocode the address.  If this 
         /// geocode is succesful, the Geocode information of the address will be updated also.
         /// </remarks>
-        /// <param name="address">The address.</param>
+        /// <param name="location">The location.</param>
         /// <param name="result">The result.</param>
         /// <returns>
         /// True/False value of whether the address was standardized was succesfully
         /// </returns>
-        public override bool Standardize( Rock.CRM.Address address, out string result )
+        public override bool Standardize( Rock.Model.Location location, out string result )
         {
-            if ( address != null )
+            if ( location != null )
             {
                 var registeredUser = new RegisteredUser();
-                registeredUser.UserID = AttributeValue("UserID");
-                registeredUser.Password = AttributeValue("Password");
+                registeredUser.UserID = GetAttributeValue("UserID");
+                registeredUser.Password = GetAttributeValue("Password");
 
                 var licenseInfo = new LicenseInfo();
                 licenseInfo.RegisteredUser = registeredUser;
@@ -50,12 +51,12 @@ namespace Rock.Address.Standardize
                 SIWsOutputOfUSAddress verifyResult;
                 SubscriptionInfo info = client.VerifyAddressUSA(
                     licenseInfo,
-                    address.Street1,
-                    address.Street2,
+                    location.Street1,
+                    location.Street2,
                     string.Format("{0} {1} {2}", 
-                        address.City,
-                        address.State,
-                        address.Zip),
+                        location.City,
+                        location.State,
+                        location.Zip),
                     string.Empty,
                     string.Empty,
                     CasingEnum.PROPER,
@@ -71,20 +72,19 @@ namespace Rock.Address.Standardize
 
                         if ( usAddress != null && usAddress.GeoCode != null )
                         {
-                            address.Street1 = usAddress.AddressLine1;
-                            address.Street2 = usAddress.AddressLine2;
-                            address.City = usAddress.City;
-                            address.State = usAddress.State;
-                            address.Zip = usAddress.ZIPPlus4;
+                            location.Street1 = usAddress.AddressLine1;
+                            location.Street2 = usAddress.AddressLine2;
+                            location.City = usAddress.City;
+                            location.State = usAddress.State;
+                            location.Zip = usAddress.ZIPPlus4;
 
                             if ( usAddress.GeoCode != null )
                             {
-                                address.GeocodeService = "StrikeIron";
-                                address.GeocodeResult = "200";
-                                address.GeocodeDate = DateTime.Now;
+                                location.GeocodeAttemptedServiceType = "StrikeIron";
+                                location.GeocodeAttemptedResult = "200";
+                                location.GeocodedDateTime = DateTime.Now;
 
-                                address.Latitude = usAddress.GeoCode.Latitude;
-                                address.Longitude = usAddress.GeoCode.Longitude;
+                                location.SetLocationPointFromLatLong( usAddress.GeoCode.Latitude, usAddress.GeoCode.Longitude );
                             }
 
                             return true;

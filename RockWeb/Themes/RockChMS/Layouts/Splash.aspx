@@ -1,27 +1,25 @@
-﻿<%@ Page Title="" ValidateRequest="false" Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.Page" %>
+﻿<%@ Page ValidateRequest="false" Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 <!DOCTYPE html> 
 <html>
-<head id="Head1" runat="server">
+<head runat="server">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta charset="utf-8">
     <title></title>
     
     <!--[if lt IE 9]>
-        <script src="<%# ResolveUrl("~/Themes/RockCMS/Scripts/html5.js") %>" ></script>
+        <script src="<%# ResolveUrl("~/Themes/RockChMS/Scripts/html5.js") %>" ></script>
     <![endif]-->
 
     <!-- Set the viewport width to device width for mobile -->
-	<meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width" />
 
-	<!-- Included CSS Files -->
-	<link rel="stylesheet" href="<%# ResolveUrl("~/CSS/bootstrap.min.css") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/bootstrap-responsive.min.css") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/RockCore.css") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/CSS/RockTheme.css") %>">
+    <!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Styles/bootstrap.css") %>"/>
+	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Styles/theme.css") %>"/>
+	<link rel="stylesheet" href="<%# ResolveUrl("~/Styles/developer.css") %>"/>
 
-    <script src="<%# ResolveUrl("~/Scripts/jquery-1.5.min.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/jquery-ui-1.8.9.custom.min.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/bootstrap-modal.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/bootstrap-tabs.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/jquery.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/bootstrap.min.js") %>" ></script>
 
 </head>
 <body id="splash">
@@ -29,10 +27,10 @@
     <form id="form1" runat="server">
 
             <div id="content">
-                <h1>Rock ChMS</h1>
+                <asp:Image ID="Image1" runat="server" AlternateText="Rock ChMS" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="pageheader-logo" />
                 
-                <div id="content-box" class="group">
-                    <Rock:Zone ID="Content" runat="server" />
+                <div id="content-box" class="clearfix">
+                    <Rock:Zone Name="Main" runat="server" />
                 </div>
             </div>
 

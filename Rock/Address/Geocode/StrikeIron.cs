@@ -6,8 +6,9 @@
 
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-
+using Rock.Attribute;
 using Rock.StrikeIron.USAddressVerification;
+using Rock.Web.UI;
 
 namespace Rock.Address.Geocode
 {
@@ -17,25 +18,25 @@ namespace Rock.Address.Geocode
     [Description( "Address Standardization and Geocoding service from StrikeIron" )]
     [Export( typeof( GeocodeComponent ) )]
     [ExportMetadata( "ComponentName", "StrikeIron" )]
-    [Rock.Attribute.Property( 1, "User ID", "Security", "The Strike Iron User ID", true, "" )]
-    [Rock.Attribute.Property( 2, "Password", "Security", "The Strike Iron Password", true, "" )]
+    [TextField( "User ID", "The Strike Iron User ID", true, "", "Security", 0 )]
+    [TextField( "Password", "The Strike Iron Password", true, "", "Security", 1 )]
     public class StrikeIron : GeocodeComponent
     {
         /// <summary>
         /// Geocodes the specified address.
         /// </summary>
-        /// <param name="address">The address.</param>
+        /// <param name="location">The location.</param>
         /// <param name="result">The result.</param>
         /// <returns>
         /// True/False value of whether the address was standardized was succesfully
         /// </returns>
-        public override bool Geocode( Rock.CRM.Address address, out string result )
+        public override bool Geocode( Rock.Model.Location location, out string result )
         {
-            if ( address != null )
+            if ( location != null )
             {
                 var registeredUser = new RegisteredUser();
-                registeredUser.UserID = AttributeValue("UserID");
-                registeredUser.Password = AttributeValue("Password");
+                registeredUser.UserID = GetAttributeValue("UserID");
+                registeredUser.Password = GetAttributeValue("Password");
 
                 var licenseInfo = new LicenseInfo();
                 licenseInfo.RegisteredUser = registeredUser;
@@ -45,12 +46,12 @@ namespace Rock.Address.Geocode
                 SIWsOutputOfUSAddress verifyResult;
                 SubscriptionInfo info = client.VerifyAddressUSA(
                     licenseInfo,
-                    address.Street1,
-                    address.Street2,
+                    location.Street1,
+                    location.Street2,
                     string.Format("{0} {1} {2}", 
-                        address.City,
-                        address.State,
-                        address.Zip),
+                        location.City,
+                        location.State,
+                        location.Zip),
                     string.Empty,
                     string.Empty,
                     CasingEnum.PROPER,
@@ -66,8 +67,7 @@ namespace Rock.Address.Geocode
 
                         if ( usAddress != null && usAddress.GeoCode != null )
                         {
-                            address.Latitude = usAddress.GeoCode.Latitude;
-                            address.Longitude = usAddress.GeoCode.Longitude;
+                            location.SetLocationPointFromLatLong( usAddress.GeoCode.Latitude, usAddress.GeoCode.Longitude );
 
                             return true;
                         }

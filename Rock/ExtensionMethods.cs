@@ -6,11 +6,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Web.Script.Serialization;
+using System.Web.Routing;
+using System.Web.UI.WebControls;
+using DotLiquid;
+using Newtonsoft.Json;
+using Rock.Model;
 
 namespace Rock
 {
@@ -26,23 +32,99 @@ namespace Rock
         /// </summary>
         /// <param name="obj">Object.</param>
         /// <returns></returns>
-        public static string ToJSON( this object obj )
+        public static string ToJson( this object obj )
         {
-            JavaScriptSerializer serializer = new JavaScriptSerializer();
-            return serializer.Serialize( obj );
+            return JsonConvert.SerializeObject( obj, Formatting.Indented,
+                new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                } );
+        }
+
+
+        /// <summary>
+        /// Gets the property value.
+        /// </summary>
+        /// <param name="rootObj">The root obj.</param>
+        /// <param name="propertyPathName">Name of the property path.</param>
+        /// <returns></returns>
+        public static object GetPropertyValue( this object rootObj, string propertyPathName )
+        {
+            var propPath = propertyPathName.Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries ).ToList<string>();
+
+            object obj = rootObj;
+            Type objType = rootObj.GetType();
+
+            while ( propPath.Any() && obj != null )
+            {
+                PropertyInfo property = objType.GetProperty( propPath.First() );
+                if ( property != null )
+                {
+                    obj = property.GetValue( obj );
+                    objType = property.PropertyType;
+                    propPath = propPath.Skip( 1 ).ToList();
+                }
+                else
+                {
+                    obj = null;
+                }
+            }
+
+            return obj;
         }
 
         /// <summary>
-        /// Converts object to JSON string
+        /// Safely ToString() this item, even if it's null.
         /// </summary>
-        /// <param name="obj">Object.</param>
-        /// <param name="recursionDepth">constrains the number of object levels to process.</param>
-        /// <returns></returns>
-        public static string ToJSON( this object obj, int recursionDepth )
+        /// <param name="obj">an object</param>
+        /// <returns>The ToString or the empty string if the item is null.</returns>
+        public static string ToStringSafe( this object obj )
         {
-            JavaScriptSerializer serializer = new JavaScriptSerializer();
-            serializer.RecursionLimit = recursionDepth;
-            return serializer.Serialize( obj );
+            if ( obj != null )
+            {
+                return obj.ToString();
+            }
+            return String.Empty;
+        }
+        #endregion
+
+        #region Type Extensions
+
+        /// <summary>
+        /// Gets the name of the friendly type.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
+        public static string GetFriendlyTypeName( this Type type )
+        {
+            Rock.Data.FriendlyTypeNameAttribute attrib = type.GetTypeInfo().GetCustomAttribute<Rock.Data.FriendlyTypeNameAttribute>();
+            if ( attrib != null )
+            {
+                return attrib.FriendlyTypeName;
+            }
+            else
+            {
+                if ( type.Namespace == null )
+                {
+                    // Anonymous types will not have a namespace
+                    return "Item";
+                }
+
+                if ( type.Namespace.Equals( "System.Data.Entity.DynamicProxies" ) )
+                {
+                    type = type.BaseType;
+                }
+
+                if ( type.Namespace.Equals( "Rock.Model" ) )
+                {
+                    var entityType = Rock.Web.Cache.EntityTypeCache.Read( type );
+                    return entityType.FriendlyName ?? SplitCase( type.Name );
+                }
+                else
+                {
+                    return SplitCase( type.Name );
+                }
+            }
         }
 
         #endregion
@@ -56,6 +138,9 @@ namespace Rock
         /// <returns></returns>
         public static string SplitCase( this string str )
         {
+            if ( str == null )
+                return null;
+
             return Regex.Replace( Regex.Replace( str, @"(\P{Ll})(\P{Ll}\p{Ll})", "$1 $2" ), @"(\p{Ll})(\P{Ll})", "$1 $2" );
         }
 
@@ -63,15 +148,22 @@ namespace Rock
         /// Returns a string array that contains the substrings in this string that are delimited by any combination of whitespace, comma, semi-colon, or pipe characters
         /// </summary>
         /// <param name="str">The string.</param>
+        /// <param name="whitespace">if set to <c>true</c> [whitespace].</param>
         /// <returns></returns>
-        public static string[] SplitDelimitedValues( this string str )
+        public static string[] SplitDelimitedValues( this string str, bool whitespace = true )
         {
-            char[] delimiter = new char[] {','};
-            return Regex.Replace( str, @"[\s\|,;]+", "," ).Split( delimiter, StringSplitOptions.RemoveEmptyEntries );
+            if ( str == null )
+                return new string[0];
+
+            string regex = whitespace ? @"[\s\|,;]+" : @"[\|,;]+";
+
+            char[] delimiter = new char[] { ',' };
+            return Regex.Replace( str, regex, "," ).Split( delimiter, StringSplitOptions.RemoveEmptyEntries );
         }
 
         /// <summary>
         /// Replaces every instance of oldValue (regardless of case) with the newValue.
+        /// from http://www.codeproject.com/Articles/10890/Fastest-C-Case-Insenstive-String-Replace
         /// </summary>
         /// <param name="str">The source string.</param>
         /// <param name="oldValue">The value to replace.</param>
@@ -79,6 +171,9 @@ namespace Rock
         /// <returns></returns>
         public static string ReplaceCaseInsensitive( this string str, string oldValue, string newValue )
         {
+            if ( str == null )
+                return null;
+
             int count, position0, position1;
             count = position0 = position1 = 0;
             string upperString = str.ToUpper();
@@ -101,14 +196,409 @@ namespace Rock
             return new string( chars, 0, count );
         }
 
+        /// <summary>
+        /// Replaces every instance of oldValue with newValue.  Will continue to replace
+        /// values after each replace until the oldValue does not exist.  
+        /// </summary>
+        /// <param name="str">The source string.</param>
+        /// <param name="oldValue">The value to replace.</param>
+        /// <param name="newValue">The value to insert.</param>
+        /// <returns>System.String.</returns>
+        public static string ReplaceWhileExists( this string str, string oldValue, string newValue )
+        {
+            string newstr = str;
+
+            if ( oldValue != newValue )
+            {
+                while ( newstr.Contains( oldValue ) )
+                {
+                    newstr = newstr.Replace( oldValue, newValue );
+                }
+            }
+
+            return newstr;
+
+        }
+        /// <summary>
+        /// Adds escape character for quotes in a string
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
         public static string EscapeQuotes( this string str )
         {
+            if ( str == null )
+                return null;
+
             return str.Replace( "'", "\\'" ).Replace( "\"", "\\" );
+        }
+
+        /// <summary>
+        /// Returns the specified number of characters, starting at the left side of the string.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="length">The desired length.</param>
+        /// <returns></returns>
+        public static string Left( this string str, int length )
+        {
+            if ( str.Length <= length )
+            {
+                return str;
+            }
+            else
+            {
+                return str.Substring( 0, length );
+            }
+        }
+
+        /// <summary>
+        /// Truncates a string after a max length and adds ellipsis.  Truncation will occur at first space prior to maxLength
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
+        public static string Truncate( this string str, int maxLength )
+        {
+            if ( str == null )
+                return null;
+
+            if ( str.Length <= maxLength )
+                return str;
+
+            maxLength -= 3;
+            var truncatedString = str.Substring( 0, maxLength );
+            var lastSpace = truncatedString.LastIndexOf( ' ' );
+            if ( lastSpace > 0 )
+                truncatedString = truncatedString.Substring( 0, lastSpace );
+
+            return truncatedString + "...";
+        }
+
+        /// <summary>
+        /// Pluralizes the specified string.
+        /// </summary>
+        /// <param name="str">The string to pluralize.</param>
+        /// <returns></returns>
+        public static string Pluralize( this string str )
+        {
+            // Pluralization services handles most words, but there are some exceptions (i.e. campus)
+            switch ( str )
+            {
+                case "Campus":
+                case "campus":
+                    return str + "es";
+                case "CAMPUS":
+                    return str + "ES";
+                default:
+                    var pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService( new System.Globalization.CultureInfo( "en-US" ) );
+                    return pluralizationService.Pluralize( str );
+            }
+        }
+
+        /// <summary>
+        /// Singularizes the specified string.
+        /// </summary>
+        /// <param name="str">The string to singularize.</param>
+        /// <returns></returns>
+        public static string Singularize( this string str )
+        {
+            var pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService( new System.Globalization.CultureInfo( "en-US" ) );
+            return pluralizationService.Singularize( str );
+        }
+
+        /// <summary>
+        /// Removes any non-numeric characters
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static string AsNumeric( this string str )
+        {
+            return Regex.Replace( str, @"[^0-9]", "" );
+        }
+
+        /// <summary>
+        /// Returns True for 'True', 'Yes', '1'
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="NullIsFalse">if set to <c>true</c> [null is false].</param>
+        /// <returns></returns>
+        public static bool AsBoolean( this string str, bool NullIsFalse = true )
+        {
+            if ( NullIsFalse )
+            {
+                if ( string.IsNullOrWhiteSpace( str ) )
+                {
+                    return false;
+                }
+            }
+
+            if ( str.Equals( "true", StringComparison.OrdinalIgnoreCase ) || str.Equals( "yes", StringComparison.OrdinalIgnoreCase ) || str.Equals( "1", StringComparison.OrdinalIgnoreCase ) )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Attempts to convert string to integer.  Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The STR.</param>
+        /// <param name="emptyStringAsZero">if set to <c>true</c> [empty string as zero].</param>
+        /// <returns></returns>
+        public static int? AsInteger( this string str, bool emptyStringAsZero = true )
+        {
+            if ( !emptyStringAsZero )
+            {
+                if ( string.IsNullOrWhiteSpace( str ) )
+                {
+                    return null;
+                }
+            }
+
+            int value;
+            if ( int.TryParse( str, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to convert string to Guid.  Returns Guid.Empty if unsuccessful.
+        /// </summary>
+        /// <param name="str">The STR.</param>
+        /// <returns></returns>
+        public static Guid AsGuid( this string str)
+        {
+            Guid value;
+            if ( Guid.TryParse( str, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return Guid.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to convert string to decimal.  Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="emptyStringAsZero">if set to <c>true</c> [empty string as zero].</param>
+        /// <returns></returns>
+        public static decimal? AsDecimal( this string str, bool emptyStringAsZero = true )
+        {
+            if ( !emptyStringAsZero )
+            {
+                if ( string.IsNullOrWhiteSpace( str ) )
+                {
+                    return null;
+                }
+            }
+
+            if ( !string.IsNullOrWhiteSpace( str ) )
+            {
+                // strip off the currency symbol if there is one
+                str = str.Replace( "$", string.Empty );
+            }
+
+            decimal value;
+            if ( decimal.TryParse( str, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to convert string to DateTime.  Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static DateTime? AsDateTime( this string str )
+        {
+            DateTime value;
+            if ( DateTime.TryParse( str, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Use DotLiquid to resolve any merge codes within the content using the values 
+        /// in the mergeObjects.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <param name="mergeObjects">The merge objects.</param>
+        /// <returns></returns>
+        public static string ResolveMergeFields( this string content, Dictionary<string, object> mergeObjects )
+        {
+            if ( content == null )
+                return string.Empty;
+
+            // If there's no merge codes, just return the content
+            if ( !Regex.IsMatch( content, @".*\{.+\}.*" ) )
+                return content;
+
+            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+            Template template = Template.Parse( content );
+
+            return template.Render( Hash.FromDictionary( mergeObjects ) );
+        }
+
+        /// <summary>
+        /// Converts string to a HTML title "<span class='first-word'>first-word</span> rest of string"
+        /// </summary>
+        /// <param name="str">The STR.</param>
+        /// <returns></returns>
+        public static string FormatAsHtmlTitle( this string str )
+        {
+
+            // split first word from rest of string
+            int endOfFirstWord = str.IndexOf( " " );
+
+            if ( endOfFirstWord != -1 )
+                return "<span class='first-word'>" + str.Substring( 0, endOfFirstWord ) + " </span> " + str.Substring( endOfFirstWord, str.Length - endOfFirstWord );
+            else
+                return "<span class='first-word'>" + str + " </span>";
+        }
+
+        /// <summary>
+        /// Converts the value to Type, or if unsuccessful, returns the default value of Type.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static T AsType<T>( this string value )
+        {
+            var converter = TypeDescriptor.GetConverter( typeof( T ) );
+            return converter.IsValid( value )
+                ? (T)converter.ConvertFrom( value )
+                : default( T );
+        }
+
+        /// <summary>
+        /// Maskeds the specified value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static string Masked( this string value )
+        {
+            if ( value.Length > 4 )
+            {
+                return string.Concat( new string( '*', 12 ), value.Substring( value.Length - 4 ) );
+            }
+            else
+            {
+                return value;
+            }
+        }
+        #endregion
+
+        #region Int Extensions
+
+        /// <summary>
+        /// Gets the Defined Value name associated with this id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static string DefinedValue( this int? id )
+        {
+            if ( !id.HasValue )
+                return string.Empty;
+
+            var definedValue = Rock.Web.Cache.DefinedValueCache.Read( id.Value );
+            if ( definedValue != null )
+                return definedValue.Name;
+            else
+                return string.Empty;
+        }
+
+        #endregion
+
+        #region Boolean Extensions
+
+        /// <summary>
+        /// A numeric 1 or 0
+        /// </summary>
+        /// <param name="field"></param>
+        /// <returns></returns>
+        public static int Bit( this Boolean field )
+        {
+            return field ? 1 : 0;
+        }
+
+        /// <summary>
+        /// To the yes no.
+        /// </summary>
+        /// <param name="value">if set to <c>true</c> [value].</param>
+        /// <returns></returns>
+        public static string ToYesNo( this bool value )
+        {
+            return value ? "Yes" : "No";
+        }
+
+        /// <summary>
+        /// To the true false.
+        /// </summary>
+        /// <param name="value">if set to <c>true</c> [value].</param>
+        /// <returns></returns>
+        public static string ToTrueFalse( this bool value )
+        {
+            return value ? "True" : "False";
+        }
+
+        /// <summary>
+        /// Froms the true false.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static bool FromTrueFalse( this string value )
+        {
+            return value.Equals( "True" );
         }
 
         #endregion
 
         #region DateTime Extensions
+
+        /// <summary>
+        /// Returns the age at the current date
+        /// </summary>
+        /// <param name="start"></param>
+        /// <returns></returns>
+        public static int Age( this DateTime? start )
+        {
+            if ( start.HasValue )
+                return start.Value.Age();
+            else
+                return 0;
+        }
+
+        /// <summary>
+        /// Returns the age at the current date
+        /// </summary>
+        /// <param name="start"></param>
+        /// <returns></returns>
+        public static int Age( this DateTime start )
+        {
+            var now = DateTime.Today;
+            int age = now.Year - start.Year;
+            if ( start > now.AddYears( -age ) ) age--;
+
+            return age;
+        }
 
         /// <summary>
         /// The total months.
@@ -118,7 +608,7 @@ namespace Rock
         /// <returns></returns>
         public static int TotalMonths( this DateTime end, DateTime start )
         {
-            return ( start.Year * 12 + start.Month ) - ( end.Year * 12 + end.Month );
+            return ( end.Year * 12 + end.Month ) - ( start.Year * 12 + start.Month );
         }
 
         /// <summary>
@@ -129,60 +619,194 @@ namespace Rock
         /// <returns></returns>
         public static int TotalYears( this DateTime end, DateTime start )
         {
-            return ( start.Year) - ( end.Year);
+            return ( end.Year ) - ( start.Year );
         }
 
         /// <summary>
         /// Returns a friendly elapsed time string.
         /// </summary>
         /// <param name="dateTime">The date time.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <param name="includeTime">if set to <c>true</c> [include time].</param>
         /// <returns></returns>
-        public static string ToElapsedString( this DateTime? dateTime )
+        public static string ToElapsedString( this DateTime? dateTime, bool condensed = false, bool includeTime = true )
         {
             if ( dateTime.HasValue )
             {
-                string direction = "Ago";
-                TimeSpan timeSpan = DateTime.Now.Subtract( dateTime.Value );
-                if ( timeSpan.TotalMilliseconds < 0 )
-                {
-                    direction = "From Now";
-                    timeSpan = timeSpan.Negate();
-                }
-
-                string duration = "";
-
-                // Less than one second
-                if ( timeSpan.TotalSeconds <= 1 )
-                    duration = "1 Second";
-
-                else if ( timeSpan.TotalSeconds < 60 )
-                    duration = string.Format( "{0:N0} Seconds", Math.Truncate( timeSpan.TotalSeconds ) );
-                else if ( timeSpan.TotalMinutes <= 1 )
-                    duration = "1 Minute";
-                else if ( timeSpan.TotalMinutes < 60 )
-                    duration = string.Format( "{0:N0} Minutes", Math.Truncate( timeSpan.TotalMinutes ) );
-                else if ( timeSpan.TotalHours <= 1 )
-                    duration = "1 Hour";
-                else if ( timeSpan.TotalHours < 24 )
-                    duration = string.Format( "{0:N0} Hours", Math.Truncate( timeSpan.TotalHours ) );
-                else if ( timeSpan.TotalDays <= 1 )
-                    duration = "1 Day";
-                else if ( timeSpan.TotalDays < 31 )
-                    duration = string.Format( "{0:N0} Days", Math.Truncate( timeSpan.TotalDays ) );
-                else if ( DateTime.Now.TotalMonths( dateTime.Value ) <= 1 )
-                    duration = "1 Month";
-                else if ( DateTime.Now.TotalMonths( dateTime.Value ) <= 18 )
-                    duration = string.Format( "{0:N0} Months", DateTime.Now.TotalMonths( dateTime.Value ) );
-                else if ( DateTime.Now.TotalYears( dateTime.Value ) <= 1 )
-                    duration = "1 Year";
-                else
-                    duration = string.Format( "{0:N0} Years", DateTime.Now.TotalYears( dateTime.Value ) );
-
-                return duration + " " + direction;
+                return ToElapsedString( dateTime.Value, condensed, includeTime );
             }
             else
                 return string.Empty;
+        }
 
+        /// <summary>
+        /// Returns a friendly elapsed time string.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <param name="includeTime">if set to <c>true</c> [include time].</param>
+        /// <returns></returns>
+        public static string ToElapsedString( this DateTime dateTime, bool condensed = false, bool includeTime = true )
+        {
+            DateTime start = dateTime;
+            DateTime end = DateTime.Now;
+
+            string direction = " Ago";
+            TimeSpan timeSpan = end.Subtract( start );
+            if ( timeSpan.TotalMilliseconds < 0 )
+            {
+                direction = " From Now";
+                start = end;
+                end = dateTime;
+                timeSpan = timeSpan.Negate();
+            }
+
+            string duration = "";
+
+            if ( timeSpan.TotalHours < 24 && includeTime )
+            {
+                // Less than one second
+                if ( timeSpan.TotalSeconds <= 1 )
+                    duration = string.Format( "1{0}", condensed ? "sec" : " Second" );
+
+                else if ( timeSpan.TotalSeconds < 60 )
+                    duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalSeconds ), condensed ? "sec" : " Seconds" );
+                else if ( timeSpan.TotalMinutes <= 1 )
+                    duration = string.Format( "1{0}", condensed ? "min" : " Minute" );
+                else if ( timeSpan.TotalMinutes < 60 )
+                    duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalMinutes ), condensed ? "min" : " Minutes" );
+                else if ( timeSpan.TotalHours <= 1 )
+                    duration = string.Format( "1{0}", condensed ? "hr" : " Hour" );
+                else if ( timeSpan.TotalHours < 24 )
+                    duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalHours ), condensed ? "hr" : " Hours" );
+            }
+
+            if ( duration == "" )
+            {
+                if ( timeSpan.TotalDays <= 1 )
+                    duration = string.Format( "1{0}", condensed ? "day" : " Day" );
+                else if ( timeSpan.TotalDays < 31 )
+                    duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalDays ), condensed ? "days" : " Days" );
+                else if ( end.TotalMonths( start ) <= 1 )
+                    duration = string.Format( "1{0}", condensed ? "mon" : " Month" );
+                else if ( end.TotalMonths( start ) <= 18 )
+                    duration = string.Format( "{0:N0}{1}", end.TotalMonths( start ), condensed ? "mon" : " Months" );
+                else if ( end.TotalYears( start ) <= 1 )
+                    duration = string.Format( "1{0}", condensed ? "yr" : " Year" );
+                else
+                    duration = string.Format( "{0:N0}{1}", end.TotalYears( start ), condensed ? "yrs" : " Years" );
+            }
+
+            return "(" + duration + ( condensed ? "" : direction ) + ")";
+
+        }
+
+        /// <summary>
+        /// Returns a string in FB style relative format (x seconds ago, x minutes ago, about an hour ago, etc.).
+        /// or if max days has already passed in FB datetime format (February 13 at 11:28am or November 5, 2011 at 1:57pm)
+        /// </summary>
+        /// <param name="dateTime">the datetime to convert to relative time.</param>
+        /// <param name="maxDays">maximum number of days before formatting in FB date-time format (ex. November 5, 2011 at 1:57pm) </param>
+        /// <returns></returns>
+        public static string ToRelativeDateString( this DateTime dateTime, int? maxDays = null )
+        {
+            try
+            {
+                DateTime now = DateTime.Now;
+                TimeSpan timeSince = now - dateTime;
+
+                double inSeconds = timeSince.TotalSeconds;
+                double inMinutes = timeSince.TotalMinutes;
+                double inHours = timeSince.TotalHours;
+                double inDays = timeSince.TotalDays;
+                double inWeeks = inDays / 7;
+                double inMonths = inDays / 30;
+                double inYears = inDays / 365;
+
+                // Just return in FB time format if max days has passed.
+                if ( maxDays.HasValue && inDays > maxDays )
+                {
+                    if ( now.Year == dateTime.Year )
+                    {
+                        return dateTime.ToString( "MMMM d at h:mmtt" ).ToLowerInvariant();
+                    }
+                    else
+                    {
+                        return dateTime.ToString( "MMMM d, yyyy at h:mmtt" ).ToLowerInvariant();
+                    }
+                }
+
+                if ( Math.Round( inSeconds ) < 5 )
+                {
+                    return "just now";
+                }
+                else if ( inMinutes < 1.0 )
+                {
+                    return Math.Floor( inSeconds ) + " seconds ago";
+                }
+                else if ( Math.Floor( inMinutes ) == 1 )
+                {
+                    return "1 minute ago";
+                }
+                else if ( inHours < 1.0 )
+                {
+                    return Math.Floor( inMinutes ) + " minutes ago";
+                }
+                else if ( Math.Floor( inHours ) == 1 )
+                {
+                    return "about an hour ago";
+                }
+                else if ( inDays < 1.0 )
+                {
+                    return Math.Floor( inHours ) + " hours ago";
+                }
+                else if ( Math.Floor( inDays ) == 1 )
+                {
+                    return "1 day ago";
+                }
+                else if ( inWeeks < 1 )
+                {
+                    return Math.Floor( inDays ) + " days ago";
+                }
+                else if ( Math.Floor( inWeeks ) == 1 )
+                {
+                    return "1 week ago";
+                }
+                else if ( inMonths < 3 )
+                {
+                    return Math.Floor( inWeeks ) + " weeks ago";
+                }
+                else if ( inMonths <= 12 )
+                {
+                    return Math.Floor( inMonths ) + " months ago ";
+                }
+                else if ( Math.Floor( inYears ) <= 1 )
+                {
+                    return "1 year ago";
+                }
+                else
+                {
+                    return Math.Floor( inYears ) + " years ago";
+                }
+            }
+            catch ( Exception )
+            {
+            }
+            return "";
+        }
+        #endregion
+
+        #region TimeSpan Extensions
+
+        /// <summary>
+        /// Returns a TimeSpan to HH:MM AM/PM.
+        /// Examples: 1:45 PM, 12:01 AM
+        /// </summary>
+        /// <param name="timespan">The timespan.</param>
+        /// <returns></returns>
+        public static string ToTimeString( this TimeSpan timespan )
+        {
+            return DateTime.Today.Add( timespan ).ToShortTimeString();
         }
 
         #endregion
@@ -214,6 +838,81 @@ namespace Rock
             return ctl;
         }
 
+        /// <summary>
+        /// Gets the parent RockBlock.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
+        public static Rock.Web.UI.RockBlock RockBlock( this System.Web.UI.Control control )
+        {
+            System.Web.UI.Control parentControl = control.Parent;
+            while ( parentControl != null )
+            {
+                if ( parentControl is Rock.Web.UI.RockBlock )
+                {
+                    return (Rock.Web.UI.RockBlock)parentControl;
+                }
+                parentControl = parentControl.Parent;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Parents the update panel.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
+        public static System.Web.UI.UpdatePanel ParentUpdatePanel( this System.Web.UI.Control control )
+        {
+            System.Web.UI.Control parentControl = control.Parent;
+            while ( parentControl != null )
+            {
+                if ( parentControl is System.Web.UI.UpdatePanel )
+                {
+                    return (System.Web.UI.UpdatePanel)parentControl;
+                }
+                parentControl = parentControl.Parent;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets all controls of Type recursively
+        /// http://stackoverflow.com/questions/7362482/c-sharp-get-all-web-controls-on-page
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="controlCollection">The control collection.</param>
+        /// <param name="resultCollection">The result collection.</param>
+        private static void GetControlListRecursive<T>( this System.Web.UI.ControlCollection controlCollection, List<T> resultCollection ) where T : System.Web.UI.Control
+        {
+            foreach ( System.Web.UI.Control control in controlCollection )
+            {
+                if ( control is T )
+                {
+                    resultCollection.Add( (T)control );
+                }
+
+                if ( control.HasControls() )
+                {
+                    GetControlListRecursive( control.Controls, resultCollection );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets all controls of Type recursively
+        /// http://stackoverflow.com/questions/7362482/c-sharp-get-all-web-controls-on-page
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
+        public static List<T> ControlsOfTypeRecursive<T>( this System.Web.UI.Control control ) where T : System.Web.UI.Control
+        {
+            List<T> result = new List<T>();
+            GetControlListRecursive<T>( control.Controls, result );
+            return result;
+        }
+
         #endregion
 
         #region WebControl Extensions
@@ -228,8 +927,8 @@ namespace Rock
             string match = @"\b" + className + "\b";
             string css = webControl.CssClass;
 
-            if (!Regex.IsMatch(css, match, RegexOptions.IgnoreCase))
-                webControl.CssClass = Regex.Replace( css + " " + className, @"^\s+", "", RegexOptions.IgnoreCase);
+            if ( !Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
+                webControl.CssClass = Regex.Replace( css + " " + className, @"^\s+", "", RegexOptions.IgnoreCase );
         }
 
         /// <summary>
@@ -239,7 +938,7 @@ namespace Rock
         /// <param name="className">Name of the class.</param>
         public static void RemoveCssClass( this System.Web.UI.WebControls.WebControl webControl, string className )
         {
-            string match = @"\s*\b" + className + "\b";
+            string match = @"\s*\b" + className + @"\b";
             string css = webControl.CssClass;
 
             if ( Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
@@ -280,25 +979,188 @@ namespace Rock
 
         #endregion
 
-        #region DropDownList Extensions
+        #region CheckBoxList Extensions
 
         /// <summary>
-        /// Try's to set the selected value, if the value does not exist, wills et the first item in the list
+        /// Sets the values.
         /// </summary>
-        /// <param name="ddl">The DDL.</param>
+        /// <param name="checkBoxList">The check box list.</param>
+        /// <param name="values">The values.</param>
+        public static void SetValues( this CheckBoxList checkBoxList, List<string> values )
+        {
+            foreach ( ListItem item in checkBoxList.Items )
+            {
+                item.Selected = values.Contains( item.Value, StringComparer.OrdinalIgnoreCase );
+            }
+        }
+
+        /// <summary>
+        /// Sets the values.
+        /// </summary>
+        /// <param name="checkBoxList">The check box list.</param>
+        /// <param name="values">The values.</param>
+        public static void SetValues( this CheckBoxList checkBoxList, List<int> values )
+        {
+            foreach ( ListItem item in checkBoxList.Items )
+            {
+                int numValue = int.MinValue;
+                item.Selected = int.TryParse( item.Value, out numValue ) && values.Contains( numValue );
+            }
+        }
+
+        #endregion
+
+        #region ListControl Extensions
+
+        /// <summary>
+        /// Try's to set the selected value, if the value does not exist, will set the first item in the list
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
-        public static void SetValue (this System.Web.UI.WebControls.DropDownList ddl, string value)
+        public static void SetValue( this ListControl listControl, string value )
         {
             try
             {
-                ddl.SelectedValue = value;
+                listControl.SelectedValue = value;
             }
             catch
             {
-                if ( ddl.Items.Count > 0 )
-                    ddl.SelectedIndex = 0;
+                if ( listControl.Items.Count > 0 )
+                    listControl.SelectedIndex = 0;
             }
-                
+        }
+
+        /// <summary>
+        /// Sets the read only value.
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="value">The value.</param>
+        public static void SetReadOnlyValue( this ListControl listControl, string value )
+        {
+            listControl.Items.Clear();
+            listControl.Items.Add( value );
+        }
+
+        /// <summary>
+        /// Try's to set the selected value, if the value does not exist, will set the first item in the list
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="value">The value.</param>
+        public static void SetValue( this ListControl listControl, int? value )
+        {
+            listControl.SetValue( value == null ? "0" : value.ToString() );
+        }
+
+        /// <summary>
+        /// Binds to enum.
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="enumType">Type of the enum.</param>
+        /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
+        public static void BindToEnum( this ListControl listControl, Type enumType, bool insertBlankOption = false )
+        {
+            var dictionary = new Dictionary<int, string>();
+            foreach ( var value in Enum.GetValues( enumType ) )
+            {
+                dictionary.Add( Convert.ToInt32( value ), Enum.GetName( enumType, value ).SplitCase() );
+            }
+
+            listControl.DataSource = dictionary;
+            listControl.DataTextField = "Value";
+            listControl.DataValueField = "Key";
+            listControl.DataBind();
+
+            if ( insertBlankOption )
+            {
+                listControl.Items.Insert( 0, new ListItem() );
+            }
+        }
+
+        /// <summary>
+        /// Binds to the values of a definedType
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="definedType">Type of the defined.</param>
+        /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
+        public static void BindToDefinedType( this ListControl listControl, Rock.Web.Cache.DefinedTypeCache definedType, bool insertBlankOption = false )
+        {
+            var ds = definedType.DefinedValues
+                .Select( v => new
+                {
+                    v.Name,
+                    v.Id
+                } );
+
+            listControl.SelectedIndex = -1;
+            listControl.DataSource = ds;
+            listControl.DataTextField = "Name";
+            listControl.DataValueField = "Id";
+            listControl.DataBind();
+
+            if ( insertBlankOption )
+            {
+                listControl.Items.Insert( 0, new ListItem() );
+            }
+
+        }
+
+        /// <summary>
+        /// Returns the Value as Int or null if Value is <see cref="T:Rock.Constants.None"/>
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="NoneAsNull">if set to <c>true</c>, will return Null if SelectedValue = <see cref="T:Rock.Constants.None" /> </param>
+        /// <returns></returns>
+        public static int? SelectedValueAsInt( this ListControl listControl, bool NoneAsNull = true )
+        {
+            if ( NoneAsNull )
+            {
+                if ( listControl.SelectedValue.Equals( Rock.Constants.None.Id.ToString() ) )
+                {
+                    return null;
+                }
+            }
+
+            if ( string.IsNullOrWhiteSpace( listControl.SelectedValue ) )
+            {
+                return null;
+            }
+            else
+            {
+                return int.Parse( listControl.SelectedValue );
+            }
+        }
+
+        /// <summary>
+        /// Returns the value of the currently selected item.
+        /// It will return NULL if either <see cref="T:Rock.Constants.None"/> or <see cref="T:Rock.Constants.All"/> is selected.
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <returns></returns>
+        public static int? SelectedValueAsId( this ListControl listControl )
+        {
+            int? result = SelectedValueAsInt( listControl );
+
+            if ( result == Rock.Constants.All.Id )
+            {
+                return null;
+            }
+
+            if ( result == Rock.Constants.None.Id )
+            {
+                return null;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Selecteds the value as enum.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static T SelectedValueAsEnum<T>( this ListControl listControl )
+        {
+            return (T)System.Enum.Parse( typeof( T ), listControl.SelectedValue );
         }
 
         #endregion
@@ -309,10 +1171,53 @@ namespace Rock
         /// Converts to the enum value to it's string value
         /// </summary>
         /// <param name="eff">The eff.</param>
+        /// <param name="SplitCase">if set to <c>true</c> [split case].</param>
         /// <returns></returns>
-        public static String ConvertToString( this Enum eff )
+        public static String ConvertToString( this Enum eff, bool SplitCase = true )
         {
-            return Enum.GetName( eff.GetType(), eff ).SplitCase();
+            if ( SplitCase )
+            {
+                return Enum.GetName( eff.GetType(), eff ).SplitCase();
+            }
+            else
+            {
+                return Enum.GetName( eff.GetType(), eff );
+            }
+        }
+
+        /// <summary>
+        /// Gets the enum description.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static string GetDescription( this Enum value )
+        {
+            var type = value.GetType();
+            string name = Enum.GetName( type, value );
+            if ( name != null )
+            {
+                System.Reflection.FieldInfo field = type.GetField( name );
+                if ( field != null )
+                {
+                    var attr = System.Attribute.GetCustomAttribute( field,
+                        typeof( DescriptionAttribute ) ) as DescriptionAttribute;
+                    if ( attr != null )
+                    {
+                        return attr.Description;
+                    }
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Converts to int.
+        /// </summary>
+        /// <param name="eff">The eff.</param>
+        /// <returns></returns>
+        public static int ConvertToInt( this Enum eff )
+        {
+            return Convert.ToInt32( eff );
         }
 
         /// <summary>
@@ -320,10 +1225,26 @@ namespace Rock
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="enumValue">The enum value.</param>
+        /// <param name="defaultValue">The default value to use if the value cannot be parsed. Leave null to throw an exception if the value cannot be parsed. </param>
         /// <returns></returns>
-        public static T ConvertToEnum<T>( this String enumValue )
+        public static T ConvertToEnum<T>( this String enumValue, T? defaultValue = null ) where T : struct // actually limited to enum, but struct is the closest we can do
         {
-            return ( T )Enum.Parse( typeof( T ), enumValue.Replace(" " , "") );
+            if ( defaultValue.HasValue )
+            {
+                T result;
+                if ( Enum.TryParse<T>( enumValue, out result ) )
+                {
+                    return result;
+                }
+                else
+                {
+                    return defaultValue.Value;
+                }
+            }
+            else
+            {
+                return (T)Enum.Parse( typeof( T ), enumValue.Replace( " ", "" ) );
+            }
         }
 
         #endregion
@@ -337,12 +1258,26 @@ namespace Rock
         /// <param name="items">The items.</param>
         /// <param name="delimiter">The delimiter.</param>
         /// <returns></returns>
-        public static String AsDelimited<T>( this List<T> items, string delimiter)
+        public static string AsDelimited<T>( this List<T> items, string delimiter )
         {
             List<string> strings = new List<string>();
             foreach ( T item in items )
                 strings.Add( item.ToString() );
             return String.Join( delimiter, strings.ToArray() );
+        }
+
+        /// <summary>
+        /// Joins a dictionary of items
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="delimter">The delimter.</param>
+        /// <returns></returns>
+        public static string Join( this Dictionary<string, string> items, string delimter )
+        {
+            List<string> parms = new List<string>();
+            foreach ( var item in items )
+                parms.Add( string.Join( "=", new string[] { item.Key, item.Value } ) );
+            return string.Join( delimter, parms.ToArray() );
         }
 
         #endregion
@@ -420,7 +1355,7 @@ namespace Rock
                             && method.GetParameters().Length == 2 )
                     .MakeGenericMethod( typeof( T ), type )
                     .Invoke( null, new object[] { source, lambda } );
-            return ( IOrderedQueryable<T> )result;
+            return (IOrderedQueryable<T>)result;
         }
 
         /// <summary>
@@ -432,12 +1367,210 @@ namespace Rock
         /// <returns></returns>
         public static IOrderedQueryable<T> Sort<T>( this IQueryable<T> source, Rock.Web.UI.Controls.SortProperty sortProperty )
         {
-            if ( sortProperty.Direction == System.Web.UI.WebControls.SortDirection.Ascending )
-                return source.OrderBy( sortProperty.Property );
-            else
-                return source.OrderByDescending( sortProperty.Property );
+            string[] columns = sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+
+            IOrderedQueryable<T> qry = null;
+
+            for ( int columnIndex = 0; columnIndex < columns.Length; columnIndex++ )
+            {
+                string column = columns[columnIndex].Trim();
+                if ( sortProperty.Direction == System.Web.UI.WebControls.SortDirection.Ascending )
+                {
+                    qry = ( columnIndex == 0 ) ? source.OrderBy( column ) : qry.ThenBy( column );
+                    if ( columnIndex == 0 )
+                    {
+                        qry = source.OrderBy( column );
+                    }
+                    else
+                    {
+                        qry = qry.ThenBy( column );
+                    }
+                }
+                else
+                {
+                    qry = ( columnIndex == 0 ) ? source.OrderByDescending( column ) : qry.ThenByDescending( column );
+                }
+            }
+
+            return qry;
         }
 
+        /// <summary>
+        /// Filters a Query to rows that have matching attribute value
+        /// (must be in a UnitOfWorkScope codeblock)
+        /// </summary>
+        /// <example>
+        /// using ( new Rock.Data.UnitOfWorkScope() )
+        /// {
+        ///     var test = new PersonService().Queryable().Where( a => a.FirstName == "Bob" ).WhereAttributeValue( "IsBaptized", "true" ).ToList();
+        /// }
+        /// </example>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source">The source.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="attributeValue">The attribute value.</param>
+        /// <returns></returns>
+        public static IQueryable<T> WhereAttributeValue<T>( this IQueryable<T> source, string attributeKey, string attributeValue ) where T : Rock.Data.Model<T>, new()
+        {
+            int entityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( typeof( T ) ) ?? 0;
+
+            var avs = new AttributeValueService().Queryable()
+                .Where( a => a.Attribute.Key == attributeKey )
+                .Where( a => a.Attribute.EntityTypeId == entityTypeId )
+                .Where( a => a.Value == attributeValue )
+                .Select( a => a.EntityId );
+
+            var result = source.Where( a => avs.Contains( ( a as T ).Id ) );
+            return result;
+        }
+
+        #endregion
+
+        #region IHasAttributes extensions
+
+        /// <summary>
+        /// Loads the attributes.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        public static void LoadAttributes( this Rock.Attribute.IHasAttributes entity )
+        {
+            Rock.Attribute.Helper.LoadAttributes( entity );
+        }
+
+        /// <summary>
+        /// Copies the attributes.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyAttributesFrom( this Rock.Attribute.IHasAttributes entity, Rock.Attribute.IHasAttributes source )
+        {
+            Rock.Attribute.Helper.CopyAttributes( source, entity );
+        }
+
+        #endregion
+
+        #region Route Extensions
+
+        /// <summary>
+        /// Pages the id.
+        /// </summary>
+        /// <param name="route">The route.</param>
+        /// <returns></returns>
+        public static int PageId( this Route route )
+        {
+            if ( route.DataTokens != null )
+            {
+                return int.Parse( route.DataTokens["PageId"] as string );
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Routes the id.
+        /// </summary>
+        /// <param name="route">The route.</param>
+        /// <returns></returns>
+        public static int RouteId( this Route route )
+        {
+            if ( route.DataTokens != null )
+            {
+                return int.Parse( route.DataTokens["RouteId"] as string );
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Adds the page route.
+        /// </summary>
+        /// <param name="routes">The routes.</param>
+        /// <param name="pageRoute">The page route.</param>
+        public static void AddPageRoute( this Collection<RouteBase> routes, PageRoute pageRoute )
+        {
+            Route route = new Route( pageRoute.Route, new Rock.Web.RockRouteHandler() );
+            route.DataTokens = new RouteValueDictionary();
+            route.DataTokens.Add( "PageId", pageRoute.PageId.ToString() );
+            route.DataTokens.Add( "RouteId", pageRoute.Id.ToString() );
+            routes.Add( route );
+        }
+
+        #endregion
+
+        #region IEntity extensions
+
+        /// <summary>
+        /// Removes the entity.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list">The list.</param>
+        /// <param name="id">The id.</param>
+        public static void RemoveEntity<T>( this List<T> list, int id ) where T : Rock.Data.IEntity
+        {
+            var item = list.FirstOrDefault( a => a.Id.Equals( id ) );
+            if ( item != null )
+            {
+                list.Remove( item );
+            }
+        }
+
+        /// <summary>
+        /// Removes the entity.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list">The list.</param>
+        /// <param name="guid">The GUID.</param>
+        public static void RemoveEntity<T>( this List<T> list, Guid guid ) where T : Rock.Data.IEntity
+        {
+            var item = list.FirstOrDefault( a => a.Guid.Equals( guid ) );
+            if ( item != null )
+            {
+                list.Remove( item );
+            }
+
+        }
+
+        #endregion
+
+        #region HiddenField Extensions
+
+        /// <summary>
+        /// Values as int.
+        /// </summary>
+        /// <param name="hiddenField">The hidden field.</param>
+        /// <returns></returns>
+        public static int ValueAsInt( this HiddenField hiddenField )
+        {
+            int intValue = 0;
+            if ( int.TryParse( hiddenField.Value, out intValue ) )
+            {
+                return intValue;
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="hiddenField">The hidden field.</param>
+        /// <param name="value">The value.</param>
+        public static void SetValue( this HiddenField hiddenField, int value )
+        {
+            hiddenField.Value = value.ToString();
+        }
+
+        /// <summary>
+        /// Determines whether the specified hidden field is zero.
+        /// </summary>
+        /// <param name="hiddenField">The hidden field.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified hidden field is zero; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsZero( this HiddenField hiddenField )
+        {
+            return hiddenField.Value.Equals( "0" );
+        }
 
         #endregion
     }

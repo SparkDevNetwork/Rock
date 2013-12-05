@@ -5,16 +5,21 @@
 //
 
 using System;
+using Rock.Attribute;
 
 namespace RockWeb.Blocks.Cms
 {
-    [Rock.Attribute.Property( 0, "Url", "The path to redirect to", true )]
-    public partial class Redirect : Rock.Web.UI.Block
+    [TextField( "Url", "The path to redirect to" )]
+    public partial class Redirect : Rock.Web.UI.RockBlock
     {
         protected override void OnInit( EventArgs e )
         {
-            if ( !string.IsNullOrEmpty( AttributeValue("Url") ) )
-                Response.Redirect( AttributeValue("Url") );
+            if ( !string.IsNullOrEmpty( GetAttributeValue( "Url" ) ) )
+            {
+                Response.Redirect( GetAttributeValue( "Url" ), false );
+                Context.ApplicationInstance.CompleteRequest();
+                return;
+            }
             base.OnInit( e );
         }
     }

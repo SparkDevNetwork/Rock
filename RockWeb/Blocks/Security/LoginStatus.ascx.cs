@@ -1,4 +1,9 @@
-﻿using System;
+//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -7,11 +12,27 @@ using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
 using System.Web.Security;
 
+using Rock.Attribute;
+using Rock.Web;
+
 namespace RockWeb.Blocks.Security
 {
-    public partial class LoginStatus : Rock.Web.UI.Block
+    [LinkedPage( "My Account Page", "Page for user to manage their account (if blank will use 'MyAccount' page route)" )]
+    public partial class LoginStatus : Rock.Web.UI.RockBlock
     {
         string action = string.Empty;
+
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            var url = LinkedPageUrl( "MyAccountPage" );
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                url = ResolveRockUrl( "~/MyAccount" );
+            }
+            hlMyAccount.NavigateUrl = url;
+        }
 
         protected override void OnLoad( EventArgs e )
         {
@@ -19,12 +40,14 @@ namespace RockWeb.Blocks.Security
 
             action = hfTest.Value;
 
-            if (CurrentPerson != null)
+            var currentPerson = CurrentPerson;
+            if ( currentPerson != null )
             {
                 phHello.Visible = true;
-                lHello.Text = string.Format( "<span>Hello {0}</span>", CurrentPerson.FirstName);
+                lHello.Text = string.Format( "<span>Hello {0}</span>", currentPerson.FirstName );
 
-                phMyAccount.Visible = CurrentUser != null && CurrentUser.IsAuthenticated;
+                var currentUser = CurrentUser;
+                phMyAccount.Visible = currentUser != null && currentUser.IsAuthenticated;
                 lbLoginLogout.Text = "Logout";
             }
             else
@@ -40,16 +63,34 @@ namespace RockWeb.Blocks.Security
         protected void lbLoginLogout_Click( object sender, EventArgs e )
         {
             if ( action == "Login" )
-                FormsAuthentication.RedirectToLoginPage();
+            {
+                var site = RockPage.Layout.Site;
+                if ( site.LoginPageId.HasValue )
+                {
+                    site.RedirectToLoginPage( true );
+                }
+                else
+                {
+                    FormsAuthentication.RedirectToLoginPage();
+                }
+            }
             else
             {
                 FormsAuthentication.SignOut();
-                Session.Remove( "UserIsAuthenticated" );
 
-                Rock.Web.UI.PageReference pageRef = new Rock.Web.UI.PageReference (PageInstance.Id, PageInstance.RouteId );
-                Response.Redirect( PageInstance.BuildUrl( pageRef, null ) );
+                // After logging out check to see if an anonymous user is allowed to view the current page.  If so
+                // redirect back to the current page, otherwise redirect to the site's default page
+                if ( RockPage.IsAuthorized( "View", null ) )
+                {
+                    Response.Redirect( CurrentPageReference.BuildUrl() );
+                    Context.ApplicationInstance.CompleteRequest();
+                }
+                else
+                {
+                    RockPage.Layout.Site.RedirectToDefaultPage();
+                }
+
             }
-
         }
     }
 }

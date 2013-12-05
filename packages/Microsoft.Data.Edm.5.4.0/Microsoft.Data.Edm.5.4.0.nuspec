@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.Data.Edm</id>
+    <version>5.4.0</version>
+    <title>EdmLib</title>
+    <authors>Microsoft Corporation</authors>
+    <owners>Microsoft Corporation</owners>
+    <licenseUrl>http://go.microsoft.com/?linkid=9809688</licenseUrl>
+    <projectUrl>http://go.microsoft.com/fwlink/?LinkId=220868</projectUrl>
+    <iconUrl>http://static.tumblr.com/hgchgxz/9ualgdf98/icon.png</iconUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>Classes to represent, construct, parse, serialize and validate entity data models. Targets .NET 4.0 or Silverlight 4.0. Localized for CHS, CHT, DEU, ESN, FRA, ITA, JPN, KOR and RUS.</description>
+    <releaseNotes>------------------------------New Features------------------------------
+
+Client deserialization/serialization hooks
+
+We have a number of investments planned in the “request pipeline” area. In 5.4.0 we have a very big set of hooks for reaching into and modifying data as it is being read from or written to the wire format. These hooks provide extensibility points that enable a number of different scenarios such as modifying wire types, property names, and more.
+
+Instance annotations on atom payloads
+
+As promised in the 5.3.0 release notes, we now support instance annotations on Atom payloads. Instance annotations are an extensibility feature in OData feeds that allow OData requests and responses to be marked up with annotations that target feeds, single entities (entries), properties, etc. We do still have some more work to do in this area, such as the ability to annotate properties.
+
+Client consumption of instance annotations
+
+Also in this release, we have added APIs to the client to enable the reading of instance annotations on the wire. These APIs make use of the new deserialization/serialization pipelines on the client (see above). This API surface includes the ability to indicate which instance annotations the client cares about via the Prefer header. This will streamline the responses from OData services that honor the odata.include-annotations preference.
+
+Simplified transition between Atom and JSON formats
+
+In this release we have bundled a few less-noticeable features that should simplify the transition between the Atom and (the new) JSON format. (See also the bug fixes below on type resolver fixes.)
+
+------------------------------Bug fixes------------------------------
+
+In addition to the features above, we have included fixes for the following notable bugs:
+- Fixes an issue where reading a collection of complex values would fail if the new JSON format was used and a type resolver was not provided
+- Fixes an issue where ODataLib was not escaping literal values in IDs and edit links
+- Fixes an issue where requesting the service document with application/json;odata=nometadata would fail
+- Fixes an issue where using the new JSON format without a type resolver would create issues with derived types
+- (Usability bug) Makes it easier to track the current item in ODataLib in many situations
+- Fixes an issue where the LINQ provider on the client would produce $filter instead of a key expression for derived types with composite keys
+- (Usability bug) Fixes an issue where the inability to set EntityState and ETag values forced people to detach and attach entities for some operations
+- Fixes an issue where some headers required a case-sensitive match on the WCF DS client
+- Fixes an issue where 304 responses were sending back more headers than appropriate per the HTTP spec
+- Fixes an issue where a request for the new JSON format could result in an error that used the Atom format
+- Fixes an issue where it was possible to write an annotation value that was invalid according to the term
+- Fixes an issue where PATCH requests for OData v1/v2 payloads would return a 500 error rather than 405</releaseNotes>
+    <tags>wcf data services odata odatalib edmlib spatial ado.net ef entity framework open protocol wcfds wcfdataservices dataservices</tags>
+    <references>
+      <reference file="Microsoft.Data.Edm.dll" />
+      <reference file="Microsoft.Data.Edm.SL.dll" />
+    </references>
+  </metadata>
+</package>

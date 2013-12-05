@@ -6,8 +6,12 @@
 
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+//using System.Data.Spatial;
 
+using Rock;
+using Rock.Attribute;
 using Rock.ServiceObjects.GeoCoder;
+using Rock.Web.UI;
 
 namespace Rock.Address.Geocode
 {
@@ -17,39 +21,40 @@ namespace Rock.Address.Geocode
     [Description("Service Objects Geocoding service")]
     [Export( typeof( GeocodeComponent ) )]
     [ExportMetadata( "ComponentName", "ServiceObjects" )]
-    [Rock.Attribute.Property( 2, "License Key", "Security", "The Service Objects License Key", true, "" )]
+    [TextField( "License Key", "The Service Objects License Key" )]
     public class ServiceObjects : GeocodeComponent
     {
         /// <summary>
         /// Geocodes the specified address.
         /// </summary>
-        /// <param name="address">The address.</param>
+        /// <param name="location">The location.</param>
         /// <param name="result">The ServiceObjects result.</param>
         /// <returns>
         /// True/False value of whether the address was standardized succesfully
         /// </returns>
-        public override bool Geocode( Rock.CRM.Address address, out string result )
+        public override bool Geocode( Rock.Model.Location location, out string result )
         {
-            if ( address != null )
+            if ( location != null )
             {
-                string licenseKey = AttributeValue("LicenseKey");
+                string licenseKey = GetAttributeValue("LicenseKey");
 
                 var client = new DOTSGeoCoderSoapClient();
-                Location_V3 location = client.GetBestMatch_V3(
+                Location_V3 location_match = client.GetBestMatch_V3(
                     string.Format("{0} {1}",
-                        address.Street1,
-                        address.Street2),
-                    address.City,
-                    address.State,
-                    address.Zip,
+                        location.Street1,
+                        location.Street2),
+                    location.City,
+                    location.State,
+                    location.Zip,
                     licenseKey );
 
-                result = location.Level;
+                result = location_match.Level;
 
-                if ( location.Level == "S" || location.Level == "P" )
+                if ( location_match.Level == "S" || location_match.Level == "P" )
                 {
-                    address.Latitude = double.Parse( location.Latitude );
-                    address.Longitude = double.Parse( location.Longitude );
+                    double latitude = double.Parse( location_match.Latitude );
+                    double longitude = double.Parse( location_match.Longitude );
+                    location.SetLocationPointFromLatLong(latitude, longitude);
 
                     return true;
                 }

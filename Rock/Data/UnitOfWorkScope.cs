@@ -21,43 +21,40 @@ namespace Rock.Data
         /// <summary>
         /// The object context
         /// </summary>
-        public readonly DbContext objectContext;
-
-        /// <summary>
-        /// Gets or sets a value indicating whether all changes should be saved when scope ends.
-        /// </summary>
-        /// <value>
-        /// 	<c>true</c> if changes should be saved; otherwise, <c>false</c>.
-        /// </value>
-        public bool SaveAllChangesAtScopeEnd { get; set; }
+        public readonly DbContext DbContext;
 
         /// <summary>
         /// Gets the current object context.
         /// </summary>
         internal static DbContext CurrentObjectContext
         {
-            get { return currentScope != null ? currentScope.objectContext : null; }
+            get { return currentScope != null ? currentScope.DbContext : null; }
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UnitOfWorkScope"/> class.
         /// </summary>
-        public UnitOfWorkScope() : this( false ) { }
+        public UnitOfWorkScope() 
+        {
+            if ( currentScope == null )
+            {
+                DbContext = new RockContext();
+                isDisposed = false;
+                currentScope = this;
+            }
+        }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="UnitOfWorkScope"/> class.
+        /// Initializes a new instance of the <see cref="UnitOfWorkScope"/> class using a custom dbContext
         /// </summary>
-        /// <param name="saveAllChangesAtScopeEnd">if set to <c>true</c> changes should be saved at scope end.</param>
-        public UnitOfWorkScope( bool saveAllChangesAtScopeEnd )
+        public UnitOfWorkScope(DbContext context)
         {
-            if ( currentScope != null && !currentScope.isDisposed )
-                throw new InvalidOperationException( "ObjectContextScope instances can not be nested" );
-
-            SaveAllChangesAtScopeEnd = saveAllChangesAtScopeEnd;
-            objectContext = new RockContext();
-            isDisposed = false;
-            //Thread.BeginThreadAffinity();  --Not supported with Medium Trust
-            currentScope = this;
+            if ( currentScope == null )
+            {
+                DbContext = context;
+                isDisposed = false;
+                currentScope = this;
+            }
         }
 
         /// <summary>
@@ -65,17 +62,27 @@ namespace Rock.Data
         /// </summary>
         public void Dispose()
         {
+            Dispose( true );
+            GC.SuppressFinalize( this );
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose( bool disposing )
+        {
             if ( !isDisposed )
             {
-                currentScope = null;
-                //Thread.EndThreadAffinity();  -- Not supported with Medium Trust
-
-                if ( SaveAllChangesAtScopeEnd )
+                if ( disposing )
                 {
-                    objectContext.SaveChanges();
+                    if ( DbContext != null )
+                    {
+                        DbContext.Dispose();
+                        currentScope = null;
+                    }
                 }
 
-                objectContext.Dispose();
                 isDisposed = true;
             }
         }
