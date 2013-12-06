@@ -171,11 +171,6 @@ namespace RockWeb.Blocks.Cms
                         }
                     }
 
-                    site.FaviconUrl = tbFaviconUrl.Text;
-                    site.AppleTouchIconUrl = tbAppleTouchIconUrl.Text;
-                    site.FacebookAppId = tbFacebookAppId.Text;
-                    site.FacebookAppSecret = tbFacebookAppSecret.Text;
-
                     if (!site.DefaultPageId.HasValue && !newSite)
                     {
                         ppDefaultPage.ShowErrorMessage( "Default Page is required." );
@@ -408,8 +403,6 @@ namespace RockWeb.Blocks.Cms
             tbErrorPage.Text = site.ErrorPage;
 
             tbSiteDomains.Text = string.Join( "\n", site.SiteDomains.Select( dom => dom.Domain ).ToArray() );
-            tbFaviconUrl.Text = site.FaviconUrl;
-            tbAppleTouchIconUrl.Text = site.AppleTouchIconUrl;
             tbFacebookAppId.Text = site.FacebookAppId;
             tbFacebookAppSecret.Text = site.FacebookAppSecret;
         }
