@@ -17,6 +17,45 @@ namespace Rock.Model
     public partial class BinaryFileService
     {
         /// <summary>
+        /// Gets the specified unique identifier.
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        /// <returns></returns>
+        public override BinaryFile Get( Guid guid )
+        {
+            BinaryFile binaryFile = base.Get( guid );
+            GetFileContentFromStorageProvider( binaryFile );
+            return binaryFile;
+        }
+
+        /// <summary>
+        /// Gets the specified identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override BinaryFile Get( int id )
+        {
+            BinaryFile binaryFile = base.Get( id );
+            GetFileContentFromStorageProvider( binaryFile );
+            return binaryFile;
+        }
+
+        /// <summary>
+        /// Gets the file content from storage provider.
+        /// </summary>
+        /// <param name="binaryFile">The binary file.</param>
+        private void GetFileContentFromStorageProvider( BinaryFile binaryFile )
+        {
+            Rock.Storage.ProviderComponent storageProvider = DetermineBinaryFileStorageProvider( binaryFile );
+
+            if ( storageProvider != null )
+            {
+                binaryFile.Data = binaryFile.Data ?? new BinaryFileData();
+                binaryFile.Data.Content = storageProvider.GetFileContent( binaryFile, HttpContext.Current );
+            }
+        }
+
+        /// <summary>
         /// Saves the specified <see cref="Rock.Model.BinaryFile"/>.
         /// </summary>
         /// <param name="item">A <see cref="Rock.Model.BinaryFile"/> to save.</param>
@@ -29,17 +68,35 @@ namespace Rock.Model
 
             if ( storageProvider != null )
             {
-                //// if this file is getting replaced, and we can determine the StorageProvider, use the provider to remove the file from the provider's 
+                //// if this file is getting replaced, and we can determine the StorageProvider, use the provider to get and remove the file from the provider's 
                 //// external storage medium before we save it again. This especially important in cases where the provider for this filetype has changed 
                 //// since it was last saved
-                storageProvider.RemoveFile( item, HttpContext.Current );
 
-                // save the file to the provider's storage medium
+                // first get the FileContent from the old/current fileprovider in case we need to save it somewhere else
+                item.Data = item.Data ?? new BinaryFileData();
+                item.Data.Content = storageProvider.GetFileContent( item, HttpContext.Current );
+
+                // now, remove it from the old/current fileprovider
+                storageProvider.RemoveFile( item, HttpContext.Current );
+            }
+
+            // when a file is saved (unless it is getting Deleted/Saved), it should use the StoredEntityType that is associated with the BinaryFileType
+            if ( item.BinaryFileType != null )
+            {
+                // make sure that it updated to use the same storage as specified by the BinaryFileType
+                if ( item.StorageEntityTypeId != item.BinaryFileType.StorageEntityTypeId )
+                {
+                    item.SetStorageEntityTypeId( item.BinaryFileType.StorageEntityTypeId );
+                    storageProvider = DetermineBinaryFileStorageProvider( item );
+                }
+            }
+
+            if ( storageProvider != null )
+            {
+                // save the file to the provider's new storage medium
                 storageProvider.SaveFile( item, HttpContext.Current );
             }
 
-            // when a file is saved, it should use the StoredEntityType that is associated with the BinaryFileType
-            item.StorageEntityTypeId = item.BinaryFileType.StorageEntityTypeId;
             return base.Save( item, personId );
         }
 
@@ -74,11 +131,7 @@ namespace Rock.Model
             item.StorageEntityType = item.StorageEntityType ?? new EntityTypeService().Get( item.StorageEntityTypeId ?? 0 );
             if ( item.StorageEntityType != null )
             {
-                item.BinaryFileType = item.BinaryFileType ?? new BinaryFileTypeService().Get( item.BinaryFileTypeId ?? 0 );
-                if ( item.BinaryFileType != null )
-                {
-                    storageProvider = Rock.Storage.ProviderContainer.GetComponent( item.BinaryFileType.StorageEntityType.Name );
-                }
+                storageProvider = Rock.Storage.ProviderContainer.GetComponent( item.StorageEntityType.Name );
             }
 
             return storageProvider;
@@ -131,8 +184,8 @@ namespace Rock.Model
             context.Items.Add( "cmd", cmd );
 
             // start async DB read
-            return cmd.BeginExecuteReader( 
-                callback, 
+            return cmd.BeginExecuteReader(
+                callback,
                 context,
                 CommandBehavior.SequentialAccess |  // doesn't load whole column into memory
                 CommandBehavior.SingleRow |         // performance improve since we only want one row
@@ -165,7 +218,8 @@ namespace Rock.Model
                 binaryFile.MimeType = reader["MimeType"] as string;
                 binaryFile.LastModifiedDateTime = reader["LastModifiedDateTime"] as DateTime?;
                 binaryFile.Description = reader["Description"] as string;
-                binaryFile.StorageEntityTypeId = reader["StorageEntityTypeId"] as int?;
+                int? storageEntityTypeId = reader["StorageEntityTypeId"] as int?;
+                binaryFile.SetStorageEntityTypeId( storageEntityTypeId );
                 var guid = reader["Guid"];
                 if ( guid is Guid )
                 {
@@ -173,16 +227,16 @@ namespace Rock.Model
                 }
 
                 string entityTypeName = reader["StorageEntityTypeName"] as string;
-                
+
                 binaryFile.Data = new BinaryFileData();
 
                 // read the fileContent from the database just in case it's stored in the database, otherwise, the Provider will get it
                 var content = reader["Content"];
-                if (content != null)
+                if ( content != null )
                 {
                     binaryFile.Data.Content = content as byte[];
                 }
-                
+
                 Rock.Storage.ProviderComponent provider = Rock.Storage.ProviderContainer.GetComponent( entityTypeName );
 
                 binaryFile.Data.Content = provider.GetFileContent( binaryFile, context );

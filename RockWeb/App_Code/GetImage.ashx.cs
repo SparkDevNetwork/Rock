@@ -9,15 +9,12 @@
 using System;
 using System.Collections.Specialized;
 using System.IO;
-using System.Net;
-using System.Web;
 using System.Linq;
-
-using ImageResizer;
-using Rock.Model;
-using Rock;
 using System.Threading;
-using System.Diagnostics;
+using System.Web;
+using ImageResizer;
+using Rock;
+using Rock.Model;
 
 namespace RockWeb
 {
@@ -32,8 +29,6 @@ namespace RockWeb
         /// <param name="context">An <see cref="T:System.Web.HttpContext" /> object that provides references to the intrinsic server objects (for example, Request, Response, Session, and Server) used to service HTTP requests.</param>
         public void ProcessRequest( HttpContext context )
         {
-            Stopwatch stopwatch = Stopwatch.StartNew();
-            
             context.Response.Clear();
             var queryString = context.Request.QueryString;
 
@@ -47,12 +42,7 @@ namespace RockWeb
 
             try
             {
-                string cacheName = Uri.EscapeDataString( context.Request.Url.Query );
-                string physCachedFilePath = context.Request.MapPath( string.Format( "~/App_Data/Cache/{0}", cacheName ) );
-
-                var binaryFileService = new BinaryFileService();
-
-                var binaryFileQuery = binaryFileService.Queryable();
+                var binaryFileQuery = new BinaryFileService().Queryable();
                 if ( fileGuid != Guid.Empty )
                 {
                     binaryFileQuery = binaryFileQuery.Where( a => a.Guid == fileGuid );
@@ -62,17 +52,15 @@ namespace RockWeb
                     binaryFileQuery = binaryFileQuery.Where( a => a.Id == fileId );
                 }
 
-                // get just the binaryFileMetaData (not the file content) just in case we can get the filecontent faster from the cache
+                //// get just the binaryFileMetaData (not the file content) just in case we can get the filecontent faster from the cache
+                //// a null LastModifiedDateTime shouldn't happen, but just in case, set it to DateTime.MaxValue so we error on the side of not getting it from the cache
                 var binaryFileMetaData = binaryFileQuery.Select( a => new
                     {
-                        a.BinaryFileType,
-                        a.LastModifiedDateTime,
+                        BinaryFileType_AllowCaching = a.BinaryFileType.AllowCaching,
+                        LastModifiedDateTime = a.LastModifiedDateTime ?? DateTime.MaxValue,
                         a.MimeType,
                         a.FileName
                     } ).FirstOrDefault();
-
-                Debug.WriteLine( string.Format( "GetImage {1} binaryFileMetaData @ {0} ms", stopwatch.Elapsed.TotalMilliseconds, binaryFileMetaData.FileName ) );
-                stopwatch.Restart();
 
                 if ( binaryFileMetaData == null )
                 {
@@ -83,74 +71,50 @@ namespace RockWeb
                 byte[] fileContent = null;
 
                 // Is it cached
-                if ( binaryFileMetaData.BinaryFileType.AllowCaching && File.Exists( physCachedFilePath ) )
+                string cacheName = Uri.EscapeDataString( context.Request.Url.Query );
+                string physCachedFilePath = context.Request.MapPath( string.Format( "~/App_Data/Cache/{0}", cacheName ) );
+                if ( binaryFileMetaData.BinaryFileType_AllowCaching && File.Exists( physCachedFilePath ) )
                 {
-                    // Is cached version newer?
-                    if ( !binaryFileMetaData.LastModifiedDateTime.HasValue ||
-                         binaryFileMetaData.LastModifiedDateTime.Value.CompareTo( File.GetCreationTime( physCachedFilePath ) ) <= 0 )
+                    // Has the file been modified since the last cached datetime?
+                    DateTime cachedFileDateTime = File.GetCreationTime( physCachedFilePath );
+                    if ( binaryFileMetaData.LastModifiedDateTime < cachedFileDateTime )
                     {
+                        // NOTE: the cached file has already been resized (the size is part of the cached file's filename), so we don't need to resize it again
                         fileContent = FetchFromCache( physCachedFilePath );
                     }
                 }
-                else
+
+                if ( fileContent == null )
                 {
-                    // use the binaryFileService.BeginGet/EndGet which is a little faster than the regular get
-                    BinaryFile binaryFile = null;
-                    System.Threading.ManualResetEvent completedEvent = new ManualResetEvent( false );
+                    // If we didn't get it from the cache, get it from the binaryFileService
+                    BinaryFile binaryFile = GetFromBinaryFileService( context, fileId, fileGuid );
 
-                    AsyncCallback cb = ( IAsyncResult asyncResult ) =>
+                    if ( binaryFile != null && binaryFile.Data != null )
                     {
-                        // restore the context from the asyncResult.AsyncState 
-                        HttpContext asyncContext = (HttpContext)asyncResult.AsyncState;
-                        binaryFile = new BinaryFileService().EndGet( asyncResult, context );
-                        completedEvent.Set();
-
-                        Debug.WriteLine( string.Format( "GetImage {1} EndGet @ {0} ms", stopwatch.Elapsed.TotalMilliseconds, binaryFileMetaData.FileName ) );
-                        stopwatch.Restart();
-                    };
-
-                    IAsyncResult beginGetResult;
-
-                    if ( fileGuid != Guid.Empty )
-                    {
-                        beginGetResult = binaryFileService.BeginGet( cb, context, fileGuid );
-                    }
-                    else
-                    {
-                        beginGetResult = binaryFileService.BeginGet( cb, context, fileId );
+                        fileContent = binaryFile.Data.Content;
                     }
 
-                    // wait up to 5 minutes for the response
-                    completedEvent.WaitOne( 300000 );
-
-                    if ( binaryFile != null )
+                    if ( fileContent != null )
                     {
-                        if ( binaryFile.Data != null )
+                        // If we got the image from the binaryFileService, it might need to be resized and cached
+                        if ( queryString.Count > 1 )
                         {
-                            fileContent = binaryFile.Data.Content;
+                            // If more than 1 query string param is passed in, assume resize is needed
+                            fileContent = GetResized( queryString, fileContent );
+                        }
+
+                        if ( binaryFileMetaData.BinaryFileType_AllowCaching )
+                        {
+                            Cache( fileContent, physCachedFilePath );
                         }
                     }
                 }
 
                 if ( fileContent == null )
                 {
+                    // if we couldn't get the file from the binaryFileServie or the cache, respond with NotFound
                     SendNotFound( context );
                     return;
-                }
-
-                // If more than 1 query string param is passed in, assume resize is needed
-                if ( queryString.Count > 1 )
-                {
-                    fileContent = GetResized( queryString, fileContent );
-                    Debug.WriteLine( string.Format( "GetImage {1} GetResized @ {0} ms", stopwatch.Elapsed.TotalMilliseconds, binaryFileMetaData.FileName ) );
-                    stopwatch.Restart();
-                }
-
-                if ( binaryFileMetaData.BinaryFileType.AllowCaching )
-                {
-                    Cache( fileContent, physCachedFilePath );
-                    Debug.WriteLine( string.Format( "GetImage {1} Cache @ {0} ms", stopwatch.Elapsed.TotalMilliseconds, binaryFileMetaData.FileName ) );
-                    stopwatch.Restart();
                 }
 
                 // respond with File
@@ -158,9 +122,6 @@ namespace RockWeb
                 context.Response.AddHeader( "content-disposition", "inline;filename=" + binaryFileMetaData.FileName );
                 context.Response.BinaryWrite( fileContent );
                 context.Response.Flush();
-
-                stopwatch.Stop();
-                Debug.WriteLine( string.Format( "GetImage {1} Done @ {0} ms", stopwatch.Elapsed.TotalMilliseconds, binaryFileMetaData.FileName ) );
             }
             catch ( Exception ex )
             {
@@ -173,12 +134,49 @@ namespace RockWeb
         }
 
         /// <summary>
+        /// Gets from binary file service.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="fileId">The file identifier.</param>
+        /// <param name="fileGuid">The file unique identifier.</param>
+        /// <returns></returns>
+        private BinaryFile GetFromBinaryFileService( HttpContext context, int fileId, Guid fileGuid )
+        {
+            BinaryFile binaryFile = null;
+            System.Threading.ManualResetEvent completedEvent = new ManualResetEvent( false );
+
+            // use the binaryFileService.BeginGet/EndGet which is a little faster than the regular get
+            AsyncCallback cb = ( IAsyncResult asyncResult ) =>
+            {
+                // restore the context from the asyncResult.AsyncState 
+                HttpContext asyncContext = (HttpContext)asyncResult.AsyncState;
+                binaryFile = new BinaryFileService().EndGet( asyncResult, context );
+                completedEvent.Set();
+            };
+
+            IAsyncResult beginGetResult;
+
+            if ( fileGuid != Guid.Empty )
+            {
+                beginGetResult = new BinaryFileService().BeginGet( cb, context, fileGuid );
+            }
+            else
+            {
+                beginGetResult = new BinaryFileService().BeginGet( cb, context, fileId );
+            }
+
+            // wait up to 5 minutes for the response
+            completedEvent.WaitOne( 300000 );
+            return binaryFile;
+        }
+
+        /// <summary>
         /// Resizes and returns the resized content
         /// </summary>
         /// <param name="queryString">The query string.</param>
         /// <param name="fileContent">Content of the file.</param>
         /// <returns></returns>
-        private static byte[] GetResized( NameValueCollection queryString, byte[] fileContent )
+        private byte[] GetResized( NameValueCollection queryString, byte[] fileContent )
         {
             ResizeSettings settings = new ResizeSettings( queryString );
             MemoryStream resizedStream = new MemoryStream();
@@ -191,7 +189,7 @@ namespace RockWeb
         /// </summary>
         /// <param name="fileContent">Content of the file.</param>
         /// <param name="physFilePath">The physical file path.</param>
-        private static void Cache( byte[] fileContent, string physFilePath )
+        private void Cache( byte[] fileContent, string physFilePath )
         {
             using ( BinaryWriter binWriter = new BinaryWriter( File.Open( physFilePath, FileMode.Create ) ) )
             {
@@ -204,7 +202,7 @@ namespace RockWeb
         /// </summary>
         /// <param name="physFilePath">The phys file path.</param>
         /// <returns></returns>
-        private static byte[] FetchFromCache( string physFilePath )
+        private byte[] FetchFromCache( string physFilePath )
         {
             try
             {
@@ -226,7 +224,7 @@ namespace RockWeb
         /// Sends 404 status.
         /// </summary>
         /// <param name="context">The context.</param>
-        private static void SendNotFound( HttpContext context )
+        private void SendNotFound( HttpContext context )
         {
             context.Response.StatusCode = 404;
             context.Response.StatusDescription = "The requested image could not be found.";

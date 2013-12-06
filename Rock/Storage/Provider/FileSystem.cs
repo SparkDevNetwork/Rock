@@ -35,7 +35,7 @@ namespace Rock.Storage.Provider
                 throw new ArgumentException( "File Data must not be null." );
             }
 
-            var url = GetUrl( file );
+            var url = GenerateUrl( file );
             var physicalPath = GetPhysicalPath( url, context );
             var directoryName = Path.GetDirectoryName( physicalPath );
 
@@ -59,8 +59,7 @@ namespace Rock.Storage.Provider
         /// <param name="context">The context.</param>
         public override void RemoveFile( BinaryFile file, HttpContext context )
         {
-            var url = GetUrl( file );
-            var physicalPath = GetPhysicalPath( url, context );
+            var physicalPath = GetPhysicalPath( file.Url, context );
 
             if ( File.Exists( physicalPath ) )
             {
@@ -76,8 +75,7 @@ namespace Rock.Storage.Provider
         /// <returns></returns>
         public override byte[] GetFileContent( BinaryFile file, HttpContext context )
         {
-            var url = GetUrl( file );
-            var physicalPath = GetPhysicalPath( url, context );
+            var physicalPath = GetPhysicalPath( file.Url, context );
 
             if ( File.Exists( physicalPath ) )
             {
@@ -90,11 +88,11 @@ namespace Rock.Storage.Provider
         }
 
         /// <summary>
-        /// Gets the URL.
+        /// Generate a URL for the file based on the rules of the StorageProvider
         /// </summary>
         /// <param name="file">The file.</param>
         /// <returns></returns>
-        public override string GetUrl( BinaryFile file)
+        public override string GenerateUrl( BinaryFile file )
         {
             if ( string.IsNullOrWhiteSpace( file.FileName ) )
             {

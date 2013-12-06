@@ -53,11 +53,11 @@ namespace Rock.Storage
         public abstract byte[] GetFileContent( BinaryFile file, HttpContext context );
 
         /// <summary>
-        /// Gets the URL.
+        /// Generate a URL for the file based on the rules of the StorageProvider
         /// </summary>
         /// <param name="file">The file.</param>
         /// <returns></returns>
-        public abstract string GetUrl( BinaryFile file);
+        public abstract string GenerateUrl( BinaryFile file);
 
         /// <summary>
         /// Gets the type of the entity.

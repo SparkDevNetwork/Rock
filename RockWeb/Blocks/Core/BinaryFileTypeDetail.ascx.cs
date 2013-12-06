@@ -242,9 +242,6 @@ namespace RockWeb.Blocks.Core
                 binaryFileType.IconLargeFileId = imgIconLarge.BinaryFileId;
                 binaryFileType.AllowCaching = cbAllowCaching.Checked;
 
-                binaryFileType.LoadAttributes();
-                Rock.Attribute.Helper.GetEditValues( phAttributes, binaryFileType );
-
                 if ( !string.IsNullOrWhiteSpace( cpStorageType.SelectedValue ) )
                 {
                     var entityTypeService = new EntityTypeService();
@@ -255,6 +252,9 @@ namespace RockWeb.Blocks.Core
                         binaryFileType.StorageEntityTypeId = storageEntityType.Id;
                     }
                 }
+
+                binaryFileType.LoadAttributes();
+                Rock.Attribute.Helper.GetEditValues( phAttributes, binaryFileType );
 
                 if ( !binaryFileType.IsValid )
                 {
