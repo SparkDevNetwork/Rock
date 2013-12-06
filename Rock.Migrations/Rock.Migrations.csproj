@@ -78,6 +78,10 @@
     <Compile Include="Migrations\201312042251282_UpdateEmailTemplates.Designer.cs">
       <DependentUpon>201312042251282_UpdateEmailTemplates.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201312052359158_UpdateSiteMapToPageMap.cs" />
+    <Compile Include="Migrations\201312052359158_UpdateSiteMapToPageMap.Designer.cs">
+      <DependentUpon>201312052359158_UpdateSiteMapToPageMap.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -114,6 +118,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201312042251282_UpdateEmailTemplates.resx">
       <DependentUpon>201312042251282_UpdateEmailTemplates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312052359158_UpdateSiteMapToPageMap.resx">
+      <DependentUpon>201312052359158_UpdateSiteMapToPageMap.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
