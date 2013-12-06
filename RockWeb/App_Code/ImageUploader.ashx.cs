@@ -23,12 +23,12 @@ namespace RockWeb
     public class ImageUploader : FileUploader
     {
         /// <summary>
-        /// Gets the file data.
+        /// Gets the file bytes.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="uploadedFile">The uploaded file.</param>
         /// <returns></returns>
-        public override BinaryFileData GetFileData( HttpContext context, HttpPostedFile uploadedFile )
+        public override byte[] GetFileBytes( HttpContext context, HttpPostedFile uploadedFile )
         {
             Bitmap bmp = new Bitmap( uploadedFile.InputStream );
 
@@ -50,15 +50,12 @@ namespace RockWeb
                 bmp = resizedBmp;
             }
 
-            BinaryFileData result = new BinaryFileData();
-
             using ( var stream = new MemoryStream() )
             {
                 bmp.Save( stream, ContentTypeToImageFormat( uploadedFile.ContentType ) );
-                result.Content = stream.ToArray();
+                byte[] result = stream.ToArray();
+                return result;
             }
-
-            return result;
         }
 
         /// <summary>

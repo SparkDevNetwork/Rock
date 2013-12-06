@@ -5,7 +5,6 @@
 //
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
@@ -18,34 +17,18 @@ namespace Rock.Storage.Provider
     /// <summary>
     /// Storage provider for saving binary files to file system
     /// </summary>
-    [Description( "File System-driven document storage" )]
+    [Description( "File System-driven file storage" )]
     [Export( typeof( ProviderComponent ) )]
     [ExportMetadata( "ComponentName", "FileSystem" )]
     public class FileSystem : ProviderComponent
     {
         /// <summary>
-        /// Gets the root path.
-        /// </summary>
-        /// <param name="binaryFileTypeId">The binary file type identifier.</param>
-        /// <returns></returns>
-        /// <value>
-        /// The root path.
-        ///   </value>
-        public string RootPath( int binaryFileTypeId )
-        {
-            BinaryFileType binaryFileType = new BinaryFileTypeService().Get( binaryFileTypeId );
-            binaryFileType.LoadAttributes();
-            string rootPath = binaryFileType.GetAttributeValue( "RootPath" );
-            return rootPath;
-        }
-
-        /// <summary>
         /// Saves the file to the external storage medium associated with the provider.
-        /// Note: This does not save the BinaryFile record to the database
         /// </summary>
         /// <param name="file">The file.</param>
+        /// <param name="context">The context.</param>
         /// <exception cref="System.ArgumentException">File Data must not be null.</exception>
-        public override void SaveFile( BinaryFile file)
+        public override void SaveFile( BinaryFile file, HttpContext context )
         {
             if ( file.Data == null )
             {
@@ -53,7 +36,7 @@ namespace Rock.Storage.Provider
             }
 
             var url = GetUrl( file );
-            var physicalPath = GetPhysicalPath( url );
+            var physicalPath = GetPhysicalPath( url, context );
             var directoryName = Path.GetDirectoryName( physicalPath );
 
             if ( !Directory.Exists( directoryName ) )
@@ -71,12 +54,39 @@ namespace Rock.Storage.Provider
 
         /// <summary>
         /// Removes the file from the external storage medium associated with the provider.
-        /// Note: This does not delete the BinaryFile record from the database
         /// </summary>
         /// <param name="file">The file.</param>
-        public override void RemoveFile( BinaryFile file)
+        /// <param name="context">The context.</param>
+        public override void RemoveFile( BinaryFile file, HttpContext context )
         {
-            File.Delete( HttpContext.Current.Server.MapPath( file.Url ) );
+            var url = GetUrl( file );
+            var physicalPath = GetPhysicalPath( url, context );
+
+            if ( File.Exists( physicalPath ) )
+            {
+                File.Delete( physicalPath );
+            }
+        }
+
+        /// <summary>
+        /// Gets the file bytes from the external storage medium associated with the provider.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        public override byte[] GetFileContent( BinaryFile file, HttpContext context )
+        {
+            var url = GetUrl( file );
+            var physicalPath = GetPhysicalPath( url, context );
+
+            if ( File.Exists( physicalPath ) )
+            {
+                return File.ReadAllBytes( physicalPath );
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -84,7 +94,7 @@ namespace Rock.Storage.Provider
         /// </summary>
         /// <param name="file">The file.</param>
         /// <returns></returns>
-        public override string GetUrl( BinaryFile file )
+        public override string GetUrl( BinaryFile file)
         {
             if ( string.IsNullOrWhiteSpace( file.FileName ) )
             {
@@ -93,7 +103,7 @@ namespace Rock.Storage.Provider
 
             var urlBuilder = new StringBuilder();
 
-            string rootPath = RootPath( file.BinaryFileTypeId ?? 0 );
+            string rootPath = GetRootPath( file.BinaryFileTypeId ?? 0 );
 
             urlBuilder.Append( rootPath );
 
@@ -108,11 +118,27 @@ namespace Rock.Storage.Provider
         }
 
         /// <summary>
+        /// Gets the root path.
+        /// </summary>
+        /// <param name="binaryFileTypeId">The binary file type identifier.</param>
+        /// <returns></returns>
+        /// <value>
+        /// The root path.
+        /// </value>
+        private string GetRootPath( int binaryFileTypeId )
+        {
+            BinaryFileType binaryFileType = new BinaryFileTypeService().Get( binaryFileTypeId );
+            binaryFileType.LoadAttributes();
+            string rootPath = binaryFileType.GetAttributeValue( "RootPath" );
+            return rootPath;
+        }
+
+        /// <summary>
         /// Gets the physical path.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns></returns>
-        private string GetPhysicalPath( string path )
+        private string GetPhysicalPath( string path, HttpContext context )
         {
             if ( path.StartsWith( "C:" ) || path.StartsWith( "\\\\" ) )
             {
@@ -121,7 +147,7 @@ namespace Rock.Storage.Provider
 
             if ( path.StartsWith( "http:" ) || path.StartsWith( "https:" ) || path.StartsWith( "/" ) || path.StartsWith( "~" ) )
             {
-                return HttpContext.Current.Server.MapPath( path );
+                return context.Server.MapPath( path );
             }
 
             return Path.Combine( AppDomain.CurrentDomain.BaseDirectory, path );
