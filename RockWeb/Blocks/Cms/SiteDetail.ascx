@@ -41,8 +41,6 @@
                         </div>
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbSiteDomains" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="SiteDomains" TextMode="MultiLine" LabelTextFromPropertyName="false" Label="Domain(s)" Help="A delimited list of domain values that are associated with this site.  These values are used by Rock to load the correct site whenever a specific page or route is not provided in the url. Rock will determine the site to use by finding the first site with a domain value that is contained by the current request's hostname in the url.  It will then display that site's default page" />
-                            <Rock:DataTextBox ID="tbFaviconUrl" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="FaviconUrl" />
-                            <Rock:DataTextBox ID="tbAppleTouchIconUrl" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="AppleTouchIconUrl" />
                             <Rock:DataTextBox ID="tbFacebookAppId" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="FacebookAppId" />
                             <Rock:DataTextBox ID="tbFacebookAppSecret" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="FacebookAppSecret" />
                         </div>
