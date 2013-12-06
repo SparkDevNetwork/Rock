@@ -21,6 +21,9 @@ namespace RockWeb.Blocks.Administration
 {
     public partial class SystemInfo : Rock.Web.UI.RockBlock
     {
+
+        #region Base Control Methods
+
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
@@ -122,6 +125,9 @@ namespace RockWeb.Blocks.Administration
             lRoutes.Text = sb.ToString();
         }
 
+        #endregion
+
+        #region Events
 
         /// <summary>
         /// Used to manually flush the attribute cache.
@@ -160,5 +166,8 @@ namespace RockWeb.Blocks.Administration
                 Rock.Web.Cache.DefinedValueCache.Flush( definedValue.Id );
             }
         }
+
+        #endregion
+
     }
 }
