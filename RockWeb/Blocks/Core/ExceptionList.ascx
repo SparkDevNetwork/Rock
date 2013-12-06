@@ -45,7 +45,9 @@
             </div>
 
             <div class="row">
-                <asp:Literal ID="lblMainDetails" runat="server" />
+                <div class="col-md-12">
+                    <asp:Literal ID="lblMainDetails" runat="server" />
+                </div>
             </div>
 
             <h4>Exception List</h4>
