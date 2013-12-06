@@ -20,8 +20,8 @@ CREATING INSTALLER ZIP FILE
 <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
 
-1. Pull latest from GitHub tag
-2. Build solution in Visual Studio (build in Release mode)
+1. Download the source from the GitHub release tag
+2. Build solution in Visual Studio (IMPORTANT: build in Release mode)
 3. Edit web.config.  Delete the line:   <add key="AutoMigrateDatabase" value="False"/>
 4. Edit web.config. set RunJobsInIISContext = true
 5. Delete mockup images under 'Assets'
