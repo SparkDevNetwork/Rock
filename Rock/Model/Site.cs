@@ -131,30 +131,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? RegistrationPageRouteId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the path to the Site's Favicon.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> containing the Url to the Site's Favicon. This property will be null if the site does not use a Favicon.
-        /// </value>
-        [MaxLength( 150 )]
-        [DataMember]
-        public string FaviconUrl { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the path to the site's AppleTouch icon. 
-        /// </summary>
-        /// <remarks>
-        /// This icon is a .png file used on iOS devices that is shown when a web application saved to the home screen.  For complete details on 
-        /// how to use these, please visit. https://developer.apple.com/library/ios/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
-        /// </remarks>
-        /// <value>
-        /// A <see cref="System.String"/> containing the path to the site's AppleTouch icon.
-        /// </value>
-        [MaxLength( 150 )]
-        [DataMember]
-        public string AppleTouchIconUrl { get; set; }
         
         /// <summary>
         /// Gets or sets the Site's Facebook AppId for utilizing the Facebook SDK.
