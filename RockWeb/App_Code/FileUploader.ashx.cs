@@ -55,61 +55,88 @@ namespace RockWeb
                     return;
                 }
 
-                BinaryFileService fileService = new BinaryFileService();
-                var id = context.Request.QueryString["fileId"];
-                BinaryFile file = null;
-                BinaryFileType fileType = null;
-
-                // Attempt to find file by an Id or Guid passed in
-                if ( !string.IsNullOrEmpty( id ) )
+                using ( new Rock.Data.UnitOfWorkScope() )
                 {
-                    int fileId;
-                    file = int.TryParse( id, out fileId ) ? fileService.Get( fileId ) : fileService.GetByEncryptedKey( id );
+                    BinaryFileService binaryFileService = new BinaryFileService();
+                    var fileIdParameter = context.Request.QueryString["fileId"];
+
+
+                    // TODO var fileGuidParameter = context.Request.QueryString["fileGuid"];
+
+
+                    BinaryFile binaryFile = null;
+                    BinaryFileType binaryFileType = null;
+
+                    // Attempt to find file by an Id or EncryptedKey passed in
+                    if ( !string.IsNullOrEmpty( fileIdParameter ) )
+                    {
+                        int? fileId = fileIdParameter.AsInteger();
+                        if ( fileId.HasValue )
+                        {
+                            binaryFile = binaryFileService.Get( fileId.Value );
+                        }
+                        else
+                        {
+                            binaryFile = binaryFileService.GetByEncryptedKey( fileIdParameter );
+                        }
+                    }
+
+                    // ...otherwise create a new BinaryFile
+                    if ( binaryFile == null )
+                    {
+                        binaryFile = new BinaryFile();
+                    }
+
+                    // Check to see if BinaryFileType info was sent
+                    BinaryFileTypeService binaryFileTypeService = new BinaryFileTypeService();
+                    var fileTypeParameter = context.Request.QueryString["fileTypeGuid"];
+
+                    if ( !string.IsNullOrEmpty( fileTypeParameter ) )
+                    {
+                        Guid fileTypeGuid = fileTypeParameter.AsGuid();
+                        if ( fileTypeGuid != Guid.Empty )
+                        {
+                            binaryFileType = binaryFileTypeService.Get( fileTypeGuid );
+                        }
+                        else
+                        {
+                            binaryFileType = binaryFileTypeService.GetByEncryptedKey( fileTypeParameter );
+                        }
+                    }
+                    else if ( binaryFile.BinaryFileType != null )
+                    {
+                        binaryFileType = binaryFile.BinaryFileType;
+                    }
+
+                    // If we're dealing with a new BinaryFile and a BinaryFileType Guid was passed in,
+                    // set its Id before the BinaryFile gets saved to the DB.
+                    if ( binaryFile.BinaryFileType == null && binaryFileType != null )
+                    {
+                        binaryFile.BinaryFileTypeId = binaryFileType.Id;
+                    }
+
+                    binaryFile.MimeType = uploadedFile.ContentType;
+                    binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
+                    binaryFile.StorageEntityTypeId = binaryFileType.StorageEntityTypeId;
+                    binaryFile.Data = binaryFile.Data ?? new BinaryFileData();
+                    binaryFile.Data.Content = GetFileBytes( context, uploadedFile );
+
+                    // Save the file using the fileService (id = 0 means it is a new file)
+                    if ( binaryFile.Id == 0 )
+                    {
+                        binaryFileService.Add( binaryFile, null );
+                    }
+
+                    binaryFileService.Save( binaryFile, null );
+
+                    var response = new
+                    {
+                        Id = binaryFile.Id,
+                        FileName = binaryFile.FileName
+                    };
+
+                    context.Response.Write( response.ToJson() );
                 }
-
-                // ...otherwise create a new BinaryFile
-                if ( file == null )
-                {
-                    file = new BinaryFile();
-                }
-
-                // Check to see if BinaryFileType info was sent
-                BinaryFileTypeService fileTypeService = new BinaryFileTypeService();
-                var guid = context.Request.QueryString["fileTypeGuid"];
-
-                if ( !string.IsNullOrEmpty( guid ) )
-                {
-                    Guid fileTypeGuid;
-                    fileType = Guid.TryParse( guid, out fileTypeGuid ) ? fileTypeService.Get( fileTypeGuid ) : fileTypeService.GetByEncryptedKey( guid );
-                }
-                else if ( file.BinaryFileType != null )
-                {
-                    fileType = file.BinaryFileType;
-                }
-
-                // If we're dealing with a new BinaryFile and a BinaryFileType Guid was passed in,
-                // set its Id before the BinaryFile gets saved to the DB.
-                if ( file.BinaryFileType == null && fileType != null )
-                {
-                    file.BinaryFileTypeId = fileType.Id;
-                }
-
-                file.MimeType = uploadedFile.ContentType;
-                file.FileName = Path.GetFileName( uploadedFile.FileName );
-                file.StorageEntityTypeId = fileType.StorageEntityTypeId;
-
-                file.Data = GetFileData( context, uploadedFile );
-
-                // Save the file using the fileService
-                if ( file.Id == 0 )
-                {
-                    fileService.Add( file, null );
-                }
-
-                fileService.Save( file, null );
-
-                context.Response.Write( new { Id = file.Id, FileName = file.FileName }.ToJson() );
-
             }
             catch ( Exception ex )
             {
@@ -119,16 +146,16 @@ namespace RockWeb
         }
 
         /// <summary>
-        /// Gets the file data.
+        /// Gets the file bytes.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="uploadedFile">The uploaded file.</param>
         /// <returns></returns>
-        public virtual BinaryFileData GetFileData( HttpContext context, HttpPostedFile uploadedFile)
+        public virtual byte[] GetFileBytes( HttpContext context, HttpPostedFile uploadedFile )
         {
             var bytes = new byte[uploadedFile.ContentLength];
             uploadedFile.InputStream.Read( bytes, 0, uploadedFile.ContentLength );
-            return new BinaryFileData { Content = bytes };
+            return bytes;
         }
     }
 }

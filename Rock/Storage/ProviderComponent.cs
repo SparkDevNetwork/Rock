@@ -4,7 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using System.Collections.Generic;
+using System.Web;
 using Rock.Extension;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -26,37 +26,38 @@ namespace Rock.Storage
         {
             get
             {
-                bool isActive;
-
-                if ( bool.TryParse( GetAttributeValue( "Active" ), out isActive ) )
-                {
-                    return isActive;
-                }
-
-                return true;
+                return GetAttributeValue( "Active" ).AsBoolean();
             }
         }
 
         /// <summary>
         /// Saves the file to the external storage medium associated with the provider.
-        /// Note: This does not save the BinaryFile record to the database
         /// </summary>
         /// <param name="file">The file.</param>
-        public abstract void SaveFile( BinaryFile file);
+        /// <param name="context">The context.</param>
+        public abstract void SaveFile( BinaryFile file, HttpContext context );
 
         /// <summary>
         /// Removes the file from the external storage medium associated with the provider.
-        /// Note: This does not delete the BinaryFile record from the database
         /// </summary>
         /// <param name="file">The file.</param>
-        public abstract void RemoveFile( BinaryFile file);
+        /// <param name="context">The context.</param>
+        public abstract void RemoveFile( BinaryFile file, HttpContext context );
+
+        /// <summary>
+        /// Gets the file bytes from the external storage medium associated with the provider.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        public abstract byte[] GetFileContent( BinaryFile file, HttpContext context );
 
         /// <summary>
         /// Gets the URL.
         /// </summary>
         /// <param name="file">The file.</param>
         /// <returns></returns>
-        public abstract string GetUrl( BinaryFile file );
+        public abstract string GetUrl( BinaryFile file);
 
         /// <summary>
         /// Gets the type of the entity.
