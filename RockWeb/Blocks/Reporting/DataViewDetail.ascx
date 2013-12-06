@@ -58,8 +58,12 @@
                     </p>
 
                     <div class="row">
-                        <asp:Literal ID="lblMainDetails" runat="server" />
-                        <asp:Literal ID="lFilters" runat="server" />
+                        <div class="col-md-6">
+                            <asp:Literal ID="lblMainDetails" runat="server" />
+                        </div>
+                        <div class="col-md-6">
+                            <asp:Literal ID="lFilters" runat="server" />
+                        </div>
                     </div>
 
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />

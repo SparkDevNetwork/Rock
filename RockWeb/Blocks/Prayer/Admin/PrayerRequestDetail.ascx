@@ -63,7 +63,9 @@
                 </div>
 
                 <div class="row">
-                    <asp:Literal ID="lMainDetails" runat="server" />
+                    <div class="col-md-12">
+                        <asp:Literal ID="lMainDetails" runat="server" />
+                    </div>
                 </div>
 
                 <div class="actions">
