@@ -200,22 +200,6 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets or sets the favicon URL.
-        /// </summary>
-        /// <value>
-        /// The favicon URL.
-        /// </value>
-        public string FaviconUrl { get; set; }
-
-        /// <summary>
-        /// Gets or sets the apple touch icon URL.
-        /// </summary>
-        /// <value>
-        /// The apple touch icon URL.
-        /// </value>
-        public string AppleTouchIconUrl { get; set; }
-
-        /// <summary>
         /// Gets or sets the facebook app id.
         /// </summary>
         /// <value>
@@ -279,8 +263,6 @@ namespace Rock.Web.Cache
                 this.RegistrationPageId = site.RegistrationPageId;
                 this.RegistrationPageRouteId = site.RegistrationPageRouteId;
                 this.ErrorPage = site.ErrorPage;
-                this.FaviconUrl = site.FaviconUrl;
-                this.AppleTouchIconUrl = site.AppleTouchIconUrl;
                 this.FacebookAppId = site.FacebookAppId;
                 this.FacebookAppSecret = site.FacebookAppSecret;
             }

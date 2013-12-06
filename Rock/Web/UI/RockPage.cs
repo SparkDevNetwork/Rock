@@ -767,29 +767,7 @@ namespace Rock.Web.UI
                     foreach ( var pageReference in pageReferences )
                     {
                         pageReference.BreadCrumbs.ForEach( c => BreadCrumbs.Add( c ) );
-                    }
-
-                    // Add favicon and apple touch icons to page
-                    Page.Trace.Warn( "Adding favicons and appletouch links" );
-                    if ( _pageCache.Layout.Site.FaviconUrl != null )
-                    {
-                        System.Web.UI.HtmlControls.HtmlLink faviconLink = new System.Web.UI.HtmlControls.HtmlLink();
-
-                        faviconLink.Attributes.Add( "rel", "shortcut icon" );
-                        faviconLink.Attributes.Add( "href", ResolveUrl( "~/" + _pageCache.Layout.Site.FaviconUrl ) );
-
-                        AddHtmlLink( faviconLink );
-                    }
-
-                    if ( _pageCache.Layout.Site.AppleTouchIconUrl != null )
-                    {
-                        System.Web.UI.HtmlControls.HtmlLink touchLink = new System.Web.UI.HtmlControls.HtmlLink();
-
-                        touchLink.Attributes.Add( "rel", "apple-touch-icon" );
-                        touchLink.Attributes.Add( "href", ResolveUrl( "~/" + _pageCache.Layout.Site.AppleTouchIconUrl ) );
-
-                        AddHtmlLink( touchLink );
-                    }
+                    } 
 
                     // Add the page admin footer if the user is authorized to edit the page
                     if ( _pageCache.IncludeAdminFooter && canAdministratePage )

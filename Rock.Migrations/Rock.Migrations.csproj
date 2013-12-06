@@ -33,11 +33,13 @@
     <Reference Include="DotLiquid">
       <HintPath>..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework">
-      <HintPath>..\packages\EntityFramework.6.0.1\lib\net45\EntityFramework.dll</HintPath>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\EntityFramework.6.0.2-beta1\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework.SqlServer">
-      <HintPath>..\packages\EntityFramework.6.0.1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\EntityFramework.6.0.2-beta1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -78,6 +80,14 @@
     <Compile Include="Migrations\201312042251282_UpdateEmailTemplates.Designer.cs">
       <DependentUpon>201312042251282_UpdateEmailTemplates.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201312052359158_UpdateSiteMapToPageMap.cs" />
+    <Compile Include="Migrations\201312052359158_UpdateSiteMapToPageMap.Designer.cs">
+      <DependentUpon>201312052359158_UpdateSiteMapToPageMap.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312060704559_SiteUpdateRemoveIcons.cs" />
+    <Compile Include="Migrations\201312060704559_SiteUpdateRemoveIcons.Designer.cs">
+      <DependentUpon>201312060704559_SiteUpdateRemoveIcons.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -114,6 +124,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201312042251282_UpdateEmailTemplates.resx">
       <DependentUpon>201312042251282_UpdateEmailTemplates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312052359158_UpdateSiteMapToPageMap.resx">
+      <DependentUpon>201312052359158_UpdateSiteMapToPageMap.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312060704559_SiteUpdateRemoveIcons.resx">
+      <DependentUpon>201312060704559_SiteUpdateRemoveIcons.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
