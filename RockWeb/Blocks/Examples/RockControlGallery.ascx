@@ -5,8 +5,15 @@
     }
 </script>
 <style>
-    .rlink { font-size: 16px; margin-left: -16px; outline : none;}
-    .anchor { outline: none; }
+    .rlink {
+        font-size: 16px;
+        margin-left: -16px;
+        outline: none;
+    }
+
+    .anchor {
+        outline: none;
+    }
 </style>
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
@@ -238,22 +245,27 @@
             <a id="Misc"></a>
             <h1 runat="server">Misc</h1>
 
+            <a id="FieldTypeList"></a>
             <div runat="server" class="r-example">
-                <Rock:FieldTypeList ID="FieldTypeList" runat="server" Label="Rock:FieldTypeList" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
+                <Rock:FieldTypeList ID="ftlExample" runat="server" Label="Rock:FieldTypeList" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
             </div>
 
+            <a id="FileUploader"></a>
             <div runat="server" class="r-example">
                 <Rock:FileUploader ID="fup" runat="server" Label="Rock:FileUploader" BinaryFileTypeGuid="29EFF9B7-6814-4B9F-A922-77FA0448EBFA" />
             </div>
 
+            <a id="ImageUploader"></a>
             <div runat="server" class="r-example">
                 <Rock:ImageUploader ID="imageUploader" runat="server" Label="Rock:ImageUploader" />
             </div>
 
+            <a id="NotificationBox"></a>
             <div runat="server" class="r-example">
                 <Rock:NotificationBox ID="notificationBox" runat="server" Title="Rock:NotificationBox" Text="Box Text" />
             </div>
 
+            <a id="Badge"></a>
             <h2 runat="server">Rock:Badge</h2>
             <p>
                 This is a mostly standard Bootstrap badge. We say "mostly" because we added the ability to
@@ -269,6 +281,7 @@
 
             </div>
 
+            <a id="HighlightLabel"></a>
             <h2 runat="server">Rock:HighlightLabel</h2>
             <p>
                 This creates a <a href="http://getbootstrap.com/components/#labels">Bootstrap Label</a>
@@ -286,8 +299,10 @@
                 <Rock:HighlightLabel ID="hlCustom" runat="server" LabelType="Custom" CustomClass="danger" Text="Custom" />
             </div>
 
-            <p>While you can set the <code>Text</code> to include HTML (such as font icons), you can also do this 
-                a little easier just by setting the <code>IconCssClass</code> property.</p>
+            <p>
+                While you can set the <code>Text</code> to include HTML (such as font icons), you can also do this 
+                a little easier just by setting the <code>IconCssClass</code> property.
+            </p>
 
             <div runat="server" class="r-example">
                 <Rock:HighlightLabel ID="HighlightLabel2" runat="server" LabelType="Danger" IconCssClass="fa fa-flag" Text="errors" />
@@ -351,9 +366,10 @@
     <li>Tabs work great</li>
     <li>Code folding</li>
 </ol>             
-</Rock:CodeEditor>
+                </Rock:CodeEditor>
             </div>
-            <p>Alternately, you can provide the contents of the code to edit in the <code>Text</code> property of the control.
+            <p>
+                Alternately, you can provide the contents of the code to edit in the <code>Text</code> property of the control.
             </p>
 
 
