@@ -35,10 +35,10 @@ namespace Rock.Web.UI
         #region Public Properties
 
         /// <summary>
-        /// Gets the rock page.
+        /// Gets the <see cref="Rock.Web.UI.RockPage">page</see> that contains the block (instance).
         /// </summary>
         /// <value>
-        /// The rock page.
+        /// The <see cref="Rock.Web.UI.RockPage"/> that contains this block (instance).
         /// </value>
         public RockPage RockPage
         {
@@ -49,10 +49,10 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Gets the current block's id.
+        /// Gets the BlockId of this <see cref="Rock.Model.Block"/>.
         /// </summary>
         /// <value>
-        /// The block identifier.
+        /// A <see cref="System.Int32"/> representing the BlockId of this <see cref="Rock.Model.Block"/>.
         /// </value>
         public int BlockId
         {
