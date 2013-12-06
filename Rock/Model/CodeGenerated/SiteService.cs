@@ -103,8 +103,6 @@ namespace Rock.Model
             target.LoginPageRouteId = source.LoginPageRouteId;
             target.RegistrationPageId = source.RegistrationPageId;
             target.RegistrationPageRouteId = source.RegistrationPageRouteId;
-            target.FaviconUrl = source.FaviconUrl;
-            target.AppleTouchIconUrl = source.AppleTouchIconUrl;
             target.FacebookAppId = source.FacebookAppId;
             target.FacebookAppSecret = source.FacebookAppSecret;
             target.ErrorPage = source.ErrorPage;
