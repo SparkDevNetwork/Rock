@@ -88,6 +88,10 @@
     <Compile Include="Migrations\201312060704559_SiteUpdateRemoveIcons.Designer.cs">
       <DependentUpon>201312060704559_SiteUpdateRemoveIcons.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201312062229010_FixPathToErrorPageOnStarkSite.cs" />
+    <Compile Include="Migrations\201312062229010_FixPathToErrorPageOnStarkSite.Designer.cs">
+      <DependentUpon>201312062229010_FixPathToErrorPageOnStarkSite.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -130,6 +134,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201312060704559_SiteUpdateRemoveIcons.resx">
       <DependentUpon>201312060704559_SiteUpdateRemoveIcons.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312062229010_FixPathToErrorPageOnStarkSite.resx">
+      <DependentUpon>201312062229010_FixPathToErrorPageOnStarkSite.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
