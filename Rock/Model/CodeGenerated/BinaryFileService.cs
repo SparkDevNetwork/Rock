@@ -131,10 +131,9 @@ namespace Rock.Model
             target.MimeType = source.MimeType;
             target.LastModifiedDateTime = source.LastModifiedDateTime;
             target.Description = source.Description;
-            target.StorageEntityTypeId = source.StorageEntityTypeId;
+            target.SetStorageEntityTypeId( source.StorageEntityTypeId );
             target.Id = source.Id;
             target.Guid = source.Guid;
-
         }
     }
 }

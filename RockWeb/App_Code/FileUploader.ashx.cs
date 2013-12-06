@@ -117,7 +117,7 @@ namespace RockWeb
 
                     binaryFile.MimeType = uploadedFile.ContentType;
                     binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
-                    binaryFile.StorageEntityTypeId = binaryFileType.StorageEntityTypeId;
+                    // NOTE: Don't set binaryFile.StorageEntityType here, let the BinaryFileService take care of it
                     binaryFile.Data = binaryFile.Data ?? new BinaryFileData();
                     binaryFile.Data.Content = GetFileBytes( context, uploadedFile );
 

@@ -34,7 +34,8 @@ namespace Rock.Storage.Provider
         /// <param name="file">The file.</param>
         public override void SaveFile( BinaryFile file, HttpContext context )
         {
-            // Database storage just stores everything in the BinaryFile table, so there is no external file data to save
+            // Database storage just stores everything in the BinaryFile table, so there is no external file data to save, but we do need to set the Url
+            file.Url = GenerateUrl( file );
         }
 
         /// <summary>
@@ -55,11 +56,11 @@ namespace Rock.Storage.Provider
         }
 
         /// <summary>
-        /// Gets the URL.
+        /// Generate a URL for the file based on the rules of the StorageProvider
         /// </summary>
         /// <param name="file">The file.</param>
         /// <returns></returns>
-        public override string GetUrl( BinaryFile file)
+        public override string GenerateUrl( BinaryFile file)
         {
             string urlPath;
 
