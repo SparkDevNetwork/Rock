@@ -19,5 +19,14 @@ namespace Rock.Install.Utilities
             return dataEncryptionKey;
         }
 
+        public static string CleanBaseAddress(string address)
+        {
+            if (!address.EndsWith("/"))
+            {
+                address = address + "/";
+            }
+            return address;
+        }
+
     }
 }
