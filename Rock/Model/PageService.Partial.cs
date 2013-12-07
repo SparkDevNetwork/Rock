@@ -55,5 +55,27 @@ namespace Rock.Model
                 select * from CTE
                 ", parentPageId );
         }
+
+        /// <summary>
+        /// Saves the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public override bool Save( Page item, int? personId )
+        {
+            // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
+            if ( item.IconFileId.HasValue )
+            {
+                BinaryFileService binaryFileService = new BinaryFileService( this.RockContext );
+                var binaryFile = binaryFileService.Get( item.IconFileId.Value );
+                if ( binaryFile != null && binaryFile.IsTemporary )
+                {
+                    binaryFile.IsTemporary = false;
+                }
+            }
+            
+            return base.Save( item, personId );
+        }
     }
 }
