@@ -100,6 +100,10 @@
     <Compile Include="Migrations\201312091737178_UpdateRenameStoredProcs.Designer.cs">
       <DependentUpon>201312091737178_UpdateRenameStoredProcs.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201312091918239_UpdateItemsToIsSystem.cs" />
+    <Compile Include="Migrations\201312091918239_UpdateItemsToIsSystem.Designer.cs">
+      <DependentUpon>201312091918239_UpdateItemsToIsSystem.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -152,6 +156,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201312091737178_UpdateRenameStoredProcs.resx">
       <DependentUpon>201312091737178_UpdateRenameStoredProcs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312091918239_UpdateItemsToIsSystem.resx">
+      <DependentUpon>201312091918239_UpdateItemsToIsSystem.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
