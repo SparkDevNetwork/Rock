@@ -17,27 +17,39 @@
                     
                     <div class="panel panel-default">
                         <div class="panel-body">
+                            
                             <div class="row">
-                    
                                 <div class="col-md-6">
-                                    <fieldset>
+                                    
                                         <Rock:RockTextBox ID="tbName" runat="server" Label="Page Name" CssClass="input-large" Help="The current page's title" />
-                                        <Rock:RockTextBox ID="tbDesc" runat="server" Label="Page Description" TextMode="MultiLine" Rows="2" CssClass="input-xlarge" Help="The current page's description" />
-                                        <Rock:RockTextBox ID="tbQuery" runat="server" Label="Query" TextMode="MultiLine" Rows="5" CssClass="input-xlarge" 
-                                            Help="The SQL query or stored procedure name to execute.  If parameters are included below, this should be the name of a stored procedure, otherwise it can be any SQL text.
-            By default, a grid will be displayed showing all the rows and columns returned by the query.  However, if the query returns one row and one column with a name of 'Html,' the html will be rendered instead.  Likewise, if it 
-            returns one row and one column with a name of 'Xml', the escaped xml will be displayed, or the xml can optionally be transformed to html by specifying an 'Xslt File' value." />
-                                        <Rock:RockTextBox ID="tbParams" runat="server" Label="Parameters" TextMode="MultiLine" Rows="2" CssClass="input-xlarge" 
-                                            Help="The parameters that the stored procedure expects in the format of 'param1=value;param2=value'.  Any parameter with the same name as a page parameter (i.e. querystring, 
-            form, or page route) will have it's value replaced with the page's current value.  A parameter with the name of 'CurrentPersonId' will have it's value replaced with the currently logged in person's id."/>
-                                    </fieldset>
                                 </div>
+                            </div>
 
+                            <div class="row">
+                                <div class="col-md-12">
+                                     <Rock:RockTextBox ID="tbDesc" runat="server" Label="Page Description" TextMode="MultiLine" Rows="3" CssClass="input-xlarge" Help="The current page's description" />
+                                
+                                    <Rock:CodeEditor ID="tbQuery" EditorHeight="400" EditorMode="Sql" EditorTheme="Rock" runat="server" Label="Query" 
+                                            Help="The SQL query or stored procedure name to execute.  If parameters are included below, this should be the name of a stored procedure, otherwise it can be any SQL text.
+                                            By default, a grid will be displayed showing all the rows and columns returned by the query.  However, if the query returns one row and one column with a name of 'Html,' the html will be rendered instead.  Likewise, if it 
+                                            returns one row and one column with a name of 'Xml', the escaped xml will be displayed, or the xml can optionally be transformed to html by specifying an 'Xslt File' value." />
+                                </div>
+                            </div>
+                            
+                            <div class="row">
                                 <div class="col-md-6">
-                                    <fieldset>
-                                        <Rock:RockTextBox ID="tbUrlMask" runat="server" Label="Selection Url" CssClass="input-large"
-                                            Help="The Url to redirect user to when they click on a row in the grid.  Any column's value can be used in the url by including it in braces.  For example if the grid includes an 'Id' column that contains Person Ids, you can link to the Person view, by specifying a value here of '~/Person/{Id}" />
-                                        <div class="control-group">
+                                    <Rock:RockCheckBox ID="cbPersonReport" runat="server" Label="Person Report" Text="Yes"
+                                            Help="Does this query return a list of people? If it does, then additional options will be available from the result grid.  (i.e. Communicate, etc).  Note: A column named 'Id' that contains the person's Id is required for a person report." />
+
+                                    <Rock:RockTextBox ID="tbParams" runat="server" Label="Parameters" TextMode="MultiLine" Rows="2" CssClass="input-xlarge" 
+                                            Help="The parameters that the stored procedure expects in the format of 'param1=value;param2=value'.  Any parameter with the same name as a page parameter (i.e. querystring, 
+                                            form, or page route) will have it's value replaced with the page's current value.  A parameter with the name of 'CurrentPersonId' will have it's value replaced with the currently logged in person's id."/>
+                               
+                                    <Rock:RockTextBox ID="tbUrlMask" runat="server" Label="Selection Url" CssClass="input-large"
+                                            Help="The Url to redirect user to when they click on a row in the grid.  Any column's value can be used in the url by including it in braces.  For example if the grid includes an 'Id' column that contains Person Ids, you can link to the Person view, by specifying a value here of '~/Person/{Id}" />     
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="control-group">
                                             <div class="control-label">
                                                 <asp:DropDownList ID="ddlHideShow" runat="server" CssClass="input-small">
                                                     <asp:ListItem Text="Hide" Value="False"></asp:ListItem>
@@ -52,14 +64,13 @@
 
                                         <Rock:RockTextBox ID="tbXslt" runat="server" Label="Xslt File" CssClass="input-large" 
                                             Help="The Xslt file to use for transformation when outputing Xml.  The filename is relative to the current theme's Assets/Xslt folder.  If left blank, the escaped Xml will be displayed." />
-                                        <Rock:RockCheckBox ID="cbPersonReport" runat="server" Label="Person Report" Text="Yes"
-                                            Help="Does this query return a list of people? If it does, then additional options will be available from the result grid.  (i.e. Communicate, etc).  Note: A column named 'Id' that contains the person's Id is required for a person report." />
+                                        
                                         <Rock:RockTextBox ID="tbMergeFields" runat="server" Label="Communication Merge Fields" TextMode="MultiLine" Rows="2" CssClass="input-xlarge" 
                                             Help="When creating a new communication from a person report, additional fields from the report can be used as merge fields on the communication.  Enter any column names that you'd like to be available for the communication."/>
 
-                                    </fieldset>
+                                
                                 </div>
-                            </div>
+                            </div>           
 
                             <div class="actions">
                                 <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
