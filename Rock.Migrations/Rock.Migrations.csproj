@@ -108,6 +108,10 @@
     <Compile Include="Migrations\201312092011514_HtmlContentLastModified.Designer.cs">
       <DependentUpon>201312092011514_HtmlContentLastModified.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201312092306168_MarketingAdLayoutChanges.cs" />
+    <Compile Include="Migrations\201312092306168_MarketingAdLayoutChanges.Designer.cs">
+      <DependentUpon>201312092306168_MarketingAdLayoutChanges.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -166,6 +170,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201312092011514_HtmlContentLastModified.resx">
       <DependentUpon>201312092011514_HtmlContentLastModified.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312092306168_MarketingAdLayoutChanges.resx">
+      <DependentUpon>201312092306168_MarketingAdLayoutChanges.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
