@@ -104,7 +104,6 @@
     	
     	// delete install files
         string installDirectory = Server.MapPath(".");
-        File.Delete(installDirectory + @"\waiting.gif");
         File.Delete(installDirectory + @"\Install.aspx");
         File.Delete(installDirectory + @"\Configure.aspx");
         File.Delete(installDirectory + @"\RockInstall.zip");
@@ -122,7 +121,7 @@
 		<link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css'>
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
         <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
-        <link rel="stylesheet" href="<%=rockStyles %>">
+        <link rel="stylesheet" href="<%=InstallSetting.RockStyles %>">
 		
         <script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
 		
