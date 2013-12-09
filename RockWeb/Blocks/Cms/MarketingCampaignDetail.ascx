@@ -48,11 +48,11 @@
                 <legend>Marketing Campaign - Ads
                 </legend>
                 <div class="well">
-                    <div class="row-fluid">
                         <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-                    </div>
-                    <div class="row-fluid">
-                        <asp:Literal ID="lblMainDetails" runat="server" />
+                    <div class="row">
+                        <div class="col-md-12">
+                            <asp:Literal ID="lblMainDetails" runat="server" />
+                        </div>
                     </div>
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />

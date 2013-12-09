@@ -23,7 +23,7 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     public partial class MetricValueList : Rock.Web.UI.RockBlock, Rock.Web.UI.ISecondaryBlock
     {       
-        #region Control Methods
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -175,7 +175,16 @@ namespace RockWeb.Blocks.Administration
         
         #endregion
 
-        #region Internal Methods
+        #region Methods
+
+        /// <summary>
+        /// Sets the visible.
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            pnlContent.Visible = visible;
+        }
 
         /// <summary>
         /// Binds the grid.
@@ -252,19 +261,6 @@ namespace RockWeb.Blocks.Administration
             cbIsDateBased.Checked = metricValue.isDateBased;
 
             mdValueDialog.Show();
-        }
-
-        #endregion
-
-        #region ISecondaryBlock
-
-        /// <summary>
-        /// Sets the visible.
-        /// </summary>
-        /// <param name="visible">if set to <c>true</c> [visible].</param>
-        public void SetVisible( bool visible )
-        {
-            pnlContent.Visible = visible;
         }
 
         #endregion

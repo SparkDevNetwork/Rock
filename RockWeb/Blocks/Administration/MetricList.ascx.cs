@@ -24,7 +24,7 @@ namespace RockWeb.Blocks.Administration
     [LinkedPage( "Detail Page" )]
     public partial class MetricList : Rock.Web.UI.RockBlock
     {        
-        #region Control Methods
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Administration
         
         #endregion
 
-        #region Internal Methods
+        #region Methods
 
         /// <summary>
         /// Binds the category filter.
