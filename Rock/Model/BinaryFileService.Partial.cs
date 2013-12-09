@@ -175,7 +175,7 @@ namespace Rock.Model
             SqlConnection conn = new SqlConnection( string.Format( "{0};Asynchronous Processing=true;", ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString ) );
             conn.Open();
             SqlCommand cmd = conn.CreateCommand();
-            cmd.CommandText = "BinaryFile_sp_getByID";
+            cmd.CommandText = "spBinaryFileGet";
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.Add( new SqlParameter( "@Id", fileId ) );
             cmd.Parameters.Add( new SqlParameter( "@Guid", fileGuid ) );

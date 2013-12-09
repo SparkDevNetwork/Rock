@@ -1,4 +1,4 @@
-alter procedure [sp_get_contribution_person_group_address]
+create procedure [spContributionStatementQuery]
 	@startDate datetime,
     @endDate datetime,
     @accountIds varchar(max), -- comma delimited list of integers. NULL means all
@@ -6,7 +6,9 @@ alter procedure [sp_get_contribution_person_group_address]
     @orderByZipCode bit
 as
 begin
-	-- SET NOCOUNT ON added to prevent extra result sets from
+	/*  Note:  This stored procedure returns the Mailing Addresses and any CustomMessages for the Contribution Statement, but not the actual transactions */
+
+    -- SET NOCOUNT ON added to prevent extra result sets from
 	-- interfering with SELECT statements.
 	set nocount on;
 
@@ -25,7 +27,7 @@ begin
             (
                 (@accountIds is null)
                 or
-                (ftd.AccountId in (select * from ufn_csv_to_table(@accountIds)))
+                (ftd.AccountId in (select * from ufnCsvToTable(@accountIds)))
             )
     )
 
@@ -78,7 +80,7 @@ begin
             [g].[GroupTypeId] = (select Id from GroupType where Guid = '790E3215-3B10-442B-AF69-616C0DCB998E' /* GROUPTYPE_FAMILY */)
         and [p].[Id] in (select * from tranListCTE)
     ) [pg]
-    cross apply [ufn_person_group_to_person_names]([pg].[PersonId], [pg].[GroupId]) [pn]
+    cross apply [ufnPersonGroupToPersonName]([pg].[PersonId], [pg].[GroupId]) [pn]
     join 
         [GroupLocation] [gl] 
     on 

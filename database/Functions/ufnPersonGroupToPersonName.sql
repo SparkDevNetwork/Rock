@@ -1,11 +1,4 @@
--- drop/create the function
-if exists (select * from sys.objects where object_id = OBJECT_ID(N'[dbo].[ufn_person_group_to_person_names]') and [type] = 'TF')
-begin
-    drop function [dbo].[ufn_person_group_to_person_names];
-end
-go
-
-create function [dbo].[ufn_person_group_to_person_names] 
+create function [dbo].[ufnPersonGroupToPersonName] 
 ( 
 @personId int, -- NULL means generate person names from Group Members. NOT-NULL means just get FullName from Person
 @groupId int
@@ -114,4 +107,3 @@ begin
 
   return
 end
-go
