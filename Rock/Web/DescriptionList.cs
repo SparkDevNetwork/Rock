@@ -57,16 +57,6 @@ namespace Rock.Web
         }
 
         /// <summary>
-        /// Starts the second column.
-        /// </summary>
-        /// <returns></returns>
-        public DescriptionList StartSecondColumn()
-        {
-            _termDescriptionList.Add( ColumnBreak, string.Empty );
-            return this;
-        }
-
-        /// <summary>
         /// Gets the HTML.
         /// </summary>
         /// <value>
@@ -80,7 +70,7 @@ namespace Rock.Web
                 {
                     string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
 
-                    string result = @"<div class='col-md-6'><dl>";
+                    string result = @"<dl>";
 
                     foreach ( var pair in _termDescriptionList )
                     {
@@ -90,18 +80,10 @@ namespace Rock.Web
                             displayValue = Rock.Constants.None.TextHtml;
                         }
 
-
-                        if ( pair.Key == ColumnBreak )
-                        {
-                            result += @"</dl></div><div class='col-md-6'><dl>";
-                        }
-                        else
-                        {
-                            result += string.Format( descriptionFormat, pair.Key, displayValue );
-                        }
+                        result += string.Format( descriptionFormat, pair.Key, displayValue );
                     }
 
-                    result += @"</dl></div>";
+                    result += @"</dl>";
 
                     return result;
                 }
@@ -110,10 +92,5 @@ namespace Rock.Web
 
             }
         }
-
-        /// <summary>
-        /// The column break
-        /// </summary>
-        private const string ColumnBreak = "<<ColumnBreak>>";
     }
 }

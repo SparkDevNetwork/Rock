@@ -26,7 +26,7 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region Control Methods
+        #region Base Control Methods
 
         protected override void OnInit( EventArgs e )
         {
@@ -74,7 +74,9 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region Grid Events
+        #region Events
+
+        #region Grid 
 
         void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
@@ -230,7 +232,9 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region Internal Methods
+        #endregion
+
+        #region Methods
 
         private void BindGrid()
         {

@@ -27,10 +27,15 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     public partial class PageProperties : RockBlock
     {
+
         #region Fields
 
         private PageCache _page;
         private readonly List<string> _tabs = new List<string> { "Basic Settings", "Display Settings", "Advanced Settings", "Import/Export"} ;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets or sets the current tab.
@@ -54,7 +59,7 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region Overridden Methods
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -438,9 +443,30 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
+        protected void cvPageRoute_ServerValidate( object source, ServerValidateEventArgs args )
+        {
+            var errorMessages = new List<string>();
+
+            foreach ( string route in tbPageRoute.Text.SplitDelimitedValues() )
+            {
+                var pageRoute = new PageRoute();
+                pageRoute.Route = route;
+                pageRoute.Guid = Guid.NewGuid();
+                if ( !pageRoute.IsValid )
+                {
+                    errorMessages.Add( string.Format( "The '{0}' route is invalid: {1}", route,
+                    pageRoute.ValidationResults.Select( r => r.ErrorMessage ).ToList().AsDelimited( "; " ) ) );
+                }
+            }
+
+            cvPageRoute.ErrorMessage = errorMessages.AsDelimited( "<br/>" );
+
+            args.IsValid = !errorMessages.Any();
+        }
+
         #endregion
 
-        #region Internal Methods
+        #region Methods
 
         private void LoadSites()
         {
@@ -533,25 +559,5 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        protected void cvPageRoute_ServerValidate( object source, ServerValidateEventArgs args )
-        {
-            var errorMessages = new List<string>();
-
-            foreach ( string route in tbPageRoute.Text.SplitDelimitedValues() )
-            {
-                var pageRoute = new PageRoute();
-                pageRoute.Route = route;
-                pageRoute.Guid = Guid.NewGuid();
-                if ( !pageRoute.IsValid )
-                {
-                    errorMessages.Add( string.Format( "The '{0}' route is invalid: {1}", route,
-                    pageRoute.ValidationResults.Select( r => r.ErrorMessage ).ToList().AsDelimited( "; " ) ) );
-                }
-            }
-
-            cvPageRoute.ErrorMessage = errorMessages.AsDelimited( "<br/>" );
-
-            args.IsValid = !errorMessages.Any();
-        }
     }
 }

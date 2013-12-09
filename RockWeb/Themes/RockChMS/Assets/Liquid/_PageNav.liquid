@@ -1,4 +1,4 @@
-﻿{% if page.display-child-pages == 'true' && page.pages != empty %}
+﻿{% if page.display-child-pages == 'true' and page.pages != empty %}
     <ul class="nav navbar-nav">
         {% for topPage in page.pages %}
             <li class="dropdown pagenav-item">
@@ -7,7 +7,7 @@
                     {{ topPage.title }}
                     <b class="caret"></b>
                 </a>
-                {% if topPage.display-child-pages == 'true' && topPage.pages != empty %}
+                {% if topPage.display-child-pages == 'true' and topPage.pages != empty %}
                     <ul class="dropdown-menu" role="menu">
                         {% for sectionPage in topPage.pages %}
                             <li class="dropdown-header">{{ sectionPage.title }}</li>

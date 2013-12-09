@@ -41,7 +41,6 @@
                             <asp:Literal ID="TransactionCount" runat="server" />
                         </ItemTemplate>
                     </asp:TemplateField>
-                    <asp:BoundField DataField="Status" HeaderText="Status" />
                     <asp:BoundField DataField="Campus" HeaderText="Campus" />
                     <Rock:DeleteField OnClick="rGridBatch_Delete" />
                 </Columns>
