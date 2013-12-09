@@ -22,7 +22,7 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region Control Methods
+        #region Base Control Methods
 
         /// <summary>
         /// Handles the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -165,7 +165,7 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region Internal Methods
+        #region Methods
 
         /// <summary>
         /// Binds the filter.
@@ -299,6 +299,7 @@ namespace RockWeb.Blocks.Administration
         #endregion
 
         #region HtmlApproval Class
+
         /// <summary>
         /// A class to hold all the info for the HtmlContentApproval Block
         /// </summary>

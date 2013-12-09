@@ -353,10 +353,12 @@ namespace RockWeb.Blocks.Cms
         {
             if ( site.Id == 0 )
             {
+                nbDefaultPageNotice.Visible = true;
                 lReadOnlyTitle.Text = ActionTitle.Add(Rock.Model.Site.FriendlyTypeName).FormatAsHtmlTitle();
             }
             else
             {
+                nbDefaultPageNotice.Visible = false;
                 lReadOnlyTitle.Text = site.Name.FormatAsHtmlTitle();
             }
 

@@ -48,16 +48,14 @@
             </div>
 
             <fieldset id="fieldsetViewDetails" runat="server">
-                <div class="well">
-                    <div class="row-fluid">
-                        <div class="span6">
-                            <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />                            
-                            <asp:Literal ID="lDetails" runat="server" />
-                        </div>                        
-                    </div>
-                    <div class="actions">
-                        <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" CausesValidation="false" OnClick="lbEdit_Click" />
-                    </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />                            
+                        <asp:Literal ID="lDetails" runat="server" />
+                    </div>                        
+                </div>
+                <div class="actions">
+                    <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" CausesValidation="false" OnClick="lbEdit_Click" />
                 </div>
             </fieldset>
 
