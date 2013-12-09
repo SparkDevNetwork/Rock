@@ -14,6 +14,8 @@ using System.Web.UI.WebControls;
 using System.Runtime.Caching;
 using System.Reflection;
 
+using System.Web;
+
 using Rock.Web.UI.Controls;
 using Rock.VersionInfo;
 
@@ -165,6 +167,44 @@ namespace RockWeb.Blocks.Administration
             {
                 Rock.Web.Cache.DefinedValueCache.Flush( definedValue.Id );
             }
+        }
+
+        protected void btnRestart_Click(object sender, EventArgs e)
+        {
+            RestartWebApplication();
+        }
+
+        // method from Rick Strahl http://weblog.west-wind.com/posts/2006/Oct/08/Recycling-an-ASPNET-Application-from-within
+        private bool RestartWebApplication()
+        {
+            bool Error = false;
+            try
+            {
+                // *** This requires full trust so this will fail
+                // *** in many scenarios
+                HttpRuntime.UnloadAppDomain();
+            }
+            catch
+            {
+                Error = true;
+            }
+
+            if (!Error)
+                return true;
+
+            // *** Couldn't unload with Runtime - let's try modifying web.config
+            string ConfigPath = HttpContext.Current.Request.PhysicalApplicationPath + "\\web.config";
+
+            try
+            {
+                File.SetLastWriteTimeUtc(ConfigPath, DateTime.UtcNow);
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
         }
 
         #endregion
