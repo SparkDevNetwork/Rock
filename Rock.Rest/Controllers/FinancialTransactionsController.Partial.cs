@@ -135,7 +135,7 @@ namespace Rock.Rest.Controllers
             }
 
             parameters.Add( "orderByZipCode", options.OrderByZipCode );
-            var result = service.GetDataSet( "sp_get_contribution_person_group_address", System.Data.CommandType.StoredProcedure, parameters );
+            var result = service.GetDataSet( "spContributionStatementQuery", System.Data.CommandType.StoredProcedure, parameters );
 
             if ( result.Tables.Count > 0 )
             {

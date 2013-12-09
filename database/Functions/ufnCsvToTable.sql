@@ -1,14 +1,8 @@
 --
 -- from http://www.sql-server-helper.com/functions/comma-delimited-to-table
 --
--- drop/create the function
-if exists (select * from sys.objects where object_id = OBJECT_ID(N'[dbo].[ufn_csv_to_table]') and [type] = 'TF')
-begin
-    drop function [dbo].[ufn_csv_to_table];
-end
-go
 
-create function [dbo].[ufn_csv_to_table] ( @input varchar(max) )
+create function [dbo].[ufnCsvToTable] ( @input varchar(max) )
 returns @outputTable table ( [id] int )
 as
 begin
@@ -29,4 +23,4 @@ begin
     
     return
 end
-go
+

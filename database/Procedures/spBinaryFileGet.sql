@@ -1,18 +1,25 @@
-ALTER PROCEDURE [BinaryFile_sp_getByID]
+CREATE PROCEDURE [spBinaryFileGet]
     @Id int,
     @Guid uniqueidentifier
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    /* NOTE!: Column Order cannot be changed without changing GetFile.ashx.cs due to CommandBehavior.SequentialAccess */
+    /* NOTE!: Column Order cannot be changed without changing BinaryFileService.partial.cs due to CommandBehavior.SequentialAccess */
     SELECT 
         bf.Id,
+        bf.IsTemporary, 
+        bf.IsSystem,
+        bf.BinaryFileTypeId,
+        bf.Url,
         bf.[FileName], 
         bf.MimeType,
-        bf.Url,
+        bf.LastModifiedDateTime,
+        bf.[Description],
+        bf.StorageEntityTypeId,
+        bf.[Guid],
         /* if the BinaryFile as StorageEntityTypeId set, use that. Otherwise use the default StorageEntityTypeId from BinaryFileType  */
-        COALESCE (bfse.Name,bftse.Name ) as StorageTypeName,
+        COALESCE (bfse.Name,bftse.Name ) as StorageEntityTypeName,
         bfd.Content
     FROM BinaryFile bf 
     LEFT JOIN BinaryFileData bfd

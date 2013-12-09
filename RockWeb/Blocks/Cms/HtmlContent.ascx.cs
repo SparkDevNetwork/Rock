@@ -210,6 +210,8 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
+                content.LastModifiedPersonId = this.CurrentPersonId;
+                content.LastModifiedDateTime = DateTime.Now;
                 content.Content = htmlContent.Text;
 
                 if ( service.Save( content, CurrentPersonId ) )
@@ -301,40 +303,16 @@ namespace RockWeb.Blocks.Cms
             var HtmlService = new HtmlContentService();
             var content = HtmlService.GetContent( BlockId, EntityValue() );
 
-            var personService = new Rock.Model.PersonService();
-            var versionAudits = new Dictionary<int, Rock.Model.Audit>();
-            var modifiedPersons = new Dictionary<int, string>();
-
-            foreach ( var version in content )
-            {
-                var lastAudit = HtmlService.Audits( version )
-                    .Where( a => a.AuditType == Rock.Model.AuditType.Add ||
-                        a.AuditType == Rock.Model.AuditType.Modify )
-                    .OrderByDescending( h => h.DateTime )
-                    .FirstOrDefault();
-                if ( lastAudit != null )
-                    versionAudits.Add( version.Id, lastAudit );
-            }
-
-            foreach ( var audit in versionAudits.Values )
-            {
-                if ( audit.PersonId.HasValue && !modifiedPersons.ContainsKey( audit.PersonId.Value ) )
-                {
-                    var modifiedPerson = personService.Get( audit.PersonId.Value, true );
-                    modifiedPersons.Add( audit.PersonId.Value, modifiedPerson != null ? modifiedPerson.FullName : string.Empty );
-                }
-            }
-
             var versions = content.
                 Select( v => new
                 {
                     v.Id,
                     v.Version,
                     v.Content,
-                    ModifiedDateTime = versionAudits.ContainsKey( v.Id ) ? versionAudits[v.Id].DateTime.ToElapsedString() : string.Empty,
-                    ModifiedByPerson = versionAudits.ContainsKey( v.Id ) && versionAudits[v.Id].PersonId.HasValue ? modifiedPersons[versionAudits[v.Id].PersonId.Value] : string.Empty,
+                    ModifiedDateTime = v.LastModifiedDateTime.HasValue ? v.LastModifiedDateTime.ToElapsedString() : string.Empty,
+                    ModifiedByPerson = v.LastModifiedPerson,
                     Approved = v.IsApproved,
-                    ApprovedByPerson = v.ApprovedByPerson != null ? v.ApprovedByPerson.FullName : "",
+                    ApprovedByPerson = v.ApprovedByPerson,
                     v.StartDateTime,
                     v.ExpireDateTime
                 } ).ToList();

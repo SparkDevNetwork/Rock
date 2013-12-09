@@ -26,7 +26,6 @@
     const string rockConfigureFile = "http://rockchms.blob.core.windows.net/install/Configure.aspx";
     const string rockUtilitiesAssembly = "http://rockchms.blob.core.windows.net/install/Rock.Install.Utilities.dll";
     
-    const string rockWaitingImage = "http://rockchms.blob.core.windows.net/install/waiting.gif";
     const string rockLogoIco = "http://rockchms.blob.core.windows.net/install/rock-chms.ico";
     const string rockStyles = "http://rockchms.blob.core.windows.net/install/install.css";
         
@@ -91,15 +90,6 @@
 			
 			// download the config file
 			downloadSuccessful = DownloadFile(rockConfigureFile, Server.MapPath(".") + @"\Configure.aspx", out checkMessages);	
-			
-			if (!downloadSuccessful) {
-				lTitle.Text = "An Error Occurred...";
-				lOutput.Text = "<p>" + checkMessages + "</p>";
-				return;
-			}
-			
-			// download the config file
-			downloadSuccessful = DownloadFile(rockWaitingImage, Server.MapPath(".") + @"\waiting.gif", out checkMessages);	
 			
 			if (!downloadSuccessful) {
 				lTitle.Text = "An Error Occurred...";

@@ -14,21 +14,11 @@
 <%@ Import Namespace="Rock.Data"  %>
 <%@ Import Namespace="Rock.Model"  %>
 
+<%@ Import Namespace="Rock.Install.Utilities" %>
+
 <script language="CS" runat="server">
-
-
-    const string rockLogoIco = "http://rockchms.blob.core.windows.net/install/rock-chms.ico";
-    const string rockStyles = "http://rockchms.blob.core.windows.net/install/install.css";
+  
     
-    private string CleanBaseAddress(string address)
-    {
-        if (!address.EndsWith("/"))
-        {
-            address = address + "/";
-        }
-        return address;
-    }
-
     void AdminNext_Click(Object sender, EventArgs e)
     {
     	// update the admin password
@@ -54,8 +44,8 @@
     void AddressesNext_Click(Object sender, EventArgs e)
     {
         // clean addresses
-        string internalAddress = CleanBaseAddress(txtInternalAddress.Text);
-        string publicAddress = CleanBaseAddress(txtPublicAddress.Text);
+        string internalAddress = InstallUtilities.CleanBaseAddress(txtInternalAddress.Text);
+        string publicAddress = InstallUtilities.CleanBaseAddress(txtPublicAddress.Text);
         
         // save addresses
         var globalAttributesCache = Rock.Web.Cache.GlobalAttributesCache.Read();
@@ -114,7 +104,6 @@
     	
     	// delete install files
         string installDirectory = Server.MapPath(".");
-        File.Delete(installDirectory + @"\waiting.gif");
         File.Delete(installDirectory + @"\Install.aspx");
         File.Delete(installDirectory + @"\Configure.aspx");
         File.Delete(installDirectory + @"\RockInstall.zip");
@@ -132,17 +121,30 @@
 		<link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css'>
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
         <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
-        <link rel="stylesheet" href="<%=rockStyles %>">
+        <link rel="stylesheet" href="<%=InstallSetting.RockStyles %>">
 		
         <script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
 		
-		<link href="<%=rockLogoIco %>" rel="shortcut icon">
-		<link href="<%=rockLogoIco %>" type="image/ico" rel="icon">
+		<link href="<%=InstallSetting.RockLogoIco %>" rel="shortcut icon">
+		<link href="<%=InstallSetting.RockLogoIco %>" type="image/ico" rel="icon">
 
 	</head>
 	<body>
 		<form runat="server">
 		<asp:ScriptManager ID="ScriptManager1" runat="server" EnablePartialRendering="true" />
+
+        <asp:UpdateProgress id="updateProgress" runat="server">
+		     <ProgressTemplate>
+		         
+                <div class="updateprogress-status">
+                    <i class="fa fa-refresh fa-spin fa-4x" ></i><br />
+                    This could take a few minutes...
+                </div>      
+		            
+		        <div class="updateprogress-bg"></div>
+		     </ProgressTemplate>
+		</asp:UpdateProgress>
+
 		<asp:UpdatePanel ID="GettingStartedUpdatePanel" runat="server" UpdateMode="Conditional">
 			<ContentTemplate>
 				<div id="content">
@@ -314,7 +316,7 @@
                                 var formValid = true;
 
                                 // add spinner to button to tell user something is happening
-                                $('#btnOrgNext i').attr("class", "fa fa-spinner fa-spin");
+                                //$('#btnOrgNext i').attr("class", "fa fa-spinner fa-spin");
 
                                 // ensure that all values were provided
                                 $("#pOrganization .required-field").each(function (index, value) {
@@ -362,12 +364,12 @@
 							</div>
 							
 							<div class="form-group">
-								<label class="control-label" for="inputEmail">Email Username (optional)</label>
+								<label class="control-label" for="inputEmail">Relay Email Username (optional) * if server requires authenication</label>
 								<asp:TextBox ID="txtEmailUsername" runat="server" Text="" CssClass="form-control"></asp:TextBox>
 							</div>
 							
 							<div class="form-group">
-								<label class="control-label" for="inputEmail">Email Password (optional)</label>
+								<label class="control-label" for="inputEmail">Relay Email Password (optional )</label>
 								<div class="row">
                                     <div class="col-md-8"><asp:TextBox ID="txtEmailPassword" TextMode="Password" runat="server" Text="" CssClass="form-control"></asp:TextBox></div>
 								    <div class="col-md-4" style="padding-top: 6px;">
@@ -405,7 +407,7 @@
 
                                 if (formValid) {
                                     // add spinner to button to tell user something is happening
-                                    $('#btnEmailNext i').attr("class", "fa fa-spinner fa-spin");
+                                    //$('#btnEmailNext i').attr("class", "fa fa-spinner fa-spin");
                                     return true;
                                 } else {
                                     return false;
