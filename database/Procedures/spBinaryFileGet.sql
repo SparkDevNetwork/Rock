@@ -1,4 +1,4 @@
-ALTER PROCEDURE [BinaryFile_sp_getByID]
+CREATE PROCEDURE [spBinaryFileGet]
     @Id int,
     @Guid uniqueidentifier
 AS

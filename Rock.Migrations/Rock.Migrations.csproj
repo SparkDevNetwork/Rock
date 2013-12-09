@@ -92,6 +92,14 @@
     <Compile Include="Migrations\201312062229010_FixPathToErrorPageOnStarkSite.Designer.cs">
       <DependentUpon>201312062229010_FixPathToErrorPageOnStarkSite.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201312091725419_BinaryFileRootPathAttribute.cs" />
+    <Compile Include="Migrations\201312091725419_BinaryFileRootPathAttribute.Designer.cs">
+      <DependentUpon>201312091725419_BinaryFileRootPathAttribute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312091737178_UpdateRenameStoredProcs.cs" />
+    <Compile Include="Migrations\201312091737178_UpdateRenameStoredProcs.Designer.cs">
+      <DependentUpon>201312091737178_UpdateRenameStoredProcs.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -137,6 +145,13 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201312062229010_FixPathToErrorPageOnStarkSite.resx">
       <DependentUpon>201312062229010_FixPathToErrorPageOnStarkSite.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312091725419_BinaryFileRootPathAttribute.resx">
+      <DependentUpon>201312091725419_BinaryFileRootPathAttribute.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312091737178_UpdateRenameStoredProcs.resx">
+      <DependentUpon>201312091737178_UpdateRenameStoredProcs.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
