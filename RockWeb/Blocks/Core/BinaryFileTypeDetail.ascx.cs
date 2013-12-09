@@ -80,6 +80,20 @@ namespace RockWeb.Blocks.Core
                     pnlDetails.Visible = false;
                 }
             }
+            else
+            {
+                if ( pnlDetails.Visible )
+                {
+                    var storageEntityType = new EntityTypeService().Get( cpStorageType.SelectedValue.AsGuid() );
+                    if ( storageEntityType != null )
+                    {
+                        var binaryFileType = new BinaryFileType { StorageEntityTypeId = storageEntityType.Id };
+                        binaryFileType.LoadAttributes();
+                        phAttributes.Controls.Clear();
+                        Rock.Attribute.Helper.AddEditControls( binaryFileType, phAttributes, false );
+                    }
+                }
+            }
         }
 
         #endregion
@@ -153,10 +167,18 @@ namespace RockWeb.Blocks.Core
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( BinaryFileType.FriendlyTypeName );
             }
 
+            phAttributes.Controls.Clear();
+            binaryFileType.LoadAttributes();
+
             if ( readOnly )
             {
                 lActionTitle.Text = ActionTitle.View( BinaryFileType.FriendlyTypeName );
                 btnCancel.Text = "Close";
+                Rock.Attribute.Helper.AddDisplayControls( binaryFileType, phAttributes );
+            }
+            else
+            {
+                Rock.Attribute.Helper.AddEditControls( binaryFileType, phAttributes, true );
             }
 
             tbName.ReadOnly = readOnly;
@@ -231,6 +253,9 @@ namespace RockWeb.Blocks.Core
                     }
                 }
 
+                binaryFileType.LoadAttributes();
+                Rock.Attribute.Helper.GetEditValues( phAttributes, binaryFileType );
+
                 if ( !binaryFileType.IsValid )
                 {
                     // Controls will render the error messages                    
@@ -263,6 +288,9 @@ namespace RockWeb.Blocks.Core
                             Rock.Attribute.Helper.SaveAttributeEdits( attributeState, attributeService, attributeQualifierService, categoryService,
                                 entityTypeId, "BinaryFileTypeId", binaryFileType.Id.ToString(), CurrentPersonId );
                         }
+
+                        // SaveAttributeValues for the BinaryFileType
+                        Rock.Attribute.Helper.SaveAttributeValues( binaryFileType, CurrentPersonId );
 
                     } );
             }
@@ -303,7 +331,7 @@ namespace RockWeb.Blocks.Core
         {
             pnlDetails.Visible = false;
             pnlBinaryFileAttribute.Visible = true;
-            
+
             Attribute attribute;
             if ( attributeGuid.Equals( Guid.Empty ) )
             {

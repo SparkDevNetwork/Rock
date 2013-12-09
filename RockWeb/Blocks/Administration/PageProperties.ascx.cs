@@ -275,7 +275,14 @@ namespace RockWeb.Blocks.Administration
                     }
 
                     page.LayoutId = ddlLayout.SelectedValueAsInt().Value;
-                    page.IconFileId = imgIcon.BinaryFileId;
+
+                    int? orphanedIconFileId = null;
+
+                    if ( page.IconFileId != imgIcon.BinaryFileId )
+                    {
+                        orphanedIconFileId = page.IconFileId;
+                        page.IconFileId = imgIcon.BinaryFileId;
+                    }
                     page.IconCssClass = tbIconCssClass.Text;
 
                     page.PageDisplayTitle = cbPageTitle.Checked;
@@ -352,13 +359,24 @@ namespace RockWeb.Blocks.Administration
                         Rock.Attribute.Helper.GetEditValues( phAttributes, _page );
                         _page.SaveAttributeValues( CurrentPersonId );
 
+                        if ( orphanedIconFileId.HasValue)
+                        {
+                            BinaryFileService binaryFileService = new BinaryFileService();
+                            var binaryFile = binaryFileService.Get( orphanedIconFileId.Value );
+                            if ( binaryFile != null )
+                            {
+                                // marked the old images as IsTemporary so they will get cleaned up later
+                                binaryFile.IsTemporary = true;
+                                binaryFileService.Save( binaryFile, CurrentPersonId );
+                            }
+                        }
+
                         Rock.Web.Cache.PageCache.Flush( _page.Id );
 
                         string script = "if (typeof window.parent.Rock.controls.modal.close === 'function') window.parent.Rock.controls.modal.close('PAGE_UPDATED');";
                         ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
                     }
                 }
-
             }
         }
 

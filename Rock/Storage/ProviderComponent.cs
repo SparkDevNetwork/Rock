@@ -4,7 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using System.Collections.Generic;
+using System.Web;
 using Rock.Extension;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -26,47 +26,38 @@ namespace Rock.Storage
         {
             get
             {
-                bool isActive;
-
-                if ( bool.TryParse( GetAttributeValue( "Active" ), out isActive ) )
-                {
-                    return isActive;
-                }
-
-                return true;
+                return GetAttributeValue( "Active" ).AsBoolean();
             }
         }
 
         /// <summary>
-        /// Saves the file.
+        /// Saves the file to the external storage medium associated with the provider.
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="personId">The person id.</param>
-        public virtual void SaveFile( BinaryFile file, int? personId )
-        {
-            SaveFiles( new List<BinaryFile> { file }, personId );
-        }
+        /// <param name="context">The context.</param>
+        public abstract void SaveFile( BinaryFile file, HttpContext context );
 
         /// <summary>
-        /// Saves the files.
-        /// </summary>
-        /// <param name="files">The files.</param>
-        /// <param name="personId"></param>
-        public abstract void SaveFiles( IEnumerable<BinaryFile> files, int? personId );
-
-        /// <summary>
-        /// Removes the file.
+        /// Removes the file from the external storage medium associated with the provider.
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="personId"></param>
-        public abstract void RemoveFile( BinaryFile file, int? personId );
+        /// <param name="context">The context.</param>
+        public abstract void RemoveFile( BinaryFile file, HttpContext context );
 
         /// <summary>
-        /// Gets the URL.
+        /// Gets the file bytes from the external storage medium associated with the provider.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        public abstract byte[] GetFileContent( BinaryFile file, HttpContext context );
+
+        /// <summary>
+        /// Generate a URL for the file based on the rules of the StorageProvider
         /// </summary>
         /// <param name="file">The file.</param>
         /// <returns></returns>
-        public abstract string GetUrl( BinaryFile file );
+        public abstract string GenerateUrl( BinaryFile file);
 
         /// <summary>
         /// Gets the type of the entity.

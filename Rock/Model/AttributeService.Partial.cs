@@ -118,5 +118,36 @@ namespace Rock.Model
         {
             return this.Get( null, string.Empty, string.Empty, key );
         }
+
+        /// <summary>
+        /// Saves the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public override bool Save( Attribute item, int? personId )
+        {
+            // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
+            var fieldTypeImage = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.IMAGE.AsGuid() );
+            var fieldTypeBinaryFile = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() );
+
+            if ( item.FieldTypeId == fieldTypeImage.Id || item.FieldTypeId == fieldTypeBinaryFile.Id )
+            {
+                int? binaryFileId = item.DefaultValue.AsInteger();
+                if ( binaryFileId.HasValue )
+                {
+                    BinaryFileService binaryFileService = new BinaryFileService( this.RockContext );
+                    var binaryFile = binaryFileService.Get( binaryFileId.Value );
+                    if ( binaryFile != null && binaryFile.IsTemporary )
+                    {
+                        binaryFile.IsTemporary = false;
+                    }
+                }
+            }            
+            
+            return base.Save( item, personId );
+        }
     }
+
+    
 }

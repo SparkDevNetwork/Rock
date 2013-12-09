@@ -60,6 +60,28 @@ namespace Rock.Model
             return base.Repository.AsQueryable( includes ).Where( p => includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value );
         }
 
+        /// <summary>
+        /// Saves the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public override bool Save( Person item, int? personId )
+        {
+            // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
+            if ( item.PhotoId.HasValue )
+            {
+                BinaryFileService binaryFileService = new BinaryFileService( this.RockContext );
+                var binaryFile = binaryFileService.Get( item.PhotoId.Value );
+                if ( binaryFile != null && binaryFile.IsTemporary )
+                {
+                    binaryFile.IsTemporary = false;
+                }
+            }
+            
+            return base.Save( item, personId );
+        }
+
         #region Get People
 
         /// <summary>
