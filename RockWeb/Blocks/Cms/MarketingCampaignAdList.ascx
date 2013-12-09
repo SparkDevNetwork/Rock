@@ -2,6 +2,9 @@
 
 <asp:UpdatePanel ID="upList" runat="server">
     <ContentTemplate>
+        <asp:Literal ID="lTitle" runat="server">
+            <h4>Ads</h4>
+        </asp:Literal>
         <Rock:GridFilter ID="rFilter" runat="server" >
             <%-- Approval Status, Priority Range, Ad Type, Date Range --%>
             <Rock:RockDropDownList ID="ddlApprovalStatus" runat="server" Label="Approval Status" />
