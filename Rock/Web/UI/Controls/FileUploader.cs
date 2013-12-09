@@ -272,10 +272,10 @@ namespace Rock.Web.UI.Controls
             RockControlHelper.CreateChildControls( this, Controls );
 
             Controls.Add( _hfBinaryFileId );
-            _hfBinaryFileId.ID = "hfBinaryFileId";
+            _hfBinaryFileId.ID = this.ID + "_hfBinaryFileId";
 
             Controls.Add( _hfBinaryFileTypeGuid );
-            _hfBinaryFileTypeGuid.ID = "hfBinaryFileTypeGuid";
+            _hfBinaryFileTypeGuid.ID = this.ID + "_hfBinaryFileTypeGuid";
 
             _aFileName = new HtmlAnchor();
             Controls.Add( _aFileName );
@@ -292,7 +292,7 @@ namespace Rock.Web.UI.Controls
 
             _fileUpload = new FileUpload();
             Controls.Add( _fileUpload );
-            _fileUpload.ID = "fu";
+            _fileUpload.ID = this.ID + "_fu";
         }
 
         /// <summary>
