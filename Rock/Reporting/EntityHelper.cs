@@ -99,7 +99,7 @@ namespace Rock.Reporting
 
                 EntityField entityProperty = null;
 
-                switch ( attribute.FieldType.Guid.ToString().ToUpper() )
+                switch ( FieldTypeCache.Read(attribute.FieldTypeId).Guid.ToString().ToUpper() )
                 {
                     case SystemGuid.FieldType.BOOLEAN:
                         entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );

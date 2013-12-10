@@ -47,8 +47,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.PayFlowPro", "Rock.Pay
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Migrations", "Rock.Migrations\Rock.Migrations.csproj", "{957B1DBE-B921-4FAE-8E5E-B7AD7F01B161}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportingTest", "ReportingTest\ReportingTest.csproj", "{7FD5E609-06C4-4966-BC5E-FF9C6BD9DF4A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -149,16 +147,6 @@ Global
 		{957B1DBE-B921-4FAE-8E5E-B7AD7F01B161}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{957B1DBE-B921-4FAE-8E5E-B7AD7F01B161}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{957B1DBE-B921-4FAE-8E5E-B7AD7F01B161}.Release|x86.ActiveCfg = Release|Any CPU
-		{7FD5E609-06C4-4966-BC5E-FF9C6BD9DF4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7FD5E609-06C4-4966-BC5E-FF9C6BD9DF4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7FD5E609-06C4-4966-BC5E-FF9C6BD9DF4A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{7FD5E609-06C4-4966-BC5E-FF9C6BD9DF4A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{7FD5E609-06C4-4966-BC5E-FF9C6BD9DF4A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{7FD5E609-06C4-4966-BC5E-FF9C6BD9DF4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7FD5E609-06C4-4966-BC5E-FF9C6BD9DF4A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7FD5E609-06C4-4966-BC5E-FF9C6BD9DF4A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{7FD5E609-06C4-4966-BC5E-FF9C6BD9DF4A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{7FD5E609-06C4-4966-BC5E-FF9C6BD9DF4A}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

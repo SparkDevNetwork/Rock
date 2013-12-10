@@ -1,12 +1,20 @@
-﻿using System.ComponentModel;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 using Rock;
-using System;
 
 namespace Rock.Reporting.DataSelect.Person
 {
@@ -18,19 +26,8 @@ namespace Rock.Reporting.DataSelect.Person
     [ExportMetadata( "ComponentName", "Select Person Last Contribution" )]
     public class LastContributionSelect : DataSelectComponent<Rock.Model.Person>
     {
-        /// <summary>
-        /// Gets the title.
-        /// </summary>
-        /// <value>
-        /// The title.
-        /// </value>
-        public override string Title
-        {
-            get
-            {
-                return "Last Contribution";
-            }
-        }
+
+        #region Properties
 
         /// <summary>
         /// Gets the name of the entity type.
@@ -38,98 +35,11 @@ namespace Rock.Reporting.DataSelect.Person
         /// <value>
         /// The name of the entity type.
         /// </value>
-        public override string EntityTypeName
+        public override string AppliesToEntityType
         {
             get
             {
                 return typeof( Rock.Model.Person ).FullName;
-            }
-        }
-
-        /// <summary>
-        /// Gets the default column header text.
-        /// </summary>
-        /// <value>
-        /// The default column header text.
-        /// </value>
-        public override string ColumnHeaderText
-        {
-            get
-            {
-                return "Last Contribution Date";
-            }
-        }
-
-        /*
-         -- Example1: turn something like this into Linq 
-         select 
-            p.FirstName, 
-           (select max(TransactionDateTime) from FinancialTransaction where AuthorizedPersonId = p.Id and AccountID in (3,4,5)) [LastDateTime]
-         from Person p
-         * 
-         
-         -- Example2: turn something like this into linq
-        select 
-            p.FirstName, 
-            g.Name [FamilyName]
-        from Person p
-            left outer join GroupMember gm on gm.PersonId = p.Id
-            left outer join Group g on gm.GroupId = g.Id
-            where g.GroupTypeId = :familyGroupTypeId
-         
-         */
-
-        #region Query
-
-        /// <summary>
-        /// Returns an IQueryable that subquery of this DataSelectComponent
-        /// </summary>
-        /// <param name="selection">The selection.</param>
-        /// <returns></returns>
-        public override IQueryable<IEntity> SubQuery( string selection )
-        {
-            IQueryable<FinancialTransaction> lastTransactionQry = new FinancialTransactionService().Queryable().OrderByDescending( o => o.TransactionDateTime );
-
-            // split the selection into parts of Control Values (AccountIds will be the first one)
-            string[] controlValues = selection.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-
-            if ( controlValues.Count() > 0 )
-            {
-                // get the selected AccountId(s).  If there are any, limit to transactions that for that Account
-                var selectedAccountIds = controlValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsInteger() ?? 0 ).ToList();
-                if ( selectedAccountIds.Count() > 0 )
-                {
-                    lastTransactionQry = lastTransactionQry
-                        .Where(a => selectedAccountIds
-                            .Contains( a.TransactionDetails.Select( s => s.AccountId ).FirstOrDefault() )
-                            );
-                }
-            }
-
-
-            return lastTransactionQry;
-
-        }
-
-        /// <summary>
-        /// The Linq Expression for the Select portion of the SubQuery
-        /// </summary>
-        /// <returns></returns>
-        public override Expression<System.Func<IEntity, DataSelectData>> SelectExpression
-        {
-            get
-            {
-                Expression<Func<IEntity, DataSelectData>> lastTranSelect = a => new DataSelectData
-                {
-                    EntityId = ( a as FinancialTransaction ).AuthorizedPersonId ?? 0,
-                    Data = new
-                    {
-                        // this should be the same as ColumnPropertyName
-                        LastTransactionDateTime = ( a as FinancialTransaction ).TransactionDateTime
-                    }
-                };
-
-                return lastTranSelect;
             }
         }
 
@@ -147,9 +57,111 @@ namespace Rock.Reporting.DataSelect.Person
             }
         }
 
+        /// <summary>
+        /// Gets the type of the column field.
+        /// </summary>
+        /// <value>
+        /// The type of the column field.
+        /// </value>
+        public override Type ColumnFieldType
+        {
+            get { return typeof(DateTime?); }
+        }
+
+        /// <summary>
+        /// Gets the default column header text.
+        /// </summary>
+        /// <value>
+        /// The default column header text.
+        /// </value>
+        public override string ColumnHeaderText
+        {
+            get
+            {
+                return "Last Contribution Date";
+            }
+        }
+
         #endregion
 
-        #region Controls methods
+        #region Methods
+
+        /// <summary>
+        /// Gets the title.
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
+        /// <value>
+        /// The title.
+        ///   </value>
+        public override string GetTitle(Type entityType)
+        {
+            return "Last Contribution";
+        }
+
+        /// <summary>
+        /// Gets the expression.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="entityIdProperty">The entity identifier property.</param>
+        /// <param name="selection"></param>
+        /// <returns></returns>
+        public override Expression GetExpression( RockContext context, Expression entityIdProperty, string selection )
+        {
+            // transactions
+            var transactionDetails = context.Set<FinancialTransactionDetail>();
+
+            // t
+            ParameterExpression transactionDetailParameter = Expression.Parameter( typeof( FinancialTransactionDetail ), "t" );
+
+            // t.Transaction
+            MemberExpression transactionProperty = Expression.Property( transactionDetailParameter, "Transaction" );
+
+            // t.Transaction.AuthorizedPersonId
+            MemberExpression authorizedPersonIdProperty = Expression.Property( transactionProperty, "AuthorizedPersonId" );
+
+            // t.Transaction.AuthorizedPersonId == Convert(p.Id)
+            Expression whereClause = Expression.Equal(authorizedPersonIdProperty, Expression.Convert(entityIdProperty, typeof(int?)));
+
+            // get the selected AccountId(s).  If there are any, limit to transactions that for that Account
+            if ( !string.IsNullOrWhiteSpace( selection ) )
+            {
+                // accountIds
+                var selectedAccountIdList = selection.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsInteger() ?? 0 ).ToList();
+                if ( selectedAccountIdList.Count() > 0 )
+                {
+                    // t.AccountId
+                    MemberExpression accountIdProperty = Expression.Property( transactionDetailParameter, "AccountId" );
+
+                    // accountIds.Contains(t.AccountId)
+                    Expression selectedAccountIds = Expression.Constant(selectedAccountIdList);
+                    Expression containsExpression = Expression.Call(selectedAccountIds, "Contains", new Type[] {}, accountIdProperty );
+
+                    // t.authorizedPersonId == Convert(p.Id) && accountIds.Contains(t.AccountId)
+                    whereClause = Expression.And(whereClause, containsExpression );
+                }
+            }
+
+            // t => t.Transaction.AuthorizedPersonId == Convert(p.Id)
+            var compare = new Expression[] { 
+                    Expression.Constant(transactionDetails), 
+                    Expression.Lambda<Func<FinancialTransactionDetail, bool>>( whereClause , new ParameterExpression[] { transactionDetailParameter } ) 
+                };
+
+            // transactions.Where( t => t.Transaction.AuthorizedPersonId == Convert(p.Id)
+            Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( FinancialTransactionDetail ) }, compare );
+
+            // t.Transaction.TransactionDateTime
+            MemberExpression transactionDateTime = Expression.Property( transactionProperty, "TransactionDateTime" );
+
+            // t => t.Transaction.transactionDateTime
+            var transactionDate = Expression.Lambda<Func<FinancialTransactionDetail, DateTime?>>( transactionDateTime, new ParameterExpression[] { transactionDetailParameter } );
+
+            // transaction.Where( t => t.Transaction.AuthorizedPersonId == Convert(p.Id).Max( t => t.Transaction.transactionDateTime)
+            Expression maxExpression = Expression.Call( typeof( Queryable ), "Max", new Type[] { typeof( FinancialTransactionDetail ), typeof( DateTime? ) }, whereExpression, transactionDate );
+
+            return maxExpression;
+        }
 
         /// <summary>
         /// Creates the child controls.
@@ -245,5 +257,6 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         #endregion
+
     }
 }

@@ -13,29 +13,17 @@ namespace Rock.Reporting
     /// </summary>
     public abstract class DataSelectComponent : Component
     {
-        /// <summary>
-        /// Gets the title.
-        /// </summary>
-        /// <value>
-        /// The title.
-        /// </value>
-        public abstract string Title { get; }
+
+        #region Properties
 
         /// <summary>
-        /// Gets the name of the entity type.
+        /// Gets the name of the entity type. Filter should be an empty string
+        /// if it applies to all entities
         /// </summary>
         /// <value>
         /// The name of the entity type.
         /// </value>
-        public abstract string EntityTypeName { get; }
-
-        /// <summary>
-        /// Gets the default column header text.
-        /// </summary>
-        /// <value>
-        /// The default column header text.
-        /// </value>
-        public abstract string ColumnHeaderText { get; }
+        public abstract string AppliesToEntityType { get; }
 
         /// <summary>
         /// Gets the section.
@@ -47,6 +35,30 @@ namespace Rock.Reporting
         {
             get { return "Other"; }
         }
+        
+        /// <summary>
+        /// The PropertyName of the property in the anonymous class returned by the SelectExpression
+        /// </summary>
+        /// <value>
+        /// The name of the column property.
+        /// </value>
+        public abstract string ColumnPropertyName { get; }
+
+        /// <summary>
+        /// Gets the type of the column field.
+        /// </summary>
+        /// <value>
+        /// The type of the column field.
+        /// </value>
+        public abstract Type ColumnFieldType { get; }
+
+        /// <summary>
+        /// Gets the default column header text.
+        /// </summary>
+        /// <value>
+        /// The default column header text.
+        /// </value>
+        public abstract string ColumnHeaderText { get; }
 
         /// <summary>
         /// Gets the attribute value defaults.
@@ -64,6 +76,18 @@ namespace Rock.Reporting
             }
         }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the title.
+        /// </summary>
+        /// <value>
+        /// The title.
+        /// </value>
+        public abstract string GetTitle( Type entityType );
+
         /// <summary>
         /// Formats the selection on the client-side.  When the widget is collapsed by the user, the Filterfield control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
@@ -76,7 +100,7 @@ namespace Rock.Reporting
         ///   </value>
         public virtual string GetClientFormatSelection()
         {
-            return this.Title;
+            return this.GetTitle( null );
         }
 
         /// <summary>
@@ -86,7 +110,7 @@ namespace Rock.Reporting
         /// <returns></returns>
         public virtual string FormatSelection( string selection )
         {
-            return this.Title;
+            return this.GetTitle( null );
         }
 
         /// <summary>
@@ -135,32 +159,16 @@ namespace Rock.Reporting
         }
 
         /// <summary>
-        /// Returns an IQueryable that subquery of this DataSelectComponent
+        /// Gets the expression.
         /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="entityIdProperty">The entity identifier property.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        /// <value>
-        /// The sub query.
-        ///   </value>
-        public abstract IQueryable<IEntity> SubQuery( string selection );
+        public abstract Expression GetExpression( RockContext context, Expression entityIdProperty, string selection );
 
-        /// <summary>
-        /// The Linq Expression for the Select portion of the SubQuery
-        /// Note: This cannot include a WHERE expression, use WhereExpression for that
-        /// </summary>
-        /// <value>
-        /// The select expression.
-        /// </value>
-        /// <returns></returns>
-        public abstract Expression<Func<IEntity, DataSelectData>> SelectExpression { get; }
+        #endregion
 
-        /// <summary>
-        /// The PropertyName of the property in the anonymous class returned by the SelectExpression
-        /// </summary>
-        /// <value>
-        /// The name of the column property.
-        /// </value>
-        public abstract string ColumnPropertyName { get; }
     }
 
     /// <summary>

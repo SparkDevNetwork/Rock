@@ -1,3 +1,4 @@
+using System;
 //
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
@@ -7,9 +8,15 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Reporting;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -135,6 +142,135 @@ namespace Rock.Model
         #endregion
 
         #region Methods
+
+        public DataTable GetDataTable( RockContext context, Type entityType, List<EntityField> entityFields, List<AttributeCache> attributes, List<ReportField> selectComponents, out List<string> errorMessages )
+        {
+            errorMessages = new List<string>();
+
+            if ( entityType != null )
+            {
+                Type[] modelType = { entityType };
+                Type genericServiceType = typeof( Rock.Data.Service<> );
+                Type modelServiceType = genericServiceType.MakeGenericType( modelType );
+
+                object serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { context } );
+
+                if ( serviceInstance != null )
+                {
+                    ParameterExpression paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
+                    MemberExpression idExpression = Expression.Property( paramExpression, "Id" );
+
+                    // Get AttributeValue queryable and parameter
+                    var attributeValues = context.Set<AttributeValue>();
+                    ParameterExpression attributeValueParameter = Expression.Parameter( typeof( AttributeValue ), "v" );
+
+                    // Create the dynamic type
+                    var dynamicFields = new Dictionary<string, Type>();
+                    entityFields.ForEach( f => dynamicFields.Add( string.Format( "Entity_{0}", f.Name ), f.PropertyType ) );
+                    attributes.ForEach( a => dynamicFields.Add( string.Format( "Attribute_{0}", a.Key ), typeof( string ) ) );
+                    foreach( var reportField in selectComponents)
+                    {
+                        DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
+                        if (selectComponent != null)
+                        {
+                            dynamicFields.Add( string.Format( "Data_{0}", selectComponent.ColumnPropertyName ), selectComponent.ColumnFieldType );
+                        }
+                    }
+                    Type dynamicType = LinqRuntimeTypeBuilder.GetDynamicType( dynamicFields );
+                    ConstructorInfo methodFromHandle = dynamicType.GetConstructor( Type.EmptyTypes );
+
+                    // Bind the dynamic fields to their expressions
+                    var bindings = new List<MemberBinding>();
+                    entityFields.ForEach( f => bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "Entity_{0}", f.Name ) ), Expression.Property( paramExpression, f.Name ) ) ) );
+                    attributes.ForEach( a => bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "Attribute_{0}", a.Key ) ), GetAttributeValueExpression( attributeValues, attributeValueParameter, idExpression, a.Id ) ) ) );
+                    foreach( var reportField in selectComponents)
+                    {
+                        DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
+                        if (selectComponent != null)
+                        {
+                            bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "Data_{0}", selectComponent.ColumnPropertyName ) ), selectComponent.GetExpression( context, idExpression, reportField.Selection ) ) );
+                        }
+                    }
+
+                    Expression selector = Expression.Lambda( Expression.MemberInit( Expression.New( dynamicType.GetConstructor( Type.EmptyTypes ) ), bindings ), paramExpression );
+
+                    Expression whereExpression = this.DataView.GetExpression( serviceInstance, paramExpression, out errorMessages );
+
+                    MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
+                    if ( getMethod != null )
+                    {
+                        var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression } );
+                        var qry = getResult as IQueryable<IEntity>;
+
+                        var selectExpression = Expression.Call( typeof( Queryable ), "Select", new Type[] { qry.ElementType, dynamicType }, Expression.Constant( qry ), selector );
+                        var query = qry.Provider.CreateQuery( selectExpression );
+
+                        DataTable dt = new Service().GetDataTable( query.ToString(), CommandType.Text, null );
+
+                        // The select does not return fields with the same name as the generic type's field names (not sure why), so need to rename columns
+                        foreach ( var field in entityFields )
+                        {
+                            RenameColumn( dt, field.Name, "Entity_" + field.Name );
+                        }
+
+                        int colNum = 1;
+                        foreach ( var attribute in attributes )
+                        {
+                            RenameColumn( dt, string.Format( "C{0}", colNum ), string.Format( "Attribute_{0}", attribute.Key ) );
+                            colNum++;
+                        }
+                        foreach ( var reportField in selectComponents )
+                        {
+                            DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
+                            if ( selectComponent != null )
+                            {
+                                RenameColumn( dt, string.Format( "C{0}", colNum ), string.Format( "Data_{0}", selectComponent.ColumnPropertyName ) );
+                                colNum++;
+                            }
+                        }
+
+                        return dt;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private Expression GetAttributeValueExpression(IQueryable<AttributeValue> attributeValues, ParameterExpression attributeValueParameter, Expression parentIdProperty, int attributeId)
+        {
+            MemberExpression attributeIdProperty = Expression.Property(attributeValueParameter, "AttributeId");
+            MemberExpression entityIdProperty = Expression.Property( attributeValueParameter, "EntityId" );
+            Expression attributeIdConstant = Expression.Constant(attributeId);
+
+            Expression attributeIdCompare = Expression.Equal(attributeIdProperty, attributeIdConstant);
+            Expression entityIdCompre = Expression.Equal( entityIdProperty, Expression.Convert( parentIdProperty, typeof( int? ) ) );
+            Expression andExpression = Expression.And( attributeIdCompare, entityIdCompre );
+
+            var match = new Expression[] {
+                Expression.Constant(attributeValues),
+                Expression.Lambda<Func<AttributeValue, bool>>( andExpression, new ParameterExpression[] { attributeValueParameter })
+            };
+            Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( AttributeValue ) }, match );
+
+            MemberExpression valueProperty = Expression.Property( attributeValueParameter, "Value" );
+            Expression valueLambda = Expression.Lambda( valueProperty, new ParameterExpression[] { attributeValueParameter } );
+
+            Expression selectValue = Expression.Call( typeof( Queryable ), "Select", new Type[] { typeof( AttributeValue ), typeof( string ) }, whereExpression, valueLambda );
+
+            Expression firstOrDefault = Expression.Call( typeof( Queryable ), "FirstOrDefault", new Type[] { typeof( string ) }, selectValue );
+
+            return firstOrDefault;
+        }
+
+        private void RenameColumn(DataTable dt, string colName, string newName)
+        {
+            var col = dt.Columns[colName];
+            if (col != null)
+            {
+                col.ColumnName = newName;
+            }
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
