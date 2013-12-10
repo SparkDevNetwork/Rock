@@ -54,6 +54,9 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbEdit_Click( object sender, EventArgs e )
         {
+            // only enable viewstate for htmlEditor when needed (it is really big)
+            pnlEdit.EnableViewState = true;
+
             pnlEdit.Visible = true;
             pnlVersionGrid.Visible = false;
             mdEdit.Show();
@@ -241,6 +244,10 @@ namespace RockWeb.Blocks.Cms
         protected void ShowView()
         {
             mdEdit.Hide();
+
+            // prevent htmlEditor from using viewstate when not needed
+            pnlEdit.EnableViewState = false;
+
             pnlEdit.Visible = false;
             pnlVersionGrid.Visible = false;
             string entityValue = EntityValue();
