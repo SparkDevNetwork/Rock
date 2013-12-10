@@ -3,15 +3,16 @@
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
  
+        <div class="banner">
+            <h1><asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
+            <asp:Literal ID="lStatus" runat="server" />
+            <asp:Literal ID="lRecipientStatus" runat="server" />
+        </div>
+
         <asp:Panel ID="pnlEdit" runat="server">
 
         <asp:HiddenField ID="hfCommunicationId" runat="server" />
         <asp:HiddenField ID="hfChannelId" runat="server" />
-
-        <asp:Panel ID="pnlStatus" runat="server" CssClass="pull-right">
-            <h4><asp:Literal ID="lStatus" runat="server" /></h4>
-            <h5><asp:Literal ID="lRecipientStatus" runat="server" /></h5>
-        </asp:Panel>
 
         <ul class="nav nav-pills">
             <asp:Repeater ID="rptChannels" runat="server">

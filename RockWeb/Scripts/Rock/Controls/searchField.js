@@ -48,6 +48,12 @@
                 });
 
                 // Listen for the ENTER key being pressed while in the search box and trigger search when hit
+                this.$el.keydown(function (e) {
+                    if (e.keyCode === 13) {
+                        e.preventDefault();
+                        return false;
+                    }
+                });
                 this.$el.keyup(function (e) {
                     if (e.keyCode === 13) {
                         search($(this).val());
