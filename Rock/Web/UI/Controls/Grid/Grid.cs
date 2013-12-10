@@ -1123,11 +1123,11 @@ namespace Rock.Web.UI.Controls
                 baseType = propertyType.GetGenericArguments()[0];
             }
 
-            if ( baseType == typeof( Boolean ) )
+            if ( baseType == typeof( Boolean ) || baseType == typeof( Boolean? ) )
             {
                 bf = new BoolField();
             }
-            else if ( baseType == typeof( DateTime ) )
+            else if ( baseType == typeof( DateTime ) || baseType == typeof( DateTime? ) )
             {
                 bf = new DateField();
             }
@@ -1135,7 +1135,8 @@ namespace Rock.Web.UI.Controls
             {
                 bf = new EnumField();
             }
-            else if ( baseType == typeof( decimal ) || baseType == typeof( int ) )
+            else if ( baseType == typeof( decimal ) || baseType == typeof( decimal? ) ||
+                baseType == typeof( int ) || baseType == typeof( int? ) )
             {
                 bf = new BoundField();
                 bf.ItemStyle.HorizontalAlign = HorizontalAlign.Right;

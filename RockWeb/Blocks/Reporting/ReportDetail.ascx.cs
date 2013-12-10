@@ -441,11 +441,11 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 // Add DataSelect MEF Components that apply to this EntityType
-                foreach ( var component in DataSelectContainer.GetComponentsBySelectedEntityTypeName( entityType.FullName ).OrderBy( c => c.Title ) )
+                foreach ( var component in DataSelectContainer.GetComponentsBySelectedEntityTypeName( entityType.FullName ).OrderBy( c => c.Order ) )
                 {
                     var selectEntityType = EntityTypeCache.Read( component.TypeName );
                     var listItem = new ListItem();
-                    listItem.Text = component.Title;
+                    listItem.Text = component.GetTitle( selectEntityType.GetEntityType() );
                     listItem.Value = string.Format( "{0}|{1}", ReportFieldType.DataSelectComponent, component.TypeId );
                     listItem.Attributes["optiongroup"] = component.Section;
                     ddlFields.Items.Add( listItem );
@@ -637,12 +637,11 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 Type entityType = EntityTypeCache.Read( report.EntityTypeId.Value ).GetEntityType();
-
                 List<EntityField> entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType );
 
-                List<DataSelectComponent> reportDataSelectComponents = new List<DataSelectComponent>();
-
-                //gReport.DataKeyNames = new string[] { "Entity.Id" };
+                var selectedEntityFields = new List<EntityField>();
+                var selectedAttributes = new List<AttributeCache>();
+                var selectedComponents = new List<ReportField>();
 
                 gReport.Columns.Clear();
                 foreach ( var reportField in report.ReportFields.OrderBy( a => a.Order ) )
@@ -652,58 +651,64 @@ namespace RockWeb.Blocks.Reporting
                         var entityField = entityFields.FirstOrDefault( a => a.Name == reportField.Selection );
                         if ( entityField != null )
                         {
-                            BoundField boundField;
-                            if ( entityField.DefinedTypeId.HasValue )
-                            {
-                                boundField = new DefinedValueField();
-                            }
-                            else
-                            {
-                                boundField = Grid.GetGridField( entityField.PropertyType );
-                            }
+                            selectedEntityFields.Add( entityField );
 
-                            boundField.DataField = "Entity." + entityField.Name;
-                            boundField.HeaderText = entityField.Title;
-                            boundField.SortExpression = entityField.Name;
+                            if ( reportField.ShowInGrid )
+                            {
+                                BoundField boundField;
+                                if ( entityField.DefinedTypeId.HasValue )
+                                {
+                                    boundField = new DefinedValueField();
+                                }
+                                else
+                                {
+                                    boundField = Grid.GetGridField( entityField.PropertyType );
+                                }
 
-                            gReport.Columns.Add( boundField );
+                                boundField.DataField = "Entity_" + entityField.Name;
+                                boundField.HeaderText = entityField.Title;
+                                boundField.SortExpression = entityField.Name;
+                                gReport.Columns.Add( boundField );
+                            }
                         }
                     }
                     else if ( reportField.ReportFieldType == ReportFieldType.Attribute )
                     {
-                        // TODO get more info about the Attribute (FieldType, Name, etc);
-                        AttributeField boundField = new AttributeField();
-                        boundField.DataField = reportField.Selection;
-                        boundField.HeaderText = reportField.Selection.SplitCase();
-                        boundField.SortExpression = null;
-                        gReport.Columns.Add( boundField );
+                        int? attributeId = reportField.Selection.AsInteger( false );
+                        if ( attributeId.HasValue )
+                        {
+                            var attribute = AttributeCache.Read( attributeId.Value );
+                            selectedAttributes.Add( attribute );
+
+                            if ( reportField.ShowInGrid )
+                            {
+                                var boundField = new BoundField();
+                                boundField.DataField = string.Format( "Attribute_{0}", attribute.Key );
+                                boundField.HeaderText = attribute.Name;
+                                boundField.SortExpression = null;
+                                gReport.Columns.Add( boundField );
+                            }
+                        }
                     }
                     else if ( reportField.ReportFieldType == ReportFieldType.DataSelectComponent )
                     {
-                        DataSelectComponent dataSelectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
-                        int dataFieldIndex = reportDataSelectComponents.Count();
-                        reportDataSelectComponents.Add( dataSelectComponent );
-
-                        //TODO smarter BoundField type selection...
-                        BoundField boundField = new BoundField();
-                        boundField.DataField = string.Format( "Data{0}.{1}", dataFieldIndex, dataSelectComponent.ColumnPropertyName );
-                        boundField.HeaderText = dataSelectComponent.ColumnHeaderText;
-                        boundField.SortExpression = null;
-                        gReport.Columns.Add( boundField );
+                        selectedComponents.Add( reportField );
+                        if ( reportField.ShowInGrid )
+                        {
+                            DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
+                            if ( selectComponent != null )
+                            {
+                                var boundField = Grid.GetGridField( selectComponent.ColumnFieldType );
+                                boundField.DataField = string.Format( "Data_{0}", selectComponent.ColumnPropertyName );
+                                boundField.HeaderText = selectComponent.ColumnHeaderText;
+                                boundField.SortExpression = null;
+                                gReport.Columns.Add( boundField );
+                            }
+                        }
                     }
                 }
 
-                using ( new UnitOfWorkScope() )
-                {
-                    IQueryable<IEntity> dataviewQry = report.DataView.GetQuery( out errors );
-                    ReportExpressionSelector reportExpressionSelector = new ReportExpressionSelector();
-                    var selectExpression = reportExpressionSelector.GetReportSelectExpression( reportDataSelectComponents );
-                    var reportQuery = dataviewQry.Select( selectExpression );
-
-                    var list = reportQuery.AsNoTracking().ToList();
-
-                    gReport.DataSource = list;
-                }
+                gReport.DataSource = report.GetDataTable( new RockContext(), entityType, selectedEntityFields, selectedAttributes, selectedComponents, out errors );
 
                 if ( errors.Any() )
                 {
@@ -794,7 +799,7 @@ namespace RockWeb.Blocks.Reporting
                     dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );
                     if ( dataSelectComponent != null )
                     {
-                        fieldTitle = dataSelectComponent.Title;
+                        fieldTitle = dataSelectComponent.GetTitle( null );
                     }
 
                     break;
