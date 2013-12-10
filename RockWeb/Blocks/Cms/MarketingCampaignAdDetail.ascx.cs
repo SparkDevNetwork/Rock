@@ -139,11 +139,11 @@ namespace RockWeb.Blocks.Cms
 
             if ( marketingCampaignAd.Id.Equals( 0 ) )
             {
-                lActionTitleAd.Text = ActionTitle.Add( "Marketing Ad for " + marketingCampaignAd.MarketingCampaign.Title );
+                lActionTitleAd.Text = ActionTitle.Add( "Marketing Ad for " + marketingCampaignAd.MarketingCampaign.Title ).FormatAsHtmlTitle();
             }
             else
             {
-                lActionTitleAd.Text = ActionTitle.Edit( "Marketing Ad for " + marketingCampaignAd.MarketingCampaign.Title );
+                lActionTitleAd.Text = ActionTitle.Edit( "Marketing Ad for " + marketingCampaignAd.MarketingCampaign.Title ).FormatAsHtmlTitle();
             }
 
             LoadDropDowns();
@@ -378,16 +378,21 @@ namespace RockWeb.Blocks.Cms
         /// <param name="person">The person.</param>
         private void SetApprovalValues( MarketingCampaignAdStatus status, Person person )
         {
-            ltMarketingCampaignAdStatus.Text = status.ConvertToString();
+           
+
+            string cssClass = string.Empty;
+
             switch ( status )
             {
-                case MarketingCampaignAdStatus.Approved: ltMarketingCampaignAdStatus.CssClass = "alert MarketingCampaignAdStatus alert-success";
+                case MarketingCampaignAdStatus.Approved: cssClass = "label MarketingCampaignAdStatus label-success";
                     break;
-                case MarketingCampaignAdStatus.Denied: ltMarketingCampaignAdStatus.CssClass = "alert MarketingCampaignAdStatus alert-danger";
+                case MarketingCampaignAdStatus.Denied: cssClass = "label MarketingCampaignAdStatus label-danger";
                     break;
-                default: ltMarketingCampaignAdStatus.CssClass = "alert MarketingCampaignAdStatus alert-info";
+                default: cssClass = "label MarketingCampaignAdStatus label-info";
                     break;
             }
+
+            ltMarketingCampaignAdStatus.Text = String.Format("<span class='{0}'>{1}</span>", cssClass, status.ConvertToString());
 
             hfMarketingCampaignAdStatus.Value = status.ConvertToInt().ToString();
             lblMarketingCampaignAdStatusPerson.Visible = person != null;

@@ -393,22 +393,28 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     familyGroup.CampusId = cpCampus.SelectedValueAsInt();
                                     familyMembers.ForEach( m => familyGroup.Members.Add( m ) );
 
-                                    var groupLocation = new GroupLocation();
-                                    var location = new LocationService().Get(
-                                        tbStreet1.Text, tbStreet2.Text, tbCity.Text, ddlState.SelectedValue, tbZip.Text );
-                                    groupLocation.Location = location;
-
-                                    Guid locationTypeGuid = Guid.Empty;
-                                    if ( Guid.TryParse( GetAttributeValue( "LocationType" ), out locationTypeGuid ) )
+                                    if ( !String.IsNullOrEmpty( tbStreet1.Text ) ||
+                                         !String.IsNullOrEmpty( tbStreet2.Text ) ||
+                                         !String.IsNullOrEmpty( tbCity.Text ) ||
+                                         !String.IsNullOrEmpty( tbZip.Text ) )
                                     {
-                                        var locationType = Rock.Web.Cache.DefinedValueCache.Read( locationTypeGuid );
-                                        if ( locationType != null )
-                                        {
-                                            groupLocation.GroupLocationTypeValueId = locationType.Id;
-                                        }
-                                    }
+                                        var groupLocation = new GroupLocation();
+                                        var location = new LocationService().Get(
+                                            tbStreet1.Text, tbStreet2.Text, tbCity.Text, ddlState.SelectedValue, tbZip.Text );
+                                        groupLocation.Location = location;
 
-                                    familyGroup.GroupLocations.Add( groupLocation );
+                                        Guid locationTypeGuid = Guid.Empty;
+                                        if ( Guid.TryParse( GetAttributeValue( "LocationType" ), out locationTypeGuid ) )
+                                        {
+                                            var locationType = Rock.Web.Cache.DefinedValueCache.Read( locationTypeGuid );
+                                            if ( locationType != null )
+                                            {
+                                                groupLocation.GroupLocationTypeValueId = locationType.Id;
+                                            }
+                                        }
+
+                                        familyGroup.GroupLocations.Add( groupLocation );
+                                    }
 
                                     groupService.Add( familyGroup, CurrentPersonId );
                                     groupService.Save( familyGroup, CurrentPersonId );

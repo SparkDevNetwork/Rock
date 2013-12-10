@@ -9,9 +9,10 @@ using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
+using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -22,11 +23,10 @@ namespace RockWeb.Blocks.Administration
 
         private bool canConfigure = false;
         private Rock.Web.Cache.PageCache _page = null;
-        private Rock.Model.PageService pageService = new Rock.Model.PageService();
 
         #endregion
 
-        #region Control Methods
+        #region Base Control Methods
 
         protected override void OnInit( EventArgs e )
         {
@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Administration
                 if ( _page != null )
                     canConfigure = _page.IsAuthorized( "Administrate", CurrentPerson );
                 else
-                    canConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
+                    canConfigure = RockPage.IsAuthorized( "Administrate", CurrentPerson );
 
                 if ( canConfigure )
                 {
@@ -74,7 +74,9 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region Grid Events
+        #region Events
+
+        #region Grid 
 
         void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
@@ -82,6 +84,7 @@ namespace RockWeb.Blocks.Administration
             if (_page != null)
                 parentPageId = _page.Id;
 
+            var pageService = new PageService();
             pageService.Reorder( pageService.GetByParentPageId( parentPageId ).ToList(),
                 e.OldIndex, e.NewIndex, CurrentPersonId );
 
@@ -95,16 +98,53 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            Rock.Model.Page page = pageService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
-            if ( page != null )
+            using ( new UnitOfWorkScope() )
             {
-                Rock.Web.Cache.PageCache.Flush( page.Id );
+                var pageService = new PageService();
+                var siteService = new SiteService();
 
-                pageService.Delete( page, CurrentPersonId );
-                pageService.Save( page, CurrentPersonId );
+                var page = pageService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
+                if ( page != null )
+                {
+                    RockTransactionScope.WrapTransaction( () =>
+                    {
+                        foreach ( var site in siteService.Queryable() )
+                        {
+                            bool updateSite = false;
+                            if (site.DefaultPageId == page.Id)
+                            {
+                                site.DefaultPageId = null;
+                                site.DefaultPageRouteId = null;
+                                updateSite = true;
+                            }
+                            if (site.LoginPageId == page.Id)
+                            {
+                                site.LoginPageId = null;
+                                site.LoginPageRouteId = null;
+                                updateSite = true;
+                            }
+                            if (site.RegistrationPageId == page.Id)
+                            {
+                                site.RegistrationPageId = null;
+                                site.RegistrationPageRouteId = null;
+                                updateSite = true;
+                            }
 
-                if (_page != null)
-                    _page.FlushChildPages();
+                            if (updateSite)
+                            {
+                                siteService.Save( site, CurrentPersonId );
+                            }
+                        }
+
+                        pageService.Delete( page, CurrentPersonId );
+                        pageService.Save( page, CurrentPersonId );
+
+                        Rock.Web.Cache.PageCache.Flush( page.Id );
+
+                        if ( _page != null )
+                            _page.FlushChildPages();
+                    } );
+                }
             }
 
             BindGrid();
@@ -133,6 +173,7 @@ namespace RockWeb.Blocks.Administration
         protected void lbSave_Click( object sender, EventArgs e )
         {
             Rock.Model.Page page;
+            var pageService = new PageService();
 
             int pageId = 0;
             if ( !Int32.TryParse( hfPageId.Value, out pageId ) )
@@ -150,7 +191,7 @@ namespace RockWeb.Blocks.Administration
                 else
                 {
                     page.ParentPageId = null;
-                    page.LayoutId = CurrentPage.LayoutId;
+                    page.LayoutId = PageCache.Read( RockPage.PageId ).LayoutId;
                 }
 
                 page.Title = dtbPageName.Text;
@@ -191,7 +232,9 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region Internal Methods
+        #endregion
+
+        #region Methods
 
         private void BindGrid()
         {
@@ -199,14 +242,14 @@ namespace RockWeb.Blocks.Administration
             if ( _page != null )
                 parentPageId = _page.Id;
 
-            rGrid.DataSource = pageService.GetByParentPageId( parentPageId ).ToList();
+            rGrid.DataSource = new PageService().GetByParentPageId( parentPageId ).ToList();
             rGrid.DataBind();
         }
 
         private void LoadLayouts()
         {
             ddlLayout.Items.Clear();
-            int siteId = _page != null ? _page.Layout.SiteId : CurrentPage.Layout.SiteId;
+            int siteId = _page != null ? _page.Layout.SiteId : RockPage.Layout.SiteId;
             foreach(var layout in new LayoutService().GetBySiteId(siteId))
             {
                 ddlLayout.Items.Add( new ListItem( layout.Name, layout.Id.ToString() ) );
@@ -215,7 +258,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( int pageId )
         {
-            Rock.Model.Page page = pageService.Get( pageId );
+            var page = new PageService().Get( pageId );
             if ( page != null )
             {
                 hfPageId.Value = page.Id.ToString();
@@ -235,7 +278,7 @@ namespace RockWeb.Blocks.Administration
                     if ( _page != null )
                         ddlLayout.SelectedValue = _page.LayoutId.ToString();
                     else
-                        ddlLayout.Text = CurrentPage.LayoutId.ToString();
+                        ddlLayout.Text = RockPage.Layout.Id.ToString();
                 }
                 catch { }
 

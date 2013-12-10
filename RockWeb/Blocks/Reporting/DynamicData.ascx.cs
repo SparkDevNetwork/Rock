@@ -19,6 +19,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -83,13 +84,15 @@ namespace RockWeb.Blocks.Reporting
             {
                 if ( allowEdit )
                 {
-                    tbName.Visible = updatePage;
-                    tbDesc.Visible = updatePage;
                     if ( updatePage )
                     {
-                        tbName.Text = CurrentPage.Title;
-                        tbDesc.Text = CurrentPage.Description;
+                        var pageCache = PageCache.Read( RockPage.PageId );
+                        tbName.Text = pageCache != null ? pageCache.Title : string.Empty;
+                        tbDesc.Text = pageCache != null ? pageCache.Description : string.Empty;
                     }
+
+                    tbName.Visible = updatePage;
+                    tbDesc.Visible = updatePage;
 
                     tbQuery.Text = GetAttributeValue( "Query" );
                     tbParams.Text = GetAttributeValue( "QueryParams" );
@@ -125,21 +128,22 @@ namespace RockWeb.Blocks.Reporting
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            if ( updatePage && ( CurrentPage.Title != tbName.Text ||
-                CurrentPage.Description != tbDesc.Text ) )
+            if ( updatePage )
             {
-                var service = new PageService();
-                var page = service.Get( CurrentPage.Id );
-                page.Title = tbName.Text;
-                page.Description = tbDesc.Text;
-                service.Save( page, CurrentPersonId );
+                var pageCache = PageCache.Read( RockPage.PageId );
+                if ( pageCache != null &&
+                    ( pageCache.Title != tbName.Text || pageCache.Description != tbDesc.Text ) )
+                {
+                    var service = new PageService();
+                    var page = service.Get( pageCache.Id );
+                    page.Title = tbName.Text;
+                    page.Description = tbDesc.Text;
+                    service.Save( page, CurrentPersonId );
 
-                Rock.Web.Cache.PageCache.Flush( page.Id );
+                    Rock.Web.Cache.PageCache.Flush( page.Id );
 
-                CurrentPage.Title = page.Title;
-                CurrentPage.Description = page.Description;
-
-                Page.Title = page.Title;
+                    Page.Title = tbName.Text;
+                }
             }
 
             SetAttributeValue( "Query", tbQuery.Text );

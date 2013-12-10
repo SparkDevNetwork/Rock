@@ -27,10 +27,15 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     public partial class PageProperties : RockBlock
     {
+
         #region Fields
 
         private PageCache _page;
         private readonly List<string> _tabs = new List<string> { "Basic Settings", "Display Settings", "Advanced Settings", "Import/Export"} ;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets or sets the current tab.
@@ -54,7 +59,7 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region Overridden Methods
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -78,13 +83,6 @@ namespace RockWeb.Blocks.Administration
 
                     if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
                     {
-                        ddlLayout.Items.Clear();
-                        var layoutService = new LayoutService();
-                        layoutService.RegisterLayouts( Request.MapPath( "~" ), _page.Layout.Site, CurrentPersonId );
-                        foreach ( var layout in layoutService.GetBySiteId( _page.Layout.SiteId ) )
-                        {
-                            ddlLayout.Items.Add( new ListItem( layout.Name, layout.Id.ToString() ) );
-                        }
                         ddlMenuWhen.BindToEnum( typeof( DisplayInNavWhen ) );
 
                         phAttributes.Controls.Clear();
@@ -96,8 +94,7 @@ namespace RockWeb.Blocks.Administration
                             var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
                             if ( blockControl != null )
                             {
-                                blockControl.CurrentPage = _page;
-                                blockControl.CurrentBlock = block;
+                                blockControl.SetBlock( block );
                                 foreach ( var context in blockControl.ContextTypesRequired )
                                 {
                                     if ( !blockContexts.Contains( context ) )
@@ -161,13 +158,20 @@ namespace RockWeb.Blocks.Administration
                 PageService pageService = new PageService();
                 Rock.Model.Page page = pageService.Get( _page.Id );
 
+                LoadSites();
+                if ( _page.Layout != null )
+                {
+                    ddlSite.SelectedValue = _page.Layout.SiteId.ToString();
+                    LoadLayouts( _page.Layout.Site );
+                    ddlLayout.SelectedValue = _page.Layout.Id.ToString();
+                }
+
                 rptProperties.DataSource = _tabs;
                 rptProperties.DataBind();
 
                 tbPageName.Text = _page.Name;
                 tbPageTitle.Text = _page.Title;
                 ppParentPage.SetValue( pageService.Get( page.ParentPageId ?? 0 ) );
-                ddlLayout.SelectedValue = _page.LayoutId.ToString();
                 imgIcon.BinaryFileId = page.IconFileId;
                 tbIconCssClass.Text = _page.IconCssClass;
 
@@ -222,6 +226,11 @@ namespace RockWeb.Blocks.Administration
             ShowSelectedPane();
         }
 
+        protected void ddlSite_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            LoadLayouts( SiteCache.Read( ddlSite.SelectedValueAsInt().Value ) );
+        }
+        
         /// <summary>
         /// Handles the OnSave event of the masterPage control.
         /// </summary>
@@ -266,7 +275,14 @@ namespace RockWeb.Blocks.Administration
                     }
 
                     page.LayoutId = ddlLayout.SelectedValueAsInt().Value;
-                    page.IconFileId = imgIcon.BinaryFileId;
+
+                    int? orphanedIconFileId = null;
+
+                    if ( page.IconFileId != imgIcon.BinaryFileId )
+                    {
+                        orphanedIconFileId = page.IconFileId;
+                        page.IconFileId = imgIcon.BinaryFileId;
+                    }
                     page.IconCssClass = tbIconCssClass.Text;
 
                     page.PageDisplayTitle = cbPageTitle.Checked;
@@ -343,13 +359,24 @@ namespace RockWeb.Blocks.Administration
                         Rock.Attribute.Helper.GetEditValues( phAttributes, _page );
                         _page.SaveAttributeValues( CurrentPersonId );
 
+                        if ( orphanedIconFileId.HasValue)
+                        {
+                            BinaryFileService binaryFileService = new BinaryFileService();
+                            var binaryFile = binaryFileService.Get( orphanedIconFileId.Value );
+                            if ( binaryFile != null )
+                            {
+                                // marked the old images as IsTemporary so they will get cleaned up later
+                                binaryFile.IsTemporary = true;
+                                binaryFileService.Save( binaryFile, CurrentPersonId );
+                            }
+                        }
+
                         Rock.Web.Cache.PageCache.Flush( _page.Id );
 
                         string script = "if (typeof window.parent.Rock.controls.modal.close === 'function') window.parent.Rock.controls.modal.close('PAGE_UPDATED');";
                         ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
                     }
                 }
-
             }
         }
 
@@ -416,9 +443,50 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
+        protected void cvPageRoute_ServerValidate( object source, ServerValidateEventArgs args )
+        {
+            var errorMessages = new List<string>();
+
+            foreach ( string route in tbPageRoute.Text.SplitDelimitedValues() )
+            {
+                var pageRoute = new PageRoute();
+                pageRoute.Route = route;
+                pageRoute.Guid = Guid.NewGuid();
+                if ( !pageRoute.IsValid )
+                {
+                    errorMessages.Add( string.Format( "The '{0}' route is invalid: {1}", route,
+                    pageRoute.ValidationResults.Select( r => r.ErrorMessage ).ToList().AsDelimited( "; " ) ) );
+                }
+            }
+
+            cvPageRoute.ErrorMessage = errorMessages.AsDelimited( "<br/>" );
+
+            args.IsValid = !errorMessages.Any();
+        }
+
         #endregion
 
-        #region Internal Methods
+        #region Methods
+
+        private void LoadSites()
+        {
+            ddlSite.Items.Clear();
+            foreach(Site site in new SiteService().Queryable().OrderBy(s => s.Name))
+            {
+                ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
+            }
+        }
+
+        private void LoadLayouts(SiteCache Site)
+        {
+            ddlLayout.Items.Clear();
+            var layoutService = new LayoutService();
+            layoutService.RegisterLayouts( Request.MapPath( "~" ), Site, CurrentPersonId );
+            foreach ( var layout in layoutService.GetBySiteId( Site.Id ) )
+            {
+                ddlLayout.Items.Add( new ListItem( layout.Name, layout.Id.ToString() ) );
+            }
+        }
 
         /// <summary>
         /// Displays the error.
@@ -491,25 +559,5 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        protected void cvPageRoute_ServerValidate( object source, ServerValidateEventArgs args )
-        {
-            var errorMessages = new List<string>();
-
-            foreach ( string route in tbPageRoute.Text.SplitDelimitedValues() )
-            {
-                var pageRoute = new PageRoute();
-                pageRoute.Route = route;
-                pageRoute.Guid = Guid.NewGuid();
-                if ( !pageRoute.IsValid )
-                {
-                    errorMessages.Add( string.Format( "The '{0}' route is invalid: {1}", route,
-                    pageRoute.ValidationResults.Select( r => r.ErrorMessage ).ToList().AsDelimited( "; " ) ) );
-                }
-            }
-
-            cvPageRoute.ErrorMessage = errorMessages.AsDelimited( "<br/>" );
-
-            args.IsValid = !errorMessages.Any();
-        }
-}
+    }
 }

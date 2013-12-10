@@ -171,14 +171,10 @@ namespace RockWeb.Blocks.Cms
                         }
                     }
 
-                    site.FaviconUrl = tbFaviconUrl.Text;
-                    site.AppleTouchIconUrl = tbAppleTouchIconUrl.Text;
-                    site.FacebookAppId = tbFacebookAppId.Text;
-                    site.FacebookAppSecret = tbFacebookAppSecret.Text;
-
-                    if (!site.DefaultPageId.HasValue)
+                    if (!site.DefaultPageId.HasValue && !newSite)
                     {
                         ppDefaultPage.ShowErrorMessage( "Default Page is required." );
+                        return;
                     }
 
                     if ( !site.IsValid )
@@ -193,17 +189,52 @@ namespace RockWeb.Blocks.Cms
 
                         if ( newSite )
                         {
-                            Rock.Security.Authorization.CopyAuthorization( CurrentPage.Layout.Site, site, CurrentPersonId );
+                            Rock.Security.Authorization.CopyAuthorization( RockPage.Layout.Site, site, CurrentPersonId );
                         }
                     } );
 
                     SiteCache.Flush( site.Id );
+
+                    // Create the default page is this is a new site
+                    if ( !site.DefaultPageId.HasValue && newSite )
+                    {
+                        var siteCache = SiteCache.Read( site.Id );
+
+                        // Create the layouts for the site, and find the first one
+                        var layoutService = new LayoutService();
+                        layoutService.RegisterLayouts( Request.MapPath( "~" ), siteCache, CurrentPersonId );
+                        var layout = layoutService.GetBySiteId( siteCache.Id ).FirstOrDefault();
+                        if ( layout != null )
+                        {
+                            var pageService = new PageService();
+                            var page = new Page();
+                            page.LayoutId = layout.Id;
+                            page.Title = siteCache.Name + " Home Page";
+                            page.Name = page.Title;
+                            page.EnableViewState = true;
+                            page.IncludeAdminFooter = true;
+
+                            var lastPage = pageService.GetByParentPageId( null ).
+                                OrderByDescending( b => b.Order ).FirstOrDefault();
+
+                            page.Order = lastPage != null ? lastPage.Order + 1 : 0;
+                            pageService.Add( page, CurrentPersonId );
+                            pageService.Save( page, CurrentPersonId );
+
+                            site = siteService.Get( siteCache.Id );
+                            site.DefaultPageId = page.Id;
+                            siteService.Save( site, CurrentPersonId );
+
+                            SiteCache.Flush( site.Id );
+                        }
+                    }
+
                 }
 
                 var qryParams = new Dictionary<string, string>();
                 qryParams["siteId"] = site.Id.ToString();
 
-                NavigateToPage( this.CurrentPage.Guid, qryParams );
+                NavigateToPage( RockPage.Guid, qryParams );
             }
         }
 
@@ -267,7 +298,7 @@ namespace RockWeb.Blocks.Cms
             {
                 site = new Site { Id = 0 };
                 site.SiteDomains = new List<SiteDomain>();
-                site.Theme = CurrentPage.Layout.Site.Theme;
+                site.Theme = RockPage.Layout.Site.Theme;
             }
 
             if ( site == null )
@@ -322,10 +353,12 @@ namespace RockWeb.Blocks.Cms
         {
             if ( site.Id == 0 )
             {
+                nbDefaultPageNotice.Visible = true;
                 lReadOnlyTitle.Text = ActionTitle.Add(Rock.Model.Site.FriendlyTypeName).FormatAsHtmlTitle();
             }
             else
             {
+                nbDefaultPageNotice.Visible = false;
                 lReadOnlyTitle.Text = site.Name.FormatAsHtmlTitle();
             }
 
@@ -372,8 +405,6 @@ namespace RockWeb.Blocks.Cms
             tbErrorPage.Text = site.ErrorPage;
 
             tbSiteDomains.Text = string.Join( "\n", site.SiteDomains.Select( dom => dom.Domain ).ToArray() );
-            tbFaviconUrl.Text = site.FaviconUrl;
-            tbAppleTouchIconUrl.Text = site.AppleTouchIconUrl;
             tbFacebookAppId.Text = site.FacebookAppId;
             tbFacebookAppSecret.Text = site.FacebookAppSecret;
         }

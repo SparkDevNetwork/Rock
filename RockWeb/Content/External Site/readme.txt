@@ -1,0 +1,1 @@
+﻿This directory is for storing assets related to the external site. Consider making a logical directory structure here for managing your files.

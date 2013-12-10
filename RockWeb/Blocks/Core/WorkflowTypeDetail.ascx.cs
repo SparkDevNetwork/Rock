@@ -205,7 +205,7 @@ namespace RockWeb.Blocks.Core
                 {
                     qryParams["CategoryId"] = parentCategoryId;
                 }
-                NavigateToPage( this.CurrentPage.Guid, qryParams );
+                NavigateToPage( RockPage.Guid, qryParams );
             }
             else
             {
@@ -394,7 +394,7 @@ namespace RockWeb.Blocks.Core
             
             var qryParams = new Dictionary<string, string>();
             qryParams["workflowTypeId"] = workflowType.Id.ToString();
-            NavigateToPage( this.CurrentPage.Guid, qryParams );
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         #endregion
@@ -671,7 +671,7 @@ namespace RockWeb.Blocks.Core
             // reload page so that other blocks respond to any data that was changed
             var qryParams = new Dictionary<string, string>();
             qryParams["workflowTypeId"] = hfWorkflowTypeId.Value;
-            NavigateToPage( this.CurrentPage.Guid, qryParams );
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>
@@ -706,7 +706,7 @@ namespace RockWeb.Blocks.Core
             // reload page so that other blocks respond to any data that was changed
             var qryParams = new Dictionary<string, string>();
             qryParams["workflowTypeId"] = hfWorkflowTypeId.Value;
-            NavigateToPage( this.CurrentPage.Guid, qryParams );
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>

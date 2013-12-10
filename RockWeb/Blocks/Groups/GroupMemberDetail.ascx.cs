@@ -113,6 +113,13 @@ namespace RockWeb.Blocks.Groups
 
                 GroupTypeRole role = new GroupTypeRoleService().Get( ddlGroupRole.SelectedValueAsInt() ?? 0 );
 
+                //check to see if the user selected a role
+                if (role == null)
+                {
+                    nbErrorMessage.Title = "Please select a Role";
+                    return;
+                }
+
                 // if adding a new group member 
                 if ( groupMemberId.Equals( 0 ) )
                 {
@@ -134,7 +141,7 @@ namespace RockWeb.Blocks.Groups
                             person.FullName,
                             ddlGroupRole.SelectedItem.Text,
                             role.GroupType.GroupTerm,
-                            CurrentPage.Id,
+                            RockPage.PageId,
                             existingGroupMember.Id
                             );
                         return;

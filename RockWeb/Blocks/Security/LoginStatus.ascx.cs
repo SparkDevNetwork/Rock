@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Security
         {
             if ( action == "Login" )
             {
-                var site = CurrentPage.Layout.Site;
+                var site = RockPage.Layout.Site;
                 if ( site.LoginPageId.HasValue )
                 {
                     site.RedirectToLoginPage( true );
@@ -80,14 +80,14 @@ namespace RockWeb.Blocks.Security
 
                 // After logging out check to see if an anonymous user is allowed to view the current page.  If so
                 // redirect back to the current page, otherwise redirect to the site's default page
-                if ( CurrentPage.IsAuthorized( "View", null ) )
+                if ( RockPage.IsAuthorized( "View", null ) )
                 {
                     Response.Redirect( CurrentPageReference.BuildUrl() );
                     Context.ApplicationInstance.CompleteRequest();
                 }
                 else
                 {
-                    CurrentPage.Layout.Site.RedirectToDefaultPage();
+                    RockPage.Layout.Site.RedirectToDefaultPage();
                 }
 
             }
