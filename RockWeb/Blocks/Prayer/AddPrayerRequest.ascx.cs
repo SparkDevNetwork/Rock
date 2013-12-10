@@ -30,7 +30,7 @@ namespace RockWeb.Blocks.Prayer
     [IntegerField( "Character Limit", "If set to something other than 0, this will limit the number of characters allowed when entering a new prayer request.", false, 250, "Behavior", 5 )]
     // On Save
     [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save", 10 )]
-    [TextField("Save Success Text", "Some text (or HTML) to display to the requester upon successful save.", false, "<p>Thank you allowing us to pray for you.</p>", "On Save", 11 )]
+    [TextField("Save Success Text", "Some text (or HTML) to display to the requester upon successful save.", false, "<p>Thank you for allowing us to pray for you.</p>", "On Save", 11 )]
     
     public partial class AddPrayerRequest : RockBlock
     {
@@ -87,6 +87,25 @@ namespace RockWeb.Blocks.Prayer
     Sys.WebForms.PageRequestManager.getInstance().add_endRequest(SetCharacterLimit);
 ", dtbRequest.ClientID, charLimit, lblCount.ClientID, lbSave.ClientID );
                 ScriptManager.RegisterStartupScript( this.Page, this.GetType(), string.Format( "limit-{0}", this.ClientID ), script, true );
+            }
+        }
+
+        /// <summary>
+        /// Handles the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            if ( ! Page.IsPostBack )
+            {
+                if ( CurrentPerson != null )
+                {
+                    dtbFirstName.Text = CurrentPerson.FirstName;
+                    dtbLastName.Text = CurrentPerson.LastName;
+                    dtbEmail.Text = CurrentPerson.Email;
+                }
             }
         }
 

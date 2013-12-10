@@ -26,8 +26,6 @@ namespace RockWeb.Blocks.Prayer
         #region Private BlockType Attributes
         private static readonly string PrayerRequestKeyParameter = "prayerRequestId";
         int _blockInstanceGroupCategoryId = -1;
-        protected int? _prayerRequestEntityTypeId = null;
-        protected NoteType _noteType;
         #endregion
 
         #region Control Methods
@@ -42,8 +40,6 @@ namespace RockWeb.Blocks.Prayer
 
             Int32.TryParse( GetAttributeValue( "GroupCategoryId" ), out _blockInstanceGroupCategoryId );
             PrayerRequest prayerRequest = new PrayerRequest();
-            Type type = prayerRequest.GetType();
-            _prayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type.FullName );
         }
 
         /// <summary>
