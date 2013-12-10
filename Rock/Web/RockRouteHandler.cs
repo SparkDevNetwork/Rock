@@ -67,8 +67,13 @@ namespace Rock.Web
                 {
                     int siteId = 1;
 
+                    // Attempt to find site first by an exact match to domain, then by a contained domain name
                     Rock.Model.SiteDomainService siteDomainService = new Rock.Model.SiteDomainService();
-                    Rock.Model.SiteDomain siteDomain = siteDomainService.GetByDomainContained( requestContext.HttpContext.Request.Url.Host );
+                    Rock.Model.SiteDomain siteDomain = siteDomainService.GetByDomain( requestContext.HttpContext.Request.Url.Host );
+                    if ( siteDomain == null )
+                    {
+                        siteDomain = siteDomainService.GetByDomainContained( requestContext.HttpContext.Request.Url.Host );
+                    }
                     if ( siteDomain != null )
                     {
                         siteId = siteDomain.SiteId;
