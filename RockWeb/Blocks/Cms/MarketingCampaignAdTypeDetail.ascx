@@ -9,9 +9,9 @@
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
             <fieldset>
-                <legend>
-                    <asp:Literal ID="lActionTitle" runat="server" />
-                </legend>
+                <div class="banner">
+                    <h1><asp:Literal ID="lActionTitle" runat="server" /></h1>
+                </div>
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 

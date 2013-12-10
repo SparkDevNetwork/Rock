@@ -133,7 +133,7 @@ namespace RockWeb.Blocks.Core
 
         protected string GetExceptionDetailUrl( int exceptionId )
         {
-            return string.Format( "/page/{0}?ExceptionId={1}", this.CurrentPage.Id, exceptionId );
+            return string.Format( "/page/{0}?ExceptionId={1}", RockPage.PageId, exceptionId );
         }
 
         /// <summary>
@@ -168,8 +168,6 @@ namespace RockWeb.Blocks.Core
             {
                 dl.Add( "Query String", BuildQueryStringList( baseException.QueryString ) );
             }
-
-            dl.StartSecondColumn();
 
 
             dl.Add( "User", baseException.CreatedByPersonId != null ? baseException.CreatedByPerson.FullName : "Anonymous" );

@@ -23,7 +23,7 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     public partial class ExternalFileList : RockBlock
     {
-        #region Control Methods
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -55,7 +55,42 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region Grid Events (main grid)
+        #region Events
+
+        /// <summary>
+        /// Handles the Click event of the Download control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void Download_Click( object sender, RowEventArgs e )
+        {
+            string fileUrl = string.Format( "{0}GetFile.ashx?id={1}", ResolveUrl( "~" ), e.RowKeyId );
+            Response.Redirect( fileUrl, false );
+            Context.ApplicationInstance.CompleteRequest();
+        }
+
+        protected void gBinaryFile_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
+        {
+            var site = RockPage.Site;
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var downloadCellIndex = gBinaryFile.Columns.IndexOf( gBinaryFile.Columns.OfType<HyperLinkField>().First( a => a.Text == "Download" ) );
+                if ( downloadCellIndex >= 0 )
+                {
+                    string fileUrl = string.Format( "{0}GetFile.ashx?id={1}", ResolveUrl( "~" ), e.Row.DataItem.GetPropertyValue( "Id" ).ToString() );
+                    e.Row.Cells[downloadCellIndex].Text = string.Format( "<a href='{0}' class='btn btn-action btn-xs'><i class='fa fa-download'></i> Download</a>", fileUrl );
+                }
+
+                Literal lAppName = e.Row.FindControl( "lAppName" ) as Literal;
+                if ( lAppName != null )
+                {
+                    var binaryFile = e.Row.DataItem as BinaryFile;
+                    binaryFile.LoadAttributes();
+                    lAppName.Text = binaryFile.GetAttributeValue( "Name" );
+                }
+
+            }
+        }
 
         /// <summary>
         /// Handles the GridRebind event of the gBinaryFile control.
@@ -69,7 +104,7 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region Internal Methods
+        #region Methods
 
         /// <summary>
         /// Binds the grid.
@@ -107,38 +142,5 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        /// <summary>
-        /// Handles the Click event of the Download control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void Download_Click( object sender, RowEventArgs e )
-        {
-            string fileUrl = string.Format( "{0}GetFile.ashx?id={1}", ResolveUrl( "~" ), e.RowKeyId );
-            Response.Redirect( fileUrl, false );
-            Context.ApplicationInstance.CompleteRequest();
-        }
-
-        protected void gBinaryFile_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
-        {
-            if ( e.Row.RowType == DataControlRowType.DataRow )
-            {
-                var downloadCellIndex = gBinaryFile.Columns.IndexOf( gBinaryFile.Columns.OfType<HyperLinkField>().First( a => a.Text == "Download" ) );
-                if ( downloadCellIndex >= 0 )
-                {
-                    string fileUrl = string.Format( "{0}GetFile.ashx?id={1}", ResolveUrl( "~" ), e.Row.DataItem.GetPropertyValue( "Id" ).ToString() );
-                    e.Row.Cells[downloadCellIndex].Text = string.Format("<a href='{0}' class='btn btn-action btn-xs'><i class='fa fa-download'></i> Download</a>", fileUrl);
-                }
-
-                Literal lAppName = e.Row.FindControl("lAppName") as Literal;
-                if (lAppName != null)
-                {
-                    var binaryFile = e.Row.DataItem as BinaryFile;
-                    binaryFile.LoadAttributes();
-                    lAppName.Text = binaryFile.GetAttributeValue("Name");
-                }
-                
-            }
-        }
     }
 }

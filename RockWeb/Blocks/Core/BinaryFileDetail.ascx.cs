@@ -130,19 +130,21 @@ namespace RockWeb.Blocks.Core
                 lActionTitle.Text = ActionTitle.Add( friendlyName ).FormatAsHtmlTitle();
             }
 
-            ShowDetail( binaryFile );
+            // initialize the fileUploader BinaryFileId to whatever file we are editing/viewing
+            fsFile.BinaryFileId = binaryFile.Id;
+            
+            ShowBinaryFileDetail( binaryFile );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
         /// <param name="binaryFile">The binary file.</param>
-        public void ShowDetail( BinaryFile binaryFile )
+        public void ShowBinaryFileDetail( BinaryFile binaryFile )
         {
             pnlDetails.Visible = true;
             hfBinaryFileId.SetValue( binaryFile.Id );
-
-            fsFile.BinaryFileId = binaryFile.Id;
+            
             if ( binaryFile.BinaryFileTypeId.HasValue )
             {
                 fsFile.BinaryFileTypeGuid = new BinaryFileTypeService().Get( binaryFile.BinaryFileTypeId ?? 0).Guid;
@@ -222,6 +224,21 @@ namespace RockWeb.Blocks.Core
                 binaryFile = binaryFileService.Get( binaryFileId );
             }
 
+            // if a new file was uploaded, copy the uploaded file to this binaryFile (uploaded files are always new temporary binaryFiles)
+            if ( fsFile.BinaryFileId != binaryFile.Id)
+            {
+                var uploadedBinaryFile = binaryFileService.Get(fsFile.BinaryFileId ?? 0);
+                if (uploadedBinaryFile != null)
+                {
+                    binaryFile.BinaryFileTypeId = uploadedBinaryFile.BinaryFileTypeId;
+                    if ( uploadedBinaryFile.Data != null )
+                    {
+                        binaryFile.Data = binaryFile.Data ?? new BinaryFileData();
+                        binaryFile.Data.Content = uploadedBinaryFile.Data.Content;
+                    }
+                }
+            }
+
             binaryFile.IsTemporary = false;
             binaryFile.FileName = tbName.Text;
             binaryFile.Description = tbDescription.Text;
@@ -278,6 +295,8 @@ namespace RockWeb.Blocks.Core
                         binaryFile.FileName = tbName.Text;
                     }
 
+                    // set binaryFile.Id to original id since the UploadedFile is a temporary binaryFile with a different id
+                    binaryFile.Id = hfBinaryFileId.ValueAsInt();
                     binaryFile.Description = tbDescription.Text;
                     binaryFile.BinaryFileTypeId = ddlBinaryFileType.SelectedValueAsInt();
                     if ( binaryFile.BinaryFileTypeId.HasValue )
@@ -312,8 +331,8 @@ namespace RockWeb.Blocks.Core
                             }
                         }
                     }
-
-                    ShowDetail( binaryFile );
+                    
+                    ShowBinaryFileDetail( binaryFile );
                 }
             }
         }

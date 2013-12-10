@@ -118,20 +118,20 @@ namespace RockWeb.Blocks.Core
         {
             RockTransactionScope.WrapTransaction( () =>
             {
-                BinaryFileService BinaryFileService = new BinaryFileService();
-                BinaryFile BinaryFile = BinaryFileService.Get( (int)e.RowKeyValue );
+                BinaryFileService binaryFileService = new BinaryFileService();
+                BinaryFile binaryFile = binaryFileService.Get( (int)e.RowKeyValue );
 
-                if ( BinaryFile != null )
+                if ( binaryFile != null )
                 {
                     string errorMessage;
-                    if ( !BinaryFileService.CanDelete( BinaryFile, out errorMessage ) )
+                    if ( !binaryFileService.CanDelete( binaryFile, out errorMessage ) )
                     {
                         mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                         return;
                     }
 
-                    BinaryFileService.Delete( BinaryFile, CurrentPersonId );
-                    BinaryFileService.Save( BinaryFile, CurrentPersonId );
+                    binaryFileService.Delete( binaryFile, CurrentPersonId );
+                    binaryFileService.Save( binaryFile, CurrentPersonId );
                 }
             } );
 

@@ -104,13 +104,23 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the Storage Service <see cref="Rock.Model.EntityType"/> that is used to store this file.
+        /// Gets the Id of the Storage Service <see cref="Rock.Model.EntityType"/> that is used to store this file.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the ID of the Storage Service <see cref="Rock.Model.EntityType"/> that is being used to store this file.
         /// </value>
         [DataMember]
-        public int? StorageEntityTypeId { get; set; }
+        public int? StorageEntityTypeId { get; private set; }
+
+        /// <summary>
+        /// Sets the type of the storage entity.
+        /// Should only be set by the BinaryFileService
+        /// </summary>
+        /// <param name="storageEntityTypeId">The storage entity type identifier.</param>
+        public void SetStorageEntityTypeId( int? storageEntityTypeId)
+        {
+            StorageEntityTypeId = storageEntityTypeId;
+        }
 
         #endregion
 
@@ -154,17 +164,7 @@ namespace Rock.Model
         {
             return this.FileName;
         }
-
-        /// <summary>
-        /// Gets the URL where the file can be accessed.
-        /// </summary>
-        /// <returns>A <see cref="System.String"/> that represents the URL of the file.</returns>
-        public string GetUrl()
-        {
-            var provider = ProviderContainer.GetComponent( StorageEntityType.Name );
-            return provider.GetUrl( this );
-        }
-
+    
         #endregion
 
         #region StaticMethods

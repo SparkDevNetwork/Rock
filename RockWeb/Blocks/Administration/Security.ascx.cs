@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region Overridden Methods
+        #region Base Control Methods
 
         protected override void OnInit( EventArgs e )
         {
@@ -419,7 +419,7 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region Internal Methods
+        #region Methods
 
         private void BindGrid()
         {
@@ -526,6 +526,8 @@ namespace RockWeb.Blocks.Administration
 
     }
 
+    #region MyAuthRule class
+
     class MyAuthRule : AuthRule
     {
         public string EntityTitle { get; set; }
@@ -535,4 +537,7 @@ namespace RockWeb.Blocks.Administration
         {
         }
     }
+
+    #endregion
+
 }

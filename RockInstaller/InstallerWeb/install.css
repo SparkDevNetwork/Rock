@@ -58,7 +58,7 @@ div#content > h1 {
 	float: left;
 	height: 50px;
 	margin-bottom: 6px;
-	margin-top: 65px;
+	margin-top: 25px;
 	text-indent: -9999px;
 	width: 123px;
 }
@@ -137,4 +137,40 @@ p.wait {
 
 h4 {
     font-weight: 600;
+}
+
+/* update status styles */
+.updateprogress-status {
+    padding-top: 50px;
+    position:fixed;
+    top: 35%;
+    left: 40%;
+    z-index: 10000;
+    background-color: #a8a6a6;
+    color: #fff;
+    width: 200px;
+    height: 200px;
+    -moz-box-shadow:    rgba(0,0,0, 0.5) 18px 18px 80px 0px;
+    -webkit-box-shadow: rgba(0,0,0, 0.5) 18px 18px 80px 0px;
+    box-shadow: rgba(0,0,0, 0.5) 18px 18px 80px 0px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.updateprogress-status i {
+    margin-bottom: 12px;
+}
+
+.updateprogress-bg {
+    color: #fff;
+    position: fixed;
+    text-align: center;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 9999;
+    background-color: #343434;
+    opacity: 0.97;
 }

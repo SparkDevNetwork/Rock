@@ -64,11 +64,11 @@
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.6.0.1\lib\net45\EntityFramework.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.0.2-beta1\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.6.0.1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.0.2-beta1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="EPPlus">
       <HintPath>..\libs\EPPlus\EPPlus.dll</HintPath>
@@ -205,6 +205,7 @@
     <Compile Include="Model\CodeGenerated\LayoutService.cs" />
     <Compile Include="Model\CodeGenerated\ReportFieldService.cs" />
     <Compile Include="Model\DbGeographyConverter.cs" />
+    <Compile Include="Model\FinancialTransactionImageService.partial.cs" />
     <Compile Include="Model\LayoutService.Partial.cs" />
     <Compile Include="Model\Layout.cs" />
     <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />

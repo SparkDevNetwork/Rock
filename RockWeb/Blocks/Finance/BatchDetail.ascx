@@ -39,7 +39,7 @@
 
             <fieldset id="fieldsetViewDetails" runat="server">
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />                            
                         <asp:Literal ID="lblDetails" runat="server" />
                     </div>                        

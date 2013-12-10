@@ -271,7 +271,7 @@ namespace RockWeb.Blocks.Reporting
                         qryParams["categoryId"] = categoryId.ToString();
                     }
 
-                    NavigateToPage( this.CurrentPage.Guid, qryParams );
+                    NavigateToPage( RockPage.Guid, qryParams );
                 }
             }
         }
@@ -381,7 +381,7 @@ namespace RockWeb.Blocks.Reporting
 
             var qryParams = new Dictionary<string, string>();
             qryParams["ReportId"] = report.Id.ToString();
-            NavigateToPage( this.CurrentPage.Guid, qryParams );
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>
@@ -402,7 +402,7 @@ namespace RockWeb.Blocks.Reporting
                     qryParams["CategoryId"] = parentCategoryId;
                 }
 
-                NavigateToPage( this.CurrentPage.Guid, qryParams );
+                NavigateToPage( RockPage.Guid, qryParams );
             }
             else
             {

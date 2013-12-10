@@ -13,6 +13,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Jobs
 {
@@ -21,8 +22,7 @@ namespace Rock.Jobs
     /// </summary>
     /// <author>Rich Dubay</author>
     /// <author>Spark Development Network</author>
-    [TextField( "SQL Query", "SQL query to run", true, "", "General", 0, "SQLQuery" )]
-    //[TextField( "Base Cache Folder", "The base/starting Directory for the file cache (default is ~/Cache.)", false, "~/Cache", "General", 3, "BaseCacheDirectory" )]
+    [CodeEditorField( "SQL Query", "SQL query to run", CodeEditorMode.Sql, CodeEditorTheme.Rock, 200, true, "", "General", 0, "SQLQuery" )]
     public class RunSQL : IJob
     {
         /// <summary> 

@@ -77,7 +77,7 @@ namespace Rock.Tests.Model
 
                 var result = device.ToJson();
                 string key1 = "\"GeoPoint\": {";
-                string key2 = "\"latitude\": ";
+                string key2 = "\"WellKnownText\": ";
                 Assert.Greater( result.IndexOf( key1 ), -1, string.Format( "'{0}' was not found in '{1}'.", key1, result ) );
                 Assert.Greater( result.IndexOf( key2 ), -1, string.Format( "'{0}' was not found in '{1}'.", key2, result ) );
             }
