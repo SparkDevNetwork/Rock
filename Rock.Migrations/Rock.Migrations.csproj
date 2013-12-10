@@ -128,6 +128,10 @@
     <Compile Include="Migrations\201312102004063_AccountNumberSecureNonUnique.Designer.cs">
       <DependentUpon>201312102004063_AccountNumberSecureNonUnique.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201312102031566_NoteContextFix.cs" />
+    <Compile Include="Migrations\201312102031566_NoteContextFix.Designer.cs">
+      <DependentUpon>201312102031566_NoteContextFix.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -201,6 +205,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201312102004063_AccountNumberSecureNonUnique.resx">
       <DependentUpon>201312102004063_AccountNumberSecureNonUnique.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312102031566_NoteContextFix.resx">
+      <DependentUpon>201312102031566_NoteContextFix.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
