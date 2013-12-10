@@ -54,7 +54,7 @@
                     <div class="row">
                         <div class="col-md-12">
                             <Rock:DataTextBox ID="tbSubject" runat="server" SourceTypeName="Rock.Model.EmailTemplate, Rock" PropertyName="Subject" />
-                            <Rock:CodeEditor ID="tbBody" EditorHeight="500" EditorMode="Html" EditorTheme="Rock" runat="server" SourceTypeName="Rock.Model.EmailTemplate, Rock" PropertyName="Body" />
+                            <Rock:CodeEditor ID="tbBody" EditorHeight="500" Label="Message Body" EditorMode="Liquid" EditorTheme="Rock" runat="server" SourceTypeName="Rock.Model.EmailTemplate, Rock" PropertyName="Body" />
                         </div>
                     </div>
                     
