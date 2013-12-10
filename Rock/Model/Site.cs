@@ -74,7 +74,7 @@ namespace Rock.Model
         /// this value will be null.
         /// </value>
         [DataMember]
-        public int DefaultPageId { get; set; }
+        public int? DefaultPageId { get; set; }
 
         /// <summary>
         /// Gets or sets the default page route unique identifier.
@@ -122,7 +122,6 @@ namespace Rock.Model
         [DataMember]
         public int? RegistrationPageId { get; set; }
 
-        [DataMember]
         /// <summary>
         /// Gets or sets the registration page route unique identifier.
         /// If this has a value (and the PageRoute can be found) use this instead of the RegistrationPageId
@@ -130,31 +129,8 @@ namespace Rock.Model
         /// <value>
         /// The registration page route unique identifier.
         /// </value>
+        [DataMember]
         public int? RegistrationPageRouteId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the path to the Site's Favicon.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> containing the Url to the Site's Favicon. This property will be null if the site does not use a Favicon.
-        /// </value>
-        [MaxLength( 150 )]
-        [DataMember]
-        public string FaviconUrl { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the path to the site's AppleTouch icon. 
-        /// </summary>
-        /// <remarks>
-        /// This icon is a .png file used on iOS devices that is shown when a web application saved to the home screen.  For complete details on 
-        /// how to use these, please visit. https://developer.apple.com/library/ios/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
-        /// </remarks>
-        /// <value>
-        /// A <see cref="System.String"/> containing the path to the site's AppleTouch icon.
-        /// </value>
-        [MaxLength( 150 )]
-        [DataMember]
-        public string AppleTouchIconUrl { get; set; }
         
         /// <summary>
         /// Gets or sets the Site's Facebook AppId for utilizing the Facebook SDK.
@@ -277,7 +253,7 @@ namespace Rock.Model
         /// </summary>
         public SiteConfiguration()
         {
-            this.HasRequired( p => p.DefaultPage ).WithMany().HasForeignKey( p => p.DefaultPageId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.DefaultPage ).WithMany().HasForeignKey( p => p.DefaultPageId ).WillCascadeOnDelete(false);
             this.HasOptional( p => p.DefaultPageRoute ).WithMany().HasForeignKey( p => p.DefaultPageRouteId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.LoginPage ).WithMany().HasForeignKey( p => p.LoginPageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.LoginPageRoute ).WithMany().HasForeignKey( p => p.LoginPageRouteId ).WillCascadeOnDelete( false );

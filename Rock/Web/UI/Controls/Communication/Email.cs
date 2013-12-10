@@ -232,7 +232,7 @@ namespace Rock.Web.UI.Controls.Communication
                 writer.Write( " " );
 
                 removeButtons[attachment.Key].RenderBeginTag(writer);
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "icon-remove" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-times" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 removeButtons[attachment.Key].RenderEndTag( writer );
@@ -245,7 +245,7 @@ namespace Rock.Web.UI.Controls.Communication
 
             writer.RenderEndTag();  // span6 div
 
-            writer.RenderEndTag();  // row-fluid div
+            writer.RenderEndTag();  // row div
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );

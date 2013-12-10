@@ -15,7 +15,7 @@ namespace Rock.Web.UI.Controls
     /// <see cref="Grid"/> Column for editing the value of a row in a grid
     /// </summary>
     [ToolboxData( "<{0}:EditValueField runat=server></{0}:EditValueField>" )]
-    public class EditValueField : TemplateField
+    public class EditValueField : TemplateField, INotRowSelectedField
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="EditValueField" /> class.
@@ -90,7 +90,7 @@ namespace Rock.Web.UI.Controls
                 lbEditValue.CssClass = "btn btn-default btn-sm";
 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
-                buttonIcon.Attributes.Add( "class", "icon-pencil" );
+                buttonIcon.Attributes.Add( "class", "fa fa-pencil" );
                 lbEditValue.Controls.Add( buttonIcon );
 
                 lbEditValue.Click += lbEditValue_Click;

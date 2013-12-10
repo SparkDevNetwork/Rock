@@ -100,14 +100,71 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the by geo location.
+        /// Returns a <see cref="Rock.Model.Location"/> by GeoPoint. If a match is not found,
+        /// a new Location will be added based on the Geopoint.
         /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public Location GetByGeoLocation( DbGeography value )
+        /// <param name="point">A <see cref="System.Data.Entity.Spatial.DbGeography"/> object
+        ///     representing the Geopoint for the location.</param>
+        /// <returns>The first <see cref="Rock.Model.Location"/> that matches the specified GeoPoint.</returns>
+        public Location GetByGeoPoint( DbGeography point )
         {
+            // get the first address that has a GeoPoint the value
+            var result = Queryable()
+                .Where( a => 
+                    a.GeoPoint != null &&
+                    a.GeoPoint.SpatialEquals(point))
+                .FirstOrDefault();
+            
+            if ( result == null )
+            {
+                // if the Location can't be found, save the new location to the database
+                Location newLocation = new Location
+                {
+                    GeoPoint = point,
+                    Guid = Guid.NewGuid()
+                };
+
+                Add( newLocation, null );
+                Save( newLocation, null );
+                return Get( newLocation.Guid );
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Returns the first <see cref="Rock.Model.Location"/> with a GeoFence that matches
+        /// the specified GeoFence.
+        /// </summary>
+        /// <param name="fence">A <see cref="System.Data.Entity.Spatial.DbGeography"/> object that 
+        ///  represents the GeoFence of the location to retrieve.</param>
+        /// <returns>The <see cref="Rock.Model.Location"/> for the specified GeoFence. </returns>
+        public Location GetByGeoFence( DbGeography fence )
+        {
+
             // get the first address that has a GeoPoint or GeoFence that matches the value
-            return Queryable().Where( a => a.GeoPoint == value || a.GeoFence == value ).FirstOrDefault();
+            var result = Queryable()
+                .Where( a => 
+                    a.GeoFence != null &&
+                    a.GeoFence.SpatialEquals( fence ) )
+                .FirstOrDefault();
+
+            if ( result == null )
+            {
+                // if the Location can't be found, save the new location to the database
+                Location newLocation = new Location
+                {
+                    GeoFence = fence,
+                    Guid = Guid.NewGuid()
+                };
+
+                Add( newLocation, null );
+                Save( newLocation, null );
+                return Get( newLocation.Guid );
+            }
+
+            return result;
+
         }
 
         /// <summary>

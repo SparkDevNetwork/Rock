@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BatchDetail.ascx.cs" Inherits="RockWeb.Blocks.Finance.Administration.BatchDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BatchDetail.ascx.cs" Inherits="RockWeb.Blocks.Finance.BatchDetail" %>
 
 <asp:UpdatePanel ID="upFinancialBatch" runat="server">
     <ContentTemplate>
@@ -39,7 +39,7 @@
 
             <fieldset id="fieldsetViewDetails" runat="server">
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />                            
                         <asp:Literal ID="lblDetails" runat="server" />
                     </div>                        

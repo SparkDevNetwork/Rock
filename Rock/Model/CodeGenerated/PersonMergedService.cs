@@ -81,16 +81,25 @@ namespace Rock.Model
             else
             {
                 var target = new PersonMerged();
-                target.PreviousPersonId = source.PreviousPersonId;
-                target.PreviousPersonGuid = source.PreviousPersonGuid;
-                target.NewPersonId = source.NewPersonId;
-                target.NewPersonGuid = source.NewPersonGuid;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another PersonMerged object to this PersonMerged object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this PersonMerged target, PersonMerged source )
+        {
+            target.PreviousPersonId = source.PreviousPersonId;
+            target.PreviousPersonGuid = source.PreviousPersonGuid;
+            target.NewPersonId = source.NewPersonId;
+            target.NewPersonGuid = source.NewPersonGuid;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

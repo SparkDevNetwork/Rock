@@ -36,6 +36,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            string formattedValue = string.Empty;
+
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 var names = new List<string>();
@@ -52,10 +54,10 @@ namespace Rock.Field.Types
                     }
                 }
 
-                return names.AsDelimited( ", " );
+                formattedValue = names.AsDelimited( ", " );
             }
 
-            return string.Empty;
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
 
         }
 
@@ -85,6 +87,8 @@ namespace Rock.Field.Types
             controls.Add( ddl );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
+            ddl.Label = "Defined Type";
+            ddl.Help = "The Defined Type to select values from.";
 
             Rock.Model.DefinedTypeService definedTypeService = new Model.DefinedTypeService();
             foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Order ) )
@@ -98,7 +102,9 @@ namespace Rock.Field.Types
             controls.Add( cb );
             cb.AutoPostBack = true;
             cb.CheckedChanged += OnQualifierUpdated;
+            cb.Label = "Allow Multiple Values";
             cb.Text = "Yes";
+            cb.Help = "When set, allows multiple defined type values to be selected.";
             return controls;
         }
 

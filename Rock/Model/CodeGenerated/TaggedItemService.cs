@@ -81,15 +81,24 @@ namespace Rock.Model
             else
             {
                 var target = new TaggedItem();
-                target.IsSystem = source.IsSystem;
-                target.TagId = source.TagId;
-                target.EntityGuid = source.EntityGuid;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another TaggedItem object to this TaggedItem object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this TaggedItem target, TaggedItem source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.TagId = source.TagId;
+            target.EntityGuid = source.EntityGuid;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

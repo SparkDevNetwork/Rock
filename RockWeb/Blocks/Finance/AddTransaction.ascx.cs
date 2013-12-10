@@ -30,9 +30,9 @@ namespace RockWeb.Blocks.Finance
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", false, "", "", 0, "CCGateway" )]
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "ACH Card Gateway", "The payment gateway to use for ACH (bank account) transactions", false, "", "", 1, "ACHGateway" )]
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving - ", "", 2 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, "", "", 3)]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.LOCATION_LOCATION_TYPE, "Address Type", "The location type to use for the person's address", false,
-        Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME, "", 4 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false, "", "", 3)]
+    [GroupLocationTypeField(Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Address Type", "The location type to use for the person's address", false,
+        Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 4 )]
 
     [CustomDropdownListField( "Layout Style", "How the sections of this page should be displayed", "Vertical,Fluid", false, "Vertical", "", 5 )]
 
@@ -49,27 +49,27 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Prompt for Phone", "Should the user be prompted for their phone number?", false, "", 11, "DisplayPhone" )]
     [BooleanField( "Prompt for Email", "Should the user be prompted for their email address?", true, "", 12, "DisplayEmail" )]
 
-    [MemoField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.", true, @"
+    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <p>
 Please confirm the information below. Once you have confirmed that the information is accurate click the 'Finish' button to complete your transaction. 
 </p>
 ", "Text Options", 13 )]
 
-    [MemoField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section.", true, @"
+    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <div class='alert alert-info'>
 By clicking the 'finish' button below I agree to allow {{ OrganizationName }} to debit the amount above from my account. I acknowledge that I may 
 update the transaction information at any time by returning to this website. Please call the Finance Office if you have any additional questions. 
 </div>
 ", "Text Options", 14 )]
 
-    [MemoField( "Success Header", "The text (HTML) to display at the top of the success section.", true, @"
+    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <p>
-Thank-you for your generous contribution.  Your support is helping {{ OrganizationName }} actively 
+Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively 
 achieve our mission.  We are so grateful for your commitment. 
 </p>
 ", "Text Options", 15 )]
 
-    [MemoField( "Success Footer", "The text (HTML) to display at the bottom of the success section.", true, @"
+    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 ", "Text Options", 16 )]
 
     #endregion
@@ -150,8 +150,7 @@ achieve our mission.  We are so grateful for your commitment.
             get { return ViewState["ScheduleId"] as string ?? string.Empty; }
             set { ViewState["ScheduleId"] = value; }
         }
-
-
+        
         #endregion
 
         #region overridden control methods
@@ -165,8 +164,8 @@ achieve our mission.  We are so grateful for your commitment.
             base.OnInit( e );
 
             // If impersonation is allowed, and a valid person key was used, set the target to that person
-            bool allowInpersonation = false;
-            if ( bool.TryParse( GetAttributeValue( "Impersonation" ), out allowInpersonation ) && allowInpersonation )
+            bool allowImpersonation = false;
+            if ( bool.TryParse( GetAttributeValue( "Impersonation" ), out allowImpersonation ) && allowImpersonation )
             {
                 string personKey = PageParameter( "Person" );
                 if ( !string.IsNullOrWhiteSpace( personKey ) )
@@ -194,6 +193,7 @@ achieve our mission.  We are so grateful for your commitment.
                     txtCardFirstName.Visible = _ccGateway.SplitNameOnCard;
                     txtCardLastName.Visible = _ccGateway.SplitNameOnCard;
                     txtCardName.Visible = !_ccGateway.SplitNameOnCard;
+                    mypExpiration.MinimumYear = DateTime.Now.Year;
                 }
             }
 
@@ -275,10 +275,12 @@ achieve our mission.  We are so grateful for your commitment.
                 
                 bool.TryParse( GetAttributeValue( "DisplayEmail" ), out display );
                 txtEmail.Visible = display;
+                txtEmail.Required = display;
                 tdEmail.Visible = display;
 
                 bool.TryParse( GetAttributeValue( "DisplayPhone" ), out display );
                 txtPhone.Visible = display;
+                txtPhone.Required = display;
                 tdPhone.Visible = display;
 
                 FluidLayout = GetAttributeValue( "LayoutStyle" ) == "Fluid";
@@ -294,6 +296,18 @@ achieve our mission.  We are so grateful for your commitment.
                 else
                 {
                     rblSavedCC.Visible = false;
+                    divNewCard.Style[HtmlTextWriterStyle.Display] = "block";
+                }
+
+                if ( rblSavedAch.Items.Count > 0 )
+                {
+                    rblSavedAch.Items[0].Selected = true;
+                    rblSavedAch.Visible = true;
+                    divNewBank.Style[HtmlTextWriterStyle.Display] = "none";
+                }
+                else
+                {
+                    rblSavedAch.Visible = false;
                     divNewCard.Style[HtmlTextWriterStyle.Display] = "block";
                 }
 
@@ -422,7 +436,7 @@ achieve our mission.  We are so grateful for your commitment.
                             Guid addressTypeGuid = Guid.Empty;
                             if ( !Guid.TryParse( GetAttributeValue( "AddressType" ), out addressTypeGuid ) )
                             {
-                                addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME );
+                                addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
                             }
 
                             var address = personService.GetFirstLocation( person, DefinedValueCache.Read( addressTypeGuid ).Id );
@@ -485,6 +499,11 @@ achieve our mission.  We are so grateful for your commitment.
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnPrev control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnPrev_Click( object sender, EventArgs e )
         {
             // Previous should only be enabled on the confirmation page (2)
@@ -510,7 +529,7 @@ achieve our mission.  We are so grateful for your commitment.
             {
                 case 1:
 
-                    if ( ProccessPaymentInfo( out errorMessage ) )
+                    if ( ProcessPaymentInfo( out errorMessage ) )
                     {
                         this.AddHistory( "GivingDetail", "1", null );
                         SetPage( 2 );
@@ -524,7 +543,7 @@ achieve our mission.  We are so grateful for your commitment.
 
                 case 2:
 
-                    if ( ProccessConfirmation( out errorMessage ) )
+                    if ( ProcessConfirmation( out errorMessage ) )
                     {
                         this.AddHistory( "GivingDetail", "2", null );
                         SetPage( 3 );
@@ -548,7 +567,7 @@ achieve our mission.  We are so grateful for your commitment.
             TransactionCode = string.Empty;
 
             string errorMessage = string.Empty;
-            if ( ProccessConfirmation( out errorMessage ) )
+            if ( ProcessConfirmation( out errorMessage ) )
             {
                 SetPage( 3 );
             }
@@ -631,26 +650,39 @@ achieve our mission.  We are so grateful for your commitment.
 
                         var paymentInfo = GetPaymentInfo();
 
-                        var savedAccount = new FinancialPersonSavedAccount();
-                        savedAccount.PersonId = transaction.AuthorizedPersonId.Value;
-                        savedAccount.FinancialTransactionId = transaction.Id;
-                        savedAccount.Name = txtSaveAccount.Text;
-                        savedAccount.MaskedAccountNumber = paymentInfo.MaskedNumber;
+                        GatewayComponent gateway = hfPaymentTab.Value == "ACH" ? _achGateway : _ccGateway;
+                        string errorMessage = string.Empty;
+                        string referenceNumber = gateway.GetReferenceNumber( transaction, out errorMessage );
+                        if (errorMessage.Any())
+                        {
+                            nbSaveAccount.Title = "Invalid Transaction";
+                            nbSaveAccount.Text = "Sorry, the account information cannot be saved. " + errorMessage;
+                            nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
+                            nbSaveAccount.Visible = true;
+                        }
+                        else
+                        {
+                            var savedAccount = new FinancialPersonSavedAccount();
+                            savedAccount.PersonId = transaction.AuthorizedPersonId.Value;
+                            savedAccount.FinancialTransactionId = transaction.Id;
+                            savedAccount.ReferenceNumber = referenceNumber;
+                            savedAccount.Name = txtSaveAccount.Text;
+                            savedAccount.MaskedAccountNumber = paymentInfo.MaskedNumber;
 
-                        var savedAccountService = new FinancialPersonSavedAccountService();
-                        savedAccountService.Add( savedAccount, CurrentPersonId );
-                        savedAccountService.Save( savedAccount, CurrentPersonId );
+                            var savedAccountService = new FinancialPersonSavedAccountService();
+                            savedAccountService.Add( savedAccount, CurrentPersonId );
+                            savedAccountService.Save( savedAccount, CurrentPersonId );
 
-                        cbSaveAccount.Visible = false;
-                        txtSaveAccount.Visible = false;
-                        phCreateLogin.Visible = false;
-                        divSaveActions.Visible = false;
+                            cbSaveAccount.Visible = false;
+                            txtSaveAccount.Visible = false;
+                            phCreateLogin.Visible = false;
+                            divSaveActions.Visible = false;
 
-                        nbSaveAccount.Title = "Success";
-                        nbSaveAccount.Text = "The account has been saved for future use";
-                        nbSaveAccount.NotificationBoxType = NotificationBoxType.Success;
-                        nbSaveAccount.Visible = true;
-
+                            nbSaveAccount.Title = "Success";
+                            nbSaveAccount.Text = "The account has been saved for future use";
+                            nbSaveAccount.NotificationBoxType = NotificationBoxType.Success;
+                            nbSaveAccount.Visible = true;
+                        }
                     }
                     else
                     {
@@ -676,6 +708,9 @@ achieve our mission.  We are so grateful for your commitment.
 
         #region Methods for the Payment Info Page (panel)
 
+        /// <summary>
+        /// Gets the accounts.
+        /// </summary>
         private void GetAccounts()
         {
             var selectedGuids = GetAttributeValues( "Accounts" ).Select( Guid.Parse ).ToList();
@@ -698,9 +733,9 @@ achieve our mission.  We are so grateful for your commitment.
                     f.PublicName.Trim() != "" &&
                     ( f.StartDate == null || f.StartDate <= DateTime.Today ) &&
                     ( f.EndDate == null || f.EndDate >= DateTime.Today ) )
-                .OrderBy( f => f.PublicName ) )
+                .OrderBy( f => f.Order ) )
             {
-                var accountItem = new AccountItem( account.Id, account.Name, account.CampusId );
+                var accountItem = new AccountItem( account.Id, account.Order, account.Name, account.CampusId );
                 if ( showAll )
                 {
                     SelectedAccounts.Add( accountItem );
@@ -722,9 +757,12 @@ achieve our mission.  We are so grateful for your commitment.
             }
         }
 
+        /// <summary>
+        /// Binds the accounts.
+        /// </summary>
         private void BindAccounts()
         {
-            rptAccountList.DataSource = SelectedAccounts;
+            rptAccountList.DataSource = SelectedAccounts.OrderBy( a => a.Order ).ToList();
             rptAccountList.DataBind();
 
             btnAddAccount.Visible = AvailableAccounts.Any();
@@ -732,6 +770,11 @@ achieve our mission.  We are so grateful for your commitment.
             btnAddAccount.DataBind();
         }
 
+        /// <summary>
+        /// Gets the person.
+        /// </summary>
+        /// <param name="create">if set to <c>true</c> [create].</param>
+        /// <returns></returns>
         private Person GetPerson( bool create )
         {
             Person person = null;
@@ -789,7 +832,7 @@ achieve our mission.  We are so grateful for your commitment.
                             // Create Family Role
                             var groupMember = new GroupMember();
                             groupMember.Person = person;
-                            groupMember.GroupRole = new GroupRoleService().Get(new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) );
+                            groupMember.GroupRole = new GroupTypeRoleService().Get(new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) );
 
                             // Create Family
                             var group = new Group();
@@ -805,7 +848,7 @@ achieve our mission.  We are so grateful for your commitment.
                                 Guid addressTypeGuid = Guid.Empty;
                                 if ( !Guid.TryParse( GetAttributeValue( "AddressType" ), out addressTypeGuid ) )
                                 {
-                                    addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME );
+                                    addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
                                 }
 
                                 groupLocation = new GroupLocation();
@@ -886,7 +929,12 @@ achieve our mission.  We are so grateful for your commitment.
             }
         }
 
-        private bool ProccessPaymentInfo( out string errorMessage )
+        /// <summary>
+        /// Processes the payment information.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        private bool ProcessPaymentInfo( out string errorMessage )
         {
             errorMessage = string.Empty;
 
@@ -932,6 +980,27 @@ achieve our mission.  We are so grateful for your commitment.
             if ( hfPaymentTab.Value == "ACH" )
             {
                 // Validate ach options
+                if ( rblSavedAch.Items.Count > 0 && ( rblSavedAch.SelectedValueAsInt() ?? 0 ) > 0 )
+                {
+                    // TODO: Find saved account
+                }
+                else
+                {
+                    if ( string.IsNullOrWhiteSpace( txtBankName.Text ) )
+                    {
+                        errorMessages.Add( "Make sure to enter a bank name" );
+                    }
+
+                    if ( string.IsNullOrWhiteSpace( txtRoutingNumber.Text ) )
+                    {
+                        errorMessages.Add( "Make sure to enter a valid routing number" );
+                    }
+
+                    if ( string.IsNullOrWhiteSpace( txtAccountNumber.Text ) )
+                    {
+                        errorMessages.Add( "Make sure to enter a valid account number" );
+                    }                
+                }                
             }
             else
             {
@@ -1016,6 +1085,10 @@ achieve our mission.  We are so grateful for your commitment.
             return true;
         }
 
+        /// <summary>
+        /// Gets the payment information.
+        /// </summary>
+        /// <returns></returns>
         private PaymentInfo GetPaymentInfo()
         {
             PaymentInfo paymentInfo = null;
@@ -1053,6 +1126,10 @@ achieve our mission.  We are so grateful for your commitment.
             return paymentInfo;
         }
 
+        /// <summary>
+        /// Gets the credit card information.
+        /// </summary>
+        /// <returns></returns>
         private CreditCardPaymentInfo GetCCInfo()
         {
             var cc = new CreditCardPaymentInfo( txtCreditCard.Text, txtCVV.Text, mypExpiration.SelectedDate.Value );
@@ -1076,6 +1153,10 @@ achieve our mission.  We are so grateful for your commitment.
             return cc;
         }
 
+        /// <summary>
+        /// Gets the ACH information.
+        /// </summary>
+        /// <returns></returns>
         private ACHPaymentInfo GetACHInfo()
         {
             var ach = new ACHPaymentInfo( txtAccountNumber.Text, txtRoutingNumber.Text, rblAccountType.SelectedValue == "Savings" ? BankAccountType.Savings : BankAccountType.Checking );
@@ -1083,6 +1164,11 @@ achieve our mission.  We are so grateful for your commitment.
             return ach;
         }
 
+        /// <summary>
+        /// Gets the reference information.
+        /// </summary>
+        /// <param name="savedAccountId">The saved account unique identifier.</param>
+        /// <returns></returns>
         private ReferencePaymentInfo GetReferenceInfo( int savedAccountId )
         {
             using (new UnitOfWorkScope() )
@@ -1090,10 +1176,15 @@ achieve our mission.  We are so grateful for your commitment.
                 var savedAccount = new FinancialPersonSavedAccountService().Get( savedAccountId );
                 if ( savedAccount != null )
                 {
-                    var reference = new ReferencePaymentInfo( savedAccount.FinancialTransaction.TransactionCode );
+                    var reference = new ReferencePaymentInfo();
+                    reference.TransactionCode = savedAccount.FinancialTransaction.TransactionCode;
+                    reference.ReferenceNumber = savedAccount.ReferenceNumber;
                     reference.MaskedAccountNumber = savedAccount.MaskedAccountNumber;
                     reference.InitialCurrencyTypeValue = DefinedValueCache.Read( savedAccount.FinancialTransaction.CurrencyTypeValue );
-                    reference.InitialCreditCardTypeValue = DefinedValueCache.Read( savedAccount.FinancialTransaction.CreditCardTypeValue );
+                    if ( reference.InitialCurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) )
+                    { 
+                        reference.InitialCreditCardTypeValue = DefinedValueCache.Read( savedAccount.FinancialTransaction.CreditCardTypeValue );
+                    }
                     return reference;
                 }
             }
@@ -1101,6 +1192,10 @@ achieve our mission.  We are so grateful for your commitment.
             return null;
         }
 
+        /// <summary>
+        /// Gets the payment schedule.
+        /// </summary>
+        /// <returns></returns>
         private PaymentSchedule GetSchedule()
         {
             // Figure out if this is a one-time transaction or a future scheduled transaction
@@ -1136,7 +1231,12 @@ achieve our mission.  We are so grateful for your commitment.
 
         #region Methods for the confirmation Page (panel)
 
-        private bool ProccessConfirmation( out string errorMessage )
+        /// <summary>
+        /// Processes the confirmation.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        private bool ProcessConfirmation( out string errorMessage )
         {
             if ( string.IsNullOrWhiteSpace( TransactionCode ) )
             {
@@ -1320,6 +1420,10 @@ achieve our mission.  We are so grateful for your commitment.
 
         #region Methods used globally
 
+        /// <summary>
+        /// Sets the page.
+        /// </summary>
+        /// <param name="page">The page.</param>
         private void SetPage( int page )
         {
             // Page 1 = Payment Info
@@ -1339,6 +1443,12 @@ achieve our mission.  We are so grateful for your commitment.
             hfCurrentPage.Value = page.ToString();
         }
 
+        /// <summary>
+        /// Shows the message.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="title">The title.</param>
+        /// <param name="text">The text.</param>
         private void ShowMessage( NotificationBoxType type, string title, string text )
         {
             if ( !string.IsNullOrWhiteSpace( text ) )
@@ -1350,9 +1460,12 @@ achieve our mission.  We are so grateful for your commitment.
             }
         }
 
+        /// <summary>
+        /// Registers the startup script.
+        /// </summary>
         private void RegisterScript()
         {
-            CurrentPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.creditCardTypeDetector.js" ) );
+            RockPage.AddScriptLink( ResolveUrl( "~/Scripts/jquery.creditCardTypeDetector.js" ) );
 
             int oneTimeFrequencyId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
 
@@ -1361,22 +1474,23 @@ achieve our mission.  We are so grateful for your commitment.
 
         // As amounts are entered, validate that they are numeric and recalc total
         $('.account-amount').on('change', function() {{
-            var totalAmt = Number(0);
-            $('input.account-amount').each(function (index) {{
+            var totalAmt = Number(0);   
+                 
+            $('.account-amount .form-control').each(function (index) {{
                 var itemValue = $(this).val();
                 if (itemValue != null && itemValue != '') {{
                     if (isNaN(itemValue)) {{
-                        $(this).parents('div.control-group').addClass('error');
+                        $(this).parents('div.input-group').addClass('has-error');
                     }}
                     else {{
-                        $(this).parents('div.control-group').removeClass('error');
+                        $(this).parents('div.input-group').removeClass('has-error');
                         var num = Number(itemValue);
                         $(this).val(num.toFixed(2));
                         totalAmt = totalAmt + num;
                     }}
                 }}
                 else {{
-                    $(this).parents('div.control-group').removeClass('error');
+                    $(this).parents('div.input-group').removeClass('has-error');
                 }}
             }});
             $('.total-amount').html('$ ' + totalAmt.toFixed(2));
@@ -1418,8 +1532,8 @@ achieve our mission.  We are so grateful for your commitment.
             }}
         }});
 
-        // detect credit card type
-        $('.credit-card').creditCardTypeDetector({{ 'credit_card_logos': '.card_logos' }});
+        // Detect credit card type
+        $('.credit-card').creditCardTypeDetector({{ 'credit_card_logos': '.card-logos' }});
 
         // Toggle credit card display if saved card option is available
         $('div.radio-content').prev('.form-group').find('input:radio').unbind('click').on('click', function () {{
@@ -1450,7 +1564,6 @@ achieve our mission.  We are so grateful for your commitment.
     }});
 
 ", divCCPaymentInfo.ClientID, hfPaymentTab.ClientID, oneTimeFrequencyId );
-
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
         }
 
@@ -1458,10 +1571,14 @@ achieve our mission.  We are so grateful for your commitment.
 
         #region Helper Classes 
 
+        /// <summary>
+        /// Lightweight object for each contribution item 
+        /// </summary>
         [Serializable]
         protected class AccountItem
         {
             public int Id { get; set; }
+            public int Order { get; set; }
             public string Name { get; set; }
             public int? CampusId { get; set; }
             public decimal Amount { get; set; }
@@ -1475,9 +1592,10 @@ achieve our mission.  We are so grateful for your commitment.
 
             }
 
-            public AccountItem( int id, string name, int? campusId )
+            public AccountItem( int id, int order, string name, int? campusId )
             {
                 Id = id;
+                Order = order;
                 Name = name;
                 CampusId = campusId;
             }

@@ -1,0 +1,15 @@
+﻿
+<section class="nav-sub">
+  
+{% if page.display-child-pages == 'true' and page.pages != empty %}
+    <ul class="nav nav-pills nav-stacked nav-categories">
+        {% for childPage in page.pages %}
+          <li>
+              <a href="{{ childPage.url }}">{{ childPage.title }}</a>
+          </li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+</section>
+<p />

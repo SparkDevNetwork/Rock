@@ -12,15 +12,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Service class for Transaction objects.
+    /// Service/Data access class for <see cref="Rock.Model.FinancialTransaction"/> entity objects.
     /// </summary>
     public partial class FinancialTransactionService 
     {
         /// <summary>
-        /// Gets the transaction by its TransactionCode.
+        /// Gets a transaction by it's transaction code.
         /// </summary>
-        /// <param name="transactionCode">The transaction code.</param>
-        /// <returns></returns>
+        /// <param name="transactionCode">A <see cref="System.String"/> representing the transaction code for the transaction</param>
+        /// <returns>The <see cref="Rock.Model.FinancialTransaction"/> that matches the transaction code, this value will be null if a match is not found.</returns>
         public FinancialTransaction GetByTransactionCode( string transactionCode )
         {
             if ( !string.IsNullOrWhiteSpace( transactionCode ) )
@@ -30,58 +30,6 @@ namespace Rock.Model
                     .FirstOrDefault();
             }
             return null;
-        }
-
-        /// <summary>
-        /// Gets the transaction by search.
-        /// </summary>
-        /// <param name="searchValue">The search value.</param>
-        /// <returns></returns>
-        public IQueryable<FinancialTransaction> Get(TransactionSearchValue searchValue)
-        {
-            var transactions = Repository.AsQueryable();
-
-            if ( searchValue.AmountRange.From.HasValue )
-            {
-                transactions = transactions.Where(t => t.Amount >= searchValue.AmountRange.From); 
-            }
-            if (searchValue.AmountRange.To.HasValue)
-            {
-                transactions = transactions.Where(t => t.Amount <= searchValue.AmountRange.To); 
-            }
-            if ( searchValue.DateRange.From.HasValue )
-            {
-                transactions = transactions.Where( t => t.TransactionDateTime >= searchValue.DateRange.From.Value );
-            }
-            if ( searchValue.DateRange.To.HasValue )
-            {
-                transactions = transactions.Where( t => t.TransactionDateTime <= searchValue.DateRange.To.Value );
-            }
-            if ( searchValue.TransactionTypeValueId.HasValue )
-            {
-                transactions = transactions.Where( t => t.TransactionTypeValueId == searchValue.TransactionTypeValueId.Value );
-            }
-            if ( searchValue.CurrencyTypeValueId.HasValue )
-            {
-                transactions = transactions.Where( t => t.CurrencyTypeValueId.HasValue && t.CurrencyTypeValueId == searchValue.CurrencyTypeValueId.Value );
-            }
-            if ( searchValue.CreditCardTypeValueId.HasValue )
-            {
-                transactions = transactions.Where(t => t.CreditCardTypeValueId.HasValue && t.CurrencyTypeValueId == searchValue.CreditCardTypeValueId.Value);
-            }
-            if (searchValue.SourceTypeValueId.HasValue)
-            {
-                transactions = transactions.Where(t => t.SourceTypeValueId.HasValue && t.SourceTypeValueId == searchValue.SourceTypeValueId.Value);
-            }
-            if (!String.IsNullOrEmpty(searchValue.TransactionCode))
-            {
-                transactions = transactions.Where(t => t.TransactionCode == searchValue.TransactionCode);
-            }
-            if ( searchValue.AccountId.HasValue )
-            {
-                transactions = transactions.Where( t => t.TransactionDetails.Any( d => d.AccountId == searchValue.AccountId.Value ) );
-            }
-            return transactions;
         }
     }
 }

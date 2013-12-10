@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace Rock.Web
@@ -41,6 +42,7 @@ namespace Rock.Web
         /// <param name="term">The term.</param>
         /// <param name="dateTime">The date time.</param>
         /// <param name="format">The format.</param>
+        /// <param name="showIfBlank">if set to <c>true</c> [show if blank].</param>
         /// <returns></returns>
         public DescriptionList Add( string term, DateTime? dateTime, string format = "g", bool showIfBlank = false )
         {
@@ -55,16 +57,6 @@ namespace Rock.Web
         }
 
         /// <summary>
-        /// Starts the second column.
-        /// </summary>
-        /// <returns></returns>
-        public DescriptionList StartSecondColumn()
-        {
-            _termDescriptionList.Add( ColumnBreak, string.Empty );
-            return this;
-        }
-
-        /// <summary>
         /// Gets the HTML.
         /// </summary>
         /// <value>
@@ -74,38 +66,31 @@ namespace Rock.Web
         {
             get
             {
-                string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
-
-                string result = @"<div class='col-md-6'><dl>";
-
-                foreach ( var pair in _termDescriptionList )
+                if ( _termDescriptionList.Any() )
                 {
-                    string displayValue = pair.Value;
-                    if ( string.IsNullOrWhiteSpace( displayValue ) )
-                    {
-                        displayValue = Rock.Constants.None.TextHtml;
-                    }
+                    string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
 
+                    string result = @"<dl>";
 
-                    if ( pair.Key == ColumnBreak )
+                    foreach ( var pair in _termDescriptionList )
                     {
-                        result += @"</dl></div><div class='col-md-6'><dl>";
-                    }
-                    else
-                    {
+                        string displayValue = pair.Value;
+                        if ( string.IsNullOrWhiteSpace( displayValue ) )
+                        {
+                            displayValue = Rock.Constants.None.TextHtml;
+                        }
+
                         result += string.Format( descriptionFormat, pair.Key, displayValue );
                     }
+
+                    result += @"</dl>";
+
+                    return result;
                 }
 
-                result += @"</dl></div>";
+                return string.Empty;
 
-                return result;
             }
         }
-
-        /// <summary>
-        /// The column break
-        /// </summary>
-        private const string ColumnBreak = "<<ColumnBreak>>";
     }
 }

@@ -81,20 +81,29 @@ namespace Rock.Model
             else
             {
                 var target = new Note();
-                target.IsSystem = source.IsSystem;
-                target.NoteTypeId = source.NoteTypeId;
-                target.EntityId = source.EntityId;
-                target.SourceTypeValueId = source.SourceTypeValueId;
-                target.Caption = source.Caption;
-                target.CreationDateTime = source.CreationDateTime;
-                target.IsAlert = source.IsAlert;
-                target.Text = source.Text;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another Note object to this Note object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this Note target, Note source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.NoteTypeId = source.NoteTypeId;
+            target.EntityId = source.EntityId;
+            target.SourceTypeValueId = source.SourceTypeValueId;
+            target.Caption = source.Caption;
+            target.CreationDateTime = source.CreationDateTime;
+            target.IsAlert = source.IsAlert;
+            target.Text = source.Text;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

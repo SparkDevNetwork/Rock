@@ -20,7 +20,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Prayer
 {
-    [CategoryField( "Category", "A top level category. This controls which categories are shown when entering new prayer requests.", false,"Rock.Model.PrayerRequest", "","", false, Rock.Constants.None.IdValue, "Filtering", 1, "GroupCategoryId" )]
+    [CategoryField( "Category", "A top level category. This controls which categories are shown when entering new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "", "Filtering", 1, "GroupCategoryId" )]
     // Behavior
     [BooleanField( "Enable Auto Approve", "If enabled, prayer requests are automatically approved; otherwise they must be approved by an admin before they can be seen by the prayer team.", true, "Behavior", 0 )]
     [BooleanField( "Default Allow Comments Setting", "Controls the default setting for 'Allow Comments' on new prayer requests.", false, "Behavior", 1 )]
@@ -30,12 +30,11 @@ namespace RockWeb.Blocks.Prayer
     [IntegerField( "Character Limit", "If set to something other than 0, this will limit the number of characters allowed when entering a new prayer request.", false, 250, "Behavior", 5 )]
     // On Save
     [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save", 10 )]
-    [TextField("Save Success Text", "Some text (or HTML) to display to the requester upon successful save.", false, "<p>Thank you allowing us to pray for you.</p>", "On Save", 11 )]
+    [TextField("Save Success Text", "Some text (or HTML) to display to the requester upon successful save.", false, "<p>Thank you for allowing us to pray for you.</p>", "On Save", 11 )]
     
     public partial class AddPrayerRequest : RockBlock
     {
         #region Private BlockType Attributes
-        int _groupCategoryId = 0;
         protected int? _prayerRequestEntityTypeId = null;
         protected bool enableUrgentFlag = false;
         protected bool enableCommentsFlag = false;
@@ -63,7 +62,7 @@ namespace RockWeb.Blocks.Prayer
             }
             else
             {
-                ddlCategory.Visible = false;
+                bddlCategory.Visible = false;
             }
 
             Type type = new PrayerRequest().GetType();
@@ -72,7 +71,7 @@ namespace RockWeb.Blocks.Prayer
             int charLimit;
             if ( Int32.TryParse( GetAttributeValue( "CharacterLimit" ), out charLimit ) && charLimit > 0 )
             {
-                txtRequest.Placeholder = string.Format( "Please pray that... (up to {0} characters)", charLimit );
+                dtbRequest.Placeholder = string.Format( "Please pray that... (up to {0} characters)", charLimit );
                 string script = string.Format( @"
     function SetCharacterLimit() {{
         $('#{0}').limit({{maxChars: {1}, counter:'#{2}', normalClass:'badge', warningClass:'badge-warning', overLimitClass: 'badge-danger'}});
@@ -86,8 +85,27 @@ namespace RockWeb.Blocks.Prayer
     }};
     $(document).ready(function () {{ SetCharacterLimit(); }});
     Sys.WebForms.PageRequestManager.getInstance().add_endRequest(SetCharacterLimit);
-", txtRequest.ClientID, charLimit, lblCount.ClientID, btnSave.ClientID );
+", dtbRequest.ClientID, charLimit, lblCount.ClientID, lbSave.ClientID );
                 ScriptManager.RegisterStartupScript( this.Page, this.GetType(), string.Format( "limit-{0}", this.ClientID ), script, true );
+            }
+        }
+
+        /// <summary>
+        /// Handles the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            if ( ! Page.IsPostBack )
+            {
+                if ( CurrentPerson != null )
+                {
+                    dtbFirstName.Text = CurrentPerson.FirstName;
+                    dtbLastName.Text = CurrentPerson.LastName;
+                    dtbEmail.Text = CurrentPerson.Email;
+                }
             }
         }
 
@@ -98,11 +116,11 @@ namespace RockWeb.Blocks.Prayer
         {
             Guid guid = new Guid( categoryGuid );
 
-            ddlCategory.DataSource = new CategoryService().GetByEntityTypeId( _prayerRequestEntityTypeId ).Where( c => c.Guid == guid ||
+            bddlCategory.DataSource = new CategoryService().GetByEntityTypeId( _prayerRequestEntityTypeId ).Where( c => c.Guid == guid ||
                 (c.ParentCategory != null && c.ParentCategory.Guid == guid ) ).AsQueryable().ToList();
-            ddlCategory.DataTextField = "Name";
-            ddlCategory.DataValueField = "Id";
-            ddlCategory.DataBind();
+            bddlCategory.DataTextField = "Name";
+            bddlCategory.DataValueField = "Id";
+            bddlCategory.DataBind();
         }
 
         /// <summary>
@@ -116,7 +134,7 @@ namespace RockWeb.Blocks.Prayer
             nbWarningMessage.Visible = false;
             int charLimit;
             if ( Int32.TryParse( GetAttributeValue( "CharacterLimit" ), out charLimit ) && charLimit > 0 
-                && txtRequest.Text.Length > charLimit )
+                && dtbRequest.Text.Length > charLimit )
             {
                 nbWarningMessage.Visible = true;
                 nbWarningMessage.Text = string.Format( "Whoops. Would you mind reducing the length of your prayer request to {0} characters?", charLimit );
@@ -140,10 +158,11 @@ namespace RockWeb.Blocks.Prayer
             }
 
             // Now record all the bits...
-            prayerRequest.CategoryId = ddlCategory.SelectedValueAsInt();
-            prayerRequest.FirstName = tbFirstName.Text;
-            prayerRequest.LastName = tbLastName.Text;
-            prayerRequest.Text = txtRequest.Text;
+            prayerRequest.CategoryId = bddlCategory.SelectedValueAsInt();
+            prayerRequest.FirstName = dtbFirstName.Text;
+            prayerRequest.LastName = dtbLastName.Text;
+            prayerRequest.Email = dtbEmail.Text;
+            prayerRequest.Text = dtbRequest.Text;
 
             if ( enableUrgentFlag )
             {
@@ -195,9 +214,9 @@ namespace RockWeb.Blocks.Prayer
         {
             pnlForm.Visible = true;
             pnlReceipt.Visible = false;
-            txtRequest.Text = "";
+            dtbRequest.Text = "";
             //rblCategory.SelectedIndex = -1;
-            txtRequest.Focus();
+            dtbRequest.Focus();
         }
 }
 }

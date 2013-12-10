@@ -81,20 +81,29 @@ namespace Rock.Model
             else
             {
                 var target = new MetricValue();
-                target.IsSystem = source.IsSystem;
-                target.MetricId = source.MetricId;
-                target.Value = source.Value;
-                target.Description = source.Description;
-                target.xValue = source.xValue;
-                target.isDateBased = source.isDateBased;
-                target.Label = source.Label;
-                target.Order = source.Order;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another MetricValue object to this MetricValue object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this MetricValue target, MetricValue source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.MetricId = source.MetricId;
+            target.Value = source.Value;
+            target.Description = source.Description;
+            target.xValue = source.xValue;
+            target.isDateBased = source.isDateBased;
+            target.Label = source.Label;
+            target.Order = source.Order;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

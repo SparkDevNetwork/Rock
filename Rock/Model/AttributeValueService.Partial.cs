@@ -12,20 +12,20 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Attribute Value POCO Service class
+    /// Data access/service for <see cref="Rock.Model.AttributeValue"/> entity objects.
     /// </summary>
-    public partial class AttributeValueService 
+    public partial class AttributeValueService
     {
         /// <summary>
-        /// Gets Attribute Values by Attribute Id
+        /// Returns an enumerable collection of <see cref="Rock.Model.AttributeValue">AttributeValues</see> by <see cref="Rock.Model.Attribute"/>.
         /// </summary>
-        /// <param name="attributeId">Attribute Id.</param>
-        /// <returns>An enumerable list of AttributeValue objects.</returns>
+        /// <param name="attributeId">A <see cref="System.Int32" /> that represents the AttributeId of the <see cref="Rock.Model.Attribute"/> to search by.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.AttributeValue">AttributeValues</see> by the specified <see cref="Rock.Model.Attribute"/>.</returns>
         public IEnumerable<AttributeValue> GetByAttributeId( int attributeId )
         {
             return Repository.Find( t => t.AttributeId == attributeId );
         }
-        
+
         /// <summary>
         /// Gets Attribute Values by Attribute Id And Entity Id
         /// </summary>
@@ -36,23 +36,23 @@ namespace Rock.Model
         {
             return Repository.Find( t => t.AttributeId == attributeId && ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
         }
-        
+
         /// <summary>
-        /// Gets Attribute Values by Entity Id
+        /// Returns an enumerable collection of <see cref="Rock.Model.AttributeValue">AttributeValues</see> by EntityId.
         /// </summary>
-        /// <param name="entityId">Entity Id.</param>
-        /// <returns>An enumerable list of AttributeValue objects.</returns>
+        /// <param name="entityId">A <see cref="System.Int32"/> representing the EntityId to search by.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.AttributeValue">AttributeValues</see> by EntityId.</returns>
         public IEnumerable<AttributeValue> GetByEntityId( int? entityId )
         {
             return Repository.Find( t => ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
         }
 
         /// <summary>
-        /// Gets the by attribute id and entity id.
+        /// Returns an enumerable collection of <see cref="Rock.Model.AttributeValue">AttributeValues</see> by <see cref="Rock.Model.Attribute"/> and EntityId.
         /// </summary>
-        /// <param name="attributeId">The attribute id.</param>
-        /// <param name="entityId">The entity id.</param>
-        /// <returns></returns>
+        /// <param name="attributeId">A <see cref="System.Int32"/> representing the AttributeId of the <see cref="Rock.Model.Attribute"/> to search by..</param>
+        /// <param name="entityId">A <see cref="System.Int32"/> representing the EntityId to search by.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.AttributeValue">AttributeValues</see> that match the search criteria.</returns>
         public IEnumerable<AttributeValue> GetByAttributeIdAndEntityId( int attributeId, int entityId )
         {
             return Repository.AsQueryable().
@@ -61,10 +61,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the global attribute value.
+        /// Returns a <see cref="Rock.Model.AttributeValue"/> for a <see cref="Rock.Model.Attribute"/> by Key.
         /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
+        /// <param name="key">A <see cref="System.String"/> representing the name of the Global <see cref="Rock.Model.Attribute">Attribute's</see> key value.</param>
+        /// <returns>The <see cref="Rock.Model.AttributeValue" /> of the global <see cref="Rock.Model.Attribute"/>.</returns>
         public AttributeValue GetGlobalAttributeValue( string key )
         {
             return Repository.AsQueryable()
@@ -75,6 +75,38 @@ namespace Rock.Model
                     v.Attribute.Key == key &&
                     !v.EntityId.HasValue )
                 .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Saves the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public override bool Save( AttributeValue item, int? personId )
+        {
+            if ( item.Attribute != null )
+            {
+                // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
+                var fieldTypeImage = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.IMAGE.AsGuid() );
+                var fieldTypeBinaryFile = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() );
+
+                if ( item.Attribute.FieldTypeId == fieldTypeImage.Id || item.Attribute.FieldTypeId == fieldTypeBinaryFile.Id )
+                {
+                    int? binaryFileId = item.Value.AsInteger();
+                    if ( binaryFileId.HasValue )
+                    {
+                        BinaryFileService binaryFileService = new BinaryFileService( this.RockContext );
+                        var binaryFile = binaryFileService.Get( binaryFileId.Value );
+                        if ( binaryFile != null && binaryFile.IsTemporary )
+                        {
+                            binaryFile.IsTemporary = false;
+                        }
+                    }
+                }
+            }
+
+            return base.Save( item, personId );
         }
     }
 }

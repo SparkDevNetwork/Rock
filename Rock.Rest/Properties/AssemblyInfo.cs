@@ -13,9 +13,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Rock.Rest")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Christ's Church of the Valley")]
-[assembly: AssemblyProduct("Rock.Rest")]
-[assembly: AssemblyCopyright("Copyright © Christ's Church of the Valley 2012")]
+[assembly: AssemblyCompany( "Spark Development Network" )]
+[assembly: AssemblyProduct( "Rock.Rest" )]
+[assembly: AssemblyCopyright( "Copyright © Spark Development Network 2011-2013" )]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

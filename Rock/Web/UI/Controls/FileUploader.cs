@@ -108,6 +108,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets an optional validation group to use.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get { return ViewState["ValidationGroup"] as string; }
+            set { ViewState["ValidationGroup"] = value; }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -260,10 +272,10 @@ namespace Rock.Web.UI.Controls
             RockControlHelper.CreateChildControls( this, Controls );
 
             Controls.Add( _hfBinaryFileId );
-            _hfBinaryFileId.ID = "hfBinaryFileId";
+            _hfBinaryFileId.ID = this.ID + "_hfBinaryFileId";
 
             Controls.Add( _hfBinaryFileTypeGuid );
-            _hfBinaryFileTypeGuid.ID = "hfBinaryFileTypeGuid";
+            _hfBinaryFileTypeGuid.ID = this.ID + "_hfBinaryFileTypeGuid";
 
             _aFileName = new HtmlAnchor();
             Controls.Add( _aFileName );
@@ -275,12 +287,12 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _aRemove );
             _aRemove.ID = "rmv";
             _aRemove.HRef = "#";
-            _aRemove.InnerHtml = "<i class='icon-remove'></i>";
+            _aRemove.InnerHtml = "<i class='fa fa-times'></i>";
             _aRemove.Attributes["class"] = "remove-file";
 
             _fileUpload = new FileUpload();
             Controls.Add( _fileUpload );
-            _fileUpload.ID = "fu";
+            _fileUpload.ID = this.ID + "_fu";
         }
 
         /// <summary>

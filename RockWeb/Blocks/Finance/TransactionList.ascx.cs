@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Data.Entity;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -48,7 +49,7 @@ namespace RockWeb.Blocks.Finance
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
             rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
 
-            _canConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
+            _canConfigure = RockPage.IsAuthorized( "Edit", CurrentPerson );
 
             if ( _canConfigure )
             {
@@ -62,7 +63,7 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                DisplayError( "You are not authorized to configure this page" );
+                DisplayError( "You are not authorized to edit these transactions" );
             }
         }
 
@@ -75,14 +76,8 @@ namespace RockWeb.Blocks.Finance
             base.OnLoad(e);
 
             var contextEntity = this.ContextEntity();
-            if (contextEntity != null)
+            if (contextEntity  != null)
             {
-                dtStartDate.Visible = false;
-                dtEndDate.Visible = false;
-                txtFromAmount.Visible = false;
-                txtToAmount.Visible = false;
-                txtTransactionCode.Visible = false;
-
                 if (contextEntity is Person)
                 {
                     _person = contextEntity as Person;
@@ -90,6 +85,7 @@ namespace RockWeb.Blocks.Finance
                 else if (contextEntity is FinancialBatch)
                 {
                     _batch = contextEntity as FinancialBatch;
+                    rFilter.Visible = false;
                 }
             }
 
@@ -114,24 +110,33 @@ namespace RockWeb.Blocks.Finance
         {
             switch ( e.Key )
             {
-                case "Fund":
+                case "Date Range":
+                    e.Value = DateRangePicker.FormatDelimitedValues(e.Value);
+                    break;
 
-                    int fundId = 0;
-                    if ( int.TryParse( e.Value, out fundId ) )
+                case "Amount Range":
+                    e.Value = NumberRangeEditor.FormatDelimitedValues( e.Value, "N2" );
+                    break;
+
+                case "Account":
+
+                    int accountId = 0;
+                    if ( int.TryParse( e.Value, out accountId ) )
                     {
                         var service = new FinancialAccountService();
-                        var fund = service.Get( fundId );
-                        if ( fund != null )
+                        var account = service.Get( accountId );
+                        if ( account != null )
                         {
-                            e.Value = fund.Name;
+                            e.Value = account.Name;
                         }
                     }
 
                     break;
 
+                case "Transaction Type":
                 case "Currency Type":
                 case "Credit Card Type":
-                case "Source":
+                case "Source Type":
 
                     int definedValueId = 0;
                     if ( int.TryParse( e.Value, out definedValueId ) )
@@ -154,15 +159,14 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "From Date", dtStartDate.Text );
-            rFilter.SaveUserPreference( "To Date", dtEndDate.Text );
-            rFilter.SaveUserPreference( "From Amount", txtFromAmount.Text );
-            rFilter.SaveUserPreference( "To Amount", txtToAmount.Text );
+            rFilter.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
+            rFilter.SaveUserPreference( "Amount Range", nreAmount.DelimitedValues );
             rFilter.SaveUserPreference( "Transaction Code", txtTransactionCode.Text );
             rFilter.SaveUserPreference( "Account", ddlAccount.SelectedValue != All.Id.ToString() ? ddlAccount.SelectedValue : string.Empty);
+            rFilter.SaveUserPreference( "Transaction Type", ddlTransactionType.SelectedValue != All.Id.ToString() ? ddlTransactionType.SelectedValue : string.Empty );
             rFilter.SaveUserPreference( "Currency Type", ddlCurrencyType.SelectedValue != All.Id.ToString() ? ddlCurrencyType.SelectedValue : string.Empty );
             rFilter.SaveUserPreference( "Credit Card Type", ddlCreditCardType.SelectedValue != All.Id.ToString() ? ddlCreditCardType.SelectedValue : string.Empty );
-            rFilter.SaveUserPreference( "Source", ddlSourceType.SelectedValue != All.Id.ToString() ? ddlSourceType.SelectedValue : string.Empty );
+            rFilter.SaveUserPreference( "Source Type", ddlSourceType.SelectedValue != All.Id.ToString() ? ddlSourceType.SelectedValue : string.Empty );
 
             BindGrid();
         }
@@ -225,31 +229,23 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindFilter()
         {
-            //DateTime fromDate;
-            //if ( !DateTime.TryParse( rFilter.GetUserPreference( "From Date" ), out fromDate ) )
-            //{
-            //    fromDate = DateTime.Today;
-            //}
-            //dtStartDate.Text = fromDate.ToShortDateString();
-            dtStartDate.Text = rFilter.GetUserPreference( "From Date" );
-            dtEndDate.Text = rFilter.GetUserPreference( "To Date" );
-            txtFromAmount.Text = rFilter.GetUserPreference( "From Amount" );
-            txtToAmount.Text = rFilter.GetUserPreference( "To Amount" );
+            drpDates.DelimitedValues = rFilter.GetUserPreference( "Date Range" );
+            nreAmount.DelimitedValues = rFilter.GetUserPreference( "Amount Range" );
             txtTransactionCode.Text = rFilter.GetUserPreference( "Transaction Code" );
 
             var accountService = new FinancialAccountService();
+            ddlAccount.Items.Add( new ListItem( string.Empty, string.Empty ) );
             foreach ( FinancialAccount account in accountService.Queryable() )
             {
                 ListItem li = new ListItem( account.Name, account.Id.ToString() );
                 li.Selected = account.Id.ToString() == rFilter.GetUserPreference( "Account" );
                 ddlAccount.Items.Add( li );
             }
-            ddlAccount.Items.Insert( 0, Rock.Constants.All.ListItem );
 
             BindDefinedTypeDropdown( ddlTransactionType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE ), "Transaction Type" );
             BindDefinedTypeDropdown( ddlCurrencyType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE ), "Currency Type" );
             BindDefinedTypeDropdown( ddlCreditCardType,new Guid(  Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ), "Credit Card Type" );
-            BindDefinedTypeDropdown( ddlSourceType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE ), "Source" );
+            BindDefinedTypeDropdown( ddlSourceType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE ), "Source Type" );
         }
 
         /// <summary>
@@ -261,7 +257,7 @@ namespace RockWeb.Blocks.Finance
         private void BindDefinedTypeDropdown( ListControl ListControl, Guid definedTypeGuid, string userPreferenceKey )
         {
             ListControl.BindToDefinedType( DefinedTypeCache.Read( definedTypeGuid ) );
-            ListControl.Items.Insert( 0, Rock.Constants.All.ListItem );
+            ListControl.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
 
             if ( !string.IsNullOrWhiteSpace( rFilter.GetUserPreference( userPreferenceKey ) ) )
             {
@@ -274,22 +270,91 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
-            TransactionSearchValue searchValue = GetSearchValue();
-            SortProperty sortProperty = rGridTransactions.SortProperty;
-            
-            var transactionService = new FinancialTransactionService();
-            var queryable = transactionService.Get( searchValue );
+            var queryable = new FinancialTransactionService().Queryable();
 
+            // Set up the selection filter
             if ( _batch != null )
             {
+                // If transactions are for a batch, the filter is hidden so only check the batch id
                 queryable = queryable.Where( t => t.BatchId.HasValue && t.BatchId.Value == _batch.Id );
             }
-
-            if ( _person != null )
+            else
             {
-                queryable = queryable.Where( t => t.AuthorizedPersonId == _person.Id );
+                // otherwise set the selection based on filter settings
+                if ( _person != null )
+                {
+                    queryable = queryable.Where( t => t.AuthorizedPersonId == _person.Id );
+                }
+
+                // Date Range
+                var drp = new DateRangePicker();
+                drp.DelimitedValues = rFilter.GetUserPreference( "Date Range" );
+                if ( drp.LowerValue.HasValue )
+                {
+                    queryable = queryable.Where( t => t.TransactionDateTime >= drp.LowerValue.Value );
+                }
+                if ( drp.UpperValue.HasValue )
+                {
+                    DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
+                    queryable = queryable.Where( t => t.TransactionDateTime < upperDate );
+                }
+
+                // Amount Range
+                var nre = new NumberRangeEditor();
+                nre.DelimitedValues = rFilter.GetUserPreference( "Amount Range" );
+                if ( nre.LowerValue.HasValue )
+                {
+                    queryable = queryable.Where( t => t.Amount >= nre.LowerValue.Value );
+                }
+                if ( nre.UpperValue.HasValue )
+                {
+                    queryable = queryable.Where( t => t.Amount <= nre.UpperValue.Value );
+                }
+
+                // Transaction Code
+                string transactionCode = rFilter.GetUserPreference( "Transaction Code" );
+                if ( !string.IsNullOrWhiteSpace( transactionCode ) )
+                {
+                    queryable = queryable.Where( t => t.TransactionCode == transactionCode.Trim() );
+                }
+
+                // Account Id
+                int accountId = int.MinValue; 
+                if ( int.TryParse( rFilter.GetUserPreference( "Account" ), out accountId ) )
+                {
+                    queryable = queryable.Where( t => t.TransactionDetails.Any( d => d.AccountId == accountId ) );
+                }
+
+                // Transaction Type
+                int transactionTypeId = int.MinValue;
+                if ( int.TryParse( rFilter.GetUserPreference( "Transaction Type" ), out transactionTypeId ) )
+                {
+                    queryable = queryable.Where( t => t.TransactionTypeValueId == transactionTypeId );
+                }
+
+                // Currency Type
+                int currencyTypeId = int.MinValue;
+                if ( int.TryParse( rFilter.GetUserPreference( "Currency Type" ), out currencyTypeId ) )
+                {
+                    queryable = queryable.Where( t => t.CurrencyTypeValueId == currencyTypeId );
+                }
+
+                // Credit Card Type
+                int creditCardTypeId = int.MinValue;
+                if ( int.TryParse( rFilter.GetUserPreference( "Credit Card Type" ), out creditCardTypeId ) )
+                {
+                    queryable = queryable.Where( t => t.CreditCardTypeValueId == creditCardTypeId );
+                }
+
+                // Source Type
+                int sourceTypeId = int.MinValue;
+                if ( int.TryParse( rFilter.GetUserPreference( "Source Type" ), out sourceTypeId ) )
+                {
+                    queryable = queryable.Where( t => t.SourceTypeValueId == sourceTypeId );
+                }
             }
 
+            SortProperty sortProperty = rGridTransactions.SortProperty;
             if ( sortProperty != null )
             {
                 queryable = queryable.Sort( sortProperty );
@@ -299,7 +364,7 @@ namespace RockWeb.Blocks.Finance
                 queryable = queryable.OrderBy( t => t.TransactionDateTime );
             }
 
-            rGridTransactions.DataSource = queryable.ToList();
+            rGridTransactions.DataSource = queryable.AsNoTracking().ToList();
             rGridTransactions.DataBind();
         }
 
@@ -329,64 +394,6 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
-        /// <summary>
-        /// Gets the search value.
-        /// </summary>
-        /// <returns></returns>
-        private TransactionSearchValue GetSearchValue()
-        {
-            TransactionSearchValue searchValue = new TransactionSearchValue();
-
-
-            decimal? fromAmountRange = null;
-            if ( !String.IsNullOrEmpty( txtFromAmount.Text ) )
-            {
-                fromAmountRange = Decimal.Parse( txtFromAmount.Text );
-            }
-            decimal? toAmountRange = null;
-            if ( !String.IsNullOrEmpty( txtToAmount.Text ) )
-            {
-                toAmountRange = Decimal.Parse( txtToAmount.Text );
-            }
-            searchValue.AmountRange = new RangeValue<decimal?>( fromAmountRange, toAmountRange );
-
-            DateTime? fromTransactionDate = dtStartDate.SelectedDate;
-            DateTime? toTransactionDate = dtEndDate.SelectedDate;
-            searchValue.DateRange = new RangeValue<DateTime?>( dtStartDate.SelectedDate, dtEndDate.SelectedDate );
-            
-            if ( !string.IsNullOrEmpty( txtTransactionCode.Text )  )
-            {
-                searchValue.TransactionCode = txtTransactionCode.Text;
-            }
-            
-            if ( ddlAccount.SelectedValue != Rock.Constants.All.IdValue )
-            {
-                searchValue.AccountId = ddlAccount.SelectedValueAsInt();
-            }
-
-            if ( ddlTransactionType.SelectedValue != Rock.Constants.All.IdValue )
-            {
-                searchValue.TransactionTypeValueId = ddlTransactionType.SelectedValueAsInt();
-            }
-
-            if ( ddlCurrencyType.SelectedValue != Rock.Constants.All.IdValue )
-            {
-                searchValue.CurrencyTypeValueId = ddlCurrencyType.SelectedValueAsInt();
-            }
-
-            if ( ddlCreditCardType.SelectedValue != Rock.Constants.All.IdValue )
-            {
-                searchValue.CreditCardTypeValueId = ddlCreditCardType.SelectedValueAsInt();
-            }
-
-            if ( ddlSourceType.SelectedValue != Rock.Constants.All.IdValue )
-            {
-                searchValue.SourceTypeValueId = ddlSourceType.SelectedValueAsInt();
-            }
-
-            return searchValue;
-        }
-        
         /// <summary>
         /// Displays the error.
         /// </summary>

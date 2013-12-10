@@ -135,13 +135,12 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        [Previewable]
         [MergeField]
         public string GivenName { get; set; }
 
         /// <summary>
         /// Gets or sets the nick name of the Person. 
-        /// </summary
+        /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the nick name of the Person.
         /// </value>
@@ -215,6 +214,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [Previewable]
         [MergeField]
         public string FirstName
         {
@@ -436,6 +436,28 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
+        /// Gets the first name of the last.
+        /// </summary>
+        /// <value>
+        /// The first name of the last.
+        /// </value>
+        public virtual string FirstLastName
+        {
+            get { return string.Format( "{0} {1}", FirstName, LastName ); }
+        }
+
+        /// <summary>
+        /// Gets the last name of the first.
+        /// </summary>
+        /// <value>
+        /// The last name of the first.
+        /// </value>
+        public virtual string LastFirstName
+        {
+            get { return string.Format( "{0}, {1}", LastName, FirstName ); }
+        }
+
+        /// <summary>
         /// Gets or sets a collection containing the Person's <see cref="Rock.Model.UserLogin">UserLogins</see>.
         /// </summary>
         /// <value>
@@ -443,7 +465,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MergeField]
-        public virtual ICollection<UserLogin> Users 
+        public virtual ICollection<UserLogin> Users
         {
             get { return _users ?? ( _users = new Collection<UserLogin>() ); }
             set { _users = value; }
@@ -603,7 +625,7 @@ namespace Rock.Model
         /// Gets or sets the Person's birth date.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.DateTime"/> representing the Person's birthdate.  If no birthdate is available, null is returned. If the year is not available then the birthdate is returned with the DateTime.MinValue.Year.
+        /// A <see cref="System.DateTime"/> representing the Person's birthdate.  If no birthdate is available, null is returned. If the year is not available then the birthdate is returned with the DateTime.MinValue.Year.
         /// </value>
         [NotMapped]
         [DataMember]
@@ -673,7 +695,7 @@ namespace Rock.Model
         /// Gets the number of days until the Person's birthday.
         /// </summary>
         /// <value>
-        /// A <see cref="Systeem.Int32"/> representing the number of days until the Person's birthday. If the person's birthdate is not available returns Int.MaxValue
+        /// A <see cref="System.Int32"/> representing the number of days until the Person's birthday. If the person's birthdate is not available returns Int.MaxValue
         /// </value>
         [MergeField]
         public virtual int DaysToBirthday
@@ -796,7 +818,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the <see cref="Rock.Mode.UserLogin"/> of the user being impersonated.
+        /// Gets the <see cref="Rock.Model.UserLogin"/> of the user being impersonated.
         /// </summary>
         /// <value>
         /// Th <see cref="Rock.Model.UserLogin"/> of the user being impersonated.
@@ -814,9 +836,9 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a <see cref="System.Collections.Generic.Dictionary"/> of the Person object
+        /// Creates a <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of the Person object
         /// </summary>
-        /// <returns>A <see cref="Sytem.Collection.Generic.Dictionary"/> of the Person object.</returns>
+        /// <returns>A <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of the Person object.</returns>
         public override Dictionary<string, object> ToDictionary()
         {
             var dictionary = base.ToDictionary();
@@ -867,7 +889,7 @@ namespace Rock.Model
 
                 if ( knownRelationshipGroup != null )
                 {
-                    int? canCheckInRoleId = new GroupRoleService().Queryable()
+                    int? canCheckInRoleId = new GroupTypeRoleService().Queryable()
                         .Where( r =>
                             r.Guid.Equals( new Guid( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) )
                         .Select( r => r.Id )
@@ -952,7 +974,7 @@ namespace Rock.Model
         /// </summary>
         Female = 2
     }
-        
+
     /// <summary>
     /// A person's possible grade levels
     /// </summary>
@@ -967,13 +989,13 @@ namespace Rock.Model
         /// <summary>
         /// Kindergarten
         /// </summary>
-        [Description("Kindergarten")]
+        [Description( "Kindergarten" )]
         Kindergarten = 0,
 
         /// <summary>
         /// 1st Grade
         /// </summary>
-        [Description("1st Grade")]
+        [Description( "1st Grade" )]
         First = 1,
 
         /// <summary>
@@ -1081,7 +1103,7 @@ namespace Rock.Model
         }
 
     }
-    
+
     #endregion
 
 }

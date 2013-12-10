@@ -8,10 +8,10 @@ DECLARE @FamilyGroupType int
 SET @FamilyGroupType = (SELECT id FROM GroupType WHERE guid = '790E3215-3B10-442B-AF69-616C0DCB998E')
 
 DECLARE @AdultRole int
-SET @AdultRole = (SELECT id FROM GroupRole WHERE guid = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42')
+SET @AdultRole = (SELECT id FROM GroupTypeRole WHERE guid = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42')
 
 DECLARE @ChildRole int
-SET @ChildRole = (SELECT id FROM GroupRole WHERE guid = 'C8B1814F-6AA7-4055-B2D7-48FE20429CB9')
+SET @ChildRole = (SELECT id FROM GroupTypeRole WHERE guid = 'C8B1814F-6AA7-4055-B2D7-48FE20429CB9')
 
 DECLARE @PrimaryPhone int
 SET @PrimaryPhone = (SELECT id FROM DefinedValue WHERE guid = '407E7E45-7B2E-4FCD-9605-ECB1339F2453')
@@ -33,8 +33,10 @@ SET @GroupId = (SELECT [Id] FROM [Group] WHERE Guid = 'CCFAC929-8086-4A07-B7B3-8
 IF @GroupId IS NOT NULL
 BEGIN
     DELETE [PhoneNumber] WHERE PersonId IN (SELECT PersonId FROM [GroupMember] WHERE GroupId = @GroupId)	
+    DELETE [FinancialTransaction] WHERE AuthorizedPersonId IN (SELECT PersonId FROM [GroupMember] WHERE GroupId = @GroupId)    
     DELETE [Person] WHERE Id IN (SELECT PersonId FROM [GroupMember] WHERE GroupId = @GroupId)
 	DELETE [Group] WHERE Id = @GroupId
+    DELETE [GroupLocation] WHERE Id = @GroupId
 END
 INSERT INTO [Group] (IsSystem, GroupTypeId, Name, IsSecurityRole, IsActive, Guid, [Order])
 VALUES (0, @FamilyGroupType, 'Turner Family', 0, 1, 'CCFAC929-8086-4A07-B7B3-81A23C6A5FC3', 0)
@@ -88,8 +90,10 @@ SET @GroupId = (SELECT Id FROM [Group] WHERE Guid = '4DCC3392-9CA6-4FA1-A59E-FF0
 IF @GroupId IS NOT NULL
 BEGIN
 	DELETE [PhoneNumber] WHERE PersonId IN (SELECT PersonId FROM [GroupMember] WHERE GroupId = @GroupId)	
+    DELETE [FinancialTransaction] WHERE AuthorizedPersonId IN (SELECT PersonId FROM [GroupMember] WHERE GroupId = @GroupId)    
     DELETE [Person] WHERE Id IN (SELECT PersonId FROM [GroupMember] WHERE GroupId = @GroupId)
 	DELETE [Group] WHERE Id = @GroupId
+    DELETE [GroupLocation] WHERE Id = @GroupId  
 END
 INSERT INTO [Group] (IsSystem, GroupTypeId, Name, IsSecurityRole, IsActive, Guid, [Order])
 VALUES (0, @FamilyGroupType, 'Edmiston Family', 0, 1, '4DCC3392-9CA6-4FA1-A59E-FF085E0750B4', 0)
@@ -128,6 +132,7 @@ SET @GroupId = (SELECT Id FROM [Group] WHERE Guid = 'B9813A13-A5B3-47E3-AF32-208
 IF @GroupId IS NOT NULL
 BEGIN
 	DELETE [PhoneNumber] WHERE PersonId IN (SELECT PersonId FROM [GroupMember] WHERE GroupId = @GroupId)	
+    DELETE [FinancialTransaction] WHERE AuthorizedPersonId IN (SELECT PersonId FROM [GroupMember] WHERE GroupId = @GroupId)    
     DELETE [Person] WHERE Id IN (SELECT PersonId FROM [GroupMember] WHERE GroupId = @GroupId)
 	DELETE [Group] WHERE Id = @GroupId
     DELETE [GroupLocation] WHERE Id = @GroupId
@@ -136,12 +141,12 @@ INSERT INTO [Group] (IsSystem, GroupTypeId, Name, IsSecurityRole, IsActive, Guid
 VALUES (0, @FamilyGroupType, 'Peterson Family', 0, 1, 'B9813A13-A5B3-47E3-AF32-208D785287F4', 0)
 SET @GroupId = SCOPE_IDENTITY()
 
-INSERT INTO [Location] (Street1, Street2, City, [State], Zip, LocationTypeValueId, IsActive, Guid, IsLocation)
-VALUES ('6515 W Lariat Ln', '', 'Phoenix', 'AZ', '85083', @LocationTypeValueHome, 1, NEWID(), 0)
+INSERT INTO [Location] (Street1, Street2, City, [State], Zip, IsActive, Guid, IsNamedLocation)
+VALUES ('6515 W Lariat Ln', '', 'Phoenix', 'AZ', '85083', 1, NEWID(), 0)
 SET @LocationId = SCOPE_IDENTITY()
 
-INSERT INTO [GroupLocation] (GroupId, LocationId, GroupLocationTypeValueId, Guid, IsMailing, IsLocation)
-VALUES (@GroupId, @LocationId, @LocationTypeValueHome, NEWID(), 1, 0)
+INSERT INTO [GroupLocation] (GroupId, LocationId, GroupLocationTypeValueId, Guid, IsMailingLocation, IsMappedLocation)
+VALUES (@GroupId, @LocationId, @LocationTypeValueHome, NEWID(), 1, 1)
 
 INSERT INTO [Person] ([IsSystem],[GivenName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId], [MaritalStatusValueId],[GivingGroupId])
 VALUES (0, 'Mike', 'Peterson', 5, 11, 1971, 1, 'mikepeterson@ccvonline.com', 1, 0, NEWID(), @PersonRecordType, @ActiveRecordStatus, @MaritalStatus, @GroupId)

@@ -15,24 +15,33 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Job POCO Service class
+    /// Service/Data access class for <see cref="Rock.Model.ServiceJob"/> entity objects.
     /// </summary>
     public partial class ServiceJobService 
     {
         /// <summary>
-        /// Gets the active jobs.
+        /// Returns a queryable collection of active <see cref="Rock.Model.ServiceJob">Jobs</see>
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A queryable collection that contains all active <see cref="Rock.Model.ServiceJob">Jobs</see></returns>
         public IQueryable<ServiceJob> GetActiveJobs()
         {
             return Repository.AsQueryable().Where( t => t.IsActive == true );
         }
 
         /// <summary>
-        /// Builds the quartz job.
+        /// Returns a queryable collection of all <see cref="Rock.Model.ServiceJob">Jobs</see>
         /// </summary>
-        /// <param name="job">The job.</param>
-        /// <returns></returns>
+        /// <returns>A queryable collection of all <see cref="Rock.Model.ServiceJob"/>Jobs</returns>
+        public IQueryable<ServiceJob> GetAllJobs()
+        {
+            return Repository.AsQueryable();
+        }
+
+        /// <summary>
+        /// Builds a Quartz Job for a specified <see cref="Rock.Model.ServiceJob">Job</see>
+        /// </summary>
+        /// <param name="job">The <see cref="Rock.Model.ServiceJob"/> to create a Quarts Job for.</param>
+        /// <returns>A object that implements the <see cref="Quartz.IJobDetail"/> interface</returns>
         public IJobDetail BuildQuartzJob( ServiceJob job )
         {
             // build the type object, will depend if the class is in an assembly or the App_Code folder
@@ -45,14 +54,6 @@ namespace Rock.Model
             {
                 string thetype = string.Format( "{0}, {1}", job.Class, job.Assembly );
                 type = Type.GetType( thetype );
-            }
-
-            // create attributes if needed 
-            // TODO: next line should be moved to Job creation UI, when it's created
-            int? jobEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Model.ServiceJob" ).Id;
-            using ( new UnitOfWorkScope() )
-            {
-                Rock.Attribute.Helper.UpdateAttributes( type, jobEntityTypeId, "Class", job.Class, null );
             }
 
             // load up job attributes (parameters) 
@@ -76,10 +77,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Builds the quartz trigger.
+        /// Builds a Quartz schedule trigger
         /// </summary>
-        /// <param name="job">The job.</param>
-        /// <returns></returns>
+        /// <param name="job">The <see cref="Rock.Model.ServiceJob">Job</see> to create a <see cref="Quartz.ITrigger"/> compatible Trigger.</param>
+        /// <returns>A Quartz trigger that implements <see cref="Quartz.ITrigger"/> for the specified job.</returns>
         public ITrigger BuildQuartzTrigger( ServiceJob job )
         {
             // create quartz trigger

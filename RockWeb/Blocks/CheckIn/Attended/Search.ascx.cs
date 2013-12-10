@@ -27,6 +27,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
     /// </summary>
     [Description( "Attended Check-In Search block" )]
     [LinkedPage( "Admin Page" )]
+    [BooleanField( "Show Key Pad", "Show the number key pad on the search screen", false)]
     [IntegerField( "Minimum Text Length", "Minimum length for text searches (defaults to 4).", false, 4 )]
     [IntegerField( "Maximum Text Length", "Maximum length for text searches (defaults to 20).", false, 20 )]
     public partial class Search : CheckInBlock
@@ -41,7 +42,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             if ( !Page.IsPostBack )
             {
-                if ( CurrentKioskId == null  || CurrentGroupTypeIds == null )
+                if ( CurrentKioskId == null  || CurrentGroupTypeIds == null || CurrentCheckInState.Kiosk == null )
                 {
                     var queryParams = new Dictionary<string, string>();
                     queryParams.Add( "back", "true" );
@@ -77,6 +78,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     ", CurrentKioskId, CurrentGroupTypeIds.AsDelimited( "," ) );
                     phScript.Controls.Add( new LiteralControl( script ) );
 
+                    if ( bool.Parse( GetAttributeValue( "ShowKeyPad" ) ) == true )
+                    {
+                        pnlKeyPad.Visible = true;
+                    }
+                    
                     tbSearchBox.Focus();
                     SaveState();
                 }

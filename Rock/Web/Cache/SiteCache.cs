@@ -126,6 +126,20 @@ namespace Rock.Web.Cache
         public int? DefaultPageRouteId { get; set; }
 
         /// <summary>
+        /// Gets the default page reference.
+        /// </summary>
+        /// <value>
+        /// The default page reference.
+        /// </value>
+        public PageReference DefaultPageReference
+        {
+            get
+            {
+                return new Rock.Web.PageReference( DefaultPageId ?? 0, DefaultPageRouteId ?? 0 );
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the login page id.
         /// </summary>
         /// <value>
@@ -140,6 +154,20 @@ namespace Rock.Web.Cache
         /// The login page route id.
         /// </value>
         public int? LoginPageRouteId { get; set; }
+
+        /// <summary>
+        /// Gets the login page reference.
+        /// </summary>
+        /// <value>
+        /// The login page reference.
+        /// </value>
+        public PageReference LoginPageReference
+        {
+            get
+            {
+                return new Rock.Web.PageReference( LoginPageId ?? 0, LoginPageRouteId ?? 0 );
+            }
+        }
 
         /// <summary>
         /// Gets or sets the registration page id.
@@ -158,20 +186,18 @@ namespace Rock.Web.Cache
         public int? RegistrationPageRouteId { get; set; }
 
         /// <summary>
-        /// Gets or sets the favicon URL.
+        /// Gets the registration page reference.
         /// </summary>
         /// <value>
-        /// The favicon URL.
+        /// The registration page reference.
         /// </value>
-        public string FaviconUrl { get; set; }
-
-        /// <summary>
-        /// Gets or sets the apple touch icon URL.
-        /// </summary>
-        /// <value>
-        /// The apple touch icon URL.
-        /// </value>
-        public string AppleTouchIconUrl { get; set; }
+        public PageReference RegistrationPageReference
+        {
+            get
+            {
+                return new Rock.Web.PageReference( RegistrationPageId ?? 0, RegistrationPageRouteId ?? 0 );
+            }
+        }
 
         /// <summary>
         /// Gets or sets the facebook app id.
@@ -204,7 +230,7 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( DefaultPageId != null && DefaultPageId.Value != 0 )
+                if ( DefaultPageId.HasValue && DefaultPageId.Value != 0 )
                     return PageCache.Read( DefaultPageId.Value );
                 else
                     return null;
@@ -237,8 +263,6 @@ namespace Rock.Web.Cache
                 this.RegistrationPageId = site.RegistrationPageId;
                 this.RegistrationPageRouteId = site.RegistrationPageRouteId;
                 this.ErrorPage = site.ErrorPage;
-                this.FaviconUrl = site.FaviconUrl;
-                this.AppleTouchIconUrl = site.AppleTouchIconUrl;
                 this.FacebookAppId = site.FacebookAppId;
                 this.FacebookAppSecret = site.FacebookAppSecret;
             }
@@ -255,6 +279,46 @@ namespace Rock.Web.Cache
             return this.Name;
         }
 
+        /// <summary>
+        /// Redirects to default page.
+        /// </summary>
+        public void RedirectToDefaultPage()
+        {
+            var context = HttpContext.Current;
+            context.Response.Redirect( DefaultPageReference.BuildUrl(), false );
+            context.ApplicationInstance.CompleteRequest();
+        }
+
+        /// <summary>
+        /// Redirects to login page.
+        /// </summary>
+        public void RedirectToLoginPage(bool includeReturnUrl)
+        {
+            var context = HttpContext.Current;
+
+            var pageReference = LoginPageReference;
+
+            if ( includeReturnUrl )
+            {
+                var parms = new Dictionary<string, string>();
+                parms.Add( "returnurl", context.Request.QueryString["returnUrl"] ?? context.Server.UrlEncode( context.Request.RawUrl ) );
+                pageReference.Parameters = parms;
+            }
+
+            context.Response.Redirect( pageReference.BuildUrl(), false );
+            context.ApplicationInstance.CompleteRequest();
+        }
+
+        /// <summary>
+        /// Redirects to registration page.
+        /// </summary>
+        public void RedirectToRegistrationPage()
+        {
+            var context = HttpContext.Current;
+            context.Response.Redirect( RegistrationPageReference.BuildUrl(), false );
+            context.ApplicationInstance.CompleteRequest();
+        }
+        
         #endregion
 
         #region Static Methods

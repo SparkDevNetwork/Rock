@@ -3,14 +3,16 @@
 
 */
 
-.rock-modal-frame {
+.rock-modal-frame { // used by both the iframe modal and the in-window modal
     width: 750px;
-    
+    -moz-box-shadow:    @modal-dropshadow-color 18px 18px 80px 0px;
+    -webkit-box-shadow: @modal-dropshadow-color 18px 18px 80px 0px;
+    box-shadow: @modal-dropshadow-color 18px 18px 80px 0px; 
 }
 
 .rock-modal {
 
-     background-color: @body-bg;
+    background-color: @body-bg;
 
     .modal-header {
         background-color: @modal-header-bg;  
@@ -21,6 +23,7 @@
         
         h3 {
             float: left;
+            margin-right: 12px;
         }
 
         .close {
@@ -33,6 +36,12 @@
         .label {
             margin-top: 8px;
         }
+
+        small {
+            margin-top: 12px;
+            display: block;
+            color: darken(@modal-header-text-color, 30%);
+        }
     }
 
     .modal-body {
@@ -42,7 +51,7 @@
             margin: 6px 0 18px;
         }
 
-        .scroll-container {
+        & > .scroll-container {
             width: 720px;
 
             .viewport {
@@ -61,21 +70,6 @@
         margin-top: 10px;
         background-color: @accent-light-color;
     }
-}
-
-
-
-.modal-backdrop 
-{
-    background-color: #8b8b8b;
-    opacity: 0.7;    
-    
-}
-
-.bootbox.modal {
-    width:500px;
-    left: 50%;
-    margin-left:-250px;
 }
 
 .modal {
@@ -105,4 +99,13 @@
     height: 100%;
     width: 100%;
     border: 0;
+}
+
+
+/* Bootbox Modal Overrides */
+.modal.bootbox {
+    left: 0;
+    top: 0;
+    width: auto;
+    background-color: transparent;
 }

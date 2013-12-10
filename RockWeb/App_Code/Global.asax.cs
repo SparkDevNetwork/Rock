@@ -70,17 +70,16 @@ namespace RockWeb
         {
             if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
             {
-                System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", DateTime.Now ) );
-                HttpInternals.RockWebFileChangeMonitor();
+                System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", DateTime.Now.ToString("hh:mm:ss.FFF" ) ));
             }
-            
+
             // Check if database should be auto-migrated for the core and plugins
             bool autoMigrate = true;
             if ( !Boolean.TryParse( ConfigurationManager.AppSettings["AutoMigrateDatabase"], out autoMigrate ) )
             {
                 autoMigrate = true;
             }
-            
+
             if ( autoMigrate )
             {
                 try
@@ -127,8 +126,18 @@ namespace RockWeb
                 Database.SetInitializer<Rock.Data.RockContext>( null );
             }
 
+            if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+            {
+                new AttributeService().Get( 0 );
+                System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - Connected: {0}", DateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+            }
+
             // Preload the commonly used objects
             LoadCacheObjects();
+            if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+            {
+                System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - Done: {0}", DateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+            }
 
             // setup and launch the jobs infrastructure if running under IIS
             bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
@@ -264,7 +273,7 @@ namespace RockWeb
                     Global.BaseUrl = string.Format( "{0}://{1}/", Context.Request.Url.Scheme, Context.Request.Url.Authority );
                 }
             }
-            
+
             Context.Items.Add( "Request_Start_Time", DateTime.Now );
         }
 
@@ -303,16 +312,20 @@ namespace RockWeb
 
                 // string to send a message to the error page to prevent infinite loops
                 // of error reporting from incurring if there is an exception on the error page
-                string errorQueryParm = "?error=1";
+                string errorQueryParm = "?type=exception&error=1";
 
-                if ( context.Request.Url.ToString().Contains( "?error=1" ) )
+                string errorCount = context.Request["error"];
+                if ( !string.IsNullOrWhiteSpace( errorCount ) )
                 {
-                    errorQueryParm = "?error=2";
-                }
-                else if ( context.Request.Url.ToString().Contains( "?error=2" ) )
-                {
-                    // something really bad is occurring stop logging errors as we're in an infinate loop
-                    logException = false;
+                    if ( errorCount == "1" )
+                    {
+                        errorQueryParm = "?type=exception&error=2";
+                    }
+                    else if ( errorCount == "2" )
+                    {
+                        // something really bad is occurring stop logging errors as we're in an infinate loop
+                        logException = false;
+                    }
                 }
 
                 if ( logException )
@@ -402,7 +415,7 @@ namespace RockWeb
                     }
                 }
             }
-        } 
+        }
 
         /// <summary>
         /// Formats the exception.
@@ -448,9 +461,9 @@ namespace RockWeb
             else
             {
                 var pid = context.Items["Rock:PageId"];
-                pageId = pid != null ? int.Parse( pid.ToString() ) : (int?) null;
+                pageId = pid != null ? int.Parse( pid.ToString() ) : (int?)null;
                 var sid = context.Items["Rock:SiteId"];
-                siteId = sid != null ? int.Parse( sid.ToString() ) : (int?) null;
+                siteId = sid != null ? int.Parse( sid.ToString() ) : (int?)null;
                 var user = UserLoginService.GetCurrentUser();
                 personId = user != null ? user.PersonId : null;
             }
@@ -485,7 +498,7 @@ namespace RockWeb
                     string shutDownMessage = (string)runtime.GetType().InvokeMember( "_shutDownMessage", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField, null, runtime, null );
 
                     // send debug info to debug window
-                    System.Diagnostics.Debug.WriteLine( String.Format( "shutDownMessage:{0}", shutDownMessage ));
+                    System.Diagnostics.Debug.WriteLine( String.Format( "shutDownMessage:{0}", shutDownMessage ) );
                 }
             }
             catch

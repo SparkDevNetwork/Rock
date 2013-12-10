@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Prayer
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            btnAddNote.Click += btnAddNote_Click;
+            lbAddNote.Click += lbAddNote_Click;
         }
 
         /// <summary>
@@ -131,11 +131,11 @@ namespace RockWeb.Blocks.Prayer
         }
 
         /// <summary>
-        /// Handles the Click event of the btnAddNote control.
+        /// Handles the Click event of the lbAddNote control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void btnAddNote_Click( object sender, EventArgs e )
+        void lbAddNote_Click( object sender, EventArgs e )
         {
             var service = new NoteService();
 
@@ -210,7 +210,7 @@ namespace RockWeb.Blocks.Prayer
         /// <summary>
         /// Adds the note HTML in the form:
         ///    <article class="alert alert-info">
-        ///    <i class="icon-comment"></i>
+        ///    <i class="fa fa-comment"></i>
 	    ///      <div class="detail"> <strong>Name/Caption</strong> <span class="muted">relative date</span><br>
         ///          <p>text</p>
         ///      </div>
@@ -225,14 +225,14 @@ namespace RockWeb.Blocks.Prayer
             article.AddCssClass( "alert alert-info" );
 
             // The comment icon or possibly a picture of the person who made the comment...
-            article.Controls.Add( new LiteralControl( "<i class='icon-comment'></i> " ) );
+            article.Controls.Add( new LiteralControl( "<i class='fa fa-comment'></i> " ) );
 
             var divDetail = new HtmlGenericControl( "div" );
             article.Controls.Add( divDetail );
             divDetail.AddCssClass( "detail" );
 
             // Add the name/caption
-            divDetail.Controls.Add( new LiteralControl( string.Format("<strong>{0}</strong> <span class='muted'>{1}</span>", note.Caption, note.CreationDateTime.ToRelativeDateString() ) ) );
+            divDetail.Controls.Add( new LiteralControl( string.Format("<strong>{0}</strong> <span class='text-muted'>{1}</span>", note.Caption, note.CreationDateTime.ToRelativeDateString() ) ) );
 
             var pText = new HtmlGenericControl( "p" );
             divDetail.Controls.Add( pText );
@@ -240,11 +240,11 @@ namespace RockWeb.Blocks.Prayer
         }
 
         /// <summary>
-        /// Handles the edit Click event of the btnEdit control.
+        /// Handles the edit Click event of the lbEdit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnEdit_Click( object sender, EventArgs e )
+        protected void lbEdit_Click( object sender, EventArgs e )
         {
             ShowEditDetails( prayerComment );
         }
@@ -273,9 +273,9 @@ namespace RockWeb.Blocks.Prayer
             fieldsetEditDetails.Visible = true;
             hfNoteId.Value = prayerComment.Id.ToString();
 
-            tbText.Text = prayerComment.Text;
-            tbCaption.Text = prayerComment.Caption;
-            tbText.Attributes.Add( "rel", prayerComment.Id.ToString() );
+            dtbText.Text = prayerComment.Text;
+            dtbCaption.Text = prayerComment.Caption;
+            dtbText.Attributes.Add( "rel", prayerComment.Id.ToString() );
         }
 
         /// <summary>
@@ -287,7 +287,7 @@ namespace RockWeb.Blocks.Prayer
             fieldsetEditDetails.Visible = enableEdit;
         }
 
-        protected void btnSave_Click( object sender, EventArgs e )
+        protected void lbSave_Click( object sender, EventArgs e )
         {
             SaveNote();
             NavigateToParentPage();     
@@ -305,8 +305,8 @@ namespace RockWeb.Blocks.Prayer
             NoteService noteService = new NoteService();
             note = noteService.Get( noteId );
 
-            note.Text = tbText.Text;
-            note.Caption = tbCaption.Text;
+            note.Text = dtbText.Text;
+            note.Caption = dtbCaption.Text;
 
             if ( !Page.IsValid )
             {
@@ -322,7 +322,7 @@ namespace RockWeb.Blocks.Prayer
             noteService.Save( note, CurrentPersonId );
         }
 
-        protected void btnCancel_Click( object sender, EventArgs e )
+        protected void lbCancel_Click( object sender, EventArgs e )
         {
             NavigateToParentPage();       
         }

@@ -81,31 +81,40 @@ namespace Rock.Model
             else
             {
                 var target = new PrayerRequest();
-                target.FirstName = source.FirstName;
-                target.LastName = source.LastName;
-                target.Email = source.Email;
-                target.RequestedByPersonId = source.RequestedByPersonId;
-                target.CategoryId = source.CategoryId;
-                target.Text = source.Text;
-                target.Answer = source.Answer;
-                target.EnteredDate = source.EnteredDate;
-                target.ExpirationDate = source.ExpirationDate;
-                target.GroupId = source.GroupId;
-                target.AllowComments = source.AllowComments;
-                target.IsUrgent = source.IsUrgent;
-                target.IsPublic = source.IsPublic;
-                target.IsActive = source.IsActive;
-                target.IsApproved = source.IsApproved;
-                target.FlagCount = source.FlagCount;
-                target.PrayerCount = source.PrayerCount;
-                target.ApprovedByPersonId = source.ApprovedByPersonId;
-                target.ApprovedOnDate = source.ApprovedOnDate;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another PrayerRequest object to this PrayerRequest object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this PrayerRequest target, PrayerRequest source )
+        {
+            target.FirstName = source.FirstName;
+            target.LastName = source.LastName;
+            target.Email = source.Email;
+            target.RequestedByPersonId = source.RequestedByPersonId;
+            target.CategoryId = source.CategoryId;
+            target.Text = source.Text;
+            target.Answer = source.Answer;
+            target.EnteredDate = source.EnteredDate;
+            target.ExpirationDate = source.ExpirationDate;
+            target.GroupId = source.GroupId;
+            target.AllowComments = source.AllowComments;
+            target.IsUrgent = source.IsUrgent;
+            target.IsPublic = source.IsPublic;
+            target.IsActive = source.IsActive;
+            target.IsApproved = source.IsApproved;
+            target.FlagCount = source.FlagCount;
+            target.PrayerCount = source.PrayerCount;
+            target.ApprovedByPersonId = source.ApprovedByPersonId;
+            target.ApprovedOnDate = source.ApprovedOnDate;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

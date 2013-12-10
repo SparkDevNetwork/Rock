@@ -54,8 +54,8 @@ namespace Rock.Web.UI.Controls
 $('.workflow-action > header').click(function () {
     $(this).siblings('.panel-body').slideToggle();
 
-    $('i.workflow-action-state', this).toggleClass('icon-chevron-down');
-    $('i.workflow-action-state', this).toggleClass('icon-chevron-up');
+    $('i.workflow-action-state', this).toggleClass('fa-chevron-down');
+    $('i.workflow-action-state', this).toggleClass('fa-chevron-up');
 });
 
 // fix so that the Remove button will fire its event, but not the parent event 
@@ -133,7 +133,7 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
                 }
 
                 _phActionAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( value, _phActionAttributes, true, new List<string>() { "Active", "Order" } );
+                Rock.Attribute.Helper.AddEditControls( value, _phActionAttributes, true, string.Empty, new List<string>() { "Active", "Order" } );
             }
         }
 
@@ -159,7 +159,7 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
 
             var iDelete = new HtmlGenericControl( "i" );
             _lbDeleteActionType.Controls.Add( iDelete );
-            iDelete.AddCssClass( "icon-remove" );
+            iDelete.AddCssClass( "fa fa-times" );
 
             _tbActionTypeName = new DataTextBox();
             _tbActionTypeName.ID = this.ID + "_tbActionTypeName";
@@ -175,8 +175,29 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
 
             foreach ( var item in WorkflowActionContainer.Instance.Components.Values.OrderBy( a => a.Value.EntityType.FriendlyName ) )
             {
-                var entityType = item.Value.EntityType;
-                _ddlEntityType.Items.Add( new ListItem( entityType.FriendlyName, entityType.Id.ToString() ) );
+                var type = item.Value.GetType();
+                if (type != null)
+                {
+                    var entityType = EntityTypeCache.Read( type );
+                    var li = new ListItem( entityType.FriendlyName, entityType.Id.ToString() );
+
+                    // Get description
+                    string description = string.Empty;
+                    var descAttributes = type.GetCustomAttributes( typeof( System.ComponentModel.DescriptionAttribute ), false );
+                    if ( descAttributes != null )
+                    {
+                        foreach ( System.ComponentModel.DescriptionAttribute descAttribute in descAttributes )
+                        {
+                            description = descAttribute.Description;
+                        }
+                    }
+                    if ( !string.IsNullOrWhiteSpace( description ) )
+                    {
+                        li.Attributes.Add( "title", description );
+                    }
+
+                    _ddlEntityType.Items.Add( li );
+                }
             }
 
             // set label when they exit the edit field
@@ -238,8 +259,8 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.WriteLine( "<a class='btn btn-xs workflow-action-reorder'><i class='icon-reorder'></i></a>" );
-            writer.WriteLine( "<a class='btn btn-xs'><i class='workflow-action-state icon-chevron-down'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs btn-link workflow-action-reorder'><i class='fa fa-bars'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs btn-link'><i class='workflow-action-state fa fa-chevron-down'></i></a>" );
 
             if ( IsDeleteEnabled )
             {

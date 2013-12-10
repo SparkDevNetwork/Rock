@@ -4,12 +4,12 @@
 <ContentTemplate>
 
     <section class="panel panel-persondetails">
-        <div class="panel-heading">
+        <div class="panel-heading clearfix">
             <h3 class="panel-title pull-left">
                 <asp:Literal ID="lCategoryName" runat="server" />
             </h3>
             <div class="actions pull-right" style="display: none;">
-                <asp:LinkButton ID="lbEdit" runat="server" CssClass="edit" OnClick="lbEdit_Click"><i class="icon-pencil"></i></asp:LinkButton>
+                <asp:LinkButton ID="lbEdit" runat="server" CssClass="edit" OnClick="lbEdit_Click"><i class="fa fa-pencil"></i></asp:LinkButton>
             </div>
         </div>
         <div class="panel-body">

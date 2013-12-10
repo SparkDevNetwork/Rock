@@ -30,57 +30,8 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
 
-            string script = string.Format( @"
-    $(document).ready(function() {{
-
-
-        // change selection when picked
-        $('.smartsearch .dropdown-menu a').click(function () {{
-            var text = $(this).html();
-            $('.smartsearch .dropdown a.dropdown-toggle span').html(text);
-            $('#{1}_hSearchFilter').val($(this).parent().attr('key'));
-        }});
-
-        $('ul.ui-autocomplete').css('width', '300px');
-        $('input#{0}').autocomplete({{
-            source: function( request, response ) {{
-                $.ajax({{
-                    url: Rock.settings.get('baseUrl') + 'api/search?type=' +  $('#{1}_hSearchFilter:first').val() + '&term=' + request.term,
-                    dataType: 'json',
-                    success: function(data, status, xhr){{ 
-                        response($.map(data, function (item) {{
-                            return {{
-                                value: item
-                            }}
-                        }}))
-                    }},
-                    error: function(xhr, status, error) {{
-                        // alert(status + ' [' + error + ']: ' + xhr.reponseText);
-                    }}
-                }});
-            }},
-            minLength: 2,
-            appendTo: 'div.smartsearch',
-            messages: {{
-              noResults: function () {{ }},
-              results: function () {{ }}
-            }}
-        }});
-
-        $('input#{0}').keyup(function(event){{
-            if(event.keyCode == 13){{
-                var keyValue = $('#{1}_hSearchFilter:first').val();
-                var $li = $('.dropdown ul li[key=""' + keyValue + '""]:first');
-                var target = $li.attr('target');
-                window.location.href = Rock.settings.get('baseUrl') + target.replace('{{0}}',encodeURIComponent($(this).val()));
-            }}
-        }});
-
-
-    }});
-", this.ClientID, this.ID );
-
-            this.Page.ClientScript.RegisterStartupScript( this.GetType(), "search-field-" + this.ID.ToString(), script, true );
+            string script = string.Format( @"Rock.controls.searchField.initialize({{ controlId: '{0}' }});", this.ClientID );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "search-field-" + this.ID, script, true );
         }
 
         /// <summary>
@@ -133,8 +84,8 @@ namespace Rock.Web.UI.Controls
 
             foreach ( var searchExtension in searchExtensions )
             {
-                writer.AddAttribute( "key", searchExtension.Key );
-                writer.AddAttribute( "target", searchExtension.Value.Item2 );
+                writer.AddAttribute( "data-key", searchExtension.Key );
+                writer.AddAttribute( "data-target", searchExtension.Value.Item2 );
                 writer.RenderBeginTag( HtmlTextWriterTag.Li );
 
                 writer.RenderBeginTag( HtmlTextWriterTag.A );

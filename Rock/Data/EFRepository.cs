@@ -436,13 +436,17 @@ namespace Rock.Data
 
                         if ( modifiedProperties.Count > 0 )
                         {
-                            audit.DateTime = DateTime.Now;
-                            audit.PersonId = PersonId;
-                            audit.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read(rockEntity.TypeName).Id;
-                            audit.EntityId = rockEntity.Id;
-                            audit.Title = rockEntity.ToString().Truncate( 195 );
-                            audit.Properties = modifiedProperties.AsDelimited( ";" );
-                            audits.Add( audit );
+                            var entityType = Rock.Web.Cache.EntityTypeCache.Read( rockEntity.TypeName, false );
+                            if ( entityType != null )
+                            {
+                                audit.DateTime = DateTime.Now;
+                                audit.PersonId = PersonId;
+                                audit.EntityTypeId = entityType.Id;
+                                audit.EntityId = rockEntity.Id;
+                                audit.Title = rockEntity.ToString().Truncate( 195 );
+                                audit.Properties = modifiedProperties.AsDelimited( ";" );
+                                audits.Add( audit );
+                            }
                         }
                     }
                 }
@@ -453,8 +457,29 @@ namespace Rock.Data
                 return false;
             }
 
-            Context.SaveChanges();
+            try
+            {
+                Context.SaveChanges();
+            }
+            catch ( System.Data.Entity.Validation.DbEntityValidationException e )
+            {
+                var outputLines = new List<string>();
+                foreach ( var eve in e.EntityValidationErrors )
+                {
+                    outputLines.Add( string.Format(
+                        "{0}: Entity of type \"{1}\" in state \"{2}\" has the following validation errors:",
+                        DateTime.Now, eve.Entry.Entity.GetType().Name, eve.Entry.State ) );
+                    foreach ( var ve in eve.ValidationErrors )
+                    {
+                        outputLines.Add( string.Format(
+                            "- Property: \"{0}\", Error: \"{1}\"",
+                            ve.PropertyName, ve.ErrorMessage ) );
+                    }
+                }
 
+                throw new Exception(outputLines.AsDelimited("\n"));
+            } 
+            
             foreach ( object modifiedEntity in addedEntities )
             {
                 var model = modifiedEntity as Entity<T>;

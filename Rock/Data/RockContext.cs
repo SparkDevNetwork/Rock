@@ -338,7 +338,7 @@ namespace Rock.Data
         /// <value>
         /// the Group Roles.
         /// </value>
-        public DbSet<GroupRole> GroupRoles { get; set; }
+        public DbSet<GroupTypeRole> GroupRoles { get; set; }
 
         /// <summary>
         /// Gets or sets the Group Types.
@@ -507,6 +507,14 @@ namespace Rock.Data
         /// The reports.
         /// </value>
         public DbSet<Report> Reports { get; set; }
+
+        /// <summary>
+        /// Gets or sets the report fields.
+        /// </summary>
+        /// <value>
+        /// The report fields.
+        /// </value>
+        public DbSet<ReportField> ReportFields { get; set; }
 
         /// <summary>
         /// Gets or sets the schedules.

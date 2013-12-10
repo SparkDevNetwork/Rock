@@ -83,7 +83,7 @@ namespace Rock.Field.Types
             NumberRangeEditor editor = control as NumberRangeEditor;
             if ( editor != null )
             {
-                return string.Format( "{0},{1}", editor.LowerValue, editor.UpperValue );
+                return editor.DelimitedValues;
             }
 
             return null;
@@ -100,24 +100,7 @@ namespace Rock.Field.Types
             NumberRangeEditor editor = control as NumberRangeEditor;
             if ( editor != null )
             {
-                if ( value != null )
-                {
-                    string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
-                    if ( valuePair.Length == 2 )
-                    {
-                        decimal result;
-
-                        if ( decimal.TryParse( valuePair[0], out result ) )
-                        {
-                            editor.LowerValue = result;
-                        }
-
-                        if ( decimal.TryParse( valuePair[1], out result ) )
-                        {
-                            editor.UpperValue = result;
-                        }
-                    }
-                }
+                editor.DelimitedValues = value;
             }
         }
 
@@ -131,19 +114,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( value != null )
-            {
-                string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
-                if ( valuePair.Length == 2 )
-                {
-                    string lowerValue = string.IsNullOrWhiteSpace( valuePair[0] ) ? Rock.Constants.None.TextHtml : valuePair[0];
-                    string upperValue = string.IsNullOrWhiteSpace( valuePair[1] ) ? Rock.Constants.None.TextHtml : valuePair[1];
-                    return string.Format( "{0} to {1}", lowerValue, upperValue );
-                }
-            }
-
-            // something unexpected.  Let the base format it
-            return base.FormatValue( parentControl, value, configurationValues, condensed );
+            string formattedValue = NumberRangeEditor.FormatDelimitedValues( value ) ?? value;
+            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
         }
     }
 }

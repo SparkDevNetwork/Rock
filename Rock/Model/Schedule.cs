@@ -17,7 +17,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// CheckInSchedule EF Model.
+    /// Represents a Scheduled event in RockChMS.  Several places where this has been used includes Check-in scheduling and Kiosk scheduling.
     /// </summary>
     [Table( "Schedule" )]
     [DataContract]
@@ -26,22 +26,21 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Schedule name.
+        /// Gets or sets the Name of the Schedule. This property is required.
         /// </summary>
         /// <value>
-        /// File Name.
+        /// A <see cref="System.String"/> that represents the Name of the Schedule.
         /// </value>
         [Required]
-        [AlternateKey]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a user defined Description of the Schedule.
         /// </summary>
         /// <value>
-        /// Notes about the job..
+        /// A <see cref="System.String"/> representing the Description of the Schedule.
         /// </value>
         [DataMember]
         public string Description { get; set; }
@@ -50,7 +49,7 @@ namespace Rock.Model
         /// Gets or sets the content lines of the iCalendar
         /// </summary>
         /// <value>
-        /// The content of the iCalendar.
+        /// A <see cref="System.String"/>representing the  content of the iCalendar.
         /// </value>
         [DataMember]
         public string iCalendarContent
@@ -115,48 +114,53 @@ namespace Rock.Model
         private string _iCalendarContent;
 
         /// <summary>
-        /// Gets or sets the number of minutes prior to schedule start that Check-in should be active
+        /// Gets or sets the number of minutes prior to the Schedule's start time  that Check-in should be active. 0 represents that Check-in 
+        /// will not be available to the beginning of the event.
         /// </summary>
         /// <value>
-        /// The check-in start offset
+        /// A <see cref="System.Int32"/> representing how many minutes prior the Schedule's start time that Check-in should be active. 
+        /// 0 means that Check-in will not be available to the Schedule's start time. This schedule will not be available if this value is <c>Null</c>.
         /// </value>
         [DataMember]
         public int? CheckInStartOffsetMinutes { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of minutes following schedule start that Check-in should be active
+        /// Gets or sets the number of minutes following schedule start that Check-in should be active. 0 represents that Check-in will only be available
+        /// until the Schedule's start time.
         /// </summary>
         /// <value>
-        /// The check-in end offset
+        /// A <see cref="System.Int32"/> representing how many minutes following the Schedule's end time that Check-in should be active. 0 represents that Check-in
+        /// will only be available until the Schedule's start time.
         /// </value>
         [DataMember]
         public int? CheckInEndOffsetMinutes { get; set; }
 
         /// <summary>
-        /// Gets or sets the effective start date.
+        /// Gets or sets the Date that the Schedule becomes effective/active. This property is inclusive, and the schedule will be inactive before this date. 
         /// </summary>
         /// <value>
-        /// The effective start date.
+        /// A <see cref="System.DateTime"/> value that represents the date that this Schedule becomes active.
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
         public DateTime? EffectiveStartDate { get; private set; }
 
         /// <summary>
-        /// Gets or sets the effective end date.
+        /// Gets or sets that date that this Schedule expires and becomes inactive. This value is inclusive and the schedule will be inactive after this date.
         /// </summary>
         /// <value>
-        /// The effective end date.
+        /// A <see cref="System.DateTime"/> value that represents the date that this Schedule ends and becomes inactive.
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
         public DateTime? EffectiveEndDate { get; private set; }
 
         /// <summary>
-        /// Gets or sets the category id.
+        /// Gets or sets the CategoryId of the <see cref="Rock.Model.Category"/> that this Schedule belongs to.
         /// </summary>
         /// <value>
-        /// The category id.
+        /// A <see cref="System.Int32"/> representing the CategoryId of the <see cref="Rock.Model.Category"/> that this Schedule belongs to. This property will be null
+        /// if the Schedule does not belong to a Category.
         /// </value>
         [DataMember]
         public int? CategoryId { get; set; }
@@ -166,10 +170,14 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets a value indicating whether this instance is check in enabled.
+        /// Gets a value indicating whether Check-in is enabled for this Schedule.
         /// </summary>
         /// <value>
-        /// <c>true</c> if this instance is check in enabled; otherwise, <c>false</c>.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this instance is check in enabled; otherwise, <c>false</c>.
+        /// <remarks>
+        /// The <c>CheckInStartOffsetMinutes</c> is used to determine if Check-in is enabled. If the value is <c>null</c>, it is determined that Check-in is not 
+        /// enabled for this Schedule.
+        /// </remarks>
         /// </value>
         public virtual bool IsCheckInEnabled
         {
@@ -180,10 +188,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a value indicating whether check-in is currently active for this instance.
+        /// Gets a value indicating whether check-in is currently active for this Schedule.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        ///  A <see cref="System.Boolean"/> that is  <c>true</c> if Check-in is currently active for this Schedule ; otherwise, <c>false</c>.
         /// </value>
         public virtual bool IsCheckInActive
         {
@@ -245,10 +253,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the category.
+        /// Gets or sets the <see cref="Rock.Model.Category"/> that this Schedule belongs to.
         /// </summary>
         /// <value>
-        /// The category.
+        /// The <see cref="Rock.Model.Category"/> that this Schedule belongs to.  If it does not belong to a <see cref="Rock.Model.Category"/> this value will be null.
         /// </value>
         [DataMember]
         public virtual Category Category { get; set; }
@@ -258,10 +266,10 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
-        /// Gets the iCalender Event.
+        /// Gets the Schedule's iCalender Event.
         /// </summary>
         /// <value>
-        /// The iCalender Event.
+        /// A <see cref="DDay.iCal.Event"/> representing the iCalendar event for this Schedule.
         /// </value>
         public virtual DDay.iCal.Event GetCalenderEvent()
         {
@@ -284,10 +292,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the next check-in start time.
+        /// Gets the next Check-in start date for this Schedule.  
         /// </summary>
-        /// <param name="beginDateTime">The begin date time.</param>
-        /// <returns></returns>
+        /// <param name="beginDateTime">A <see cref="System.DateTimeOffset"/> representing the base date.</param>
+        /// <returns>A <see cref="System.DateTime"/> containing the next time that Check-in begins for this schedule.</returns>
         public virtual DateTime? GetNextCheckInStartTime( DateTimeOffset beginDateTime )
         {
             if ( !IsCheckInEnabled )
@@ -336,7 +344,7 @@ namespace Rock.Model
         /// Gets the Friendly Text of the Calendar Event.
         /// For example, "Every 3 days at 10:30am", "Monday, Wednesday, Friday at 5:00pm", "Saturday at 4:30pm"
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A <see cref="System.String"/> containing a friendly description of the Schedule.</returns>
         public string ToFriendlyScheduleText()
         {
             // init the result to just the schedule name just in case we can't figure out the FriendlyText

@@ -13,7 +13,8 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Scheduled Transaction Detail POCO class.
+    /// Represents a detail item of a <see cref="Rock.Model.FinancialScheduledTransaction"/>.  It represents a gift/payment to be made to an <see cref="Rock.Model.FinancialAccount"/>/fund
+    /// as part of the scheduled transaction. This allows multiple payments/gifts to be consolidated into one scheduled transaction.
     /// </summary>
     [Table( "FinancialScheduledTransactionDetail" )]
     [DataContract]
@@ -22,37 +23,37 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the scheduled transaction id.
+        /// Gets or sets the ScheduledTransactionId of the <see cref="Rock.Model.FinancialScheduledTransaction"/> that this detail item belongs to.
         /// </summary>
         /// <value>
-        /// The scheduled transaction id.
+        /// A <see cref="System.Int32"/> representing the ScheudledTransactionId of the <see cref="Rock.Model.FinancialScheduledTransaction"/> that this detail item belongs to.
         /// </value>
         [DataMember]
         public int ScheduledTransactionId { get; set; }
 
         /// <summary>
-        /// Gets or sets the account id.
+        /// Gets or sets the AccountId of the <see cref="Rock.Model.FinancialAccount"/>/fund that that the transaction detail <see cref="Amount"/> should be directed toward.
         /// </summary>
         /// <value>
-        /// The account id.
+        /// A <see cref="System.Int32"/> representing the AccountId of the <see cref="Rock.Model.FinancialAccount"/>/fund that this transaction detail is directed toward.
         /// </value>
         [DataMember]
         public int AccountId { get; set; }
 
         /// <summary>
-        /// Gets or sets the amount.
+        /// Gets or sets the purchase/gift amount.
         /// </summary>
         /// <value>
-        /// The amount.
+        /// A <see cref="System.Decimal"/> representing the purchase/gift amount.
         /// </value>
         [DataMember]
         public decimal Amount { get; set; }
 
         /// <summary>
-        /// Gets or sets the summary.
+        /// Gets or sets the summary of this scheduled transaction detail.
         /// </summary>
         /// <value>
-        /// The summary.
+        /// A <see cref="System.String"/> representing the summary of this scheduled transaction detail.
         /// </value>
         [MaxLength( 500 )]
         [DataMember]
@@ -81,19 +82,19 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the scheduled transaction.
+        /// Gets or sets the <see cref="Rock.Model.FinancialScheduledTransaction"/> that this transaction detail belongs to.
         /// </summary>
         /// <value>
-        /// The scheduled transaction.
+        /// The <see cref="Rock.Model.FinancialScheduledTransaction"/> that the transaction detail belongs to.
         /// </value>
         [DataMember]
         public virtual FinancialScheduledTransaction ScheduledTransaction { get; set; }
 
         /// <summary>
-        /// Gets or sets the account.
+        /// Gets or sets the <see cref="Rock.Model.FinancialAccount"/>/fund that the <see cref="Amount"/> of this transaction detail will be credited toward.
         /// </summary>
         /// <value>
-        /// The account.
+        /// Tehe <see cref="Rock.Model.FinancialAccount"/>/fund that the <see cref="Amount"/> of this transaction detail will be credited toward.
         /// </value>
         [DataMember]
         public virtual FinancialAccount Account { get; set; }

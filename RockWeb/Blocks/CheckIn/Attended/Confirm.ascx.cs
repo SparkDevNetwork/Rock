@@ -30,6 +30,29 @@ namespace RockWeb.Blocks.CheckIn.Attended
     [LinkedPage("Activity Select Page")]
     public partial class Confirm : CheckInBlock
     {
+        /// <summary>
+        /// Check-In information class used to bind the selected grid.
+        /// </summary>
+        protected class CheckIn
+        {
+            public int PersonId { get; set; }
+            public string Name { get; set; }
+            public string Location { get; set; }
+            public int LocationId { get; set; }
+            public string Schedule { get; set; }
+            public int ScheduleId { get; set; }
+
+            public CheckIn()
+            {
+                PersonId = 0;
+                Name = string.Empty;
+                Location = string.Empty;
+                LocationId = 0;
+                Schedule = string.Empty;
+                ScheduleId = 0;
+            }
+        }
+
         #region Control Methods
 
         /// <summary>
@@ -66,39 +89,47 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
-        /// Creates the grid data source.
+        /// Binds the grid.
         /// </summary>
         protected void BindGrid()
         {
             var selectedPeopleList = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
                 .People.Where( p => p.Selected ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
-            var checkInGrid = new System.Data.DataTable();
-            checkInGrid.Columns.Add( "PersonId", typeof(int) );
-            checkInGrid.Columns.Add( "Name", typeof(string) );
-            checkInGrid.Columns.Add( "Location", typeof(string) );
-            checkInGrid.Columns.Add( "LocationId", typeof(int) );
-            checkInGrid.Columns.Add( "Schedule", typeof(string) );
-            checkInGrid.Columns.Add( "ScheduleId", typeof(int) );
-            
+
+            var checkInList = new List<CheckIn>();
             foreach ( var person in selectedPeopleList )
             {
-                int personId = person.Person.Id;
-                string personName = person.Person.FullName;
                 var locations = person.GroupTypes.Where( gt => gt.Selected )
                     .SelectMany( gt => gt.Groups ).Where( g => g.Selected )
-                    .SelectMany( g => g.Locations ).Where( l => l.Selected ).ToList();                    
-                                
-                foreach ( var location in locations )
+                    .SelectMany( g => g.Locations ).Where( l => l.Selected ).ToList();
+
+                if ( locations.Any() )
                 {
-                    var schedule = location.Schedules.Where( s => s.Selected ).FirstOrDefault();                    
-                    checkInGrid.Rows.Add( personId, personName, location.Location.Name, location.Location.Id, schedule.Schedule.Name, schedule.Schedule.Id );
-                }                
+                    foreach ( var location in locations )
+                    {
+                        foreach ( var schedule in location.Schedules.Where( s => s.Selected ) )
+                        {
+                            var checkIn = new CheckIn();
+                            checkIn.PersonId = person.Person.Id;
+                            checkIn.Name = person.Person.FullName;
+                            checkIn.Location = location.Location.Name;
+                            checkIn.LocationId = location.Location.Id;
+                            checkIn.Schedule = schedule.Schedule.Name;
+                            checkIn.ScheduleId = schedule.Schedule.Id;
+                            checkInList.Add( checkIn );
+                        }                    
+                    }                    
+                }
+                else
+                {   // auto assignment didn't select anything
+                    checkInList.Add( new CheckIn { PersonId = person.Person.Id, Name = person.Person.FullName } );
+                }
             }
 
-            gPersonList.DataSource = checkInGrid;
+            gPersonList.DataSource = checkInList.OrderBy( c => c.Schedule ).ToList();
             gPersonList.DataBind();
         }
-
+        
         #endregion
 
         #region Edit Events
@@ -120,9 +151,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDone_Click( object sender, EventArgs e )
         {
-            GoNext();
+            CurrentCheckInState.CheckIn.SearchType = null;
+            CurrentCheckInState.CheckIn.SearchValue = string.Empty;
+            SaveState();
+            NavigateToNextPage();
         }
-        
+                
         /// <summary>
         /// Handles the Click event of the lbPrintAll control.
         /// </summary>
@@ -151,6 +185,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "personId", dataKeyValues["PersonId"].ToString() );
             queryParams.Add( "locationId", dataKeyValues["LocationId"].ToString() );
+            queryParams.Add( "scheduleId", dataKeyValues["ScheduleId"].ToString() );
             NavigateToLinkedPage( "ActivitySelectPage", queryParams);
         }
 
@@ -168,7 +203,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
             
             var selectedPerson = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
                 .People.Where( p => p.Person.Id == personId ).FirstOrDefault();
-            var selectedGroups = selectedPerson.GroupTypes.Where( gt => gt.Selected ).SelectMany( gt => gt.Groups );
+            var selectedGroups = selectedPerson.GroupTypes.Where( gt => gt.Selected )
+                .SelectMany( gt => gt.Groups.Where( g => g.Selected ) );
             CheckInGroup selectedGroup = selectedGroups.Where( g => g.Selected
                 && g.Locations.Any( l => l.Location.Id == locationId
                     && l.Schedules.Any( s => s.Schedule.Id == scheduleId ) ) ).FirstOrDefault();
@@ -180,12 +216,22 @@ namespace RockWeb.Blocks.CheckIn.Attended
             
             selectedSchedule.Selected = false;
             selectedSchedule.PreSelected = false;
-            selectedLocation.Selected = false;
-            selectedLocation.PreSelected = false;
-            if ( selectedGroups.Count() == 1 )
+
+            // clear checkin rows without anything selected
+            if ( !selectedLocation.Schedules.Any( s => s.Selected ) )
+            {
+                selectedLocation.Selected = false;
+                selectedLocation.PreSelected = false;                
+            }
+            
+            if ( !selectedGroup.Locations.Any( l => l.Selected ) )
             {
                 selectedGroup.Selected = false;
                 selectedGroup.PreSelected = false;
+            }       
+     
+            if ( !selectedGroups.Any() )
+            {
                 selectedPerson.Selected = false;
                 selectedPerson.PreSelected = false;
             }
@@ -210,8 +256,17 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 var scheduleId = Convert.ToInt32( dataKeyValues["ScheduleId"] );
                 PrintLabel( personId, locationId, scheduleId );
             }
-        }        
+        }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gPersonList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gPersonList_GridRebind( object sender, EventArgs e )
+        {
+            BindGrid();
+        }
         #endregion
 
         #region Internal Methods
@@ -233,20 +288,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
             }
         }
-             
-        // GoBack() handled by Rock.Model.CheckInBlock
-
-        /// <summary>
-        /// Goes to the next page.
-        /// </summary>
-        private void GoNext()
-        {
-            CurrentCheckInState.CheckIn.SearchType = null;
-            CurrentCheckInState.CheckIn.SearchValue = string.Empty;
-            SaveState();
-            NavigateToNextPage();
-        }
-
+        
         /// <summary>
         /// Prints the label.
         /// </summary>
@@ -365,5 +407,5 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         #endregion        
-    }
+}
 }

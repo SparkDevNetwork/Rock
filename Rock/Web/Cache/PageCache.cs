@@ -39,6 +39,8 @@ namespace Rock.Web.Cache
 
         #endregion
 
+        private string _title;
+
         #region Properties
 
         /// <summary>
@@ -63,7 +65,24 @@ namespace Rock.Web.Cache
         /// <value>
         /// The title.
         /// </value>
-        public string Title { get; set; }
+        public string Title {
+            get
+            {
+                if (_title != null && _title != string.Empty)
+                {
+                    return _title;
+                }
+                else
+                {
+                    return Name;
+                }
+            }
+
+            set
+            {
+                _title = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is system.
@@ -347,16 +366,6 @@ namespace Rock.Web.Cache
         public Dictionary<string, string> PageContexts { get; set; }
 
         /// <summary>
-        /// Gets a dictionary of the current context items (models).
-        /// </summary>
-        internal Dictionary<string, Rock.Data.KeyEntity> Context
-        {
-            get { return _context; }
-            set { _context = value; }
-        }
-        private Dictionary<string, Data.KeyEntity> _context;
-
-        /// <summary>
         /// Helper class for PageRoute information
         /// </summary>
         public class PageRouteInfo
@@ -424,7 +433,7 @@ namespace Rock.Web.Cache
                 }
                 if ( BreadCrumbDisplayName )
                 {
-                    bcName += Name;
+                    bcName += Title;
                 }
 
                 return bcName;
@@ -505,86 +514,6 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the current context object for a given entity type.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <returns></returns>
-        public Rock.Data.IEntity GetCurrentContext( string entity )
-        {
-            if ( this.Context.ContainsKey( entity ) )
-            {
-                var keyModel = this.Context[entity];
-
-                if ( keyModel.Entity == null )
-                {
-                    Type modelType = Type.GetType( entity );
-
-                    if ( modelType == null )
-                    {
-                        // if the Type isn't found in the Rock.dll (it might be from a Plugin), lookup which assessmbly it is in and look in there
-                        EntityTypeCache entityTypeInfo = EntityTypeCache.Read( entity, false );
-                        if ( entityTypeInfo != null )
-                        {
-                            string[] assemblyNameParts = entityTypeInfo.AssemblyName.Split( new char[] { ',' } );
-                            if ( assemblyNameParts.Length > 1 )
-                            {
-                                modelType = Type.GetType( string.Format( "{0}, {1}", entityTypeInfo.Name, assemblyNameParts[1] ) );
-                            }
-                        }
-                    }
-
-                    if ( modelType != null )
-                    {
-                        // In the case of core Rock.dll Types, we'll just use Rock.Data.Service<> and Rock.Data.RockContext<>
-                        // otherwise find the first (and hopefully only) Service<> and dbContext we can find in the Assembly.  
-                        Type serviceType = typeof( Rock.Data.Service<> );
-                        Type contextType = typeof( Rock.Data.RockContext );
-                        if ( modelType.Assembly != serviceType.Assembly )
-                        {
-                            var serviceTypeLookup = Reflection.SearchAssembly( modelType.Assembly, serviceType );
-                            if ( serviceTypeLookup.Any() )
-                            {
-                                serviceType = serviceTypeLookup.First().Value;
-                            }
-
-                            var contextTypeLookup = Reflection.SearchAssembly( modelType.Assembly, typeof( System.Data.Entity.DbContext ) );
-
-                            if ( contextTypeLookup.Any() )
-                            {
-                                contextType = contextTypeLookup.First().Value;
-                            }
-                        }
-
-                        System.Data.Entity.DbContext dbContext = Activator.CreateInstance( contextType ) as System.Data.Entity.DbContext;
-
-                        Type service = serviceType.MakeGenericType( new Type[] { modelType } );
-                        var serviceInstance = Activator.CreateInstance( service, dbContext );
-
-                        if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
-                        {
-                            MethodInfo getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
-                            keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Id } ) as Rock.Data.IEntity;
-                        }
-                        else
-                        {
-                            MethodInfo getMethod = service.GetMethod( "GetByPublicKey" );
-                            keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Key } ) as Rock.Data.IEntity;
-                        }
-
-                        if ( keyModel.Entity is Rock.Attribute.IHasAttributes )
-                        {
-                            Rock.Attribute.Helper.LoadAttributes( keyModel.Entity as Rock.Attribute.IHasAttributes );
-                        }
-                    }
-                }
-
-                return keyModel.Entity;
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Gets all the pages in the current hierarchy
         /// </summary>
         /// <returns></returns>
@@ -617,17 +546,6 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Fires the block content updated event.
-        /// </summary>
-        public void BlockContentUpdated( object sender )
-        {
-            if ( OnBlockContentUpdated != null )
-            {
-                OnBlockContentUpdated( sender, new EventArgs() );
-            }
-        }
-
-        /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
         /// <returns>
@@ -637,98 +555,6 @@ namespace Rock.Web.Cache
         {
             return this.Name;
         }
-
-        #region SharedItemCaching
-
-        /// <summary>
-        /// Used to save an item to the current HTTPRequests items collection.  This is useful if multiple blocks
-        /// on the same page will need access to the same object.  The first block can read the object and save
-        /// it using this method for the other blocks to reference
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="item"></param>
-        public void SaveSharedItem( string key, object item )
-        {
-            string itemKey = string.Format( "{0}:Item:{1}", PageCache.CacheKey( Id ), key );
-
-            System.Collections.IDictionary items = HttpContext.Current.Items;
-            if ( items.Contains( itemKey ) )
-                items[itemKey] = item;
-            else
-                items.Add( itemKey, item );
-        }
-
-        /// <summary>
-        /// Retrieves an item from the current HTTPRequest items collection.  This is useful to retrieve an object
-        /// that was saved by a previous block on the same page.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public object GetSharedItem( string key )
-        {
-            string itemKey = string.Format( "{0}:Item:{1}", PageCache.CacheKey( Id ), key );
-
-            System.Collections.IDictionary items = HttpContext.Current.Items;
-            if ( items.Contains( itemKey ) )
-                return items[itemKey];
-
-            return null;
-        }
-
-        #endregion
-
-        #region HtmlLinks
-
-        /// <summary>
-        /// Adds a new CSS link that will be added to the page header prior to the page being rendered
-        /// </summary>
-        /// <param name="page">Current System.Web.UI.Page</param>
-        /// <param name="href">Path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
-        public void AddCSSLink( System.Web.UI.Page page, string href )
-        {
-            RockPage.AddCSSLink( page, href );
-        }
-
-        /// <summary>
-        /// Adds a new CSS link that will be added to the page header prior to the page being rendered
-        /// </summary>
-        /// <param name="page">The page.</param>
-        /// <param name="href">The href.</param>
-        /// <param name="mediaType">MediaType to use in the css link.</param>
-        public void AddCSSLink( System.Web.UI.Page page, string href, string mediaType )
-        {
-            RockPage.AddCSSLink( page, href, mediaType );
-        }
-
-        /// <summary>
-        /// Adds a meta tag to the page header priore to the page being rendered
-        /// </summary>
-        /// <param name="page">The page.</param>
-        /// <param name="htmlMeta">The HTML meta tag.</param>
-        public void AddMetaTag( System.Web.UI.Page page, HtmlMeta htmlMeta )
-        {
-            RockPage.AddMetaTag( page, htmlMeta );
-        }
-
-        /// <summary>
-        /// Adds a new Html link that will be added to the page header prior to the page being rendered
-        /// </summary>
-        public void AddHtmlLink( System.Web.UI.Page page, HtmlLink htmlLink )
-        {
-            RockPage.AddHtmlLink( page, htmlLink );
-        }
-
-        /// <summary>
-        /// Adds a new script tag to the page header prior to the page being rendered
-        /// </summary>
-        /// <param name="page">Current System.Web.UI.Page</param>
-        /// <param name="path">Path to script file.  Should be relative to layout template.  Will be resolved at runtime</param>
-        public void AddScriptLink( System.Web.UI.Page page, string path )
-        {
-            RockPage.AddScriptLink( page, path );
-        }
-
-        #endregion
 
         #region Menu XML Methods
 
@@ -832,11 +658,11 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="levelsDeep">The levels deep.</param>
         /// <param name="person">The person.</param>
-        /// <param name="currentPage">The current page.</param>
+        /// <param name="currentPageHeirarchy">The current page heirarchy.</param>
         /// <param name="parameters">The parameters.</param>
         /// <param name="queryString">The query string.</param>
         /// <returns></returns>
-        public Dictionary<string, object> GetMenuProperties( int levelsDeep, Person person, PageCache currentPage = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
+        public Dictionary<string, object> GetMenuProperties( int levelsDeep, Person person, List<int> currentPageHeirarchy = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
         {
             if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
             {
@@ -848,12 +674,19 @@ namespace Rock.Web.Cache
                         this.IconFileId.Value );
                 }
 
-                bool isCurrentPage = currentPage != null && currentPage.Id == this.Id;
+                bool isCurrentPage = false;
+                bool isParentOfCurrent = false;
+                if ( currentPageHeirarchy != null && currentPageHeirarchy.Any() )
+                {
+                    isCurrentPage = currentPageHeirarchy.First() == this.Id;
+                    isParentOfCurrent = currentPageHeirarchy.Skip( 1 ).Any( p => p == this.Id );
+                }
 
                 var properties = new Dictionary<string, object>();
                 properties.Add( "id", this.Id );
                 properties.Add( "title", this.Title ?? this.Name );
-                properties.Add( "current", isCurrentPage.ToString() );
+                properties.Add( "current", isCurrentPage.ToString().ToLower() );
+                properties.Add( "isParentOfCurrent", isParentOfCurrent.ToString().ToLower() );
                 properties.Add( "url", new PageReference( this.Id, 0, parameters, queryString ).BuildUrl() );
                 properties.Add( "display-description", this.MenuDisplayDescription.ToString().ToLower() );
                 properties.Add( "display-icon", this.MenuDisplayIcon.ToString().ToLower() );
@@ -870,9 +703,11 @@ namespace Rock.Web.Cache
                     {
                         if ( page != null )
                         {
-                            var childPageElement = page.GetMenuProperties( levelsDeep - 1, person, currentPage, parameters, queryString );
+                            var childPageElement = page.GetMenuProperties( levelsDeep - 1, person, currentPageHeirarchy, parameters, queryString );
                             if ( childPageElement != null )
+                            {
                                 childPages.Add( childPageElement );
+                            }
                         }
                     }
 
@@ -1067,13 +902,5 @@ namespace Rock.Web.Cache
 
         #endregion
 
-        #region Event Handlers
-
-        /// <summary>
-        /// Occurs when a block on the page updates content.
-        /// </summary>
-        public event EventHandler OnBlockContentUpdated;
-
-        #endregion
     }
 }

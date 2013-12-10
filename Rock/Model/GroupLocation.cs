@@ -47,35 +47,47 @@ namespace Rock.Model
         public int LocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the GroupLocationType <see cref="Rock.Model.DefinedValue"/> that is used to identify the type of <see cref="Rock.Model.Location"/>
+        /// Gets or sets the Id of the GroupLocationType <see cref="Rock.Model.DefinedValue"/> that is used to identify the type of <see cref="Rock.Model.GroupLocation"/>
         /// that this is.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> referencing the Id of the GroupLocaitonType <see cref="Rock.Model.DefinedValue"/> that identifies the type of location that this is.
+        /// An <see cref="System.Int32"/> referencing the Id of the GroupLocationType <see cref="Rock.Model.DefinedValue"/> that identifies the type of group location that this is.
         /// If a GroupLocationType <see cref="Rock.Model.DefinedValue"/> is not associated with this GroupLocation this value will be null.
         /// </value>
-        /// <remarks>
-        /// Examples of 
-        /// </remarks>
         [DataMember]
+        [DefinedValue(SystemGuid.DefinedType.GROUP_LOCATION_TYPE)]
         public int? GroupLocationTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets a flag indicating if the <see cref="Rock.Model.Location"/> referenced by this GroupLocation is the mailing address/location for the <see cref="Rock.Model.Group"/>.
+        /// Gets or sets a flag indicating if the <see cref="Rock.Model.Location"/> referenced by this GroupLocation is the mailing address/location for the <see cref="Rock.Model.Group"/>.  
+        /// This field is only supported in the UI for family groups
         /// </summary>
         /// <value>
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this is the mailing address/location for this <see cref="Rock.Model.Group"/>.
         /// </value>
-        public bool IsMailing { get; set; }
+        [DataMember]
+        public bool IsMailingLocation { get; set; }
 
         //TODO: Document
         /// <summary>
         /// Gets or sets a flag indicating if this is the mappable location for this 
+        /// This field is only supported in the UI for family groups
         /// </summary>
         /// <value>
         /// <c>true</c> if this instance is location; otherwise, <c>false</c>.
         /// </value>
-        public bool IsLocation { get; set; }
+        [DataMember]
+        public bool IsMappedLocation { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group member person identifier.  A GroupLocation can optionally be created by selecting one of the group member's locations.  If the GroupLocation is 
+        /// created this way, the member's person id is saved with the group location
+        /// </summary>
+        /// <value>
+        /// The group member person identifier.
+        /// </value>
+        [DataMember]
+        public int? GroupMemberPersonId { get; set; }
 
         #endregion
 
@@ -109,10 +121,20 @@ namespace Rock.Model
         public virtual DefinedValue LocationTypeValue { get; set; }
 
         /// <summary>
+        /// Gets or sets the group member person. A GroupLocation can optionally be created by selecting one of the group member's locations.  If the GroupLocation is 
+        /// created this way, the member is saved with the group location
+        /// </summary>
+        /// <value>
+        /// The group member person.
+        /// </value>
+        [DataMember]
+        public virtual Person GroupMemberPerson { get; set; }
+
+        /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.Schedule">Schedules</see> that are associated with this GroupLocation.
         /// </summary>
         /// <value>
-        /// A collection of <see cref="Rock.Model.Scheudles"/> that are associated with this GroupLocation.
+        /// A collection of <see cref="Rock.Model.Schedule"/> that are associated with this GroupLocation.
         /// </value>
         public virtual ICollection<Schedule> Schedules
         {
@@ -155,6 +177,7 @@ namespace Rock.Model
             this.HasRequired( t => t.Group ).WithMany( t => t.GroupLocations ).HasForeignKey( t => t.GroupId );
             this.HasRequired( t => t.Location ).WithMany( l => l.GroupLocations).HasForeignKey( t => t.LocationId );
             this.HasOptional( t => t.LocationTypeValue ).WithMany().HasForeignKey( t => t.GroupLocationTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.GroupMemberPerson ).WithMany().HasForeignKey( t => t.GroupMemberPersonId ).WillCascadeOnDelete( true );
             this.HasMany( t => t.Schedules ).WithMany().Map( t => { t.MapLeftKey( "GroupLocationId" ); t.MapRightKey( "ScheduleId" ); t.ToTable( "GroupLocationSchedule" ); } );
         }
     }

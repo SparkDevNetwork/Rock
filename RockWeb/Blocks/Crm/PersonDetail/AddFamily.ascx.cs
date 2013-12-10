@@ -21,8 +21,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     /// <summary>
     /// Block for adding new families
     /// </summary>
-    [DefinedValueField( Rock.SystemGuid.DefinedType.LOCATION_LOCATION_TYPE, "Location Type",
-        "The type of location that address should use", false, Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME, "", 0 )]
+    [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Location Type",
+        "The type of location that address should use", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 0 )]
     [BooleanField( "Nick Name", "Show Nick Name column", "Hide Nick Name column", "Should the Nick Name field be displayed?", false, "", 1 )]
     [BooleanField( "Gender", "Require a gender for each person", "Don't require", "Should Gender be required for each person added?", false, "", 2 )]
     [BooleanField( "Grade", "Require a grade for each child", "Don't require", "Should Grade be required for each child added?", false, "", 3 )]
@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             cpCampus.Campuses = campusi;
             cpCampus.Visible = campusi.Any();
 
-            var childRole = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) );
+            var childRole = new GroupTypeRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) );
             if ( childRole != null )
             {
                 _childRoleId = childRole.Id;
@@ -393,22 +393,28 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     familyGroup.CampusId = cpCampus.SelectedValueAsInt();
                                     familyMembers.ForEach( m => familyGroup.Members.Add( m ) );
 
-                                    var groupLocation = new GroupLocation();
-                                    var location = new LocationService().Get(
-                                        tbStreet1.Text, tbStreet2.Text, tbCity.Text, ddlState.SelectedValue, tbZip.Text );
-                                    groupLocation.Location = location;
-
-                                    Guid locationTypeGuid = Guid.Empty;
-                                    if ( Guid.TryParse( GetAttributeValue( "LocationType" ), out locationTypeGuid ) )
+                                    if ( !String.IsNullOrEmpty( tbStreet1.Text ) ||
+                                         !String.IsNullOrEmpty( tbStreet2.Text ) ||
+                                         !String.IsNullOrEmpty( tbCity.Text ) ||
+                                         !String.IsNullOrEmpty( tbZip.Text ) )
                                     {
-                                        var locationType = Rock.Web.Cache.DefinedValueCache.Read( locationTypeGuid );
-                                        if ( locationType != null )
-                                        {
-                                            groupLocation.GroupLocationTypeValueId = locationType.Id;
-                                        }
-                                    }
+                                        var groupLocation = new GroupLocation();
+                                        var location = new LocationService().Get(
+                                            tbStreet1.Text, tbStreet2.Text, tbCity.Text, ddlState.SelectedValue, tbZip.Text );
+                                        groupLocation.Location = location;
 
-                                    familyGroup.GroupLocations.Add( groupLocation );
+                                        Guid locationTypeGuid = Guid.Empty;
+                                        if ( Guid.TryParse( GetAttributeValue( "LocationType" ), out locationTypeGuid ) )
+                                        {
+                                            var locationType = Rock.Web.Cache.DefinedValueCache.Read( locationTypeGuid );
+                                            if ( locationType != null )
+                                            {
+                                                groupLocation.GroupLocationTypeValueId = locationType.Id;
+                                            }
+                                        }
+
+                                        familyGroup.GroupLocations.Add( groupLocation );
+                                    }
 
                                     groupService.Add( familyGroup, CurrentPersonId );
                                     groupService.Save( familyGroup, CurrentPersonId );

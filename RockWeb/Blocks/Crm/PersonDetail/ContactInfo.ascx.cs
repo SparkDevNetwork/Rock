@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 var icon = new HtmlGenericControl( "i" );
                 anchor.Controls.Add( icon );
-                icon.AddCssClass( "icon-phone" );
+                icon.AddCssClass( "fa fa-phone" );
 
                 if ( item.Unlisted )
                 {

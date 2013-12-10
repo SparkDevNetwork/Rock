@@ -81,20 +81,29 @@ namespace Rock.Model
             else
             {
                 var target = new Block();
-                target.IsSystem = source.IsSystem;
-                target.PageId = source.PageId;
-                target.LayoutId = source.LayoutId;
-                target.BlockTypeId = source.BlockTypeId;
-                target.Zone = source.Zone;
-                target.Order = source.Order;
-                target.Name = source.Name;
-                target.OutputCacheDuration = source.OutputCacheDuration;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another Block object to this Block object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this Block target, Block source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.PageId = source.PageId;
+            target.LayoutId = source.LayoutId;
+            target.BlockTypeId = source.BlockTypeId;
+            target.Zone = source.Zone;
+            target.Order = source.Order;
+            target.Name = source.Name;
+            target.OutputCacheDuration = source.OutputCacheDuration;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

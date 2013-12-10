@@ -52,6 +52,9 @@
     <Reference Include="CKEditor.NET">
       <HintPath>..\packages\CKEditor.3.6.4\CKEditor.NET.dll</HintPath>
     </Reference>
+    <Reference Include="CronExpressionDescriptor">
+      <HintPath>..\packages\CronExpressionDescriptor.1.7.1\lib\net35\CronExpressionDescriptor.dll</HintPath>
+    </Reference>
     <Reference Include="DDay.iCal">
       <HintPath>..\packages\DDay.iCal.1.0.2.575\lib\DDay.iCal.dll</HintPath>
     </Reference>
@@ -61,11 +64,11 @@
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.6.0.1\lib\net45\EntityFramework.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.0.2-beta1\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.6.0.1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.0.2-beta1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="EPPlus">
       <HintPath>..\libs\EPPlus\EPPlus.dll</HintPath>
@@ -94,6 +97,9 @@
     <Reference Include="NuGet.Core, Version=2.2.31210.9045, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NuGet.Core.2.2.0\lib\net40-Client\NuGet.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp">
+      <HintPath>..\packages\RestSharp.104.3.3\lib\net4\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -131,6 +137,9 @@
     </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="Twilio.Api">
+      <HintPath>..\packages\Twilio.3.6.5\lib\3.5\Twilio.Api.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Address\GeocodeContainer.cs">
@@ -144,6 +153,10 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
+    <Compile Include="Attribute\CodeEditorFieldAttribute.cs" />
+    <Compile Include="Attribute\DefinedTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\GroupLocationTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\InheritedAttribute.cs" />
     <Compile Include="Attribute\TimeFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerRangeFieldAttribute.cs" />
     <Compile Include="Attribute\DateRangeFieldAttribute.cs" />
@@ -170,6 +183,9 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
+    <Compile Include="Communication\Transport\Twilio.cs" />
+    <Compile Include="Field\Types\GroupLocationTypeFieldType.cs" />
+    <Compile Include="Field\Types\CodeEditorFieldType.cs" />
     <Compile Include="Field\Types\TimeFieldType.cs" />
     <Compile Include="Field\Types\IntegerRangeFieldType.cs" />
     <Compile Include="Field\Types\DateRangeFieldType.cs" />
@@ -181,111 +197,32 @@
     <Compile Include="Financial\Payment.cs" />
     <Compile Include="Financial\GatewayComponent.cs" />
     <Compile Include="Financial\GatewayContainer.cs" />
-    <Compile Include="Migrations\201308232058045_CreateDatabase.cs" />
-    <Compile Include="Migrations\201308232058045_CreateDatabase.Designer.cs">
-      <DependentUpon>201308232058045_CreateDatabase.cs</DependentUpon>
+    <Compile Include="Jobs\LaunchWorkflow.cs">
+      <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Migrations\201308291631419_FixAbilityLevelAttribute.cs" />
-    <Compile Include="Migrations\201308291631419_FixAbilityLevelAttribute.Designer.cs">
-      <DependentUpon>201308291631419_FixAbilityLevelAttribute.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201309032043048_FixBinaryFileTypeCaching.cs" />
-    <Compile Include="Migrations\201309032043048_FixBinaryFileTypeCaching.Designer.cs">
-      <DependentUpon>201309032043048_FixBinaryFileTypeCaching.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201309070045381_CheckinConfigUI.cs" />
-    <Compile Include="Migrations\201309070045381_CheckinConfigUI.Designer.cs">
-      <DependentUpon>201309070045381_CheckinConfigUI.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201309112300564_DefaultWorkflowActionAttributes.cs" />
-    <Compile Include="Migrations\201309112300564_DefaultWorkflowActionAttributes.Designer.cs">
-      <DependentUpon>201309112300564_DefaultWorkflowActionAttributes.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201309122129396_SitePageRoute.cs" />
-    <Compile Include="Migrations\201309122129396_SitePageRoute.Designer.cs">
-      <DependentUpon>201309122129396_SitePageRoute.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201309122131001_DetailPageLinkedPageRefactor.cs" />
-    <Compile Include="Migrations\201309122131001_DetailPageLinkedPageRefactor.Designer.cs">
-      <DependentUpon>201309122131001_DetailPageLinkedPageRefactor.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201309182012247_DefinedTypeRefactor.cs" />
-    <Compile Include="Migrations\201309182012247_DefinedTypeRefactor.Designer.cs">
-      <DependentUpon>201309182012247_DefinedTypeRefactor.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201309182328119_AddAbilityLevelToCheckIn.cs" />
-    <Compile Include="Migrations\201309182328119_AddAbilityLevelToCheckIn.Designer.cs">
-      <DependentUpon>201309182328119_AddAbilityLevelToCheckIn.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201309211607057_PaymentGateway.cs" />
-    <Compile Include="Migrations\201309211607057_PaymentGateway.Designer.cs">
-      <DependentUpon>201309211607057_PaymentGateway.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201309251315512_RefactorMetrics.cs" />
-    <Compile Include="Migrations\201309251315512_RefactorMetrics.Designer.cs">
-      <DependentUpon>201309251315512_RefactorMetrics.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201309260255120_XSLTToLiquid.cs" />
-    <Compile Include="Migrations\201309260255120_XSLTToLiquid.Designer.cs">
-      <DependentUpon>201309260255120_XSLTToLiquid.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201309261219018_LiquidPromotions.cs" />
-    <Compile Include="Migrations\201309261219018_LiquidPromotions.Designer.cs">
-      <DependentUpon>201309261219018_LiquidPromotions.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201309271956487_MoveLiquidToTheme.cs" />
-    <Compile Include="Migrations\201309271956487_MoveLiquidToTheme.Designer.cs">
-      <DependentUpon>201309271956487_MoveLiquidToTheme.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201309272221418_AddPasswordWarningDate.cs" />
-    <Compile Include="Migrations\201309272221418_AddPasswordWarningDate.Designer.cs">
-      <DependentUpon>201309272221418_AddPasswordWarningDate.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201309291500225_RefactorBatchDetail.cs" />
-    <Compile Include="Migrations\201309291500225_RefactorBatchDetail.Designer.cs">
-      <DependentUpon>201309291500225_RefactorBatchDetail.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201310012025428_AttendedCheckin.cs" />
-    <Compile Include="Migrations\201310012025428_AttendedCheckin.Designer.cs">
-      <DependentUpon>201310012025428_AttendedCheckin.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201310012252403_AddLayout.cs" />
-    <Compile Include="Migrations\201310012252403_AddLayout.Designer.cs">
-      <DependentUpon>201310012252403_AddLayout.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201310021237541_FixSystemData.cs" />
-    <Compile Include="Migrations\201310021237541_FixSystemData.Designer.cs">
-      <DependentUpon>201310021237541_FixSystemData.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201310091510427_CreditCardTypes.cs" />
-    <Compile Include="Migrations\201310091510427_CreditCardTypes.Designer.cs">
-      <DependentUpon>201310091510427_CreditCardTypes.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201310091945298_LayoutBlocks.cs" />
-    <Compile Include="Migrations\201310091945298_LayoutBlocks.Designer.cs">
-      <DependentUpon>201310091945298_LayoutBlocks.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201310092101235_SitePageReferences.cs" />
-    <Compile Include="Migrations\201310092101235_SitePageReferences.Designer.cs">
-      <DependentUpon>201310092101235_SitePageReferences.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201310112336543_GivingGroup.cs" />
-    <Compile Include="Migrations\201310112336543_GivingGroup.Designer.cs">
-      <DependentUpon>201310112336543_GivingGroup.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\RockMigration.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Migrations\RockMigration1.cs" />
+    <Compile Include="Jobs\RunSQL.cs" />
     <Compile Include="Model\CodeGenerated\LayoutService.cs" />
+    <Compile Include="Model\CodeGenerated\ReportFieldService.cs" />
+    <Compile Include="Model\DbGeographyConverter.cs" />
+    <Compile Include="Model\FinancialTransactionImageService.partial.cs" />
     <Compile Include="Model\LayoutService.Partial.cs" />
     <Compile Include="Model\Layout.cs" />
     <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
+    <Compile Include="Model\ReportField.cs" />
     <Compile Include="Net\RestParameters\ContributionStatementOptions.cs" />
     <Compile Include="PersonProfile\Badge\Baptized.cs" />
     <Compile Include="PersonProfile\Badge\NextSteps.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Reporting\DataSelectComponent.cs" />
+    <Compile Include="Reporting\DataFilter\Person\GivingAmountFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\DistanceFromFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\InGroupGroupTypeFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\InGroupFilter.cs" />
+    <Compile Include="Reporting\DataSelect\Person\LastContributionSelect.cs" />
+    <Compile Include="Reporting\DataSelectContainer.cs" />
+    <Compile Include="Reporting\EntityHelper.cs" />
+    <Compile Include="Reporting\FilterExpressionExtractor.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
@@ -326,10 +263,12 @@
     <Compile Include="Search\Group\Name.cs" />
     <Compile Include="SystemGuid\Category.cs" />
     <Compile Include="SystemGuid\EntityType.cs" />
+    <Compile Include="SystemGuid\SiteDomain.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\Cache\CategoryCache.cs" />
     <Compile Include="Web\Cache\LayoutCache.cs" />
     <Compile Include="Web\DescriptionList.cs" />
+    <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Controls\BootstrapButton.cs" />
     <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroupEditor.cs" />
     <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroupTypeEditor.cs" />
@@ -519,18 +458,23 @@
     <Compile Include="SystemGuid\BinaryFileType.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />
     <Compile Include="Web\UI\Adapters\CheckBoxAdapter.cs" />
-    <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\DropDownListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
     <Compile Include="Web\UI\Controls\Communication\Sms.cs" />
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\Grid\LinkButtonField.cs" />
+    <Compile Include="Web\UI\Controls\IHasValidationGroup.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\EntityTypePicker.cs" />
+    <Compile Include="Web\UI\Controls\PanelWidget.cs" />
+    <Compile Include="Web\UI\Controls\RockControlWrapper.cs" />
     <Compile Include="Web\UI\Controls\HighlightLabel.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BirthdayPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LocationItemPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LocationAddressPicker.cs" />
     <Compile Include="Web\UI\Controls\RockControlHelper.cs" />
+    <Compile Include="Web\UI\Controls\CodeEditor.cs" />
     <Compile Include="Web\UI\Controls\TermDescription.cs" />
     <Compile Include="Web\UI\Controls\Grid\DefinedValueField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LocationPicker.cs" />
@@ -592,7 +536,7 @@
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActionTypeEditor.cs" />
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActivityTypeEditor.cs" />
     <Compile Include="Web\UI\Controls\Grid\BadgeField.cs" />
-    <Compile Include="Web\UI\Controls\Grid\INotRowSelectedField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\ISupressRowSelected.cs" />
     <Compile Include="Web\UI\Controls\Toggle.cs" />
     <Compile Include="Web\UI\Controls\HelpBlock.cs" />
     <Compile Include="Reporting\DataFilterComponent.cs" />
@@ -605,8 +549,11 @@
     <Compile Include="Web\UI\Controls\Grid\AttributeField.cs" />
     <Compile Include="Web\UI\Controls\IRockControl.cs" />
     <Compile Include="Web\UI\BreadCrumb.cs" />
+    <Compile Include="Web\UI\RockMasterPage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Web\UI\IDetailBlock.cs" />
-    <Compile Include="Web\UI\IDimmableBlock.cs" />
+    <Compile Include="Web\UI\ISecondaryBlock.cs" />
     <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
@@ -635,6 +582,7 @@
     <Compile Include="Workflow\Action\CheckIn\SelectByBestFit.cs" />
     <Compile Include="Workflow\Action\CheckIn\SelectByLastAttended.cs" />
     <Compile Include="Workflow\Action\ParseZebraLabel.cs" />
+    <Compile Include="Workflow\Action\RunSQL.cs" />
     <Compile Include="Workflow\TriggerCache.cs" />
     <Compile Include="Model\WorkflowTriggerService.Partial.cs" />
     <Compile Include="Model\WorkflowTrigger.cs" />
@@ -695,7 +643,6 @@
     <Compile Include="Extension\Component.cs" />
     <Compile Include="Extension\IComponentData.cs" />
     <Compile Include="Extension\Container.cs" />
-    <Compile Include="Address\Geocode\TeleAtlas.cs" />
     <Compile Include="Extension\ComponentDescription.cs" />
     <Compile Include="Address\Standardize\MelissaData.cs" />
     <Compile Include="Address\Standardize\StrikeIron.cs" />
@@ -756,13 +703,12 @@
     <Compile Include="Model\FinancialTransactionDetail.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\TransactionSearchValue.cs" />
     <Compile Include="Model\Group.cs" />
-    <Compile Include="Model\CodeGenerated\GroupRoleService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupTypeRoleService.cs" />
     <Compile Include="Model\CodeGenerated\GroupService.cs" />
     <Compile Include="Model\GroupService.Partial.cs" />
-    <Compile Include="Model\GroupRole.cs" />
-    <Compile Include="Model\GroupRoleService.Partial.cs" />
+    <Compile Include="Model\GroupTypeRole.cs" />
+    <Compile Include="Model\GroupTypeRoleService.Partial.cs" />
     <Compile Include="Model\GroupType.cs" />
     <Compile Include="Model\CodeGenerated\GroupTypeService.cs" />
     <Compile Include="Model\GroupTypeService.Partial.cs" />
@@ -770,10 +716,7 @@
     <Compile Include="Model\CodeGenerated\GroupMemberService.cs" />
     <Compile Include="Model\GroupMemberService.Partial.cs" />
     <Compile Include="Model\GroupLocation.cs" />
-    <Compile Include="Jobs\SendGridProcess.cs" />
     <Compile Include="Jobs\RockCleanup.cs" />
-    <Compile Include="Migrations\Configuration.cs" />
-    <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Search\Person\Address.cs" />
     <Compile Include="Search\Person\Email.cs" />
     <Compile Include="Search\Person\Name.cs" />
@@ -831,7 +774,6 @@
     <Compile Include="Model\WorkflowType.cs" />
     <Compile Include="Model\ServiceJob.cs" />
     <Compile Include="Model\ServiceJobService.Partial.cs" />
-    <Compile Include="Version.cs" />
     <Compile Include="Web\Cache\AttributeCache.cs" />
     <Compile Include="Web\Cache\BlockTypeCache.cs" />
     <Compile Include="Web\Cache\BlockCache.cs" />
@@ -916,7 +858,6 @@
     <Compile Include="Reflection.cs" />
     <Compile Include="Jobs\JobPulse.cs" />
     <Compile Include="Jobs\RockJobListener.cs" />
-    <Compile Include="Jobs\TestJob.cs" />
     <Compile Include="Attribute\IHasAttributes.cs" />
     <Compile Include="Data\IOrdered.cs" />
     <Compile Include="Data\Entity.cs" />
@@ -1082,77 +1023,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Auth\" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Migrations\201308232058045_CreateDatabase.resx">
-      <DependentUpon>201308232058045_CreateDatabase.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201308291631419_FixAbilityLevelAttribute.resx">
-      <DependentUpon>201308291631419_FixAbilityLevelAttribute.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201309032043048_FixBinaryFileTypeCaching.resx">
-      <DependentUpon>201309032043048_FixBinaryFileTypeCaching.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201309070045381_CheckinConfigUI.resx">
-      <DependentUpon>201309070045381_CheckinConfigUI.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201309112300564_DefaultWorkflowActionAttributes.resx">
-      <DependentUpon>201309112300564_DefaultWorkflowActionAttributes.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201309122129396_SitePageRoute.resx">
-      <DependentUpon>201309122129396_SitePageRoute.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201309122131001_DetailPageLinkedPageRefactor.resx">
-      <DependentUpon>201309122131001_DetailPageLinkedPageRefactor.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201309182012247_DefinedTypeRefactor.resx">
-      <DependentUpon>201309182012247_DefinedTypeRefactor.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201309182328119_AddAbilityLevelToCheckIn.resx">
-      <DependentUpon>201309182328119_AddAbilityLevelToCheckIn.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201309211607057_PaymentGateway.resx">
-      <DependentUpon>201309211607057_PaymentGateway.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201309251315512_RefactorMetrics.resx">
-      <DependentUpon>201309251315512_RefactorMetrics.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201309260255120_XSLTToLiquid.resx">
-      <DependentUpon>201309260255120_XSLTToLiquid.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201309261219018_LiquidPromotions.resx">
-      <DependentUpon>201309261219018_LiquidPromotions.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201309271956487_MoveLiquidToTheme.resx">
-      <DependentUpon>201309271956487_MoveLiquidToTheme.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201309272221418_AddPasswordWarningDate.resx">
-      <DependentUpon>201309272221418_AddPasswordWarningDate.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201309291500225_RefactorBatchDetail.resx">
-      <DependentUpon>201309291500225_RefactorBatchDetail.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201310012025428_AttendedCheckin.resx">
-      <DependentUpon>201310012025428_AttendedCheckin.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201310012252403_AddLayout.resx">
-      <DependentUpon>201310012252403_AddLayout.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201310021237541_FixSystemData.resx">
-      <DependentUpon>201310021237541_FixSystemData.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201310091510427_CreditCardTypes.resx">
-      <DependentUpon>201310091510427_CreditCardTypes.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201310091945298_LayoutBlocks.resx">
-      <DependentUpon>201310091945298_LayoutBlocks.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201310092101235_SitePageReferences.resx">
-      <DependentUpon>201310092101235_SitePageReferences.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201310112336543_GivingGroup.resx">
-      <DependentUpon>201310112336543_GivingGroup.cs</DependentUpon>
-    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -27,5 +27,10 @@ namespace Rock.SystemGuid
         /// Gets the Contribution-Image (scanned check, scanned envelope, etc) file type guid
         /// </summary>
         public const string CONTRIBUTION_IMAGE = "6D18A9C4-34AB-444A-B95B-C644019465AC";
+
+        /// <summary>
+        /// Gets the External File file type guid
+        /// </summary>
+        public const string EXTERNAL_FILE = "29EFF9B7-6814-4B9F-A922-77FA0448EBFA";
     }
 }

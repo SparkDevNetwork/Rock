@@ -131,6 +131,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets an optional validation group to use.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get { return ViewState["ValidationGroup"] as string; }
+            set { ViewState["ValidationGroup"] = value; }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -168,8 +180,6 @@ namespace Rock.Web.UI.Controls
         private HiddenField _hfGeoPath;
         private HtmlAnchor _btnSelect;
         private HtmlAnchor _btnSelectNone;
-        private DbGeography _geoFence;
-        private DbGeography _geoPoint;
 
         #endregion
 
@@ -291,19 +301,14 @@ namespace Rock.Web.UI.Controls
                     // Now we split the lat1,long1|lat2,long2|... stored in the hidden
                     // into something that's usable by DbGeography's PolygonFromText
                     // Well Known Text (http://en.wikipedia.org/wiki/Well-known_text) representation.
-                    _geoFence = DbGeography.PolygonFromText( ConvertPolyToWellKnownText( _hfGeoPath.Value ), 4326 );
+                    return DbGeography.PolygonFromText( ConvertPolyToWellKnownText( _hfGeoPath.Value ), 4326 );
                 }
-
-                return _geoFence;
             }
 
             set
             {
                 EnsureChildControls();
-                if ( value == null )
-                    return;
-                _geoFence = value;
-                _hfGeoPath.Value = ConvertPolyFromWellKnownText( _geoFence.AsText() );
+                _hfGeoPath.Value = value != null ? ConvertPolyFromWellKnownText( value.AsText() ) : string.Empty;
             }
         }
 
@@ -327,19 +332,14 @@ namespace Rock.Web.UI.Controls
                     // Now split the lat1,long1 stored in the hidden into something
                     // that's usable by DbGeography's PolygonFromText Well Known Text (WKT)
                     // (http://en.wikipedia.org/wiki/Well-known_text) representation.
-                    _geoPoint = DbGeography.FromText( ConvertPointToWellKnownText( _hfGeoPath.Value ), 4326 );
+                    return DbGeography.FromText( ConvertPointToWellKnownText( _hfGeoPath.Value ), 4326 );
                 }
-
-                return _geoPoint;
             }
 
             set
             {
                 EnsureChildControls();
-                if ( value == null )
-                    return;
-                _geoPoint = value;
-                _hfGeoPath.Value = ConvertPointFromWellKnownText( _geoPoint.AsText() );
+                _hfGeoPath.Value = value != null ? ConvertPointFromWellKnownText( value.AsText() ) : string.Empty;
             }
         }
 
@@ -414,22 +414,6 @@ namespace Rock.Web.UI.Controls
             {
                 sm.RegisterAsyncPostBackControl( _btnSelect );
                 sm.RegisterAsyncPostBackControl( _btnSelectNone );
-                var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
-                sm.Scripts.Add( new ScriptReference( string.Format( "https://maps.googleapis.com/maps/api/js?key={0}&sensor=false&libraries=drawing", googleAPIKey )  ) );
-            }
-        }
-
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
-        /// </summary>
-        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnLoad( EventArgs e )
-        {
-            base.OnLoad( e );
-            if ( this.Visible )
-            {
-                // register the Javascript in OnLoad instead of OnInit because the LocationPicker in 'GeoPoint mode' might change the .Visible 
-                RegisterJavaScript();
             }
         }
 
@@ -470,7 +454,7 @@ namespace Rock.Web.UI.Controls
             _btnSelectNone.ClientIDMode = ClientIDMode.Static;
             _btnSelectNone.Attributes["class"] = "picker-select-none";
             _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ClientID );
-            _btnSelectNone.InnerHtml = "<i class='icon-remove'></i>";
+            _btnSelectNone.InnerHtml = "<i class='fa fa-times'></i>";
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
 
@@ -507,6 +491,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            RegisterJavaScript();
+
             // controls div
             writer.AddAttribute( "class", "controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -522,7 +508,7 @@ namespace Rock.Web.UI.Controls
 
                 writer.Write( string.Format( @"
                     <a class='picker-label' href='#'>
-                        <i class='icon-map-marker'></i>
+                        <i class='fa fa-map-marker'></i>
                         <span id='selectedGeographyLabel_{0}'>{1}</span>
                         <b class='caret pull-right'></b>
                     </a>", this.ClientID, this.GeoDisplayName ) );
@@ -551,7 +537,7 @@ namespace Rock.Web.UI.Controls
                     <!-- Our custom delete button that we add to the map for deleting polygons. -->
                     <div style='display:none; z-index: 10; position: absolute; left: 105px; top: 0px; line-height:0;' id='gmnoprint-delete-button_{0}'>
                         <div style='direction: ltr; overflow: hidden; text-align: left; position: relative; color: rgb(51, 51, 51); font-family: Arial, sans-serif; font-size: 13px; background-color: rgb(255, 255, 255); padding: 4px; border-width: 1px 1px 1px 1px; border-style: solid; border-color: rgb(113, 123, 135); -webkit-box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px; box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px; font-weight: normal; background-position: initial initial; background-repeat: initial initial;' title='Delete selected shape'>
-                            <span style='display: inline-block;'><div style='width: 16px; height: 16px; overflow: hidden; position: relative;'><i class='icon-remove' style='font-size: 16px; padding-left: 2px; color: #aaa;'></i></div></span>
+                            <span style='display: inline-block;'><div style='width: 16px; height: 16px; overflow: hidden; position: relative;'><i class='fa fa-times' style='font-size: 16px; padding-left: 2px; color: #aaa;'></i></div></span>
                         </div>
                     </div>
                     <!-- This is where the Google Map (with Drawing Tools) will go. -->
@@ -562,7 +548,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "picker-actions" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _btnSelect.RenderControl( writer );
-                writer.Write( "<a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>", this.ClientID );
+                writer.Write( "<a class='btn btn-link btn-xs' id='btnCancel_{0}'>Cancel</a>", this.ClientID );
                 writer.WriteLine();
                 writer.RenderEndTag();
 
@@ -579,7 +565,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 LinkButton linkButton = new LinkButton();
                 linkButton.CssClass = "picker-label";
-                linkButton.Text = string.Format( "<i class='{1}'></i><span>{0}</span>", this.GeoDisplayName, "icon-map-marker" );
+                linkButton.Text = string.Format( "<i class='{1}'></i><span>{0}</span>", this.GeoDisplayName, "fa fa-map-marker" );
                 linkButton.Enabled = false;
                 linkButton.RenderControl( writer );
                 writer.WriteLine();
@@ -620,7 +606,14 @@ namespace Rock.Web.UI.Controls
                 options += string.Format( ", centerLatitude: '{0}', centerLongitude: '{1}'", centerPoint.Latitude, centerPoint.Longitude );
             }
 
-            string script = string.Format( "Rock.controls.geoPicker.initialize({{ {0} }});", options );
+            string script = string.Format( @"
+// if the geoPicker was rendered, initialize it
+if ($('#{1}').length > 0)
+{{
+    Rock.controls.geoPicker.initialize({{ {0} }});
+}}
+
+", options, this.ClientID );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "geo_picker-" + this.ClientID, script, true );
         }

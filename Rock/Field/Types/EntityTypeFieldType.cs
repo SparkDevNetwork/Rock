@@ -32,13 +32,94 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string entityTypeName = value;
-            if ( !string.IsNullOrWhiteSpace( entityTypeName ) )
+            string formattedValue = string.Empty;
+
+            Guid guid = Guid.Empty;
+            if ( Guid.TryParse( value, out guid ) )
             {
-                return EntityTypeCache.Read( entityTypeName ).FriendlyName;
+                var entityType = EntityTypeCache.Read( guid );
+                if ( entityType != null )
+                {
+                    formattedValue = entityType.FriendlyName;
+                }
             }
 
-            return string.Empty;
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
+        }
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            List<string> configKeys = new List<string>();
+            configKeys.Add( "includeglobal" );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            List<Control> controls = new List<Control>();
+
+            var cb = new RockCheckBox();
+            controls.Add( cb );
+            cb.Label = "Include Global Attributes Option";
+            cb.Text = "Yes";
+            cb.Help = "Should the 'Global Attributes' entity option be included.";
+            cb.CheckedChanged += OnQualifierUpdated;
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( "includeglobal", new ConfigurationValue( "Include Global Option",
+                "Should the 'Global Attributes' entity option be included.", "" ) );
+
+            if ( controls != null && controls.Count == 1 )
+            {
+                if ( controls[0] != null && controls[0] is RockCheckBox )
+                    configurationValues["includeglobal"].Value = ( (RockCheckBox)controls[0] ).Checked.ToString();
+
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count == 1 && configurationValues != null )
+            {
+                if ( controls[0] != null && controls[0] is RockCheckBox && configurationValues.ContainsKey( "includeglobal" ) )
+                {
+                    var cb = (RockCheckBox)controls[0];
+                    cb.Checked = true;
+
+                    bool includeGlobal = false;
+                    if ( configurationValues.ContainsKey( "includeglobal" ) &&
+                        bool.TryParse( configurationValues["includeglobal"].Value, out includeGlobal ) &&
+                        !includeGlobal )
+                    {
+                        cb.Checked = false;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -51,10 +132,21 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var dropDownList = new RockDropDownList { ID = id }; 
-            dropDownList.Items.Add( new ListItem( "None (Global)", "") );
-            new EntityTypeService().GetEntityListItems().ForEach( l => dropDownList.Items.Add( l ) );
-            return dropDownList;
+            var entityTypePicker = new EntityTypePicker { ID = id };
+            entityTypePicker.IncludeGlobalOption = true;
+
+            if ( configurationValues != null )
+            {
+                bool includeGlobal = false;
+                if ( configurationValues.ContainsKey( "includeglobal" ) && 
+                    bool.TryParse(configurationValues["includeglobal"].Value, out includeGlobal) &&
+                    !includeGlobal)
+                {
+                    entityTypePicker.IncludeGlobalOption = false;
+                }
+            }
+            entityTypePicker.EntityTypes = new EntityTypeService().GetEntities().ToList();
+            return entityTypePicker;
         }
 
         /// <summary>
@@ -65,10 +157,14 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            DropDownList dropDownList = control as DropDownList;
-            if ( dropDownList != null )
+            EntityTypePicker entityTypePicker = control as EntityTypePicker;
+            if ( entityTypePicker != null && entityTypePicker.SelectedEntityTypeId.HasValue )
             {
-                return dropDownList.SelectedValue;
+                var entityType = EntityTypeCache.Read(entityTypePicker.SelectedEntityTypeId.Value);
+                if (entityType != null)
+                {
+                    return entityType.Guid.ToString();
+                }
             }
 
             return null;
@@ -82,12 +178,19 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            Guid guid = Guid.Empty;
+            if (Guid.TryParse(value, out guid))
             {
-                DropDownList dropDownList = control as DropDownList;
-                if ( dropDownList != null )
+                EntityTypePicker entityTypePicker = control as EntityTypePicker;
+                if ( entityTypePicker != null )
                 {
-                    dropDownList.SetValue( value );
+                    int selectedValue = 0;
+                    var entityType = EntityTypeCache.Read(guid);
+                    if (entityType != null)
+                    {
+                        selectedValue = entityType.Id;
+                    }
+                    entityTypePicker.SelectedEntityTypeId = selectedValue;
                 }
             }
         }

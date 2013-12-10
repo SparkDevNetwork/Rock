@@ -44,9 +44,10 @@
                                         <div class="row">
                                             <div class="col-sm-9">
                                                 <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />
-                                                <Rock:DataTextBox ID="tbPhone" PrependText="<i class='icon-phone-sign'></i>" runat="server" Text='<%# Eval("NumberFormatted")  %>' />
+                                                <Rock:RockTextBox ID="tbPhone" PrependText="<i class='fa fa-phone-square'></i>" runat="server" Text='<%# Eval("NumberFormatted")  %>' />
                                             </div>    
                                             <div class="col-sm-3">
+                                                <asp:CheckBox ID="cbSms" runat="server" Text="sms" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' />
                                                 <asp:CheckBox ID="cbUnlisted" runat="server" Text="unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' />
                                             </div>
 
@@ -57,7 +58,7 @@
                         </asp:Repeater>
                     </div>
 
-                    <Rock:DataTextBox ID="tbEmail" PrependText="<i class=' icon-envelope'></i>" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" />
+                    <Rock:DataTextBox ID="tbEmail" PrependText="<i class='fa fa-envelope'></i>" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" />
 
                 </fieldset>
 
@@ -68,7 +69,7 @@
 
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default" CausesValidation="false" OnClick="btnCancel_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                 </div>
 
             </div>

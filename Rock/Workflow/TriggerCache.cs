@@ -21,6 +21,7 @@ namespace Rock.Workflow
         // Locking object
         private static readonly Object obj = new object();
 
+        // All workflow triggers grouped by EntityTypeName
         private static Dictionary<string, List<WorkflowTrigger>> EntityTriggers { get; set; }
 
         #endregion

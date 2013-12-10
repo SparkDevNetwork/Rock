@@ -3,23 +3,26 @@
 <asp:UpdatePanel ID="upEditFamily" runat="server">
     <ContentTemplate>
 
-        <asp:ValidationSummary ID="valSummaryTop" runat="server"
-            HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+        <div class="banner">
+            <h1><asp:Literal ID="lBanner" runat="server"></asp:Literal></h1>
+        </div>
+
+        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
         <Rock:NotificationBox ID="nbNotice" runat="server" Visible="false" />
 
         <div class="row">
-            <div class="col-md-4 form-horizontal">
+            <div class="col-md-4">
                 <fieldset>
                     <Rock:RockTextBox ID="tbFamilyName" runat="server" Label="Family Name" Required="true" CssClass="input-meduim" AutoPostBack="true" OnTextChanged="tbFamilyName_TextChanged" />
                 </fieldset>
             </div>
-            <div class="col-md-4 form-horizontal">
+            <div class="col-md-4">
                 <fieldset>
                     <Rock:CampusPicker ID="cpCampus" runat="server" Required="true" AutoPostBack="true" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" />
                 </fieldset>
             </div>
-            <div class="col-md-4 form-horizontal">
+            <div class="col-md-4">
                 <fieldset>
                     <Rock:RockDropDownList ID="ddlRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" /><br />
                     <Rock:RockDropDownList ID="ddlReason" runat="server" Label="Reason" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="ddlReason_SelectedIndexChanged"></Rock:RockDropDownList>
@@ -28,23 +31,26 @@
             </div>
         </div>
 
-        <div class="persondetails-familybar">
-            <div class="members">
-                <ul class="clearfix">
+        <div class="panel panel-widget editfamily-list">
+            <div class="panel-heading clearfix">
+                <h3 class="panel-title pull-left">Family Members</h3>
+                <div class="pull-right">
+                    <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddPerson_Click"><i class="fa fa-user"></i> Add Person</asp:LinkButton>
+                </div>
+            </div>
+            <div class="panel-body">
+                <ul class="groupmembers">
                     <asp:ListView ID="lvMembers" runat="server">
                         <ItemTemplate>
-                            <li>
+                            <li class="member">
                                 <a href='<%# basePersonUrl + Eval("Id") %>'>
-                                    <asp:Image ID="imgPerson" runat="server" />
-                                    <div class="member">
-                                        <h4><%# Eval("FirstName") %> <%# Eval("LastName") %></h4>
-                                    </div>
+                                    <asp:Image ID="imgPerson" runat="server" ImageUrl="~/Assets/Images/person-no-photo.svg" />
+                                    <h4><%# Eval("FirstName") %> <%# Eval("LastName") %></h4>
                                 </a>
-                                <br />
-                                <div>
-                                    <asp:RadioButtonList ID="rblRole" runat="server" DataValueField="Id" DataTextField="Name" /></div>
-                                <asp:LinkButton ID="lbNewFamily" runat="server" CssClass="btn btn-mini" CommandName="Move"><i class="icon-external-link"></i> Move to New Family</asp:LinkButton>
-                                <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-mini" CommandName="Remove"><i class="icon-remove"></i> Remove from Family</asp:LinkButton>
+                                <asp:RadioButtonList ID="rblRole" runat="server" DataValueField="Id" DataTextField="Name" />
+                                
+                                <asp:LinkButton ID="lbNewFamily" runat="server" CssClass="btn btn-action btn-mini" CommandName="Move"><i class="fa fa-external-link"></i> Move to New Family</asp:LinkButton>
+                                <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-mini" CommandName="Remove"><i class="fa fa-times"></i> Remove from Family</asp:LinkButton>
                             </li>
                         </ItemTemplate>
                     </asp:ListView>
@@ -52,114 +58,122 @@
             </div>
         </div>
 
+        <div class="panel panel-widget">
+            <div class="panel-heading clearfix">
+                <h4 class="panel-title pull-left">Addresses</h4>
+                <div class="pull-right">
+                    <asp:LinkButton ID="lbMoved" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbMoved_Click"><i class="fa fa-truck fa-flip-horizontal"></i> Family Moved</asp:LinkButton>
+                </div>
+            </div>
+
+            <div class="panel-body">
+                <Rock:Grid ID="gLocations" runat="server" AllowSorting="true" AllowPaging="false" DisplayType="Light">
+                    <Columns>
+                        <asp:TemplateField HeaderText="Type">
+                            <ItemTemplate>
+                                <%# Eval("LocationTypeName") %>
+                            </ItemTemplate>
+                            <EditItemTemplate>
+                                <Rock:RockDropDownList ID="ddlLocType" runat="server" DataTextField="Name" DataValueField="Id" />
+                            </EditItemTemplate>
+                        </asp:TemplateField>
+                        <asp:TemplateField HeaderText="Street">
+                            <ItemTemplate>
+                                <%# Eval("Street1") %><br />
+                                <%# Eval("Street2") %>
+                            </ItemTemplate>
+                            <EditItemTemplate>
+                                <Rock:RockTextBox ID="tbStreet1" runat="server" Text='<%# Eval("Street1") %>' /><br />
+                                <Rock:RockTextBox ID="tbStreet2" runat="server" Text='<%# Eval("Street2") %>' />
+                            </EditItemTemplate>
+                        </asp:TemplateField>
+                        <asp:TemplateField HeaderText="City">
+                            <ItemTemplate>
+                                <%# Eval("City") %>
+                            </ItemTemplate>
+                            <EditItemTemplate>
+                                <Rock:RockTextBox ID="tbCity" runat="server" Text='<%# Eval("City") %>' />
+                            </EditItemTemplate>
+                        </asp:TemplateField>
+                        <asp:TemplateField HeaderText="State">
+                            <ItemTemplate>
+                                <%# Eval("State") %>
+                            </ItemTemplate>
+                            <EditItemTemplate>
+                                <Rock:StateDropDownList ID="ddlState" runat="server" UseAbbreviation="true" CssClass="input-mini" />
+                            </EditItemTemplate>
+                        </asp:TemplateField>
+                        <asp:TemplateField HeaderText="Zip">
+                            <ItemTemplate>
+                                <%# Eval("Zip") %>
+                            </ItemTemplate>
+                            <EditItemTemplate>
+                                <Rock:RockTextBox ID="tbZip" runat="server" Text='<%# Eval("Zip") %>' CssClass="input-small" />
+                            </EditItemTemplate>
+                        </asp:TemplateField>
+                        <asp:TemplateField HeaderText="Mailing" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
+                            <ItemTemplate>
+                                <%# ((bool)Eval("IsMailing")) ? "<i class=\"fa fa-check\"></i>" : "" %>
+                            </ItemTemplate>
+                            <EditItemTemplate>
+                                <asp:CheckBox ID="cbMailing" runat="server" Checked='<%# Eval("IsMailing") %>' />
+                            </EditItemTemplate>
+                        </asp:TemplateField>
+                        <asp:TemplateField HeaderText="Location" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
+                            <ItemTemplate>
+                                <%# ((bool)Eval("IsLocation")) ? "<i class=\"fa fa-check\"></i>" : "" %>
+                            </ItemTemplate>
+                            <EditItemTemplate>
+                                <asp:CheckBox ID="cbLocation" runat="server" Checked='<%# Eval("IsLocation") %>' />
+                            </EditItemTemplate>
+                        </asp:TemplateField>
+                        <asp:TemplateField ItemStyle-HorizontalAlign="Center" HeaderStyle-CssClass="span1" ItemStyle-Wrap="false">
+                            <ItemTemplate>
+                                <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CommandName="Edit" CssClass="btn btn-default btn-sm"><i class="fa fa-pencil"></i></asp:LinkButton>
+                            </ItemTemplate>
+                            <EditItemTemplate>
+                                <asp:LinkButton ID="lbSave" runat="server" Text="Save" CommandName="Update" CssClass="btn btn-sm btn-success"><i class="fa fa-check"></i></asp:LinkButton>
+                                <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CommandName="Cancel" CssClass="btn btn-sm btn-warning" CausesValidation="false"><i class="fa fa-minus"></i></asp:LinkButton>
+                            </EditItemTemplate>
+                        </asp:TemplateField>
+                        <Rock:DeleteField OnClick="gLocation_RowDelete" />
+                    </Columns>
+                </Rock:Grid>
+            </div>
+        </div>
+
+        
         <p>
-            <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-default" OnClick="lbAddPerson_Click"><i class="icon-user"></i> Add Person</asp:LinkButton>
+            
         </p>
 
-        <h4>Addresses</h4>
-        <p>
-            <asp:LinkButton ID="lbMoved" runat="server" CssClass="btn btn-default" OnClick="lbMoved_Click"><i class="icon-truck icon-flip-horizontal"></i> Family Moved</asp:LinkButton>
-        </p>
-
-        <Rock:Grid ID="gLocations" runat="server" AllowSorting="true" AllowPaging="false" DisplayType="Light">
-            <Columns>
-                <asp:TemplateField HeaderText="Type">
-                    <ItemTemplate>
-                        <%# Eval("LocationTypeName") %>
-                    </ItemTemplate>
-                    <EditItemTemplate>
-                        <asp:DropDownList ID="ddlLocType" runat="server" CssClass="input-small" />
-                    </EditItemTemplate>
-                </asp:TemplateField>
-                <asp:TemplateField HeaderText="Street">
-                    <ItemTemplate>
-                        <%# Eval("Street1") %><br />
-                        <%# Eval("Street2") %>
-                    </ItemTemplate>
-                    <EditItemTemplate>
-                        <asp:TextBox ID="tbStreet1" runat="server" Text='<%# Eval("Street1") %>' /><br />
-                        <asp:TextBox ID="tbStreet2" runat="server" Text='<%# Eval("Street2") %>' />
-                    </EditItemTemplate>
-                </asp:TemplateField>
-                <asp:TemplateField HeaderText="City">
-                    <ItemTemplate>
-                        <%# Eval("City") %>
-                    </ItemTemplate>
-                    <EditItemTemplate>
-                        <asp:TextBox ID="tbCity" runat="server" Text='<%# Eval("City") %>' />
-                    </EditItemTemplate>
-                </asp:TemplateField>
-                <asp:TemplateField HeaderText="State">
-                    <ItemTemplate>
-                        <%# Eval("State") %>
-                    </ItemTemplate>
-                    <EditItemTemplate>
-                        <Rock:StateDropDownList ID="ddlState" runat="server" UseAbbreviation="true" CssClass="input-mini" />
-                    </EditItemTemplate>
-                </asp:TemplateField>
-                <asp:TemplateField HeaderText="Zip">
-                    <ItemTemplate>
-                        <%# Eval("Zip") %>
-                    </ItemTemplate>
-                    <EditItemTemplate>
-                        <asp:TextBox ID="tbZip" runat="server" Text='<%# Eval("Zip") %>' CssClass="input-small" />
-                    </EditItemTemplate>
-                </asp:TemplateField>
-                <asp:TemplateField HeaderText="Mailing" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
-                    <ItemTemplate>
-                        <%# ((bool)Eval("IsMailing")) ? "<i class=\"icon-ok\"></i>" : "" %>
-                    </ItemTemplate>
-                    <EditItemTemplate>
-                        <asp:CheckBox ID="cbMailing" runat="server" Checked='<%# Eval("IsMailing") %>' />
-                    </EditItemTemplate>
-                </asp:TemplateField>
-                <asp:TemplateField HeaderText="Location" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
-                    <ItemTemplate>
-                        <%# ((bool)Eval("IsLocation")) ? "<i class=\"icon-ok\"></i>" : "" %>
-                    </ItemTemplate>
-                    <EditItemTemplate>
-                        <asp:CheckBox ID="cbLocation" runat="server" Checked='<%# Eval("IsLocation") %>' />
-                    </EditItemTemplate>
-                </asp:TemplateField>
-                <asp:TemplateField ItemStyle-HorizontalAlign="Center" HeaderStyle-CssClass="span1" ItemStyle-Wrap="false">
-                    <ItemTemplate>
-                        <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CommandName="Edit" CssClass="btn btn-mini"><i class="icon-edit"></i></asp:LinkButton>
-                    </ItemTemplate>
-                    <EditItemTemplate>
-                        <asp:LinkButton ID="lbSave" runat="server" Text="Save" CommandName="Update" CssClass="btn btn-mini btn-success"><i class="icon-check"></i></asp:LinkButton>
-                        <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CommandName="Cancel" CssClass="btn btn-mini btn-warning" CausesValidation="false"><i class="icon-check-minus"></i></asp:LinkButton>
-                    </EditItemTemplate>
-                </asp:TemplateField>
-                <Rock:DeleteField OnClick="gLocation_RowDelete" />
-            </Columns>
-        </Rock:Grid>
+        
 
         <div class="actions">
             <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default" CausesValidation="false" OnClick="btnCancel_Click" />
+            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
         </div>
 
         <Rock:ConfirmPageUnload ID="confirmExit" runat="server" ConfirmationMessage="Changes have been made to this family that have not yet been saved." Enabled="false" />
 
-        <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Person" Content-Height="380" ValidationGroup="modalAddPersonValidationGroup">
+        <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Person" Content-Height="380" ValidationGroup="AddPerson" >
             <Content>
 
-                <asp:HiddenField ID="hfActiveTab" runat="server" Value="Existing" />
+                <asp:HiddenField ID="hfActiveTab" runat="server" />
 
                 <ul class="nav nav-pills">
                     <li id="liExistingPerson" runat="server" class="active"><a href='#<%=divExistingPerson.ClientID%>' data-toggle="pill">Add Existing Person</a></li>
                     <li id="liNewPerson" runat="server"><a href='#<%=divNewPerson.ClientID%>' data-toggle="pill">Add New Person</a></li>
                 </ul>
 
-                <asp:ValidationSummary ID="valSummaryAddPerson" runat="server" ValidationGroup="modalAddPersonValidationGroup"
-                    HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+                <asp:ValidationSummary ID="valSummaryAddPerson" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="AddPerson"/>
 
                 <div class="tab-content">
 
                     <div id="divExistingPerson" runat="server" class="tab-pane active">
                         <fieldset>
-                            <Rock:PersonPicker2 ID="ppExistingPerson" runat="server" />
-                            <Rock:RockCheckBox ID="cbRemoveOtherFamilies" runat="server" Checked="true" Text="Remove person from other families" />
+                            <Rock:PersonPicker2 ID="ppExistingPerson" runat="server" ValidationGroup="AddPerson"/>
+                            <Rock:RockCheckBox ID="cbRemoveOtherFamilies" runat="server" Checked="true" Text="Remove person from other families" ValidationGroup="AddPerson"/>
                         </fieldset>
                     </div>
 
@@ -167,31 +181,31 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <fieldset>
-                                    <Rock:RockTextBox ID="tbNewPersonFirstName" runat="server" Label="First Name" ValidationGroup="modalAddPersonValidationGroup" />
+                                    <Rock:RockTextBox ID="tbNewPersonFirstName" runat="server" Label="First Name" ValidationGroup="AddPerson" />
                                 </fieldset>
                             </div>
                             <div class="col-md-4">
                                 <fieldset>
-                                    <Rock:RockTextBox ID="tbNewPersonLastName" runat="server" Label="Last Name" ValidationGroup="modalAddPersonValidationGroup" />
-                                </fieldset>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <fieldset>
-                                    <Rock:RockDropDownList ID="ddlNewPersonGender" runat="server" Label="Gender" />
-                                </fieldset>
-                            </div>
-                            <div class="col-md-4">
-                                <fieldset>
-                                    <Rock:DatePicker ID="dpNewPersonBirthDate" runat="server" Label="Birthdate" />
+                                    <Rock:RockTextBox ID="tbNewPersonLastName" runat="server" Label="Last Name" ValidationGroup="AddPerson" />
                                 </fieldset>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-4">
                                 <fieldset>
-                                    <Rock:RockRadioButtonList ID="rblNewPersonRole" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Role" />
+                                    <Rock:RockDropDownList ID="ddlNewPersonGender" runat="server" Label="Gender" ValidationGroup="AddPerson"/>
+                                </fieldset>
+                            </div>
+                            <div class="col-md-4">
+                                <fieldset>
+                                    <Rock:DatePicker ID="dpNewPersonBirthDate" runat="server" Label="Birthdate" ValidationGroup="AddPerson"/>
+                                </fieldset>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <fieldset>
+                                    <Rock:RockRadioButtonList ID="rblNewPersonRole" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Role" ValidationGroup="AddPerson"/>
                                 </fieldset>
                             </div>
                         </div>

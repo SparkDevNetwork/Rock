@@ -81,17 +81,26 @@ namespace Rock.Model
             else
             {
                 var target = new PageContext();
-                target.IsSystem = source.IsSystem;
-                target.PageId = source.PageId;
-                target.Entity = source.Entity;
-                target.IdParameter = source.IdParameter;
-                target.CreatedDateTime = source.CreatedDateTime;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another PageContext object to this PageContext object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this PageContext target, PageContext source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.PageId = source.PageId;
+            target.Entity = source.Entity;
+            target.IdParameter = source.IdParameter;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

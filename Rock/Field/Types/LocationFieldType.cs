@@ -27,6 +27,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            string formattedValue = string.Empty;
+
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 var service = new LocationService();
@@ -34,11 +36,11 @@ namespace Rock.Field.Types
 
                 if ( location != null )
                 {
-                    return location.ToString();
+                    formattedValue = location.ToString();
                 }
             }
 
-            return string.Empty;
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 
         /// <summary>
@@ -51,7 +53,9 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new LocationPicker { ID = id, PickerMode = LocationPicker.LocationPickerMode.Address, AllowModeSelection = true };
+            // TODO This field type should expose a CheckBoxList configuration control that allows one or more modes to be selected for the 
+            // location picker instead of always allowing all modes.
+            return new LocationPicker { ID = id, CurrentPickerMode = LocationPickerMode.Address, AllowedPickerModes = LocationPickerMode.All };
         }
 
         /// <summary>

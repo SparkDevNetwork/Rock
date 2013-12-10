@@ -100,7 +100,6 @@
                 <dl>
                     <dt></dt>
                     <dd>
-                        <a class="show-action-list" href="#">...</a>
                         <asp:CheckBoxList ID="cblRoleActionList" runat="server" RepeatDirection="Horizontal" CssClass="inputs-list" ></asp:CheckBoxList>
                     </dd>
                 </dl>
@@ -108,7 +107,7 @@
 
             <div class="actions">
                 <asp:LinkButton ID="lbAddRole" runat="server" Text="Add" CssClass="btn btn-primary" onclick="lbAddRole_Click"></asp:LinkButton>
-                <asp:LinkButton ID="lbCancelAddRole" runat="server" Text="Cancel" CssClass="btn btn-default" onclick="lbCancelAdd_Click"></asp:LinkButton>
+                <asp:LinkButton ID="lbCancelAddRole" runat="server" Text="Cancel" CssClass="btn btn-link" onclick="lbCancelAdd_Click"></asp:LinkButton>
             </div>
 
         </asp:Panel>
@@ -129,7 +128,7 @@
 
             <div class="actions">
                 <asp:LinkButton ID="lbAddUser" runat="server" Text="Add" CssClass="btn btn-primary" OnClientClick="showAddUser(false);" onclick="lbAddUser_Click"></asp:LinkButton>
-                <asp:LinkButton ID="lbCancelAddUser" runat="server" Text="Cancel" CssClass="btn btn-default" onclick="lbCancelAdd_Click"></asp:LinkButton>
+                <asp:LinkButton ID="lbCancelAddUser" runat="server" Text="Cancel" CssClass="btn btn-link" onclick="lbCancelAdd_Click"></asp:LinkButton>
             </div>
 
         </asp:Panel>

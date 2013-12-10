@@ -22,32 +22,29 @@
 
         <div class="tabContent" >
 
-            <asp:ValidationSummary ID="valSummaryTop" runat="server"  
-                HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server"  HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+
             <asp:Panel ID="pnlError" runat="server" Visible="false" CssClass="alert alert-danger block-message error"/>
             
             <asp:Panel ID="pnlBasicProperty" runat="server" Visible="true" >
                 <div class="row">
                     <div class="col-md-6">
-                        <fieldset>
-                            <Rock:PagePicker ID="ppParentPage" runat="server" Label="Parent Page" Required="false" />
-                            <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Name" Required="true" />
-                            <Rock:DataTextBox ID="tbPageTitle" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Title" Help="The text to be displayed in menus and page headings"/>
-                            <Rock:DataDropDownList ID="ddlLayout" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Layout"/>
-                            <Rock:RockCheckBox ID="cbMenuIcon" runat="server" Text="Show Icon"/>
-                            <div class="control-group">
-                                <label class="control-label">Icon Image</label>
-                                <div class="controls">
-                                    <Rock:ImageUploader ID="imgIcon" runat="server" />
-                                </div>
+                        <Rock:PagePicker ID="ppParentPage" runat="server" Label="Parent Page" Required="false" />
+                        <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Name" Required="true" />
+                        <Rock:DataTextBox ID="tbPageTitle" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Title" Help="The text to be displayed in menus, breadcrumbs and page headings."/>
+                        <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Site" Help="The Site that the page should belong to." AutoPostBack="true" OnSelectedIndexChanged="ddlSite_SelectedIndexChanged" />
+                        <Rock:DataDropDownList ID="ddlLayout" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Layout"/>
+                        <Rock:RockCheckBox ID="cbMenuIcon" runat="server" Text="Show Icon"/>
+                        <div class="control-group">
+                            <label class="control-label">Icon Image</label>
+                            <div class="controls">
+                                <Rock:ImageUploader ID="imgIcon" runat="server" />
                             </div>
-                            <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="IconCssClass" Label="Icon CSS Class"/>
-                        </fieldset>
+                        </div>
+                        <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="IconCssClass" Label="Icon CSS Class"/>
                     </div>
                     <div class="col-md-6">
-                        <fieldset>
-                            <Rock:DataTextBox ID="tbDescription" runat="server" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Description" />
-                        </fieldset>
+                        <Rock:DataTextBox ID="tbDescription" runat="server" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Description" />
                     </div>
                 </div>
             </asp:Panel>
@@ -76,21 +73,20 @@
             <asp:Panel ID="pnlAdvancedSettings" runat="server" Visible="false" >
                 <div class="row">
                     <div class="col-md-6">
-                        <fieldset>
-                            <Rock:RockCheckBox ID="cbRequiresEncryption" runat="server" Text="Force SSL"/>
-                            <Rock:RockCheckBox ID="cbEnableViewState" runat="server" Text="Enable ViewState"/>
-                            <Rock:RockCheckBox ID="cbIncludeAdminFooter" runat="server" Text="Allow Configuration"/>
-                            <Rock:DataTextBox ID="tbCacheDuration" runat="server" Label="Cache Duration" SourceTypeName="Rock.Model.Page, Rock" PropertyName="OutputCacheDuration"/>
-                        </fieldset>
+                        <Rock:RockCheckBox ID="cbRequiresEncryption" runat="server" Text="Force SSL"/>
+                        <Rock:RockCheckBox ID="cbEnableViewState" runat="server" Text="Enable ViewState"/>
+                        <Rock:RockCheckBox ID="cbIncludeAdminFooter" runat="server" Text="Allow Configuration"/>
+                        <Rock:DataTextBox ID="tbCacheDuration" runat="server" Label="Cache Duration" SourceTypeName="Rock.Model.Page, Rock" PropertyName="OutputCacheDuration"/>
                     </div>
                     <div class="col-md-6">
                         <fieldset>                
-                            <Rock:DataTextBox ID="tbPageRoute" runat="server" TextMode="MultiLine" Rows="3" Label="Page Routes" SourceTypeName="Rock.Model.Page, Rock" PropertyName="PageRoutes"  />
+                            <Rock:RockTextBox ID="tbPageRoute" runat="server" TextMode="MultiLine" Rows="3" Label="Page Routes"  />
+                            <asp:CustomValidator ID="cvPageRoute" runat="server" ControlToValidate="tbPageRoute" OnServerValidate="cvPageRoute_ServerValidate" Display="None" ErrorMessage="Invalid Route(s)" />
                         </fieldset>
                         <asp:PlaceHolder ID="phContextPanel" runat="server">
                             <fieldset>
                                 <legend>Context Parameters</legend>
-                                <p>There are one or more blocks on this page that need to load objects based on a 'context' parameter.  
+                                <p>There are one or more blocks on this page that can load content based on a 'context' parameter.  
                                 Please enter the route parameter name or query string parameter name that will contain the id for 
                                 each of the objects below.</p>
                                 <asp:PlaceHolder ID="phContext" runat="server"></asp:PlaceHolder>
@@ -105,12 +101,12 @@
                     <div class="col-md-6">
                         <fieldset>
                             <legend>Import Pages</legend>
-                            <asp:Panel runat="server" ID="pnlImportSuccess" CssClass="row-fluid" Visible="False">
-                                <div class="span12 alert alert-success">
-                                    <p><i class="icon-bolt"></i> <strong>Sweet!</strong> Your package was imported successfully.</p>
+                            <asp:Panel runat="server" ID="pnlImportSuccess" CssClass="row" Visible="False">
+                                <div class="col-md-12 alert alert-success">
+                                    <p><i class="fa fa-bolt"></i> <strong>Sweet!</strong> Your package was imported successfully.</p>
                                     <asp:Repeater ID="rptImportWarnings" runat="server" Visible="False">
                                         <HeaderTemplate>
-                                            <p><i class="icon-warning-sign"></i> Just a quick head's up...</p>
+                                            <p><i class="fa fa-exclamation-triangle"></i> Just a quick head's up...</p>
                                             <ul>
                                         </HeaderTemplate>
                                         <ItemTemplate>
@@ -124,8 +120,8 @@
                             </asp:Panel>
                             <asp:Repeater runat="server" ID="rptImportErrors" Visible="False">
                                 <HeaderTemplate>
-                                    <div class="row-fluid">
-                                        <div class="span12 alert alert-danger">
+                                    <div class="row">
+                                        <div class="col-md-12 alert alert-danger">
                                             <p><strong>Uh oh!</strong> Looks like we ran into some trouble importing the package.</p>
                                             <ul>
                                 </HeaderTemplate>
@@ -140,7 +136,7 @@
                             </asp:Repeater>
                             <asp:FileUpload runat="server" ID="fuImport" CssClass="input-small" />
                             <asp:LinkButton runat="server" ID="lbImport" CssClass="btn btn-default btn-sm" OnClick="lbImport_Click">
-                                <i class="icon-arrow-up"></i> Import
+                                <i class="fa fa-arrow-up"></i> Import
                             </asp:LinkButton>
                         </fieldset>
                     </div>
@@ -152,7 +148,7 @@
                                 Export child pages?
                             </label>
                             <asp:LinkButton runat="server" ID="lbExport" OnClick="lbExport_Click" CssClass="btn btn-default btn-sm">
-                                <i class="icon-download-alt"></i> Export
+                                <i class="fa fa-download"></i> Export
                             </asp:LinkButton>
                         </fieldset>
                     </div>

@@ -156,6 +156,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Handles the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains event data.</param>
+        protected override void OnLoad( System.EventArgs e )
+        {
+            base.OnLoad( e );
+
+            // Hack to get the selected items on postback.  
+            if ( Page.IsPostBack )
+            {
+                for ( int i = 0; i < this.Items.Count; i++ )
+                {
+                    this.Items[i].Selected = this.Page.Request.Form[string.Format( "{0}${1}", this.UniqueID, i )] != null;
+                }
+            }
+        }
+
+        /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
@@ -187,16 +205,39 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the selected values as int.
+        /// Selects the values.
         /// </summary>
         /// <value>
-        /// The selected values as int.
+        /// The selected values.
         /// </value>
         public List<string> SelectedValues
         {
             get
             {
                 return this.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value ).ToList();
+            }
+        }
+
+        /// <summary>
+        /// Selects the values as int.
+        /// </summary>
+        /// <value>
+        /// The selected values as int.
+        /// </value>
+        public List<int> SelectedValuesAsInt
+        {
+            get
+            {
+                var values = new List<int>();
+                foreach ( string stringValue in SelectedValues )
+                {
+                    int numValue = int.MinValue;
+                    if ( int.TryParse( stringValue, out numValue ) )
+                    {
+                        values.Add( numValue );
+                    }
+                }
+                return values;
             }
         }
 

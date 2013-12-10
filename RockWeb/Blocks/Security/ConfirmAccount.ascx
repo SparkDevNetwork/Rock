@@ -15,8 +15,8 @@
 
         <div class="actions">
             <asp:Button ID="btnCodeConfirm" runat="server" Text="Confirm Account" CssClass="btn btn-primary" OnClick="btnCodeConfirm_Click" />
-            <asp:Button ID="btnCodeReset" runat="server" Text="Change Password" CssClass="btn btn-default" OnClick="btnCodeReset_Click" />
-            <asp:Button ID="btnCodeDelete" runat="server" Text="Delete Account" CssClass="btn btn-default" OnClick="btnCodeDelete_Click" />
+            <asp:Button ID="btnCodeReset" runat="server" Text="Change Password" CssClass="btn btn-link" OnClick="btnCodeReset_Click" />
+            <asp:Button ID="btnCodeDelete" runat="server" Text="Delete Account" CssClass="btn btn-link" OnClick="btnCodeDelete_Click" />
         </div>
 
     </asp:Panel>

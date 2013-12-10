@@ -26,8 +26,6 @@ namespace RockWeb.Blocks.Prayer
         #region Private BlockType Attributes
         private static readonly string PrayerRequestKeyParameter = "prayerRequestId";
         int _blockInstanceGroupCategoryId = -1;
-        protected int? _prayerRequestEntityTypeId = null;
-        protected NoteType _noteType;
         #endregion
 
         #region Control Methods
@@ -42,8 +40,6 @@ namespace RockWeb.Blocks.Prayer
 
             Int32.TryParse( GetAttributeValue( "GroupCategoryId" ), out _blockInstanceGroupCategoryId );
             PrayerRequest prayerRequest = new PrayerRequest();
-            Type type = prayerRequest.GetType();
-            _prayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type.FullName );
         }
 
         /// <summary>
@@ -69,11 +65,11 @@ namespace RockWeb.Blocks.Prayer
         }
 
         /// <summary>
-        /// Handles the edit Click event of the btnEdit control.
+        /// Handles the edit Click event of the lbEdit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnEdit_Click( object sender, EventArgs e )
+        protected void lbEdit_Click( object sender, EventArgs e )
         {
             PrayerRequestService service = new PrayerRequestService();
             PrayerRequest item = service.Get( hfPrayerRequestId.ValueAsInt() );
@@ -118,7 +114,7 @@ namespace RockWeb.Blocks.Prayer
 
             if ( readOnly )
             {
-                btnEdit.Visible = false;
+                lbEdit.Visible = false;
                 ShowReadonlyDetails( prayerRequest );
             }
             else
@@ -151,23 +147,23 @@ namespace RockWeb.Blocks.Prayer
             descriptionList.Add( "Category", prayerRequest.Category != null ? prayerRequest.Category.Name : "" );
             descriptionList.Add( "Request", HttpUtility.HtmlEncode( prayerRequest.Text ) );
             descriptionList.Add( "Answer", HttpUtility.HtmlEncode( prayerRequest.Answer ) );
-            lblMainDetails.Text = descriptionList.Html;
+            lMainDetails.Text = descriptionList.Html;
 
-            ShowStatus( prayerRequest, this.CurrentPerson, hlFlaggedMessageRO );
+            ShowStatus( prayerRequest, this.CurrentPerson, hlblFlaggedMessageRO );
             ShowPrayerCount( prayerRequest );
 
             if ( ! prayerRequest.IsApproved.HasValue )
             {
-                hlStatus.Visible = true;
-                hlStatus.Text = "Pending Approval";
+                hlblStatus.Visible = true;
+                hlblStatus.Text = "Pending Approval";
             }
             else if ( prayerRequest.IsApproved.HasValue && ( !prayerRequest.IsApproved ?? false ) )
             {
-                hlStatus.Visible = true;
-                hlStatus.Text = "Unapproved";
+                hlblStatus.Visible = true;
+                hlblStatus.Text = "Unapproved";
             }
 
-            hlUrgent.Visible = ( prayerRequest.IsUrgent ?? false );
+            hlblUrgent.Visible = ( prayerRequest.IsUrgent ?? false );
         }
 
         /// <summary>
@@ -184,14 +180,14 @@ namespace RockWeb.Blocks.Prayer
 
             pnlDetails.Visible = true;
 
-            cpCategory.SetValue( prayerRequest.Category );
+            catpCategory.SetValue( prayerRequest.Category );
 
-            tbFirstName.Text = prayerRequest.FirstName;
-            tbLastName.Text = prayerRequest.LastName;
-            tbText.Text = prayerRequest.Text;
-            tbAnswer.Text = prayerRequest.Answer;
+            dtbFirstName.Text = prayerRequest.FirstName;
+            dtbLastName.Text = prayerRequest.LastName;
+            dtbText.Text = prayerRequest.Text;
+            dtbAnswer.Text = prayerRequest.Answer;
 
-            ShowStatus( prayerRequest, this.CurrentPerson, hlFlaggedMessage );
+            ShowStatus( prayerRequest, this.CurrentPerson, hlblFlaggedMessage );
 
             cbIsPublic.Checked = prayerRequest.IsPublic ?? false;
             cbIsUrgent.Checked = prayerRequest.IsUrgent ?? false;
@@ -217,14 +213,14 @@ namespace RockWeb.Blocks.Prayer
         {
             if ( prayerRequest.PrayerCount > 10 )
             {
-                bPrayerCount.BadgeType="success";
+                badgePrayerCount.BadgeType="success";
             }
 
             if ( prayerRequest.PrayerCount > 0 )
             {
-                bPrayerCount.Text = string.Format( "{0} prayers", prayerRequest.PrayerCount ?? 0 );
+                badgePrayerCount.Text = string.Format( "{0} prayers", prayerRequest.PrayerCount ?? 0 );
             }
-            bPrayerCount.ToolTip = string.Format( "{0} prayers so far.", prayerRequest.PrayerCount ?? 0 );
+            badgePrayerCount.ToolTip = string.Format( "{0} prayers so far.", prayerRequest.PrayerCount ?? 0 );
         }
 
         /// <summary>
@@ -257,11 +253,11 @@ namespace RockWeb.Blocks.Prayer
         }
 
         /// <summary>
-        /// Handles the Click event of the btnSave control.
+        /// Handles the Click event of the lbSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnSave_Click( object sender, EventArgs e )
+        protected void lbSave_Click( object sender, EventArgs e )
         {
             SaveRequest();
         }
@@ -305,11 +301,11 @@ namespace RockWeb.Blocks.Prayer
             prayerRequest.IsUrgent = cbIsUrgent.Checked;
             prayerRequest.AllowComments = cbAllowComments.Checked;
             prayerRequest.IsPublic = cbIsPublic.Checked;
-            prayerRequest.CategoryId = cpCategory.SelectedValueAsInt();
-            prayerRequest.FirstName = tbFirstName.Text;
-            prayerRequest.LastName = tbLastName.Text;
-            prayerRequest.Text = tbText.Text;
-            prayerRequest.Answer = tbAnswer.Text;
+            prayerRequest.CategoryId = catpCategory.SelectedValueAsInt();
+            prayerRequest.FirstName = dtbFirstName.Text;
+            prayerRequest.LastName = dtbLastName.Text;
+            prayerRequest.Text = dtbText.Text;
+            prayerRequest.Answer = dtbAnswer.Text;
 
             if ( !Page.IsValid )
             {
@@ -328,11 +324,11 @@ namespace RockWeb.Blocks.Prayer
         }
 
         /// <summary>
-        /// Handles the Click event of the btnCancel control.
+        /// Handles the Click event of the lbCancel control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
+        protected void lbCancel_Click( object sender, EventArgs e )
         {
             NavigateToParentPage();       
         }

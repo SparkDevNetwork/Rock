@@ -159,9 +159,7 @@ namespace Rock.Reporting.DataFilter
                     // If two more values, then it is a comparison and a value
                     else if ( values.Count == 3 )
                     {
-                        ComparisonType comparisonType = ComparisonType.StartsWith;
-                        try { comparisonType = values[1].ConvertToEnum<ComparisonType>(); }
-                        catch { }
+                        ComparisonType comparisonType = values[1].ConvertToEnum<ComparisonType>( ComparisonType.StartsWith );
                         return string.Format( "{0} {1} '{2}'", entityField.Title, comparisonType.ConvertToString(), values[2] );
                     }
                 }
@@ -669,133 +667,7 @@ namespace Rock.Reporting.DataFilter
         {
             if ( _entityFields == null )
             {
-                var entityFields = new List<EntityField>();
-
-                // Get Properties
-                foreach ( var property in entityType.GetProperties() )
-                {
-                    if ( !property.GetGetMethod().IsVirtual || property.Name == "Id" || property.Name == "Guid" || property.Name == "Order" )
-                    {
-                        EntityField entityProperty = null;
-
-                        // Enum Properties
-                        if ( property.PropertyType.IsEnum )
-                        {
-                            entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 1 );
-                            entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
-                        }
-
-                        // Boolean properties
-                        if ( property.PropertyType == typeof( bool ) || property.PropertyType == typeof( bool? ) )
-                        {
-                            entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 1 );
-                            entityProperty.FilterFieldType = SystemGuid.FieldType.SINGLE_SELECT;
-                        }
-
-                        // Date properties
-                        if ( property.PropertyType == typeof( DateTime ) || property.PropertyType == typeof( DateTime? ) )
-                        {
-                            entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 2 );
-                            entityProperty.FilterFieldType = SystemGuid.FieldType.DATE;
-                        }
-
-                        // Text Properties
-                        else if ( property.PropertyType == typeof( string ) )
-                        {
-                            entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 2 );
-                            entityProperty.FilterFieldType = SystemGuid.FieldType.TEXT;
-                        }
-
-                        // Integer Properties
-                        else if ( property.PropertyType == typeof( int ) || property.PropertyType == typeof( int? ) )
-                        {
-                            var definedValueAttribute = property.GetCustomAttributes( typeof( Rock.Data.DefinedValueAttribute ), true ).FirstOrDefault();
-
-                            if ( definedValueAttribute != null )
-                            {
-                                // Defined Value Properties
-                                entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 1 );
-                                var definedType = DefinedTypeCache.Read( ( (Rock.Data.DefinedValueAttribute)definedValueAttribute ).DefinedTypeGuid );
-                                entityProperty.Title = definedType != null ? definedType.Name : property.Name.Replace( "ValueId", "" ).SplitCase();
-                                entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
-                                entityProperty.DefinedTypeId = definedType.Id;
-                            }
-                            else
-                            {
-                                entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 2 );
-                                entityProperty.FilterFieldType = SystemGuid.FieldType.INTEGER;
-                            }
-                        }
-
-                        if ( entityProperty != null )
-                        {
-                            entityFields.Add( entityProperty );
-                        }
-                    }
-                }
-
-                // Get Attributes
-                int entityTypeId = EntityTypeCache.Read( entityType ).Id;
-                foreach ( var attribute in new AttributeService().Get( entityTypeId, string.Empty, string.Empty ) )
-                {
-                    // Ensure prop name is unique
-                    string propName = attribute.Name;
-                    int i = 1;
-                    while ( entityFields.Any( p => p.Name.Equals( propName, StringComparison.CurrentCultureIgnoreCase ) ) )
-                    {
-                        propName = attribute.Name + i++.ToString();
-                    }
-
-                    EntityField entityProperty = null;
-
-                    switch ( attribute.FieldType.Guid.ToString().ToUpper() )
-                    {
-                        case SystemGuid.FieldType.BOOLEAN:
-                            entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );
-                            entityProperty.FilterFieldType = SystemGuid.FieldType.SINGLE_SELECT;
-                            break;
-
-                        case SystemGuid.FieldType.DATE:
-                            entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
-                            entityProperty.FilterFieldType = SystemGuid.FieldType.DATE;
-                            break;
-
-                        case SystemGuid.FieldType.INTEGER:
-                            entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
-                            entityProperty.FilterFieldType = SystemGuid.FieldType.INTEGER;
-                            break;
-
-                        case SystemGuid.FieldType.MULTI_SELECT:
-                            entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );
-                            entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
-                            break;
-
-                        case SystemGuid.FieldType.SINGLE_SELECT:
-                            entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );
-                            entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
-                            break;
-
-                        case SystemGuid.FieldType.TEXT:
-                            entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
-                            entityProperty.FilterFieldType = SystemGuid.FieldType.TEXT;
-                            break;
-                    }
-
-                    if ( entityProperty != null )
-                    {
-                        entityFields.Add( entityProperty );
-                    }
-
-                }
-
-                int index = 1;
-                _entityFields = new List<EntityField>();
-                foreach ( var entityProperty in entityFields.OrderBy( p => p.Title ).ThenBy( p => p.Name ) )
-                {
-                    entityProperty.Index = index;
-                    index += entityProperty.ControlCount;
-                    _entityFields.Add( entityProperty );
-                }
+                _entityFields = EntityHelper.GetEntityFields( entityType );
             }
 
             return _entityFields;
@@ -826,8 +698,7 @@ namespace Rock.Reporting.DataFilter
                         DateTime dateValue = DateTime.MinValue;
                         if ( DateTime.TryParse( values[1], out dateValue ) )
                         {
-                            try { comparisonType = values[0].ConvertToEnum<ComparisonType>(); }
-                            catch { }
+                            comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo); 
                             constantExpression = Expression.Constant( dateValue );
 
                             if ( entityField.PropertyType == typeof( DateTime? ) )
@@ -855,8 +726,7 @@ namespace Rock.Reporting.DataFilter
                         int intValue = int.MinValue;
                         if ( int.TryParse( values[1], out intValue ) )
                         {
-                            try { comparisonType = values[0].ConvertToEnum<ComparisonType>(); }
-                            catch { }
+                            comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo ); 
                             constantExpression = Expression.Constant( intValue );
 
                             if ( entityField.PropertyType == typeof( int? ) )
@@ -950,8 +820,7 @@ namespace Rock.Reporting.DataFilter
 
                     if ( values.Count == 2 )
                     {
-                        try { comparisonType = values[0].ConvertToEnum<ComparisonType>(); }
-                        catch { }
+                        comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo ); 
                         constantExpression = Expression.Constant( values[1] );
 
                         return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
@@ -993,9 +862,8 @@ namespace Rock.Reporting.DataFilter
                         DateTime dateValue = DateTime.MinValue;
                         if ( DateTime.TryParse( values[1], out dateValue ) )
                         {
-                            try { comparisonType = values[0].ConvertToEnum<ComparisonType>(); }
-                            catch { }
-
+                            comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                            
                             switch ( comparisonType )
                             {
                                 case ComparisonType.EqualTo:
@@ -1027,9 +895,8 @@ namespace Rock.Reporting.DataFilter
                         int intValue = int.MinValue;
                         if ( int.TryParse( values[1], out intValue ) )
                         {
-                            try { comparisonType = values[0].ConvertToEnum<ComparisonType>(); }
-                            catch { }
-
+                            comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                            
                             switch ( comparisonType )
                             {
                                 case ComparisonType.EqualTo:
@@ -1058,9 +925,8 @@ namespace Rock.Reporting.DataFilter
 
                     if ( values.Count == 2 )
                     {
-                        try { comparisonType = values[0].ConvertToEnum<ComparisonType>(); }
-                        catch { }
-
+                        comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo ); 
+                        
                         switch ( comparisonType )
                         {
                             case ComparisonType.Contains:
@@ -1147,67 +1013,6 @@ namespace Rock.Reporting.DataFilter
             }
 
             return groupedControls;
-        }
-
-        #endregion
-
-        #region Helper Classes
-
-        /// <summary>
-        /// Helper class for saving information about each property and attribute of an entity
-        /// Note: the type of a field or attribute does not neccesarily determine the ui rendered for filtering.   For example, a Single-Select attribute
-        /// will use a multi-select ui so that user can filter on one or more values.  The FilterFieldType property determines the UI rendered for filtering
-        /// and not the type of field.
-        /// 
-        /// Entity Property Types and their renderd filter field type
-        ///     string              ->  TEXT
-        ///     bool or bool?       ->  SINGLE_SELECT
-        ///     date or date?       ->  DATE
-        ///     int or int?
-        ///         Defined Values  ->  MULTI_SELECT
-        ///         otherwise       ->  INTEGER
-        ///     enumeration         ->  MULTI_SELECT
-        /// 
-        /// Attribute types and their rendered filter field type
-        ///     MULTI_SELECT        ->  MULTI_SELECT
-        ///     SINGLE_SELECT       ->  MULTI_SELECT
-        ///     BOOLEAN             ->  SINGLE_SELECT (True or False)
-        ///     DATE                ->  DATE
-        ///     INTEGER             ->  INTEGER
-        ///     TEXT                ->  TEXT
-        ///     
-        /// </summary>
-        class EntityField
-        {
-            public string Name { get; set; }
-            public string Title { get; set; }
-            public FieldKind FieldKind { get; set; }
-            public Type PropertyType { get; set; }
-            public int Index { get; set; }
-            public int ControlCount { get; set; }
-            public int? AttributeId { get; set; }
-            public string FilterFieldType { get; set; }
-            public int? DefinedTypeId { get; set; }
-
-            public EntityField( string name, FieldKind fieldKind, Type propertyType, int controlCount, int? attributeId = null )
-            {
-                Name = name;
-                Title = name.SplitCase();
-                FieldKind = fieldKind;
-                PropertyType = propertyType;
-                ControlCount = controlCount;
-                AttributeId = attributeId;
-            }
-        }
-
-        #endregion
-
-        #region Private Enumerations
-
-        enum FieldKind
-        {
-            Property,
-            Attribute,
         }
 
         #endregion

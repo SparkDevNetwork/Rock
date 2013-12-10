@@ -79,10 +79,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            var service = new PersonService();
-            var person = service.Get( Person.Id );
+            var personService = new PersonService();
+            var person = personService.Get( Person.Id );
 
-            person.PhotoId = imgPhoto.BinaryFileId;
+            int? orphanedPhotoId = null;
+            if ( person.PhotoId != imgPhoto.BinaryFileId )
+            {
+                orphanedPhotoId = person.PhotoId;
+                person.PhotoId = imgPhoto.BinaryFileId;
+            }
+            
             person.TitleValueId = ddlTitle.SelectedValueAsInt();
             person.GivenName = tbGivenName.Text;
             person.NickName = tbNickName.Text;
@@ -121,9 +127,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 HiddenField hfPhoneType = item.FindControl( "hfPhoneType" ) as HiddenField;
                 TextBox tbPhone = item.FindControl( "tbPhone" ) as TextBox;
                 CheckBox cbUnlisted = item.FindControl( "cbUnlisted" ) as CheckBox;
+                CheckBox cbSms = item.FindControl( "cbSms" ) as CheckBox;
 
                 if ( hfPhoneType != null &&
                     tbPhone != null &&
+                    cbSms != null &&
                     cbUnlisted != null )
                 {
                     if ( !string.IsNullOrWhiteSpace( tbPhone.Text ) )
@@ -139,6 +147,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             }
 
                             phoneNumber.Number = PhoneNumber.CleanNumber( tbPhone.Text );
+                            phoneNumber.IsMessagingEnabled = cbSms.Checked;
                             phoneNumber.IsUnlisted = cbUnlisted.Checked;
 
                             phoneNumberTypeIds.Add( phoneNumberTypeId );
@@ -160,7 +169,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             person.RecordStatusValueId = ddlRecordStatus.SelectedValueAsInt();
             person.RecordStatusReasonValueId = ddlReason.SelectedValueAsInt();
 
-            service.Save( person, CurrentPersonId );
+            personService.Save( person, CurrentPersonId );
+
+            if ( orphanedPhotoId.HasValue )
+            {
+                BinaryFileService binaryFileService = new BinaryFileService(personService.RockContext);
+                var binaryFile = binaryFileService.Get( orphanedPhotoId.Value );
+                if ( binaryFile != null )
+                {
+                    // marked the old images as IsTemporary so they will get cleaned up later
+                    binaryFile.IsTemporary = true;
+                    binaryFileService.Save( binaryFile, CurrentPersonId );
+                }
+            }
 
             Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
         }
@@ -197,6 +218,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ddlRecordStatus.SelectedValue = Person.RecordStatusValueId.HasValue ? Person.RecordStatusValueId.Value.ToString() : string.Empty;
             ddlReason.SelectedValue = Person.RecordStatusReasonValueId.HasValue ? Person.RecordStatusReasonValueId.Value.ToString() : string.Empty;
 
+            var mobilePhoneType = DefinedValueCache.Read(new Guid(Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE));
+
             var phoneNumbers = new List<PhoneNumber>();
             var phoneNumberTypes = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
             if ( phoneNumberTypes.DefinedValues.Any() )
@@ -211,6 +234,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         numberType.Name = phoneNumberType.Name;
 
                         phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
+                        phoneNumber.IsMessagingEnabled = mobilePhoneType != null && phoneNumberType.Id == mobilePhoneType.Id;
                     }
 
                     phoneNumbers.Add( phoneNumber );

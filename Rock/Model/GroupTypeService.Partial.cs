@@ -13,12 +13,11 @@ namespace Rock.Model
     /// </summary>
     public partial class GroupTypeService 
     {
-
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.GroupType"/> entities by the Id of their <see cref="Rock.Model.GroupRole."/>.
+        /// Returns an enumerable collection of <see cref="Rock.Model.GroupType"/> entities by the Id of their <see cref="Rock.Model.GroupTypeRole"/>.
         /// </summary>
-        /// <param name="defaultGroupRoleId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupRole"/> to search by.</param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.GroupType">GroupTypes</see> that use the provided <see cref="Rock.Model.GroupRole"/> as the 
+        /// <param name="defaultGroupRoleId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupTypeRole"/> to search by.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.GroupType">GroupTypes</see> that use the provided <see cref="Rock.Model.GroupTypeRole"/> as the 
         /// default GroupRole for their member Groups.</returns>
         public IEnumerable<GroupType> GetByDefaultGroupRoleId( int? defaultGroupRoleId )
         {
@@ -26,7 +25,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Verifies if the specified <see cref="Rock.MOdel.GroupType"/> can be deleted, and if so deletes it.
+        /// Verifies if the specified <see cref="Rock.Model.GroupType"/> can be deleted, and if so deletes it.
         /// </summary>
         /// <param name="item">The <see cref="Rock.Model.GroupType"/> to delete.</param>
         /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who is attempting to delete the
@@ -44,6 +43,39 @@ namespace Rock.Model
             this.Save( item, personId );
 
             return base.Delete( item, personId );
+        }
+
+        /// <summary>
+        /// Saves the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public override bool Save( GroupType item, int? personId )
+        {
+            // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
+            if ( item.IconLargeFileId.HasValue )
+            {
+                BinaryFileService binaryFileService = new BinaryFileService( this.RockContext );
+                var binaryFile = binaryFileService.Get( item.IconLargeFileId.Value );
+                if ( binaryFile != null && binaryFile.IsTemporary )
+                {
+                    binaryFile.IsTemporary = false;
+                }
+            }
+
+            // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
+            if ( item.IconSmallFileId.HasValue )
+            {
+                BinaryFileService binaryFileService = new BinaryFileService( this.RockContext );
+                var binaryFile = binaryFileService.Get( item.IconSmallFileId.Value );
+                if ( binaryFile != null && binaryFile.IsTemporary )
+                {
+                    binaryFile.IsTemporary = false;
+                }
+            }
+            
+            return base.Save( item, personId );
         }
     }
 }

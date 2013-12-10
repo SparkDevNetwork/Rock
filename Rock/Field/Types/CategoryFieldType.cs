@@ -68,16 +68,22 @@ namespace Rock.Field.Types
             controls.Add( ddl );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
+            ddl.Label = "Entity Type";
+            ddl.Help = "The type of entity to display categories for.";
 
             var tbColumn = new RockTextBox();
             controls.Add( tbColumn );
             tbColumn.AutoPostBack = true;
             tbColumn.TextChanged += OnQualifierUpdated;
+            tbColumn.Label = "Qualifier Column";
+            tbColumn.Help = "Entity column qualifier.";
 
             var tbValue = new RockTextBox();
             controls.Add( tbValue );
             tbValue.AutoPostBack = true;
             tbValue.TextChanged += OnQualifierUpdated;
+            tbValue.Label = "Qualifier Value";
+            tbValue.Help = "Entity column value.";
 
             return controls;
         }
@@ -140,16 +146,18 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            string formattedValue = string.Empty;
+
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 var category = CategoryCache.Read( new Guid( value ) );
                 if ( category != null )
                 {
-                    return category.Name;
+                    formattedValue = category.Name;
                 }
             }
 
-            return string.Empty;
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 
         /// <summary>

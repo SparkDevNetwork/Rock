@@ -53,7 +53,7 @@ namespace Rock.Model
         /// Gets or sets the Id of the GroupMember's <see cref="GroupRole"/> in the <see cref="Rock.Model.Group"/>. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupRole"/> that the Group Member is in.
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupTypeRole"/> that the Group Member is in.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -93,10 +93,10 @@ namespace Rock.Model
         /// Gets or sets the the GroupMember's role in the <see cref="Rock.Model.Group"/>.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.GroupRole"/> representing the GroupMember's <see cref="Rock.Model.GroupRole"/> in the <see cref="Rock.Model.Group"/>.
+        /// A <see cref="Rock.Model.GroupTypeRole"/> representing the GroupMember's <see cref="Rock.Model.GroupTypeRole"/> in the <see cref="Rock.Model.Group"/>.
         /// </value>
         [DataMember]
-        public virtual GroupRole GroupRole { get; set; }
+        public virtual GroupTypeRole GroupRole { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

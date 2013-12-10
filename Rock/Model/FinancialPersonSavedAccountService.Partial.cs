@@ -8,15 +8,15 @@ using System.Linq;
 namespace Rock.Model
 {
     /// <summary>
-    /// Service class for Financial Person Saved Account objects.
+    /// Service and data access class for <see cref="Rock.Model.FinancialPersonSavedAccount"/> objects.
     /// </summary>
     public partial class FinancialPersonSavedAccountService
     {
         /// <summary>
-        /// Gets saved accounts by person id
+        /// Returns an queryable collection of saved accounts (<see cref="Rock.Model.FinancialPersonSavedAccount"/> by PersonId
         /// </summary>
-        /// <param name="personId">The person id.</param>
-        /// <returns></returns>
+        /// <param name="personId">A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> to retrieve saved accounts for.</param>
+        /// <returns>A queryable collection of <see cref="Rock.Model.FinancialPersonSavedAccount">Saved Accounts</see> belonging to the specified <see cref="Rock.Model.Person"/>.</returns>
         public IQueryable<FinancialPersonSavedAccount> GetByPersonId(int personId)
         {
             return this.Queryable().Where( a => a.PersonId == personId );

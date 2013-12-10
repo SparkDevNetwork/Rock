@@ -15,7 +15,7 @@
                     </h1>
                 </div>
 
-                <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                 <fieldset>
 
@@ -23,11 +23,11 @@
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" CssClass="" />
                             <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                            <Rock:RockDropDownList ID="ddlTransform" runat="server" Label="Post-filter Transformation" />
-                        </div>
-                        <div class="col-md-6">
                             <Rock:DataDropDownList ID="ddlEntityType" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="EntityTypeId"
                                 Label="Applies To" DataTextField="FriendlyName" DataValueField="Id" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:RockDropDownList ID="ddlTransform" runat="server" Label="Post-filter Transformation" />
                             <Rock:CategoryPicker ID="cpCategory" runat="server" EntityTypeName="Rock.Model.DataView" Label="Category" Required="true" />
                         </div>
                     </div>
@@ -37,7 +37,7 @@
 
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-sm btn-primary" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-sm" CausesValidation="false" OnClick="btnCancel_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link btn-sm" CausesValidation="false" OnClick="btnCancel_Click" />
                     <asp:LinkButton ID="btnPreview" runat="server" Text="Preview" CssClass="btn btn-action btn-sm pull-right" CausesValidation="false" OnClick="btnPreview_Click" />
                 </div>
 
@@ -58,8 +58,12 @@
                     </p>
 
                     <div class="row">
-                        <asp:Literal ID="lblMainDetails" runat="server" />
-                        <asp:Literal ID="lFilters" runat="server" />
+                        <div class="col-md-6">
+                            <asp:Literal ID="lblMainDetails" runat="server" />
+                        </div>
+                        <div class="col-md-6">
+                            <asp:Literal ID="lFilters" runat="server" />
+                        </div>
                     </div>
 
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
@@ -79,7 +83,7 @@
 
             </div>
 
-            <Rock:ModalDialog ID="modalPreview" runat="server" Title="Preview">
+            <Rock:ModalDialog ID="modalPreview" runat="server" Title="Preview" ValidationGroup="Preview" >
                 <Content>
                     <Rock:Grid ID="gPreview" runat="server" AllowSorting="true" EmptyDataText="No Results" ShowActionRow="false" />
                 </Content>

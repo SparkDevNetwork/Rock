@@ -116,6 +116,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets an optional validation group to use.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get { return ViewState["ValidationGroup"] as string; }
+            set { ViewState["ValidationGroup"] = value; }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -208,12 +220,24 @@ namespace Rock.Web.UI.Controls
             private set
             {
                 EnsureChildControls();
-                _hfLocationId.Value = value.Id.ToString();
-                _tbAddress1.Text = value.Street1;
-                _tbAddress2.Text = value.Street2;
-                _tbCity.Text = value.City;
-                _ddlState.SelectedValue = value.State;
-                _tbZip.Text = value.Zip;
+                if ( value != null )
+                {
+                    _hfLocationId.Value = value.Id.ToString();
+                    _tbAddress1.Text = value.Street1;
+                    _tbAddress2.Text = value.Street2;
+                    _tbCity.Text = value.City;
+                    _ddlState.SelectedValue = value.State;
+                    _tbZip.Text = value.Zip;
+                }
+                else
+                {
+                    _hfLocationId.Value = string.Empty;
+                    _tbAddress1.Text = string.Empty;
+                    _tbAddress2.Text = string.Empty;
+                    _tbCity.Text = string.Empty;
+                    _ddlState.SelectedValue = string.Empty;
+                    _tbZip.Text = string.Empty;
+                }
             }
         }
 
@@ -307,7 +331,7 @@ namespace Rock.Web.UI.Controls
 
             _btnPickerLabel = new HtmlAnchor { ID = "btnPickerLabel" };
             _btnPickerLabel.Attributes["class"] = "picker-label";
-            _btnPickerLabel.InnerHtml = string.Format( "<i class='icon-user'></i>{0}<b class='caret pull-right'></b>", this.AddressSummaryText );
+            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-user'></i>{0}<b class='caret pull-right'></b>", this.AddressSummaryText );
             this.Controls.Add( _btnPickerLabel );
 
             // PickerMenu (DropDown menu)
@@ -334,13 +358,13 @@ namespace Rock.Web.UI.Controls
             _divCityStateZipRow = new HtmlGenericContainer( "div", "row" );
             _pnlAddressEntry.Controls.Add( _divCityStateZipRow );
 
-            _divCityColumn = new HtmlGenericContainer( "div", "col-lg-7" );
+            _divCityColumn = new HtmlGenericContainer( "div", "col-lg-5" );
             _divCityStateZipRow.Controls.Add( _divCityColumn );
             _tbCity = new RockTextBox { ID = "tbCity" };
             _tbCity.Label = "City";
             _divCityColumn.Controls.Add( _tbCity );
 
-            _divStateColumn = new HtmlGenericContainer( "div", "col-lg-2" );
+            _divStateColumn = new HtmlGenericContainer( "div", "col-lg-3" );
             _divCityStateZipRow.Controls.Add( _divStateColumn );
             _ddlState = new StateDropDownList { ID = "ddlState" };
             _ddlState.UseAbbreviation = true;
@@ -348,7 +372,7 @@ namespace Rock.Web.UI.Controls
             _ddlState.Label = "State";
             _divStateColumn.Controls.Add( _ddlState );
 
-            _divZipColumn = new HtmlGenericContainer( "div", "col-lg-3" );
+            _divZipColumn = new HtmlGenericContainer( "div", "col-lg-4" );
             _divCityStateZipRow.Controls.Add( _divZipColumn );
             _tbZip = new RockTextBox { ID = "tbZip" };
             _tbZip.CssClass = "input-small";
@@ -361,7 +385,7 @@ namespace Rock.Web.UI.Controls
             _btnSelect = new LinkButton { ID = "btnSelect", CssClass = "btn btn-xs btn-primary", Text = "Select", CausesValidation = false };
             _btnSelect.Click += _btnSelect_Click;
             _pnlPickerActions.Controls.Add( _btnSelect );
-            _btnCancel = new LinkButton { ID = "btnCancel", CssClass = "btn btn-xs", Text = "Cancel" };
+            _btnCancel = new LinkButton { ID = "btnCancel", CssClass = "btn btn-xs btn-link", Text = "Cancel" };
             _btnCancel.OnClientClick = string.Format( "$('#{0}').hide();", _pnlPickerMenu.ClientID );
             _pnlPickerActions.Controls.Add( _btnCancel );
         }
@@ -406,7 +430,7 @@ namespace Rock.Web.UI.Controls
             LocationService locationService = new LocationService();
             var location = locationService.Get( _tbAddress1.Text, _tbAddress2.Text, _tbCity.Text, _ddlState.SelectedItem.Text, _tbZip.Text );
             Location = location;
-            _btnPickerLabel.InnerHtml = string.Format( "<i class='icon-user'></i>{0}<b class='caret pull-right'></b>", this.AddressSummaryText );
+            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-user'></i>{0}<b class='caret pull-right'></b>", this.AddressSummaryText );
         }
 
         /// <summary>

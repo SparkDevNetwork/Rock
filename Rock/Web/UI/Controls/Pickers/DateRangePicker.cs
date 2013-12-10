@@ -334,5 +334,99 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
                 _tbUpperValue.ValidationGroup = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the lower and upper values by specifying a comma-delimted lower and upper date
+        /// </summary>
+        /// <value>
+        /// The delimited values.
+        /// </value>
+        public string DelimitedValues
+        {
+            get
+            {
+                return string.Format( "{0:d},{1:d}", this.LowerValue, this.UpperValue );
+            }
+            set
+            {
+                if ( value != null )
+                {
+                    string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
+                    if ( valuePair.Length == 2 )
+                    {
+                        DateTime result;
+
+                        if ( DateTime.TryParse( valuePair[0], out result ) )
+                        {
+                            this.LowerValue = result;
+                        }
+                        else
+                        {
+                            this.LowerValue = null;
+                        }
+
+                        if ( DateTime.TryParse( valuePair[1], out result ) )
+                        {
+                            this.UpperValue = result;
+                        }
+                        else
+                        {
+                            this.UpperValue = null;
+                        }
+                    }
+                    else
+                    {
+                        this.LowerValue = null;
+                        this.UpperValue = null;
+                    }
+                }
+                else
+                {
+                    this.LowerValue = null;
+                    this.UpperValue = null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Formats the delimited values.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static string FormatDelimitedValues( string value )
+        {
+            try
+            {
+                if ( value != null )
+                {
+                    if ( value.StartsWith( "," ) )
+                    {
+                        string upperValue = DateTime.Parse( value.Substring( 1 ) ).Date.ToShortDateString();
+                        return string.Format( "through {0}", upperValue );
+                    }
+                    else if ( value.EndsWith( "," ) )
+                    {
+                        string lowerValue = DateTime.Parse( value.Substring( 0, value.Length - 1 ) ).Date.ToShortDateString();
+                        return string.Format( "from {0}", lowerValue );
+                    }
+                    else
+                    {
+                        string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
+                        if ( valuePair.Length == 2 )
+                        {
+                            string lowerValue = string.IsNullOrWhiteSpace( valuePair[0] ) ? Rock.Constants.None.TextHtml : DateTime.Parse( valuePair[0] ).Date.ToShortDateString();
+                            string upperValue = string.IsNullOrWhiteSpace( valuePair[1] ) ? Rock.Constants.None.TextHtml : DateTime.Parse( valuePair[1] ).Date.ToShortDateString();
+                            return string.Format( "{0} to {1}", lowerValue, upperValue );
+                        }
+                    }
+                }
+
+                return null;
+            }
+            catch 
+            {
+                return null;  
+            }
+        }
     }
 }

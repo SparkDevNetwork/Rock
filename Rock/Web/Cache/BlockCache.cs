@@ -93,6 +93,14 @@ namespace Rock.Web.Cache
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the CSS class.
+        /// </summary>
+        /// <value>
+        /// The CSS class.
+        /// </value>
+        public string CssClass { get; set; }
+
+        /// <summary>
         /// Gets or sets the duration of the output cache.
         /// </summary>
         /// <value>
@@ -211,7 +219,7 @@ namespace Rock.Web.Cache
                 this.Zone = block.Zone;
                 this.Order = block.Order;
                 this.Name = block.Name;
-
+                this.CssClass = block.CssClass;
                 this.OutputCacheDuration = block.OutputCacheDuration;
             }
         }
