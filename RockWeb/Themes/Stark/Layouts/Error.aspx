@@ -32,8 +32,8 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="error-wrap">
-                            <h1>Ah Man... An Error Occurred...</h1>
-                            <p>An error has occurred while processing your request.  The Rock ChMS administrators have 
+                            <h1>Ah Man...</h1>
+                            <p><strong>An Error Occurred...</strong>  The website administrators have 
                             been notified of this problem.</p>
 
                             <p><a onclick="history.go(-1);" class="btn btn-sm btn-primary">Go Back</a></p>
