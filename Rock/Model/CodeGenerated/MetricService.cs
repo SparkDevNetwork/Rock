@@ -18,7 +18,8 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Metric Service class
+    /// Represents a numerically measurable statistic or Metric in RockChMS.  An example of a metric can include 
+    /// weekly membership count, number of children who check-in to preschool, etc.
     /// </summary>
     public partial class MetricService : Service<Metric>
     {
@@ -81,25 +82,34 @@ namespace Rock.Model
             else
             {
                 var target = new Metric();
-                target.IsSystem = source.IsSystem;
-                target.Type = source.Type;
-                target.Category = source.Category;
-                target.Title = source.Title;
-                target.Subtitle = source.Subtitle;
-                target.Description = source.Description;
-                target.MinValue = source.MinValue;
-                target.MaxValue = source.MaxValue;
-                target.CollectionFrequencyValueId = source.CollectionFrequencyValueId;
-                target.LastCollectedDateTime = source.LastCollectedDateTime;
-                target.Source = source.Source;
-                target.SourceSQL = source.SourceSQL;
-                target.Order = source.Order;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another Metric object to this Metric object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this Metric target, Metric source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.Type = source.Type;
+            target.Category = source.Category;
+            target.Title = source.Title;
+            target.Subtitle = source.Subtitle;
+            target.Description = source.Description;
+            target.MinValue = source.MinValue;
+            target.MaxValue = source.MaxValue;
+            target.CollectionFrequencyValueId = source.CollectionFrequencyValueId;
+            target.LastCollectedDateTime = source.LastCollectedDateTime;
+            target.Source = source.Source;
+            target.SourceSQL = source.SourceSQL;
+            target.Order = source.Order;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

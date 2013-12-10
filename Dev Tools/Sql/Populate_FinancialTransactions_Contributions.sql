@@ -1,8 +1,10 @@
+set nocount on
+
 declare
   @authorizedPersonId int = 1,
   @transactionCounter int = 0,
-  @maxTransactionCount int = 3*50, 
-  @maxPersonIdForTransactions int = 113,  --(select max(id) from Person),
+  @maxTransactionCount int = 200000, 
+  @maxPersonIdForTransactions int = (select max(id) from (select top 4000 id from Person order by Id) x),  /* limit to first 4000 persons in the database */ 
   @transactionDateTime datetime,
   @transactionAmount decimal(18,2),
   @transactionNote nvarchar(max),
@@ -28,7 +30,12 @@ while @transactionCounter < @maxTransactionCount
     begin
         set @transactionAmount = ROUND(rand() * 5000, 2);
         set @transactionNote = 'Random Note ' + convert(nvarchar(max), rand());
-        set @authorizedPersonId = (select top 1 Id from Person where Id >= rand() * @maxPersonIdForTransactions);
+        set @authorizedPersonId =  (select top 1 Id from Person where Id <= rand() * @maxPersonIdForTransactions order by Id desc);
+        while @authorizedPersonId is null
+        begin
+          -- Try again just in case we didn't get anybody
+          set @authorizedPersonId =  (select top 1 Id from Person where Id <= rand() * @maxPersonIdForTransactions order by Id desc);
+        end
 
         INSERT INTO [dbo].[FinancialTransaction]
                    ([AuthorizedPersonId]

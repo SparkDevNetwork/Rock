@@ -91,7 +91,7 @@ namespace Rock.Rest.Controllers
             List<Person> sortedPersonList = topQry.ToList();
 
             var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-            string imageUrlFormat = string.Format( "<image src='{0}' />", Path.Combine( appPath, "GetImage.ashx?id={0}&width=25&height=25" ) );
+            string imageUrlFormat = string.Format( "<image src='{0}' />", Path.Combine( appPath, "GetImage.ashx?id={0}&width=65&height=65" ) );
             string imageNoPhoto = string.Format("<image src='{0}' />", Path.Combine(appPath, "/Assets/images/person-no-photo.svg"));
             string itemDetailFormat = @"
 <div class='picker-select-item-details clearfix' style='display: none;'>
@@ -155,7 +155,7 @@ namespace Rock.Rest.Controllers
                         personInfo += familyGroupMember.GroupRole.Name;
                         if ( person.Age != null )
                         {
-                            personInfo += " - " + person.Age.ToString() + " yrs old";
+                            personInfo += " <em>(" + person.Age.ToString() + " yrs old)</em>";
                         }
 
                         // Figure out spouse (Implied by "the other GROUPROLE_FAMILY_MEMBER_ADULT that is of the opposite gender")
@@ -198,7 +198,7 @@ namespace Rock.Rest.Controllers
                                     streetInfo = location.Street2;
                                 }
 
-                                string addressHtml = string.Format( "<h5>Address</h5>{0} {1}, {2}, {3}", streetInfo, location.City, location.State, location.Zip );
+                                string addressHtml = string.Format( "<h5>Address</h5>{0} <br />{1}, {2}, {3}", streetInfo, location.City, location.State, location.Zip );
                                 personInfo += addressHtml;
                             }
                         }
@@ -249,7 +249,7 @@ namespace Rock.Rest.Controllers
                 var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
                 string imageUrlFormat = Path.Combine( appPath, "GetImage.ashx?id={0}&width=37&height=37" );
                 string imageNoPhoto = Path.Combine(appPath, "Assets/images/person-no-photo.svg");
-                html.AppendFormat( "<header><img src='{0}'/> <div>{1}<small>{2}</small></div></header>",
+                html.AppendFormat( "<header><img src='{0}'/> <h3>{1}<small>{2}</small></h3></header>",
                     person.PhotoId.HasValue ? string.Format( imageUrlFormat, person.PhotoId.Value ) : imageNoPhoto,
                     person.FullName,
                     person.PersonStatusValueId.HasValue ? person.PersonStatusValue.Name : string.Empty );
@@ -257,7 +257,7 @@ namespace Rock.Rest.Controllers
                 var spouse = person.GetSpouse();
                 if (spouse != null)
                 {
-                    html.AppendFormat("<br/><strong>Spouse</strong> {0}", 
+                    html.AppendFormat("<strong>Spouse</strong> {0}", 
                         spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName);
                 }
 
@@ -277,7 +277,7 @@ namespace Rock.Rest.Controllers
                     html.AppendFormat("<br/><strong>{0}</strong> {1}", phoneNumber.NumberTypeValue.Name, phoneNumber.NumberFormatted);
                 }
 
-                // TODO: Should also show area: <br /><strong>Area</strong> Westwing
+                // TODO: Should also show area: <br /><strong>Area</strong> WestwingS
 
                 result.PickerItemDetailsHtml = html.ToString();
             }

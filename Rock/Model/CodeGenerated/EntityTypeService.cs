@@ -146,6 +146,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<ReportField>().Queryable().Any( a => a.DataSelectComponentEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, ReportField.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Tag>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Tag.FriendlyTypeName );
@@ -181,18 +187,27 @@ namespace Rock.Model
             else
             {
                 var target = new EntityType();
-                target.Name = source.Name;
-                target.AssemblyName = source.AssemblyName;
-                target.FriendlyName = source.FriendlyName;
-                target.IsEntity = source.IsEntity;
-                target.IsSecured = source.IsSecured;
-                target.IsCommon = source.IsCommon;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another EntityType object to this EntityType object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this EntityType target, EntityType source )
+        {
+            target.Name = source.Name;
+            target.AssemblyName = source.AssemblyName;
+            target.FriendlyName = source.FriendlyName;
+            target.IsEntity = source.IsEntity;
+            target.IsSecured = source.IsSecured;
+            target.IsCommon = source.IsCommon;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

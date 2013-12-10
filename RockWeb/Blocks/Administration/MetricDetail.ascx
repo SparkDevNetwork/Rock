@@ -6,7 +6,7 @@
             <asp:HiddenField ID="hfMetricId" runat="server" />
 
             <div id="pnlEditDetails" runat="server" class="well">
-                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                 <fieldset>    
                     <legend>
@@ -42,22 +42,20 @@
                 </fieldset>            
 
                 <div class="actions">
-                    <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default" CausesValidation="false" OnClick="btnCancel_Click" />
+                    <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
+                    <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                 </div>
             </div>
 
             <fieldset id="fieldsetViewDetails" runat="server">
-                <div class="well">
-                    <div class="row-fluid">
-                        <div class="span6">
-                            <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />                            
-                            <asp:Literal ID="lblDetails" runat="server" />
-                        </div>                        
-                    </div>
-                    <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" CausesValidation="false" OnClick="btnEdit_Click" />
-                    </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />                            
+                        <asp:Literal ID="lDetails" runat="server" />
+                    </div>                        
+                </div>
+                <div class="actions">
+                    <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" CausesValidation="false" OnClick="lbEdit_Click" />
                 </div>
             </fieldset>
 

@@ -53,11 +53,33 @@ namespace Rock.Model
         /// </summary>
         /// <param name="includes">The includes.</param>
         /// <param name="includeDeceased">A <see cref="System.Boolean"/> value indicating if deceased <see cref="Rock.Model.Person"/> should be included. If <c>true</c>
-        /// deceased individuals will be included, otherwise <c>false</c> and they will be excluded.
+        /// deceased individuals will be included, otherwise <c>false</c> and they will be excluded.</param>
         /// <returns>A queryable collection of <see cref="Rock.Model.Person"/> entities with properties that support eager loading, with deceased individuals either included or excluded based on the provided value. </returns>
         public IQueryable<Person> Queryable( string includes, bool includeDeceased )
         {
             return base.Repository.AsQueryable( includes ).Where( p => includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value );
+        }
+
+        /// <summary>
+        /// Saves the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public override bool Save( Person item, int? personId )
+        {
+            // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
+            if ( item.PhotoId.HasValue )
+            {
+                BinaryFileService binaryFileService = new BinaryFileService( this.RockContext );
+                var binaryFile = binaryFileService.Get( item.PhotoId.Value );
+                if ( binaryFile != null && binaryFile.IsTemporary )
+                {
+                    binaryFile.IsTemporary = false;
+                }
+            }
+            
+            return base.Save( item, personId );
         }
 
         #region Get People
@@ -273,12 +295,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-		/// Returns a collection of <see cref="Rock.Model.Person"/> entities containing the family members of the provided person.
+        /// Returns a collection of <see cref="Rock.Model.Person" /> entities containing the family members of the provided person.
         /// </summary>
-        /// <param name="person">A <see cref="Rock.Model.Person"/> representing the person to get the family members for.</param>
-        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be 
-        /// included, otherwise <c>false</c>.</param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.Person"/> entities containing the family members of the provided person.</returns>
+        /// <param name="person">A <see cref="Rock.Model.Person" /> representing the person to get the family members for.</param>
+        /// <param name="includeSelf">if set to <c>true</c> [include self].</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.Person" /> entities containing the family members of the provided person.
+        /// </returns>
         public IQueryable<GroupMember> GetFamilyMembers( Person person, bool includeSelf = false )
         {
             Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
@@ -329,7 +352,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="id">The <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> to search for.</param>
         /// <param name="followMerges">A <see cref="System.Boolean"/> flag indicating that the provided PersonId should be checked against the <see cref="Rock.Model.PersonMerged"/> list.
-        /// When <c>true</c> the <see cref="Rock.Model.PersonsMerged"/> log will be checked for the PersonId, otherwise <c>false</c>.</param>
+        /// When <c>true</c> the <see cref="Rock.Model.PersonMerged"/> log will be checked for the PersonId, otherwise <c>false</c>.</param>
         /// <returns>The <see cref="Rock.Model.Person"/> associated with the provided Id, otherwise null.</returns>
         public Person Get( int id, bool followMerges )
         {
@@ -345,7 +368,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="guid">A <see cref="System.Guid"/> representing the <see cref="Rock.Model.Person">Person's</see> Guid identifier.</param>
         /// <param name="followMerges">A <see cref="System.Boolean"/> flag indicating that the provided Guid should be checked against the <see cref="Rock.Model.PersonMerged"/> list.
-        /// When <c>true</c> the <see cref="Rock.Model.PersonsMerged"/> log will be checked for the Guid, otherwise <c>false</c>.</param>
+        /// When <c>true</c> the <see cref="Rock.Model.PersonMerged"/> log will be checked for the Guid, otherwise <c>false</c>.</param>
         /// <returns>The <see cref="Rock.Model.Person"/> associated with the provided Guid, otherwise null.</returns>
         public Person Get( Guid guid, bool followMerges )
         {
@@ -361,7 +384,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="encryptedKey">A <see cref="System.String"/> containing an encrypted key value.</param>
         /// <param name="followMergeTrail">A <see cref="System.Boolean"/> flag indicating that the provided Guid should be checked against the <see cref="Rock.Model.PersonMerged"/> list.
-        /// When <c>true</c> the <see cref="Rock.Model.PersonsMerged"/> log will be checked for the Guid, otherwise <c>false</c>.</param>
+        /// When <c>true</c> the <see cref="Rock.Model.PersonMerged"/> log will be checked for the Guid, otherwise <c>false</c>.</param>
         /// <returns>
         /// The <see cref="Rock.Model.Person"/> associated with the provided Key, otherwise null.
         /// </returns>

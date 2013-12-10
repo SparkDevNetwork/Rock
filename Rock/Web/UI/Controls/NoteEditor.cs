@@ -27,6 +27,7 @@ namespace Rock.Web.UI.Controls
         private LinkButton _lbSaveNote;
         private LinkButton _lbEditNote;
         private LinkButton _lbDeleteNote;
+        private SecurityButton _sbSecurity;
 
         /// <summary>
         /// Sets the note.
@@ -95,6 +96,18 @@ namespace Rock.Web.UI.Controls
             set { ViewState["CreatedDateTime"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the label for the note entry box
+        /// </summary>
+        /// <value>
+        /// The label.
+        /// </value>
+        public string Label
+        {
+            get { return _tbNote.Label; }
+            set { _tbNote.Label = value; }
+        }
+        
         /// <summary>
         /// Gets or sets the text.
         /// </summary>
@@ -185,15 +198,15 @@ namespace Rock.Web.UI.Controls
             {
                 if ( IsAlert )
                 {
-                    return "clearfix highlight";
+                    return "clearfix highlight rollover-container";
                 }
 
                 if ( IsPrivate )
                 {
-                    return "clearfix personal";
+                    return "clearfix personal rollover-container";
                 }
 
-                return "clearfix";
+                return "clearfix rollover-container";
             }
         }
 
@@ -213,7 +226,7 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
-                return "icon-comment";
+                return "fa fa-comment";
             }
 
         }
@@ -224,11 +237,14 @@ namespace Rock.Web.UI.Controls
         public NoteEditor()
         {
             _tbNote = new RockTextBox();
+            _tbNote.Label = "Note";
+
             _cbAlert = new CheckBox();
             _cbPrivate = new CheckBox();
             _lbSaveNote = new LinkButton();
             _lbEditNote = new LinkButton();
             _lbDeleteNote = new LinkButton();
+            _sbSecurity = new SecurityButton();
         }
 
         /// <summary>
@@ -238,23 +254,6 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             string script = @"
-    $('.note-editor').on({
-        mouseenter:
-            function () {
-                var actionsDiv = $('.actions', this);
-                if (actionsDiv.length > 0) {
-                    $(actionsDiv).stop(true, true).fadeIn(""slow"");
-                }
-            },
-        mouseleave:
-            function () {
-                var actionsDiv = $('.actions', this);
-                if (actionsDiv.length > 0) {
-                    $(actionsDiv).stop(true, true).fadeOut(""slow"");
-                }
-            }
-    });
-
     $('a.edit-note').click(function (e) {
         e.preventDefault();
         $(this).parent().parent().parent().children().slideToggle('slow');
@@ -296,17 +295,22 @@ namespace Rock.Web.UI.Controls
             Controls.Add(_lbSaveNote);
 
             var iEdit = new HtmlGenericControl( "i" );
-            iEdit.Attributes["class"] = "icon-pencil";
+            iEdit.Attributes["class"] = "fa fa-pencil";
             _lbEditNote.Controls.Add( iEdit );
 
             _lbDeleteNote.ID = this.ID + "_lbDeleteNote";
             _lbDeleteNote.Attributes["class"] = "remove-note";
             _lbDeleteNote.Click += lbDeleteNote_Click;
             Controls.Add( _lbDeleteNote );
-
             var iDelete = new HtmlGenericControl( "i" );
-            iDelete.Attributes["class"] = "icon-remove";
+            iDelete.Attributes["class"] = "fa fa-times";
             _lbDeleteNote.Controls.Add( iDelete );
+
+            _sbSecurity.ID = "_sbSecurity";
+            _sbSecurity.Attributes["class"] = "btn btn-security btn-xs security pull-right";
+            _sbSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Note ) ).Id;
+
+            Controls.Add( _sbSecurity );
         }
 
         /// <summary>
@@ -360,14 +364,11 @@ namespace Rock.Web.UI.Controls
             writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            // label and text
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            _tbNote.Label = "Note";
-            _tbNote.Text = Text;
+
             _tbNote.RenderControl( writer );
             
-
             // Options
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "settings clearfix" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -389,14 +390,9 @@ namespace Rock.Web.UI.Controls
 
             if ( ShowSecurityButton )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-security btn-xs security pull-right" );
-                writer.AddAttribute( HtmlTextWriterAttribute.Type, "button" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Button );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "icon-lock" );
-                writer.RenderBeginTag( HtmlTextWriterTag.I );
-                writer.RenderEndTag();
-                writer.Write( " Security" );
-                writer.RenderEndTag();
+                _sbSecurity.EntityId = this.NoteId;
+                _sbSecurity.Title = this.Label;
+                _sbSecurity.RenderControl( writer );
             }
 
             writer.RenderEndTag();  // settings div
@@ -443,8 +439,7 @@ namespace Rock.Web.UI.Controls
 
             if ( CanEdit )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
-                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions rollover-item" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 _lbDeleteNote.RenderControl(writer);
@@ -452,7 +447,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "icon-pencil" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-pencil" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();  // A

@@ -104,6 +104,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets an optional validation group to use.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get { return ViewState["ValidationGroup"] as string; }
+            set { ViewState["ValidationGroup"] = value; }
+        }
+        
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -140,7 +152,7 @@ namespace Rock.Web.UI.Controls
         private DropDownList yearDropDownList;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MonthDayYearPicker"/> class.
+        /// Initializes a new instance of the <see cref="BirthdayPicker"/> class.
         /// </summary>
         public BirthdayPicker()
             : base()

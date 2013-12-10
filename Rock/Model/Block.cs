@@ -125,6 +125,16 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets an optional CSS class to include when the block's parent container is rendered
+        /// </summary>
+        /// <value>
+        /// The CSS class.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string CssClass { get; set; }
+
+        /// <summary>
         /// Gets or sets the length of time (in minutes) that the Block's data is cached. This property is required.
         /// </summary>
         /// <value>

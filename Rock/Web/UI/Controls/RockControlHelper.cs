@@ -53,7 +53,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="rockControl">The rock control.</param>
         /// <param name="writer">The writer.</param>
-        public static void RenderControl( IRockControl rockControl, HtmlTextWriter writer )
+        /// <param name="additionalCssClass">The additional CSS class.</param>
+        public static void RenderControl( IRockControl rockControl, HtmlTextWriter writer, string additionalCssClass = "" )
         {
             bool renderLabel = ( !string.IsNullOrEmpty( rockControl.Label ) );
             bool renderHelp = ( rockControl.HelpBlock != null && !string.IsNullOrWhiteSpace( rockControl.Help ) );
@@ -61,14 +62,18 @@ namespace Rock.Web.UI.Controls
             if ( renderLabel )
             {
                 var cssClass = new StringBuilder();
-                cssClass.AppendFormat( "form-group {0}", rockControl.GetType().Name.SplitCase().Replace(' ', '-').ToLower());
-                if ( !rockControl.IsValid )
+                cssClass.AppendFormat( "form-group {0}", rockControl.GetType().Name.SplitCase().Replace( ' ', '-' ).ToLower() );
+                if ( ( (Control)rockControl ).Page.IsPostBack && !rockControl.IsValid )
                 {
-                    cssClass.Append(" has-error" );
+                    cssClass.Append( " has-error" );
                 }
                 if ( rockControl.Required )
                 {
                     cssClass.Append( " required" );
+                }
+                if (!string.IsNullOrWhiteSpace(additionalCssClass))
+                {
+                    cssClass.Append( additionalCssClass );
                 }
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, cssClass.ToString() );
@@ -104,6 +109,7 @@ namespace Rock.Web.UI.Controls
                 {
                     rockControl.RequiredFieldValidator.ErrorMessage = rockControl.Label + " is Required.";
                 }
+                rockControl.RequiredFieldValidator.ValidationGroup = rockControl.ValidationGroup;
                 rockControl.RequiredFieldValidator.RenderControl( writer );
             }
 

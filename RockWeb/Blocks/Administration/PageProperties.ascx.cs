@@ -27,34 +27,39 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     public partial class PageProperties : RockBlock
     {
+
         #region Fields
 
         private PageCache _page;
         private readonly List<string> _tabs = new List<string> { "Basic Settings", "Display Settings", "Advanced Settings", "Import/Export"} ;
 
+        #endregion
+
+        #region Properties
+
         /// <summary>
-        /// Gets or sets the current property.
+        /// Gets or sets the current tab.
         /// </summary>
         /// <value>
-        /// The current property.
+        /// The current tab.
         /// </value>
-        protected string CurrentProperty
+        protected string CurrentTab
         {
             get
             {
-                object currentProperty = ViewState["CurrentProperty"];
+                object currentProperty = ViewState["CurrentTab"];
                 return currentProperty != null ? currentProperty.ToString() : "Basic Settings";
             }
 
             set
             {
-                ViewState["CurrentProperty"] = value;
+                ViewState["CurrentTab"] = value;
             }
         }
 
         #endregion
 
-        #region Overridden Methods
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -62,70 +67,70 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            DialogMasterPage masterPage = this.Page.Master as DialogMasterPage;
-            if ( masterPage != null )
-            {
-                masterPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
-            }
-
             try
             {
-                int pageId = Convert.ToInt32( PageParameter( "Page" ) );
-                _page = Rock.Web.Cache.PageCache.Read( pageId );
-
-                if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
+                int pageId = int.MinValue;
+                if ( int.TryParse( PageParameter( "Page" ), out pageId ) )
                 {
-                    ddlLayout.Items.Clear();
-                    var layoutService = new LayoutService();
-                    layoutService.RegisterLayouts( Request.MapPath( "~" ), _page.Layout.Site, CurrentPersonId );
-                    foreach(var layout in layoutService.GetBySiteId(_page.Layout.SiteId))
+                    _page = Rock.Web.Cache.PageCache.Read( pageId );
+
+                    DialogMasterPage masterPage = this.Page.Master as DialogMasterPage;
+                    if ( masterPage != null )
                     {
-                        ddlLayout.Items.Add( new ListItem( layout.Name, layout.Id.ToString() ) );
+                        masterPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
+                        masterPage.SubTitle = string.Format( "Id: {0}", _page.Id );
                     }
-                    ddlMenuWhen.BindToEnum( typeof( DisplayInNavWhen ) );
 
-                    phAttributes.Controls.Clear();
-                    Rock.Attribute.Helper.AddEditControls( _page, phAttributes, !Page.IsPostBack );
-
-                    List<string> blockContexts = new List<string>();
-                    foreach ( var block in _page.Blocks )
+                    if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
                     {
-                        var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
-                        if ( blockControl != null )
+                        ddlMenuWhen.BindToEnum( typeof( DisplayInNavWhen ) );
+
+                        phAttributes.Controls.Clear();
+                        Rock.Attribute.Helper.AddEditControls( _page, phAttributes, !Page.IsPostBack );
+
+                        var blockContexts = new List<EntityTypeCache>();
+                        foreach ( var block in _page.Blocks )
                         {
-                            blockControl.CurrentPage = _page;
-                            blockControl.CurrentBlock = block;
-                            foreach ( var context in blockControl.ContextTypesRequired )
+                            var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
+                            if ( blockControl != null )
                             {
-                                if ( !blockContexts.Contains( context ) )
+                                blockControl.SetBlock( block );
+                                foreach ( var context in blockControl.ContextTypesRequired )
                                 {
-                                    blockContexts.Add( context );
+                                    if ( !blockContexts.Contains( context ) )
+                                    {
+                                        blockContexts.Add( context );
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    phContextPanel.Visible = blockContexts.Count > 0;
+                        phContextPanel.Visible = blockContexts.Count > 0;
 
-                    int i = 0;
-                    foreach ( string context in blockContexts )
-                    {
-                        var tbContext = new RockTextBox();
-                        tbContext.ID = string.Format( "context_{0}", i++ );
-                        tbContext.Required = true;
-                        tbContext.Label = context;
-
-                        if ( _page.PageContexts.ContainsKey( context ) )
+                        int i = 0;
+                        foreach ( EntityTypeCache context in blockContexts )
                         {
-                            tbContext.Text = _page.PageContexts[context];
-                        }
+                            var tbContext = new RockTextBox();
+                            tbContext.ID = string.Format( "context_{0}", i++ );
+                            tbContext.Required = true;
+                            tbContext.Label = context.FriendlyName + " Parameter Name";
+                            tbContext.Help = "The page parameter name that contains the id of this context entity.";
+                            if ( _page.PageContexts.ContainsKey( context.Name ) )
+                            {
+                                tbContext.Text = _page.PageContexts[context.Name];
+                            }
 
-                        phContext.Controls.Add( tbContext );
+                            phContext.Controls.Add( tbContext );
+                        }
+                    }
+                    else
+                    {
+                        DisplayError( "You are not authorized to edit this page" );
                     }
                 }
                 else
                 {
-                    DisplayError( "You are not authorized to edit this page" );
+                    DisplayError( "Invalid Page Id value" );
                 }
             }
             catch ( SystemException ex )
@@ -153,15 +158,20 @@ namespace RockWeb.Blocks.Administration
                 PageService pageService = new PageService();
                 Rock.Model.Page page = pageService.Get( _page.Id );
 
+                LoadSites();
+                if ( _page.Layout != null )
+                {
+                    ddlSite.SelectedValue = _page.Layout.SiteId.ToString();
+                    LoadLayouts( _page.Layout.Site );
+                    ddlLayout.SelectedValue = _page.Layout.Id.ToString();
+                }
+
                 rptProperties.DataSource = _tabs;
                 rptProperties.DataBind();
-
-                LoadDropdowns();
 
                 tbPageName.Text = _page.Name;
                 tbPageTitle.Text = _page.Title;
                 ppParentPage.SetValue( pageService.Get( page.ParentPageId ?? 0 ) );
-                ddlLayout.SelectedValue = _page.LayoutId.ToString();
                 imgIcon.BinaryFileId = page.IconFileId;
                 tbIconCssClass.Text = _page.IconCssClass;
 
@@ -207,7 +217,7 @@ namespace RockWeb.Blocks.Administration
             LinkButton lb = sender as LinkButton;
             if ( lb != null )
             {
-                CurrentProperty = lb.Text;
+                CurrentTab = lb.Text;
 
                 rptProperties.DataSource = _tabs;
                 rptProperties.DataBind();
@@ -216,6 +226,11 @@ namespace RockWeb.Blocks.Administration
             ShowSelectedPane();
         }
 
+        protected void ddlSite_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            LoadLayouts( SiteCache.Read( ddlSite.SelectedValueAsInt().Value ) );
+        }
+        
         /// <summary>
         /// Handles the OnSave event of the masterPage control.
         /// </summary>
@@ -223,6 +238,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void masterPage_OnSave( object sender, EventArgs e )
         {
+            Page.Validate( BlockValidationGroup );
             if ( Page.IsValid )
             {
                 using ( new UnitOfWorkScope() )
@@ -259,7 +275,14 @@ namespace RockWeb.Blocks.Administration
                     }
 
                     page.LayoutId = ddlLayout.SelectedValueAsInt().Value;
-                    page.IconFileId = imgIcon.BinaryFileId;
+
+                    int? orphanedIconFileId = null;
+
+                    if ( page.IconFileId != imgIcon.BinaryFileId )
+                    {
+                        orphanedIconFileId = page.IconFileId;
+                        page.IconFileId = imgIcon.BinaryFileId;
+                    }
                     page.IconCssClass = tbIconCssClass.Text;
 
                     page.PageDisplayTitle = cbPageTitle.Checked;
@@ -314,28 +337,46 @@ namespace RockWeb.Blocks.Administration
                         if ( control is RockTextBox )
                         {
                             var tbContext = control as RockTextBox;
-                            var pageContext = new PageContext();
-                            pageContext.Entity = tbContext.Label;
-                            pageContext.IdParameter = tbContext.Text;
-                            page.PageContexts.Add( pageContext );
+                            if ( !string.IsNullOrWhiteSpace( tbContext.Text ) )
+                            {
+                                var pageContext = new PageContext();
+                                pageContext.Entity = tbContext.Label;
+                                pageContext.IdParameter = tbContext.Text;
+                                page.PageContexts.Add( pageContext );
+                            }
                         }
                     }
 
-                    pageService.Save( page, CurrentPersonId );
-
-                    foreach ( var pageRoute in new PageRouteService().GetByPageId( page.Id ) )
+                    if ( page.IsValid )
                     {
-                        RouteTable.Routes.AddPageRoute( pageRoute );
+                        pageService.Save( page, CurrentPersonId );
+
+                        foreach ( var pageRoute in new PageRouteService().GetByPageId( page.Id ) )
+                        {
+                            RouteTable.Routes.AddPageRoute( pageRoute );
+                        }
+
+                        Rock.Attribute.Helper.GetEditValues( phAttributes, _page );
+                        _page.SaveAttributeValues( CurrentPersonId );
+
+                        if ( orphanedIconFileId.HasValue)
+                        {
+                            BinaryFileService binaryFileService = new BinaryFileService();
+                            var binaryFile = binaryFileService.Get( orphanedIconFileId.Value );
+                            if ( binaryFile != null )
+                            {
+                                // marked the old images as IsTemporary so they will get cleaned up later
+                                binaryFile.IsTemporary = true;
+                                binaryFileService.Save( binaryFile, CurrentPersonId );
+                            }
+                        }
+
+                        Rock.Web.Cache.PageCache.Flush( _page.Id );
+
+                        string script = "if (typeof window.parent.Rock.controls.modal.close === 'function') window.parent.Rock.controls.modal.close('PAGE_UPDATED');";
+                        ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
                     }
-
-                    Rock.Attribute.Helper.GetEditValues( phAttributes, _page );
-                    _page.SaveAttributeValues( CurrentPersonId );
-
-                    Rock.Web.Cache.PageCache.Flush( _page.Id );
                 }
-
-                string script = "if (typeof window.parent.Rock.controls.modal.close === 'function') window.parent.Rock.controls.modal.close();";
-                ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
             }
         }
 
@@ -402,15 +443,49 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
+        protected void cvPageRoute_ServerValidate( object source, ServerValidateEventArgs args )
+        {
+            var errorMessages = new List<string>();
+
+            foreach ( string route in tbPageRoute.Text.SplitDelimitedValues() )
+            {
+                var pageRoute = new PageRoute();
+                pageRoute.Route = route;
+                pageRoute.Guid = Guid.NewGuid();
+                if ( !pageRoute.IsValid )
+                {
+                    errorMessages.Add( string.Format( "The '{0}' route is invalid: {1}", route,
+                    pageRoute.ValidationResults.Select( r => r.ErrorMessage ).ToList().AsDelimited( "; " ) ) );
+                }
+            }
+
+            cvPageRoute.ErrorMessage = errorMessages.AsDelimited( "<br/>" );
+
+            args.IsValid = !errorMessages.Any();
+        }
+
         #endregion
 
-        #region Internal Methods
+        #region Methods
 
-        /// <summary>
-        /// Loads the dropdowns.
-        /// </summary>
-        private void LoadDropdowns()
+        private void LoadSites()
         {
+            ddlSite.Items.Clear();
+            foreach(Site site in new SiteService().Queryable().OrderBy(s => s.Name))
+            {
+                ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
+            }
+        }
+
+        private void LoadLayouts(SiteCache Site)
+        {
+            ddlLayout.Items.Clear();
+            var layoutService = new LayoutService();
+            layoutService.RegisterLayouts( Request.MapPath( "~" ), Site, CurrentPersonId );
+            foreach ( var layout in layoutService.GetBySiteId( Site.Id ) )
+            {
+                ddlLayout.Items.Add( new ListItem( layout.Name, layout.Id.ToString() ) );
+            }
         }
 
         /// <summary>
@@ -433,7 +508,7 @@ namespace RockWeb.Blocks.Administration
         /// <returns></returns>
         protected string GetTabClass( object property )
         {
-            if ( property.ToString() == CurrentProperty )
+            if ( property.ToString() == CurrentTab )
             {
                 return "active";
             }
@@ -446,7 +521,7 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void ShowSelectedPane()
         {
-            if ( CurrentProperty.Equals( "Basic Settings" ) )
+            if ( CurrentTab.Equals( "Basic Settings" ) )
             {
                 pnlBasicProperty.Visible = true;
                 pnlDisplaySettings.Visible = false;
@@ -454,7 +529,7 @@ namespace RockWeb.Blocks.Administration
                 pnlImportExport.Visible = false;
                 pnlBasicProperty.DataBind();
             }
-            else if ( CurrentProperty.Equals( "Display Settings" ) )
+            else if ( CurrentTab.Equals( "Display Settings" ) )
             {
                 pnlBasicProperty.Visible = false;
                 pnlDisplaySettings.Visible = true;
@@ -462,7 +537,7 @@ namespace RockWeb.Blocks.Administration
                 pnlImportExport.Visible = false;
                 pnlDisplaySettings.DataBind();
             }
-            else if ( CurrentProperty.Equals( "Advanced Settings" ) )
+            else if ( CurrentTab.Equals( "Advanced Settings" ) )
             {
                 pnlBasicProperty.Visible = false;
                 pnlDisplaySettings.Visible = false;
@@ -470,7 +545,7 @@ namespace RockWeb.Blocks.Administration
                 pnlImportExport.Visible = false;
                 pnlAdvancedSettings.DataBind();
             }
-            else if ( CurrentProperty.Equals( "Import/Export" ) )
+            else if ( CurrentTab.Equals( "Import/Export" ) )
             {
                 pnlBasicProperty.Visible = false;
                 pnlDisplaySettings.Visible = false;
@@ -483,5 +558,6 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
+
     }
 }

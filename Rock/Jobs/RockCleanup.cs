@@ -22,8 +22,9 @@ namespace Rock.Jobs
     /// <author>Spark Development Network</author>
     [IntegerField("Hours to Keep Unconfirmed Accounts", "The number of hours to keep user accounts that have not been confirmed (default is 48 hours.)", false, 48, "General", 0, "HoursKeepUnconfirmedAccounts" )]
     [IntegerField("Days to Keep Exceptions in Log", "The number of days to keep exceptions in the exception log (default is 14 days.)", false, 14, "General", 1,"DaysKeepExceptions" )]
-    [IntegerField( "Days to Keep Cached Files", "The number of days to keep cached files in the cache folder (default is 14 days.)", false, 14, "General", 2, "DaysKeepCachedFiles" )]
-    [TextField( "Base Cache Folder", "The base/starting Directory for the file cache (default is ~/Cache.)", false, "~/Cache", "General", 3, "BaseCacheDirectory" )]
+    [IntegerField( "Audit Log Expiration Days", "The number of days to keep items in the audit log (default is 14 days.)", false, 14, "General", 2, "AuditLogExpirationDays" )]
+    [IntegerField( "Days to Keep Cached Files", "The number of days to keep cached files in the cache folder (default is 14 days.)", false, 14, "General", 3, "DaysKeepCachedFiles" )]
+    [TextField( "Base Cache Folder", "The base/starting Directory for the file cache (default is ~/Cache.)", false, "~/Cache", "General", 4, "BaseCacheDirectory" )]
     public class RockCleanup : IJob
     {        
         /// <summary> 
@@ -74,6 +75,16 @@ namespace Rock.Jobs
                 exceptionLogService.Save( exception, null );
             }
 
+            // purge audit log
+            int auditExpireDays = Int32.Parse( dataMap.GetString( "AuditLogExpirationDays" ) );
+            DateTime auditExpireDate = DateTime.Now.Add( new TimeSpan( auditExpireDays * -1, 0, 0, 0 ) );
+            AuditService auditService = new AuditService();
+            foreach( var audit in auditService.Queryable().Where( a => a.DateTime < auditExpireDate ).ToList() )
+            {
+                auditService.Delete( audit, null );
+                auditService.Save( audit, null );
+            }
+
             // clean the cached file directory
 
             //get the attributes
@@ -93,6 +104,17 @@ namespace Rock.Jobs
             {
                 //Clean cache directory
                 CleanCacheDirectory( cacheDirectoryPath, cacheExpirationDate );
+            }
+
+            // clean out any temporary binary files
+            BinaryFileService binaryFileService = new BinaryFileService();
+            foreach( var binaryFile in binaryFileService.Queryable().Where( bf => bf.IsTemporary == true ).ToList() )
+            {
+                if ( binaryFile.LastModifiedDateTime < DateTime.Now.AddDays(-1) )
+                {
+                    binaryFileService.Delete( binaryFile, null );
+                    binaryFileService.Save( binaryFile, null );
+                }
             }
 
         }

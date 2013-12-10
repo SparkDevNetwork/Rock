@@ -35,7 +35,6 @@ namespace Rock.Web.UI.Controls
         private Table _table;
         private GridViewRow _actionRow;
         private GridActions _gridActions;
-        private Dictionary<int, string> _dataBoundColumns = new Dictionary<int, string>();
 
         #region Properties
 
@@ -88,7 +87,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 string rowItemText = this.ViewState["RowItemText"] as string;
-                if (!string.IsNullOrWhiteSpace(rowItemText))
+                if ( !string.IsNullOrWhiteSpace( rowItemText ) )
                 {
                     return rowItemText;
                 }
@@ -189,7 +188,7 @@ namespace Rock.Web.UI.Controls
             set
             {
                 this.ViewState["DisplayType"] = value;
-                
+
                 if ( DisplayType == GridDisplayType.Light )
                 {
                     this.AllowPaging = false;
@@ -246,20 +245,46 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string PersonIdField
         {
-            get 
+            get
             {
                 string personIdField = ViewState["PersonIdField"] as string;
-                if (string.IsNullOrWhiteSpace(personIdField))
+                if ( string.IsNullOrWhiteSpace( personIdField ) )
                 {
                     personIdField = null;
                 }
 
-                return personIdField; 
+                return personIdField;
             }
 
             set
             {
                 ViewState["PersonIdField"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the description field.  If specified, the description will be 
+        /// added as a tooltip (title) attribute on the row
+        /// </summary>
+        /// <value>
+        /// The description field.
+        /// </value>
+        public string TooltipField
+        {
+            get
+            {
+                string tooltipField = ViewState["TooltipField"] as string;
+                if ( string.IsNullOrWhiteSpace( tooltipField ) )
+                {
+                    tooltipField = null;
+                }
+
+                return tooltipField;
+            }
+
+            set
+            {
+                ViewState["TooltipField"] = value;
             }
         }
 
@@ -273,6 +298,24 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["CommunicationPageRoute"] as string ?? "~/Communication/{0}"; }
             set { ViewState["CommunicationPageRoute"] = value; }
+        }
+
+        private Dictionary<int, string> RowSelectedColumns
+        {
+            get 
+            {
+                var rowSelectedColumns = ViewState["RowSelectedColumns"] as Dictionary<int, string>;
+                if (rowSelectedColumns == null)
+                {
+                    rowSelectedColumns = new Dictionary<int,string>();
+                    ViewState["RowSelectedColumns"] = rowSelectedColumns;
+                }
+                return rowSelectedColumns;
+            }
+            set
+            {
+                ViewState["RowSelectedColumns"] = value;
+            }                
         }
 
         #region Action Row Properties
@@ -398,7 +441,7 @@ namespace Rock.Web.UI.Controls
         {
             OnGridRebind( e );
 
-            if ( !string.IsNullOrWhiteSpace(PersonIdField) )
+            if ( !string.IsNullOrWhiteSpace( PersonIdField ) )
             {
                 // Set Sender
                 var rockPage = Page as RockPage;
@@ -462,12 +505,12 @@ namespace Rock.Web.UI.Controls
                         Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
 
                         PropertyInfo idProp = oType.GetProperty( this.PersonIdField );
-                        if (idProp != null)
+                        if ( idProp != null )
                         {
                             foreach ( var item in data )
                             {
                                 var recipient = new Rock.Model.CommunicationRecipient();
-                                recipient.PersonId =  (int)idProp.GetValue( item, null );
+                                recipient.PersonId = (int)idProp.GetValue( item, null );
 
                                 foreach ( string mergeField in CommunicateMergeFields )
                                 {
@@ -570,7 +613,7 @@ namespace Rock.Web.UI.Controls
                 {
                     for ( int i = 0; i < data.Columns.Count; i++ )
                     {
-                        worksheet.Cells[rowCounter, i+1].Value = row[i].ToString();
+                        worksheet.Cells[rowCounter, i + 1].Value = row[i].ToString();
 
                         // format background color for alternating rows
                         if ( rowCounter % 2 == 1 )
@@ -747,7 +790,33 @@ namespace Rock.Web.UI.Controls
 
             this.PrepareControlHierarchy();
 
+            // render script for popovers
+            string script = @"
+    $('.grid-table tr').tooltip({html: true, container: 'body', delay: { show: 500, hide: 100 }});
+    $('.grid-table tr').click( function(){ $(this).tooltip('hide'); });;
+";
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "grid-popover", script, true);
+
             this.RenderContents( writer );
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.DataBinding" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnDataBinding( EventArgs e )
+        {
+            // Get the css class for any column that does not implement the INotRowSelectedField
+            RowSelectedColumns = new Dictionary<int, string>();
+            for ( int i = 0; i < this.Columns.Count; i++ )
+            {
+                if ( !( this.Columns[i] is INotRowSelectedField ) )
+                {
+                    RowSelectedColumns.Add( i, this.Columns[i].ItemStyle.CssClass );
+                }
+            }
+
+            base.OnDataBinding( e );
         }
 
         /// <summary>
@@ -756,8 +825,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
         protected override void OnDataBound( EventArgs e )
         {
-            
-
             base.OnDataBound( e );
 
             // Get ItemCount
@@ -825,13 +892,36 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            if ( e.Row.DataItem != null && this.DataKeys != null && this.DataKeys.Count > 0 )
+            if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                object dataKey = this.DataKeys[e.Row.RowIndex].Value as object;
-                if ( dataKey != null )
+                if ( e.Row.DataItem != null )
                 {
-                    string key = dataKey.ToString();
-                    e.Row.Attributes.Add( "datakey", key );
+                    if ( this.DataKeys != null && this.DataKeys.Count > 0 )
+                    {
+                        object dataKey = this.DataKeys[e.Row.RowIndex].Value as object;
+                        if ( dataKey != null )
+                        {
+                            string key = dataKey.ToString();
+                            e.Row.Attributes.Add( "datakey", key );
+                        }
+                    }
+
+                    if ( TooltipField != null )
+                    {
+                        PropertyInfo pi = e.Row.DataItem.GetType().GetProperty( TooltipField );
+                        if ( pi != null )
+                        {
+                            var piv = pi.GetValue( e.Row.DataItem );
+                            if ( piv != null )
+                            {
+                                string description = piv.ToString();
+                                if ( !string.IsNullOrWhiteSpace( description ) )
+                                {
+                                    e.Row.ToolTip = description;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -848,15 +938,12 @@ namespace Rock.Web.UI.Controls
             {
                 string clickUrl = Page.ClientScript.GetPostBackClientHyperlink( this, "RowSelected$" + e.Row.RowIndex );
 
-                for ( int i = 0; i < e.Row.Cells.Count; i++ )
+                foreach ( var col in RowSelectedColumns)
                 {
-                    if ( _dataBoundColumns.ContainsKey( i ) )
-                    {
-                        var cell = e.Row.Cells[i];
-                        cell.AddCssClass( _dataBoundColumns[i] );
-                        cell.AddCssClass( "grid-select-cell" );
-                        cell.Attributes["onclick"] = clickUrl;
-                    }
+                    var cell = e.Row.Cells[col.Key];
+                    cell.AddCssClass( col.Value );
+                    cell.AddCssClass( "grid-select-cell" );
+                    cell.Attributes["onclick"] = clickUrl;
                 }
             }
         }
@@ -865,22 +952,11 @@ namespace Rock.Web.UI.Controls
         /// Creates a new child table.
         /// </summary>
         /// <returns>
-        /// Always returns a new <see cref="T:System.Web.UI.WebControls.Table"/> that represents the child table.
+        /// Always returns a new <see cref="T:System.Web.UI.WebControls.Table" /> that represents the child table.
         /// </returns>
         protected override Table CreateChildTable()
         {
             _table = base.CreateChildTable();
-
-            _dataBoundColumns = new Dictionary<int, string>();
-            for ( int i = 0; i < this.Columns.Count; i++ )
-            {
-                BoundField column = this.Columns[i] as BoundField;
-                if ( column != null && !( column is INotRowSelectedField ) )
-                {
-                    _dataBoundColumns.Add( i, column.ItemStyle.CssClass );
-                }
-            }
-
             return _table;
         }
 
@@ -903,9 +979,9 @@ namespace Rock.Web.UI.Controls
                 if ( this.AllowPaging && this.BottomPagerRow != null )
                 {
                     this.BottomPagerRow.Visible = true;
-                    
+
                     // add paging style
-                    if (this.BottomPagerRow.Cells.Count > 0)
+                    if ( this.BottomPagerRow.Cells.Count > 0 )
                     {
                         this.BottomPagerRow.Cells[0].CssClass = "grid-paging";
                     }
@@ -965,8 +1041,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">A <see cref="T:System.Web.UI.WebControls.GridViewCommandEventArgs" /> that contains event data.</param>
         protected override void OnRowCommand( GridViewCommandEventArgs e )
         {
-        	base.OnRowCommand( e );
-        	
+            base.OnRowCommand( e );
+
             if ( e.CommandName == "RowSelected" )
             {
                 int rowIndex = Int32.Parse( e.CommandArgument.ToString() );
@@ -993,15 +1069,20 @@ namespace Rock.Web.UI.Controls
 
             foreach ( var property in modelType.GetProperties() )
             {
-                if ( property.Name != "Id" )
+                // limit to non-virtual methods to prevent lazy loading issues
+                var getMethod = property.GetGetMethod();
+                if ( !getMethod.IsVirtual )
                 {
-                    if ( property.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() > 0 )
+                    if ( property.Name != "Id" )
                     {
-                        displayColumns.Add( property.Name, GetGridField( property ) );
-                    }
-                    else if ( displayColumns.Count == 0 && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
-                    {
-                        allColumns.Add( property.Name, GetGridField( property ) );
+                        if ( property.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() > 0 )
+                        {
+                            displayColumns.Add( property.Name, GetGridField( property.PropertyType ) );
+                        }
+                        else if ( displayColumns.Count == 0 && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
+                        {
+                            allColumns.Add( property.Name, GetGridField( property.PropertyType ) );
+                        }
                     }
                 }
             }
@@ -1030,23 +1111,34 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Gets the grid field.
         /// </summary>
-        /// <param name="property">The property.</param>
+        /// <param name="propertyType">Type of the property.</param>
         /// <returns></returns>
-        private BoundField GetGridField( PropertyInfo property )
+        public static BoundField GetGridField( Type propertyType )
         {
             BoundField bf = new BoundField();
+            Type baseType = propertyType;
 
-            if ( property.PropertyType == typeof( Boolean ) )
+            if (propertyType.IsGenericType)
+            {
+                baseType = propertyType.GetGenericArguments()[0];
+            }
+
+            if ( baseType == typeof( Boolean ) )
             {
                 bf = new BoolField();
             }
-            else if ( property.PropertyType == typeof( DateTime ) )
+            else if ( baseType == typeof( DateTime ) )
             {
                 bf = new DateField();
             }
-            else if ( property.PropertyType.IsEnum )
+            else if ( baseType.IsEnum )
             {
                 bf = new EnumField();
+            }
+            else if ( baseType == typeof( decimal ) || baseType == typeof( int ) )
+            {
+                bf = new BoundField();
+                bf.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
             }
 
             return bf;
@@ -1352,11 +1444,11 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The direction string.
         /// </value>
-        public string DirectionString 
-        { 
+        public string DirectionString
+        {
             get
             {
-                if (Direction == SortDirection.Descending)
+                if ( Direction == SortDirection.Descending )
                 {
                     return "DESC";
                 }
@@ -1404,7 +1496,7 @@ namespace Rock.Web.UI.Controls
         HtmlGenericContainer[] PageLinkListItem = new HtmlGenericContainer[12];
         LinkButton[] PageLink = new LinkButton[12];
 
-       Literal itemCountDisplay;
+        Literal itemCountDisplay;
 
         HtmlGenericContainer[] ItemLinkListItem = new HtmlGenericContainer[4];
         LinkButton[] ItemLink = new LinkButton[4];
@@ -1421,8 +1513,8 @@ namespace Rock.Web.UI.Controls
         public void InstantiateIn( Control container )
         {
             HtmlGenericControl ulSizeOptions = new HtmlGenericControl( "ul" );
-            ulSizeOptions.AddCssClass("grid-pagesize pagination pagination-sm");
-            container.Controls.Add(ulSizeOptions);
+            ulSizeOptions.AddCssClass( "grid-pagesize pagination pagination-sm" );
+            container.Controls.Add( ulSizeOptions );
 
             for ( int i = 0; i < ItemLinkListItem.Length; i++ )
             {
@@ -1431,6 +1523,7 @@ namespace Rock.Web.UI.Controls
 
                 ItemLink[i] = new LinkButton();
                 ItemLinkListItem[i].Controls.Add( ItemLink[i] );
+                ItemLink[i].CausesValidation = false;
                 ItemLink[i].Click += new EventHandler( lbItems_Click );
             }
 
@@ -1440,26 +1533,26 @@ namespace Rock.Web.UI.Controls
             ItemLink[3].Text = "All";
 
             // itemCount
-            HtmlGenericControl divItemCount = new HtmlGenericControl("div");
-            divItemCount.Attributes.Add("class", "grid-itemcount");
-            container.Controls.Add(divItemCount);
+            HtmlGenericControl divItemCount = new HtmlGenericControl( "div" );
+            divItemCount.Attributes.Add( "class", "grid-itemcount" );
+            container.Controls.Add( divItemCount );
 
             itemCountDisplay = new Literal();
-            divItemCount.Controls.Add(itemCountDisplay);
+            divItemCount.Controls.Add( itemCountDisplay );
 
             // Pagination
-            NavigationPanel = new HtmlGenericControl("ul");
-            NavigationPanel.AddCssClass("grid-pager pagination pagination-sm");
-            container.Controls.Add(NavigationPanel);
+            NavigationPanel = new HtmlGenericControl( "ul" );
+            NavigationPanel.AddCssClass( "grid-pager pagination pagination-sm" );
+            container.Controls.Add( NavigationPanel );
 
-            for (var i = 0; i < PageLinkListItem.Length; i++)
+            for ( var i = 0; i < PageLinkListItem.Length; i++ )
             {
-                PageLinkListItem[i] = new HtmlGenericContainer("li");
-                NavigationPanel.Controls.Add(PageLinkListItem[i]);
+                PageLinkListItem[i] = new HtmlGenericContainer( "li" );
+                NavigationPanel.Controls.Add( PageLinkListItem[i] );
 
                 PageLink[i] = new LinkButton();
-                PageLinkListItem[i].Controls.Add(PageLink[i]);
-                PageLink[i].Click += new EventHandler(lbPage_Click);
+                PageLinkListItem[i].Controls.Add( PageLink[i] );
+                PageLink[i].Click += new EventHandler( lbPage_Click );
             }
 
             PageLink[0].Text = "&laquo;";
@@ -1474,7 +1567,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="pageSize">The number of items on each page</param>
         /// <param name="itemCount">The item count.</param>
         /// <param name="rowItemText">The row item text.</param>
-        public void SetNavigation( int pageCount, int pageIndex, int pageSize, int itemCount, string rowItemText  )
+        public void SetNavigation( int pageCount, int pageIndex, int pageSize, int itemCount, string rowItemText )
         {
             // Set navigation controls
             if ( NavigationPanel != null )

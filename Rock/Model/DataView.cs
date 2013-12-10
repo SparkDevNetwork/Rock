@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -19,7 +20,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Model
 {
     /// <summary>
-    /// DataView POCO Entity.
+    /// Represents a filterable dataview in RockChMS.
     /// </summary>
     [Table( "DataView" )]
     [DataContract]
@@ -29,20 +30,20 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the System.
+        /// Gets or sets a flag indicating if this DataView is part of the RockChMS core system/framework.
         /// </summary>
         /// <value>
-        /// System indicates whether or not the campus is part of the core framework/system.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if it is part of the RockChMS core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the Name of the DataView.
         /// </summary>
         /// <value>
-        /// Given Name.
+        /// A <see cref="System.String"/> representing the Name of the DataView.
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -50,47 +51,49 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the user defined description of the DataView
         /// </summary>
         /// <value>
-        /// Notes about the job..
+        /// A <see cref="System.String"/> representing the description of the DataView.
         /// </value>
         [DataMember]
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the category id.
+        /// Gets or sets the CategoryId of the <see cref="Rock.Model.Category"/> that this DataView belongs to. If there is no Category, this value will be null.
         /// </summary>
         /// <value>
-        /// The category id.
+        /// A <see cref="System.Int32"/> representing the CategoryId of the <see cref="Rock.Model.Category"/> that this DataView belongs to. If it is not part of a Category this value will be null.
         /// </value>
         [DataMember]
         public int? CategoryId { get; set; }
 
         /// <summary>
-        /// Gets or sets the entity type that this view applies to.
+        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that this DataView reports on.
         /// </summary>
         /// <value>
-        /// The entity type id.
+        /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that this DataView reports on.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the root filter id.
+        /// Gets or sets the DataViewFilterId of the root/base <see cref="Rock.Model.DataViewFilter"/> that is used to generate this DataView. 
         /// </summary>
         /// <value>
-        /// The root filter id.
+        /// A <see cref="System.Int32"/> that represents the DataViewFilterId of the root/base <see cref="Rock.Model.DataViewFilter"/> that is used to generate this DataView. If there is 
+        /// not a filter on this DataView, this value will be null.
         /// </value>
         [DataMember]
         public int? DataViewFilterId { get; set; }
 
         /// <summary>
-        /// Gets or sets the entity type id that is used for an optional transformation
+        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that is used for an optional transformation on this DataView.
         /// </summary>
         /// <value>
-        /// The transformation entity type id.
+        /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that is used for an optional transformation on this DataView. If there
+        /// is not a transformation on this DataView, this value will be null.
         /// </value>
         [DataMember]
         public int? TransformEntityTypeId { get; set; }
@@ -100,37 +103,37 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the category.
+        /// Gets or sets the <see cref="Rock.Model.Category"/> that this DataView belongs to
         /// </summary>
         /// <value>
-        /// The category.
+        /// The <see cref="Rock.Model.Category"/> that this DataView belongs to.
         /// </value>
         [DataMember]
         public virtual Category Category { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the entity.
+        /// Gets or sets the <see cref="Rock.Model.EntityType"/> that this DataView reports on.
         /// </summary>
         /// <value>
-        /// The type of the entity.
+        /// The <see cref="Rock.Model.EntityType"/> that this DataView reports on.
         /// </value>
         [DataMember]
         public virtual EntityType EntityType { get; set; }
 
         /// <summary>
-        /// Gets or sets the root Data View Filter.
+        /// Gets or sets the base <see cref="Rock.Model.DataViewFilter"/> that is used to generate this DataView.
         /// </summary>
         /// <value>
-        /// The report filter.
+        /// The base <see cref="Rock.Model.DataViewFilter"/>.
         /// </value>
         [DataMember]
         public virtual DataViewFilter DataViewFilter { get; set; }
 
         /// <summary>
-        /// Gets the parent authority.
+        /// Gets the parent security authority for the DataView
         /// </summary>
         /// <value>
-        /// The parent authority.
+        /// The parent authority of the DataView.
         /// </value>
         public override Security.ISecured ParentAuthority
         {
@@ -165,7 +168,7 @@ namespace Rock.Model
         /// <param name="errorMessages">The error messages.</param>
         /// <param name="createColumns">if set to <c>true</c> [create columns].</param>
         /// <returns></returns>
-        public object BindGrid(Grid grid, out List<string> errorMessages, bool createColumns = false)
+        public List<IEntity> BindGrid( Grid grid, out List<string> errorMessages, bool createColumns = false )
         {
             errorMessages = new List<string>();
 
@@ -183,24 +186,59 @@ namespace Rock.Model
                             grid.CreatePreviewColumns( entityType );
                         }
 
+                        using ( new Rock.Data.UnitOfWorkScope() )
+                        {
+                            var qry = this.GetQuery( out errorMessages );
+                            if ( grid.SortProperty != null )
+                            {
+                                qry = qry.Sort( grid.SortProperty );
+                            }
+
+                            return qry.ToList();
+                        };
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the query.
+        /// </summary>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        public IQueryable<IEntity> GetQuery( out List<string> errorMessages )
+        {
+            errorMessages = new List<string>();
+
+            if ( EntityTypeId.HasValue )
+            {
+                var cachedEntityType = EntityTypeCache.Read( EntityTypeId.Value );
+                if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
+                {
+                    Type entityType = cachedEntityType.GetEntityType();
+
+                    if ( entityType != null )
+                    {
                         Type[] modelType = { entityType };
                         Type genericServiceType = typeof( Rock.Data.Service<> );
                         Type modelServiceType = genericServiceType.MakeGenericType( modelType );
 
-                        using ( new Rock.Data.UnitOfWorkScope() )
+                        object serviceInstance = Activator.CreateInstance( modelServiceType );
+
+                        if ( serviceInstance != null )
                         {
-                            object serviceInstance = Activator.CreateInstance( modelServiceType );
+                            ParameterExpression paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
+                            Expression whereExpression = GetExpression( serviceInstance, paramExpression, out errorMessages );
 
-                            if ( serviceInstance != null )
+                            MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
+                            if ( getMethod != null )
                             {
-                                ParameterExpression paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
-                                Expression whereExpression = GetExpression( serviceInstance, paramExpression, out errorMessages );
+                                var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression } );
+                                var qry = getResult as IQueryable<IEntity>;
 
-                                MethodInfo getListMethod = serviceInstance.GetType().GetMethod( "GetList", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
-                                if ( getListMethod != null )
-                                {
-                                    return getListMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, grid.SortProperty } );
-                                }
+                                return qry;
                             }
                         }
                     }
@@ -306,7 +344,7 @@ namespace Rock.Model
             this.HasOptional( v => v.Category ).WithMany().HasForeignKey( v => v.CategoryId ).WillCascadeOnDelete( false );
             this.HasOptional( v => v.DataViewFilter ).WithMany().HasForeignKey( v => v.DataViewFilterId ).WillCascadeOnDelete( true );
             this.HasRequired( v => v.EntityType ).WithMany().HasForeignKey( v => v.EntityTypeId ).WillCascadeOnDelete( false );
-            this.HasOptional( e => e.TransformEntityType ).WithMany().HasForeignKey( e => e.TransformEntityTypeId).WillCascadeOnDelete( false );
+            this.HasOptional( e => e.TransformEntityType ).WithMany().HasForeignKey( e => e.TransformEntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 

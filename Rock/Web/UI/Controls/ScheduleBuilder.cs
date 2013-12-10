@@ -125,6 +125,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets an optional validation group to use.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get { return ViewState["ValidationGroup"] as string; }
+            set { ViewState["ValidationGroup"] = value; }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -179,6 +191,14 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
 
             RegisterJavaScript();
+
+            var sm = ScriptManager.GetCurrent( this.Page );
+            EnsureChildControls();
+
+            if ( sm != null )
+            {
+                sm.RegisterAsyncPostBackControl( _btnShowPopup );
+            }
         }
 
         /// <summary>
@@ -218,6 +238,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the text displayed when the mouse pointer hovers over the Web server control.
+        /// </summary>
+        /// <returns>The text displayed when the mouse pointer hovers over the Web server control. The default is <see cref="F:System.String.Empty" />.</returns>
+        public override string ToolTip
+        {
+            get
+            {
+                EnsureChildControls();
+                return _btnShowPopup.ToolTip;
+            }
+            set
+            {
+                EnsureChildControls();
+                _btnShowPopup.ToolTip = value;
+            }
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -234,7 +272,7 @@ namespace Rock.Web.UI.Controls
             _btnShowPopup.CausesValidation = false;
             _btnShowPopup.ID = "btnShowPopup_" + this.ClientID;
             _btnShowPopup.CssClass = "picker-label";
-            _btnShowPopup.Text = "<i class='icon-calendar'></i> Edit Schedule";
+            _btnShowPopup.Text = "<i class='fa fa-calendar'></i> Edit Schedule";
             _btnShowPopup.ClientIDMode = ClientIDMode.Static;
             _btnShowPopup.Click += _btnShowPopup_Click;
 
@@ -1277,12 +1315,12 @@ END:VCALENDAR
 
             foreach ( var dateValue in _hfSpecificDateListValues.Value.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
             {
-                writer.Write( "<li><span>" + dateValue + "</span><a href='#' style='display: none'><i class='icon-remove'></i></a></li>" );
+                writer.Write( "<li><span>" + dateValue + "</span><a href='#' style='display: none'><i class='fa fa-times'></i></a></li>" );
             }
 
             writer.Write( @"
                 </ul>
-                <a class='btn btn-action btn-sm add-specific-date'><i class='icon-plus'></i>
+                <a class='btn btn-action btn-sm add-specific-date'><i class='fa fa-plus'></i>
                     <span> Add Date</span>
                 </a>
 " );
@@ -1298,7 +1336,7 @@ END:VCALENDAR
                     <a class='btn btn-primary btn-xs add-specific-date-ok'>
                         <span>OK</span>
                     </a>
-                    <a class='btn btn-xs add-specific-date-cancel'>
+                    <a class='btn btn-link btn-xs add-specific-date-cancel'>
                         <span>Cancel</span>
                     </a>
                 </div>
@@ -1458,12 +1496,12 @@ END:VCALENDAR
 
             foreach ( var dateRangeValue in _hfExclusionDateRangeListValues.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
             {
-                writer.Write( "<li><span>" + dateRangeValue + "</span> <a href='#' style='display: none'><i class='icon-remove'></i></a></li>" );
+                writer.Write( "<li><span>" + dateRangeValue + "</span> <a href='#' style='display: none'><i class='fa fa-times'></i></a></li>" );
             }
 
             writer.Write( @"
                 </ul>
-                <a class='btn btn-action btn-sm add-exclusion-daterange'><i class='icon-plus'></i>
+                <a class='btn btn-action btn-sm add-exclusion-daterange'><i class='fa fa-plus'></i>
                     <span> Add Date Range</span>
                 </a>" );
 
@@ -1477,7 +1515,7 @@ END:VCALENDAR
                     <a class='btn btn-primary btn-xs add-exclusion-daterange-ok'>
                         <span>OK</span>
                     </a>
-                    <a class='btn btn-xs add-exclusion-daterange-cancel'>
+                    <a class='btn btn-link btn-xs add-exclusion-daterange-cancel'>
                         <span>Cancel</span>
                     </a>
                 </div>");

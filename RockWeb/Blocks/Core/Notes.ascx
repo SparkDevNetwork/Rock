@@ -6,14 +6,14 @@
         <asp:Panel ID="pnlNotes" runat="server">
             <section class="panel panel-note">
 
-                <asp:ValidationSummary ID="vs1" runat="server" />
+                <asp:ValidationSummary ID="vs1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                 <div class="panel-heading clearfix">
                     <h3 class="panel-title">
-                        <i class="icon-calendar"></i>
+                        <i class="fa fa-calendar"></i>
                         <asp:Literal ID="lTitle" runat="server"></asp:Literal>
                     </h3>
-                    <a class="btn btn-sm btn-action add-note"><i class="icon-plus"></i></a>
+                    <a class="btn btn-sm btn-action add-note"><i class="fa fa-plus"></i></a>
                 </div>
 
                 
@@ -29,7 +29,7 @@
                                     <asp:CheckBox ID="cbAlert" runat="server" Text="Alert" />
                                     <asp:CheckBox ID="cbPrivate" runat="server" Text="Private" />
                                 </div>
-                                <button class="btn btn-xs security pull-right" type="button" id="btnSecurity" runat="server"><i class="icon-lock"></i> Security</button>
+                                <button class="btn btn-xs security pull-right" type="button" id="btnSecurity" runat="server"><i class="fa fa-lock"></i> Security</button>
                             </div>
                         </div>
 
@@ -50,9 +50,9 @@
                 </div>
 
                 <asp:LinkButton ID="lbShowMore" runat="server" OnClick="lbShowMore_Click">
-                <i class="icon-angle-down"></i>
+                <i class="fa fa-angle-down"></i>
                 <span>Load More</span>
-                <i class="icon-angle-down"></i>
+                <i class="fa fa-angle-down"></i>
                 </asp:LinkButton>
 
                 <asp:HiddenField ID="hfDisplayCount" runat="server" Value="10" />

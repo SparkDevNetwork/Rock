@@ -11,13 +11,28 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
 using System.Web.Security;
+
+using Rock.Attribute;
 using Rock.Web;
 
 namespace RockWeb.Blocks.Security
 {
+    [LinkedPage( "My Account Page", "Page for user to manage their account (if blank will use 'MyAccount' page route)" )]
     public partial class LoginStatus : Rock.Web.UI.RockBlock
     {
         string action = string.Empty;
+
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            var url = LinkedPageUrl( "MyAccountPage" );
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                url = ResolveRockUrl( "~/MyAccount" );
+            }
+            hlMyAccount.NavigateUrl = url;
+        }
 
         protected override void OnLoad( EventArgs e )
         {
@@ -49,22 +64,10 @@ namespace RockWeb.Blocks.Security
         {
             if ( action == "Login" )
             {
-                var site = CurrentPage.Layout.Site;
+                var site = RockPage.Layout.Site;
                 if ( site.LoginPageId.HasValue )
                 {
-                    var pageReference = new PageReference( site.LoginPageId.Value );
-                    if ( site.LoginPageRouteId.HasValue )
-                    {
-                        pageReference.RouteId = site.LoginPageRouteId.Value;
-                    }
-
-                    var parms = new Dictionary<string, string>();
-
-                    // if the QueryString already has a returnUrl, use that, otherwise redirect to RawUrl
-                    parms.Add( "returnurl", Request.QueryString["returnUrl"] ?? Server.UrlEncode( Request.RawUrl ) );
-                    pageReference.Parameters = parms;
-
-                    Response.Redirect( pageReference.BuildUrl() );
+                    site.RedirectToLoginPage( true );
                 }
                 else
                 {
@@ -75,10 +78,19 @@ namespace RockWeb.Blocks.Security
             {
                 FormsAuthentication.SignOut();
 
-                Response.Redirect( CurrentPageReference.BuildUrl() );
-                Context.ApplicationInstance.CompleteRequest();
-            }
+                // After logging out check to see if an anonymous user is allowed to view the current page.  If so
+                // redirect back to the current page, otherwise redirect to the site's default page
+                if ( RockPage.IsAuthorized( "View", null ) )
+                {
+                    Response.Redirect( CurrentPageReference.BuildUrl() );
+                    Context.ApplicationInstance.CompleteRequest();
+                }
+                else
+                {
+                    RockPage.Layout.Site.RedirectToDefaultPage();
+                }
 
+            }
         }
     }
 }

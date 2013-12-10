@@ -1,15 +1,15 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BatchList.ascx.cs" Inherits="RockWeb.Blocks.Finance.Administration.BatchList" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BatchList.ascx.cs" Inherits="RockWeb.Blocks.Finance.BatchList" %>
 
 <asp:UpdatePanel ID="upFinancialBatch" runat="server">
     <ContentTemplate>
 
-        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error alert" />
+        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
         <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
         <asp:Panel ID="pnlBatchList" runat="server">
 
             <Rock:GridFilter ID="rFBFilter" runat="server">
-                <Rock:DatePicker ID="dtBatchDate" runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDate" Label="Date" />
+                <Rock:DatePicker ID="dtBatchDate" runat="server" Label="Date" />
                 <Rock:RockTextBox ID="txtTitle" runat="server" Label="Title"></Rock:RockTextBox>
                 <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
                 <Rock:CampusPicker ID="ddlCampus" runat="server" />
@@ -41,7 +41,6 @@
                             <asp:Literal ID="TransactionCount" runat="server" />
                         </ItemTemplate>
                     </asp:TemplateField>
-                    <asp:BoundField DataField="Status" HeaderText="Status" />
                     <asp:BoundField DataField="Campus" HeaderText="Campus" />
                     <Rock:DeleteField OnClick="rGridBatch_Delete" />
                 </Columns>

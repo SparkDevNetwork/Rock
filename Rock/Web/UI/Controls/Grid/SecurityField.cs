@@ -15,7 +15,7 @@ namespace Rock.Web.UI.Controls
     /// <see cref="Grid"/> Column for editing the security of an item in a row in a grid
     /// </summary>
     [ToolboxData( "<{0}:SecurityField BoundField=server></{0}:SecurityField>" )]
-    public class SecurityField : TemplateField
+    public class SecurityField : TemplateField, INotRowSelectedField
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SecurityField" /> class.
@@ -114,7 +114,7 @@ namespace Rock.Web.UI.Controls
                 aSecure.Attributes.Add( "height", "500px" );
 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
-                buttonIcon.Attributes.Add( "class", "icon-lock" );
+                buttonIcon.Attributes.Add( "class", "fa fa-lock" );
                 aSecure.Controls.Add( buttonIcon );
 
                 aSecure.DataBinding += new EventHandler( aSecure_DataBinding );

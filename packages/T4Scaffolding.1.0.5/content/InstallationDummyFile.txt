@@ -1,2 +1,0 @@
-﻿This file is added as part of the NuGet package installation process for the scaffolding package.
-It should be deleted automatically after installation is completed. If not, you can delete it manually.

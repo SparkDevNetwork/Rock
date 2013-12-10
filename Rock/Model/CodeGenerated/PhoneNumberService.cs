@@ -81,20 +81,29 @@ namespace Rock.Model
             else
             {
                 var target = new PhoneNumber();
-                target.IsSystem = source.IsSystem;
-                target.PersonId = source.PersonId;
-                target.Number = source.Number;
-                target.Extension = source.Extension;
-                target.NumberTypeValueId = source.NumberTypeValueId;
-                target.IsMessagingEnabled = source.IsMessagingEnabled;
-                target.IsUnlisted = source.IsUnlisted;
-                target.Description = source.Description;
-                target.Id = source.Id;
-                target.Guid = source.Guid;
-
-            
+                target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Copies the properties from another PhoneNumber object to this PhoneNumber object
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyPropertiesFrom( this PhoneNumber target, PhoneNumber source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.PersonId = source.PersonId;
+            target.Number = source.Number;
+            target.Extension = source.Extension;
+            target.NumberTypeValueId = source.NumberTypeValueId;
+            target.IsMessagingEnabled = source.IsMessagingEnabled;
+            target.IsUnlisted = source.IsUnlisted;
+            target.Description = source.Description;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

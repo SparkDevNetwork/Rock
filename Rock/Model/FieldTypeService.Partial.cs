@@ -14,35 +14,35 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Field Type POCO Service class
+    /// Service/Data Access class for <see cref="Rock.Model.FieldType"/> entity objects.
     /// </summary>
     public partial class FieldTypeService
     {
         /// <summary>
-        /// Gets Field Types by Name
+        /// Returns an enumerable collection of <see cref="Rock.Model.FieldType">FieldTypes</see> by Name.
         /// </summary>
-        /// <param name="name">Name.</param>
-        /// <returns>An enumerable list of FieldType objects.</returns>
+        /// <param name="name">A <see cref="System.String"/> represents the Name of the <see cref="Rock.Model.FieldType">FieldType(s)</see> to retrieve.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.FieldType">FieldTypes</see> with a name that matches the specified value.</returns>
         public IEnumerable<FieldType> GetByName( string name )
         {
             return Repository.Find( t => t.Name == name );
         }
         
         /// <summary>
-        /// Gets Field Types by Guid
+        /// Returns a <see cref="Rock.Model.FieldType"/> by it's Guid identifier.
         /// </summary>
-        /// <param name="guid">Guid.</param>
-        /// <returns>FieldType object.</returns>
+        /// <param name="guid">A <see cref="System.Guid"/> representing the Guid identifier of the <see cref="Rock.Model.FieldType"/> to retrieve.</param>
+        /// <returns>The <see cref="Rock.Model.FieldType"/> with a Guid identifier that matches the specified value.</returns>
         public Rock.Model.FieldType GetByGuid( Guid guid )
         {
             return Repository.FirstOrDefault( t => t.Guid == guid );
         }
 
         /// <summary>
-        /// Gets a list of ISecured entities (all models) that have not yet been registered and adds them
-        /// as an entity type.
+        /// Gets a list of all <see cref="Rock.Model.FieldType">FieldTypes</see> (all items that implement the <see cref="Rock.Field.IFieldType"/> interface) and registers the 
+        /// <see cref="Rock.Model.FieldType">FieldTypes</see> that have not been previously registered.
         /// </summary>
-        /// <param name="physWebAppPath">the physical path of the web application</param>
+        /// <param name="physWebAppPath">A <see cref="System.String"/> representing the physical path of the web application.</param>
         public void RegisterFieldTypes( string physWebAppPath )
         {
             var fieldTypes = new Dictionary<string, EntityType>();
@@ -56,8 +56,13 @@ namespace Rock.Model
                     f.Assembly == assemblyName &&
                     f.Class == className ).Any() )
                 {
+                    string fieldTypeName = type.Value.Name.SplitCase();
+                    if (fieldTypeName.EndsWith(" Field Type"))
+                    {
+                        fieldTypeName = fieldTypeName.Substring( 0, fieldTypeName.Length - 11 );
+                    }
                     var fieldType = new FieldType();
-                    fieldType.Name = type.Value.Name.SplitCase();
+                    fieldType.Name = fieldTypeName;
                     fieldType.Assembly = assemblyName;
                     fieldType.Class = className;
                     fieldType.IsSystem = false;

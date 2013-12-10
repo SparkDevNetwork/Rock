@@ -29,8 +29,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     {
         private Group _family = null;
         private bool _canEdit = false;
-        private DefinedTypeCache addressTypes;
-        private List<GroupRole> familyRoles = new List<GroupRole>();
+        private List<DefinedValue> addressTypes = new List<DefinedValue>();
+        private List<GroupTypeRole> familyRoles = new List<GroupTypeRole>();
         protected string basePersonUrl;
 
         private List<FamilyMember> FamilyMembers
@@ -98,15 +98,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
                 else
                 {
-                    familyRoles = _family.GroupType.Roles.OrderBy( r => r.SortOrder ).ToList();
+                    familyRoles = _family.GroupType.Roles.OrderBy( r => r.Order ).ToList();
                     rblNewPersonRole.DataSource = familyRoles;
                     rblNewPersonRole.DataBind();
+
+                    addressTypes = _family.GroupType.LocationTypes.Select( l => l.LocationTypeValue ).OrderBy( v => v.Order ).ToList();
                 }
             }
 
             _canEdit = IsUserAuthorized( "Edit" );
 
-            addressTypes = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.LOCATION_LOCATION_TYPE ) );
             var campusi = new CampusService().Queryable().OrderBy( a => a.Name ).ToList();
             cpCampus.Campuses = campusi;
             cpCampus.Visible = campusi.Any();
@@ -120,6 +121,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             modalAddPerson.SaveButtonText = "Ok";
             modalAddPerson.SaveClick += modalAddPerson_SaveClick;
+            modalAddPerson.OnCancelScript = string.Format( "$('#{0}').val('');", hfActiveTab.ClientID );
 
             gLocations.DataKeyNames = new string[] { "id" };
             gLocations.RowDataBound += gLocations_RowDataBound;
@@ -173,8 +175,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 if ( _family != null )
                 {
-
                     tbFamilyName.Text = _family.Name;
+                    
+                    // add banner text
+                    if (_family.Name.Contains("family")) { 
+                        lBanner.Text = _family.Name.FormatAsHtmlTitle();
+                    }
+                    else
+                    {
+                        lBanner.Text = (_family.Name + " Family").FormatAsHtmlTitle();
+                    }
+
+
                     cpCampus.SelectedCampusId = _family.CampusId;
 
                     FamilyMembers = new List<FamilyMember>();
@@ -190,7 +202,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         FamilyAddresses.Add( new FamilyAddress( groupLocation ) );
                     }
                     BindLocations();
+                }
 
+                if ( !string.IsNullOrWhiteSpace( hfActiveTab.Value ) )
+                {
+                    modalAddPerson.Show();
                 }
             }
         }
@@ -257,10 +273,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     System.Web.UI.WebControls.Image imgPerson = e.Item.FindControl( "imgPerson" ) as System.Web.UI.WebControls.Image;
                     if ( imgPerson != null )
                     {
-                        imgPerson.Visible = familyMember.PhotoId.HasValue;
                         if ( familyMember.PhotoId.HasValue )
                         {
-                            imgPerson.ImageUrl = string.Format( "~/GetImage.ashx?id={0}", familyMember.PhotoId );
+                            imgPerson.ImageUrl = string.Format( "~/GetImage.ashx?id={0}&width=65&height=65", familyMember.PhotoId );
                         }
                     }
 
@@ -357,7 +372,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                             var existingFamilyRoles = new GroupMemberService().Queryable("GroupRole")
                                 .Where( m => m.PersonId == person.Id && familyRoleIds.Contains( m.GroupRoleId ) )
-                                .OrderBy( m => m.GroupRole.SortOrder)
+                                .OrderBy( m => m.GroupRole.Order)
                                 .ToList();
 
                             var existingRole = existingFamilyRoles.Select( m => m.GroupRole).FirstOrDefault();
@@ -388,6 +403,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     familyMember.RoleGuid = role.Guid;
                     familyMember.RoleName = role.Name;
                 }
+
                 FamilyMembers.Add( familyMember );
             }
 
@@ -395,6 +411,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             tbNewPersonLastName.Required = false;
 
             confirmExit.Enabled = true;
+
+            hfActiveTab.Value = string.Empty;
 
             BindMembers();
         }
@@ -410,8 +428,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbMoved_Click( object sender, EventArgs e )
         {
-            var homeLocType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME ) );
-            var prevLocType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_PREVIOUS ) );
+            var homeLocType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME ) );
+            var prevLocType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS ) );
 
             if ( homeLocType != null && prevLocType != null )
             {
@@ -451,7 +469,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         var ddlLocType = e.Row.FindControl( "ddlLocType" ) as DropDownList;
                         if ( ddlLocType != null )
                         {
-                            ddlLocType.BindToDefinedType( addressTypes );
+                            ddlLocType.DataSource = addressTypes;
+                            ddlLocType.DataBind();
                             ddlLocType.SelectedValue = familyAddress.LocationTypeId.ToString();
                         }
 
@@ -785,8 +804,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         }
 
                         groupLocation.GroupLocationTypeValueId = familyAddress.LocationTypeId;
-                        groupLocation.IsMailing = familyAddress.IsMailing;
-                        groupLocation.IsLocation = familyAddress.IsLocation;
+                        groupLocation.IsMailingLocation = familyAddress.IsMailing;
+                        groupLocation.IsMappedLocation = familyAddress.IsLocation;
                         if ( updatedAddress != null )
                         {
                             groupLocation.Location = updatedAddress;
@@ -806,8 +825,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 newFamilyLocation.GroupId = newFamily.Id;
                                 newFamilyLocation.LocationId = groupLocation.LocationId;
                                 newFamilyLocation.GroupLocationTypeValueId = groupLocation.GroupLocationTypeValueId;
-                                newFamilyLocation.IsMailing = groupLocation.IsMailing;
-                                newFamilyLocation.IsLocation = groupLocation.IsLocation;
+                                newFamilyLocation.IsMailingLocation = groupLocation.IsMailingLocation;
+                                newFamilyLocation.IsMappedLocation = groupLocation.IsMappedLocation;
                                 groupLocationService.Add( newFamilyLocation, CurrentPersonId );
                                 groupLocationService.Save( newFamilyLocation, CurrentPersonId );
                             }
@@ -1027,8 +1046,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     Zip = groupLocation.Location.Zip;
                 }
 
-                IsMailing = groupLocation.IsMailing;
-                IsLocation = groupLocation.IsLocation;
+                IsMailing = groupLocation.IsMailingLocation;
+                IsLocation = groupLocation.IsMappedLocation;
             }
         }
 

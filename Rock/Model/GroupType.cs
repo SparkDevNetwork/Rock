@@ -1,3 +1,4 @@
+using System;
 //
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
@@ -31,6 +32,8 @@ namespace Rock.Model
         {
             ShowInGroupList = true;
             ShowInNavigation = true;
+            GroupTerm = "Group";
+            GroupMemberTerm = "Member";
         }
 
         #region Entity Properties
@@ -74,6 +77,7 @@ namespace Rock.Model
         /// <remarks>
         /// Examples of GroupTerms include: group, community, class, family, etc.
         /// </remarks>
+        [Required]
         [MaxLength( 100 )]
         [DataMember]
         public string GroupTerm { get; set; }
@@ -88,15 +92,16 @@ namespace Rock.Model
         /// <example>
         /// Examples of GroupMemberTerms include: member, attendee, team member, student, etc.
         /// </example>
+        [Required]
         [MaxLength( 100 )]
         [DataMember]
         public string GroupMemberTerm { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.GroupRole"/> that a <see cref="Rock.Model.GroupMember"/> of a <see cref="Rock.Model.Group"/> belonging to this GroupType is given by default.
+        /// Gets or sets the Id of the <see cref="Rock.Model.GroupTypeRole"/> that a <see cref="Rock.Model.GroupMember"/> of a <see cref="Rock.Model.Group"/> belonging to this GroupType is given by default.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupRole"/> that a <see cref="Rock.Model.GroupMember"/> of a <see cref="Rock.Model.Group"/> belonging to this GroupType is given by default.
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupTypeRole"/> that a <see cref="Rock.Model.GroupMember"/> of a <see cref="Rock.Model.Group"/> belonging to this GroupType is given by default.
         /// </value>
         [DataMember]
         public int? DefaultGroupRoleId { get; set; }
@@ -179,7 +184,7 @@ namespace Rock.Model
         /// The available options are:
         /// AttendanceRule.None -> A <see cref="Rock.Model.Person"/> does not have to previously belong to the <see cref="Rock.Model.Group"/> that they are checking into, and they will not be automatically added.
         /// AttendanceRule.AddOnCheckin -> If a <see cref="Rock.Model.Person"/> does not belong to the <see cref="Rock.Model.Group"/> that they are checking into, they will be automatically added with the default
-        /// <see cref="Rock.Model.GroupRole"/> upon check in.
+        /// <see cref="Rock.Model.GroupTypeRole"/> upon check in.
         /// </example>
         [DataMember]
         public AttendanceRule AttendanceRule { get; set; }
@@ -217,23 +222,22 @@ namespace Rock.Model
         public int? InheritedGroupTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of <see cref="Rock.Model.Location">Locations</see> that can be selected for <see cref="Rock.Model.Group">Groups</see> of this type and 
-        /// this property is also used to configure the Location Picker.
+        /// Gets or sets selection mode that the Location Picker should use when adding locations to groups of this type
         /// </summary>
         /// <value>
-        /// The <see cref="LocationPickerMode"/> that represents the type of <see cref="Rock.Model.Location">Locations</see> that can be selected for <see cref="Rock.Model.Group">Groups</see>
-        /// of this GroupType. This property is also used to configure the Location Picker.
+        /// The <see cref="Rock.Web.UI.Controls.LocationPickerMode"/> to use when adding location(s) to <see cref="Rock.Model.Group">Groups</see>
+        /// of this GroupType. This can be one or more of the following values
         /// </value>
         /// <remarks>
-        /// Available options include:
-        ///     LocationPickerMode.Any -> Use any Location Picker mode.
-        ///     LocationPickerMode.Address -> Selection by address (i.e. 7007 W Happy Valley Rd Peoria, AZ 85383)
-        ///     LocationPickerMode.Point -> A geographic point (i.e. 38.229336, -85.542045)
-        ///     LocationPickerMode.Polygon -> A geographic polygon.
-        ///     LocationPickerMode.PointofInterest -> A named location.
+        /// Available options include one or more of the following:
+        ///     GroupLocationPickerMode.Location -> A named location.
+        ///     GroupLocationPickerMode.Address -> Selection by address (i.e. 7007 W Happy Valley Rd Peoria, AZ 85383)
+        ///     GroupLocationPickerMode.Point -> A geographic point (i.e. 38.229336, -85.542045)
+        ///     GroupLocationPickerMode.Polygon -> A geographic polygon.
+        ///     GroupLocationPickerMode.GroupMember -> A group members's address
         /// </remarks>
         [DataMember]
-        public LocationPickerMode LocationSelectionMode { get; set; }
+        public GroupLocationPickerMode LocationSelectionMode { get; set; }
 
         /// <summary>
         /// Gets or sets Id of the <see cref="Rock.Model.DefinedValue"/> that represents the purpose of the GroupType.
@@ -292,18 +296,18 @@ namespace Rock.Model
         private ICollection<GroupType> _parentGroupTypes;
 
         /// <summary>
-        /// Gets or sets a collection containing the <see cref="Rock.Model.GroupRole">GroupRoles</see> that this GroupType utilizes.
+        /// Gets or sets a collection containing the <see cref="Rock.Model.GroupTypeRole">GroupRoles</see> that this GroupType utilizes.
         /// </summary>
         /// <value>
-        /// A collection containing the <see cref="Rock.Model.GroupRole">GroupRoles that are associated with this GroupType.
+        /// A collection containing the <see cref="Rock.Model.GroupTypeRole"/>GroupRoles that are associated with this GroupType.
         /// </value>
         [DataMember]
-        public virtual ICollection<GroupRole> Roles
+        public virtual ICollection<GroupTypeRole> Roles
         {
-            get { return _roles ?? ( _roles = new Collection<GroupRole>() ); }
+            get { return _roles ?? ( _roles = new Collection<GroupTypeRole>() ); }
             set { _roles = value; }
         }
-        private ICollection<GroupRole> _roles;
+        private ICollection<GroupTypeRole> _roles;
 
         /// <summary>
         /// Gets or sets a collection of the <see cref="Rock.Model.GroupTypeLocationType">GroupTypeLocationTypes</see> that are associated with this GroupType.
@@ -321,14 +325,14 @@ namespace Rock.Model
 
 
         /// <summary>
-        /// Gets or sets the default <see cref="Rock.Model.GroupRole"/> for <see cref="Rock.Model.GroupMember">GroupMembers</see> who belong to a 
+        /// Gets or sets the default <see cref="Rock.Model.GroupTypeRole"/> for <see cref="Rock.Model.GroupMember">GroupMembers</see> who belong to a 
         /// <see cref="Rock.Model.Group"/> of this GroupType.
         /// </summary>
         /// <value>
-        /// The default <see cref="Rock.Model.GroupRole"/> for <see cref="Rock.Model.GroupMember">GroupMembers</see> who belong to a <see cref="Rock.Model.Group"/>
+        /// The default <see cref="Rock.Model.GroupTypeRole"/> for <see cref="Rock.Model.GroupMember">GroupMembers</see> who belong to a <see cref="Rock.Model.Group"/>
         /// of this GroupType.
         /// </value>
-        public virtual GroupRole DefaultGroupRole { get; set; }
+        public virtual GroupTypeRole DefaultGroupRole { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.BinaryFile"/> that is used as the small icon representing this GroupType. This is only used when the GroupType uses
@@ -361,7 +365,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual DefinedValue GroupTypePurposeValue { get; set; }
-        
+
         /// <summary>
         /// Gets a count of <see cref="Rock.Model.Group">Groups</see> that belong to this GroupType.
         /// </summary>
@@ -464,15 +468,15 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// Represents the type of <see cref="Rock.Model.Location">Locations</see> that should be allowed to be selected using the location picker.
-    /// TODO: Move this enum to the LocationPicker class when created
+    /// Represents and indicates the type of location picker to use when setting a location for a group and/or when searching for group(s)
     /// </summary>
-    public enum LocationPickerMode
+    [Flags]
+    public enum GroupLocationPickerMode
     {
         /// <summary>
-        /// Any location type.
+        /// The none
         /// </summary>
-        Any = 0,
+        None = 0,
 
         /// <summary>
         /// An Address
@@ -480,21 +484,31 @@ namespace Rock.Model
         Address = 1,
 
         /// <summary>
+        /// A Named location (Building, Room)
+        /// </summary>
+        Named = 2,
+
+        /// <summary>
         /// A Geographic point (Latitude/Longitude)
         /// </summary>
-        Point = 2,
+        Point = 4,
 
         /// <summary>
         /// A Geographic Polygon
         /// </summary>
-        Polygon = 3,
+        Polygon = 8,
 
         /// <summary>
-        /// A Named location (Building, Room)
+        /// A Group Member's address
         /// </summary>
-        PointOfInterest = 4
-    }
+        GroupMember = 16,
 
+        /// <summary>
+        /// All
+        /// </summary>
+        All = Address | Named | Point | Polygon | GroupMember
+
+    }
     #endregion
 
 }

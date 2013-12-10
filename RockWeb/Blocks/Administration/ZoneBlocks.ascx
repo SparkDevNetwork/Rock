@@ -46,12 +46,12 @@
 
     </asp:Panel>
 
-    <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="admin-details well">
+    <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="admin-details">
 
         <asp:HiddenField ID="hfBlockLocation" runat="server" />
         <asp:HiddenField ID="hfBlockId" runat="server" />
 
-        <asp:ValidationSummary ID="vsZoneBlocks" runat="server" CssClass="alert alert-danger" ValidationGroup="ZoneBlockValidationGroup"/>
+        <asp:ValidationSummary ID="vsZoneBlocks" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="ZoneBlockValidationGroup"/>
         <fieldset>
             <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Block</legend>
             <Rock:DataTextBox ID="tbBlockName" runat="server" SourceTypeName="Rock.Model.Block, Rock" PropertyName="Name" Required="true" ValidationGroup="ZoneBlockValidationGroup" CssClass="input-large"/>
@@ -61,7 +61,7 @@
 
         <div class="actions">
             <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" onclick="btnSave_Click" ValidationGroup="ZoneBlockValidationGroup" />
-            <asp:LinkButton id="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default" CausesValidation="false" OnClick="btnCancel_Click" />
+            <asp:LinkButton id="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
         </div>
 
     </asp:Panel>

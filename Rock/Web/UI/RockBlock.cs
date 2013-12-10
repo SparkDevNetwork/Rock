@@ -26,6 +26,12 @@ namespace Rock.Web.UI
     /// </summary>
     public abstract class RockBlock : UserControl
     {
+        #region Private Properties
+
+        private BlockCache _blockCache;
+
+        #endregion
+
         #region Public Properties
 
         /// <summary>
@@ -43,16 +49,15 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// The current page.  This value is read and cached by the RockRouteHandler
-        /// and set by the layout's base class (Rock.Web.UI.RockPage) when loading the block instance
+        /// Gets the current block's id.
         /// </summary>
-        public PageCache CurrentPage { get; set; }
-
-        /// <summary>
-        /// The current block.  This value is read and cached by the layout's 
-        /// base class (Rock.Web.UI.RockPage) when loading the block instance
-        /// </summary>
-        public BlockCache CurrentBlock { get; set; }
+        /// <value>
+        /// The block identifier.
+        /// </value>
+        public int BlockId
+        {
+            get { return _blockCache.Id; }
+        }
 
         /// <summary>
         /// Gets the current page reference.
@@ -87,6 +92,14 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Gets or sets the validation group.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string BlockValidationGroup { get; set; }
+
+        /// <summary>
         /// Gets the bread crumbs that were created during the page's oninit.  A block
         /// can add additional breadcrumbs to this list to be rendered.  Crumb's added 
         /// this way will not be saved to the current page reference's collection of 
@@ -104,17 +117,6 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Gets the app path.
-        /// </summary>
-        /// <value>
-        /// The app path.
-        /// </value>
-        public string AppPath
-        {
-            get { return RockPage.AppPath; }
-        }
-
-        /// <summary>
         /// Gets the root URL Path.
         /// </summary>
         public string RootPath
@@ -129,46 +131,43 @@ namespace Rock.Web.UI
         /// <summary>
         /// Gets a list of any context entities that the block requires.
         /// </summary>
-        public virtual List<string> ContextTypesRequired
+        public virtual List<EntityTypeCache> ContextTypesRequired
         {
             get
             {
                 if ( _contextTypesRequired == null )
                 {
-                    _contextTypesRequired = new List<string>();
+                    _contextTypesRequired = new List<EntityTypeCache>();
 
                     int properties = 0;
                     foreach ( var attribute in this.GetType().GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
                     {
                         var contextAttribute = (ContextAwareAttribute)attribute;
-                        string contextType = string.Empty;
+                        var entityType = contextAttribute.EntityType;
 
-                        if ( String.IsNullOrEmpty( contextAttribute.EntityType ) )
+                        if ( contextAttribute.EntityType == null )
                         {
                             // If the entity type was not specified in the attibute, look for a property that defines it
                             string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
                             properties++;
 
-                            if ( !String.IsNullOrEmpty( GetAttributeValue( propertyKeyName ) ) )
+                            Guid guid = Guid.Empty;
+                            if ( Guid.TryParse( GetAttributeValue( propertyKeyName ), out guid ) )
                             {
-                                contextType = GetAttributeValue( propertyKeyName );
+                                entityType = EntityTypeCache.Read( guid );
                             }
                         }
-                        else
-                        {
-                            contextType = contextAttribute.EntityType;
-                        }
 
-                        if ( contextType != string.Empty && !_contextTypesRequired.Contains( contextType ) )
+                        if ( entityType != null && !_contextTypesRequired.Any( e => e.Guid.Equals( entityType.Guid ) ) )
                         {
-                            _contextTypesRequired.Add( contextType );
+                            _contextTypesRequired.Add( entityType );
                         }
                     }
                 }
                 return _contextTypesRequired;
             }
         }
-        private List<string> _contextTypesRequired;
+        private List<EntityTypeCache> _contextTypesRequired;
 
         /// <summary>
         /// Gets a dictionary of the current context entities.  The key is the type of context, and the value is the entity object
@@ -222,19 +221,6 @@ namespace Rock.Web.UI
         /// </summary>
         public RockBlock()
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RockBlock" /> class.
-        /// </summary>
-        /// <param name="currentPage">The current page.</param>
-        /// <param name="currentBlock">The current block.</param>
-        /// <param name="currentPageReference">The current page reference.</param>
-        public RockBlock( PageCache currentPage, BlockCache currentBlock, PageReference currentPageReference )
-        {
-            CurrentPage = CurrentPage;
-            CurrentBlock = currentBlock;
-            CurrentPageReference = currentPageReference;
         }
 
         #endregion
@@ -316,7 +302,7 @@ namespace Rock.Web.UI
         private string ItemCacheKey( string key )
         {
             return string.Format( "Rock:Page:{0}:RockBlock:{1}:ItemCache:{2}",
-                this.CurrentPage.Id, CurrentBlock.Id, key );
+                RockPage.PageId, _blockCache.Id, key );
         }
 
         #endregion
@@ -336,24 +322,39 @@ namespace Rock.Web.UI
             string param = PageParameter( "ContextEntityType" );
             if ( !String.IsNullOrWhiteSpace( param ) )
             {
-                requiredContext.Add( param );
+                var entityType = EntityTypeCache.Read( param, false );
+                if ( entityType != null )
+                {
+                    requiredContext.Add( entityType );
+                }
             }
 
             // Get the current context for each required context type
             ContextEntities = new Dictionary<string, Data.IEntity>();
             foreach ( var contextEntityType in requiredContext )
             {
-                if ( !String.IsNullOrWhiteSpace( contextEntityType ) )
+                Data.IEntity contextEntity = RockPage.GetCurrentContext( contextEntityType );
+                if ( contextEntity != null )
                 {
-                    Data.IEntity contextEntity = CurrentPage.GetCurrentContext( contextEntityType );
-                    if ( contextEntity != null )
-                    {
-                        ContextEntities.Add( contextEntityType, contextEntity );
-                    }
+                    ContextEntities.Add( contextEntityType.Name, contextEntity );
                 }
             }
 
             base.OnInit( e );
+
+            this.BlockValidationGroup = string.Format( "{0}_{1}", this.GetType().BaseType.Name, _blockCache.Id );
+
+            RockPage.BlockUpdated += Page_BlockUpdated;
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+            SetValidationGroup( this.Controls, BlockValidationGroup );
         }
 
         /// <summary>
@@ -366,9 +367,9 @@ namespace Rock.Web.UI
         /// <param name="writer"></param>
         protected override void Render( HtmlTextWriter writer )
         {
-            if ( CurrentBlock.OutputCacheDuration > 0 )
+            if ( _blockCache.OutputCacheDuration > 0 )
             {
-                string blockCacheKey = string.Format( "Rock:BlockOutput:{0}", CurrentBlock.Id );
+                string blockCacheKey = string.Format( "Rock:BlockOutput:{0}", _blockCache.Id );
                 StringBuilder sbOutput = new StringBuilder();
                 StringWriter swOutput = new StringWriter( sbOutput );
                 HtmlTextWriter twOutput = new HtmlTextWriter( swOutput );
@@ -376,7 +377,7 @@ namespace Rock.Web.UI
                 base.Render( twOutput );
 
                 CacheItemPolicy cacheDuration = new CacheItemPolicy();
-                cacheDuration.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( CurrentBlock.OutputCacheDuration );
+                cacheDuration.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( _blockCache.OutputCacheDuration );
 
                 ObjectCache cache = MemoryCache.Default;
                 cache.Set( blockCacheKey, sbOutput.ToString(), cacheDuration );
@@ -385,53 +386,18 @@ namespace Rock.Web.UI
             base.Render( writer );
         }
 
-        ///// <summary>
-        ///// When an unhandled error occurs in a module, a notification box will be displayed.
-        ///// </summary>
-        ///// <param name="e"></param>
-        //protected override void OnError( EventArgs e )
-        //{
-        //    DisplayNotification( "Exception", NotificationBoxType.Error,
-        //        HttpContext.Current.Server.GetLastError().Message );
-
-        //    base.OnError( e );
-        //}
         #endregion
 
         #region Public Methods
 
-        ///// <summary>
-        ///// Clear all child controls and add a notification box with error or warning message
-        ///// </summary>
-        ///// <param name="title"></param>
-        ///// <param name="type"></param>
-        ///// <param name="message"></param>
-        //public void DisplayNotification( string title, NotificationBoxType type, string message )
-        //{
-        //    NotificationBox notification = new NotificationBox();
-        //    notification.Title = title;
-        //    notification.NotificationBoxType = type;
-        //    notification.Text = message;
-        //    this.Controls.Add( notification );
-        //}
-
-        ///// <summary>
-        ///// Clear all child controls and add a notification box with an error message
-        ///// </summary>
-        ///// <param name="message">The message.</param>
-        //public void DisplayError( string message )
-        //{
-        //    DisplayNotification( "Error", NotificationBoxType.Error, message );
-        //}
-
-        ///// <summary>
-        ///// Clear all child controls and add a notification box with a warning message
-        ///// </summary>
-        ///// <param name="message">The message.</param>
-        //public void DisplayWarning( string message )
-        //{
-        //    DisplayNotification( "Warning", NotificationBoxType.Warning, message );
-        //}
+        /// <summary>
+        /// Sets the block.
+        /// </summary>
+        /// <param name="blockCache">The block cache.</param>
+        public void SetBlock( BlockCache blockCache )
+        {
+            _blockCache = blockCache;
+        }
 
         /// <summary>
         /// Saves the attribute values.
@@ -439,9 +405,9 @@ namespace Rock.Web.UI
         /// <param name="personId">The person id.</param>
         public void SaveAttributeValues( int? personId )
         {
-            if ( CurrentBlock != null )
+            if ( _blockCache != null )
             {
-                CurrentBlock.SaveAttributeValues( personId );
+                _blockCache.SaveAttributeValues( personId );
             }
         }
 
@@ -453,9 +419,9 @@ namespace Rock.Web.UI
         /// <returns>the stored value as a string or null if none exists</returns>
         public string GetAttributeValue( string key )
         {
-            if ( CurrentBlock != null )
+            if ( _blockCache != null )
             {
-                return CurrentBlock.GetAttributeValue( key );
+                return _blockCache.GetAttributeValue( key );
             }
             return null;
         }
@@ -468,9 +434,9 @@ namespace Rock.Web.UI
         /// <returns>a list of strings or an empty list if none exists</returns>
         public List<string> GetAttributeValues( string key )
         {
-            if ( CurrentBlock != null )
+            if ( _blockCache != null )
             {
-                return CurrentBlock.GetAttributeValues( key );
+                return _blockCache.GetAttributeValues( key );
             }
 
             return new List<string>();
@@ -483,25 +449,19 @@ namespace Rock.Web.UI
         /// <param name="value">The value.</param>
         public void SetAttributeValue( string key, string value )
         {
-            if ( CurrentBlock != null )
+            if ( _blockCache != null )
             {
-                CurrentBlock.SetAttributeValue( key, value );
+                _blockCache.SetAttributeValue( key, value );
             }
         }
 
         /// <summary>
-        /// Adds an update trigger for when the block instance properties are updated.
+        /// Adds an update trigger for when the block properties are updated.
         /// </summary>
         /// <param name="updatePanel">The update panel.</param>
-        public void AddAttributeUpdateTrigger( UpdatePanel updatePanel )
+        public void AddConfigurationUpdateTrigger( UpdatePanel updatePanel )
         {
-            if ( CurrentBlock.IsAuthorized( "Administrate", CurrentPerson ) )
-            {
-                AsyncPostBackTrigger trigger = new AsyncPostBackTrigger();
-                trigger.ControlID = string.Format( "blck-cnfg-trggr-{0}", CurrentBlock.Id );
-                trigger.EventName = "Click";
-                updatePanel.Triggers.Add( trigger );
-            }
+            RockPage.AddConfigurationUpdateTrigger( updatePanel );
         }
 
         /// <summary>
@@ -511,7 +471,7 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public bool IsUserAuthorized( string action )
         {
-            return CurrentBlock.IsAuthorized( action, CurrentPerson );
+            return _blockCache.IsAuthorized( action, CurrentPerson );
         }
 
         /// <summary>
@@ -547,15 +507,32 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Linkeds the page URL.
+        /// </summary>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="queryParams">The query parameters.</param>
+        /// <returns></returns>
+        public string LinkedPageUrl( string attributeKey, Dictionary<string, string> queryParams = null )
+        {
+            var pageReference = new PageReference( GetAttributeValue( attributeKey ), queryParams );
+            if ( pageReference.PageId > 0 )
+            {
+                return pageReference.BuildUrl();
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
         /// Navigates to a linked page attribute.
         /// </summary>
         /// <param name="attributeKey">The attribute key.</param>
         /// <param name="queryParams">The query params.</param>
         public void NavigateToLinkedPage( string attributeKey, Dictionary<string, string> queryParams = null )
         {
-            var pageReference = new PageReference( GetAttributeValue( attributeKey ), queryParams );
-            string pageUrl = pageReference.BuildUrl();
-            Response.Redirect( pageUrl, false );
+            Response.Redirect( LinkedPageUrl( attributeKey, queryParams ), false );
             Context.ApplicationInstance.CompleteRequest();
         }
 
@@ -584,7 +561,15 @@ namespace Rock.Web.UI
         /// </summary>
         public void NavigateToParentPage( Dictionary<string, string> queryString = null )
         {
-            NavigateToPage( this.CurrentPage.ParentPage.Guid, queryString );
+            var pageCache = PageCache.Read( RockPage.PageId );
+            if ( pageCache != null )
+            {
+                var parentPage = pageCache.ParentPage;
+                if ( parentPage != null )
+                {
+                    NavigateToPage( parentPage.Guid, queryString );
+                }
+            }
         }
 
         /// <summary>
@@ -625,12 +610,12 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Dims the other blocks.
+        /// Hides the secondary blocks.
         /// </summary>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        public void DimOtherBlocks( bool dimmed )
+        /// <param name="hidden">if set to <c>true</c> [hidden].</param>
+        public void HideSecondaryBlocks( bool hidden )
         {
-            RockPage.DimOtherBlocks( this, dimmed );
+            RockPage.HideSecondaryBlocks( this, hidden );
         }
 
         /// <summary>
@@ -639,7 +624,7 @@ namespace Rock.Web.UI
         /// <param name="key">The key to use for the history point</param>
         /// <param name="state">any state information to store for the history point</param>
         /// <param name="title">The title to be used by the browser</param>
-        public void AddHistory( string key, string state, string title )
+        public void AddHistory( string key, string state, string title = "" )
         {
             RockPage.AddHistory( key, state, title );
         }
@@ -653,6 +638,49 @@ namespace Rock.Web.UI
         public string ResolveRockUrl( string url )
         {
             return RockPage.ResolveRockUrl( url );
+        }
+
+        /// <summary>
+        /// Sets the validation group.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <param name="validationGroup">The validation group.</param>
+        public void SetValidationGroup( ControlCollection controls, string validationGroup )
+        {
+            if ( controls != null )
+            {
+                foreach ( Control control in controls )
+                {
+                    if ( control is Rock.Web.UI.Controls.IHasValidationGroup )
+                    {
+                        var rockControl = (Rock.Web.UI.Controls.IHasValidationGroup)control;
+                        rockControl.ValidationGroup = SetValidationGroup( rockControl.ValidationGroup, validationGroup );
+                    }
+
+                    if ( control is ValidationSummary )
+                    {
+                        var validationSummary = (ValidationSummary)control;
+                        validationSummary.ValidationGroup = SetValidationGroup( validationSummary.ValidationGroup, validationGroup );
+                    }
+
+                    else if ( control is BaseValidator )
+                    {
+                        var validator = (BaseValidator)control;
+                        validator.ValidationGroup = SetValidationGroup( validator.ValidationGroup, validationGroup );
+                    }
+
+                    else if ( control is IButtonControl )
+                    {
+                        var button = (IButtonControl)control;
+                        button.ValidationGroup = SetValidationGroup( button.ValidationGroup, validationGroup );
+                    }
+                    else
+                    {
+                        // Check child controls
+                        SetValidationGroup( control.Controls, validationGroup );
+                    }
+                }
+            }
         }
 
         #region User Preferences
@@ -702,41 +730,19 @@ namespace Rock.Web.UI
 
             if ( canConfig || canEdit )
             {
-                // Attributes
-                CompiledTemplateBuilder upContent = new CompiledTemplateBuilder(
-                    delegate( Control content )
-                    {
-                        Button trigger = new Button();
-                        trigger.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                        trigger.ID = string.Format( "blck-cnfg-trggr-{0}", CurrentBlock.Id.ToString() );
-                        trigger.Click += trigger_Click;
-                        content.Controls.Add( trigger );
-
-                        HiddenField triggerData = new HiddenField();
-                        triggerData.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                        triggerData.ID = string.Format( "blck-cnfg-trggr-data-{0}", CurrentBlock.Id.ToString() );
-                        content.Controls.Add( triggerData );
-                    }
-                );
-
-                UpdatePanel upTrigger = new UpdatePanel();
-                upTrigger.ContentTemplate = upContent;
-                configControls.Add( upTrigger );
-                upTrigger.Attributes.Add( "style", "display:none" );
-
                 // Icon to display block properties
                 HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                 aAttributes.ID = "aBlockProperties";
                 aAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 aAttributes.Attributes.Add( "class", "properties" );
                 aAttributes.Attributes.Add( "height", "500px" );
-                aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", CurrentBlock.Id ) ) + "')" );
+                aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", _blockCache.Id ) ) + "')" );
                 aAttributes.Attributes.Add( "title", "Block Properties" );
                 //aAttributes.Attributes.Add( "instance-id", BlockInstance.Id.ToString() );
                 configControls.Add( aAttributes );
                 HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
                 aAttributes.Controls.Add( iAttributes );
-                iAttributes.Attributes.Add( "class", "icon-cog" );
+                iAttributes.Attributes.Add( "class", "fa fa-cog" );
             }
 
             if ( canConfig )
@@ -748,34 +754,34 @@ namespace Rock.Web.UI
                 aSecureBlock.Attributes.Add( "class", "security" );
                 aSecureBlock.Attributes.Add( "height", "500px" );
                 aSecureBlock.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Block Security&pb=&sb=Done",
-                    EntityTypeCache.Read( typeof( Block ) ).Id, CurrentBlock.Id ) ) + "')" );
+                    EntityTypeCache.Read( typeof( Block ) ).Id, _blockCache.Id ) ) + "')" );
                 aSecureBlock.Attributes.Add( "title", "Block Security" );
                 configControls.Add( aSecureBlock );
                 HtmlGenericControl iSecureBlock = new HtmlGenericControl( "i" );
                 aSecureBlock.Controls.Add( iSecureBlock );
-                iSecureBlock.Attributes.Add( "class", "icon-lock" );
+                iSecureBlock.Attributes.Add( "class", "fa fa-lock" );
 
                 // Move
                 HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );
                 aMoveBlock.Attributes.Add( "class", "block-move block-move" );
-                aMoveBlock.Attributes.Add( "href", CurrentBlock.Id.ToString() );
-                aMoveBlock.Attributes.Add( "zone", CurrentBlock.Zone );
-                aMoveBlock.Attributes.Add( "zoneloc", CurrentBlock.BlockLocation.ToString() );
+                aMoveBlock.Attributes.Add( "href", _blockCache.Id.ToString() );
+                aMoveBlock.Attributes.Add( "zone", _blockCache.Zone );
+                aMoveBlock.Attributes.Add( "zoneloc", _blockCache.BlockLocation.ToString() );
                 aMoveBlock.Attributes.Add( "title", "Move Block" );
                 configControls.Add( aMoveBlock );
                 HtmlGenericControl iMoveBlock = new HtmlGenericControl( "i" );
                 aMoveBlock.Controls.Add( iMoveBlock );
-                iMoveBlock.Attributes.Add( "class", "icon-external-link" );
+                iMoveBlock.Attributes.Add( "class", "fa fa-external-link" );
 
                 // Delete
                 HtmlGenericControl aDeleteBlock = new HtmlGenericControl( "a" );
                 aDeleteBlock.Attributes.Add( "class", "delete block-delete" );
-                aDeleteBlock.Attributes.Add( "href", CurrentBlock.Id.ToString() );
+                aDeleteBlock.Attributes.Add( "href", _blockCache.Id.ToString() );
                 aDeleteBlock.Attributes.Add( "title", "Delete Block" );
                 configControls.Add( aDeleteBlock );
                 HtmlGenericControl iDeleteBlock = new HtmlGenericControl( "i" );
                 aDeleteBlock.Controls.Add( iDeleteBlock );
-                iDeleteBlock.Attributes.Add( "class", "icon-remove-circle" );
+                iDeleteBlock.Attributes.Add( "class", "fa fa-times-circle-o" );
             }
 
             return configControls;
@@ -799,15 +805,7 @@ namespace Rock.Web.UI
         /// <param name="ex">The System.Exception to log.</param>
         public void LogException( Exception ex )
         {
-            ExceptionLogService.LogException( ex, Context, CurrentPage.Id, CurrentPage.Layout.SiteId, CurrentPersonId );
-        }
-
-        /// <summary>
-        /// Contents the updated.
-        /// </summary>
-        protected virtual void ContentUpdated()
-        {
-            CurrentPage.BlockContentUpdated( this );
+            ExceptionLogService.LogException( ex, Context, RockPage.PageId, RockPage.Layout.SiteId, CurrentPersonId );
         }
 
         #endregion
@@ -824,9 +822,9 @@ namespace Rock.Web.UI
             using ( new Rock.Data.UnitOfWorkScope() )
             {
                 if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(), blockEntityTypeId, "BlockTypeId",
-                    this.CurrentBlock.BlockTypeId.ToString(), CurrentPersonId ) )
+                    this._blockCache.BlockTypeId.ToString(), CurrentPersonId ) )
                 {
-                    this.CurrentBlock.ReloadAttributeValues();
+                    this._blockCache.ReloadAttributeValues();
                 }
             }
         }
@@ -850,32 +848,46 @@ namespace Rock.Web.UI
             return additionalActions;
         }
 
+        /// <summary>
+        /// Sets the validation group.
+        /// </summary>
+        /// <param name="existingValidationGroup">The existing validation group.</param>
+        /// <param name="validationGroup">The validation group.</param>
+        /// <returns></returns>
+        private string SetValidationGroup( string existingValidationGroup, string validationGroup )
+        {
+            if ( ( existingValidationGroup ?? string.Empty ).StartsWith( validationGroup ) )
+            {
+                return existingValidationGroup;
+            }
+            else
+            {
+                if ( string.IsNullOrWhiteSpace( existingValidationGroup ) )
+                {
+                    return validationGroup;
+                }
+                else
+                {
+                    return string.Format( "{0}_{1}", validationGroup, existingValidationGroup );
+                }
+            }
+        }
+
         #endregion
 
         #region Event Handlers
 
         /// <summary>
-        /// Handles the Click event of the trigger control.
+        /// Handles the BlockUpdated event of the Page control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        protected void trigger_Click( object sender, EventArgs e )
+        /// <param name="e">The <see cref="BlockUpdatedEventArgs"/> instance containing the event data.</param>
+        internal void Page_BlockUpdated( object sender, BlockUpdatedEventArgs e )
         {
-            if ( AttributesUpdated != null )
+            if ( e.BlockID == _blockCache.Id && BlockUpdated != null )
             {
-                AttributesUpdated( sender, e );
+                BlockUpdated( sender, e );
             }
-        }
-
-        /// <summary>
-        /// Handles the BlockAttributesUpdated event of the CmsBlock control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.Web.UI.BlockAttributesUpdatedEventArgs"/> instance containing the event data.</param>
-        void CmsBlock_BlockAttributesUpdated( object sender, BlockAttributesUpdatedEventArgs e )
-        {
-            if ( e.BlockID == CurrentBlock.Id && AttributesUpdated != null )
-                AttributesUpdated( sender, e );
         }
 
         #endregion
@@ -883,9 +895,9 @@ namespace Rock.Web.UI
         #region Events
 
         /// <summary>
-        /// Occurs when the block instance properties are updated.
+        /// Occurs when the block properties are updated.
         /// </summary>
-        public event EventHandler<EventArgs> AttributesUpdated;
+        public event EventHandler<EventArgs> BlockUpdated;
 
         #endregion
 

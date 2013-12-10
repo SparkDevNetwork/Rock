@@ -126,6 +126,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets an optional validation group to use.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get { return ViewState["ValidationGroup"] as string; }
+            set { ViewState["ValidationGroup"] = value; }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -452,10 +464,11 @@ namespace Rock.Web.UI.Controls
     restUrl: '{1}',
     allowMultiSelect: {2},
     defaultText: '{3}',
-    restParams: '{4}',
+    restParams: $('#{4}').val(),
     expandedIds: [{5}]
-}});";
-            string treeViewScript = string.Format( treeViewScriptFormat, this.ID, this.ResolveUrl( ItemRestUrl ), this.AllowMultiSelect.ToString().ToLower(), this.DefaultText, this.ItemRestUrlExtraParams, this.InitialItemParentIds );
+}});
+";
+            string treeViewScript = string.Format( treeViewScriptFormat, this.ID, this.ResolveUrl( ItemRestUrl ), this.AllowMultiSelect.ToString().ToLower(), this.DefaultText, _hfItemRestUrlExtraParams.ClientID, this.InitialItemParentIds );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "item_picker-treeviewscript_" + this.ID, treeViewScript, true );
         }
 
@@ -503,7 +516,7 @@ namespace Rock.Web.UI.Controls
             _btnSelectNone.ClientIDMode = ClientIDMode.Static;
             _btnSelectNone.Attributes["class"] = "picker-select-none";
             _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
-            _btnSelectNone.InnerHtml = "<i class='icon-remove'></i>";
+            _btnSelectNone.InnerHtml = "<i class='fa fa-times'></i>";
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
 
@@ -522,6 +535,8 @@ namespace Rock.Web.UI.Controls
 
             RequiredFieldValidator.InitialValue = "0";
             RockControlHelper.CreateChildControls( this, Controls );
+
+            RequiredFieldValidator.Display = ValidatorDisplay.None;
         }
 
         /// <summary>
@@ -599,7 +614,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "picker-actions" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _btnSelect.RenderControl( writer );
-                writer.Write( "<a class='btn btn-xs picker-cancel' id='btnCancel_{0}'>Cancel</a>", this.ID );
+                writer.Write( "<a class='btn btn-xs btn-link picker-cancel' id='btnCancel_{0}'>Cancel</a>", this.ID );
                 writer.WriteLine();
                 writer.RenderEndTag();
                 

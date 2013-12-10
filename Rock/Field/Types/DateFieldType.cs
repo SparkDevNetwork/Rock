@@ -64,7 +64,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            return formattedValue;
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 
         /// <summary>
@@ -89,10 +89,14 @@ namespace Rock.Field.Types
 
             var textbox = new RockTextBox();
             controls.Add( textbox );
+            textbox.Label = "Date Format";
+            textbox.Help = "The format string to use for date (default is system short date)";
 
             var cbDisplayDiff = new RockCheckBox();
             controls.Add( cbDisplayDiff );
-
+            cbDisplayDiff.Label = "Display Date Span";
+            cbDisplayDiff.Text = "Yes";
+            cbDisplayDiff.Help = "Display the number of years between value and current date";
             return controls;
         }
 

@@ -1,0 +1,141 @@
+//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.UI.WebControls;
+
+using Rock.Constants;
+using Rock.Model;
+
+namespace Rock.Web.UI.Controls
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    public class EntityTypePicker : RockDropDownList
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityTypePicker" /> class.
+        /// </summary>
+        public EntityTypePicker()
+            : base()
+        {
+            Label = "Entity Type";
+        }
+
+        /// <summary>
+        /// Gets or sets the EntityTypes.
+        /// </summary>
+        /// <value>
+        /// The EntityTypes.
+        /// </value>
+        public List<EntityType> EntityTypes
+        {
+            set
+            {
+                this.Items.Clear();
+
+                if ( !Required )
+                {
+                    this.Items.Add( new ListItem( string.Empty, string.Empty ) );
+                }
+
+                if ( IncludeGlobalOption )
+                {
+                    this.Items.Add( new ListItem( "None (Global Attributes)", "0" ) );
+                }
+
+                var entities = value.OrderBy( e => e.FriendlyName ).ToList();
+
+                foreach ( var entity in entities.Where( t => t.IsCommon ) )
+                {
+                    var li = new System.Web.UI.WebControls.ListItem( entity.FriendlyName, entity.Id.ToString() );
+                    li.Attributes.Add( "optiongroup", "Common" );
+                    this.Items.Add( li );
+                }
+
+                foreach ( var entity in entities )
+                {
+                    var li = new System.Web.UI.WebControls.ListItem( entity.FriendlyName, entity.Id.ToString() );
+                    li.Attributes.Add( "optiongroup", "All Entities" );
+                    this.Items.Add( li );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to include option for Global entity (0)
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [include global option]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IncludeGlobalOption
+        {
+            get 
+            {
+                return ViewState["IncludeGlobalOption"] as bool? ?? false; 
+            }
+            set
+            {
+                ViewState["IncludeGlobalOption"] = value;
+                var item = this.Items.FindByValue( "0" );
+                if ( value && item == null )
+                {
+                    int i = 0;
+                    while ( this.Items.Count > i )
+                    {
+                        if ( this.Items[i].Value.AsInteger() > 0 )
+                        {
+                            break;
+                        }
+                        i++;
+                    }
+                    this.Items.Insert( i, new ListItem( "None (Global Attributes)", "0" ) );
+                }
+                if ( !value && item != null)
+                {
+                    this.Items.Remove( item );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the selected EntityType ids.
+        /// </summary>
+        /// <value>
+        /// The selected EntityType ids.
+        /// </value>
+        public int? SelectedEntityTypeId
+        {
+            get
+            {
+                return this.SelectedValueAsInt(false);
+            }
+            set
+            {
+                string id = value.HasValue ? value.Value.ToString() : "";
+
+                // Look for the first item in list that matches value and select it.  
+                // Unselect all the others.  Because common entities are included in 
+                // list multiple times, the first occurrence should be selected
+                bool noneSelected = true;
+                foreach ( ListItem li in this.Items )
+                {
+                    if ( li.Value == id && noneSelected )
+                    {
+                        li.Selected = true;
+                        noneSelected = false;
+                    }
+                    else
+                    {
+                        li.Selected = false;
+                    }
+                }
+            }
+        }
+
+    }
+}

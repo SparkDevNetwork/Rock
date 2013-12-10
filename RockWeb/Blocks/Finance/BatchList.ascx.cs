@@ -17,7 +17,7 @@ using Rock.Web.UI.Controls;
 using Rock.Web.Cache;
 using System.Collections.Generic;
 
-namespace RockWeb.Blocks.Finance.Administration
+namespace RockWeb.Blocks.Finance
 {
     [LinkedPage("Detail Page")]
     public partial class BatchList : Rock.Web.UI.RockBlock
@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Finance.Administration
             rFBFilter.ApplyFilterClick += rFBFilter_ApplyFilterClick;
             rFBFilter.DisplayFilterValue += rFBFilter_DisplayFilterValue;
 
-            _canConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
+            _canConfigure = RockPage.IsAuthorized( "Edit", CurrentPerson );
 
             if ( _canConfigure )
             {
@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.Finance.Administration
             }
             else
             {
-                DisplayError( "You are not authorized to configure this page" );
+                DisplayError( "You are not authorized to edit these batches" );
             }
         }
 

@@ -26,70 +26,6 @@ namespace Rock.Communication
         public abstract void Send( Rock.Model.Communication communication, int? CurrentPersonId );
 
         /// <summary>
-        /// Gets the global config values.
-        /// </summary>
-        /// <returns></returns>
-        public Dictionary<string, object> GetGlobalMergeFields()
-        {
-            var configValues = new Dictionary<string, object>();
-
-            var globalAttributeValues = new Dictionary<string, object>();
-            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-            foreach ( var attribute in globalAttributes.AttributeKeys.OrderBy( a => a.Value ) )
-            {
-                var attributeCache = AttributeCache.Read( attribute.Key );
-                if ( attributeCache.IsAuthorized( "View", null ) )
-                {
-                    globalAttributeValues.Add(attributeCache.Key, globalAttributes.AttributeValues[attributeCache.Key].Value);
-                }
-            }
-
-            configValues.Add( "GlobalAttribute", globalAttributeValues );
-
-            // Add any application config values as available merge objects
-            var appSettingValues = new Dictionary<string, object>();
-            foreach ( string key in System.Configuration.ConfigurationManager.AppSettings.AllKeys )
-            {
-                appSettingValues.Add( key, System.Configuration.ConfigurationManager.AppSettings[key] );
-            }
-
-            configValues.Add( "AppSetting", appSettingValues );
-
-            // Recursively resolve any of the config values that may have other merge codes as part of their value
-            foreach ( var collection in configValues.ToList() )
-            {
-                var collectionDictionary = collection.Value as Dictionary<string, object>;
-                foreach ( var item in collectionDictionary.ToList() )
-                {
-                    collectionDictionary[item.Key] = ResolveConfigValue( item.Value as string, configValues );
-                }
-            }
-
-            return configValues;
-        }
-
-
-        /// <summary>
-        /// Resolves the config value.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="configValues">The config values.</param>
-        /// <returns></returns>
-        private string ResolveConfigValue( string value, Dictionary<string, object> configValues )
-        {
-            string result = value.ResolveMergeFields( configValues );
-
-            // If anything was resolved, keep resolving until nothing changed.
-            while ( result != value )
-            {
-                value = result;
-                result = ResolveConfigValue( result, configValues );
-            }
-
-            return result;
-        }
-
-        /// <summary>
         /// Merges the values.
         /// </summary>
         /// <param name="configValues">The config values.</param>
@@ -121,6 +57,72 @@ namespace Rock.Communication
             return mergeValues;
 
         }
+
+        #region Static Methods
+
+        /// <summary>
+        /// Gets the global config values.
+        /// </summary>
+        /// <returns></returns>
+        public static Dictionary<string, object> GetGlobalMergeFields()
+        {
+            var configValues = new Dictionary<string, object>();
+
+            var globalAttributeValues = new Dictionary<string, object>();
+            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+            foreach ( var attributeCache in globalAttributes.Attributes.OrderBy( a => a.Key ) )
+            {
+                if ( attributeCache.IsAuthorized( "View", null ) )
+                {
+                    globalAttributeValues.Add( attributeCache.Key, globalAttributes.AttributeValues[attributeCache.Key].Value );
+                }
+            }
+
+            configValues.Add( "GlobalAttribute", globalAttributeValues );
+
+            // Add any application config values as available merge objects
+            var appSettingValues = new Dictionary<string, object>();
+            foreach ( string key in System.Configuration.ConfigurationManager.AppSettings.AllKeys )
+            {
+                appSettingValues.Add( key, System.Configuration.ConfigurationManager.AppSettings[key] );
+            }
+
+            configValues.Add( "AppSetting", appSettingValues );
+
+            // Recursively resolve any of the config values that may have other merge codes as part of their value
+            foreach ( var collection in configValues.ToList() )
+            {
+                var collectionDictionary = collection.Value as Dictionary<string, object>;
+                foreach ( var item in collectionDictionary.ToList() )
+                {
+                    collectionDictionary[item.Key] = ResolveConfigValue( item.Value as string, configValues );
+                }
+            }
+
+            return configValues;
+        }
+
+        /// <summary>
+        /// Resolves the config value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="configValues">The config values.</param>
+        /// <returns></returns>
+        private static string ResolveConfigValue( string value, Dictionary<string, object> configValues )
+        {
+            string result = value.ResolveMergeFields( configValues );
+
+            // If anything was resolved, keep resolving until nothing changed.
+            while ( result != value )
+            {
+                value = result;
+                result = ResolveConfigValue( result, configValues );
+            }
+
+            return result;
+        }
+
+        #endregion
     }
    
 }

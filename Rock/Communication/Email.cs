@@ -176,32 +176,7 @@ namespace Rock.Communication
         /// <param name="recipients">The recipients.</param>
         public void Send( Dictionary<string, Dictionary<string, object>> recipients )
         {
-            var configValues = new Dictionary<string,object>();
-
-            // Get all the global attribute values that begin with "Organization" or "Email"
-            // TODO: We don't want to allow access to all global attribute values, as that would be a security
-            // hole, but not sure limiting to those that start with "Organization" or "Email" is the best
-            // solution either.
-            Rock.Web.Cache.GlobalAttributesCache.Read().AttributeValues
-                .Where( v => 
-                    v.Key.StartsWith( "Organization", StringComparison.CurrentCultureIgnoreCase ) ||
-                    v.Key.StartsWith( "Email", StringComparison.CurrentCultureIgnoreCase ) )
-                .ToList()
-                .ForEach( v => configValues.Add( v.Key, v.Value.Value ) );
-
-            // Add any application config values as available merge objects
-            foreach ( string key in System.Configuration.ConfigurationManager.AppSettings.AllKeys )
-            {
-                configValues.Add( "Config_" + key, System.Configuration.ConfigurationManager.AppSettings[key] );
-            }
-
-            // Recursively resolve any of the config values that may have other merge codes as part of their value
-            foreach ( var item in configValues.ToList() )
-            {
-                configValues[item.Key] = ResolveConfigValue( item.Value as string, configValues );
-            }
-
-            var configValuesList = configValues.ToList();
+            var configValues = TransportComponent.GetGlobalMergeFields();
 
             List<string> cc = SplitRecipient( Cc );
             List<string> bcc = SplitRecipient( Bcc );
@@ -216,7 +191,7 @@ namespace Rock.Communication
                 var mergeObjects = recipient.Value;
 
                 // Combine the global and config file merge values with the recipient specific merge values
-                configValuesList.ForEach( g => mergeObjects.Add( g.Key, g.Value ) );
+                configValues.ToList().ForEach( g => mergeObjects.Add( g.Key, g.Value ) );
 
                 // Resolve any merge codes in the subject and body
                 string subject = Subject.ResolveMergeFields( mergeObjects );

@@ -73,6 +73,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the group of controls for which the control that is derived from the <see cref="T:System.Web.UI.WebControls.ListControl" /> class causes validation when it posts back to the server.
+        /// </summary>
+        /// <returns>The group of controls for which the derived <see cref="T:System.Web.UI.WebControls.ListControl" /> causes validation when it posts back to the server. The default is an empty string ("").</returns>
+        public override string ValidationGroup
+        {
+            get
+            {
+                return base.ValidationGroup;
+            }
+            set
+            {
+                base.ValidationGroup = value;
+                EnsureChildControls();
+                dataValidator.ValidationGroup = value;
+            }
+        }        
+        
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -82,6 +100,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
+                dataValidator.Validate();
                 return base.IsValid && dataValidator.IsValid;
             }
         }

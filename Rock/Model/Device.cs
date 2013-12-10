@@ -3,17 +3,14 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Data.Entity.Spatial;
 using System.Linq;
 using System.Runtime.Serialization;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -123,11 +120,11 @@ namespace Rock.Model
         /// A physical location would signify where the device is at. A situation where a geographic fence could be used would be for mobile check in, 
         /// where if the device is within the fence, a user would be able to check in from their mobile device.
         /// </remarks>
+        [DataMember]
         public virtual Location Location { get; set; }
 
-
         /// <summary>
-        /// Gets or sets a collection containing the <see cref="Rock.Model.Locaton">Locations</see> that use this device.
+        /// Gets or sets a collection containing the <see cref="Rock.Model.Location">Locations</see> that use this device.
         /// </summary>
         /// <value>
         /// A collection of <see cref="Rock.Model.Location">Locations</see> that use this device.
@@ -165,7 +162,7 @@ namespace Rock.Model
         /// Returns an enumerable collection of <see cref="Rock.Model.GroupType">GroupTypes</see> that use the <see cref="Rock.Model.Location">Locations</see> that this
         /// device is configured for.
         /// </summary>
-        /// <returns>A enumerable collection of <see cref="Rock.Model.GroupType"/> entities that use the <see cref="Rock.Model.Location">Locations that this device is configured for.</returns>
+        /// <returns>A enumerable collection of <see cref="Rock.Model.GroupType"/> entities that use the <see cref="Rock.Model.Location"/>Locations that this device is configured for.</returns>
         public virtual IEnumerable<GroupType> GetLocationGroupTypes()
         {
             var groupTypes = new Dictionary<int, GroupType>();
@@ -259,102 +256,6 @@ namespace Rock.Model
         Server = 1
     }
 
-    #endregion
-
-    # region Custom JSON Converter
-    /// The JSON serializer normally would create the following...
-    /// 
-    /// {
-    ///  ...
-    ///  "GeoPoint": {
-    ///    "Geography": {
-    ///      "CoordinateSystemId": 4326,
-    ///      "WellKnownText": "POINT (-112.20884 33.7106)"
-    ///    }
-    ///  },
-    ///  "GeoFence": null,
-    ///  ...
-    ///}
-    ///
-    /// Which almost works except for the null GeoFence output, however the 
-    /// JsonConvert.DerserializeObject() fails with:
-    /// 
-    ///    Unable to find a constructor to use for type System.Data.Spatial.DbGeography. 
-    ///    A class should either have a default constructor, one constructor with arguments
-    ///    or a constructor marked with the JsonConstructor attribute. Path 'GeoPoint.Geography',
-    ///    line 5, position 17.
-    /// 
-    public class DbGeographyConverter : JsonConverter
-    {
-        private const string LATITUDE_KEY = "latitude";
-        private const string LONGITUDE_KEY = "longitude";
-
-        /// <summary>
-        /// Determines whether this instance can convert the specified object type.
-        /// </summary>
-        /// <param name="objectType">Type of the object.</param>
-        /// <returns>
-        ///   <c>true</c> if this instance can convert the specified object type; otherwise, <c>false</c>.
-        /// </returns>
-        public override bool CanConvert( Type objectType )
-        {
-            return objectType.Equals( typeof( DbGeography ) );
-        }
-
-        /// <summary>
-        /// Reads the JSON representation of the object.
-        /// </summary>
-        /// <param name="reader">The <see cref="T:Newtonsoft.Json.JsonReader" /> to read from.</param>
-        /// <param name="objectType">Type of the object.</param>
-        /// <param name="existingValue">The existing value of object being read.</param>
-        /// <param name="serializer">The calling serializer.</param>
-        /// <returns>
-        /// The object value.
-        /// </returns>
-        public override object ReadJson( JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer )
-        {
-            if ( reader.TokenType == JsonToken.Null )
-            {
-                return default( DbGeography );
-            }
-
-            var jObject = JObject.Load( reader );
-
-            if ( !jObject.HasValues || ( jObject.Property( LATITUDE_KEY ) == null || jObject.Property( LONGITUDE_KEY ) == null ) )
-            {
-                return default( DbGeography );
-            }
-
-            string wkt = string.Format( "POINT({0} {1})", jObject[LONGITUDE_KEY], jObject[LATITUDE_KEY] );  // note: long, lat
-            return DbGeography.FromText( wkt, DbGeography.DefaultCoordinateSystemId );
-        }
-
-        /// <summary>
-        /// This serializer produces the following (which is slightly different than the default one):
-        /// 
-        ///{
-        /// ...
-        ///  "GeoPoint": {
-        ///    "latitude": 33.7106,
-        ///    "longitude": -112.20884
-        ///  },
-        ///  "GeoFence": null,
-        ///  ...
-        ///}
-        /// 
-        /// </summary>
-        /// <param name="writer"></param>
-        /// <param name="value"></param>
-        /// <param name="serializer"></param>
-        public override void WriteJson( JsonWriter writer, object value, JsonSerializer serializer )
-        {
-            var dbGeography = value as DbGeography;
-
-            serializer.Serialize( writer, dbGeography == null
-                || dbGeography.IsEmpty ? null 
-                : new { latitude = dbGeography.Latitude.Value, longitude = dbGeography.Longitude.Value } );
-        }
-    }
     #endregion
 
 }

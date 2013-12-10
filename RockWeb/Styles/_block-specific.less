@@ -3,12 +3,14 @@
     
     1. SQL Command - block to query database directly
     2. HTML Content - block to edit HTML on a page
-    3. Login - block to allow logins
+    3. Login - Styles for the login control
     4. Notes - block to display, add, edit, delete notes
     5. Add Family - block to add families to the database
     6. Contributions - block add a contribution transaction
     7. Data Views - block for creating data views
     8. Schedule Builder - block for building schedules
+    9. Error Page - styles for the error page.
+    10. Group Viewer - styles for the group viewer block.
 
 */
 
@@ -44,23 +46,6 @@ span.cke_skin_kama
     padding: 0 !important;
 }
 
-
-// 3. Login Status
-// -------------------------
-
-.loginstatus {
-    width: 160px;
-
-    .dropdown-toggle {
-        text-align: right;
-        font-size: 11px;
-    }
-
-    .dropdown-menu {
-        right: 0;
-        font-size: 11px;
-    }
-}
 
 // 3. Login 
 // -------------------------
@@ -222,9 +207,10 @@ span.cke_skin_kama
 /* data views */
 .filter-toogle {
 
+    padding-top: 6px;
+
     & > span {
         float: left;
-        padding-top: 6px;
     }
 
     .controls {
@@ -247,7 +233,13 @@ span.cke_skin_kama
         float: left;
         width: 250px;
     }
+}
 
+// add top margin to checkbox lists in filters
+.field-criteria {
+    .checkbox-inline {
+        margin-top: 8px;
+    }
 }
 
 // 8. Schedule Builder
@@ -318,5 +310,30 @@ span.cke_skin_kama
             float: left;
             margin-top: 5px;
         }
+    }
+}
+
+// 9. Error Page
+// -------------------------
+#splash.error  #content {
+    width: 750px;
+    margin: 0 auto;
+}
+
+// 10. Group Viewer
+// -------------------------
+.group-location-map {
+
+    float: right;
+
+    img {
+        border: 1px solid @accent-semibold-color;
+    }
+}
+
+@media (max-width: @screen-md-min) {
+
+    .group-location-map {
+        float: left;
     }
 }

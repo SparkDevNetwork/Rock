@@ -82,7 +82,7 @@ namespace Rock.Field.Types
             DateRangePicker editor = control as DateRangePicker;
             if ( editor != null )
             {
-                return string.Format( "{0:d},{1:d}", editor.LowerValue, editor.UpperValue );
+                return editor.DelimitedValues;
             }
 
             return null;
@@ -99,24 +99,7 @@ namespace Rock.Field.Types
             DateRangePicker editor = control as DateRangePicker;
             if ( editor != null )
             {
-                if ( value != null )
-                {
-                    string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
-                    if ( valuePair.Length == 2 )
-                    {
-                        DateTime result;
-
-                        if ( DateTime.TryParse( valuePair[0], out result ) )
-                        {
-                            editor.LowerValue = result;
-                        }
-
-                        if ( DateTime.TryParse( valuePair[1], out result ) )
-                        {
-                            editor.UpperValue = result;
-                        }
-                    }
-                }
+                editor.DelimitedValues = value;
             }
         }
 
@@ -130,20 +113,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( value != null )
-            {
-                string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
-                if ( valuePair.Length == 2 )
-                {
-                    string lowerValue = string.IsNullOrWhiteSpace( valuePair[0] ) ? Rock.Constants.None.TextHtml : DateTime.Parse( valuePair[0] ).Date.ToShortDateString();
-                    string upperValue = string.IsNullOrWhiteSpace( valuePair[1] ) ? Rock.Constants.None.TextHtml : DateTime.Parse( valuePair[1] ).Date.ToShortDateString();
-                    return string.Format( "{0} to {1}", lowerValue, upperValue );
-                }
-            }
-
-            // something unexpected.  Let the base format it
-            return base.FormatValue( parentControl, value, configurationValues, condensed );
-
+            string formattedValue = DateRangePicker.FormatDelimitedValues( value ) ?? value;
+            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
         }
     }
 }

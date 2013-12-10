@@ -3,9 +3,7 @@
 <asp:UpdatePanel ID="upAddFamily" runat="server">
     <ContentTemplate>
 
-
-        <asp:ValidationSummary ID="valSummaryTop" runat="server"  
-            HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
         <asp:Panel ID="pnlFamilyData" runat="server">
             <div class="row">
@@ -55,7 +53,7 @@
         </asp:Panel>
 
         <div class="actions">
-            <asp:LinkButton ID="btnPrevious" runat="server" Text="Previous" CssClass="btn btn-default" OnClick="btnPrevious_Click" Visible="false" CausesValidation="false" />
+            <asp:LinkButton ID="btnPrevious" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnPrevious_Click" Visible="false" CausesValidation="false" />
             <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnNext_Click" />
         </div>
 

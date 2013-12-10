@@ -50,7 +50,7 @@ $(document).ready(function() {
 ";
             ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "toggle-switch-init", script, true );
 
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", DataView.FriendlyTypeName );
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", DataView.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.DataView ) ).Id;
 
             gReport.GridRebind += gReport_GridRebind;
@@ -194,7 +194,7 @@ $(document).ready(function() {
 
             var qryParams = new Dictionary<string, string>();
             qryParams["DataViewId"] = dataView.Id.ToString();
-            NavigateToPage( this.CurrentPage.Guid, qryParams );
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>
@@ -214,7 +214,7 @@ $(document).ready(function() {
                 {
                     qryParams["CategoryId"] = parentCategoryId;
                 }
-                NavigateToPage( this.CurrentPage.Guid, qryParams );
+                NavigateToPage( RockPage.Guid, qryParams );
             }
             else
             {
@@ -259,7 +259,7 @@ $(document).ready(function() {
                         qryParams["CategoryId"] = categoryId.ToString();
                     }
 
-                    NavigateToPage( this.CurrentPage.Guid, qryParams );
+                    NavigateToPage( RockPage.Guid, qryParams );
                 }
             }
         }
@@ -732,7 +732,7 @@ $(document).ready(function() {
             emptyFilter.ExpressionType = FilterExpressionType.Filter;
             dataViewFilter.ChildFilters.Add( emptyFilter );
 
-            CreateFilterControl( ddlEntityType.SelectedValueAsInt(), dataViewFilter, false );
+            CreateFilterControl( ddlEntityType.SelectedValueAsInt(), dataViewFilter, true );
         }
 
         #endregion

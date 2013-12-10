@@ -107,7 +107,15 @@ namespace Rock.Rest.Controllers
             Service service = new Service();
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             parameters.Add( "startDate", options.StartDate );
-            parameters.Add( "endDate", options.EndDate );
+            if ( options.EndDate.HasValue )
+            {
+                parameters.Add( "endDate", options.EndDate.Value );
+            }
+            else
+            {
+                parameters.Add( "endDate", DateTime.MaxValue );
+            }
+
             if ( options.AccountIds != null )
             {
                 parameters.Add( "accountIds", options.AccountIds.AsDelimited( "," ) );
@@ -127,7 +135,7 @@ namespace Rock.Rest.Controllers
             }
 
             parameters.Add( "orderByZipCode", options.OrderByZipCode );
-            var result = service.GetDataSet( "sp_get_contribution_person_group_address", System.Data.CommandType.StoredProcedure, parameters );
+            var result = service.GetDataSet( "spContributionStatementQuery", System.Data.CommandType.StoredProcedure, parameters );
 
             if ( result.Tables.Count > 0 )
             {
@@ -162,22 +170,29 @@ namespace Rock.Rest.Controllers
         [HttpPost]
         public DataSet GetContributionTransactions( int groupId, int? personId, [FromBody]Rock.Net.RestParameters.ContributionStatementOptions options )
         {
-            // get data from Rock database
-            FinancialTransactionService financialTransactionService = new FinancialTransactionService();
+            var user = CurrentUser();
+            if ( user == null )
+            {
+                // unable to determine user
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
 
-            var qry = Get();
-
-            qry = qry
+            if ( !new FinancialTransaction().IsAuthorized( "View", user.Person ) )
+            {
+                // user can't view FinancialTransactions
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+            
+            var qry = Get()
                 .Where( a => a.TransactionDateTime >= options.StartDate )
-                .Where( a => a.TransactionDateTime < options.EndDate )
-                .OrderBy( a => a.TransactionDateTime );
+                .Where( a => a.TransactionDateTime < ( options.EndDate ?? DateTime.MaxValue ) );
 
             if ( personId.HasValue )
             {
                 // get transactions for a specific person
                 qry = qry.Where( a => a.AuthorizedPersonId == personId.Value );
             }
-            else 
+            else
             {
                 // get transactions for all the persons in the specified group that have specified that group as their GivingGroup
                 GroupMemberService groupMemberService = new GroupMemberService();
@@ -191,37 +206,41 @@ namespace Rock.Rest.Controllers
                 qry = qry.Where( a => options.AccountIds.Contains( a.TransactionDetails.FirstOrDefault().AccountId ) );
             }
 
-            var selectQry = qry.Select( a => new 
+            var selectQry = qry.Select( a => new
             {
                 a.TransactionDateTime,
                 CurrencyTypeValueName = a.CurrencyTypeValue.Name,
                 a.Summary,
-                AccountId = a.TransactionDetails.FirstOrDefault().Account.Id,
-                AccountName = a.TransactionDetails.FirstOrDefault().Account.Name,
+                Account = a.TransactionDetails.FirstOrDefault().Account,
                 a.Amount
-            } );
+            } ).OrderBy( a => a.TransactionDateTime );
 
             DataTable dataTable = new DataTable( "contribution_transactions" );
-            dataTable.Columns.Add( "TransactionDateTime" );
+            dataTable.Columns.Add( "TransactionDateTime", typeof(DateTime) );
             dataTable.Columns.Add( "CurrencyTypeValueName" );
             dataTable.Columns.Add( "Summary" );
-            dataTable.Columns.Add( "AccountId" );
+            dataTable.Columns.Add( "AccountId", typeof(int) );
             dataTable.Columns.Add( "AccountName" );
-            dataTable.Columns.Add( "Amount" );
+            dataTable.Columns.Add( "Amount", typeof(decimal) );
 
-            foreach ( var fieldItems in selectQry.ToList() )
+            var list = selectQry.ToList();
+
+            dataTable.BeginLoadData();
+            foreach ( var fieldItems in list )
             {
                 var itemArray = new object[] {
                     fieldItems.TransactionDateTime,
                     fieldItems.CurrencyTypeValueName,
                     fieldItems.Summary,
-                    fieldItems.AccountId,
-                    fieldItems.AccountName,
+                    fieldItems.Account.Id,
+                    fieldItems.Account.Name,
                     fieldItems.Amount
                 };
 
                 dataTable.Rows.Add( itemArray );
             }
+
+            dataTable.EndLoadData();
 
             DataSet dataSet = new DataSet();
             dataSet.Tables.Add( dataTable );

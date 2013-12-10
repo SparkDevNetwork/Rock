@@ -17,6 +17,11 @@ namespace Rock.Financial
     public class ReferencePaymentInfo : PaymentInfo
     {
         /// <summary>
+        /// Gets or sets the transaction code.
+        /// </summary>
+        public string TransactionCode { get; set; }
+
+        /// <summary>
         /// Gets or sets the reference number.
         /// </summary>
         public string ReferenceNumber { get; set; }
@@ -41,16 +46,6 @@ namespace Rock.Financial
         /// The initial credit card type value id.
         /// </value>
         public DefinedValueCache InitialCreditCardTypeValue { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ReferencePaymentInfo" /> struct.
-        /// </summary>
-        /// <param name="referenceNumber">The reference number.</param>
-        public ReferencePaymentInfo( string referenceNumber )
-            : base()
-        {
-            ReferenceNumber = referenceNumber;
-        }
 
         /// <summary>
         /// Gets the account number.

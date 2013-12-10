@@ -3,11 +3,11 @@
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
-        <asp:ValidationSummary ID="valSummary" runat="server" CssClass="alert alert-danger" />
+        <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
         <asp:Panel ID="pnlMetricList" runat="server">
 
-            <Rock:GridFilter ID="rFilter" runat="server">
+            <Rock:GridFilter ID="gfFilter" runat="server">
                 <Rock:RockDropDownList ID="ddlCategoryFilter" runat="server" Label="Category" />
             </Rock:GridFilter>
             <Rock:Grid ID="gMetrics" runat="server" AllowSorting="true" EmptyDataText="No Metrics Found" RowItemText="Metric" OnRowSelected="gMetrics_Edit">

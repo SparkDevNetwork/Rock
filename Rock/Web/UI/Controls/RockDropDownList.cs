@@ -82,7 +82,7 @@ namespace Rock.Web.UI.Controls
 
             set 
             { 
-                var li = this.Items.FindByValue( None.IdValue );
+                var li = this.Items.FindByValue( string.Empty );
 
                 if ( value )
                 {
@@ -95,7 +95,7 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( li == null )
                     {
-                        this.Items.Insert( 0, new ListItem( string.Empty, None.IdValue ) );
+                        this.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
                     }
                 }
 

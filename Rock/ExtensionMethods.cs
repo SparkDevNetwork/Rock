@@ -126,7 +126,7 @@ namespace Rock
                 }
             }
         }
-        
+
         #endregion
 
         #region String Extensions
@@ -233,6 +233,24 @@ namespace Rock
         }
 
         /// <summary>
+        /// Returns the specified number of characters, starting at the left side of the string.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="length">The desired length.</param>
+        /// <returns></returns>
+        public static string Left( this string str, int length )
+        {
+            if ( str.Length <= length )
+            {
+                return str;
+            }
+            else
+            {
+                return str.Substring( 0, length );
+            }
+        }
+
+        /// <summary>
         /// Truncates a string after a max length and adds ellipsis.  Truncation will occur at first space prior to maxLength
         /// </summary>
         /// <param name="str"></param>
@@ -303,7 +321,7 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <param name="NullIsFalse">if set to <c>true</c> [null is false].</param>
         /// <returns></returns>
-        public static bool AsBoolean (this string str, bool NullIsFalse = true)
+        public static bool AsBoolean( this string str, bool NullIsFalse = true )
         {
             if ( NullIsFalse )
             {
@@ -312,7 +330,7 @@ namespace Rock
                     return false;
                 }
             }
-            
+
             if ( str.Equals( "true", StringComparison.OrdinalIgnoreCase ) || str.Equals( "yes", StringComparison.OrdinalIgnoreCase ) || str.Equals( "1", StringComparison.OrdinalIgnoreCase ) )
             {
                 return true;
@@ -320,7 +338,7 @@ namespace Rock
 
             return false;
         }
-        
+
         /// <summary>
         /// Attempts to convert string to integer.  Returns null if unsuccessful.
         /// </summary>
@@ -336,9 +354,78 @@ namespace Rock
                     return null;
                 }
             }
-            
+
             int value;
             if ( int.TryParse( str, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to convert string to Guid.  Returns Guid.Empty if unsuccessful.
+        /// </summary>
+        /// <param name="str">The STR.</param>
+        /// <returns></returns>
+        public static Guid AsGuid( this string str)
+        {
+            Guid value;
+            if ( Guid.TryParse( str, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return Guid.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to convert string to decimal.  Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="emptyStringAsZero">if set to <c>true</c> [empty string as zero].</param>
+        /// <returns></returns>
+        public static decimal? AsDecimal( this string str, bool emptyStringAsZero = true )
+        {
+            if ( !emptyStringAsZero )
+            {
+                if ( string.IsNullOrWhiteSpace( str ) )
+                {
+                    return null;
+                }
+            }
+
+            if ( !string.IsNullOrWhiteSpace( str ) )
+            {
+                // strip off the currency symbol if there is one
+                str = str.Replace( "$", string.Empty );
+            }
+
+            decimal value;
+            if ( decimal.TryParse( str, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to convert string to DateTime.  Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static DateTime? AsDateTime( this string str )
+        {
+            DateTime value;
+            if ( DateTime.TryParse( str, out value ) )
             {
                 return value;
             }
@@ -365,8 +452,6 @@ namespace Rock
                 return content;
 
             Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-            //TODO: This should probably use the theme assets folder
-            Template.FileSystem = new DotLiquid.FileSystems.LocalFileSystem( System.Web.HttpContext.Current.Server.MapPath( "~/Assets/Liquid" ) );
             Template template = Template.Parse( content );
 
             return template.Render( Hash.FromDictionary( mergeObjects ) );
@@ -377,14 +462,14 @@ namespace Rock
         /// </summary>
         /// <param name="str">The STR.</param>
         /// <returns></returns>
-        public static string FormatAsHtmlTitle(this string str)
+        public static string FormatAsHtmlTitle( this string str )
         {
 
             // split first word from rest of string
-            int endOfFirstWord = str.IndexOf(" ");
+            int endOfFirstWord = str.IndexOf( " " );
 
-            if (endOfFirstWord != -1)
-                return "<span class='first-word'>" + str.Substring(0, endOfFirstWord) + " </span> " + str.Substring(endOfFirstWord, str.Length - endOfFirstWord);
+            if ( endOfFirstWord != -1 )
+                return "<span class='first-word'>" + str.Substring( 0, endOfFirstWord ) + " </span> " + str.Substring( endOfFirstWord, str.Length - endOfFirstWord );
             else
                 return "<span class='first-word'>" + str + " </span>";
         }
@@ -412,7 +497,7 @@ namespace Rock
         {
             if ( value.Length > 4 )
             {
-                return string.Concat(new string('*', 12 ), value.Substring( value.Length - 4 ) );
+                return string.Concat( new string( '*', 12 ), value.Substring( value.Length - 4 ) );
             }
             else
             {
@@ -894,46 +979,76 @@ namespace Rock
 
         #endregion
 
-        #region DropDownList/ListControl Extensions
+        #region CheckBoxList Extensions
+
+        /// <summary>
+        /// Sets the values.
+        /// </summary>
+        /// <param name="checkBoxList">The check box list.</param>
+        /// <param name="values">The values.</param>
+        public static void SetValues( this CheckBoxList checkBoxList, List<string> values )
+        {
+            foreach ( ListItem item in checkBoxList.Items )
+            {
+                item.Selected = values.Contains( item.Value, StringComparer.OrdinalIgnoreCase );
+            }
+        }
+
+        /// <summary>
+        /// Sets the values.
+        /// </summary>
+        /// <param name="checkBoxList">The check box list.</param>
+        /// <param name="values">The values.</param>
+        public static void SetValues( this CheckBoxList checkBoxList, List<int> values )
+        {
+            foreach ( ListItem item in checkBoxList.Items )
+            {
+                int numValue = int.MinValue;
+                item.Selected = int.TryParse( item.Value, out numValue ) && values.Contains( numValue );
+            }
+        }
+
+        #endregion
+
+        #region ListControl Extensions
 
         /// <summary>
         /// Try's to set the selected value, if the value does not exist, will set the first item in the list
         /// </summary>
-        /// <param name="ddl">The DDL.</param>
+        /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
-        public static void SetValue( this DropDownList ddl, string value )
+        public static void SetValue( this ListControl listControl, string value )
         {
             try
             {
-                ddl.SelectedValue = value;
+                listControl.SelectedValue = value;
             }
             catch
             {
-                if ( ddl.Items.Count > 0 )
-                    ddl.SelectedIndex = 0;
+                if ( listControl.Items.Count > 0 )
+                    listControl.SelectedIndex = 0;
             }
-
         }
 
         /// <summary>
         /// Sets the read only value.
         /// </summary>
-        /// <param name="ddl">The DDL.</param>
+        /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
-        public static void SetReadOnlyValue( this DropDownList ddl, string value )
+        public static void SetReadOnlyValue( this ListControl listControl, string value )
         {
-            ddl.Items.Clear();
-            ddl.Items.Add( value );
+            listControl.Items.Clear();
+            listControl.Items.Add( value );
         }
 
         /// <summary>
         /// Try's to set the selected value, if the value does not exist, will set the first item in the list
         /// </summary>
-        /// <param name="ddl">The DDL.</param>
+        /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
-        public static void SetValue( this DropDownList ddl, int? value )
+        public static void SetValue( this ListControl listControl, int? value )
         {
-            ddl.SetValue( value == null ? "0" : value.ToString() );
+            listControl.SetValue( value == null ? "0" : value.ToString() );
         }
 
         /// <summary>
@@ -976,6 +1091,7 @@ namespace Rock
                     v.Id
                 } );
 
+            listControl.SelectedIndex = -1;
             listControl.DataSource = ds;
             listControl.DataTextField = "Name";
             listControl.DataValueField = "Id";
@@ -985,6 +1101,7 @@ namespace Rock
             {
                 listControl.Items.Insert( 0, new ListItem() );
             }
+
         }
 
         /// <summary>
@@ -1054,6 +1171,7 @@ namespace Rock
         /// Converts to the enum value to it's string value
         /// </summary>
         /// <param name="eff">The eff.</param>
+        /// <param name="SplitCase">if set to <c>true</c> [split case].</param>
         /// <returns></returns>
         public static String ConvertToString( this Enum eff, bool SplitCase = true )
         {
@@ -1090,7 +1208,7 @@ namespace Rock
                 }
             }
             return null;
-        }        
+        }
 
         /// <summary>
         /// Converts to int.
@@ -1107,10 +1225,26 @@ namespace Rock
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="enumValue">The enum value.</param>
+        /// <param name="defaultValue">The default value to use if the value cannot be parsed. Leave null to throw an exception if the value cannot be parsed. </param>
         /// <returns></returns>
-        public static T ConvertToEnum<T>( this String enumValue )
+        public static T ConvertToEnum<T>( this String enumValue, T? defaultValue = null ) where T : struct // actually limited to enum, but struct is the closest we can do
         {
-            return (T)Enum.Parse( typeof( T ), enumValue.Replace( " ", "" ) );
+            if ( defaultValue.HasValue )
+            {
+                T result;
+                if ( Enum.TryParse<T>( enumValue, out result ) )
+                {
+                    return result;
+                }
+                else
+                {
+                    return defaultValue.Value;
+                }
+            }
+            else
+            {
+                return (T)Enum.Parse( typeof( T ), enumValue.Replace( " ", "" ) );
+            }
         }
 
         #endregion
@@ -1259,6 +1393,35 @@ namespace Rock
             }
 
             return qry;
+        }
+
+        /// <summary>
+        /// Filters a Query to rows that have matching attribute value
+        /// (must be in a UnitOfWorkScope codeblock)
+        /// </summary>
+        /// <example>
+        /// using ( new Rock.Data.UnitOfWorkScope() )
+        /// {
+        ///     var test = new PersonService().Queryable().Where( a => a.FirstName == "Bob" ).WhereAttributeValue( "IsBaptized", "true" ).ToList();
+        /// }
+        /// </example>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source">The source.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="attributeValue">The attribute value.</param>
+        /// <returns></returns>
+        public static IQueryable<T> WhereAttributeValue<T>( this IQueryable<T> source, string attributeKey, string attributeValue ) where T : Rock.Data.Model<T>, new()
+        {
+            int entityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( typeof( T ) ) ?? 0;
+
+            var avs = new AttributeValueService().Queryable()
+                .Where( a => a.Attribute.Key == attributeKey )
+                .Where( a => a.Attribute.EntityTypeId == entityTypeId )
+                .Where( a => a.Value == attributeValue )
+                .Select( a => a.EntityId );
+
+            var result = source.Where( a => avs.Contains( ( a as T ).Id ) );
+            return result;
         }
 
         #endregion

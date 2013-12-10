@@ -8,11 +8,6 @@
 
     */
 
-/* NA: I'd like to propose se use dashed lines to denote zones when you enter zone editing mode */
-.zone-instance.outline {
-    border: 1px dashed #909090;
-    border-radius: 3px;
-}
 
 /* NA: Used to style a checkboxlist grouping -- based somewhat off the textarea of the rock-boot.less */
 .checkboxlist-group {
@@ -306,29 +301,6 @@ small
     margin-top: 2px;
 }
 
-        
-
-
-
-.personlist
-{
-    list-style: none;
-    margin-left: 0;
-}
-
-.personlist li
-{
-    margin-left: 16px;
-}
-
-.personlist i[class=icon-circle]
-{
-    font-size: 9px;
-    color: #d0cfcf;
-    margin-left: -16px;
-    margin-right: 3px;
-    vertical-align: middle;
-}
 
 @media (max-width: 767px) {
 	/* center the person image */
@@ -366,7 +338,6 @@ small
 
 }
 
-/* Schedule Builder classes - MP */
 
 /* Family Edit - DT */
 #person-search-results.scroll-container {
@@ -396,57 +367,67 @@ span.data-view-filter-label {
     margin: 8px 12px 0 0;
 }
 
-/* RockTree css - JO */
-ul.rock-tree,
-ul.rock-tree ul {
-	list-style-type: none;
-	margin: 10px 0px;
-	padding: 0px;
+/* TypeAhead Bootstrap css - JO */
+.twitter-typeahead .tt-query,
+.twitter-typeahead .tt-hint {
+  margin-bottom: 0;
 }
 
-ul.rock-tree ul {
-	margin: 0px 0px 0px 25px;
+.tt-dropdown-menu {
+  min-width: 160px;
+  margin-top: 2px;
+  padding: 5px 0;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border: 1px solid rgba(0,0,0,.2);
+  *border-right-width: 2px;
+  *border-bottom-width: 2px;
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+  -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+     -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+          box-shadow: 0 5px 10px rgba(0,0,0,.2);
+  -webkit-background-clip: padding-box;
+     -moz-background-clip: padding;
+          background-clip: padding-box;
 }
 
-.rock-tree li {
-	margin: 0px;
+.tt-suggestion {
+  display: block;
+  padding: 3px 20px;
 }
 
-.rock-tree span,
-.rock-tree a {
-	margin: 1px;
-	display: inline-block;
+.tt-suggestion.tt-is-under-cursor {
+  color: #fff;
+  background-color: #a4b4c4;
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0088cc', endColorstr='#ff0077b3', GradientType=0)
 }
 
-.rock-tree .rock-tree-name:hover,
-.rock-tree span:hover,
-.rock-tree span:hover a {
-	background: #59849C;
-    color: #fff;
+.tt-suggestion.tt-is-under-cursor a {
+  color: #fff;
 }
 
-.rock-tree .selected,
-.rock-tree .selected a {
-	background: #779cb1;
-    color: #fff
+.tt-suggestion p {
+  margin: 0;
 }
 
-.rock-tree .rock-tree-name {
-	padding: 2px 6px;
-	border-radius: 3px;
-	cursor: pointer;
+/* Fixed column widths for attribute grids in the Group Type Detail block - DT */
+section.group-type-attribute-panel label {
+    padding-left: 36px;
 }
-
-.rock-tree .rock-tree-loading {
-  margin-left: 10px;
-  color: #777 !important;
-  font-size: 12px;
+table.inherited-attribute-grid tr td:first-child {
+    padding-left: 36px;
+    width: 131px;
 }
-
-.rock-tree .rock-tree-loading i {
-  margin-right: 5px;
+table.attribute-grid tr th:first-child {
+    width: 31px;
 }
-
-.rock-tree-leaf {
-    padding-left: 12px;
+table.attribute-grid tr th:nth-child(2) {
+    width: 100px;
+}
+table.inherited-attribute-grid tr td:nth-child(2),
+table.attribute-grid tr th:nth-child(3) {
+    width: 550px;
 }

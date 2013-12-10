@@ -15,7 +15,7 @@ namespace Rock.Web.UI.Controls
     /// <see cref="Grid"/> Column for reordering rows in a grid
     /// </summary>
     [ToolboxData( "<{0}:ReorderField runat=server></{0}:ReorderField>" )]
-    public class ReorderField : TemplateField
+    public class ReorderField : TemplateField, INotRowSelectedField
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ReorderField" /> class.
@@ -52,13 +52,13 @@ namespace Rock.Web.UI.Controls
         return ui;
     };
 ";
-                grid.Page.ClientScript.RegisterStartupScript( grid.Page.GetType(), "grid-sortable-helper-script", script, true );
+                ScriptManager.RegisterStartupScript( grid, grid.GetType(), "grid-sortable-helper-script", script, true );
 
                 script = string.Format( @"
     Sys.Application.add_load(function () {{
         $('#{0} tbody').sortable({{
             helper: fixHelper,
-            handle: '.icon-reorder',
+            handle: '.fa-bars',
             start: function(event, ui) {{
                 var start_pos = ui.item.index();
                 ui.item.data('start_pos', start_pos);
@@ -70,8 +70,7 @@ namespace Rock.Web.UI.Controls
     }});
 ", grid.ClientID, grid.UniqueID );
 
-                grid.Page.ClientScript.RegisterStartupScript( this.GetType(),
-                    string.Format( "grid-sort-{0}-script", grid.ClientID ), script, true );
+                ScriptManager.RegisterStartupScript( grid, grid.GetType(), string.Format( "grid-sort-{0}-script", grid.ClientID ), script, true );
 
                 this.ItemTemplate = new ReorderFieldTemplate();
             }
@@ -99,7 +98,7 @@ namespace Rock.Web.UI.Controls
                 a.AddCssClass( "minimal" );
                 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
-                buttonIcon.Attributes.Add( "class", "icon-reorder" );
+                buttonIcon.Attributes.Add( "class", "fa fa-bars" );
                 a.Controls.Add( buttonIcon );
 
                 cell.Controls.Add( a );

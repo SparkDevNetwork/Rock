@@ -107,6 +107,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets an optional validation group to use.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get { return ViewState["ValidationGroup"] as string; }
+            set { ViewState["ValidationGroup"] = value; }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -269,19 +281,19 @@ Rock.controls.imageUploader.initialize({{
             _imgThumbnail.ID = "img";
             Controls.Add( _imgThumbnail );
 
-            _hfBinaryFileId.ID = "hfBinaryFileId";
+            _hfBinaryFileId.ID = this.ID + "_hfBinaryFileId";
             Controls.Add( _hfBinaryFileId );
 
-            _hfBinaryFileTypeGuid.ID = "hfBinaryFileTypeGuid";
+            _hfBinaryFileTypeGuid.ID = this.ID + "_hfBinaryFileTypeGuid";
             Controls.Add( _hfBinaryFileTypeGuid );
 
             _aRemove = new HtmlAnchor();
             _aRemove.ID = "rmv";
-            _aRemove.InnerHtml = "<i class='icon-remove'></i>";
+            _aRemove.InnerHtml = "<i class='fa fa-times'></i>";
             Controls.Add( _aRemove );
 
             _fileUpload = new FileUpload();
-            _fileUpload.ID = "fu";
+            _fileUpload.ID = this.ID + "_fu";
             Controls.Add( _fileUpload );
         }
 

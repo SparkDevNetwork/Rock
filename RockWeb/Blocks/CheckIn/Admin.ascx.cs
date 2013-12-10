@@ -27,7 +27,7 @@ namespace RockWeb.Blocks.CheckIn
     {
         protected override void OnLoad( EventArgs e )
         {
-            CurrentPage.AddScriptLink( this.Page, "~/Blocks/CheckIn/Scripts/geo-min.js" );
+            RockPage.AddScriptLink( "~/Blocks/CheckIn/Scripts/geo-min.js" );
 
             if ( !Page.IsPostBack )
             {
@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.CheckIn
                 $(""input[id$='hfLatitude']"").val( latitude );
                 $(""input[id$='hfLongitude']"").val( longitude );
                 $(""div.checkin-header h1"").html( 'Checking Your Location...' );
-                $(""div.checkin-header"").append( ""<p class='muted'>"" + latitude + "" "" + longitude + ""</p>"" );
+                $(""div.checkin-header"").append( ""<p class='text-muted'>"" + latitude + "" "" + longitude + ""</p>"" );
                 // now perform a postback to fire the check geo location 
                 {0};
             }}

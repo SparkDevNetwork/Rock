@@ -1,0 +1,176 @@
+/*
+    CSS For Rock Installer
+    
+    Note: This file lives on the rock file storage host where it is referenced during installs.
+
+    TODO: Make this a less file
+ */
+
+body {
+	background-color: #3c3c3c;
+	color: #333;
+	font-family: 'Open Sans', sans-serif;
+	background-image: url("http://rockchms.blob.core.windows.net/install/header-texture.png");
+}
+			
+div#content {
+	width: 600px;
+	margin: 0 auto;
+}
+			
+i {
+	font-family: FontAwesome;
+	font-size: 22px;
+}
+			
+i.pass {
+	color: #218921;
+}
+			
+i.fail {
+	color: #e43030;
+}
+			
+.btn i {
+	font-size: 12px;
+	margin-top: 6px;
+}
+			
+ul {
+	list-style-type: none;
+}
+			
+ul li {
+	margin-bottom: 12px;
+}
+			
+ul li i[class^="icon-"] {
+	height: 30px;
+	float: left;
+	margin-right: 12px;
+	line-height: 18px;
+} 
+			
+div#content > h1 {
+	background: url("http://rockchms.blob.core.windows.net/install/header-logo.png") no-repeat scroll 0 0 transparent;
+	color: #E7E7E7;
+	display: block;
+	float: left;
+	height: 50px;
+	margin-bottom: 6px;
+	margin-top: 25px;
+	text-indent: -9999px;
+	width: 123px;
+}
+    		
+div#content #content-box {
+	background-color: #E7E7E7;
+	border-radius: 5px 5px 5px 5px;
+	box-shadow: 0 0 20px #000000;
+	clear: both;
+	min-height: 254px;
+	padding: 16px;
+	width: 584px;
+	color: #;
+}
+    		
+div#content #content-box h1 {
+    margin-top: 10px;
+    font-family: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+    		
+    		    		
+a.btn {
+    text-decoration: none;
+}
+    		
+p.wait {
+    width: 48px;
+    margin: 0 auto;
+    margin-top: 24px;
+}
+    		
+.btn.start-install, .btn.next-step {
+    display: block;
+    margin: 24px auto 24px auto;
+    text-align: center;
+    width: 180px;
+}
+
+.group:after {
+	clear: both;
+	content: ".";
+	display: block;
+	height: 0;
+	visibility: hidden;
+}
+
+.btn-list {
+    width: 100%;
+    text-align: center;
+}
+
+/* used to show the user directions to a page (e.g. 'Administration > General Settings') */
+.navigation-tip { 
+    font-family: Monaco, Menlo, Consolas, "Courier New", monospace; /* from bootstrap */
+    padding: 2px 4px;
+    font-size: 90%;
+    color: #000;
+    background-color: #ccc;
+    white-space: nowrap;
+    border-radius: 4px;
+} 
+
+/* Bootstrap Overrides */
+
+.btn-primary {
+    background-color: #2b2b2b;
+    border-color: #1b1b1b;
+}
+
+.btn-primary:hover {
+    background-color: #424242;
+    border-color: #2b2b2b;
+}
+
+h4 {
+    font-weight: 600;
+}
+
+/* update status styles */
+.updateprogress-status {
+    padding-top: 50px;
+    position:fixed;
+    top: 35%;
+    left: 40%;
+    z-index: 10000;
+    background-color: #a8a6a6;
+    color: #fff;
+    width: 200px;
+    height: 200px;
+    -moz-box-shadow:    rgba(0,0,0, 0.5) 18px 18px 80px 0px;
+    -webkit-box-shadow: rgba(0,0,0, 0.5) 18px 18px 80px 0px;
+    box-shadow: rgba(0,0,0, 0.5) 18px 18px 80px 0px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.updateprogress-status i {
+    margin-bottom: 12px;
+}
+
+.updateprogress-bg {
+    color: #fff;
+    position: fixed;
+    text-align: center;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 9999;
+    background-color: #343434;
+    opacity: 0.97;
+}

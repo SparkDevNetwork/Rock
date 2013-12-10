@@ -33,17 +33,19 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            string formattedValue = string.Empty;
+
             Guid guid = Guid.Empty;
             if ( Guid.TryParse( value, out guid ) )
             {
-                var groupRole = new Rock.Model.GroupRoleService().Get( guid );
+                var groupRole = new Rock.Model.GroupTypeRoleService().Get( guid );
                 if ( groupRole != null )
                 {
-                    return groupRole.Name;
+                    formattedValue = groupRole.Name;
                 }
             }
 
-            return string.Empty;
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 
         /// <summary>
@@ -71,6 +73,8 @@ namespace Rock.Field.Types
             controls.Add( ddl );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
+            ddl.Label = "Group Type";
+            ddl.Help = "Type of group to select roles from, if left blank any group type's role can be selected.";
 
             ddl.Items.Add( new ListItem() );
 
@@ -157,7 +161,7 @@ namespace Rock.Field.Types
             {
                 if ( groupRolePicker.GroupRoleId.HasValue )
                 {
-                    var groupRole = new Rock.Model.GroupRoleService().Get( groupRolePicker.GroupRoleId.Value );
+                    var groupRole = new Rock.Model.GroupTypeRoleService().Get( groupRolePicker.GroupRoleId.Value );
                     if ( groupRole != null )
                     {
                         return groupRole.Guid.ToString();
@@ -182,7 +186,7 @@ namespace Rock.Field.Types
                 GroupRolePicker groupRolePicker = control as GroupRolePicker;
                 if ( groupRolePicker != null )
                 {
-                    var groupRole = new Rock.Model.GroupRoleService().Get( guid );
+                    var groupRole = new Rock.Model.GroupTypeRoleService().Get( guid );
                     if ( groupRole != null )
                     {
                         groupRolePicker.GroupRoleId = groupRole.Id;

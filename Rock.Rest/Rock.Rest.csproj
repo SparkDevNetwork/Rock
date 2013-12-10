@@ -90,6 +90,7 @@
     <Compile Include="Controllers\CodeGenerated\FinancialTransactionImagesController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialTransactionRefundsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialTransactionScannedChecksController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupTypeRolesController.cs" />
     <Compile Include="Controllers\CodeGenerated\LayoutsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NotesController.cs" />
     <Compile Include="Controllers\CodeGenerated\NoteTypesController.cs" />
@@ -124,7 +125,6 @@
     <Compile Include="Controllers\CodeGenerated\FinancialTransactionDetailsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialTransactionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupMembersController.cs" />
-    <Compile Include="Controllers\CodeGenerated\GroupRolesController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupsController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\HtmlContentsController.cs" />
