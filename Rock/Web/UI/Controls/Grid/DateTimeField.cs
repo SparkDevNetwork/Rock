@@ -21,6 +21,7 @@ namespace Rock.Web.UI.Controls
         public DateTimeField()
             : base()
         {
+            this.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
             this.DataFormatString = "{0:g}";
         }

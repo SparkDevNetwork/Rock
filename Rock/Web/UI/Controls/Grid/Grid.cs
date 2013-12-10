@@ -1139,6 +1139,7 @@ namespace Rock.Web.UI.Controls
                 baseType == typeof( int ) || baseType == typeof( int? ) )
             {
                 bf = new BoundField();
+                bf.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
                 bf.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
             }
 
