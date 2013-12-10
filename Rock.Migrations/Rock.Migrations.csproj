@@ -120,6 +120,10 @@
     <Compile Include="Migrations\201312100236061_AddPrayerSessionBlock.Designer.cs">
       <DependentUpon>201312100236061_AddPrayerSessionBlock.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201312101739202_FixMyAccountRoute.cs" />
+    <Compile Include="Migrations\201312101739202_FixMyAccountRoute.Designer.cs">
+      <DependentUpon>201312101739202_FixMyAccountRoute.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -187,6 +191,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201312100236061_AddPrayerSessionBlock.resx">
       <DependentUpon>201312100236061_AddPrayerSessionBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312101739202_FixMyAccountRoute.resx">
+      <DependentUpon>201312101739202_FixMyAccountRoute.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
