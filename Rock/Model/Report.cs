@@ -167,7 +167,7 @@ namespace Rock.Model
                     // Create the dynamic type
                     var dynamicFields = new Dictionary<string, Type>();
                     entityFields.ForEach( f => dynamicFields.Add( string.Format( "Entity_{0}", f.Name ), f.PropertyType ) );
-                    attributes.ForEach( a => dynamicFields.Add( string.Format( "Attribute_{0}", a.Key ), typeof( string ) ) );
+                    attributes.ForEach( a => dynamicFields.Add( string.Format( "Attribute_{0}", a.Id ), typeof( string ) ) );
                     foreach( var reportField in selectComponents)
                     {
                         DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
@@ -182,7 +182,7 @@ namespace Rock.Model
                     // Bind the dynamic fields to their expressions
                     var bindings = new List<MemberBinding>();
                     entityFields.ForEach( f => bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "Entity_{0}", f.Name ) ), Expression.Property( paramExpression, f.Name ) ) ) );
-                    attributes.ForEach( a => bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "Attribute_{0}", a.Key ) ), GetAttributeValueExpression( attributeValues, attributeValueParameter, idExpression, a.Id ) ) ) );
+                    attributes.ForEach( a => bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "Attribute_{0}", a.Id ) ), GetAttributeValueExpression( attributeValues, attributeValueParameter, idExpression, a.Id ) ) ) );
                     foreach( var reportField in selectComponents)
                     {
                         DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
@@ -216,7 +216,7 @@ namespace Rock.Model
                         int colNum = 1;
                         foreach ( var attribute in attributes )
                         {
-                            RenameColumn( dt, string.Format( "C{0}", colNum ), string.Format( "Attribute_{0}", attribute.Key ) );
+                            RenameColumn( dt, string.Format( "C{0}", colNum ), string.Format( "Attribute_{0}", attribute.Id ) );
                             colNum++;
                         }
                         foreach ( var reportField in selectComponents )

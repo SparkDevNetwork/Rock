@@ -53,7 +53,7 @@ namespace Rock.Data
 
                 return builtTypes[className];
             }
-            catch ( Exception ex )
+            catch
             {
                 return null;
             }

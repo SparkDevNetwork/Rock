@@ -30,7 +30,7 @@ namespace RockWeb.Blocks.Reporting
     /// </summary>
     public partial class ReportDetail : RockBlock, IDetailBlock
     {
-        #region Control Methods
+        #region Properties
 
         /// <summary>
         /// Gets or sets the report fields dictionary.
@@ -52,39 +52,9 @@ namespace RockWeb.Blocks.Reporting
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        [Serializable]
-        protected class ReportFieldInfo
-        {
-            /// <summary>
-            /// Gets or sets the unique identifier.
-            /// </summary>
-            /// <value>
-            /// The unique identifier.
-            /// </value>
-            [DataMember]
-            public Guid Guid { get; set; }
+        #endregion
 
-            /// <summary>
-            /// Gets or sets the type of the report field.
-            /// </summary>
-            /// <value>
-            /// The type of the report field.
-            /// </value>
-            [DataMember]
-            public ReportFieldType ReportFieldType { get; set; }
-
-            /// <summary>
-            /// Gets or sets the selection.
-            /// </summary>
-            /// <value>
-            /// The selection.
-            /// </value>
-            [DataMember]
-            public string Selection { get; set; }
-        }
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -95,6 +65,7 @@ namespace RockWeb.Blocks.Reporting
             base.OnInit( e );
 
             gReport.GridRebind += gReport_GridRebind;
+            gReport.RowDataBound += gReport_RowDataBound;
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Report.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Report ) ).Id;
         }
@@ -156,38 +127,98 @@ namespace RockWeb.Blocks.Reporting
             }
         }
 
-        /// <summary>
-        /// Sorts the panel widgets.
-        /// </summary>
-        /// <param name="eventParam">The event parameter.</param>
-        /// <param name="values">The values.</param>
-        private void SortPanelWidgets( string eventParam, string[] values )
-        {
-            var allPanelWidgets = phReportFields.ControlsOfTypeRecursive<PanelWidget>();
-            string panelWidgetClientId = values[0];
-            int newIndex = int.Parse( values[1] );
+        #endregion
 
-            PanelWidget panelWidget = allPanelWidgets.FirstOrDefault( a => a.ClientID == panelWidgetClientId );
-            Guid reportFieldGuid = panelWidget.ID.Replace( "reportFieldWidget_", string.Empty ).AsGuid();
-            if ( panelWidget != null )
+        #region Events
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlEntityType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void ddlEntityType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            LoadDropdownsForEntityType( ddlEntityType.SelectedValueAsInt() );
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gReport control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gReport_GridRebind( object sender, EventArgs e )
+        {
+            BindGrid( new ReportService().Get( hfReportId.ValueAsInt() ) );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnAddField control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnAddField_Click( object sender, EventArgs e )
+        {
+            string fieldSelectionValue = ddlFields.SelectedItem.Value;
+            Guid reportFieldGuid = Guid.NewGuid();
+            string[] fieldSelectionValueParts = fieldSelectionValue.Split( '|' );
+            if ( fieldSelectionValueParts.Count() == 2 )
             {
-                phReportFields.Controls.Remove( panelWidget );
-                var reportFieldInfo = ReportFieldsDictionary.Where( a => a.Guid == reportFieldGuid ).First();
-                ReportFieldsDictionary.Remove( reportFieldInfo );
-                if ( newIndex >= allPanelWidgets.Count() )
-                {
-                    phReportFields.Controls.Add( panelWidget );
-                    ReportFieldsDictionary.Add( reportFieldInfo );
-                }
-                else
-                {
-                    phReportFields.Controls.AddAt( newIndex, panelWidget );
-                    ReportFieldsDictionary.Insert( newIndex, reportFieldInfo );
-                }
+                ReportFieldType reportFieldType = fieldSelectionValueParts[0].ConvertToEnum<ReportFieldType>();
+                string fieldSelection = fieldSelectionValueParts[1];
+                ReportFieldsDictionary.Add( new ReportFieldInfo { Guid = reportFieldGuid, ReportFieldType = reportFieldType, Selection = fieldSelection } );
+                AddFieldPanelWidget( reportFieldGuid, reportFieldType, fieldSelection, true );
             }
         }
 
-        #endregion
+
+        /// <summary>
+        /// Handles the DeleteClick event of the FieldsPanelWidget control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void FieldsPanelWidget_DeleteClick( object sender, EventArgs e )
+        {
+            PanelWidget panelWidget = sender as PanelWidget;
+            if ( panelWidget != null )
+            {
+                Guid reportFieldGuid = panelWidget.ID.Replace( "reportFieldWidget_", string.Empty ).AsGuid();
+                phReportFields.Controls.Remove( panelWidget );
+                var reportFieldInfo = ReportFieldsDictionary.First( a => a.Guid == reportFieldGuid );
+                ReportFieldsDictionary.Remove( reportFieldInfo );
+            }
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gReport control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        void gReport_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                try
+                {
+                    // Format the attribute values based on their field type
+                    for ( int i = 0; i < gReport.Columns.Count; i++ )
+                    {
+                        var boundField = gReport.Columns[i] as BoundField;
+                        if ( boundField != null && boundField.DataField.StartsWith( "Attribute_" ) )
+                        {
+                            int attributeID = int.MinValue;
+                            if ( int.TryParse( boundField.DataField.Substring( 10 ), out attributeID ) )
+                            {
+                                AttributeCache attr = AttributeCache.Read( attributeID );
+                                var cell = e.Row.Cells[i];
+                                cell.Text = attr.FieldType.Field.FormatValue( cell, cell.Text, attr.QualifierValues, true );
+                            }
+                        }
+                    }
+                }
+                catch
+                { }
+            }
+        }
 
         #region Edit Events
 
@@ -228,10 +259,10 @@ namespace RockWeb.Blocks.Reporting
                     categoryId = report.CategoryId;
 
                     RockTransactionScope.WrapTransaction( () =>
-                       {
-                           reportService.Delete( report, CurrentPersonId );
-                           reportService.Save( report, CurrentPersonId );
-                       } );
+                    {
+                        reportService.Delete( report, CurrentPersonId );
+                        reportService.Save( report, CurrentPersonId );
+                    } );
 
                     // reload page, selecting the deleted data view's parent
                     var qryParams = new Dictionary<string, string>();
@@ -384,7 +415,40 @@ namespace RockWeb.Blocks.Reporting
 
         #endregion
 
-        #region Internal Methods
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Sorts the panel widgets.
+        /// </summary>
+        /// <param name="eventParam">The event parameter.</param>
+        /// <param name="values">The values.</param>
+        private void SortPanelWidgets( string eventParam, string[] values )
+        {
+            var allPanelWidgets = phReportFields.ControlsOfTypeRecursive<PanelWidget>();
+            string panelWidgetClientId = values[0];
+            int newIndex = int.Parse( values[1] );
+
+            PanelWidget panelWidget = allPanelWidgets.FirstOrDefault( a => a.ClientID == panelWidgetClientId );
+            Guid reportFieldGuid = panelWidget.ID.Replace( "reportFieldWidget_", string.Empty ).AsGuid();
+            if ( panelWidget != null )
+            {
+                phReportFields.Controls.Remove( panelWidget );
+                var reportFieldInfo = ReportFieldsDictionary.Where( a => a.Guid == reportFieldGuid ).First();
+                ReportFieldsDictionary.Remove( reportFieldInfo );
+                if ( newIndex >= allPanelWidgets.Count() )
+                {
+                    phReportFields.Controls.Add( panelWidget );
+                    ReportFieldsDictionary.Add( reportFieldInfo );
+                }
+                else
+                {
+                    phReportFields.Controls.AddAt( newIndex, panelWidget );
+                    ReportFieldsDictionary.Insert( newIndex, reportFieldInfo );
+                }
+            }
+        }
 
         /// <summary>
         /// Loads the drop downs.
@@ -683,9 +747,17 @@ namespace RockWeb.Blocks.Reporting
                             if ( reportField.ShowInGrid )
                             {
                                 var boundField = new BoundField();
-                                boundField.DataField = string.Format( "Attribute_{0}", attribute.Key );
+                                boundField.DataField = string.Format( "Attribute_{0}", attribute.Id );
                                 boundField.HeaderText = attribute.Name;
                                 boundField.SortExpression = null;
+
+                                if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.INTEGER.AsGuid() ) ||
+                                    attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) )
+                                {
+                                    boundField.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
+                                    boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
+                                }
+
                                 gReport.Columns.Add( boundField );
                             }
                         }
@@ -716,48 +788,6 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 gReport.DataBind();
-            }
-        }
-
-
-        #endregion
-
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlEntityType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void ddlEntityType_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            LoadDropdownsForEntityType( ddlEntityType.SelectedValueAsInt() );
-        }
-
-        /// <summary>
-        /// Handles the GridRebind event of the gReport control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gReport_GridRebind( object sender, EventArgs e )
-        {
-            BindGrid( new ReportService().Get( hfReportId.ValueAsInt() ) );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnAddField control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnAddField_Click( object sender, EventArgs e )
-        {
-            string fieldSelectionValue = ddlFields.SelectedItem.Value;
-            Guid reportFieldGuid = Guid.NewGuid();
-            string[] fieldSelectionValueParts = fieldSelectionValue.Split( '|' );
-            if ( fieldSelectionValueParts.Count() == 2 )
-            {
-                ReportFieldType reportFieldType = fieldSelectionValueParts[0].ConvertToEnum<ReportFieldType>();
-                string fieldSelection = fieldSelectionValueParts[1];
-                ReportFieldsDictionary.Add( new ReportFieldInfo { Guid = reportFieldGuid, ReportFieldType = reportFieldType, Selection = fieldSelection } );
-                AddFieldPanelWidget( reportFieldGuid, reportFieldType, fieldSelection, true );
             }
         }
 
@@ -849,21 +879,44 @@ namespace RockWeb.Blocks.Reporting
             phReportFields.Controls.Add( panelWidget );
         }
 
+        #endregion
+
+        #region ReportFieldInfo Class
+
         /// <summary>
-        /// Handles the DeleteClick event of the FieldsPanelWidget control.
+        /// 
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void FieldsPanelWidget_DeleteClick( object sender, EventArgs e )
+        [Serializable]
+        protected class ReportFieldInfo
         {
-            PanelWidget panelWidget = sender as PanelWidget;
-            if ( panelWidget != null )
-            {
-                Guid reportFieldGuid = panelWidget.ID.Replace( "reportFieldWidget_", string.Empty ).AsGuid();
-                phReportFields.Controls.Remove( panelWidget );
-                var reportFieldInfo = ReportFieldsDictionary.First( a => a.Guid == reportFieldGuid );
-                ReportFieldsDictionary.Remove( reportFieldInfo );
-            }
+            /// <summary>
+            /// Gets or sets the unique identifier.
+            /// </summary>
+            /// <value>
+            /// The unique identifier.
+            /// </value>
+            [DataMember]
+            public Guid Guid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the type of the report field.
+            /// </summary>
+            /// <value>
+            /// The type of the report field.
+            /// </value>
+            [DataMember]
+            public ReportFieldType ReportFieldType { get; set; }
+
+            /// <summary>
+            /// Gets or sets the selection.
+            /// </summary>
+            /// <value>
+            /// The selection.
+            /// </value>
+            [DataMember]
+            public string Selection { get; set; }
         }
+
+        #endregion
     }
 }
