@@ -203,7 +203,13 @@ namespace RockWeb.Blocks.Cms
                         // Create the layouts for the site, and find the first one
                         var layoutService = new LayoutService();
                         layoutService.RegisterLayouts( Request.MapPath( "~" ), siteCache, CurrentPersonId );
-                        var layout = layoutService.GetBySiteId( siteCache.Id ).FirstOrDefault();
+
+                        var layouts = layoutService.GetBySiteId( siteCache.Id );
+                        Layout layout = layouts.FirstOrDefault( l => l.FileName.Equals("FullWidth", StringComparison.OrdinalIgnoreCase));
+                        if (layout == null)
+                        {
+                            layout = layouts.FirstOrDefault();
+                        }
                         if ( layout != null )
                         {
                             var pageService = new PageService();
