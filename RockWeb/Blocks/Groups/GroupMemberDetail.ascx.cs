@@ -227,9 +227,9 @@ namespace RockWeb.Blocks.Groups
                 } );
 
                 Group group = new GroupService().Get( groupMember.GroupId );
-                if ( group.IsSecurityRole )
+                if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
                 {
-                    // new person added to SecurityRole, Flush
+                    Rock.Security.Role.Flush( group.Id );
                     Rock.Security.Authorization.Flush();
                 }
             }

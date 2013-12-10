@@ -154,9 +154,10 @@ namespace RockWeb.Blocks.Groups
                     groupMemberService.Save( groupMember, CurrentPersonId );
 
                     Group group = new GroupService().Get( groupId );
-                    if ( group.IsSecurityRole )
+                    if ( group.IsSecurityRole || group.GroupType.Guid.Equals(Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ))
                     {
                         // person removed from SecurityRole, Flush
+                        Rock.Security.Role.Flush( group.Id );
                         Rock.Security.Authorization.Flush();
                     }
                 }
