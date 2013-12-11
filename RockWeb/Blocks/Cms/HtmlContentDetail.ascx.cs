@@ -72,11 +72,11 @@ namespace RockWeb.Blocks.Cms
             btnShowVersionGrid.Visible = supportsVersioning;
             cbOverwriteVersion.Visible = supportsVersioning;
             cbOverwriteVersion.Checked = false;
-            pDateRange.Visible = supportsVersioning;
 
             // RequireApproval only applies if SupportsVersioning=True
-            chkApproved.Visible = supportsVersioning && requireApproval;
-            chkApproved.Enabled = IsUserAuthorized( "Approve" );
+            upApproval.Visible = supportsVersioning && requireApproval;
+            lbApprove.Enabled = IsUserAuthorized( "Approve" );
+            lbDeny.Enabled = IsUserAuthorized( "Approve" );
 
             string entityValue = EntityValue();
             HtmlContent htmlContent = new HtmlContentService().GetActiveContent( this.BlockId, entityValue );
@@ -92,12 +92,23 @@ namespace RockWeb.Blocks.Cms
         {
             if ( htmlContent == null )
             {
-                htmlContent = new Rock.Model.HtmlContent();
+                htmlContent = new HtmlContent();
             }
 
+            int? maxVersion = GetMaxVersionOfHtmlContent();
+
             hfVersion.Value = htmlContent.Version.ToString();
-            lVersion.Text = string.Format( "Version {0} | ", htmlContent.Version );
-            chkApproved.Checked = htmlContent.IsApproved;
+            if ( maxVersion.HasValue && maxVersion.Value != htmlContent.Version )
+            {
+                lVersion.Text = string.Format( "Version {0} <small>of {1}</small> | ", htmlContent.Version, maxVersion.Value );
+            }
+            else
+            {
+                lVersion.Text = string.Format( "Version {0} | ", htmlContent.Version );
+            }
+
+            SetApprovalValues( htmlContent.IsApproved, htmlContent.ApprovedByPerson );
+
             pDateRange.LowerValue = htmlContent.StartDateTime;
             pDateRange.UpperValue = htmlContent.ExpireDateTime;
             edtHtml.Text = htmlContent.Content;
@@ -130,7 +141,7 @@ namespace RockWeb.Blocks.Cms
 
             // get current content
             int version = hfVersion.ValueAsInt();
-            Rock.Model.HtmlContent htmlContent = htmlContentService.GetByBlockIdAndEntityValueAndVersion( this.BlockId, entityValue, version );
+            HtmlContent htmlContent = htmlContentService.GetByBlockIdAndEntityValueAndVersion( this.BlockId, entityValue, version );
 
             // if the existing content changed, and the overwrite option was not checked, create a new version
             if ( htmlContent != null && supportVersioning && htmlContent.Content != edtHtml.Text && !cbOverwriteVersion.Checked )
@@ -141,44 +152,33 @@ namespace RockWeb.Blocks.Cms
             // if a record doesn't exist then create one
             if ( htmlContent == null )
             {
-                htmlContent = new Rock.Model.HtmlContent();
+                htmlContent = new HtmlContent();
                 htmlContent.BlockId = this.BlockId;
                 htmlContent.EntityValue = entityValue;
 
                 if ( supportVersioning )
                 {
-                    int? maxVersion = htmlContentService.Queryable()
-                        .Where( c => c.BlockId == this.BlockId && c.EntityValue == entityValue )
-                        .Select( c => (int?)c.Version ).Max();
+                    int? maxVersion = GetMaxVersionOfHtmlContent();
 
                     htmlContent.Version = maxVersion.HasValue ? maxVersion.Value + 1 : 1;
                 }
                 else
                 {
-                    htmlContent.Version = 0;
+                    htmlContent.Version = 1;
                 }
 
                 htmlContentService.Add( htmlContent, CurrentPersonId );
             }
 
-            if ( supportVersioning )
-            {
-                // only set the Start/Expire DateTime for VersionEnabled blocks
-                htmlContent.StartDateTime = pDateRange.LowerValue;
-                htmlContent.ExpireDateTime = pDateRange.UpperValue;
-            }
-            else
-            {
-                htmlContent.StartDateTime = null;
-                htmlContent.ExpireDateTime = null;
-            }
+            htmlContent.StartDateTime = pDateRange.LowerValue;
+            htmlContent.ExpireDateTime = pDateRange.UpperValue;
 
             if ( !requireApproval || IsUserAuthorized( "Approve" ) )
             {
-                htmlContent.IsApproved = !requireApproval || chkApproved.Checked;
+                htmlContent.IsApproved = !requireApproval || hfApprovalStatus.Value.AsBoolean();
                 if ( htmlContent.IsApproved )
                 {
-                    htmlContent.ApprovedByPersonId = CurrentPersonId;
+                    htmlContent.ApprovedByPersonId = hfApprovalStatusPersonId.ValueAsInt();
                     htmlContent.ApprovedDateTime = DateTime.Now;
                 }
             }
@@ -197,6 +197,19 @@ namespace RockWeb.Blocks.Cms
             {
                 // TODO: service.ErrorMessages;
             }
+        }
+
+        /// <summary>
+        /// Gets the maximum version that this HtmlContent block 
+        /// </summary>
+        /// <returns></returns>
+        private int? GetMaxVersionOfHtmlContent()
+        {
+            string entityValue = this.EntityValue();
+            int? maxVersion = new HtmlContentService().Queryable()
+                .Where( c => c.BlockId == this.BlockId && c.EntityValue == entityValue )
+                .Select( c => (int?)c.Version ).Max();
+            return maxVersion;
         }
 
         /// <summary>
@@ -258,7 +271,7 @@ namespace RockWeb.Blocks.Cms
             // if content not cached load it from DB
             if ( cachedContent == null )
             {
-                Rock.Model.HtmlContent content = new HtmlContentService().GetActiveContent( this.BlockId, entityValue );
+                HtmlContent content = new HtmlContentService().GetActiveContent( this.BlockId, entityValue );
 
                 if ( content != null )
                 {
@@ -403,7 +416,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void SelectVersion_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            Rock.Model.HtmlContent htmlContent = new HtmlContentService().Get( e.RowKeyId );
+            HtmlContent htmlContent = new HtmlContentService().Get( e.RowKeyId );
             pnlVersionGrid.Visible = false;
             pnlEdit.Visible = true;
             ShowEditDetail( htmlContent );
@@ -431,5 +444,55 @@ namespace RockWeb.Blocks.Cms
             pnlVersionGrid.Visible = false;
             pnlEdit.Visible = true;
         }
+
+        /// <summary>
+        /// Handles the Click event of the lbApprove control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbApprove_Click( object sender, EventArgs e )
+        {
+            SetApprovalValues( true, CurrentPerson );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbDeny control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbDeny_Click( object sender, EventArgs e )
+        {
+            SetApprovalValues( false, CurrentPerson );
+        }
+
+        /// <summary>
+        /// Sets the approval values.
+        /// </summary>
+        /// <param name="approved">if set to <c>true</c> [approved].</param>
+        /// <param name="person">The person.</param>
+        private void SetApprovalValues( bool approved, Person person )
+        {
+            string cssClass = string.Empty;
+
+            if ( approved )
+            {
+                cssClass = "label HtmlContentApprovalStatus label-success";
+            }
+            else
+            {
+                cssClass = "label HtmlContentApprovalStatus label-danger";
+            }
+
+            lApprovalStatus.Text = String.Format( "<span class='{0}'>{1}</span>", cssClass, approved ? "Approved" : "Not-Approved" );
+
+            hfApprovalStatus.Value = approved.ToTrueFalse();
+            lblApprovalStatusPerson.Visible = person != null;
+            if ( person != null )
+            {
+                lblApprovalStatusPerson.Text = "by " + person.FullName;
+                hfApprovalStatusPersonId.Value = person.Id.ToString();
+            }
+        }
+
     }
 }

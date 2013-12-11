@@ -23,8 +23,8 @@ namespace RockWeb.Blocks.Prayer
 {
     [TextField( "Welcome Introduction Text", "Some text (or HTML) to display on the first step.", false, "<h2>Welcome to our Prayer Ministry.</h2>", "", 1 )]
     [CategoryField( "Category", "A top level category. This controls which categories are shown when starting a prayer session.", false, "Rock.Model.PrayerRequest", "", "", false, "", "Filtering", 2, "CategoryGuid" )]
-    [BooleanField( "Enable Community Flagging", "If enabled, members of the prayer team will be able to flag prayer requests if they feel it is inappropriate.", false, "Flagging", 3 )]
-    [IntegerField( "Flag Limit", "Number of flags a prayer request has to get from the community before it is automatically unapproved.", false, 1, "Flagging", 4 )]
+    [BooleanField( "Enable Community Flagging", "If enabled, members of the prayer team will be able to a flag prayer request if they feel it is inappropriate.", false, "Flagging", 3 )]
+    [IntegerField( "Flag Limit", "The number of flags a prayer request has to get from the community before it is automatically unapproved.", false, 1, "Flagging", 4 )]
     [TextField( "Note Type", "The note type name for these prayer request comments.", false, "Prayer Comment", "Advanced", 0, "NoteType" )]
 
     public partial class PrayerSession : RockBlock
