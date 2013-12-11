@@ -598,6 +598,9 @@ namespace RockWeb.Blocks.Communication
         {
             CommunicationId = communication.Id;
 
+            lStatus.Visible = communication.Status != CommunicationStatus.Transient;
+            lRecipientStatus.Visible = communication.Status != CommunicationStatus.Transient; 
+
             lStatus.Text = string.Format("<span class='label label-communicationstatus-{0}'>{1}</span>", communication.Status.ConvertToString().ToLower().Replace(" ", ""), communication.Status.ConvertToString());
 
             ChannelEntityTypeId = communication.ChannelEntityTypeId;
