@@ -228,9 +228,9 @@ namespace Rock.Web.UI
         #region Protected Caching Methods
 
         /// <summary>
-        /// Adds an object to the default MemoryCache.
+        /// Adds an object to the default <see cref="System.Runtime.Caching.MemoryCache"/> .
         /// </summary>
-        /// <param name="value">Object to cache</param>
+        /// <param name="value">The <see cref="System.Object"/> to cache</param>
         protected virtual void AddCacheItem( object value )
         {
             CacheItemPolicy cacheItemPolicy = null;
@@ -238,10 +238,10 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Adds an object to the default MemoryCache.
+        /// Adds a keyed/named object to the default <see cref="System.Runtime.Caching.MemoryCache"/> .
         /// </summary>
-        /// <param name="key">Key to differentiate items from same block instance</param>
-        /// <param name="value">Object to cache</param>
+        /// <param name="key">A <see cref="System.String"/> representing the name of the key to differentiate items from same block instance</param>
+        /// <param name="value">The <see cref="System.Object"/> to cache.</param>
         protected virtual void AddCacheItem( string key, object value )
         {
             CacheItemPolicy cacheItemPolicy = null;
@@ -249,11 +249,11 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Adds an object to the default MemoryCache.
+        /// Adds an object to the default <see cref="System.Runtime.Caching.MemoryCache"/>  for a specified amount of time.
         /// </summary>
-        /// <param name="key">Key to differentiate items from same block instance</param>
-        /// <param name="value">Object to cache</param>
-        /// <param name="seconds">The Number of seconds to cache object for</param>
+        /// <param name="key">A <see cref="System.String"/> representing the name of the key to differentiate items from same block instance</param>
+        /// <param name="value">The <see cref="System.Object"/> to cache.</param>
+        /// <param name="seconds">A <see cref="System.Int32"/> representing the the amount of time in seconds that the object is cached. This is an absolute expiration</param>
         protected virtual void AddCacheItem( string key, object value, int seconds )
         {
             CacheItemPolicy cacheItemPolicy = new CacheItemPolicy();
@@ -262,11 +262,11 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Adds an object to the default MemoryCache.
+        /// Adds an object with a <see cref="System.Runtime.Caching.CacheItemPolicy"/> to the default <see cref="System.Runtime.Caching.MemoryCache"/> 
         /// </summary>
-        /// <param name="key">Key to differentiate items from same block instance</param>
-        /// <param name="value">Object to cache</param>
-        /// <param name="cacheItemPolicy">Optional CacheItemPolicy, defaults to null</param>
+        /// <param name="key">A <see cref="System.String"/> representing the name of the key to differentiate items from same block instance</param>
+        /// <param name="value">The <see cref="System.Object"/> to cache.</param>
+        /// <param name="cacheItemPolicy">Optional <see cref="System.Runtime.Caching.CacheItemPolicy"/>, defaults to null</param>
         protected virtual void AddCacheItem( string key, object value, CacheItemPolicy cacheItemPolicy )
         {
             ObjectCache cache = MemoryCache.Default;
@@ -274,10 +274,10 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Retrieve an object from the cache
+        /// Returns an object from the default <see cref="System.Runtime.Caching.MemoryCache"/> .
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
+        /// <param name="key">A <see cref="System.String"/> representing the name of the object's key. Defaults to an empty string.</param>
+        /// <returns>The cached <see cref="System.Object"/> if a key match is not found, a null object will be returned.</returns>
         protected virtual object GetCacheItem( string key = "" )
         {
             ObjectCache cache = MemoryCache.Default;
@@ -285,9 +285,10 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Flush an object from the cache
+        /// Flushes an object from the cache
         /// </summary>
-        /// <param name="key"></param>
+        /// <param name="key">A <see cref="System.String"/> representing the the key name for the item that will be flushed. This value 
+        /// defaults to an empty string.</param>
         protected virtual void FlushCacheItem( string key = "" )
         {
             ObjectCache cache = MemoryCache.Default;
@@ -295,10 +296,10 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Items the cache key.
+        /// Returns the qualified key name for the cached item. The format is PageID:BlockID:Key.
         /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
+        /// <param name="key">A <see cref="System.String"/> representing the base key name.</param>
+        /// <returns>A <see cref="System.String" /> representing the fully qualified key name.</returns>
         private string ItemCacheKey( string key )
         {
             return string.Format( "Rock:Page:{0}:RockBlock:{1}:ItemCache:{2}",
@@ -391,18 +392,19 @@ namespace Rock.Web.UI
         #region Public Methods
 
         /// <summary>
-        /// Sets the block.
+        /// Sets the block instance.
         /// </summary>
-        /// <param name="blockCache">The block cache.</param>
+        /// <param name="blockCache">The block instance from <see cref="Rock.Web.Cache.BlockCache"/> .</param>
         public void SetBlock( BlockCache blockCache )
         {
             _blockCache = blockCache;
         }
 
         /// <summary>
-        /// Saves the attribute values.
+        /// Saves the block attribute values.
         /// </summary>
-        /// <param name="personId">The person id.</param>
+        /// <param name="personId">A <see cref="System.Int32"/> representing the PersonId of the logged in person who is saving the block attributes; 
+        /// if a  user is not logged in this value will be null.</param>
         public void SaveAttributeValues( int? personId )
         {
             if ( _blockCache != null )
@@ -412,11 +414,10 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Returns the current block value for the selected attribute
-        /// If the attribute doesn't exist a null value is returned  
+        /// Returns the current value for the block attribute for the specified key. If the attribute value is not found, a null value will be returned.
         /// </summary>
-        /// <param name="key">the block attribute key</param>
-        /// <returns>the stored value as a string or null if none exists</returns>
+        /// <param name="key">A <see cref="System.String"/> representing the key name for the block attribute to retrieve.</param>
+        /// <returns>A <see cref="System.String"/> representing the stored attribute value. If the attribute is not found, this value will be null.</returns>
         public string GetAttributeValue( string key )
         {
             if ( _blockCache != null )
@@ -427,11 +428,12 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Returns the current block values for the selected attribute.
-        /// If the attribute doesn't exist an empty list is returned.
+        /// Returns a <see cref="System.Collections.Generic.List{String}"/> of the current block attribute values for the specified key. If the key is not 
+        /// found an empty list will be returned.
         /// </summary>
-        /// <param name="key">the block attribute key</param>
-        /// <returns>a list of strings or an empty list if none exists</returns>
+        /// <param name="key">A <see cref="System.String"/> representing the block attribute key</param>
+        /// <returns>A <see cref="System.Collections.Generic.List{String}"/> containing the current attribute values for the specified key. If the key is not
+        /// found, an empty list will be returned.</returns>
         public List<string> GetAttributeValues( string key )
         {
             if ( _blockCache != null )
@@ -443,10 +445,10 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Sets the value of an attribute key in memory. Once values have been set, use the <see cref="SaveAttributeValues(int?)" /> method to save all values to database 
+        /// Sets the value of an block attribute key in memory. Once values have been set, use the <see cref="SaveAttributeValues(int?)" /> method to save all values to database 
         /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="key">A <see cref="System.String"/> representing the block attribute's key name.</param>
+        /// <param name="value">A <see cref="System.String"/> representing the value of the attribute.</param>
         public void SetAttributeValue( string key, string value )
         {
             if ( _blockCache != null )
@@ -458,60 +460,67 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds an update trigger for when the block properties are updated.
         /// </summary>
-        /// <param name="updatePanel">The update panel.</param>
+        /// <param name="updatePanel">The <see cref="System.Web.UI.UpdatePanel"/> that is being added.</param>
         public void AddConfigurationUpdateTrigger( UpdatePanel updatePanel )
         {
             RockPage.AddConfigurationUpdateTrigger( updatePanel );
         }
 
         /// <summary>
-        /// Evaluates if the CurrentPerson is authorized to perform the requested action 
+        /// Evaluates if the CurrentPerson is authorized to perform the requested action.
         /// </summary>
-        /// <param name="action"></param>
-        /// <returns></returns>
+        /// <param name="action">A <see cref="System.String" /> representing the action that the <see cref="Rock.Model.UserLogin"/>/<see cref="CurrentPerson"/> 
+        /// is requesting to perform.</param>
+        /// <returns>A <see cref="System.Boolean"/> that is <c>true</c> if the CurrentPerson is authorized to perform the requested action; otherwise <c>false</c>.</returns>
         public bool IsUserAuthorized( string action )
         {
             return _blockCache.IsAuthorized( action, CurrentPerson );
         }
 
         /// <summary>
-        /// Checks the page's RouteData values and then the query string for a
-        /// parameter matching the specified name, and if found returns the string
-        /// value
+        /// Returns the specified page parameter value.  The <see cref="Rock.Model.Page">page's</see> <see cref="Rock.Model.PageRoute"/>
+        /// is checked first and then query string values.  If a match is not found an empty string is returned.
         /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
+        /// <param name="name">A <see cref="System.String"/> representing the name of the specified page parameter.</param>
+        /// <returns>A <see cref="System.String"/> representing the value of the page parameter. If a match is not found, an empty string is returned.</returns>
         public string PageParameter( string name )
         {
             return RockPage.PageParameter( name );
         }
 
         /// <summary>
-        /// Pages the parameter.
+        /// Returns a specified page parameter from the specified <see cref="Rock.Web.PageReference"/>. If a match is not found,
+        /// an empty string is returned.
         /// </summary>
-        /// <param name="pageReference">The page reference.</param>
-        /// <param name="name">The name.</param>
-        /// <returns></returns>
+        /// <param name="pageReference">The <see cref="Rock.Web.PageReference"/></param>
+        /// <param name="name">A <see cref="System.String" /> representing the name of the page parameter.</param>
+        /// <returns>A <see cref="System.String"/> representing the page parameter value. If match is not found, an empty string will be returned.</returns>
         public string PageParameter( PageReference pageReference, string name )
         {
             return RockPage.PageParameter( pageReference, name );
         }
 
         /// <summary>
-        /// Gets the page route and query string parameters
+        /// Returns a <see cref="System.Collections.Generic.Dictionary{String, Object}" /> representing all of the <see cref="Rock.Model.Page">page's</see> page parameters.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// A <see cref="System.Collections.Generic.Dictionary{String, Obejct}"/> containing all the <see cref="Rock.Model.Page">page's</see> page parameters. Each 
+        /// <see cref="System.Collections.Generic.KeyValuePair{String, Object}"/> consists of the key being a <see cref="System.String"/> representing
+        /// the name of the page parameter and the value being an <see cref="System.Object"/> that represents the parameter value.
+        /// </returns>
         public Dictionary<string, object> PageParameters()
         {
             return RockPage.PageParameters();
         }
 
         /// <summary>
-        /// Linkeds the page URL.
+        /// Builds and returns the URL for a linked <see cref="Rock.Model.Page"/> from a "linked page attribute" and any necessary query parameters.
         /// </summary>
-        /// <param name="attributeKey">The attribute key.</param>
-        /// <param name="queryParams">The query parameters.</param>
-        /// <returns></returns>
+        /// <param name="attributeKey">A <see cref="System.String"/> representing the name of the linked <see cref="Rock.Model.Page"/> attribute key.</param>
+        /// <param name="queryParams">A <see cref="System.Collections.Generic.Dictionary{String,String}" /> containing the query string parameters to be added to the URL.  
+        /// In each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> the key value is a <see cref="System.String"/> that represents the name of the query string 
+        /// parameter, and the value is a <see cref="System.String"/> that represents the query string value..</param>
+        /// <returns>A <see cref="System.String"/> representing the URL to the linked <see cref="Rock.Model.Page"/>. </returns>
         public string LinkedPageUrl( string attributeKey, Dictionary<string, string> queryParams = null )
         {
             var pageReference = new PageReference( GetAttributeValue( attributeKey ), queryParams );
@@ -526,10 +535,12 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Navigates to a linked page attribute.
+        /// Navigate to a linked <see cref="Rock.Model.Page"/>.
         /// </summary>
-        /// <param name="attributeKey">The attribute key.</param>
-        /// <param name="queryParams">The query params.</param>
+        /// <param name="attributeKey">A <see cref="System.String"/> representing the name of the linked <see cref="Rock.Model.Page"/> attribute key.</param>
+        /// <param name="queryParams">A <see cref="System.Collections.Generic.Dictionary{String,String}"/> containing the query string parameters to include in the linked page URL.  
+        /// Each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> the key value is a <see cref="System.String"/> that represents the name of the query string
+        /// parameter, and the value is a <see cref="System.String"/> that represents the query string value. This dictionary defaults to a null value.</param>
         public void NavigateToLinkedPage( string attributeKey, Dictionary<string, string> queryParams = null )
         {
             Response.Redirect( LinkedPageUrl( attributeKey, queryParams ), false );
@@ -537,13 +548,15 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Navigates the automatic linked page.
+        /// Navigates to a linked <see cref="Rock.Model.Page"/>
         /// </summary>
-        /// <param name="attributeKey">The attribute key.</param>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        /// <param name="itemParentKey">The item parent key.</param>
-        /// <param name="itemParentValue">The item parent value.</param>
+        /// <param name="attributeKey">A <see cref="System.String"/> representing the name of the linked <see cref="Rock.Model.Page"/> attribute key.</param>
+        /// <param name="itemKey">A <see cref="System.String"/> representing the key name of the item that is being passed to the linked page in the query string. </param>
+        /// <param name="itemKeyValue">A <see cref="System.Int32"/> representing the item value that is being passed to the link page in the query string.</param>
+        /// <param name="itemParentKey">A <see cref="System.String"/> representing the key name of the parent item that is being passed to the linked page in the query string. 
+        /// This value defaults to null.</param>
+        /// <param name="itemParentValue">A <see cref="System.Int32"/> representing the parent item value that is being passed to the linked page in the query string. 
+        /// This value defaults to null.</param>
         public void NavigateToLinkedPage( string attributeKey, string itemKey, int itemKeyValue, string itemParentKey = null, int? itemParentValue = null )
         {
             Dictionary<string, string> queryParams = new Dictionary<string, string>();
@@ -557,8 +570,11 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Navigates to parent page.
+        /// Navigates/redirects to the parent <see cref="Rock.Model.Page"/>.
         /// </summary>
+        /// <param name="queryString">A <see cref="System.Collections.Generic.Dictionary{String,String}"/> containing the query string parameters to include in the linked <see cref="Rock.Model.Page"/> URL.  
+        /// Each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> the key value is a <see cref="System.String"/> that represents the name of the query string
+        /// parameter, and the value is a <see cref="System.String"/> that represents the query string value. This dictionary defaults to a null value.</param>
         public void NavigateToParentPage( Dictionary<string, string> queryString = null )
         {
             var pageCache = PageCache.Read( RockPage.PageId );
@@ -573,21 +589,26 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Navigates the automatic page.
+        /// Navigates to the <see cref="Rock.Model.Page"/> specified by the provided <see cref="System.Guid"/>.
         /// </summary>
-        /// <param name="pageGuid">The page unique identifier.</param>
-        /// <param name="queryString">The query string.</param>
+        /// <param name="pageGuid">A <see cref="System.Guid"/> that represents the <see cref="Rock.Model.Page">Page's</see> unique identifier.</param>
+        /// <param name="queryString">A <see cref="System.Collections.Generic.Dictionary{String,String}"/> containing the query string parameters to include in the linked page URL.  
+        /// Each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> the key value is a <see cref="System.String"/> that represents the name of the query string
+        /// parameter, and the value is a <see cref="System.String"/> that represents the query string value. This dictionary defaults to a null value.</param>
         public void NavigateToPage( Guid pageGuid, Dictionary<string, string> queryString )
         {
             NavigateToPage( pageGuid, Guid.Empty, queryString );
         }
 
         /// <summary>
-        /// Navigates the automatic page.
+        /// Navigates to the <see cref="Rock.Model.Page"/> specified by the provided <see cref="System.Guid">page Guid</see> using the <see cref="Rock.Model.PageRoute"/> specified by the 
+        /// provided <see cref="System.Guid">page route Guid</see>.
         /// </summary>
-        /// <param name="pageGuid">The page unique identifier.</param>
-        /// <param name="pageRouteGuid">The page route unique identifier.</param>
-        /// <param name="queryString">The query string.</param>
+        /// <param name="pageGuid">A <see cref="System.Guid"/> that represents the <see cref="Rock.Model.Page">Page's</see> unique identifier.</param>
+        /// <param name="pageRouteGuid">A <see cref="System.Guid" /> that represents the <see cref="Rock.Model.PageRoute">PageRoute's</see> unique identifier.</param>
+        /// <param name="queryString">A <see cref="System.Collections.Generic.Dictionary{String,String}"/> containing the query string parameters to include in the linked page URL.  
+        /// Each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> the key value is a <see cref="System.String"/> that represents the name of the query string
+        /// parameter, and the value is a <see cref="System.String"/> that represents the query string value. This dictionary defaults to a null value.</param>
         public void NavigateToPage( Guid pageGuid, Guid pageRouteGuid, Dictionary<string, string> queryString )
         {
             var pageCache = PageCache.Read( pageGuid );
@@ -610,31 +631,32 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Hides the secondary blocks.
+        /// Sets the visibility of the secondary blocks on the page
         /// </summary>
-        /// <param name="hidden">if set to <c>true</c> [hidden].</param>
+        /// <param name="hidden">A <see cref="System.Boolean"/> value that indicates if the secondary blocks should be hidden. If <c>true</c> then the secondary blocks will be
+        /// hidden; otherwise <c>false</c> and the secondary blocks will be visible.</param>
         public void HideSecondaryBlocks( bool hidden )
         {
             RockPage.HideSecondaryBlocks( this, hidden );
         }
 
         /// <summary>
-        /// Adds a history point to the ScriptManager
+        /// Adds a history point to the <see cref="System.Web.UI.ScriptManager"/>.
         /// </summary>
-        /// <param name="key">The key to use for the history point</param>
-        /// <param name="state">any state information to store for the history point</param>
-        /// <param name="title">The title to be used by the browser</param>
+        /// <param name="key">A <see cref="System.String"/> that represents the name of the key to use for the history point.</param>
+        /// <param name="state">A <see cref="System.String"/> that represents any state information to store for the history point</param>
+        /// <param name="title">A <see cref="System.String"/> that represents the page title to be used by the browser</param>
         public void AddHistory( string key, string state, string title = "" )
         {
             RockPage.AddHistory( key, state, title );
         }
 
         /// <summary>
-        /// Resolves a rock URL.  Similiar to the System.Web.Control.ResolveUrl method except that you can prefix 
-        /// a url with '~~' to indicate a virtual path to Rock's current theme root folder
+        /// Resolves a rock URL.  Similar to the <see cref="System.Web.UI.Control"/> ResolveUrl method except that you can prefix 
+        /// a Url with '~~' to indicate a virtual path to Rock's current theme root folder
         /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <returns></returns>
+        /// <param name="url">A <see cref="System.String"/> representing the Url to resolve.</param>
+        /// <returns>A <see cref="System.String"/> that represents the resolved Url.</returns>
         public string ResolveRockUrl( string url )
         {
             return RockPage.ResolveRockUrl( url );
@@ -643,8 +665,8 @@ namespace Rock.Web.UI
         /// <summary>
         /// Sets the validation group.
         /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <param name="validationGroup">The validation group.</param>
+        /// <param name="controls">A <see cref="System.Web.UI.ControlCollection"/> containing the controls to include in the validation group.</param>
+        /// <param name="validationGroup">A <see cref="System.String"/> representing the name of the validation group.</param>
         public void SetValidationGroup( ControlCollection controls, string validationGroup )
         {
             if ( controls != null )
@@ -686,30 +708,36 @@ namespace Rock.Web.UI
         #region User Preferences
 
         /// <summary>
-        /// Gets the user preference value for the current user for a given key
+        /// Returns the user preference value for the current user for a given key
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
+        /// <param name="key">A <see cref="System.String" /> representing the key to the user preference.</param>
+        /// <returns>A <see cref="System.String" /> representing the user preference value. If a match for the key is not found, 
+        /// an empty string will be returned.</returns>
         public string GetUserPreference( string key )
         {
             return RockPage.GetUserPreference( key );
         }
 
         /// <summary>
-        /// Gets the preferences for the current user that start with a given key.
+        /// Gets the preferences for the current user where the key begins with the specified value.
         /// </summary>
-        /// <param name="keyPrefix">The key prefix.</param>
-        /// <returns></returns>
+        /// <param name="keyPrefix">A <see cref="System.String"/> representing the key preference. Any user preference
+        /// for the current user that begins with this value will be returned.</param>
+        /// <returns>A <see cref="System.Collections.Generic.Dictionary{String,String}"/> that contains all user preferences for the current 
+        /// user that begins with the key prefix.  Each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> includes 
+        /// a key <see cref="System.String"/> that represents the user preference key and a value <see cref="System.String"/> that 
+        /// represents the user preference value. If no preferences are found, an empty dictionary will be returned.</returns>
         public Dictionary<string, string> GetUserPreferences( string keyPrefix )
         {
             return RockPage.GetUserPreferences( keyPrefix );
         }
 
         /// <summary>
-        /// Sets a preference for the current user for a given key
+        /// Sets a user preference for the current user with the specified key and value.
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
+        /// <param name="key">A <see cref="System.String"/> that represents the key value that identifies the 
+        /// user preference.</param>
+        /// <param name="value">A <see cref="System.String"/> that represents the value of the user preference.</param>
         public void SetUserPreference( string key, string value )
         {
             RockPage.SetUserPreference( key, value );
@@ -718,12 +746,15 @@ namespace Rock.Web.UI
         #endregion
 
         /// <summary>
-        /// Adds icons to the configuration area of a block instance.  Can be overridden to
-        /// add additionsl icons
+        /// Adds icons to the configuration area of a <see cref="Rock.Model.Block"/> instance.  Can be overridden to
+        /// add additional icons
         /// </summary>
-        /// <param name="canConfig"></param>
-        /// <param name="canEdit"></param>
-        /// <returns></returns>
+        /// <param name="canConfig">A <see cref="System.Boolean" /> flag that indicates if the user can configure the <see cref="Rock.Model.Block"/> instance.
+        /// This value will be <c>true</c> if the user is allowed to configure the <see cref="Rock.Model.Block"/> instance; otherwise <c>false</c>.</param>
+        /// <param name="canEdit">A <see cref="System.Boolean"/> flag that indicates if the user can edit the <see cref="Rock.Model.Block"/> instance. 
+        /// This value will be <c>true</c> if the user is allowed to edit the <see cref="Rock.Model.Block"/> instance; otherwise <c>false</c>.</param>
+        /// <returns>A <see cref="System.Collections.Generic.List{Control}" /> containing all the icon <see cref="System.Web.UI.Control">controls</see> 
+        /// that will be available to the user in the configuration area of the block instance.</returns>
         public virtual List<Control> GetAdministrateControls( bool canConfig, bool canEdit )
         {
             List<Control> configControls = new List<Control>();
@@ -790,19 +821,19 @@ namespace Rock.Web.UI
         /// <summary>
         /// Returns breadcrumbs specific to the block that should be added to navigation
         /// based on the current page reference.  This function is called during the page's
-        /// oninit to load any initial breadcrumbs
+        /// oninit to load any initial breadcrumbs.
         /// </summary>
-        /// <param name="pageReference">The page reference.</param>
-        /// <returns></returns>
+        /// <param name="pageReference">The <see cref="Rock.Web.PageReference"/>.</param>
+        /// <returns>A <see cref="System.Collections.Generic.List{BreadCrumb}"/> of block related <see cref="Rock.Web.UI.BreadCrumb">BreadCrumbs</see>.</returns>
         public virtual List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
         {
             return new List<BreadCrumb>();
         }
 
         /// <summary>
-        /// Logs the exception.
+        /// Logs an <see cref="System.Exception"/> that has occurred.
         /// </summary>
-        /// <param name="ex">The System.Exception to log.</param>
+        /// <param name="ex">The <see cref="System.Exception"/> to log.</param>
         public void LogException( Exception ex )
         {
             ExceptionLogService.LogException( ex, Context, RockPage.PageId, RockPage.Layout.SiteId, CurrentPersonId );
@@ -813,7 +844,7 @@ namespace Rock.Web.UI
         #region Internal Methods
 
         /// <summary>
-        /// Creates and or updates any attributes defined for the block
+        /// Creates and or updates any <see cref="Rock.Model.Block"/> <see cref="Rock.Model.Attribute">Attributes</see>.
         /// </summary>
         internal void CreateAttributes()
         {
@@ -830,8 +861,10 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Reads the additional actions.
+        /// Reads the <see cref="Rock.Security.AdditionalActionsAttribute">additional action attributes</see> for this <see cref="Rock.Model.Block"/>
         /// </summary>
+        /// <returns>A <see cref="System.Collections.Generic.List{String}" /> containing the action values for the <see cref="Rock.Model.Block">Block's</see>
+        /// <see cref="Rock.Security.AdditionalActionsAttribute">AdditionalActionsAttributes</see>.</returns>
         internal List<string> GetAdditionalActions()
         {
             var additionalActions = new List<string>();
@@ -849,11 +882,13 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Sets the validation group.
+        /// Sets the validation group. If the validationGroup is a prefix to the existingValidationGroup, the existingValidationGroup is returned, 
+        /// if the existingValidationGroup name is an empty string, the validationGroup is returned; if the names are different a new validation group is 
+        /// created that combines the two.
         /// </summary>
-        /// <param name="existingValidationGroup">The existing validation group.</param>
-        /// <param name="validationGroup">The validation group.</param>
-        /// <returns></returns>
+        /// <param name="existingValidationGroup">A <see cref="System.String"/> representing the name of the existing validation group.</param>
+        /// <param name="validationGroup">A <see cref="System.String"/> representing the validation group.</param>
+        /// <returns>A <see cref="System.String"/> representing the name of the validationGroup.</returns>
         private string SetValidationGroup( string existingValidationGroup, string validationGroup )
         {
             if ( ( existingValidationGroup ?? string.Empty ).StartsWith( validationGroup ) )

@@ -18,11 +18,15 @@ namespace Rock.Model
     {
         /// <summary>
         /// Returns an enumerable collection of the <see cref="Rock.Model.PrayerRequest">PrayerRequests</see> that
-        /// are in a specified <see cref="Rock.Model.Category"/> or any of it's subcategories.
+        /// are in a specified <see cref="Rock.Model.Category" /> or any of it's subcategories.
         /// </summary>
-        /// <param name="categoryId">A <see cref="System.Int32"/> representing the CategoryId of
-        /// the <see cref="Rock.Model.Category"/> to retrieve PrayerRequests for.</param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.PrayerRequest"/> that are in the specified <see cref="Rock.Model.Category"/> or any of it's subcategories.</returns>
+        /// <param name="categoryId">A <see cref="System.Int32" /> representing the CategoryId of
+        /// the <see cref="Rock.Model.Category" /> to retrieve PrayerRequests for.</param>
+        /// <param name="onlyApproved">A <see cref="System.Boolean"/> flag that indicates if only approved prayer requests should be returned. If <c>true</c>
+        /// then only the approved requests will be returned; otherwise <c>false</c> and all requests will be returned.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.PrayerRequest" /> that are in the specified <see cref="Rock.Model.Category" /> or any of it's subcategories.
+        /// </returns>
         public IEnumerable<PrayerRequest> GetByCategoryId( int categoryId, bool onlyApproved = false )
         {
             PrayerRequest prayerRequest = new PrayerRequest();
@@ -36,12 +40,16 @@ namespace Rock.Model
 
         /// <summary>
         /// Returns an enumerable collection of the <see cref="Rock.Model.PrayerRequest">PrayerRequests</see> that
-        /// are in a specified <see cref="Rock.Model.Category"/> or any of it's subcategories.
+        /// are in a specified <see cref="Rock.Model.Category" /> or any of it's subcategories.
         /// </summary>
-        /// <param name="categoryIds">A <see cref="System.Collections.Generic.List"/> of
-        /// the <see cref="Rock.Model.Category"/> IDs to retrieve PrayerRequests for.</param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.PrayerRequest"/> that
-        /// are in the specified <see cref="Rock.Model.Category"/> or any of it's subcategories.</returns>
+        /// <param name="categoryIds">A <see cref="System.Collections.Generic.List{Int32}" /> of
+        /// the <see cref="Rock.Model.Category" /> IDs to retrieve PrayerRequests for.</param>
+        /// <param name="onlyApproved">A <see cref="System.Boolean"/> flag that indicates if only approved prayer requests should be returned. If <c>true</c>
+        /// then only the approved requests will be returned; otherwise <c>false</c> and all requests will be returned.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.PrayerRequest" /> that
+        /// are in the specified <see cref="Rock.Model.Category" /> or any of it's subcategories.
+        /// </returns>
         public IEnumerable<PrayerRequest> GetByCategoryIds( List<int> categoryIds, bool onlyApproved = false )
         {
             PrayerRequest prayerRequest = new PrayerRequest();
@@ -71,8 +79,12 @@ namespace Rock.Model
         /// Gets an enumerable collection of  PrayerRequests by category id (for the prayer request entity type id
         /// </summary>
         /// <param name="prayerRequestEntityTypeId">A <see cref="System.Int32" /> representing the The prayer request entity type id.</param>
-        /// <param name="categoryId">A <see cref="System.Int32"/> representing the CategoryId </param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.PrayerRequest">PrayerRequests</see> that match the search criteria.</returns>
+        /// <param name="categoryId">A <see cref="System.Int32" /> representing the CategoryId</param>
+        /// <param name="onlyApproved">A <see cref="System.Boolean"/> flag that indicates if only approved prayer requests should be returned. If <c>true</c>
+        /// then only the approved requests will be returned; otherwise <c>false</c> and all requests will be returned.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.PrayerRequest">PrayerRequests</see> that match the search criteria.
+        /// </returns>
         public IEnumerable<PrayerRequest> GetByCategoryId( int? prayerRequestEntityTypeId, int categoryId, bool onlyApproved )
         {
             // Get all the category Ids for the PrayerRequest entity and that are the parent or child of the given categoryId.
