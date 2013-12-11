@@ -10,6 +10,7 @@
             
             <div class="panel-heading">
                 <h3 class="panel-title"><asp:Literal ID="lTitle" runat="server"></asp:Literal></h3>
+
             
             
             <div class="treeview-actions row">
@@ -26,11 +27,25 @@
             </div>
                 </div>
 
-            <div class="panel-body treeview-frame">
-                <div id="treeview-content"></div>
-            </div>
+                    <div class="treeview-scroll scroll-container scroll-container-horizontal">
+                
+                        <div class="viewport">
+                            <div class="overview">
+                                <div class="panel-body treeview-frame">
+                                    <div id="treeview-content"></div>
+                                </div>
+                            </div>
+                    
+                        </div>
+                        <div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
+                    </div>
+
 
             <script type="text/javascript">
+
+                var scrollbCategory = $('.treeview-scroll');
+                scrollbCategory.tinyscrollbar({ axis: 'x', sizethumb: '60', size: '200' });
+
 
                 $(function () {
                     var $selectedId = $('#hfSelectedCategoryId'),
@@ -65,7 +80,10 @@
                             if (window.location.search !== itemSearch) {
                                 window.location.search = itemSearch;
                             }
-
+                            
+                        })
+                        .on('rockTree:expand rockTree:collapse', function () {
+                            scrollbCategory.tinyscrollbar_update();
                         })
                         .rockTree({
                             restUrl: '<%= ResolveUrl( "~/api/categories/getchildren/" ) %>',

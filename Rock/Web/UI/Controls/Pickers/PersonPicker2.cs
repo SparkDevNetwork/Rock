@@ -144,14 +144,14 @@ namespace Rock.Web.UI.Controls
                         .FirstOrDefault() ?? string.Empty;
                 }
 
-                writer.Write( string.Format( @"
+                writer.Write( string.Format(@"
     <div class='control-group'>
         <div class='control-label'>Search</div>
         <div class='controls'>
             <input id='personPicker_{0}' type='text' class='picker-search input-medium' value='{1}'/>
         </div>
     </div>
-    <div id='person-search-results' class='scroll-container'>
+    <div id='person-search-results' class='scroll-container scroll-container-vertical'>
         <div class='scrollbar'>
             <div class='track'>
                 <div class='thumb'>
