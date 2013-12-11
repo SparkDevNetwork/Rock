@@ -48,19 +48,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.AttributeValue">AttributeValues</see> by <see cref="Rock.Model.Attribute"/> and EntityId.
-        /// </summary>
-        /// <param name="attributeId">A <see cref="System.Int32"/> representing the AttributeId of the <see cref="Rock.Model.Attribute"/> to search by..</param>
-        /// <param name="entityId">A <see cref="System.Int32"/> representing the EntityId to search by.</param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.AttributeValue">AttributeValues</see> that match the search criteria.</returns>
-        public IEnumerable<AttributeValue> GetByAttributeIdAndEntityId( int attributeId, int entityId )
-        {
-            return Repository.AsQueryable().
-                Where( v => v.AttributeId == attributeId && v.EntityId == entityId ).
-                OrderBy( v => v.Order );
-        }
-
-        /// <summary>
         /// Returns a <see cref="Rock.Model.AttributeValue"/> for a <see cref="Rock.Model.Attribute"/> by Key.
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the name of the Global <see cref="Rock.Model.Attribute">Attribute's</see> key value.</param>
