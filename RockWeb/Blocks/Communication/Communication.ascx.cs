@@ -570,11 +570,14 @@ namespace RockWeb.Blocks.Communication
                 communication = new CommunicationService().Get( itemKeyValue );
                 this.Page.Title = string.Format( "Communication #{0}", communication.Id );
                 this.AdditionalMergeFields = communication.AdditionalMergeFields.ToList();
+
+                lTitle.Text = ("Subject: " + communication.Subject).FormatAsHtmlTitle();
             }
             else
             {
                 communication = new Rock.Model.Communication() { Status = CommunicationStatus.Transient };
                 this.Page.Title = "New Communication";
+                lTitle.Text = "New Communication".FormatAsHtmlTitle();
             }
 
             PageTitle = this.Page.Title;
@@ -595,8 +598,10 @@ namespace RockWeb.Blocks.Communication
         {
             CommunicationId = communication.Id;
 
-            pnlStatus.Visible = communication.Status != CommunicationStatus.Transient;
-            lStatus.Text = string.Format("Communication Status: {0}", communication.Status.ConvertToString());
+            lStatus.Visible = communication.Status != CommunicationStatus.Transient;
+            lRecipientStatus.Visible = communication.Status != CommunicationStatus.Transient; 
+
+            lStatus.Text = string.Format("<span class='label label-communicationstatus-{0}'>{1}</span>", communication.Status.ConvertToString().ToLower().Replace(" ", ""), communication.Status.ConvertToString());
 
             ChannelEntityTypeId = communication.ChannelEntityTypeId;
             BindChannels();
@@ -678,11 +683,11 @@ namespace RockWeb.Blocks.Communication
 
             StringBuilder rStatus = new StringBuilder();
 
-            lRecipientStatus.Text = "Recipient Status: " + Recipients
+            lRecipientStatus.Text = "<span class='label label-type'>Recipient Status: " + Recipients
                 .GroupBy( r => r.Status )
                 .Where( g => g.Count() > 0 )
                 .Select( g => g.Key.ToString() + " (" + g.Count().ToString( "N0" ) + ")" )
-                .ToList().AsDelimited( ", " );
+                .ToList().AsDelimited( ", " ) + "</span>";
                         
             CheckApprovalRequired( Recipients.Count );
         }

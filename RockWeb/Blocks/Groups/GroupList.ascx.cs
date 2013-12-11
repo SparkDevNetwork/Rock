@@ -117,9 +117,10 @@ namespace RockWeb.Blocks.Groups
                         return;
                     }
 
-                    bool isSecurityRoleGroup = group.IsSecurityRole;
-                    if ( isSecurityRoleGroup )
+                    bool isSecurityRoleGroup = group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
+                    if (isSecurityRoleGroup)
                     {
+                        Rock.Security.Role.Flush( group.Id );
                         foreach ( var auth in authService.Queryable().Where( a => a.GroupId == group.Id ).ToList() )
                         {
                             authService.Delete( auth, CurrentPersonId );
@@ -133,7 +134,6 @@ namespace RockWeb.Blocks.Groups
                     if ( isSecurityRoleGroup )
                     {
                         Rock.Security.Authorization.Flush();
-                        Rock.Security.Role.Flush( group.Id );
                     }
                 }
             } );

@@ -38,14 +38,13 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets hash of the Checking Account AccountNumber.  Stored as a SHA1 hash (always 40 chars) so that it can be matched without being known
-        /// Must be Unique (AlternateKey) so that a match of a Check Account to a Person can be made
+        /// Enables a match of a Check Account to Person ( or Persons if multiple persons share a checking account) can be made
         /// </summary>
         /// <value>
         /// AccountNumberSecured.
         /// </value>
         [Required]
         [MaxLength( 40 )]
-        [AlternateKey]
         public string AccountNumberSecured { get; set; }
 
         #endregion
