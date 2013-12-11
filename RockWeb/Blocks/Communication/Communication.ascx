@@ -27,26 +27,36 @@
         
         <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-        <div class="form-group">
-            <div class="control-label">
-                To: <asp:Literal ID="lNumRecipients" runat="server" /> <Rock:PersonPicker ID="ppAddPerson" runat="server" PersonName="Add Person" OnSelectPerson="ppAddPerson_SelectPerson" />
+        <div class="panel panel-widget recipients">
+            <div class="panel-heading clearfix">
+                <div class="control-label pull-left">
+                    To: <asp:Literal ID="lNumRecipients" runat="server" />
+                </div> 
+                    
+                <Rock:PersonPicker ID="ppAddPerson" runat="server" CssClass="pull-right" PersonName="Add Person" OnSelectPerson="ppAddPerson_SelectPerson" />
                 <asp:CustomValidator ID="valRecipients" runat="server" OnServerValidate="valRecipients_ServerValidate" Display="None" ErrorMessage="At least one recipient is required." />
-            </div>
-            <div class="recipient">
-                <ul class="recipient-content">
-                    <asp:Repeater ID="rptRecipients" runat="server" OnItemCommand="rptRecipients_ItemCommand" OnItemDataBound="rptRecipients_ItemDataBound">
-                        <ItemTemplate>
-                            <li class='<%# Eval("Status").ToString().ToLower() %>'><%# Eval("PersonName") %> <asp:LinkButton ID="lbRemoveRecipient" runat="server" CommandArgument='<%# Eval("PersonId") %>' CausesValidation="false"><i class="fa fa-times"></i></asp:LinkButton></li>
-                        </ItemTemplate>
-                    </asp:Repeater>
-                </ul>
+                
+             </div>   
+                
+             <div class="panel-body">
+                <div class="recipient">
+                    <ul class="recipient-content">
+                        <asp:Repeater ID="rptRecipients" runat="server" OnItemCommand="rptRecipients_ItemCommand" OnItemDataBound="rptRecipients_ItemDataBound">
+                            <ItemTemplate>
+                                <li class='<%# Eval("Status").ToString().ToLower() %>'><%# Eval("PersonName") %> <asp:LinkButton ID="lbRemoveRecipient" runat="server" CommandArgument='<%# Eval("PersonId") %>' CausesValidation="false"><i class="fa fa-times"></i></asp:LinkButton></li>
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </ul>
+
+                    <div class="pull-right">
+                        <asp:LinkButton ID="lbShowAllRecipients" runat="server" CssClass="btn btn-action btn-xs" Text="Show All" OnClick="lbShowAllRecipients_Click" CausesValidation="false"/>
+                        <asp:LinkButton ID="lbRemoveAllRecipients" runat="server" Text="Remove All Pending Recipients" CssClass="remove-all-recipients btn btn-action btn-xs" OnClick="lbRemoveAllRecipients_Click" CausesValidation="false"/>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="pull-right">
-            <asp:LinkButton ID="lbShowAllRecipients" runat="server" Text="Show All" OnClick="lbShowAllRecipients_Click" CausesValidation="false"/>
-            <asp:LinkButton ID="lbRemoveAllRecipients" runat="server" Text="Remove All Pending Recipients" CssClass="remove-all-recipients" OnClick="lbRemoveAllRecipients_Click" CausesValidation="false"/>
-        </div>
+        
 
         <asp:PlaceHolder ID="phContent" runat="server" />
 
