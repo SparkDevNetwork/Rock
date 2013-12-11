@@ -72,7 +72,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the from email address.
         /// </value>
         [MaxLength( 200 )]
-        [DataMember( IsRequired = true )]
+        [DataMember]
         public string From { get; set; }
         
         /// <summary>
