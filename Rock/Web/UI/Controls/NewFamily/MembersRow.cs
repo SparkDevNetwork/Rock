@@ -28,19 +28,15 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public static string FAMILY_ROLE_KEY = "NewFamilyMembersRow_FamilyRoles";
 
-        private RadioButtonList _rblRole;
-        private RequiredFieldValidator _rfvRole;
+        private RockRadioButtonList _rblRole;
         private DropDownList _ddlTitle;
-        private TextBox _tbFirstName;
-        private RequiredFieldValidator _rfvFirstName;
-        private TextBox _tbNickName;
-        private TextBox _tbLastName;
-        private RequiredFieldValidator _rfvLastName;
-        private RadioButtonList _rblGender;
-        private RequiredFieldValidator _rfvGender;
+        private RockTextBox _tbFirstName;
+        private RockTextBox _tbNickName;
+        private RockTextBox _tbLastName;
+        private RockRadioButtonList _rblGender;
         private DatePicker _dpBirthdate;
         private DropDownList _ddlStatus;
-        private DropDownList _ddlGrade;
+        private RockDropDownList _ddlGrade;
 
         private LinkButton _lbDelete;
 
@@ -236,10 +232,13 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool RequireGender
         {
-            get { return ViewState["RequireGender"] as bool? ?? false; }
+            get 
+            {
+                return _rblGender.Required;
+            }
             set 
-            { 
-                ViewState["RequireGender"] = value;
+            {
+                _rblGender.Required = value;
                 BindGender();
             }
         }
@@ -264,8 +263,35 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool RequireGrade
         {
-            get { return ViewState["RequireGrade"] as bool? ?? false; }
-            set { ViewState["RequireGrade"] = value; }
+            get 
+            {
+                EnsureChildControls();
+                return _ddlGrade.Required;
+            }
+            set
+            {
+                EnsureChildControls();
+                _ddlGrade.Required = value;
+            }
+        }
+
+        public string ValidationGroup
+        {
+            get
+            {
+                return _tbFirstName.ValidationGroup;
+            }
+            set
+            {
+                EnsureChildControls();
+                _rblRole.ValidationGroup = value;
+                _tbFirstName.ValidationGroup = value;
+                _tbNickName.ValidationGroup = value;
+                _tbLastName.ValidationGroup = value;
+                _rblGender.ValidationGroup = value;
+                _dpBirthdate.ValidationGroup = value;
+                _ddlGrade.ValidationGroup = value;
+            }
         }
 
         /// <summary>
@@ -274,55 +300,82 @@ namespace Rock.Web.UI.Controls
         public NewFamilyMembersRow()
             : base()
         {
-            _rblRole = new RadioButtonList();
-            _rfvRole = new RequiredFieldValidator();
+            _rblRole = new RockRadioButtonList();
             _ddlTitle = new DropDownList();
-            _tbFirstName = new TextBox();
-            _rfvFirstName = new RequiredFieldValidator();
-            _tbNickName = new TextBox();
-            _tbLastName = new TextBox();
-            _rfvLastName = new RequiredFieldValidator();
-            _rblGender = new RadioButtonList();
-            _rfvGender = new RequiredFieldValidator();
+            _tbFirstName = new RockTextBox();
+            _tbNickName = new RockTextBox();
+            _tbLastName = new RockTextBox();
+            _rblGender = new RockRadioButtonList();
             _dpBirthdate = new DatePicker();
             _ddlStatus = new DropDownList();
-            _ddlGrade = new DropDownList();
+            _ddlGrade = new RockDropDownList();
             _lbDelete = new LinkButton();
+        }
 
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
+        protected override void CreateChildControls()
+        {
+            base.CreateChildControls();
+            Controls.Clear();
+
+            _rblRole.ID = "_rblRole";
+            _ddlTitle.ID = "_ddlTitle";
+            _tbFirstName.ID = "_tbFirstName";
+            _tbNickName.ID = "_tbNickName";
+            _tbLastName.ID = "_tbLastName";
+            _rblGender.ID = "_rblGender";
+            _dpBirthdate.ID = "_dtBirthdate";
+            _ddlStatus.ID = "_ddlStatus";
+            _ddlGrade.ID = "_ddlGrade";
+            _lbDelete.ID = "_lbDelete";
+
+            Controls.Add( _rblRole );
+            Controls.Add( _ddlTitle );
+            Controls.Add( _tbFirstName );
+            Controls.Add( _tbNickName );
+            Controls.Add( _tbLastName );
+            Controls.Add( _rblGender );
+            Controls.Add( _dpBirthdate );
+            Controls.Add( _ddlStatus );
+            Controls.Add( _ddlGrade );
+            Controls.Add( _lbDelete );
+
+            _rblRole.RepeatDirection = RepeatDirection.Vertical;
+            _rblRole.AutoPostBack = true;
+            _rblRole.SelectedIndexChanged += rblRole_SelectedIndexChanged;
+            _rblRole.Required = true;
+            _rblRole.RequiredErrorMessage = "Role is required for all members";
             _rblRole.DataTextField = "Value";
             _rblRole.DataValueField = "Key";
             _rblRole.DataSource = FamilyRoles;
             _rblRole.DataBind();
 
-            _rfvRole = new RequiredFieldValidator();
-            _rfvRole.Display = ValidatorDisplay.Dynamic;
-            _rfvRole.ErrorMessage = "Role is required for all members";
-            _rfvRole.CssClass = "validation-error help-inline";
-            _rfvRole.Enabled = true;
-
+            _ddlTitle.CssClass = "form-control";
             BindListToDefinedType( _ddlTitle, Rock.SystemGuid.DefinedType.PERSON_TITLE, true );
 
-            _rfvFirstName = new RequiredFieldValidator();
-            _rfvFirstName.Display = ValidatorDisplay.Dynamic;
-            _rfvFirstName.ErrorMessage = "First Name is required for all family members";
-            _rfvFirstName.CssClass = "validation-error help-inline";
-            _rfvFirstName.Enabled = true;
+            _tbFirstName.CssClass = "form-control";
+            _tbFirstName.Required = true;
+            _tbFirstName.RequiredErrorMessage = "First Name is required for all family members";
 
-            _rfvLastName = new RequiredFieldValidator();
-            _rfvLastName.Display = ValidatorDisplay.Dynamic;
-            _rfvLastName.ErrorMessage = "Last Name is required for all family members";
-            _rfvLastName.CssClass = "validation-error help-inline";
-            _rfvLastName.Enabled = true;
+            _tbNickName.CssClass = "form-control";
 
+            _tbLastName.CssClass = "form-control";
+            _tbLastName.Required = true;
+            _tbLastName.RequiredErrorMessage = "Last Name is required for all family members";
+
+            _rblGender.RepeatDirection = RepeatDirection.Vertical;
+            _rblGender.RequiredErrorMessage = "Gender is required for all family members";
             BindGender();
 
-            _rfvGender = new RequiredFieldValidator();
-            _rfvGender.Display = ValidatorDisplay.Dynamic;
-            _rfvGender.ErrorMessage = "Gender is required for all family members";
-            _rfvGender.CssClass = "validation-error help-inline";
-
+            _ddlStatus.CssClass = "form-control";
             BindListToDefinedType( _ddlStatus, Rock.SystemGuid.DefinedType.PERSON_STATUS );
 
+            _dpBirthdate.Required = false;
+
+            _ddlGrade.CssClass = "form-control";
+            _ddlGrade.RequiredErrorMessage = "Grade is required for all children";
             _ddlGrade.Items.Clear();
             _ddlGrade.Items.Add( new ListItem( "", "" ) );
             _ddlGrade.Items.Add( new ListItem( "K", "0" ) );
@@ -339,75 +392,13 @@ namespace Rock.Web.UI.Controls
             _ddlGrade.Items.Add( new ListItem( "11th", "11" ) );
             _ddlGrade.Items.Add( new ListItem( "12th", "12" ) );
 
-        }
-
-        /// <summary>
-        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
-        /// </summary>
-        protected override void CreateChildControls()
-        {
-            base.CreateChildControls();
-            Controls.Clear();
-
-            _rblRole.ID = this.ID + "_rblRole";
-            _rfvRole.ID = this.ID + "_rfvRole";
-            _ddlTitle.ID = this.ID + "_ddlTitle";
-            _tbFirstName.ID = this.ID + "_tbFirstName";
-            _rfvFirstName.ID = this.ID + "_rfvFirstName";
-            _tbNickName.ID = this.ID + "_tbNickName";
-            _tbLastName.ID = this.ID + "_tbLastName";
-            _rfvLastName.ID = this.ID + "_rfvLastName";
-            _rblGender.ID = this.ID + "_rblGender";
-            _rfvGender.ID = this.ID + "rfvGender";
-            _dpBirthdate.ID = this.ID + "_dtBirthdate";
-            _ddlStatus.ID = this.ID + "_ddlStatus";
-            _ddlGrade.ID = this.ID + "_ddlGrade";
-            _lbDelete.ID = this.ID + "_lbDelete";
-
-            Controls.Add( _rblRole );
-            Controls.Add( _rfvRole );
-            Controls.Add( _ddlTitle );
-            Controls.Add( _tbFirstName );
-            Controls.Add( _rfvFirstName );
-            Controls.Add( _tbNickName );
-            Controls.Add( _tbLastName );
-            Controls.Add( _rfvLastName );
-            Controls.Add( _rblGender );
-            Controls.Add( _rfvGender );
-            Controls.Add( _dpBirthdate );
-            Controls.Add( _ddlStatus );
-            Controls.Add( _ddlGrade );
-            Controls.Add( _lbDelete );
-
-            _rblRole.RepeatDirection = RepeatDirection.Vertical;
-            _rblRole.AutoPostBack = true;
-            _rblRole.SelectedIndexChanged += rblRole_SelectedIndexChanged;
-            _rfvRole.ControlToValidate = _rblRole.ID;
-
-            _ddlTitle.CssClass = "form-control";
-
-            _tbFirstName.CssClass = "form-control";
-            _rfvFirstName.ControlToValidate = _tbFirstName.ID;
-
-            _tbNickName.CssClass = "form-control";
-
-            _tbLastName.CssClass = "form-control";
-            _rfvLastName.ControlToValidate = _tbLastName.ID;
-
-            _rblGender.RepeatDirection = RepeatDirection.Vertical;
-            _rfvGender.ControlToValidate = _rblGender.ID;
-
-            _ddlStatus.CssClass = "form-control";
-
-            _ddlGrade.CssClass = "form-control";
+            var iDelete = new HtmlGenericControl( "i" );
+            _lbDelete.Controls.Add( iDelete );
+            iDelete.AddCssClass( "fa fa-times" );
 
             _lbDelete.CssClass = "btn btn-xs btn-danger";
             _lbDelete.Click += lbDelete_Click;
             _lbDelete.CausesValidation = false;
-
-            var iDelete = new HtmlGenericControl( "i" );
-            _lbDelete.Controls.Add( iDelete );
-            iDelete.AddCssClass( "fa fa-times" );
         }
 
         /// <summary>
@@ -422,10 +413,9 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Tr );
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _rfvRole.IsValid ? "" : " has-error" ) );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _rblRole.IsValid ? "" : " has-error" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _rblRole.RenderControl( writer );
-                _rfvRole.RenderControl( writer );
                 writer.RenderEndTag();
                 writer.RenderEndTag();
 
@@ -434,10 +424,9 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _rfvFirstName.IsValid ? "" : " has-error" ) );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _tbFirstName.IsValid ? "" : " has-error" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _tbFirstName.RenderControl( writer );
-                _rfvFirstName.RenderControl( writer );
                 writer.RenderEndTag();
                 writer.RenderEndTag();
 
@@ -449,22 +438,16 @@ namespace Rock.Web.UI.Controls
                 }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _rfvLastName .IsValid ? "" : " has-error" ) );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _tbLastName.IsValid ? "" : " has-error" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _tbLastName.RenderControl( writer );
-                _rfvLastName.RenderControl( writer );
                 writer.RenderEndTag();
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _rfvGender.IsValid ? "" : " has-error" ) );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _rblGender.IsValid ? "" : " has-error" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _rfvGender.Enabled = RequireGender;
                 _rblGender.RenderControl( writer );
-                if ( _rfvGender.Enabled )
-                {
-                    _rfvGender.RenderControl( writer );
-                }
                 writer.RenderEndTag();
                 writer.RenderEndTag();
 
