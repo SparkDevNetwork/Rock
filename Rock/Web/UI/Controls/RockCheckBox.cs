@@ -131,6 +131,26 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public RequiredFieldValidator RequiredFieldValidator { get; set; }
 
+        /// <summary>
+        /// Gets or sets the group of controls for which the <see cref="T:System.Web.UI.WebControls.CheckBox" /> control causes validation when it posts back to the server.
+        /// </summary>
+        /// <returns>The group of controls for which the <see cref="T:System.Web.UI.WebControls.CheckBox" /> causes validation when it posts back to the server. The default is an empty string ("").</returns>
+        public override string ValidationGroup
+        {
+            get
+            {
+                return base.ValidationGroup;
+            }
+            set
+            {
+                base.ValidationGroup = value;
+                if ( RequiredFieldValidator != null )
+                {
+                    RequiredFieldValidator.ValidationGroup = value;
+                }
+            }
+        }
+
         #endregion
 
         /// <summary>

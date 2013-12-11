@@ -326,6 +326,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             familyMemberRow.Gender = Gender.Unknown;
             familyMemberRow.RequireGender = _requireGender;
             familyMemberRow.RequireGrade = _requireGrade;
+            familyMemberRow.ValidationGroup = BlockValidationGroup;
 
             var familyGroupType = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) );
             if ( familyGroupType != null && familyGroupType.DefaultGroupRoleId.HasValue )
