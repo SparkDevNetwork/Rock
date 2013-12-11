@@ -68,65 +68,72 @@ namespace Rock.Web.UI.Adapters
                     }
                 }
 
+                WebControl control = new WebControl(HtmlTextWriterTag.Span);
+                control.ID = rbl.ClientID;
+                control.CopyBaseAttributes(rbl);
+                control.RenderBeginTag(writer);
+
                 int i = 0;
                 foreach ( ListItem li in rbl.Items )
                 {
                     writer.WriteLine();
 
-                    if (rbl.RepeatDirection == RepeatDirection.Vertical)
+                    if ( rbl.RepeatDirection == RepeatDirection.Vertical )
                     {
-                        writer.AddAttribute("class", "radio");
-                        writer.RenderBeginTag(HtmlTextWriterTag.Div);
+                        writer.AddAttribute( "class", "radio" );
+                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     }
                     else
                     {
-                        writer.AddAttribute("class", "radio-inline");
+                        writer.AddAttribute( "class", "radio-inline" );
                     }
 
-                    writer.RenderBeginTag(HtmlTextWriterTag.Label);
+                    writer.RenderBeginTag( HtmlTextWriterTag.Label );
 
-                    string itemId = string.Format("{0}_{1}", rbl.ClientID, i++);
-                    writer.AddAttribute("id", itemId);
-                    writer.AddAttribute("type", "radio");
-                    writer.AddAttribute("name", rbl.UniqueID);
-                    writer.AddAttribute("value", li.Value);
-                    if (li.Selected)
+                    string itemId = string.Format( "{0}_{1}", rbl.ClientID, i++ );
+                    writer.AddAttribute( "id", itemId );
+                    writer.AddAttribute( "type", "radio" );
+                    writer.AddAttribute( "name", rbl.UniqueID );
+                    writer.AddAttribute( "value", li.Value );
+                    if ( li.Selected )
                     {
-                        writer.AddAttribute("checked", "checked");
+                        writer.AddAttribute( "checked", "checked" );
                     }
 
-                    foreach (var attributeKey in li.Attributes.Keys)
+                    foreach ( var attributeKey in li.Attributes.Keys )
                     {
                         var key = attributeKey as string;
-                        writer.AddAttribute(key, li.Attributes[key]);
+                        writer.AddAttribute( key, li.Attributes[key] );
                     }
 
-                    if (postBackOption != null)
+                    if ( postBackOption != null )
                     {
-                        writer.AddAttribute(HtmlTextWriterAttribute.Onclick, Page.ClientScript.GetPostBackEventReference(postBackOption, true));
+                        writer.AddAttribute( HtmlTextWriterAttribute.Onclick, Page.ClientScript.GetPostBackEventReference( postBackOption, true ) );
                     }
 
-                    writer.RenderBeginTag(HtmlTextWriterTag.Input);
+                    writer.RenderBeginTag( HtmlTextWriterTag.Input );
                     writer.RenderEndTag();
 
-                    writer.Write(li.Text);
+                    writer.Write( li.Text );
 
                     writer.RenderEndTag();      // Label
 
-                    if (rbl.RepeatDirection == RepeatDirection.Vertical)
+                    if ( rbl.RepeatDirection == RepeatDirection.Vertical )
                     {
                         writer.RenderEndTag();  // Div
                     }
 
-                    if (Page != null && Page.ClientScript != null)
+                    if ( rbl.Page != null )
                     {
-                        Page.ClientScript.RegisterForEventValidation(rbl.UniqueID, li.Value);
+                        rbl.Page.ClientScript.RegisterForEventValidation( rbl.UniqueID, li.Value );
                     }
                 }
 
-                if ( Page != null && Page.ClientScript != null )
+                control.RenderEndTag( writer );
+
+                if ( rbl.Page != null )
                 {
-                    Page.ClientScript.RegisterForEventValidation( rbl.UniqueID );
+                    rbl.Page.ClientScript.RegisterForEventValidation( rbl.UniqueID );
                 }
             }
         }
