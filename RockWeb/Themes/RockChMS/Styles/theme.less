@@ -360,10 +360,18 @@ body#splash #content-box {
 // X. Responsive Items
 // -------------------------
 
-// responsive menu rules
-@media (max-width: @screen-sm-min) {
+@media (min-width: @screen-lg-max) { // if screen larger than lg
     
-    .pagenav {
+    .container { // allow the rock screen to grow wide
+        width: 90%;
+    }
+
+}
+
+
+@media (max-width: @screen-sm-min) { // if screen smaller than sm
+    
+    .pagenav { // responsive menu rules
         .nav {
             border: 0;
 
