@@ -27,49 +27,24 @@
             </div>
                 </div>
 
-            
-
-
-
-
-            <div id="scrollbar1">
+                    <div class="treeview-scroll scroll-container scroll-container-horizontal">
                 
-                <div class="viewport">
-                    <div class="overview">
-                        <div class="panel-body treeview-frame">
-                            <div id="treeview-content"></div>
+                        <div class="viewport">
+                            <div class="overview">
+                                <div class="panel-body treeview-frame">
+                                    <div id="treeview-content"></div>
+                                </div>
+                            </div>
+                    
                         </div>
+                        <div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
                     </div>
-                    
-                </div>
-                <div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
-            </div>
 
-            <script type="text/javascript">
-                $(document).ready(function () {
-                    
-                });
-                
-            </script>
-
-            <style>
-                #scrollbar1 { width: 250px; clear: both; margin: 0; }
-                #scrollbar1 .viewport { width: 230px; height: 200px; overflow: hidden; position: relative; }
-                #scrollbar1 .overview { list-style: none; position: absolute; left: 0; top: 0; width: 500px; }
-                #scrollbar1 .thumb .end,
-                #scrollbar1 .thumb { background-color: #003D5D; }
-                #scrollbar1 .scrollbar { position: relative; height: 15px; clear: both; }
-                #scrollbar1 .track { background-color: #D8EEFD; height: 100%; width:13px; position: relative; padding: 0 1px; }
-                #scrollbar1 .thumb { height: 20px; width: 13px; cursor: pointer; overflow: hidden; position: absolute; top: 0; }
-                #scrollbar1 .thumb .end { overflow: hidden; height: 5px; width: 13px; }
-                #scrollbar1 .disable{ display: none; }
-                .noSelect { user-select: none; -o-user-select: none; -moz-user-select: none; -khtml-user-select: none; -webkit-user-select: none; }
-            </style>
 
             <script type="text/javascript">
 
-                var scrollbCategory = $('#scrollbar1');
-                scrollbCategory.tinyscrollbar({ axis: 'x' });
+                var scrollbCategory = $('.treeview-scroll');
+                scrollbCategory.tinyscrollbar({ axis: 'x', sizethumb: '60', size: '200' });
 
 
                 $(function () {
@@ -105,8 +80,9 @@
                             if (window.location.search !== itemSearch) {
                                 window.location.search = itemSearch;
                             }
-
-
+                            
+                        })
+                        .on('rockTree:expand rockTree:collapse', function () {
                             scrollbCategory.tinyscrollbar_update();
                         })
                         .rockTree({
