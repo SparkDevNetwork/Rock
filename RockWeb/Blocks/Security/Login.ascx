@@ -1,12 +1,15 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Login.ascx.cs" Inherits="RockWeb.Blocks.Security.Login" %>
 
-    
-
     <fieldset>
+
         <legend>Login</legend> 
+
+        <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger"/>
+
         <Rock:RockTextBox ID="tbUserName" runat="server" Label="Username" Required="true" DisplayRequiredIndicator="false" ></Rock:RockTextBox>
         <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" Required="true" DisplayRequiredIndicator="false" TextMode="Password" ></Rock:RockTextBox>
         <Rock:RockCheckBox ID="cbRememberMe" runat="server" Text="Remember me on this computer" />        
+    
     </fieldset>
 
     <div class="alt-authentication">
@@ -24,8 +27,6 @@
         <asp:Button ID="NewAccountButton" runat="server" Text="Create New Account" CssClass="btn btn-default" OnClick="btnNewAccount_Click" CausesValidation="false" />
         <asp:Button ID="Cancel" runat="server" Text="Forgot Account" CssClass="btn btn-default" OnClick="btnHelp_Click" CausesValidation="false" />
     </div>
-
-    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-info"/>
 
 
    
