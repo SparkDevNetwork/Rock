@@ -269,35 +269,7 @@ header {
     }
 }
 
-// responsive menu rules
-@media (max-width: 767px) {
-    
-    .pagenav {
-        .nav {
-            border: 0;
 
-            & > li {
-                width: 33%;
-                height: auto;
-                border: 0;
-
-                &:last-child:after {
-		            border-right: 0;
-	            }
-
-                .dropdown-menu > li {
-                    > a {
-                        color: white;
-                    }
-
-                    &.divider {
-                        display: none;
-                    }
-                } 
-            }
-        }
-    }
-}
 
 
 // page title
@@ -310,6 +282,7 @@ header {
 
     h1 {
         margin: 12px 0 0 0;
+        float: left;
     }
 
     .page-icon
@@ -382,3 +355,45 @@ body#splash #content-box {
 #splash .login .form-actions {
     margin: 0 -15px -15px -15px;
 }
+
+
+// X. Responsive Items
+// -------------------------
+
+// responsive menu rules
+@media (max-width: @screen-sm-min) {
+    
+    .pagenav {
+        .nav {
+            border: 0;
+
+            & > li {
+                width: 33%;
+                height: auto;
+                border: 0;
+
+                &:last-child:after {
+		            border-right: 0;
+	            }
+
+                .dropdown-menu > li {
+                    > a {
+                        color: white;
+                    }
+
+                    &.divider {
+                        display: none;
+                    }
+                } 
+            }
+        }
+    }
+}
+
+@media (max-width: @screen-xs-min) { // if screen smaller than sm
+
+    .pagenav .nav > li {
+        width: 50%;
+    }
+}
+
