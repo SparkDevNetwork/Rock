@@ -20,13 +20,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 {
     public partial class FamilyMembers : Rock.Web.UI.PersonBlock
     {
+
+        #region Base Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit(EventArgs e)
         {
             rptrFamilies.ItemDataBound += rptrFamilies_ItemDataBound;
  	        base.OnInit(e);
         }
 
-
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -36,6 +46,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 BindFamilies();
             //}
         }
+
+        #endregion
+
+        #region Events
 
         void rptrFamilies_ItemDataBound(object sender, System.Web.UI.WebControls.RepeaterItemEventArgs e)
         {
@@ -222,6 +236,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             BindFamilies();
         }
 
+        #endregion
+
+        #region Methods
+
         private void BindFamilies()
         {
             if ( Person != null && Person.Id > 0 )
@@ -264,11 +282,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
         }
 
-
         protected string FormatAddressType(object addressType)
         {
             string type = addressType.ToString();
             return type.EndsWith("Address", StringComparison.CurrentCultureIgnoreCase) ? type : type + " Address";
         }
+
+        protected string FormatPersonLink(string personId)
+        {
+            return ResolveRockUrl( string.Format( "~/Person/{0}", personId ) );
+        }
+
+        #endregion
+
     }
 }
