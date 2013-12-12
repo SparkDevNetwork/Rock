@@ -36,6 +36,9 @@
                 </Rock:RockDropDownList>
 
                 <Rock:CategoryPicker ID="catpPrayerCategoryFilter" runat="server" Label="Category" Required="true" EntityTypeName="Rock.Model.PrayerRequest"/>
+
+                <Rock:RockCheckBox ID="cbShowExpired" runat="server" Label="Show Expired Requests?" />
+
             </Rock:GridFilter>
 
             <Rock:ModalAlert ID="maGridWarning" runat="server" />

@@ -272,23 +272,23 @@ namespace RockWeb.Blocks.Groups
                         return;
                     }
 
-                    bool isSecurityRoleGroup = group.IsSecurityRole;
+                    bool isSecurityRoleGroup = group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
                     if ( isSecurityRoleGroup )
                     {
+                        Rock.Security.Role.Flush( group.Id );
                         foreach ( var auth in authService.Queryable().Where( a => a.GroupId.Equals( group.Id ) ).ToList() )
                         {
                             authService.Delete( auth, CurrentPersonId );
                             authService.Save( auth, CurrentPersonId );
                         }
-                    }
-
+                    } 
+                    
                     groupService.Delete( group, CurrentPersonId );
                     groupService.Save( group, CurrentPersonId );
 
                     if ( isSecurityRoleGroup )
                     {
                         Rock.Security.Authorization.Flush();
-                        Rock.Security.Role.Flush( group.Id );
                     }
                 }
             } );

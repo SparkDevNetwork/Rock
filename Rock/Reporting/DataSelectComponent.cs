@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
+using Rock.Data;
 using Rock.Extension;
 
 namespace Rock.Reporting
@@ -11,29 +13,17 @@ namespace Rock.Reporting
     /// </summary>
     public abstract class DataSelectComponent : Component
     {
-        /// <summary>
-        /// Gets the title.
-        /// </summary>
-        /// <value>
-        /// The title.
-        /// </value>
-        public abstract string Title { get; }
+
+        #region Properties
 
         /// <summary>
-        /// Gets the name of the entity type.
+        /// Gets the name of the entity type. Filter should be an empty string
+        /// if it applies to all entities
         /// </summary>
         /// <value>
         /// The name of the entity type.
         /// </value>
-        public abstract string EntityTypeName { get; }
-
-        /// <summary>
-        /// Gets the default column header text.
-        /// </summary>
-        /// <value>
-        /// The default column header text.
-        /// </value>
-        public abstract string ColumnHeaderText { get; }
+        public abstract string AppliesToEntityType { get; }
 
         /// <summary>
         /// Gets the section.
@@ -45,6 +35,30 @@ namespace Rock.Reporting
         {
             get { return "Other"; }
         }
+        
+        /// <summary>
+        /// The PropertyName of the property in the anonymous class returned by the SelectExpression
+        /// </summary>
+        /// <value>
+        /// The name of the column property.
+        /// </value>
+        public abstract string ColumnPropertyName { get; }
+
+        /// <summary>
+        /// Gets the type of the column field.
+        /// </summary>
+        /// <value>
+        /// The type of the column field.
+        /// </value>
+        public abstract Type ColumnFieldType { get; }
+
+        /// <summary>
+        /// Gets the default column header text.
+        /// </summary>
+        /// <value>
+        /// The default column header text.
+        /// </value>
+        public abstract string ColumnHeaderText { get; }
 
         /// <summary>
         /// Gets the attribute value defaults.
@@ -62,6 +76,18 @@ namespace Rock.Reporting
             }
         }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the title.
+        /// </summary>
+        /// <value>
+        /// The title.
+        /// </value>
+        public abstract string GetTitle( Type entityType );
+
         /// <summary>
         /// Formats the selection on the client-side.  When the widget is collapsed by the user, the Filterfield control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
@@ -74,7 +100,7 @@ namespace Rock.Reporting
         ///   </value>
         public virtual string GetClientFormatSelection()
         {
-            return this.Title;
+            return this.GetTitle( null );
         }
 
         /// <summary>
@@ -84,7 +110,7 @@ namespace Rock.Reporting
         /// <returns></returns>
         public virtual string FormatSelection( string selection )
         {
-            return this.Title;
+            return this.GetTitle( null );
         }
 
         /// <summary>
@@ -113,6 +139,7 @@ namespace Rock.Reporting
 
         /// <summary>
         /// Gets the selection.
+        /// This is typically a string that contains the values selected with the Controls
         /// </summary>
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
@@ -132,12 +159,16 @@ namespace Rock.Reporting
         }
 
         /// <summary>
-        /// Returns an IQueryable that contains the additional column provided by this component
+        /// Gets the expression.
         /// </summary>
-        /// <param name="query">The query.</param>
-        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="context">The context.</param>
+        /// <param name="entityIdProperty">The entity identifier property.</param>
+        /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public abstract IQueryable AddColumn(IQueryable query, ParameterExpression parameterExpression);
+        public abstract Expression GetExpression( RockContext context, Expression entityIdProperty, string selection );
+
+        #endregion
+
     }
 
     /// <summary>
@@ -146,6 +177,6 @@ namespace Rock.Reporting
     /// <typeparam name="T"></typeparam>
     public abstract class DataSelectComponent<T> : DataSelectComponent
     {
-        
+
     }
 }

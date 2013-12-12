@@ -1,9 +1,20 @@
-﻿using System.ComponentModel;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
+
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
+using Rock;
 
 namespace Rock.Reporting.DataSelect.Person
 {
@@ -12,22 +23,11 @@ namespace Rock.Reporting.DataSelect.Person
     /// </summary>
     [Description( "Selects Last Contribution Date for a Person" )]
     [Export( typeof( DataSelectComponent ) )]
-    [ExportMetadata( "ComponentName", "Last Contribution Fields" )]
+    [ExportMetadata( "ComponentName", "Select Person Last Contribution" )]
     public class LastContributionSelect : DataSelectComponent<Rock.Model.Person>
     {
-        /// <summary>
-        /// Gets the title.
-        /// </summary>
-        /// <value>
-        /// The title.
-        /// </value>
-        public override string Title
-        {
-            get
-            {
-                return "Last Contribution";
-            }
-        }
+
+        #region Properties
 
         /// <summary>
         /// Gets the name of the entity type.
@@ -35,12 +35,37 @@ namespace Rock.Reporting.DataSelect.Person
         /// <value>
         /// The name of the entity type.
         /// </value>
-        public override string EntityTypeName
+        public override string AppliesToEntityType
         {
             get
             {
                 return typeof( Rock.Model.Person ).FullName;
             }
+        }
+
+        /// <summary>
+        /// The PropertyName of the property in the anonymous class returned by the SelectExpression
+        /// </summary>
+        /// <value>
+        /// The name of the column property.
+        /// </value>
+        public override string ColumnPropertyName
+        {
+            get
+            {
+                return "LastTransactionDateTime";
+            }
+        }
+
+        /// <summary>
+        /// Gets the type of the column field.
+        /// </summary>
+        /// <value>
+        /// The type of the column field.
+        /// </value>
+        public override Type ColumnFieldType
+        {
+            get { return typeof(DateTime?); }
         }
 
         /// <summary>
@@ -57,40 +82,86 @@ namespace Rock.Reporting.DataSelect.Person
             }
         }
 
-        /*
-         -- Example1: turn something like this into Linq 
-         select 
-            p.FirstName, 
-           (select max(TransactionDateTime) from FinancialTransaction where AuthorizedPersonId = p.Id and AccountID in (3,4,5)) [LastDateTime]
-         from Person p
-         * 
-         
-         -- Example2: turn something like this into linq
-        select 
-            p.FirstName, 
-            g.Name [FamilyName]
-        from Person p
-            left outer join GroupMember gm on gm.PersonId = p.Id
-            left outer join Group g on gm.GroupId = g.Id
-            where g.GroupTypeId = :familyGroupTypeId
-         
-         */
+        #endregion
+
+        #region Methods
 
         /// <summary>
-        /// Returns an IQueryable that contains the additional column provided by this component
+        /// Gets the title.
         /// </summary>
-        /// <param name="query">The query.</param>
-        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="entityType"></param>
         /// <returns></returns>
-        public override IQueryable AddColumn( IQueryable query, ParameterExpression parameterExpression )
+        /// <value>
+        /// The title.
+        ///   </value>
+        public override string GetTitle(Type entityType)
         {
-            //var qry = new PersonService().Queryable();
-
-            // TODO
-            return null;
+            return "Last Contribution";
         }
-      
-        #region Controls methods
+
+        /// <summary>
+        /// Gets the expression.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="entityIdProperty">The entity identifier property.</param>
+        /// <param name="selection"></param>
+        /// <returns></returns>
+        public override Expression GetExpression( RockContext context, Expression entityIdProperty, string selection )
+        {
+            // transactions
+            var transactionDetails = context.Set<FinancialTransactionDetail>();
+
+            // t
+            ParameterExpression transactionDetailParameter = Expression.Parameter( typeof( FinancialTransactionDetail ), "t" );
+
+            // t.Transaction
+            MemberExpression transactionProperty = Expression.Property( transactionDetailParameter, "Transaction" );
+
+            // t.Transaction.AuthorizedPersonId
+            MemberExpression authorizedPersonIdProperty = Expression.Property( transactionProperty, "AuthorizedPersonId" );
+
+            // t.Transaction.AuthorizedPersonId == Convert(p.Id)
+            Expression whereClause = Expression.Equal(authorizedPersonIdProperty, Expression.Convert(entityIdProperty, typeof(int?)));
+
+            // get the selected AccountId(s).  If there are any, limit to transactions that for that Account
+            if ( !string.IsNullOrWhiteSpace( selection ) )
+            {
+                // accountIds
+                var selectedAccountIdList = selection.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsInteger() ?? 0 ).ToList();
+                if ( selectedAccountIdList.Count() > 0 )
+                {
+                    // t.AccountId
+                    MemberExpression accountIdProperty = Expression.Property( transactionDetailParameter, "AccountId" );
+
+                    // accountIds.Contains(t.AccountId)
+                    Expression selectedAccountIds = Expression.Constant(selectedAccountIdList);
+                    Expression containsExpression = Expression.Call(selectedAccountIds, "Contains", new Type[] {}, accountIdProperty );
+
+                    // t.authorizedPersonId == Convert(p.Id) && accountIds.Contains(t.AccountId)
+                    whereClause = Expression.And(whereClause, containsExpression );
+                }
+            }
+
+            // t => t.Transaction.AuthorizedPersonId == Convert(p.Id)
+            var compare = new Expression[] { 
+                    Expression.Constant(transactionDetails), 
+                    Expression.Lambda<Func<FinancialTransactionDetail, bool>>( whereClause , new ParameterExpression[] { transactionDetailParameter } ) 
+                };
+
+            // transactions.Where( t => t.Transaction.AuthorizedPersonId == Convert(p.Id)
+            Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( FinancialTransactionDetail ) }, compare );
+
+            // t.Transaction.TransactionDateTime
+            MemberExpression transactionDateTime = Expression.Property( transactionProperty, "TransactionDateTime" );
+
+            // t => t.Transaction.transactionDateTime
+            var transactionDate = Expression.Lambda<Func<FinancialTransactionDetail, DateTime?>>( transactionDateTime, new ParameterExpression[] { transactionDetailParameter } );
+
+            // transaction.Where( t => t.Transaction.AuthorizedPersonId == Convert(p.Id).Max( t => t.Transaction.transactionDateTime)
+            Expression maxExpression = Expression.Call( typeof( Queryable ), "Max", new Type[] { typeof( FinancialTransactionDetail ), typeof( DateTime? ) }, whereExpression, transactionDate );
+
+            return maxExpression;
+        }
 
         /// <summary>
         /// Creates the child controls.
@@ -101,7 +172,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             AccountPicker accountPicker = new AccountPicker();
             accountPicker.AllowMultiSelect = true;
-            accountPicker.ID = "accountPicker";
+            accountPicker.ID = parentControl.ID + "_accountPicker";
             accountPicker.Label = "Account";
             accountPicker.Help = "Pick accounts to show the last time the person made a contribution into any of those accounts. Leave blank if you don't want to limit it to specific accounts.";
             parentControl.Controls.Add( accountPicker );
@@ -186,5 +257,6 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         #endregion
+
     }
 }

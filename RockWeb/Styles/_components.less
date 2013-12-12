@@ -27,6 +27,7 @@
 
 .picker {
     position: relative;
+    width: 220px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
     .clearfix();
 
     .picker-label {
@@ -767,11 +768,31 @@ div.tagsinput div
 // -------------------------
 
 .label-campus {
-    background-color: @label-campus;
+    background-color: @label-campus-bg;
 }
 
 .label-type {
-    background-color: @label-type;
+    background-color: @label-type-bg;
+}
+
+.label-communicationstatus-approved {
+    background-color: @label-success-bg;
+}
+
+.label-communicationstatus-denied {
+    background-color: @label-danger-bg;
+}
+
+.label-communicationstatus-draft {
+    background-color: @label-default-bg;
+}
+
+.label-communicationstatus-submitted {
+    background-color: @label-warning-bg;
+}
+
+.label-communicationstatus-transient {
+    background-color: @label-type-bg;
 }
 
 

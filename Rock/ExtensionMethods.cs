@@ -475,6 +475,16 @@ namespace Rock
         }
 
         /// <summary>
+        /// Returns true if the given string is a valid email address.
+        /// </summary>
+        /// <param name="email">The string to validate</param>
+        /// <returns>true if valid email, false otherwise</returns>
+        public static bool IsValidEmail( this string email )
+        {
+            return Regex.IsMatch( email, @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*" );
+        }
+
+        /// <summary>
         /// Converts the value to Type, or if unsuccessful, returns the default value of Type.
         /// </summary>
         /// <typeparam name="T"></typeparam>

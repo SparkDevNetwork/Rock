@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -20,27 +21,33 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Prayer
 {
-    [CategoryField( "Category", "A top level category. This controls which categories are shown when entering new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "", "Filtering", 1, "GroupCategoryId" )]
-    // Behavior
-    [BooleanField( "Enable Auto Approve", "If enabled, prayer requests are automatically approved; otherwise they must be approved by an admin before they can be seen by the prayer team.", true, "Behavior", 0 )]
-    [BooleanField( "Default Allow Comments Setting", "Controls the default setting for 'Allow Comments' on new prayer requests.", false, "Behavior", 1 )]
-    [BooleanField( "Enable Urgent Flag", "If enabled, requestors will be able to flag prayer requests as urgent.", false, "Behavior", 2 )]
-    [BooleanField( "Enable Comments Flag", "If enabled, requestors will be able set whether or not they want to allow comments on their requests.", false, "Behavior", 3 )]
-    [BooleanField( "Enable Public Display Flag", "If enabled, requestors will be able set whether or not they want their request displayed on the public website.", false, "Behavior", 4 )]
-    [IntegerField( "Character Limit", "If set to something other than 0, this will limit the number of characters allowed when entering a new prayer request.", false, 250, "Behavior", 5 )]
-    // On Save
-    [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save", 10 )]
-    [TextField("Save Success Text", "Some text (or HTML) to display to the requester upon successful save.", false, "<p>Thank you for allowing us to pray for you.</p>", "On Save", 11 )]
+    // Category Selection
+    [CategoryField( "Category Selection", "A top level category. This controls which categories the person can choose from when entering their prayer request.", false, "Rock.Model.PrayerRequest", "", "", false, "", "Category Selection", 1, "GroupCategoryId" )]
+    [CategoryField( "Default Category", "If categories are not being shown, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "Category Selection", 2, "DefaultCategory" )]
+    
+    // Features
+    [BooleanField( "Enable Auto Approve", "If enabled, prayer requests are automatically approved; otherwise they must be approved by an admin before they can be seen by the prayer team.", true, "Features", 3 )]
+    [IntegerField( "Expires After (Days)", "Number of days until the request will expire (only applies when auto-approved is enabled).", false, 14, "Features", 4, "ExpireDays" )]
+    [BooleanField( "Default Allow Comments Setting", "This is the default setting for the 'Allow Comments' on prayer requests. If you enable the 'Comments Flag' below, the requestor can override this default setting.", true, "Features", 5 )]
+    [BooleanField( "Enable Urgent Flag", "If enabled, requestors will be able to flag prayer requests as urgent.", false, "Features", 6 )]
+    [BooleanField( "Enable Comments Flag", "If enabled, requestors will be able set whether or not they want to allow comments on their requests.", false, "Features", 7 )]
+    [BooleanField( "Enable Public Display Flag", "If enabled, requestors will be able set whether or not they want their request displayed on the public website.", false, "Features", 8 )]
+    [IntegerField( "Character Limit", "If set to something other than 0, this will limit the number of characters allowed when entering a new prayer request.", false, 250, "Features", 9 )]
+    
+    // On Save Behavior
+    [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save Behavior", 10 )]
+    [TextField( "Save Success Text", "Some text (or HTML) to display to the requester upon successful save. (Only applies if not navigating to parent page on save.)", false, "<p>Thank you for allowing us to pray for you.</p>", "On Save Behavior", 11 )]
     
     public partial class AddPrayerRequest : RockBlock
     {
-        #region Private BlockType Attributes
+        #region Fields
         protected int? _prayerRequestEntityTypeId = null;
-        protected bool enableUrgentFlag = false;
-        protected bool enableCommentsFlag = false;
-        protected bool enablePublicDisplayFlag = false;
+        protected bool _enableUrgentFlag = false;
+        protected bool _enableCommentsFlag = false;
+        protected bool _enablePublicDisplayFlag = false;
         #endregion
 
+        #region Base Control Methods
         /// <summary>
         /// Handles the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -49,9 +56,9 @@ namespace RockWeb.Blocks.Prayer
         {
             base.OnInit( e );
 
-            enableUrgentFlag = GetAttributeValue( "EnableUrgentFlag" ).AsBoolean();
-            enableCommentsFlag = GetAttributeValue( "EnableCommentsFlag" ).AsBoolean();
-            enablePublicDisplayFlag = GetAttributeValue( "EnablePublicDisplayFlag" ).AsBoolean();
+            _enableUrgentFlag = GetAttributeValue( "EnableUrgentFlag" ).AsBoolean();
+            _enableCommentsFlag = GetAttributeValue( "EnableCommentsFlag" ).AsBoolean();
+            _enablePublicDisplayFlag = GetAttributeValue( "EnablePublicDisplayFlag" ).AsBoolean();
             nbMessage.Text = GetAttributeValue( "SaveSuccessText" );
 
             RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/bootstrap-limit.js" ) );
@@ -109,19 +116,13 @@ namespace RockWeb.Blocks.Prayer
             }
         }
 
-        /// <summary>
-        /// Bind the category selector to the correct set of categories.
-        /// </summary>
-        private void BindCategories( string categoryGuid )
-        {
-            Guid guid = new Guid( categoryGuid );
+        #endregion
 
-            bddlCategory.DataSource = new CategoryService().GetByEntityTypeId( _prayerRequestEntityTypeId ).Where( c => c.Guid == guid ||
-                (c.ParentCategory != null && c.ParentCategory.Guid == guid ) ).AsQueryable().ToList();
-            bddlCategory.DataTextField = "Name";
-            bddlCategory.DataValueField = "Id";
-            bddlCategory.DataBind();
-        }
+        #region Events
+
+        #endregion
+
+        #region Event Handlers
 
         /// <summary>
         /// Handles the Click event to save the prayer request.
@@ -130,14 +131,8 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            // Check length in case the client side js didn't
-            nbWarningMessage.Visible = false;
-            int charLimit;
-            if ( Int32.TryParse( GetAttributeValue( "CharacterLimit" ), out charLimit ) && charLimit > 0 
-                && dtbRequest.Text.Length > charLimit )
+            if ( ! IsValid() )
             {
-                nbWarningMessage.Visible = true;
-                nbWarningMessage.Text = string.Format( "Whoops. Would you mind reducing the length of your prayer request to {0} characters?", charLimit );
                 return;
             }
 
@@ -149,34 +144,50 @@ namespace RockWeb.Blocks.Prayer
             PrayerRequestService prayerRequestService = new PrayerRequestService();
             prayerRequestService.Add( prayerRequest, CurrentPersonId );
             prayerRequest.EnteredDate = DateTime.Now;
-            
-            // If changing from NOT approved to approved, record who and when
+
             if ( isAutoApproved )
             {
                 prayerRequest.ApprovedByPersonId = CurrentPerson.Id;
                 prayerRequest.ApprovedOnDate = DateTime.Now;
+                var expireDays = Convert.ToDouble( GetAttributeValue( "ExpireDays" ) );
+                prayerRequest.ExpirationDate = DateTime.Now.AddDays( expireDays );
             }
 
             // Now record all the bits...
-            prayerRequest.CategoryId = bddlCategory.SelectedValueAsInt();
-            prayerRequest.FirstName = dtbFirstName.Text;
-            prayerRequest.LastName = dtbLastName.Text;
-            prayerRequest.Email = dtbEmail.Text;
-            prayerRequest.Text = dtbRequest.Text;
+            int? categoryId = bddlCategory.SelectedValueAsInt();
+            var defaultCategoryGuid = GetAttributeValue( "DefaultCategory" );
+            if ( categoryId == null && ! string.IsNullOrEmpty( defaultCategoryGuid ) )
+            {
+                var category = new CategoryService().Get( new Guid( defaultCategoryGuid ) );
+                categoryId = category.Id;
+            }
+            prayerRequest.CategoryId = categoryId;
+            prayerRequest.FirstName = HttpUtility.HtmlEncode( dtbFirstName.Text.Trim() );
+            prayerRequest.LastName = HttpUtility.HtmlEncode( dtbLastName.Text.Trim() );
+            prayerRequest.Email = dtbEmail.Text.Trim();
+            prayerRequest.Text = HttpUtility.HtmlEncode( dtbRequest.Text.Trim() );
 
-            if ( enableUrgentFlag )
+            if ( _enableUrgentFlag )
             {
                 prayerRequest.IsUrgent = cbIsUrgent.Checked;
             }
+            else
+            {
+                prayerRequest.IsUrgent = false;
+            }
 
-            if ( enableCommentsFlag )
+            if ( _enableCommentsFlag )
             {
                 prayerRequest.AllowComments = cbAllowComments.Checked;
             }
 
-            if ( enablePublicDisplayFlag )
+            if ( _enablePublicDisplayFlag )
             {
                 prayerRequest.IsPublic = cbAllowPublicDisplay.Checked;
+            }
+            else
+            {
+                prayerRequest.IsPublic = false;
             }
 
             if ( !Page.IsValid )
@@ -215,8 +226,56 @@ namespace RockWeb.Blocks.Prayer
             pnlForm.Visible = true;
             pnlReceipt.Visible = false;
             dtbRequest.Text = "";
-            //rblCategory.SelectedIndex = -1;
             dtbRequest.Focus();
         }
-}
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Bind the category selector to the correct set of categories.
+        /// </summary>
+        private void BindCategories( string categoryGuid )
+        {
+            Guid guid = new Guid( categoryGuid );
+
+            bddlCategory.DataSource = new CategoryService().GetByEntityTypeId( _prayerRequestEntityTypeId ).Where( c => c.Guid == guid ||
+                ( c.ParentCategory != null && c.ParentCategory.Guid == guid ) ).AsQueryable().ToList();
+            bddlCategory.DataTextField = "Name";
+            bddlCategory.DataValueField = "Id";
+            bddlCategory.DataBind();
+        }
+
+        /// <summary>
+        /// Returns true if the form is valid; false otherwise.
+        /// </summary>
+        /// <returns></returns>
+        private bool IsValid()
+        {
+            IEnumerable<string> errors = Enumerable.Empty<string>();
+
+            // Check length in case the client side js didn't
+            int charLimit;
+            if ( Int32.TryParse( GetAttributeValue( "CharacterLimit" ), out charLimit ) && charLimit > 0
+                && dtbRequest.Text.Length > charLimit )
+            {
+                errors = errors.Concat( new[] { string.Format( "Whoops. Would you mind reducing the length of your prayer request to {0} characters?", charLimit ) } );
+            }
+
+            if ( errors != null && errors.Count() > 0 )
+            {
+                nbWarningMessage.Visible = true;
+                nbWarningMessage.Text = errors.Aggregate( new StringBuilder( "<ul>" ), ( sb, s ) => sb.AppendFormat( "<li>{0}</li>", s ) ).Append( "</ul>" ).ToString();
+                return false;
+            }
+            else
+            {
+                nbWarningMessage.Visible = false;
+                return true;
+            }
+        }
+
+        #endregion
+    }
 }

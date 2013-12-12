@@ -326,6 +326,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             familyMemberRow.Gender = Gender.Unknown;
             familyMemberRow.RequireGender = _requireGender;
             familyMemberRow.RequireGrade = _requireGrade;
+            familyMemberRow.ValidationGroup = BlockValidationGroup;
 
             var familyGroupType = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) );
             if ( familyGroupType != null && familyGroupType.DefaultGroupRoleId.HasValue )
@@ -393,10 +394,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     familyGroup.CampusId = cpCampus.SelectedValueAsInt();
                                     familyMembers.ForEach( m => familyGroup.Members.Add( m ) );
 
-                                    if ( !String.IsNullOrEmpty( tbStreet1.Text ) ||
-                                         !String.IsNullOrEmpty( tbStreet2.Text ) ||
-                                         !String.IsNullOrEmpty( tbCity.Text ) ||
-                                         !String.IsNullOrEmpty( tbZip.Text ) )
+                                    if ( !String.IsNullOrWhiteSpace( tbStreet1.Text ) ||
+                                         !String.IsNullOrWhiteSpace( tbStreet2.Text ) ||
+                                         !String.IsNullOrWhiteSpace( tbCity.Text ) ||
+                                         !String.IsNullOrWhiteSpace( tbZip.Text ) )
                                     {
                                         var groupLocation = new GroupLocation();
                                         var location = new LocationService().Get(
