@@ -20,7 +20,7 @@ namespace Rock.Model
         /// Returns a collection of active <see cref="Rock.Model.PrayerRequest">PrayerRequests</see> that
         /// are in a specified <see cref="Rock.Model.Category"/> or any of it's subcategories.
         /// </summary>
-        /// <param name="categoryIds">A <see cref="System.Collections.Generic.List"/> of
+        /// <param name="categoryIds">A <see cref="System.Collections.Generic.List{Int32}"/> of
         /// the <see cref="Rock.Model.Category"/> IDs to retrieve PrayerRequests for.</param>
         /// <param name="onlyApproved">set false to include un-approved requests.</param>
         /// <param name="onlyUnexpired">set false to include expired requests.</param>
