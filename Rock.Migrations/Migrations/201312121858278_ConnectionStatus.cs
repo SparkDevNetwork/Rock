@@ -18,12 +18,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            DropForeignKey("dbo.Person", "PersonStatusValueId", "dbo.DefinedValue");
-            DropIndex("dbo.Person", new[] { "PersonStatusValueId" });
-            AddColumn("dbo.Person", "ConnectionStatusValueId", c => c.Int());
-            CreateIndex("dbo.Person", "ConnectionStatusValueId");
-            AddForeignKey("dbo.Person", "ConnectionStatusValueId", "dbo.DefinedValue", "Id");
-            DropColumn("dbo.Person", "PersonStatusValueId");
+            RenameColumn( "dbo.Person", "PersonStatusValueId", "ConnectionStatusValueId" );
 
             Sql( @"
     UPDATE [Attribute] SET [Key] = 'DefaultConnectionStatus' WHERE [key] = 'DefaultPersonStatus'
@@ -59,14 +54,9 @@ namespace Rock.Migrations
 	    [AssemblyName] = 'Rock.PersonProfile.Badge.PersonStatus, Rock, Version=0.0.1.0, Culture=neutral, PublicKeyToken=null',
 	    [FriendlyName] = 'Person Status'
     WHERE [Name] = 'Rock.PersonProfile.Badge.ConnectionStatus'
-" ); 
-            
-            AddColumn( "dbo.Person", "PersonStatusValueId", c => c.Int() );
-            DropForeignKey("dbo.Person", "ConnectionStatusValueId", "dbo.DefinedValue");
-            DropIndex("dbo.Person", new[] { "ConnectionStatusValueId" });
-            DropColumn("dbo.Person", "ConnectionStatusValueId");
-            CreateIndex("dbo.Person", "PersonStatusValueId");
-            AddForeignKey("dbo.Person", "PersonStatusValueId", "dbo.DefinedValue", "Id");
+" );
+
+            RenameColumn( "dbo.Person", "ConnectionStatusValueId", "PersonStatusValueId" );
         }
     }
 }
