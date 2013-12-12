@@ -81,6 +81,7 @@
                     <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-action pull-right" />
                 </div>
 
+                <h4>Results</h4>
                 <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
 
             </div>
