@@ -6,10 +6,9 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
-using CKEditor.NET;
 
 namespace Rock.Web.UI.Controls
 {
@@ -17,7 +16,7 @@ namespace Rock.Web.UI.Controls
     /// Control for rendering an html editor
     /// </summary>
     [ToolboxData( "<{0}:LabeledHtmlEditor runat=server></{0}:LabeledHtmlEditor>" )]
-    public class HtmlEditor : CKEditorControl, IRockControl
+    public class HtmlEditor : TextBox, IRockControl
     {
         #region IRockControl implementation
 
@@ -164,6 +163,38 @@ namespace Rock.Web.UI.Controls
 
         #region Properties
 
+        public string Toolbar
+        {
+            get
+            {
+                string toolbar = ViewState["Toolbar"] as string;
+                if ( string.IsNullOrWhiteSpace( toolbar ) )
+                {
+                    toolbar = "RockCustomConfigLight";
+                }
+
+                return toolbar;
+            }
+
+            set
+            {
+                ViewState["Toolbar"] = value;
+            }
+        }
+
+        public int? ResizeMaxWidth
+        {
+            get
+            {
+                return ViewState["ResizeMaxWidth"] as int?;
+            }
+
+            set
+            {
+                ViewState["ResizeMaxWidth"] = value;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the merge fields to make available.  This should include either a list of
         /// entity type names (full name), or other non-object string values
@@ -198,6 +229,11 @@ namespace Rock.Web.UI.Controls
             RequiredFieldValidator = new RequiredFieldValidator();
             RequiredFieldValidator.ValidationGroup = this.ValidationGroup;
             HelpBlock = new HelpBlock();
+
+            TextMode = TextBoxMode.MultiLine;
+            Rows = 10;
+            Columns = 80;
+
         }
 
         /// <summary>
@@ -224,7 +260,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _mergeFieldPicker );
         }
 
-       /// <summary>
+        /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
@@ -242,18 +278,56 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            string ckInitScriptFormat = @"
+var toolbar_RockCustomConfigLight =
+	[
+        {{ name: 'document', items: ['Source'] }},
+        {{ name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike', 'NumberedList', 'BulletedList', 'Link', 'Image', 'PasteFromWord', '-', 'RemoveFormat'] }},
+        {{ name: 'editing', items: ['Format'] }},
+	];
+
+var toolbar_RockCustomConfigFull =
+	[
+        {{ name: 'document', items: ['Source'] }},
+        {{ name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'] }},
+        {{ name: 'editing', items: ['Find', 'Replace', '-', 'Scayt'] }},
+        {{ name: 'links', items: ['Link', 'Unlink', 'Anchor'] }},
+        {{ name: 'styles', items: ['Styles', 'Format'] }},
+                '/',
+        {{ name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat'] }},
+        {{
+            name: 'paragraph', items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-',
+              'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'Image', 'Table']
+        }},
+	];	
+
+CKEDITOR.replace('{0}', {{ 
+  toolbar: toolbar_{1},
+  resize_maxWidth: '{2}'  
+}} );
+            ";
+
+
+
+            string ckInitScript = string.Format( ckInitScriptFormat, this.ClientID, this.Toolbar, this.ResizeMaxWidth ?? 0 );
+
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckInitScript, true );
+
             if ( MergeFields.Any() )
             {
                 _mergeFieldPicker.MergeFields = this.MergeFields;
                 _mergeFieldPicker.RenderControl( writer );
 
-                AddScript();
+                AddMergeFieldScript();
             }
 
             base.RenderControl( writer );
         }
 
-        private void AddScript()
+        /// <summary>
+        /// Adds the merge field script.
+        /// </summary>
+        private void AddMergeFieldScript()
         {
             string scriptFormat = @"
         $('#btnSelectNone_{0}').click(function (e) {{
@@ -290,6 +364,8 @@ namespace Rock.Web.UI.Controls
 ";
             string script = string.Format( scriptFormat, _mergeFieldPicker.ID, this.ClientID );
             ScriptManager.RegisterStartupScript( _mergeFieldPicker, _mergeFieldPicker.GetType(), "merge_field_extension-" + _mergeFieldPicker.ID.ToString(), script, true );
+
+
         }
     }
 }
