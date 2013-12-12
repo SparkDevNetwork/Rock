@@ -152,6 +152,10 @@
     <Compile Include="Migrations\201312121845402_LoginExperienceUpdates.Designer.cs">
       <DependentUpon>201312121845402_LoginExperienceUpdates.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201312121852389_ReportColumnHeaderText.cs" />
+    <Compile Include="Migrations\201312121852389_ReportColumnHeaderText.Designer.cs">
+      <DependentUpon>201312121852389_ReportColumnHeaderText.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -243,6 +247,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201312121845402_LoginExperienceUpdates.resx">
       <DependentUpon>201312121845402_LoginExperienceUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312121852389_ReportColumnHeaderText.resx">
+      <DependentUpon>201312121852389_ReportColumnHeaderText.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

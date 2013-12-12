@@ -232,7 +232,7 @@ $('.rock-panel-widget a.panel-widget-reorder').click(function (event) {
                     // Reorder Icon
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs panel-widget-reorder" );
                     writer.RenderBeginTag( HtmlTextWriterTag.A );
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "icon-reorder" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-bars" );
                     writer.RenderBeginTag( HtmlTextWriterTag.I );
                     writer.RenderEndTag();
                     writer.RenderEndTag();
