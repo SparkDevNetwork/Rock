@@ -161,7 +161,7 @@ namespace Rock.Model
             target.RecordTypeValueId = source.RecordTypeValueId;
             target.RecordStatusValueId = source.RecordStatusValueId;
             target.RecordStatusReasonValueId = source.RecordStatusReasonValueId;
-            target.PersonStatusValueId = source.PersonStatusValueId;
+            target.ConnectionStatusValueId = source.ConnectionStatusValueId;
             target.IsDeceased = source.IsDeceased;
             target.TitleValueId = source.TitleValueId;
             target.GivenName = source.GivenName;
