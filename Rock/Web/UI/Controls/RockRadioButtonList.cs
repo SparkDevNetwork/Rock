@@ -164,6 +164,10 @@ namespace Rock.Web.UI.Controls
             HelpBlock = new HelpBlock();
         }
 
+        /// <summary>
+        /// Handles the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains event data.</param>
         protected override void OnLoad( System.EventArgs e )
         {
             base.OnLoad( e );
