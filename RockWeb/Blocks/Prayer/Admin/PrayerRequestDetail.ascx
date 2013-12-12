@@ -21,7 +21,9 @@
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="dtbFirstName" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="FirstName" />
                             <Rock:DataTextBox ID="dtbLastName" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="LastName" />
+                            <Rock:DatePicker ID="dpExpirationDate" Text="Expires On" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="ExpirationDate" />
                         </div>
+
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIsActive" Text="Active " CssClass="checkbox inline" runat="server" />
                             <Rock:RockCheckBox ID="cbApproved" Text="Approved " CssClass="checkbox inline" runat="server" />
@@ -31,6 +33,7 @@
                             <Rock:RockCheckBox ID="cbAllowComments" Text="Allow Comments " CssClass="checkbox inline" runat="server" />
                             <asp:Label ID="lblApprovedByPerson" runat="server" CssClass="muted text-muted" Visible="false" />
                         </div>
+
                     </div>
 
                     <div class="row">

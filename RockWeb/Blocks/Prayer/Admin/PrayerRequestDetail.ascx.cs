@@ -20,12 +20,12 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Prayer
 {
-    [IntegerField( "Group Category Id", "The id of 'prayer group category'.  Only prayer requests under this category will be shown.", false, -1, "Filtering", 1, "GroupCategoryId" )]
+    [IntegerField( "Expires After (Days)", "Number of days until the request will expire (only applies when auto-approved is enabled).", false, 14, order: 4, key: "ExpireDays" )]
+
     public partial class PrayerRequestDetail : RockBlock, IDetailBlock
     {
         #region Private BlockType Attributes
         private static readonly string PrayerRequestKeyParameter = "prayerRequestId";
-        int _blockInstanceGroupCategoryId = -1;
         #endregion
 
         #region Control Methods
@@ -37,9 +37,6 @@ namespace RockWeb.Blocks.Prayer
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            Int32.TryParse( GetAttributeValue( "GroupCategoryId" ), out _blockInstanceGroupCategoryId );
-            PrayerRequest prayerRequest = new PrayerRequest();
         }
 
         /// <summary>
@@ -184,8 +181,19 @@ namespace RockWeb.Blocks.Prayer
 
             dtbFirstName.Text = prayerRequest.FirstName;
             dtbLastName.Text = prayerRequest.LastName;
-            dtbText.Text = prayerRequest.Text;
-            dtbAnswer.Text = prayerRequest.Answer;
+            dtbText.Text =  HttpUtility.HtmlDecode( prayerRequest.Text );
+            dtbAnswer.Text = HttpUtility.HtmlDecode( prayerRequest.Answer );
+
+            // If no expiration date is set, then use the default setting.
+            if ( !prayerRequest.ExpirationDate.HasValue )
+            {
+                var expireDays = Convert.ToDouble( GetAttributeValue( "ExpireDays" ) );
+                dpExpirationDate.SelectedDate = DateTime.Now.AddDays( expireDays );
+            }
+            else
+            {
+                dpExpirationDate.SelectedDate = prayerRequest.ExpirationDate;
+            }
 
             ShowStatus( prayerRequest, this.CurrentPerson, hlblFlaggedMessage );
 
@@ -284,7 +292,7 @@ namespace RockWeb.Blocks.Prayer
                 prayerRequest = prayerRequestService.Get( prayerRequestId );
             }
 
-            // If changing from NOT approved to approved, record who and when
+            // If changing from NOT-approved to approved, record who and when
             if ( !(prayerRequest.IsApproved ?? false) && cbApproved.Checked )
             {
                 prayerRequest.ApprovedByPersonId = CurrentPerson.Id;
@@ -295,6 +303,18 @@ namespace RockWeb.Blocks.Prayer
                     prayerRequest.FlagCount = 0;
                 }
             }
+
+            // If no expiration date was manually set, then use the default setting.
+            if ( !dpExpirationDate.SelectedDate.HasValue )
+            {
+                var expireDays = Convert.ToDouble( GetAttributeValue( "ExpireDays" ) );
+                prayerRequest.ExpirationDate = DateTime.Now.AddDays( expireDays );
+            }
+            else
+            {
+                prayerRequest.ExpirationDate = dpExpirationDate.SelectedDate;
+            }
+
             // Now record all the bits...
             prayerRequest.IsApproved = cbApproved.Checked;
             prayerRequest.IsActive = cbIsActive.Checked;
@@ -304,8 +324,8 @@ namespace RockWeb.Blocks.Prayer
             prayerRequest.CategoryId = catpCategory.SelectedValueAsInt();
             prayerRequest.FirstName = dtbFirstName.Text;
             prayerRequest.LastName = dtbLastName.Text;
-            prayerRequest.Text = dtbText.Text;
-            prayerRequest.Answer = dtbAnswer.Text;
+            prayerRequest.Text = HttpUtility.HtmlEncode( dtbText.Text );
+            prayerRequest.Answer = HttpUtility.HtmlEncode( dtbAnswer.Text );
 
             if ( !Page.IsValid )
             {
