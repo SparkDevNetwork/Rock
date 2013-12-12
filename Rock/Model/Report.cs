@@ -155,7 +155,7 @@ namespace Rock.Model
         /// <param name="sortProperty">The sort property.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public List<object> GetDataSource( RockContext context, Type entityType, List<EntityField> entityFields, List<AttributeCache> attributes, List<ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, out List<string> errorMessages )
+        public List<object> GetDataSource( RockContext context, Type entityType, Dictionary<int,EntityField> entityFields, Dictionary<int,AttributeCache> attributes, Dictionary<int,ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -178,14 +178,22 @@ namespace Rock.Model
 
                     // Create the dynamic type
                     var dynamicFields = new Dictionary<string, Type>();
-                    entityFields.ForEach( f => dynamicFields.Add( string.Format( "Entity_{0}", f.Name ), f.PropertyType ) );
-                    attributes.ForEach( a => dynamicFields.Add( string.Format( "Attribute_{0}", a.Id ), typeof( string ) ) );
+                    foreach (var f in entityFields)
+                    {
+                        dynamicFields.Add( string.Format( "Entity_{0}_{1}", f.Value.Name, f.Key ), f.Value.PropertyType );
+                    }
+
+                    foreach (var a in attributes)
+                    {
+                        dynamicFields.Add( string.Format( "Attribute_{0}_{1}", a.Value.Id, a.Key ), typeof( string ) );
+                    }
+
                     foreach ( var reportField in selectComponents )
                     {
-                        DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
+                        DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.Value.DataSelectComponentEntityType.Name );
                         if ( selectComponent != null )
                         {
-                            dynamicFields.Add( string.Format( "Data_{0}", selectComponent.ColumnPropertyName ), selectComponent.ColumnFieldType );
+                            dynamicFields.Add( string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ), selectComponent.ColumnFieldType );
                         }
                     }
                     
@@ -200,14 +208,21 @@ namespace Rock.Model
 
                     // Bind the dynamic fields to their expressions
                     var bindings = new List<MemberBinding>();
-                    entityFields.ForEach( f => bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "entity_{0}", f.Name ) ), Expression.Property( paramExpression, f.Name ) ) ) );
-                    attributes.ForEach( a => bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "attribute_{0}", a.Id ) ), GetAttributeValueExpression( attributeValues, attributeValueParameter, idExpression, a.Id ) ) ) );
+                    foreach (var f in entityFields)
+                    {
+                        bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "entity_{0}_{1}", f.Value.Name, f.Key ) ), Expression.Property( paramExpression, f.Value.Name ) ) );
+                    }
+
+                    foreach (var a in attributes)
+                    {
+                        bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "attribute_{0}_{1}", a.Value.Id, a.Key ) ), GetAttributeValueExpression( attributeValues, attributeValueParameter, idExpression, a.Value.Id ) ) );
+                    }
                     foreach ( var reportField in selectComponents )
                     {
-                        DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
+                        DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.Value.DataSelectComponentEntityType.Name );
                         if ( selectComponent != null )
                         {
-                            bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "data_{0}", selectComponent.ColumnPropertyName ) ), selectComponent.GetExpression( context, idExpression, reportField.Selection ) ) );
+                            bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ) ), selectComponent.GetExpression( context, idExpression, reportField.Value.Selection ) ) );
                         }
                     }
 
