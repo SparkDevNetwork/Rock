@@ -12,12 +12,12 @@ using Rock.Web.UI.Controls;
 namespace Rock.PersonProfile.Badge
 {
     /// <summary>
-    /// Person Status Badge
+    /// Connection Status Badge
     /// </summary>
-    [Description( "Person Status Badge" )]
+    [Description( "Connection Status Badge" )]
     [Export( typeof( BadgeComponent ) )]
-    [ExportMetadata("ComponentName", "Person Status")]
-    public class PersonStatus : TextBadge
+    [ExportMetadata("ComponentName", "Connection Status")]
+    public class ConnectionStatus : TextBadge
     {
         /// <summary>
         /// Gets the attribute value defaults.
@@ -46,7 +46,7 @@ namespace Rock.PersonProfile.Badge
             {
                 var label = new HighlightLabel();
                 label.LabelType = LabelType.Success;
-                label.Text = Person.PersonStatusValueId.DefinedValue();
+                label.Text = Person.ConnectionStatusValueId.DefinedValue();
                 return label;
             }
 

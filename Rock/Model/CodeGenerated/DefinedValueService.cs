@@ -128,7 +128,7 @@ namespace Rock.Model
             
             // ignoring Person,MaritalStatusValueId 
             
-            // ignoring Person,PersonStatusValueId 
+            // ignoring Person,PersonConnectionValueId 
             
             // ignoring Person,RecordStatusReasonValueId 
             
