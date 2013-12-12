@@ -11,6 +11,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Constants;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -35,7 +36,7 @@ namespace Rock.Field.Types
             Guid guid = Guid.Empty;
             if ( Guid.TryParse( value, out guid ) )
             {
-                var groupType = new Rock.Model.GroupTypeService().Get( guid );
+                var groupType = GroupTypeCache.Read( guid );
                 if ( groupType != null )
                 {
                     formattedValue = groupType.Name;
@@ -76,13 +77,10 @@ namespace Rock.Field.Types
             {
                 if ( groupTypePicker.SelectedGroupTypeId.HasValue )
                 {
-                    Guid groupTypeGuid = new GroupTypeService().Queryable()
-                        .Where( g => g.Id == groupTypePicker.SelectedGroupTypeId.Value )
-                        .Select( g => g.Guid )
-                        .FirstOrDefault();
-                    if ( groupTypeGuid != null )
+                    var groupType = GroupTypeCache.Read( groupTypePicker.SelectedGroupTypeId.Value );
+                    if (groupType != null)
                     {
-                        return groupTypeGuid.ToString();
+                        return groupType.Guid.ToString();
                     }
                 }
             }

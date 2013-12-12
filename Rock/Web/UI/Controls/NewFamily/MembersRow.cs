@@ -215,9 +215,12 @@ namespace Rock.Web.UI.Controls
                 else
                 {
                     var familyRoles = new Dictionary<int, string>();
-                    new GroupTypeService()
-                        .Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) )
-                        .Roles.ToList().ForEach( r => familyRoles.Add(r.Id, r.Name));
+                    var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+                    if (familyGroupType != null)
+                    {
+                        new GroupTypeRoleService().GetByGroupTypeId(familyGroupType.Id)
+                            .ToList().ForEach( r => familyRoles.Add(r.Id, r.Name));
+                    }
                     HttpContext.Current.Items[FAMILY_ROLE_KEY] = familyRoles;
                     return familyRoles;
                 }

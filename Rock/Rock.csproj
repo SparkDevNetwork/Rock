@@ -270,6 +270,7 @@
     <Compile Include="SystemGuid\SiteDomain.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\Cache\CategoryCache.cs" />
+    <Compile Include="Web\Cache\GroupTypeCache.cs" />
     <Compile Include="Web\Cache\LayoutCache.cs" />
     <Compile Include="Web\DescriptionList.cs" />
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
