@@ -847,7 +847,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             var familyGroup = new Group();
             familyGroup.Name = FamilyName + " Family";
-            familyGroup.GroupTypeId = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Id;
+            familyGroup.GroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
             familyGroup.IsSecurityRole = false;
             familyGroup.IsSystem = false;
             familyGroup.IsActive = true;

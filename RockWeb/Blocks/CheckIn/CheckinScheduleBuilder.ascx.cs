@@ -187,7 +187,7 @@ namespace RockWeb.Blocks.CheckIn
                         itemId = groupTypeIdPageParam.Value;
                     }
 
-                    var groupType = new GroupTypeService().Get( itemId );
+                    var groupType = GroupTypeCache.Read( itemId );
                     if ( groupType != null )
                     {
                         e.Value = groupType.Name;
