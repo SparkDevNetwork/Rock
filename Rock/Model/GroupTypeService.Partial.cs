@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.Collections.Generic;
+using System.Linq;
 using Rock.Data;
 
 namespace Rock.Model
@@ -13,7 +14,6 @@ namespace Rock.Model
     /// </summary>
     public partial class GroupTypeService 
     {
-
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.GroupType"/> entities by the Id of their <see cref="Rock.Model.GroupTypeRole"/>.
         /// </summary>
@@ -23,6 +23,26 @@ namespace Rock.Model
         public IEnumerable<GroupType> GetByDefaultGroupRoleId( int? defaultGroupRoleId )
         {
             return Repository.Find( t => ( t.DefaultGroupRoleId == defaultGroupRoleId || ( defaultGroupRoleId == null && t.DefaultGroupRoleId == null ) ) );
+        }
+
+        /// <summary>
+        /// Gets the child group types.
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public IQueryable<GroupType> GetChildGroupTypes(int groupTypeId)
+        {
+            return Repository.AsQueryable().Where( t => t.ParentGroupTypes.Select( p => p.Id ).Contains( groupTypeId ) );
+        }
+
+        /// <summary>
+        /// Gets the parent group types.
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public IQueryable<GroupType> GetParentGroupTypes( int groupTypeId )
+        {
+            return Repository.AsQueryable().Where( t => t.ChildGroupTypes.Select( p => p.Id ).Contains( groupTypeId ) );
         }
 
         /// <summary>
@@ -44,6 +64,39 @@ namespace Rock.Model
             this.Save( item, personId );
 
             return base.Delete( item, personId );
+        }
+
+        /// <summary>
+        /// Saves the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public override bool Save( GroupType item, int? personId )
+        {
+            // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
+            if ( item.IconLargeFileId.HasValue )
+            {
+                BinaryFileService binaryFileService = new BinaryFileService( this.RockContext );
+                var binaryFile = binaryFileService.Get( item.IconLargeFileId.Value );
+                if ( binaryFile != null && binaryFile.IsTemporary )
+                {
+                    binaryFile.IsTemporary = false;
+                }
+            }
+
+            // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
+            if ( item.IconSmallFileId.HasValue )
+            {
+                BinaryFileService binaryFileService = new BinaryFileService( this.RockContext );
+                var binaryFile = binaryFileService.Get( item.IconSmallFileId.Value );
+                if ( binaryFile != null && binaryFile.IsTemporary )
+                {
+                    binaryFile.IsTemporary = false;
+                }
+            }
+            
+            return base.Save( item, personId );
         }
     }
 }

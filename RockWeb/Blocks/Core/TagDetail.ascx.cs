@@ -155,7 +155,7 @@ namespace RockWeb.Blocks.Core
             var qryParams = new Dictionary<string, string>();
             qryParams["tagId"] = tag.Id.ToString();
 
-            NavigateToPage( this.CurrentPage.Guid, qryParams );
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>

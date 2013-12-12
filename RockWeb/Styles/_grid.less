@@ -163,22 +163,29 @@ td.grid-col-actions {
 // 5. Light Style
 // -------------------------
 
-.table-light thead th {
-    background-color: inherit;
-    color: @text-color;
-    font-weight: @font-weight-bold;
-}
+.table-light {
 
-.table-light tfoot td {
-    background-color: inherit;
-}
+    thead th {
+        background-color: inherit;
+        color: @text-color;
+        font-weight: @font-weight-bold;
+    }
 
-.table-light tfoot td .grid-actions a {
-    border-radius: 0;
-    border-style: none;
-    border-width: 0;
-    box-shadow: none;
-    border-color: none;
+    tfoot td {
+        background-color: inherit;
+
+        .grid-actions a {
+            border-radius: 0;
+            border-style: none;
+            border-width: 0;
+            box-shadow: none;
+            border-color: none;
+        }
+    }
+
+    .grid-columncommand { // get buttons in the light grid to align over the add in the footer
+        text-align: right;
+    }
 }
 
 // 5. Disabled Styles

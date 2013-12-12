@@ -146,6 +146,8 @@ namespace RockWeb.Blocks.Groups
 
                 if ( groupType != null )
                 {
+                    int groupTypeId = groupType.Id;
+
                     if ( !groupType.IsAuthorized("Administrate", CurrentPerson))
                     {
                         mdGridWarning.Show( "Sorry, you're not authorized to delete this group type.", ModalAlertType.Alert );
@@ -161,6 +163,8 @@ namespace RockWeb.Blocks.Groups
 
                     groupTypeService.Delete( groupType, CurrentPersonId );
                     groupTypeService.Save( groupType, CurrentPersonId );
+
+                    GroupTypeCache.Flush( groupTypeId );
                 }
             } );
 

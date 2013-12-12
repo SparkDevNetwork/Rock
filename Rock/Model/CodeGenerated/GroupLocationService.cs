@@ -98,6 +98,7 @@ namespace Rock.Model
             target.GroupLocationTypeValueId = source.GroupLocationTypeValueId;
             target.IsMailingLocation = source.IsMailingLocation;
             target.IsMappedLocation = source.IsMappedLocation;
+            target.GroupMemberPersonId = source.GroupMemberPersonId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

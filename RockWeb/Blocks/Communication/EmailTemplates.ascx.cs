@@ -8,9 +8,11 @@ using System;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Constants;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -34,7 +36,7 @@ namespace RockWeb.Blocks.Communication
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
             BindFilter();
 
-            if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
+            if ( RockPage.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 gEmailTemplates.DataKeyNames = new string[] { "id" };
                 gEmailTemplates.Actions.ShowAdd = true;
@@ -51,7 +53,7 @@ namespace RockWeb.Blocks.Communication
         {
             nbMessage.Visible = false;
 
-            if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
+            if ( RockPage.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                 {
@@ -251,6 +253,10 @@ namespace RockWeb.Blocks.Communication
         /// <param name="emailTemplateId">The email template id.</param>
         protected void ShowEdit( int emailTemplateId )
         {
+            var globalAttributes = GlobalAttributesCache.Read();
+            string globalFrom = globalAttributes.GetValue( "OrganizationEmail" );
+            tbFrom.Help = string.Format( "If a From value is not entered the 'Organization Email' Global Attribute value of '{0}' will be used when this template is sent.", globalFrom );
+
             pnlList.Visible = false;
             pnlDetails.Visible = true;
 

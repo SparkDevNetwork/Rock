@@ -38,6 +38,8 @@
     <div id="version-info">
         Rock Version:  <asp:Literal ID="lRockVersion" runat="server"></asp:Literal>
         <p>Executing Location: <asp:Literal ID="lExecLocation" runat="server"></asp:Literal></p>
+
+         <asp:Button runat="server" ID="btnRestart" CssClass="btn btn-action restart" Text="Restart Rock" OnClick="btnRestart_Click" ToolTip="Restarts the Application." />
     </div>
 
     <div id="memory-cache" style="display:none">
@@ -47,8 +49,9 @@
         </div>
         
         <a id="show-cache-objects" href="#">Show Cache Objects</a> 
-        <asp:Button runat="server" ID="btnFlushCache" CssClass="btn btn-default" Text="Clear Cache" OnClick="btnClearCache_Click" ToolTip="Flushes Pages, BlockTypes, Blocks and Attributes from the Rock web cache." />
-
+        <asp:Button runat="server" ID="btnFlushCache" CssClass="btn btn-action" Text="Clear Cache" OnClick="btnClearCache_Click" ToolTip="Flushes Pages, BlockTypes, Blocks and Attributes from the Rock web cache." />
+       
+       
         <div id="cache-objects" style="display:none">
             <asp:Literal ID="lCacheObjects" runat="server"></asp:Literal>
         </div>
@@ -58,6 +61,12 @@
     <div id="routes" style="display:none">
         <asp:Literal ID="lRoutes" runat="server"></asp:Literal>
     </div>
+
+    <script>
+        $(".restart").on("click", function () {
+            bootbox.alert("The Rock application will be restarted. You will need to reload this page to continue.")
+        });
+    </script>
 
 </div>
 

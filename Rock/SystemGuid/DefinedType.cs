@@ -115,14 +115,14 @@ namespace Rock.SystemGuid
         public const string PERSON_RECORD_STATUS =  "8522badd-2871-45a5-81dd-c76da07e2e7e";
 
         /// <summary>
-        /// Guid for the types of Person Status Reasons (such as deceased, moved, etc.)
+        /// Guid for the types of Person Record Status Reasons (such as deceased, moved, etc.)
         /// </summary>
         public const string PERSON_RECORD_STATUS_REASON =  "e17d5988-0372-4792-82cf-9e37c79f7319";
 
         /// <summary>
-        /// Guid for the person status (such as member, attendee, participant, etc.)
+        /// Guid for the person'S connection status (such as member, attendee, participant, etc.)
         /// </summary>
-        public const string PERSON_STATUS =  "2e6540ea-63f0-40fe-be50-f2a84735e600";
+        public const string PERSON_CONNECTION_STATUS =  "2e6540ea-63f0-40fe-be50-f2a84735e600";
 
         /// <summary>
         /// Guid for the types of Person Titles (such as Mr., Mrs., Dr., etc.)

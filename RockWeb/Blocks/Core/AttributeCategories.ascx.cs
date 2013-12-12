@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Core
             entityTypeFilter.EntityTypes = entityTypes;
             entityTypePicker.EntityTypes = entityTypes;
 
-            _canConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
+            _canConfigure = RockPage.IsAuthorized( "Administrate", CurrentPerson );
 
             BindFilter();
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;

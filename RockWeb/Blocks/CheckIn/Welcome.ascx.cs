@@ -33,7 +33,7 @@ namespace RockWeb.Blocks.CheckIn
                 return;
             }
 
-            CurrentPage.AddScriptLink( this.Page, "~/scripts/jquery.countdown.min.js" );
+            RockPage.AddScriptLink( "~/scripts/jquery.countdown.min.js" );
 
             RegisterScript();
         }

@@ -100,10 +100,12 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the by geo location.
+        /// Returns a <see cref="Rock.Model.Location"/> by GeoPoint. If a match is not found,
+        /// a new Location will be added based on the Geopoint.
         /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
+        /// <param name="point">A <see cref="System.Data.Entity.Spatial.DbGeography"/> object
+        ///     representing the Geopoint for the location.</param>
+        /// <returns>The first <see cref="Rock.Model.Location"/> that matches the specified GeoPoint.</returns>
         public Location GetByGeoPoint( DbGeography point )
         {
             // get the first address that has a GeoPoint the value
@@ -130,6 +132,13 @@ namespace Rock.Model
             return result;
         }
 
+        /// <summary>
+        /// Returns the first <see cref="Rock.Model.Location"/> with a GeoFence that matches
+        /// the specified GeoFence.
+        /// </summary>
+        /// <param name="fence">A <see cref="System.Data.Entity.Spatial.DbGeography"/> object that 
+        ///  represents the GeoFence of the location to retrieve.</param>
+        /// <returns>The <see cref="Rock.Model.Location"/> for the specified GeoFence. </returns>
         public Location GetByGeoFence( DbGeography fence )
         {
 

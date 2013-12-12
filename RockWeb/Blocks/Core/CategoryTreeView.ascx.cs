@@ -44,7 +44,11 @@ namespace RockWeb.Blocks.Core
         {
             base.OnLoad( e );
 
+
             lTitle.Text = GetAttributeValue("Title");
+
+            RockPage.AddScriptLink("~/Scripts/jquery.tinyscrollbar.js");
+
 
             // Get EntityTypeName
             Guid entityTypeGuid = Guid.Empty;

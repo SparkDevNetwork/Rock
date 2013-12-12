@@ -281,10 +281,10 @@ Rock.controls.imageUploader.initialize({{
             _imgThumbnail.ID = "img";
             Controls.Add( _imgThumbnail );
 
-            _hfBinaryFileId.ID = "hfBinaryFileId";
+            _hfBinaryFileId.ID = this.ID + "_hfBinaryFileId";
             Controls.Add( _hfBinaryFileId );
 
-            _hfBinaryFileTypeGuid.ID = "hfBinaryFileTypeGuid";
+            _hfBinaryFileTypeGuid.ID = this.ID + "_hfBinaryFileTypeGuid";
             Controls.Add( _hfBinaryFileTypeGuid );
 
             _aRemove = new HtmlAnchor();
@@ -293,7 +293,7 @@ Rock.controls.imageUploader.initialize({{
             Controls.Add( _aRemove );
 
             _fileUpload = new FileUpload();
-            _fileUpload.ID = "fu";
+            _fileUpload.ID = this.ID + "_fu";
             Controls.Add( _fileUpload );
         }
 

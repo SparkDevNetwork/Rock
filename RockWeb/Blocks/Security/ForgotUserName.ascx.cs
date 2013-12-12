@@ -13,9 +13,9 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.Security
 {
-    [TextField( "Heading Caption", "", false, "Enter your email address below and we'll send you your account user name", "Captions", 0 )]
-    [TextField( "Invalid Email Caption", "", false, "There are not any accounts for the email address you entered", "Captions", 1 )]
-    [TextField( "Success Caption", "", false, "Your user name has been sent to the email address you entered", "Captions", 2 )]
+    [TextField("Heading Caption", "", false, "<div class='alert alert-info'>Enter your email address below and we''ll send your account information to you right away.</div>", "Captions", 0)]
+    [TextField( "Invalid Email Caption", "", false, "Sorry, we could not find an account for the email address you entered.", "Captions", 1 )]
+    [TextField("Success Caption", "", false, "Your user name has been sent with instructions on how to change your password if needed.", "Captions", 2)]
     [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)" )]
     public partial class ForgotUserName : Rock.Web.UI.RockBlock
     {

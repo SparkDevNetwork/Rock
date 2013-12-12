@@ -67,8 +67,13 @@ namespace Rock.Web
                 {
                     int siteId = 1;
 
+                    // Attempt to find site first by an exact match to domain, then by a contained domain name
                     Rock.Model.SiteDomainService siteDomainService = new Rock.Model.SiteDomainService();
-                    Rock.Model.SiteDomain siteDomain = siteDomainService.GetByDomainContained( requestContext.HttpContext.Request.Url.Host );
+                    Rock.Model.SiteDomain siteDomain = siteDomainService.GetByDomain( requestContext.HttpContext.Request.Url.Host );
+                    if ( siteDomain == null )
+                    {
+                        siteDomain = siteDomainService.GetByDomainContained( requestContext.HttpContext.Request.Url.Host );
+                    }
                     if ( siteDomain != null )
                     {
                         siteId = siteDomain.SiteId;
@@ -131,8 +136,8 @@ namespace Rock.Web
             {
                 // Return the page for the selected theme and layout
                 Rock.Web.UI.RockPage cmsPage = (Rock.Web.UI.RockPage)BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
-                cmsPage.CurrentPage = page;
-                cmsPage.CurrentPageReference = new PageReference( page.Id, routeId, parms, requestContext.HttpContext.Request.QueryString );
+                cmsPage.SetPage( page );
+                cmsPage.PageReference = new PageReference( page.Id, routeId, parms, requestContext.HttpContext.Request.QueryString );
                 return cmsPage;
             }
             catch ( System.Web.HttpException )
@@ -153,8 +158,8 @@ namespace Rock.Web
 
                 // Return the default layout and/or theme
                 Rock.Web.UI.RockPage cmsPage = (Rock.Web.UI.RockPage)BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
-                cmsPage.CurrentPage = page;
-                cmsPage.CurrentPageReference = new PageReference( page.Id, routeId, parms, requestContext.HttpContext.Request.QueryString );
+                cmsPage.SetPage( page );
+                cmsPage.PageReference = new PageReference( page.Id, routeId, parms, requestContext.HttpContext.Request.QueryString );
                 return cmsPage;
             }
         }

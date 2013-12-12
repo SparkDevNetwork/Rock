@@ -381,6 +381,13 @@ namespace Rock.Security
         }
 
 
+        /// <summary>
+        /// Updates authorization rules for the entity so that the current person is allowed to perform the specified action.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="personId">The person identifier.</param>
         public static void AllowPerson( ISecured entity, string action, Person person, int? personId )
         {
             if ( person != null )

@@ -10,10 +10,9 @@ using System.Linq;
 using System.ServiceModel.Web;
 using System.Web;
 using System.Web.SessionState;
-
 using Rock;
+using Rock.Data;
 using Rock.Model;
-using Rock.Storage;
 
 namespace RockWeb
 {
@@ -36,14 +35,12 @@ namespace RockWeb
         /// </summary>
         /// <param name="context">An <see cref="T:System.Web.HttpContext" /> object that provides references to the intrinsic server objects (for example, Request, Response, Session, and Server) used to service HTTP requests.</param>
         /// <exception cref="WebFaultException">Must be logged in</exception>
-        public void ProcessRequest( HttpContext context )
+        public virtual void ProcessRequest( HttpContext context )
         {
-            // *********************************************
-            // TODO: verify user is authorized to save file!
-            // *********************************************
-
             if ( !context.User.Identity.IsAuthenticated )
+            {
                 throw new WebFaultException<string>( "Must be logged in", System.Net.HttpStatusCode.Forbidden );
+            }
 
             try
             {
@@ -57,49 +54,35 @@ namespace RockWeb
                     context.Response.Write( "0" );
                     return;
                 }
-
-                BinaryFileService fileService = new BinaryFileService();
-                var id = context.Request.QueryString["fileId"];
-                BinaryFile file = null;
-                BinaryFileType fileType = null;
-
-                // Attempt to find file by an Id or Guid passed in
-                if ( !string.IsNullOrEmpty( id ) )
-                {
-                    int fileId;
-                    file = int.TryParse( id, out fileId ) ? fileService.Get( fileId ) : fileService.GetByEncryptedKey( id );
-                }
-
-                // ...otherwise create a new BinaryFile
-                if ( file == null )
-                {
-                    file = new BinaryFile();
-                }
-
+                
                 // Check to see if BinaryFileType info was sent
-                BinaryFileTypeService fileTypeService = new BinaryFileTypeService();
-                var guid = context.Request.QueryString["fileTypeGuid"];
+                Guid fileTypeGuid = context.Request.QueryString["fileTypeGuid"].AsGuid();
 
-                if ( !string.IsNullOrEmpty( guid ) )
+                RockContext rockContext = new RockContext();
+                BinaryFileType binaryFileType = new BinaryFileTypeService( rockContext ).Get( fileTypeGuid );
+
+                // always create a new BinaryFile record of IsTemporary when a file is uploaded
+                BinaryFile binaryFile = new BinaryFile();
+                binaryFile.IsTemporary = true;
+                binaryFile.BinaryFileTypeId = binaryFileType.Id;
+                binaryFile.MimeType = uploadedFile.ContentType;
+                binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
+                binaryFile.Data = new BinaryFileData();
+
+                //NOTE: GetFileBytes can get overridden by a child class (ImageUploader.ashx.cs for example)
+                binaryFile.Data.Content = GetFileBytes( context, uploadedFile );
+
+                var binaryFileService = new BinaryFileService( rockContext );
+                binaryFileService.Add( binaryFile, null );
+                binaryFileService.Save( binaryFile, null );
+
+                var response = new
                 {
-                    Guid fileTypeGuid;
-                    fileType = Guid.TryParse( guid, out fileTypeGuid ) ? fileTypeService.Get( fileTypeGuid ) : fileTypeService.GetByEncryptedKey( guid );
-                }
-                else if ( file.BinaryFileType != null )
-                {
-                    fileType = file.BinaryFileType;
-                }
+                    Id = binaryFile.Id,
+                    FileName = binaryFile.FileName
+                };
 
-                // If we're dealing with a new BinaryFile and a BinaryFileType Guid was passed in,
-                // set its Id before the BinaryFile gets saved to the DB.
-                if ( file.BinaryFileType == null && fileType != null )
-                {
-                    file.BinaryFileTypeId = fileType.Id;
-                }
-
-                SaveData( context, uploadedFile, file, fileType );
-                context.Response.Write( new { Id = file.Id, FileName = file.FileName }.ToJson() );
-
+                context.Response.Write( response.ToJson() );
             }
             catch ( Exception ex )
             {
@@ -109,24 +92,16 @@ namespace RockWeb
         }
 
         /// <summary>
-        /// Saves the data.
+        /// Gets the file bytes.
         /// </summary>
-        /// <param name="context">The current HTTP context.</param>
-        /// <param name="uploadedFile">The file that was uploaded</param>
-        /// <param name="file">The file.</param>
-        /// <param name="fileType">The file type.</param>
-        public virtual void SaveData( HttpContext context, HttpPostedFile uploadedFile, BinaryFile file, BinaryFileType fileType )
+        /// <param name="context">The context.</param>
+        /// <param name="uploadedFile">The uploaded file.</param>
+        /// <returns></returns>
+        public virtual byte[] GetFileBytes( HttpContext context, HttpPostedFile uploadedFile )
         {
-            var provider = fileType != null
-                ? ProviderContainer.GetComponent( fileType.StorageEntityType.Name )
-                : ProviderContainer.DefaultComponent;
-            file.MimeType = uploadedFile.ContentType;
-            file.FileName = Path.GetFileName( uploadedFile.FileName );
-            file.StorageEntityTypeId = fileType.StorageEntityTypeId;
             var bytes = new byte[uploadedFile.ContentLength];
             uploadedFile.InputStream.Read( bytes, 0, uploadedFile.ContentLength );
-            file.Data = new BinaryFileData { Content = bytes };
-            provider.SaveFile( file, null );
+            return bytes;
         }
     }
 }

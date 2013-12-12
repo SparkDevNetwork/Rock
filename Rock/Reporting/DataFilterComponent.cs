@@ -24,7 +24,7 @@ namespace Rock.Reporting
         #region Properties
 
         /// <summary>
-        /// Gets the entity type that filter applies to.  Filter should empty string
+        /// Gets the entity type that filter applies to.  Filter should be an empty string
         /// if it applies to all entities
         /// </summary>
         /// <value>

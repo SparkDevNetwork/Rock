@@ -27,6 +27,7 @@
 
 .picker {
     position: relative;
+    width: 220px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
     .clearfix();
 
     .picker-label {
@@ -167,6 +168,10 @@
 
         .first-word {
             font-weight: @banner-firstword-weight;
+        }
+
+        i {
+            margin-right: 12px;
         }
     }
 
@@ -763,11 +768,31 @@ div.tagsinput div
 // -------------------------
 
 .label-campus {
-    background-color: @label-campus;
+    background-color: @label-campus-bg;
 }
 
 .label-type {
-    background-color: @label-type;
+    background-color: @label-type-bg;
+}
+
+.label-communicationstatus-approved {
+    background-color: @label-success-bg;
+}
+
+.label-communicationstatus-denied {
+    background-color: @label-danger-bg;
+}
+
+.label-communicationstatus-draft {
+    background-color: @label-default-bg;
+}
+
+.label-communicationstatus-submitted {
+    background-color: @label-warning-bg;
+}
+
+.label-communicationstatus-transient {
+    background-color: @label-type-bg;
 }
 
 
@@ -1129,6 +1154,9 @@ div.tagsinput div
     background-color: @accent-bold-color;
     border-radius: @border-radius-base;
     z-index: (@zindex-modal-background + 100);
+    //-moz-box-shadow:    @modal-dropshadow-color 9px 9px 40px 0px;
+    //-webkit-box-shadow: @modal-dropshadow-color 9px 9px 40px 0px;
+    //box-shadow: @modal-dropshadow-color 9px 9px 40px 0px;
 }
 
 // 19. Group List

@@ -8,23 +8,12 @@
 <%@ Import Namespace="Ionic.Zip"  %>
 <%@ Import Namespace="System.Web.Security" %>
 
+<%@ Import Namespace="Rock.Install.Utilities" %>
 
 
 <script language="CS" runat="server">
 	
-	
-	//
-	// some constants
-	//
-	const string internetCheckSite = "www.google.com";
-	const string dotNetVersionRequired = "4.5";
-	const double iisVersionRequired = 7.0;
-    const string rockInstallFile = "http://rockchms.blob.core.windows.net/install/rock-chms-latest.zip";
 
-    const string rockLogoIco = "http://rockchms.blob.core.windows.net/install/rock-chms.ico";
-    const string rockStyles = "http://rockchms.blob.core.windows.net/install/install.css";
-    const string rockWelcomeImg = "http://rockchms.blob.core.windows.net/install/welcome.jpg";
-	
 	//
 	// page events
 	//
@@ -38,13 +27,14 @@
 	{
 		// toggle the SSL warning
         lSslWarning.Visible = !Request.IsSecureConnection;
+        
 	}
 	
 	void WelcomeNext_Click(Object sender, EventArgs e)
     {
     	pWelcome.Visible = false;
     	pDatabaseConfig.Visible = true;
-        
+
         // show db settings if they are in session
         if (Session["dbServer"] != null)
         {
@@ -54,6 +44,7 @@
             txtPassword.Text = Session["dbPassword"].ToString();
         }
         
+        
     }
 	
 	void DbConfigNext_Click(Object sender, EventArgs e)
@@ -62,82 +53,81 @@
         // check settings
     	string databaseMessages = string.Empty; 
         
-        // write database settings to ViewState
-        Session["dbServer"] = txtServerName.Text;
-        Session["dbDatabasename"] = txtDatabaseName.Text;
-        Session["dbUsername"] = txtUsername.Text;
-        Session["dbPassword"] = txtPassword.Text;
-    	
-        bool canConnect = CheckSqlServerConnection(txtServerName.Text, txtDatabaseName.Text, txtUsername.Text, txtPassword.Text, out databaseMessages);
+        // write database settings to session
+        if (txtServerName.Text != string.Empty) { 
+            Session["dbServer"] = txtServerName.Text;
+            Session["dbDatabasename"] = txtDatabaseName.Text;
+            Session["dbUsername"] = txtUsername.Text;
+            Session["dbPassword"] = txtPassword.Text;
+        }
+        else
+        {
+            txtServerName.Text = Session["dbServer"].ToString();
+            txtDatabaseName.Text = Session["dbDatabasename"].ToString();
+            txtUsername.Text = Session["dbUsername"].ToString();
+            txtPassword.Text = Session["dbPassword"].ToString();
+        }
+
+        bool canConnect = EnvironmentChecks.CheckSqlLogin(txtServerName.Text, txtUsername.Text, txtPassword.Text);
 
     	if (!canConnect) {
-    		lDatabaseMessages.Text = databaseMessages;
+    		lDatabaseMessages.Text = String.Format("<div class='alert alert-warning'>Could not connect to '{0}' as '{1}'.</div>", txtServerName.Text, txtUsername.Text);
             
             pWelcome.Visible = false;
             pDatabaseConfig.Visible = true;
     		
             return;
     	} else {
-    		
 
+            lDatabaseMessages.Text = string.Empty;
+            
 		    // run environment checks
 		    string outputMessages = string.Empty;
 		    string checkResults = string.Empty;
 		    bool environmentClean = true;
 		    
 		    // check .Net version
-		    if (CheckDotNetVersion(out checkResults)) {
-                outputMessages += "<li><i class='fa fa-check-circle pass'></i>" + checkResults + "</li>";
+            if (EnvironmentChecks.CheckDotNetVersion(out checkResults))
+            {
+                outputMessages += "<li><i class='fa fa-check-circle pass'></i> " + checkResults + "</li>";
     		} else {
-                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/dotnet-version.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockchms.com/installer/help/dotnet-version.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
     			environmentClean = false;
     		}
 		    
 		    // check web server permissions
-		    if (CheckFileSystemPermissions(out checkResults)) {
-                outputMessages += "<li><i class='fa fa-check-circle pass'></i>" + checkResults + "</li>";
+            if (EnvironmentChecks.CheckFileSystemPermissions(Server.MapPath("."), out checkResults))
+            {
+                outputMessages += "<li><i class='fa fa-check-circle pass'></i> " + checkResults + "</li>";
     		} else {
-                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/filesystem-permissions.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockchms.com/installer/help/filesystem-permissions.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
     			environmentClean = false;
     		}
     		
     		// check IIS version
-    		if (CheckIisVersion(out checkResults)) {
-                outputMessages += "<li><i class='fa fa-check-circle pass'></i>" + checkResults + "</li>";
+            if (EnvironmentChecks.CheckIisVersion(out checkResults))
+            {
+                outputMessages += "<li><i class='fa fa-check-circle pass'></i> " + checkResults + "</li>";
     		} else {
-                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/iis-version.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockchms.com/installer/help/iis-version.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
     			environmentClean = false;
     		}
 		    
-		    // check sql server version
-    		if (CheckSqlServerVersion(txtServerName.Text, txtDatabaseName.Text, txtUsername.Text, txtPassword.Text, out checkResults)) {
-                outputMessages += "<li><i class='fa fa-check-circle pass'></i>" + checkResults + "</li>";
+		    // check sql server environment
+            if (EnvironmentChecks.CheckSqlServer( txtServerName.Text, txtUsername.Text, txtPassword.Text, txtDatabaseName.Text, out checkResults))
+            {
+                outputMessages += "<li><i class='fa fa-check-circle pass'></i> " + checkResults + "</li>";
     		} else {
-                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i>" + checkResults + "</li> <a href='http://www.rockchms.com/installer/help/sqlserver-version.html' class='btn btn-info btn-xs'>Let's Fix It Together</a>";
-    			environmentClean = false;
-    		}
-    		
-    		// check sql server permissions
-    		if (CheckSqlServerPermissions(txtServerName.Text, txtDatabaseName.Text, txtUsername.Text, txtPassword.Text, out checkResults)) {
-                outputMessages += "<li><i class='fa fa-check-circle pass'></i>" + checkResults + "</li>";
-    		} else {
-                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/sqlserver-permissions.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
-    			environmentClean = false;
-    		}
-    		
-    		// check sql server permissions
-    		if (CheckSqlServerEmpty(txtServerName.Text, txtDatabaseName.Text, txtUsername.Text, txtPassword.Text, out checkResults)) {
-                outputMessages += "<li><i class='fa fa-check-circle pass'></i>" + checkResults + "</li>";
-    		} else {
-                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/sqlserver-empty.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + "</li>";
     			environmentClean = false;
     		}
     		
     		// check that rock is not installed already
-    		if (CheckRockNotInstalled( out checkResults)) {
+            if (EnvironmentChecks.CheckRockNotInstalled(Server.MapPath("."), out checkResults))
+            {
     			
     		} else {
-                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/rock-installed.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockchms.com/installer/help/rock-installed.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
     			environmentClean = false;
     		}
 
@@ -163,10 +153,9 @@
 			    configFile.Close(); 
 			    configFile.Dispose();
 
-		    	
 		    } else {
 		    	lTestEnvTitle.Text = "We Have Some Work To Do";
-		    	lTestEnvResults.Text = "The server environment doesn't currently meet all of the requirements.  That's OK let's we'll try to help you solve the issues.";
+		    	lTestEnvResults.Text = "The server environment doesn't currently meet all of the requirements.  That's OK, we'll try to help you solve the issues.";
 		    	lTestEnvDetails.Text = "<ul>" + outputMessages + "</ul>";
 		    	btnEnvNext.Visible = false;
 		    	btnTryAgain.Visible = true;
@@ -176,7 +165,6 @@
 		    pTestEnv.Visible = true;
 		    pDatabaseConfig.Visible = false;
 		    pWelcome.Visible = false;
-		    
 		    
 		}
 	   
@@ -190,7 +178,7 @@
         // download install file
     	bool downloadSuccessful = false;
     	string checkMessages = string.Empty;
-    	downloadSuccessful = DownloadFile(rockInstallFile, Server.MapPath(".") + @"\RockInstall.zip", out checkMessages);
+    	downloadSuccessful = DownloadFile(InstallSetting.RockInstallFile, Server.MapPath(".") + @"\RockInstall.zip", out checkMessages);
     	
     	// change active panels
     	pTestEnv.Visible = false;
@@ -220,14 +208,14 @@
 			
 			Configuration rockWebConfig  = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration("~");
 			rockWebConfig.AppSettings.Settings["PasswordKey"].Value = hexBytes;
-            rockWebConfig.AppSettings.Settings["DataEncryptionKey"].Value = GenerateRandomDataEncryptionKey();
+            rockWebConfig.AppSettings.Settings["DataEncryptionKey"].Value = InstallUtilities.GenerateRandomDataEncryptionKey();
             
             //rockWebConfig.AppSettings.Settings["BaseUrl"].Value = Request.Url.Scheme + @"://" + Request.Url.Host + Request.ApplicationPath;  // not needed removed from web.config per https://github.com/SparkDevNetwork/Rock-ChMS/commit/17b0d30082f0b98bec8bc31d2034fb774690b2e1
 			rockWebConfig.Save();
 			
 			
 			lDownloadTitle.Text = "Download Successful";
-    		lDownloadDetails.Text = "<p>The Rock ChMS has been downloaded and installed on your web server.  The next step is to create the database.</p><div class='alert alert-info'><strong>Letting You Know:</strong> We'll be loading a new page as the database is created. This could take a couple of minutes also. Good things come to those who wait.</div>";
+    		lDownloadDetails.Text = "<p>The Rock ChMS has been downloaded and installed on your web server.  The next step is to setup and configure the database.</p><div class='alert alert-info'><strong>Letting You Know:</strong> We'll be loading a new page as the database is created. This could take a couple of minutes also. Good things come to those who wait.</div>";
     	} else {
     		lDownloadTitle.Text = "Error on Download";
     		lDownloadDetails.Text = checkMessages;
@@ -241,6 +229,15 @@
         pWelcome.Visible = false;
         pTestEnv.Visible = false;
 		pDatabaseConfig.Visible = true;
+
+        // show db settings if they are in session
+        if (Session["dbServer"] != null)
+        {
+            txtServerName.Text = Session["dbServer"].ToString();
+            txtDatabaseName.Text = Session["dbDatabasename"].ToString();
+            txtUsername.Text = Session["dbUsername"].ToString();
+            txtPassword.Text = Session["dbPassword"].ToString();
+        }
     }
     
     
@@ -266,12 +263,12 @@
 		<link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css'>
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
         <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
-        <link rel="stylesheet" href="<%=rockStyles %>">
+        <link rel="stylesheet" href="<%=InstallSetting.RockStyles %>">
 		
         <script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
         		
-		<link href="<%=rockLogoIco %>" rel="shortcut icon">
-		<link href="<%=rockLogoIco %>" type="image/ico" rel="icon">
+		<link href="<%=InstallSetting.RockLogoIco %>" rel="shortcut icon">
+		<link href="<%=InstallSetting.RockLogoIco %>" type="image/ico" rel="icon">
 		
 	</head>
 	<body>
@@ -279,15 +276,13 @@
 		<asp:ScriptManager ID="ScriptManager1" runat="server" EnablePartialRendering="true" AsyncPostBackTimeout="900" />
 		<asp:UpdateProgress id="updateProgress" runat="server">
 		     <ProgressTemplate>
-		            <div style="color: #fff; position: fixed; text-align: center; height: 100%; width: 100%; top: 0; right: 0; left: 0; z-index: 9999999; background-color: #343434; opacity: 0.97;">
-		            	<asp:Image ID="imgUpdateProgress" runat="server" ImageUrl="./waiting.gif" AlternateText="Creating ..." ToolTip="Creating ..." style="padding: 10px;position:fixed;top:45%;left:50%;" />
+		         
+                <div class="updateprogress-status">
+                    <i class="fa fa-refresh fa-spin fa-4x" ></i><br />
+                    This could take a few minutes...
+                </div>      
 		            
-		            	<div class="alert alert-info">
-		            		<h4>Heads Up</h4>
-		            		Depending on your server this could take a couple of minutes. Don't worry, it'll be done soon!
-						</div>
-		            
-		            </div>
+		        <div class="updateprogress-bg"></div>
 		     </ProgressTemplate>
 		</asp:UpdateProgress>
 		<asp:UpdatePanel ID="GettingStartedUpdatePanel" runat="server" UpdateMode="Conditional">
@@ -299,7 +294,7 @@
 						<asp:Panel id="pWelcome" Visible="true" runat="server">
 							<h1>Rock Installer</h1>
 							
-                            <img src="<%=rockWelcomeImg %>"  />
+                            <img src="<%=InstallSetting.RockWelcomeImg %>"  />
 							<asp:Label id="lTest" runat="server"></asp:Label>
 							
                             <asp:Literal ID="lSslWarning" runat="server">
@@ -468,36 +463,6 @@
         // add error message
         lErrorDetails.Text = errorMessage;
 	}
-
-    private string GenerateRandomDataEncryptionKey()
-    {
-        var rng = System.Security.Cryptography.RNGCryptoServiceProvider.Create();
-        byte[] randomBytes = new byte[128];
-        rng.GetNonZeroBytes(randomBytes);
-        string dataEncryptionKey = Convert.ToBase64String(randomBytes);
-
-        return dataEncryptionKey;
-    }
-	
-	private bool CheckRockNotInstalled(out string errorDetails) {
-		
-		bool checksPassed = false;
-		errorDetails = string.Empty;
-
-		// check for rock database connection string
-		string connectionStringFile = Server.MapPath(".") + @"\web.ConnectionStrings.config";
-		
-		
-		if (File.Exists(connectionStringFile)) {
-			errorDetails = "Rock is already installed on this server.";
-			checksPassed = false;
-		} else {
-			errorDetails = "Rock is not yet installed on this machine.";
-			checksPassed = true;
-		}
-
-		return checksPassed;
-	}
 	
 	
 	//
@@ -521,239 +486,10 @@
 		
 		return downloadSuccess;
 	}
-
-
-	//
-	// CheckEnvironment checks to ensure we are connected to the internet and have write access to the web 
-	// server file system.
-	// 
-	private bool CheckFileSystemPermissions(out string errorDetails) {
-		
-		bool checksPassed = false;
-		errorDetails = string.Empty;
-
-		// check for write access to the file system
-        
-        // first get user that the server is running as
-        var user = System.Security.Principal.WindowsIdentity.GetCurrent().User;
-        string userName = user.Translate(typeof (System.Security.Principal.NTAccount)).ToString();
-
-        bool canWrite = false;
-        
-        // check rights on directory
-        string filename = Server.MapPath(".") + @"\write-permission.test";
-
-        try
-        {
-            File.Create(filename).Dispose();
-        }
-        catch (Exception ex)
-        {
-
-        }
-
-        if (File.Exists(filename))
-        {
-            canWrite = true;
-            File.Delete(filename);
-        }
-        
-        if (!canWrite) {
-        	errorDetails += "The username " + userName + " does not have write access to the server's file system.";
-        } else {
-        	errorDetails += "Your server's file permissions look correct.";
-        	checksPassed = true;
-        }
-
-		return checksPassed;
-	}
 	
-	private bool CheckDotNetVersion(out string errorDetails) {
-		
-		bool checksFailed = false;
-		errorDetails = string.Empty;
-
-		// check .net
-		// ok this is not easy as .net 4.5 actually reports as 4.0.30319.269 so instead we need to search for the existence of an assembly that
-		// only exists in 4.5 (could also look for Environment.Version.Major == 4 && Environment.Version.Revision > 17000 but this is not future proof)
-		// sigh... Microsoft... :)
-		if (!(Type.GetType("System.Reflection.ReflectionContext", false) != null)) {
-			errorDetails = "The server does not have the correct .Net runtime.  You have .Net version " + System.Environment.Version.Major.ToString() + "." + System.Environment.Version.ToString() + " the Rock ChMS version requires " + dotNetVersionRequired + ".";
-		} else {
-			errorDetails += "You have the correct version of .Net (4.5+).";
-			checksFailed = true;
-		}
-
-		return checksFailed;
-	}
 	
-	private bool CheckIisVersion(out string errorDetails) {
-		
-		bool checksPassed = false;
-		errorDetails = string.Empty;
-
-		RegistryKey parameters = Registry.LocalMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Services\\W3SVC\\Parameters");
-		string iisVersion = parameters.GetValue("MajorVersion") + "." + parameters.GetValue("MinorVersion");
-		
-		if (double.Parse(iisVersion) >= iisVersionRequired) {
-			errorDetails = "Your IIS version is correct.  You have version " + iisVersion + ".";
-			checksPassed = true;
-		} else {
-			errorDetails = "The server's IIS version is not correct.  You have version " + iisVersion + " Rock requires version " + iisVersionRequired.ToString() + " or greater.";
-		}
-
-		return checksPassed;
-	}
 	
-	private bool CheckSqlServerConnection(string servername, string database, string username, string password, out string checkMessages) {
-			
-			checkMessages = string.Empty;
-			bool canConnect = false;
-			
-			// setup connection
-			string connectionString = String.Format("user id={0};password={1};server={2};Initial Catalog={3};connection timeout=10", username, password, servername, database);
-			SqlConnection testConnection = new SqlConnection(connectionString);
-			
-			// try connection
-			try
-			{
-			    testConnection.Open();
-			    canConnect = true;
-			}
-			catch(Exception ex)
-			{
-			    checkMessages = "<div class='alert alert-danger'><p><strong>Yikes!</strong><p> Could not connect to the database with the information provided. Please check the information provided. <p><small>" + ex.Message + "</small></p></div>";
-			    canConnect = false;
-			}
-			finally {
-				testConnection = null;
-			}
-			
-			return canConnect;
-	}
 	
-	private bool CheckSqlServerVersion(string servername, string database, string username, string password, out string checkMessages) {
-			
-			checkMessages = string.Empty;
-			string version = "0";
-			string versionInfo = string.Empty;
-			bool versionPassed = false;
-			
-			// setup connection
-			string connectionString = String.Format("user id={0};password={1};server={2};Initial Catalog={3};connection timeout=10", username, password, servername, database);
-			SqlConnection testConnection = new SqlConnection(connectionString);
-			
-			// try connection
-			try
-			{
-			    testConnection.Open();
-			    SqlCommand versionCommand= new SqlCommand("SELECT SERVERPROPERTY('productversion'), @@Version", testConnection);
-			    
-			    SqlDataReader versionReader = versionCommand.ExecuteReader();
-
-			    while(versionReader.Read())
-			    {
-			        version = versionReader[0].ToString();
-			        versionInfo = versionReader[1].ToString();
-			    }
-			    
-			    string[] versionParts = version.Split('.');
-			    
-			    int majorVersion = -1;
-			    Int32.TryParse(versionParts[0], out majorVersion);
-			    	
-			    if (majorVersion >= 10) {
-			    	versionPassed = true;
-			    }
-			    
-			    checkMessages = "You are running SQL Server version: " + versionInfo.Split('-')[0].ToString().Replace("(RTM)", "").Trim();
-			}
-			catch(Exception ex)
-			{
-			    checkMessages = "<div class='alert alert-danger'><p><strong>Yikes!</strong></p> Could not connect to the database with the information provided. Please check the information provided.</div>";
-			    versionPassed = false;
-			}
-			finally {
-				testConnection = null;
-			}
-			
-			return versionPassed;
-	}
-	
-	private bool CheckSqlServerPermissions(string servername, string database, string username, string password, out string checkMessages) {
-			
-			checkMessages = string.Empty;
-			bool permissionsCorrect = false;
-			
-			// setup connection
-			string connectionString = String.Format("user id={0};password={1};server={2};Initial Catalog={3};connection timeout=10", username, password, servername, database);
-			SqlConnection testConnection = new SqlConnection(connectionString);
-			
-			// try connection
-			try
-			{
-			    testConnection.Open();
-			    
-			    // test permissions by creating and dropping a table
-			    SqlCommand testCommand= new SqlCommand("CREATE TABLE InstallText (Name TEXT); ", testConnection);
-			    testCommand.ExecuteNonQuery();
-			    
-			    testCommand= new SqlCommand("DROP TABLE InstallText; ", testConnection);
-			    testCommand.ExecuteNonQuery();
-			    
-			    permissionsCorrect = true;
-			    checkMessages = "Database security looks good.  We're able to create tables.";
-			}
-			catch(Exception ex)
-			{
-			    checkMessages = "Check the permissions of the database user account. Be sure it has permissions to create and drop tables.";
-			    permissionsCorrect = false;
-			}
-			finally {
-				testConnection = null;
-			}
-			
-			return permissionsCorrect;
-	}
-	
-	private bool CheckSqlServerEmpty(string servername, string database, string username, string password, out string checkMessages) {
-			
-			checkMessages = string.Empty;
-			bool dbEmpty = false;
-			
-			// setup connection
-			string connectionString = String.Format("user id={0};password={1};server={2};Initial Catalog={3};connection timeout=10", username, password, servername, database);
-			SqlConnection testConnection = new SqlConnection(connectionString);
-			
-			// try connection
-			try
-			{
-			    testConnection.Open();
-			    SqlCommand emptyCommand= new SqlCommand("SELECT count([name]) FROM sysobjects WHERE [type] in ('P', 'U', 'V') AND category = 0", testConnection);
-			    
-			    // get count of db objects
-			    Int32 objectCount = (Int32)emptyCommand.ExecuteScalar();
-			    
-			    if (objectCount > 0 ) {
-			    	checkMessages = "It appears that the database you provided is not empty.  The RockChMS must be installed into a blank database.";
-			    } else {
-			    	checkMessages = "Your database is empty.  Just the way we like it.";
-			    	dbEmpty = true;
-			    	
-			    }
-			    
-			}
-			catch(Exception ex)
-			{
-			    checkMessages = "An error occurred when trying to check if the database is empty." + ex.Message;
-			    dbEmpty = false;
-			}
-			finally {
-				testConnection = null;
-			}
-			
-			return dbEmpty;
-	}
 
 
 </script>
