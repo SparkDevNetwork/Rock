@@ -46,6 +46,8 @@
                 var scrollbCategory = $('.treeview-scroll');
                 scrollbCategory.tinyscrollbar({ axis: 'x', sizethumb: '60', size: '200' });
 
+                // update viewport height
+                resizeScrollbar(scrollbCategory);
 
                 $(function () {
                     var $selectedId = $('#hfSelectedCategoryId'),
@@ -82,11 +84,11 @@
                             }
                             
                         })
-                        .on('rockTree:expand rockTree:collapse', function () {
-                            scrollbCategory.tinyscrollbar_update();
-
+                        .on('rockTree:rendered', function () {
+                            
                             // update viewport height
-                            $(this).closest.height($('#treeview-content').height());
+                            resizeScrollbar(scrollbCategory);
+
                         })
                         .rockTree({
                             restUrl: '<%= ResolveUrl( "~/api/categories/getchildren/" ) %>',
@@ -99,6 +101,14 @@
                             expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null
                         });
                 });
+
+                function resizeScrollbar(scrollControl) {
+                    var overviewHeight = $(scrollControl).find('.overview').height();
+
+                    $(scrollControl).find('.viewport').height(overviewHeight);
+
+                    scrollbCategory.tinyscrollbar_update('relative');
+                }
             </script>
         </div>
     </ContentTemplate>
