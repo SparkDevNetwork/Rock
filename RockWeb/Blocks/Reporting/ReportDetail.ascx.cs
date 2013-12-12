@@ -746,7 +746,17 @@ namespace RockWeb.Blocks.Reporting
 
                             if ( reportField.ShowInGrid )
                             {
-                                var boundField = new BoundField();
+                                BoundField boundField;
+
+                                if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.BOOLEAN.AsGuid() ) )
+                                {
+                                    boundField = new BoolField();
+                                }
+                                else
+                                {
+                                    boundField = new BoundField();
+                                }
+
                                 boundField.DataField = string.Format( "Attribute_{0}", attribute.Id );
                                 boundField.HeaderText = attribute.Name;
                                 boundField.SortExpression = null;
@@ -757,6 +767,8 @@ namespace RockWeb.Blocks.Reporting
                                     boundField.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
                                     boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
                                 }
+
+                                
 
                                 gReport.Columns.Add( boundField );
                             }
@@ -780,7 +792,7 @@ namespace RockWeb.Blocks.Reporting
                     }
                 }
 
-                gReport.DataSource = report.GetDataTable( new RockContext(), entityType, selectedEntityFields, selectedAttributes, selectedComponents, out errors );
+                gReport.DataSource = report.GetDataSource( new RockContext(), entityType, selectedEntityFields, selectedAttributes, selectedComponents, gReport.SortProperty, out errors );
 
                 if ( errors.Any() )
                 {
