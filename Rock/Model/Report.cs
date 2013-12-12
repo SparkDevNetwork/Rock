@@ -9,6 +9,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Linq.Expressions;
@@ -27,7 +28,6 @@ namespace Rock.Model
     [DataContract]
     public partial class Report : Model<Report>, ICategorized
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -132,6 +132,7 @@ namespace Rock.Model
             {
                 return _reportFields ?? ( _reportFields = new Collection<ReportField>() );
             }
+
             set
             {
                 _reportFields = value;
@@ -187,6 +188,13 @@ namespace Rock.Model
                             dynamicFields.Add( string.Format( "Data_{0}", selectComponent.ColumnPropertyName ), selectComponent.ColumnFieldType );
                         }
                     }
+                    
+                    if (dynamicFields.Count == 0)
+                    {
+                        errorMessages.Add( "At least one field must be defined" );
+                        return null;
+                    }
+
                     Type dynamicType = LinqRuntimeTypeBuilder.GetDynamicType( dynamicFields );
                     ConstructorInfo methodFromHandle = dynamicType.GetConstructor( Type.EmptyTypes );
 
@@ -212,12 +220,11 @@ namespace Rock.Model
                     MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ) } );
                     if ( getMethod != null )
                     {
-
                         var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, sortProperty } );
                         var qry = getResult as IQueryable<IEntity>;
 
                         var selectExpression = Expression.Call( typeof( Queryable ), "Select", new Type[] { qry.ElementType, dynamicType }, Expression.Constant( qry ), selector );
-                        var query = qry.Provider.CreateQuery( selectExpression );
+                        var query = qry.Provider.CreateQuery( selectExpression ).AsNoTracking();
 
                         // enumerate thru the query results and put into a list
                         var reportResult = new List<object>();
@@ -235,6 +242,14 @@ namespace Rock.Model
             return null;
         }
 
+        /// <summary>
+        /// Gets the attribute value expression.
+        /// </summary>
+        /// <param name="attributeValues">The attribute values.</param>
+        /// <param name="attributeValueParameter">The attribute value parameter.</param>
+        /// <param name="parentIdProperty">The parent identifier property.</param>
+        /// <param name="attributeId">The attribute identifier.</param>
+        /// <returns></returns>
         private Expression GetAttributeValueExpression( IQueryable<AttributeValue> attributeValues, ParameterExpression attributeValueParameter, Expression parentIdProperty, int attributeId )
         {
             MemberExpression attributeIdProperty = Expression.Property( attributeValueParameter, "AttributeId" );
@@ -261,15 +276,6 @@ namespace Rock.Model
             return firstOrDefault;
         }
 
-        private void RenameColumn( DataTable dt, string colName, string newName )
-        {
-            var col = dt.Columns[colName];
-            if ( col != null )
-            {
-                col.ColumnName = newName;
-            }
-        }
-
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
@@ -282,7 +288,6 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -303,5 +308,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }

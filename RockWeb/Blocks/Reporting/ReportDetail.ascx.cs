@@ -5,13 +5,9 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.Data.Entity.SqlServer;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 using System.Runtime.Serialization;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
@@ -166,10 +162,9 @@ namespace RockWeb.Blocks.Reporting
                 ReportFieldType reportFieldType = fieldSelectionValueParts[0].ConvertToEnum<ReportFieldType>();
                 string fieldSelection = fieldSelectionValueParts[1];
                 ReportFieldsDictionary.Add( new ReportFieldInfo { Guid = reportFieldGuid, ReportFieldType = reportFieldType, Selection = fieldSelection } );
-                AddFieldPanelWidget( reportFieldGuid, reportFieldType, fieldSelection, true );
+                AddFieldPanelWidget( reportFieldGuid, reportFieldType, fieldSelection, true, true, new ReportField { ShowInGrid = true } );
             }
         }
-
 
         /// <summary>
         /// Handles the DeleteClick event of the FieldsPanelWidget control.
@@ -193,7 +188,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        void gReport_RowDataBound( object sender, GridViewRowEventArgs e )
+        protected void gReport_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
@@ -205,18 +200,29 @@ namespace RockWeb.Blocks.Reporting
                         var boundField = gReport.Columns[i] as BoundField;
                         if ( boundField != null && boundField.DataField.StartsWith( "Attribute_" ) )
                         {
-                            int attributeID = int.MinValue;
-                            if ( int.TryParse( boundField.DataField.Substring( 10 ), out attributeID ) )
+                            if ( boundField is BoolField )
                             {
-                                AttributeCache attr = AttributeCache.Read( attributeID );
-                                var cell = e.Row.Cells[i];
-                                cell.Text = attr.FieldType.Field.FormatValue( cell, cell.Text, attr.QualifierValues, true );
+                                // let BoolFields take care of themselves
+                            }
+                            else
+                            {
+                                string attributeIdPortion = boundField.DataField.Substring( 10 );
+                                int attributeID = attributeIdPortion.AsInteger() ?? 0;
+                                if ( attributeID > 0 )
+                                {
+                                    AttributeCache attr = AttributeCache.Read( attributeID );
+                                    var cell = e.Row.Cells[i];
+                                    string cellValue = HttpUtility.HtmlDecode( cell.Text ).Trim();
+                                    cell.Text = attr.FieldType.Field.FormatValue( cell, cellValue, attr.QualifierValues, true );
+                                }
                             }
                         }
                     }
                 }
                 catch
-                { }
+                {
+                    // intentionally ignore any errors and just let the original cell value be displayed
+                }
             }
         }
 
@@ -349,6 +355,11 @@ namespace RockWeb.Blocks.Reporting
                         string showInGridCheckBoxId = string.Format( "{0}_showInGridCheckBox", panelWidget.ID );
                         RockCheckBox showInGridCheckBox = phReportFields.ControlsOfTypeRecursive<RockCheckBox>().First( a => a.ID == showInGridCheckBoxId );
                         reportField.ShowInGrid = showInGridCheckBox.Checked;
+
+                        string columnHeaderTextTextBoxId = string.Format( "{0}_columnHeaderTextTextBox", panelWidget.ID );
+                        RockTextBox columnHeaderTextTextBox = phReportFields.ControlsOfTypeRecursive<RockTextBox>().First( a => a.ID == columnHeaderTextTextBoxId );
+                        reportField.ColumnHeaderText = columnHeaderTextTextBox.Text;
+
                         reportField.Order = displayOrder++;
 
                         if ( reportFieldType == ReportFieldType.DataSelectComponent )
@@ -477,6 +488,7 @@ namespace RockWeb.Blocks.Reporting
 
                 Type entityType = EntityTypeCache.Read( entityTypeId.Value ).GetEntityType();
                 var entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType );
+                ddlFields.Items.Clear();
 
                 // Add Fields for the EntityType
                 foreach ( var entityField in entityFields.OrderBy( a => !a.IsPreviewable ).ThenBy( a => a.Title ) )
@@ -654,7 +666,7 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 ReportFieldsDictionary.Add( new ReportFieldInfo { Guid = reportField.Guid, ReportFieldType = reportField.ReportFieldType, Selection = fieldSelection } );
-                AddFieldPanelWidget( reportField.Guid, reportField.ReportFieldType, fieldSelection, false, true, reportField.Selection );
+                AddFieldPanelWidget( reportField.Guid, reportField.ReportFieldType, fieldSelection, false, true, reportField );
             }
         }
 
@@ -730,7 +742,7 @@ namespace RockWeb.Blocks.Reporting
                                 }
 
                                 boundField.DataField = "Entity_" + entityField.Name;
-                                boundField.HeaderText = entityField.Title;
+                                boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? entityField.Title : reportField.ColumnHeaderText;
                                 boundField.SortExpression = entityField.Name;
                                 gReport.Columns.Add( boundField );
                             }
@@ -758,7 +770,7 @@ namespace RockWeb.Blocks.Reporting
                                 }
 
                                 boundField.DataField = string.Format( "Attribute_{0}", attribute.Id );
-                                boundField.HeaderText = attribute.Name;
+                                boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? attribute.Name : reportField.ColumnHeaderText;
                                 boundField.SortExpression = null;
 
                                 if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.INTEGER.AsGuid() ) ||
@@ -768,8 +780,7 @@ namespace RockWeb.Blocks.Reporting
                                     boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
                                 }
 
-                                
-
+                                // NOTE:  Additional formatting for attributes is done in the gReport_RowDataBound event
                                 gReport.Columns.Add( boundField );
                             }
                         }
@@ -784,7 +795,7 @@ namespace RockWeb.Blocks.Reporting
                             {
                                 var boundField = Grid.GetGridField( selectComponent.ColumnFieldType );
                                 boundField.DataField = string.Format( "Data_{0}", selectComponent.ColumnPropertyName );
-                                boundField.HeaderText = selectComponent.ColumnHeaderText;
+                                boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? selectComponent.ColumnHeaderText : reportField.ColumnHeaderText;
                                 boundField.SortExpression = null;
                                 gReport.Columns.Add( boundField );
                             }
@@ -796,7 +807,7 @@ namespace RockWeb.Blocks.Reporting
 
                 if ( errors.Any() )
                 {
-                    nbEditModeMessage.Text = "INFO: There was a problem with one or more of the report's data view filters...<br/><br/> " + errors.AsDelimited( "<br/>" );
+                    nbEditModeMessage.Text = "INFO: There was a problem with one or more of the report's data components...<br/><br/> " + errors.AsDelimited( "<br/>" );
                 }
 
                 gReport.DataBind();
@@ -806,10 +817,20 @@ namespace RockWeb.Blocks.Reporting
         /// <summary>
         /// Adds the field panel widget.
         /// </summary>
-        /// <param name="displayOrder">The display order.</param>
-        /// <param name="fieldName">Name of the field.</param>
-        private void AddFieldPanelWidget( Guid reportFieldGuid, ReportFieldType reportFieldType, string fieldSelection, bool showExpanded, bool setDataSelectComponentSelection = false, string dataSelectComponentSelection = null )
+        /// <param name="reportFieldGuid">The report field unique identifier.</param>
+        /// <param name="reportFieldType">Type of the report field.</param>
+        /// <param name="fieldSelection">The field selection.</param>
+        /// <param name="showExpanded">if set to <c>true</c> [show expanded].</param>
+        /// <param name="setReportFieldValues">if set to <c>true</c> [set report field values].</param>
+        /// <param name="reportField">The report field.</param>
+        private void AddFieldPanelWidget( Guid reportFieldGuid, ReportFieldType reportFieldType, string fieldSelection, bool showExpanded, bool setReportFieldValues = false, ReportField reportField = null )
         {
+            int entityTypeId = ddlEntityType.SelectedValueAsInt() ?? 0;
+            if (entityTypeId == 0)
+            {
+                return;
+            }
+            
             PanelWidget panelWidget = new PanelWidget();
             panelWidget.ID = string.Format( "reportFieldWidget_{0}", reportFieldGuid.ToString( "N" ) );
 
@@ -818,7 +839,7 @@ namespace RockWeb.Blocks.Reporting
             switch ( reportFieldType )
             {
                 case ReportFieldType.Property:
-                    var entityType = EntityTypeCache.Read( ddlEntityType.SelectedValueAsInt() ?? 0 ).GetEntityType();
+                    var entityType = EntityTypeCache.Read( entityTypeId ).GetEntityType();
                     var entityField = EntityHelper.GetEntityFields( entityType ).FirstOrDefault( a => a.Name == fieldSelection );
                     if ( entityField != null )
                     {
@@ -872,8 +893,23 @@ namespace RockWeb.Blocks.Reporting
             RockCheckBox showInGridCheckBox = new RockCheckBox();
             showInGridCheckBox.ID = panelWidget.ID + "_showInGridCheckBox";
             showInGridCheckBox.Text = "Show in Grid";
-            showInGridCheckBox.Checked = true;
+
+            if ( setReportFieldValues )
+            {
+                showInGridCheckBox.Checked = reportField.ShowInGrid;
+            }
+
             panelWidget.Controls.Add( showInGridCheckBox );
+
+            RockTextBox columnHeaderTextTextBox = new RockTextBox();
+            columnHeaderTextTextBox.ID = panelWidget.ID + "_columnHeaderTextTextBox";
+            columnHeaderTextTextBox.Label = "Column Label";
+            if ( setReportFieldValues )
+            {
+                columnHeaderTextTextBox.Text = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? fieldTitle : reportField.ColumnHeaderText;
+            }
+
+            panelWidget.Controls.Add( columnHeaderTextTextBox );
 
             if ( dataSelectComponent != null )
             {
@@ -882,9 +918,9 @@ namespace RockWeb.Blocks.Reporting
                 panelWidget.Controls.Add( phDataSelectControls );
                 var dataSelectControls = dataSelectComponent.CreateChildControls( phDataSelectControls );
 
-                if ( setDataSelectComponentSelection )
+                if ( setReportFieldValues )
                 {
-                    dataSelectComponent.SetSelection( dataSelectControls, dataSelectComponentSelection );
+                    dataSelectComponent.SetSelection( dataSelectControls, reportField.Selection );
                 }
             }
 

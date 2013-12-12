@@ -80,6 +80,15 @@ namespace Rock.Model
         [DataMember]
         public int Order { get; set; }
 
+        /// <summary>
+        /// Gets or sets the column header text.
+        /// </summary>
+        /// <value>
+        /// The column header text.
+        /// </value>
+        [DataMember]
+        public string ColumnHeaderText { get; set; }
+
         #endregion
 
         #region Virtual Properties
