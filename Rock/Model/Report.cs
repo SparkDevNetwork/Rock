@@ -143,6 +143,17 @@ namespace Rock.Model
 
         #region Methods
 
+        /// <summary>
+        /// Gets the data source.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="entityFields">The entity fields.</param>
+        /// <param name="attributes">The attributes.</param>
+        /// <param name="selectComponents">The select components.</param>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
         public List<object> GetDataSource( RockContext context, Type entityType, List<EntityField> entityFields, List<AttributeCache> attributes, List<ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, out List<string> errorMessages )
         {
             errorMessages = new List<string>();

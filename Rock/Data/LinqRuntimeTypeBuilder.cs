@@ -5,9 +5,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
 
-/// <summary>
-/// 
-/// </summary>
+
 namespace Rock.Data
 {
     /// <summary>
