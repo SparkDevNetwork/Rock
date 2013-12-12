@@ -97,7 +97,7 @@
 
         <script type="text/javascript">
             Sys.Application.add_load(function () {
-                $('.version-grid-scroll').tinyscrollbar({ size: 150 });
+                $('.version-grid-scroll').tinyscrollbar({ size: 150, sizethumb: 20 });
             });
         </script>
 

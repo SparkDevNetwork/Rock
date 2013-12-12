@@ -44,7 +44,7 @@
             <script type="text/javascript">
 
                 var scrollbCategory = $('.treeview-scroll');
-                scrollbCategory.tinyscrollbar({ axis: 'x', sizethumb: '60', size: '200' });
+                scrollbCategory.tinyscrollbar({ axis: 'x', sizethumb: 60, size: 200 });
 
                 // update viewport height
                 resizeScrollbar(scrollbCategory);
