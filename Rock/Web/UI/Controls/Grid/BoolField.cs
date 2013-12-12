@@ -35,15 +35,9 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override string FormatDataValue( object dataValue, bool encode )
         {
-            bool boolValue = false;
-
             string value = base.FormatDataValue( dataValue, encode );
-            if ( !bool.TryParse( value, out boolValue ) )
-            {
-                int intValue = 0;
-                if ( Int32.TryParse( value, out intValue ) )
-                    boolValue = intValue != 0;
-            }
+
+            bool boolValue = value.AsBoolean();
 
             if ( boolValue )
                 return "<i class=\"fa fa-check\"></i>";
