@@ -171,6 +171,10 @@ namespace RockWeb.Blocks.Prayer
             {
                 prayerRequest.IsUrgent = cbIsUrgent.Checked;
             }
+            else
+            {
+                prayerRequest.IsUrgent = false;
+            }
 
             if ( _enableCommentsFlag )
             {
@@ -180,6 +184,10 @@ namespace RockWeb.Blocks.Prayer
             if ( _enablePublicDisplayFlag )
             {
                 prayerRequest.IsPublic = cbAllowPublicDisplay.Checked;
+            }
+            else
+            {
+                prayerRequest.IsPublic = false;
             }
 
             if ( !Page.IsValid )

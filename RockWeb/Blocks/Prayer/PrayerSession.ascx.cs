@@ -302,7 +302,7 @@ namespace RockWeb.Blocks.Prayer
         {
             string settingPrefix = string.Format( "prayer-categories-{0}-", this.BlockId );
 
-            var requestQuery = new PrayerRequestService().Queryable();
+            var prayerRequestQuery = new PrayerRequestService().GetActiveApprovedUnexpired();
 
             // Filter categories if one has been selected in the configuration
             if ( !string.IsNullOrEmpty( categoryGuid ) )
@@ -311,13 +311,13 @@ namespace RockWeb.Blocks.Prayer
                 var filterCategory = CategoryCache.Read( guid );
                 if ( filterCategory != null )
                 {
-                    requestQuery = requestQuery.Where( r => r.Category.ParentCategoryId == filterCategory.Id && r.IsActive == true  && r.IsApproved == true );
+                    prayerRequestQuery = prayerRequestQuery.Where( p => p.Category.ParentCategoryId == filterCategory.Id );
                 }
             }
 
-            var inUseCategories = requestQuery
-                .Where( pr => pr.Category != null )
-                .Select( pr => new { pr.Category.Id, pr.Category.Name } )
+            var inUseCategories = prayerRequestQuery
+                .Where( p => p.Category != null )
+                .Select( p => new { p.Category.Id, p.Category.Name } )
                 .GroupBy( g => new { g.Id, g.Name } )
                 .OrderBy( g => g.Key.Name )
                 .Select( a => new
@@ -344,6 +344,10 @@ namespace RockWeb.Blocks.Prayer
             return ( inUseCategories.Count() > 0 );
         }
 
+        /// <summary>
+        /// Saves the users selected prayer categories for use during the next prayer session.
+        /// </summary>
+        /// <param name="settingPrefix"></param>
         private void SaveUserPreferences( string settingPrefix )
         {
             var previouslyCheckedIds = this.GetUserPreference( settingPrefix ).SplitDelimitedValues();
@@ -373,7 +377,7 @@ namespace RockWeb.Blocks.Prayer
         private void SetAndDisplayPrayerRequests( RockCheckBoxList categoriesList )
         {
             PrayerRequestService service = new PrayerRequestService();
-            var prayerRequests = service.GetByCategoryIds( categoriesList.SelectedValuesAsInt, onlyApproved: true ).OrderByDescending( p => p.IsUrgent).ThenBy( p => p.PrayerCount );
+            var prayerRequests = service.GetByCategoryIds( categoriesList.SelectedValuesAsInt ).OrderByDescending( p => p.IsUrgent ).ThenBy( p => p.PrayerCount );
             List<int> list = prayerRequests.Select( p => p.Id ).ToList<int>();
 
             Session[ _sessionKey ] = list;

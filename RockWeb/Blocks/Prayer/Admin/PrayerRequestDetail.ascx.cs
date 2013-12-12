@@ -20,7 +20,8 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Prayer
 {
-    [IntegerField( "Expires After (Days)", "Number of days until the request will expire (only applies when auto-approved is enabled).", false, 14, order: 4, key: "ExpireDays" )]
+    [IntegerField( "Expires After (Days)", "Number of days until the request will expire (only applies when auto-approved is enabled).", false, 14, "", 0, "ExpireDays" )]
+    [CategoryField( "Default Category", "If a category is not selected, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "", 1, "DefaultCategory" )]
 
     public partial class PrayerRequestDetail : RockBlock, IDetailBlock
     {
@@ -315,13 +316,22 @@ namespace RockWeb.Blocks.Prayer
                 prayerRequest.ExpirationDate = dpExpirationDate.SelectedDate;
             }
 
+            // If no category was selected, then use the default category if there is one.
+            int? categoryId = catpCategory.SelectedValueAsInt();
+            var defaultCategoryGuid = GetAttributeValue( "DefaultCategory" );
+            if ( categoryId == null && !string.IsNullOrEmpty( defaultCategoryGuid ) )
+            {
+                var category = new CategoryService().Get( new Guid( defaultCategoryGuid ) );
+                categoryId = category.Id;
+            }
+            prayerRequest.CategoryId = categoryId;
+
             // Now record all the bits...
             prayerRequest.IsApproved = cbApproved.Checked;
             prayerRequest.IsActive = cbIsActive.Checked;
             prayerRequest.IsUrgent = cbIsUrgent.Checked;
             prayerRequest.AllowComments = cbAllowComments.Checked;
             prayerRequest.IsPublic = cbIsPublic.Checked;
-            prayerRequest.CategoryId = catpCategory.SelectedValueAsInt();
             prayerRequest.FirstName = dtbFirstName.Text;
             prayerRequest.LastName = dtbLastName.Text;
             prayerRequest.Text = HttpUtility.HtmlEncode( dtbText.Text );

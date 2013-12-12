@@ -281,6 +281,7 @@ namespace RockWeb.Blocks.Prayer
                     FullName = a.FirstName + " " + a.LastName,
                     CategoryName = a.Category.Name,
                     a.EnteredDate,
+                    a.ExpirationDate,
                     a.Text,
                     a.FlagCount,
                     a.IsApproved,
@@ -380,7 +381,15 @@ namespace RockWeb.Blocks.Prayer
                 prayerRequests = prayerRequests.Where( a => a.EnteredDate < endDate );
             }
 
-            // Sort by the given property otherwise sort by the EnteredDate
+            // Don't show expired prayer requests.
+            // TODO save users filter setting?
+            if ( !cbShowExpired.Checked )
+            {
+                prayerRequests = prayerRequests.Where( a => DateTime.Today <= a.ExpirationDate );
+            }
+
+            // Sort by the given property otherwise sort by the EnteredDate (and Id)
+            // (this is a hack because the Date field alone doesn't sort in the descending direction well)
             if ( sortProperty != null )
             {
                 gPrayerRequests.DataSource = prayerRequests.Sort( sortProperty ).ToList();
@@ -390,7 +399,7 @@ namespace RockWeb.Blocks.Prayer
                 // TODO Figure out how to tell Grid what Direction and Property it's sorting on
                 //sortProperty.Direction = SortDirection.Ascending;
                 //sortProperty.Property = "EnteredDate";
-                gPrayerRequests.DataSource = prayerRequests.OrderBy( p => p.EnteredDate ).ToList();
+                gPrayerRequests.DataSource = prayerRequests.OrderByDescending( p => p.EnteredDate ).ThenByDescending( p => p.Id ).ToList();
             }
 
             gPrayerRequests.DataBind();
