@@ -35,7 +35,7 @@ namespace Rock.Web.UI.Controls
         private RockTextBox _tbLastName;
         private RockRadioButtonList _rblGender;
         private DatePicker _dpBirthdate;
-        private DropDownList _ddlStatus;
+        private DropDownList _ddlConnectionStatus;
         private RockDropDownList _ddlGrade;
 
         private LinkButton _lbDelete;
@@ -175,15 +175,15 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the status value id.
+        /// Gets or sets the connection status value id.
         /// </summary>
         /// <value>
-        /// The status value id.
+        /// The connection status value id.
         /// </value>
-        public int? StatusValueId
+        public int? ConnectionStatusValueId
         {
-            get { return _ddlStatus.SelectedValueAsInt(); }
-            set { SetListValue( _ddlStatus, value ); }
+            get { return _ddlConnectionStatus.SelectedValueAsInt(); }
+            set { SetListValue( _ddlConnectionStatus, value ); }
         }
 
         /// <summary>
@@ -316,7 +316,7 @@ namespace Rock.Web.UI.Controls
             _tbLastName = new RockTextBox();
             _rblGender = new RockRadioButtonList();
             _dpBirthdate = new DatePicker();
-            _ddlStatus = new DropDownList();
+            _ddlConnectionStatus = new DropDownList();
             _ddlGrade = new RockDropDownList();
             _lbDelete = new LinkButton();
         }
@@ -336,7 +336,7 @@ namespace Rock.Web.UI.Controls
             _tbLastName.ID = "_tbLastName";
             _rblGender.ID = "_rblGender";
             _dpBirthdate.ID = "_dtBirthdate";
-            _ddlStatus.ID = "_ddlStatus";
+            _ddlConnectionStatus.ID = "_ddlConnectionStatus";
             _ddlGrade.ID = "_ddlGrade";
             _lbDelete.ID = "_lbDelete";
 
@@ -347,7 +347,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _tbLastName );
             Controls.Add( _rblGender );
             Controls.Add( _dpBirthdate );
-            Controls.Add( _ddlStatus );
+            Controls.Add( _ddlConnectionStatus );
             Controls.Add( _ddlGrade );
             Controls.Add( _lbDelete );
 
@@ -378,8 +378,8 @@ namespace Rock.Web.UI.Controls
             _rblGender.RequiredErrorMessage = "Gender is required for all family members";
             BindGender();
 
-            _ddlStatus.CssClass = "form-control";
-            BindListToDefinedType( _ddlStatus, Rock.SystemGuid.DefinedType.PERSON_STATUS );
+            _ddlConnectionStatus.CssClass = "form-control";
+            BindListToDefinedType( _ddlConnectionStatus, Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS );
 
             _dpBirthdate.Required = false;
 
@@ -465,7 +465,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                _ddlStatus.RenderControl( writer );
+                _ddlConnectionStatus.RenderControl( writer );
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );

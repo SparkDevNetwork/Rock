@@ -258,7 +258,7 @@
     <Compile Include="PersonProfile\Badge\eRA.cs" />
     <Compile Include="PersonProfile\Badge\RecordStatus.cs" />
     <Compile Include="PersonProfile\Badge\Campus.cs" />
-    <Compile Include="PersonProfile\Badge\PersonStatus.cs" />
+    <Compile Include="PersonProfile\Badge\ConnectionStatus.cs" />
     <Compile Include="PersonProfile\Badge\Serving.cs">
       <SubType>Code</SubType>
     </Compile>

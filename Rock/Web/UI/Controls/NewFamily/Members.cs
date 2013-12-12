@@ -139,7 +139,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
-                writer.Write( "Status" );
+                writer.Write( "Connection Status" );
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
