@@ -29,7 +29,7 @@
                     };
                 }
 
-                $control.find('.scroll-container').tinyscrollbar({ size: 120 });
+                $control.find('.scroll-container').tinyscrollbar({ size: 120, sizethumb: 20 });
                 // Since some hanlers are "live" events, they need to be bound before tree is initialized
                 this.initializeEventHandlers();
 
