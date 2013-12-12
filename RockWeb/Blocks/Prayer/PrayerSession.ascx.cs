@@ -316,6 +316,7 @@ namespace RockWeb.Blocks.Prayer
             }
 
             var inUseCategories = requestQuery
+                .Where( pr => pr.Category != null )
                 .Select( pr => new { pr.Category.Id, pr.Category.Name } )
                 .GroupBy( g => new { g.Id, g.Name } )
                 .OrderBy( g => g.Key.Name )
