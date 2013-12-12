@@ -21,7 +21,7 @@ namespace RockWeb.Blocks.Utility
         {
             base.OnInit( e );
 
-            CurrentPage.AddScriptLink( this.Page, "~/Scripts/idle-timer.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/idle-timer.min.js" );
         }
         protected override void OnLoad( EventArgs e )
         {

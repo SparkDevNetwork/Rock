@@ -3,13 +3,21 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Reporting;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -20,7 +28,6 @@ namespace Rock.Model
     [DataContract]
     public partial class Report : Model<Report>, ICategorized
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -125,6 +132,7 @@ namespace Rock.Model
             {
                 return _reportFields ?? ( _reportFields = new Collection<ReportField>() );
             }
+
             set
             {
                 _reportFields = value;
@@ -135,6 +143,153 @@ namespace Rock.Model
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Gets the data source.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="entityFields">The entity fields.</param>
+        /// <param name="attributes">The attributes.</param>
+        /// <param name="selectComponents">The select components.</param>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        public List<object> GetDataSource( RockContext context, Type entityType, Dictionary<int,EntityField> entityFields, Dictionary<int,AttributeCache> attributes, Dictionary<int,ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, out List<string> errorMessages )
+        {
+            errorMessages = new List<string>();
+
+            if ( entityType != null )
+            {
+                Type[] modelType = { entityType };
+                Type genericServiceType = typeof( Rock.Data.Service<> );
+                Type modelServiceType = genericServiceType.MakeGenericType( modelType );
+
+                object serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { context } );
+
+                if ( serviceInstance != null )
+                {
+                    ParameterExpression paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
+                    MemberExpression idExpression = Expression.Property( paramExpression, "Id" );
+
+                    // Get AttributeValue queryable and parameter
+                    var attributeValues = context.Set<AttributeValue>();
+                    ParameterExpression attributeValueParameter = Expression.Parameter( typeof( AttributeValue ), "v" );
+
+                    // Create the dynamic type
+                    var dynamicFields = new Dictionary<string, Type>();
+                    foreach (var f in entityFields)
+                    {
+                        dynamicFields.Add( string.Format( "Entity_{0}_{1}", f.Value.Name, f.Key ), f.Value.PropertyType );
+                    }
+
+                    foreach (var a in attributes)
+                    {
+                        dynamicFields.Add( string.Format( "Attribute_{0}_{1}", a.Value.Id, a.Key ), typeof( string ) );
+                    }
+
+                    foreach ( var reportField in selectComponents )
+                    {
+                        DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.Value.DataSelectComponentEntityType.Name );
+                        if ( selectComponent != null )
+                        {
+                            dynamicFields.Add( string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ), selectComponent.ColumnFieldType );
+                        }
+                    }
+                    
+                    if (dynamicFields.Count == 0)
+                    {
+                        errorMessages.Add( "At least one field must be defined" );
+                        return null;
+                    }
+
+                    Type dynamicType = LinqRuntimeTypeBuilder.GetDynamicType( dynamicFields );
+                    ConstructorInfo methodFromHandle = dynamicType.GetConstructor( Type.EmptyTypes );
+
+                    // Bind the dynamic fields to their expressions
+                    var bindings = new List<MemberBinding>();
+                    foreach (var f in entityFields)
+                    {
+                        bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "entity_{0}_{1}", f.Value.Name, f.Key ) ), Expression.Property( paramExpression, f.Value.Name ) ) );
+                    }
+
+                    foreach (var a in attributes)
+                    {
+                        bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "attribute_{0}_{1}", a.Value.Id, a.Key ) ), GetAttributeValueExpression( attributeValues, attributeValueParameter, idExpression, a.Value.Id ) ) );
+                    }
+                    foreach ( var reportField in selectComponents )
+                    {
+                        DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.Value.DataSelectComponentEntityType.Name );
+                        if ( selectComponent != null )
+                        {
+                            bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ) ), selectComponent.GetExpression( context, idExpression, reportField.Value.Selection ) ) );
+                        }
+                    }
+
+                    ConstructorInfo constructorInfo = dynamicType.GetConstructor( Type.EmptyTypes );
+                    NewExpression newExpression = Expression.New( constructorInfo );
+                    MemberInitExpression memberInitExpression = Expression.MemberInit( newExpression, bindings );
+                    Expression selector = Expression.Lambda( memberInitExpression, paramExpression );
+                    Expression whereExpression = this.DataView.GetExpression( serviceInstance, paramExpression, out errorMessages );
+
+                    MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ) } );
+                    if ( getMethod != null )
+                    {
+                        var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, sortProperty } );
+                        var qry = getResult as IQueryable<IEntity>;
+
+                        var selectExpression = Expression.Call( typeof( Queryable ), "Select", new Type[] { qry.ElementType, dynamicType }, Expression.Constant( qry ), selector );
+                        var query = qry.Provider.CreateQuery( selectExpression ).AsNoTracking();
+
+                        // enumerate thru the query results and put into a list
+                        var reportResult = new List<object>();
+                        var enumerator = query.GetEnumerator();
+                        while ( enumerator.MoveNext() )
+                        {
+                            reportResult.Add( enumerator.Current );
+                        }
+
+                        return reportResult;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the attribute value expression.
+        /// </summary>
+        /// <param name="attributeValues">The attribute values.</param>
+        /// <param name="attributeValueParameter">The attribute value parameter.</param>
+        /// <param name="parentIdProperty">The parent identifier property.</param>
+        /// <param name="attributeId">The attribute identifier.</param>
+        /// <returns></returns>
+        private Expression GetAttributeValueExpression( IQueryable<AttributeValue> attributeValues, ParameterExpression attributeValueParameter, Expression parentIdProperty, int attributeId )
+        {
+            MemberExpression attributeIdProperty = Expression.Property( attributeValueParameter, "AttributeId" );
+            MemberExpression entityIdProperty = Expression.Property( attributeValueParameter, "EntityId" );
+            Expression attributeIdConstant = Expression.Constant( attributeId );
+
+            Expression attributeIdCompare = Expression.Equal( attributeIdProperty, attributeIdConstant );
+            Expression entityIdCompre = Expression.Equal( entityIdProperty, Expression.Convert( parentIdProperty, typeof( int? ) ) );
+            Expression andExpression = Expression.And( attributeIdCompare, entityIdCompre );
+
+            var match = new Expression[] {
+                Expression.Constant(attributeValues),
+                Expression.Lambda<Func<AttributeValue, bool>>( andExpression, new ParameterExpression[] { attributeValueParameter })
+            };
+            Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( AttributeValue ) }, match );
+
+            MemberExpression valueProperty = Expression.Property( attributeValueParameter, "Value" );
+            Expression valueLambda = Expression.Lambda( valueProperty, new ParameterExpression[] { attributeValueParameter } );
+
+            Expression selectValue = Expression.Call( typeof( Queryable ), "Select", new Type[] { typeof( AttributeValue ), typeof( string ) }, whereExpression, valueLambda );
+
+            Expression firstOrDefault = Expression.Call( typeof( Queryable ), "FirstOrDefault", new Type[] { typeof( string ) }, selectValue );
+
+            return firstOrDefault;
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
@@ -148,7 +303,6 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -169,5 +323,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }

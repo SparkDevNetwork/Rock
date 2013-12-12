@@ -26,7 +26,7 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     public partial class MetricDetail : Rock.Web.UI.RockBlock
     {
-        #region Control Methods
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Administration
         
         #endregion
 
-        #region Internal Methods
+        #region Methods
 
         /// <summary>
         /// Binds the collection frequencies.
@@ -173,7 +173,7 @@ namespace RockWeb.Blocks.Administration
         /// Shows the edit details.
         /// </summary>
         /// <param name="metric">The metric.</param>
-        protected void ShowEdit( Metric metric )
+        private void ShowEdit( Metric metric )
         {
             if ( metric.Id > 0 )
             {
@@ -217,7 +217,7 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         /// <param name="itemKey">The item key.</param>
         /// <param name="itemKeyValue">The item key value.</param>
-        protected void ShowDetail( string itemKey, int itemKeyValue )
+        private void ShowDetail( string itemKey, int itemKeyValue )
         {
             if ( !itemKey.Equals( "metricId" ) )
             {

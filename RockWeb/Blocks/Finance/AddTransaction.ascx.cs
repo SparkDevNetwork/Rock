@@ -838,7 +838,7 @@ achieve our mission.  We are so grateful for your commitment.
                             var group = new Group();
                             group.Members.Add( groupMember );
                             group.Name = person.LastName + " Family";
-                            group.GroupType = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) );
+                            group.GroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
 
                             var groupLocation = new GroupLocation();
                             var location = new LocationService().Get(
@@ -1465,7 +1465,7 @@ achieve our mission.  We are so grateful for your commitment.
         /// </summary>
         private void RegisterScript()
         {
-            CurrentPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.creditCardTypeDetector.js" ) );
+            RockPage.AddScriptLink( ResolveUrl( "~/Scripts/jquery.creditCardTypeDetector.js" ) );
 
             int oneTimeFrequencyId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
 

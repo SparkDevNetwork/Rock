@@ -22,7 +22,7 @@
                 <asp:BoundField DataField="Communication.Reviewer.FullName" SortExpression="Communication.Reviewer.FullName" HeaderText="Reviewed By" />
                 <Rock:DateTimeField DataField="Communication.ReviewedDateTime" SortExpression="Communication.ReviewedDateTime" HeaderText="Date Reviewed" />
                 <Rock:EnumField DataField="Communication.Status" SortExpression="Communication.Status" HeaderText="Communication Status" />
-                <asp:TemplateField HeaderText="Recipients" SortExpression="Recipients">
+                <asp:TemplateField HeaderText="Recipients" ItemStyle-HorizontalAlign="Center" SortExpression="Recipients">
                     <ItemTemplate>
                         <Rock:Badge ID="bPending" runat="server" ToolTip="Pending" BadgeType="None"></Rock:Badge>
                         <Rock:Badge ID="bSuccess" runat="server" ToolTip="Successful" BadgeType="Success"></Rock:Badge>

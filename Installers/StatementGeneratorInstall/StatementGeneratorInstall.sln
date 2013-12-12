@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock", "..\..\Rock\Rock.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quartz", "..\..\Quartz\Quartz.csproj", "{AEF8823B-E45B-4B35-A4D0-C08C1196D017}"
 EndProject
-Project("{6141683F-8A12-4E36-9623-2EB02B2C2303}") = "StatementGeneratorInstall", "StatementGeneratorInstall\StatementGeneratorInstall.isproj", "{5984C1AC-2EE0-480E-8CB1-576294CB4BA2}"
+Project("{6141683F-8A12-4E36-9623-2EB02B2C2303}") = "StatementGeneratorInstall", "StatementGeneratorInstall.isproj", "{5984C1AC-2EE0-480E-8CB1-576294CB4BA2}"
 	ProjectSection(ProjectDependencies) = postProject
 		{896F254D-0CEC-46D0-AD76-E95D43CC7B8D} = {896F254D-0CEC-46D0-AD76-E95D43CC7B8D}
 	EndProjectSection

@@ -111,6 +111,9 @@ namespace RockWeb.Blocks.Core
 
             DefinedValue value = valueService.Get( (int)e.RowKeyValue );
 
+            DefinedTypeCache.Flush(value.DefinedTypeId);
+            DefinedValueCache.Flush(value.Id);
+
             if ( value != null )
             {
                 valueService.Delete( value, CurrentPersonId );
@@ -176,7 +179,9 @@ namespace RockWeb.Blocks.Core
 
                 definedValueService.Save( definedValue, CurrentPersonId );
                 Rock.Attribute.Helper.SaveAttributeValues( definedValue, CurrentPersonId );
+
                 Rock.Web.Cache.DefinedTypeCache.Flush( definedValue.DefinedTypeId );
+                Rock.Web.Cache.DefinedValueCache.Flush( definedValue.Id );
             } );
                         
             BindDefinedValuesGrid();

@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Core
                 {
                     qryParams["CategoryId"] = parentCategoryId;
                 }
-                NavigateToPage( this.CurrentPage.Guid, qryParams );
+                NavigateToPage( RockPage.Guid, qryParams );
             }
             else
             {
@@ -159,7 +159,7 @@ namespace RockWeb.Blocks.Core
                         qryParams["CategoryId"] = parentCategoryId.ToString();
                     }
 
-                    NavigateToPage( this.CurrentPage.Guid, qryParams );
+                    NavigateToPage( RockPage.Guid, qryParams );
                 }
             }
         }
@@ -182,53 +182,89 @@ namespace RockWeb.Blocks.Core
         protected void btnSave_Click( object sender, EventArgs e )
         {
             Category category;
-            CategoryService categoryService = new CategoryService();
 
-            int categoryId = hfCategoryId.ValueAsInt();
-
-            if ( categoryId == 0 )
+            using ( new UnitOfWorkScope() )
             {
-                category = new Category();
-                category.IsSystem = false;
-                category.EntityTypeId = entityTypeId;
-                category.EntityTypeQualifierColumn = entityTypeQualifierProperty;
-                category.EntityTypeQualifierValue = entityTypeQualifierValue;
-            }
-            else
-            {
-                category = categoryService.Get( categoryId );
-            }
+                CategoryService categoryService = new CategoryService();
 
-            category.Name = tbName.Text;
-            category.ParentCategoryId = cpParentCategory.SelectedValueAsInt();
-            category.IconCssClass = tbIconCssClass.Text;
-            category.IconSmallFileId = imgIconSmall.BinaryFileId;
-            category.IconLargeFileId = imgIconLarge.BinaryFileId;
+                int categoryId = hfCategoryId.ValueAsInt();
 
-            if ( !Page.IsValid )
-            {
-                return;
-            }
-
-            if ( !category.IsValid )
-            {
-                // Controls will render the error messages                    
-                return;
-            }
-
-            RockTransactionScope.WrapTransaction( () =>
-            {
-                if ( category.Id.Equals( 0 ) )
+                if ( categoryId == 0 )
                 {
-                    categoryService.Add( category, CurrentPersonId );
+                    category = new Category();
+                    category.IsSystem = false;
+                    category.EntityTypeId = entityTypeId;
+                    category.EntityTypeQualifierColumn = entityTypeQualifierProperty;
+                    category.EntityTypeQualifierValue = entityTypeQualifierValue;
+                }
+                else
+                {
+                    category = categoryService.Get( categoryId );
                 }
 
-                categoryService.Save( category, CurrentPersonId );
-            } );
+                category.Name = tbName.Text;
+                category.ParentCategoryId = cpParentCategory.SelectedValueAsInt();
+                category.IconCssClass = tbIconCssClass.Text;
+
+                List<int> orphanedBinaryFileIdList = new List<int>();
+
+                if ( category.IconSmallFileId != imgIconSmall.BinaryFileId )
+                {
+                    if (category.IconSmallFileId.HasValue)
+                    {
+                        orphanedBinaryFileIdList.Add( category.IconSmallFileId.Value );
+                    }
+
+                    category.IconSmallFileId = imgIconSmall.BinaryFileId;
+                }
+
+                if ( category.IconLargeFileId != imgIconLarge.BinaryFileId )
+                {
+                    if ( category.IconLargeFileId.HasValue )
+                    {
+                        orphanedBinaryFileIdList.Add( category.IconLargeFileId.Value );
+                    }
+
+                    category.IconLargeFileId = imgIconLarge.BinaryFileId;
+                }
+
+                if ( !Page.IsValid )
+                {
+                    return;
+                }
+
+                if ( !category.IsValid )
+                {
+                    // Controls will render the error messages                    
+                    return;
+                }
+
+                RockTransactionScope.WrapTransaction( () =>
+                {
+                    if ( category.Id.Equals( 0 ) )
+                    {
+                        categoryService.Add( category, CurrentPersonId );
+                    }
+
+                    categoryService.Save( category, CurrentPersonId );
+
+                    BinaryFileService binaryFileService = new BinaryFileService();
+                    foreach (int binaryFileId in orphanedBinaryFileIdList)
+                    {
+                        var binaryFile = binaryFileService.Get(binaryFileId);
+                        if ( binaryFile != null )
+                        {
+                            // marked the old images as IsTemporary so they will get cleaned up later
+                            binaryFile.IsTemporary = true;
+                            binaryFileService.Save( binaryFile, CurrentPersonId );
+                        }
+                    }
+                } );
+            }
 
             var qryParams = new Dictionary<string, string>();
             qryParams["CategoryId"] = category.Id.ToString();
-            NavigateToPage( this.CurrentPage.Guid, qryParams );
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         #endregion

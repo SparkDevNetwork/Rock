@@ -4,10 +4,9 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Web;
 using Rock.Model;
 
 namespace Rock.Storage.Provider
@@ -15,75 +14,58 @@ namespace Rock.Storage.Provider
     /// <summary>
     /// Storage provider for saving binary files to Rock database
     /// </summary>
-    [Description( "Database-driven document storage" )]
+    [Description( "Database-driven file storage" )]
     [Export( typeof( ProviderComponent ) )]
     [ExportMetadata( "ComponentName", "Database" )]
     public class Database : ProviderComponent
     {
+        /// <summary>
+        /// Removes the file from the external storage medium associated with the provider.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="context">The context.</param>
+        public override void RemoveFile( BinaryFile file, HttpContext context )
+        {
+            // Database storage just stores everything in the BinaryFile table, so there is no external file data to delete
+        }
 
         /// <summary>
-        /// Saves the files.
+        /// Saves the file to the external storage medium associated with the provider.
         /// </summary>
-        /// <param name="files">The files.</param>
-        /// <param name="personId"></param>
-        public override void SaveFiles( IEnumerable<BinaryFile> files, int? personId )
+        /// <param name="file">The file.</param>
+        /// <param name="context">The context.</param>
+        public override void SaveFile( BinaryFile file, HttpContext context )
         {
-            var fileService = new BinaryFileService();
+            // Database storage just stores everything in the BinaryFile table, so there is no external file data to save, but we do need to set the Url
+            file.Url = GenerateUrl( file );
+        }
 
-            foreach ( var fileItem in files )
+        /// <summary>
+        /// Gets the file bytes from the external storage medium associated with the provider.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        public override byte[] GetFileContent( BinaryFile file, HttpContext context )
+        {
+            if (file.Data != null)
             {
-                var file = fileItem;
-                
-                if ( file.Id == 0 )
-                {
-                    fileService.Add( file, personId );
-                }
-                else
-                {
-                    // get it fresh from the database so EF change tracking works and saves it
-                    file = fileService.Get( file.Id );
-                    file.MimeType = fileItem.MimeType;
-                    file.FileName = fileItem.FileName;
-                    file.Data.Content = fileItem.Data.Content;
-                }
-
-                // Since we're expecting a hydrated model, throw if no binary
-                // data is included.
-                if ( file.Data == null )
-                {
-                    throw new ArgumentException( "File Data must not be null." );
-                }
-
-                // Save once to persist data...
-                fileService.Save( file, personId );
-
-                // Set the URL now that we have a Guid...
-                file.Url = GetUrl( file );
-
-                // Then save again to persist the URL
-                fileService.Save( file, personId );
+                return file.Data.Content;
+            }
+            else
+            {
+                return null;
             }
         }
 
         /// <summary>
-        /// Removes the file.
-        /// </summary>
-        /// <param name="file">The file.</param>
-        /// <param name="personId"></param>
-        public override void RemoveFile( BinaryFile file, int? personId )
-        {
-            var fileService = new BinaryFileService();
-            fileService.Delete( file, personId );
-        }
-
-        /// <summary>
-        /// Gets the URL.
+        /// Generate a URL for the file based on the rules of the StorageProvider
         /// </summary>
         /// <param name="file">The file.</param>
         /// <returns></returns>
-        public override string GetUrl( BinaryFile file )
+        public override string GenerateUrl( BinaryFile file)
         {
-            string wsPath;
+            string urlPath;
 
             switch ( file.MimeType.ToLower() )
             {
@@ -91,14 +73,14 @@ namespace Rock.Storage.Provider
                 case "image/gif":
                 case "image/png":
                 case "image/bmp":
-                    wsPath = "~/GetImage.ashx";
+                    urlPath = "~/GetImage.ashx";
                     break;
                 default:
-                    wsPath = "~/GetFile.ashx";
+                    urlPath = "~/GetFile.ashx";
                     break;
             }
 
-            return string.Format( "{0}?guid={1}", wsPath, file.Guid );
+            return string.Format( "{0}?guid={1}", urlPath, file.Guid );
         }
     }
 }

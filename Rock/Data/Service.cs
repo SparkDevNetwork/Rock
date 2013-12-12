@@ -80,6 +80,25 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets the rock context.
+        /// </summary>
+        /// <value>
+        /// The rock context.
+        /// </value>
+        public RockContext RockContext
+        {
+            get
+            {
+                if (this.Repository is EFRepository<T>)
+                {
+                    return ( this.Repository as EFRepository<T> ).Context as RockContext;
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Gets an <see cref="IQueryable{T}"/> list of all models
         /// </summary>
         /// <returns></returns>

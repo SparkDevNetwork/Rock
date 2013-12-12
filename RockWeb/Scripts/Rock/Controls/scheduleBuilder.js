@@ -14,7 +14,7 @@
             var id = this.id,
                 $modal = $('#' + id).closest('.rock-modal');
 
-            $modal.find('.scroll-container').tinyscrollbar({ size: 150 });
+            $modal.find('.scroll-container').tinyscrollbar({ size: 150, sizethumb: 20 });
 
             $modal.on('mouseenter', function () {
                 // detect mouseenter to make sure scrollbar is recalculated after show

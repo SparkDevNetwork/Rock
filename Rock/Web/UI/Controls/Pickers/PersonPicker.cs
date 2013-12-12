@@ -388,14 +388,14 @@ namespace Rock.Web.UI.Controls
             if ( this.Enabled )
             {
                 string controlHtmlFormatStart = @"
-        <div id='{0}' class='picker picker-select picker-person' > 
+        <div id='{0}' class='picker picker-select picker-person {2}' > 
             <a class='picker-label' href='#'>
                 <i class='fa fa-user'></i>
                 <span id='selectedPersonLabel_{0}'>{1}</span>
                 <b class='caret pull-right'></b>
             </a>
 ";
-                writer.Write( string.Format( controlHtmlFormatStart, this.ID, this.PersonName ) );
+                writer.Write( string.Format( controlHtmlFormatStart, this.ID, this.PersonName, this.CssClass ) );
 
                 _btnSelectNone.RenderControl( writer );
 

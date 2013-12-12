@@ -70,7 +70,7 @@ namespace Rock.Model
         public int? RecordStatusValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the Record Status Reason <see cref="Rock.Model.DefinedValue"/> representing the reason why a person status would have a set status.
+        /// Gets or sets the Id of the Record Status Reason <see cref="Rock.Model.DefinedValue"/> representing the reason why a person record status would have a set status.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the Record Status Reason <see cref="Rock.Model.DefinedValue"/> representing the reason why a person entity would have a set status.
@@ -80,14 +80,14 @@ namespace Rock.Model
         public int? RecordStatusReasonValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the Person Status <see cref="Rock.Model.DefinedValue"/> representing the status of the Person.
+        /// Gets or sets the Id of the Defined Value <see cref="Rock.Model.DefinedValue"/> representing the connection status of the Person.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Person Status <see cref="Rock.Model.DefinedValue"/> representing the status of the Person.
+        /// A <see cref="System.Int32"/> representing the connection status of the Person.
         /// </value>
         [DataMember]
-        [DefinedValue( SystemGuid.DefinedType.PERSON_STATUS )]
-        public int? PersonStatusValueId { get; set; }
+        [DefinedValue( SystemGuid.DefinedType.PERSON_CONNECTION_STATUS )]
+        public int? ConnectionStatusValueId { get; set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if the Person is deceased.
@@ -378,6 +378,7 @@ namespace Rock.Model
         [DataMember]
         [Previewable]
         [MergeField]
+        [RegularExpression(@"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage= "The Email address is invalid")]
         public string Email { get; set; }
 
         /// <summary>
@@ -543,14 +544,14 @@ namespace Rock.Model
         public virtual DefinedValue MaritalStatusValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the Person's membership status
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the Person's connection status
         /// </summary>
         /// <value>
-        /// A <see cref="DefinedValue"/> object representing the Person's membership status. 
+        /// A <see cref="DefinedValue"/> object representing the Person's connection status. 
         /// </value>
         [DataMember]
         [MergeField]
-        public virtual DefinedValue PersonStatusValue { get; set; }
+        public virtual DefinedValue ConnectionStatusValue { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the record status.
@@ -939,7 +940,7 @@ namespace Rock.Model
         public PersonConfiguration()
         {
             this.HasOptional( p => p.MaritalStatusValue ).WithMany().HasForeignKey( p => p.MaritalStatusValueId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.PersonStatusValue ).WithMany().HasForeignKey( p => p.PersonStatusValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ConnectionStatusValue ).WithMany().HasForeignKey( p => p.ConnectionStatusValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RecordStatusValue ).WithMany().HasForeignKey( p => p.RecordStatusValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RecordStatusReasonValue ).WithMany().HasForeignKey( p => p.RecordStatusReasonValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RecordTypeValue ).WithMany().HasForeignKey( p => p.RecordTypeValueId ).WillCascadeOnDelete( false );

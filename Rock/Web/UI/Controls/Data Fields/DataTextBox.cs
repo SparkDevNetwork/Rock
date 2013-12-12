@@ -134,7 +134,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                dataValidator.Validate();
+                //dataValidator.Validate();
                 return base.IsValid && dataValidator.IsValid;
             }
         }

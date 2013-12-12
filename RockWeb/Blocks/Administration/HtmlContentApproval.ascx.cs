@@ -6,16 +6,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using Rock;
-using Rock.Attribute;
-using Rock.Constants;
-using Rock.Data;
 using Rock.Model;
-using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -28,7 +22,7 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region Control Methods
+        #region Base Control Methods
 
         /// <summary>
         /// Handles the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -171,7 +165,7 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region Internal Methods
+        #region Methods
 
         /// <summary>
         /// Binds the filter.
@@ -305,6 +299,7 @@ namespace RockWeb.Blocks.Administration
         #endregion
 
         #region HtmlApproval Class
+
         /// <summary>
         /// A class to hold all the info for the HtmlContentApproval Block
         /// </summary>

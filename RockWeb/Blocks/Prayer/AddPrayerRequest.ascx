@@ -16,14 +16,14 @@
                     <em ID="lblCount" runat="server" class="pull-right badge"></em>
                     <Rock:DataTextBox ID="dtbRequest" runat="server" Label="Request" TextMode="MultiLine" Rows="3" MaxLength="10" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="Text" placeholder="Please pray that..."></Rock:DataTextBox>
 
-                    <% if ( enableUrgentFlag ) { %>
+                    <% if ( _enableUrgentFlag ) { %>
                         <Rock:RockCheckBox ID="cbIsUrgent" runat="server" Checked="false" Label="Urgent?" Text="Yes" Help="If 'yes' is checked the request will be flagged as urgent in need of attention quickly." />
                     <% } %>
-                    <% if ( enableCommentsFlag )
+                    <% if ( _enableCommentsFlag )
                        { %>
                         <Rock:RockCheckBox ID="cbAllowComments" runat="server" Checked="false" Label="Allow Encouraging Comments?" Text="Yes" Help="If 'yes' is checked the prayer team can offer encouraging comments on the request." />
                     <% } %>
-                    <% if ( enablePublicDisplayFlag )
+                    <% if ( _enablePublicDisplayFlag )
                        { %>
                         <Rock:RockCheckBox ID="cbAllowPublicDisplay" runat="server" Checked="false" Label="Allow Publication?" Text="Yes" Help="If you check 'yes' you give permission to show the request on the public website." />
                     <% } %>

@@ -37,7 +37,7 @@ namespace Rock.Web.UI.Controls
                 rockControl.RequiredFieldValidator.ControlToValidate = rockControl.ID;
                 rockControl.RequiredFieldValidator.Display = ValidatorDisplay.Dynamic;
                 rockControl.RequiredFieldValidator.CssClass = "validation-error help-inline";
-                rockControl.RequiredFieldValidator.Enabled = false;
+                rockControl.RequiredFieldValidator.Enabled = rockControl.Required;
                 controls.Add( rockControl.RequiredFieldValidator );
             }
 
@@ -102,15 +102,21 @@ namespace Rock.Web.UI.Controls
                 rockControl.HelpBlock.RenderControl( writer );
             }
 
-            if ( rockControl.RequiredFieldValidator != null && rockControl.Required )
+            if ( rockControl.RequiredFieldValidator != null )
             {
-                rockControl.RequiredFieldValidator.Enabled = true;
-                if ( string.IsNullOrWhiteSpace( rockControl.RequiredFieldValidator.ErrorMessage ) )
+                if ( rockControl.Required )
                 {
-                    rockControl.RequiredFieldValidator.ErrorMessage = rockControl.Label + " is Required.";
+                    rockControl.RequiredFieldValidator.Enabled = true;
+                    if ( string.IsNullOrWhiteSpace( rockControl.RequiredFieldValidator.ErrorMessage ) )
+                    {
+                        rockControl.RequiredFieldValidator.ErrorMessage = rockControl.Label + " is Required.";
+                    }
+                    rockControl.RequiredFieldValidator.RenderControl( writer );
                 }
-                rockControl.RequiredFieldValidator.ValidationGroup = rockControl.ValidationGroup;
-                rockControl.RequiredFieldValidator.RenderControl( writer );
+                else
+                {
+                    rockControl.RequiredFieldValidator.Enabled = false;
+                }
             }
 
             if ( renderLabel )

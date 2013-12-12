@@ -594,8 +594,8 @@ namespace Rock.Web.UI.Controls
                 }
 
                 // treeview
-                writer.Write( @"
-                    <div id='treeview-scroll-container_{0}' class='scroll-container scroll-container-picker'>
+                writer.Write(@"
+                    <div id='treeview-scroll-container_{0}' class='scroll-container scroll-container-vertical scroll-container-picker'>
                         <div class='scrollbar'>
                             <div class='track'>
                                 <div class='thumb'>

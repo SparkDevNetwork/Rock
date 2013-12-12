@@ -24,8 +24,8 @@
     const string rockZipAssemblyFile = "http://rockchms.blob.core.windows.net/install/Ionic.Zip.dll";
     const string rockInstallFile = "http://rockchms.blob.core.windows.net/install/Install.aspx";
     const string rockConfigureFile = "http://rockchms.blob.core.windows.net/install/Configure.aspx";
+    const string rockUtilitiesAssembly = "http://rockchms.blob.core.windows.net/install/Rock.Install.Utilities.dll";
     
-    const string rockWaitingImage = "http://rockchms.blob.core.windows.net/install/waiting.gif";
     const string rockLogoIco = "http://rockchms.blob.core.windows.net/install/rock-chms.ico";
     const string rockStyles = "http://rockchms.blob.core.windows.net/install/install.css";
         
@@ -96,15 +96,16 @@
 				lOutput.Text = "<p>" + checkMessages + "</p>";
 				return;
 			}
-			
-			// download the config file
-			downloadSuccessful = DownloadFile(rockWaitingImage, Server.MapPath(".") + @"\waiting.gif", out checkMessages);	
-			
-			if (!downloadSuccessful) {
-				lTitle.Text = "An Error Occurred...";
-				lOutput.Text = "<p>" + checkMessages + "</p>";
-				return;
-			}
+
+            // download the assembly file
+            downloadSuccessful = DownloadFile(rockUtilitiesAssembly, Server.MapPath(".") + @"\bin\Rock.Install.Utilities.dll", out checkMessages);
+
+            if (!downloadSuccessful)
+            {
+                lTitle.Text = "An Error Occurred...";
+                lOutput.Text = "<p>" + checkMessages + "</p>";
+                return;
+            }
 					
 			// proceed with the install by downloading the installer files
 			Response.Redirect("Install.aspx");

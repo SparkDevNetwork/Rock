@@ -300,7 +300,7 @@ namespace RockWeb.Blocks.Cms
 
             var qryParams = new Dictionary<string, string>();
             qryParams["marketingCampaignId"] = marketingCampaign.Id.ToString();
-            NavigateToPage( this.CurrentPage.Guid, qryParams );
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         #endregion
@@ -391,11 +391,11 @@ namespace RockWeb.Blocks.Cms
         {
             if ( marketingCampaign.Id > 0 )
             {
-                lActionTitle.Text = ActionTitle.Edit( MarketingCampaign.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Edit( MarketingCampaign.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( MarketingCampaign.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Add( MarketingCampaign.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             SetEditMode( true );
@@ -452,7 +452,7 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            string campusList = marketingCampaign.MarketingCampaignCampuses.Select( a => a.Campus.Name ).OrderBy( a => a ).ToList().AsDelimited( "<br>" );
+            
 
             string primaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => a.IsPrimary ).Select( a => a.Name ).OrderBy( a => a ).ToList().AsDelimited( "<br>" );
             primaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => a.IsPrimary ).Count() == 0 ? None.TextHtml : primaryAudiences;
@@ -460,25 +460,29 @@ namespace RockWeb.Blocks.Cms
             string secondaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => !a.IsPrimary ).Select( a => a.Name ).OrderBy( a => a ).ToList().AsDelimited( "<br>" );
             secondaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => !a.IsPrimary ).Count() == 0 ? None.TextHtml : secondaryAudiences;
 
-            DescriptionList descriptionList = new DescriptionList()
-                .Add("Title", marketingCampaign.Title)
+            lCampaignTitle.Text = marketingCampaign.Title.FormatAsHtmlTitle();
+
+            DescriptionList descriptionListCol1 = new DescriptionList()
                 .Add("Contact", contactInfo);
 
             if (eventGroupHtml != null)
             {
-                descriptionList.Add("Linked Event", eventGroupHtml);
+                descriptionListCol1.Add("Linked Event", eventGroupHtml);
             }
 
-            if ( marketingCampaign.MarketingCampaignCampuses.Count > 0 )
+            lDetailsCol1.Text = descriptionListCol1.Html;
+
+            DescriptionList descriptionListCol2 = new DescriptionList()
+                .Add("Primary Audience", primaryAudiences)
+                .Add("Secondary Audience", secondaryAudiences);
+
+            lDetailsCol2.Text = descriptionListCol2.Html;
+
+            lCampusLabels.Text = string.Empty;
+            foreach (var campus in marketingCampaign.MarketingCampaignCampuses.Select(a => a.Campus.Name).OrderBy(a => a).ToList())
             {
-                descriptionList.Add("Campuses", campusList);
+                lCampusLabels.Text += "<span class='label label-campus'>" + campus + "</span> ";
             }
-
-            descriptionList
-                .Add( "Primary Audience", primaryAudiences )
-                .Add( "Secondary Audience", secondaryAudiences );
-
-            lblMainDetails.Text = descriptionList.Html;
         }
 
         /// <summary>

@@ -32,7 +32,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ddlTitle.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
             ddlSuffix.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
             rblMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ) );
-            rblStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_STATUS ) ) );
+            rblStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ) );
             ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
             ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
 
@@ -79,10 +79,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            var service = new PersonService();
-            var person = service.Get( Person.Id );
+            var personService = new PersonService();
+            var person = personService.Get( Person.Id );
 
-            person.PhotoId = imgPhoto.BinaryFileId;
+            int? orphanedPhotoId = null;
+            if ( person.PhotoId != imgPhoto.BinaryFileId )
+            {
+                orphanedPhotoId = person.PhotoId;
+                person.PhotoId = imgPhoto.BinaryFileId;
+            }
+            
             person.TitleValueId = ddlTitle.SelectedValueAsInt();
             person.GivenName = tbGivenName.Text;
             person.NickName = tbNickName.Text;
@@ -112,7 +118,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             person.AnniversaryDate = dpAnniversaryDate.SelectedDate;
             person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
             person.MaritalStatusValueId = rblMaritalStatus.SelectedValueAsInt();
-            person.PersonStatusValueId = rblStatus.SelectedValueAsInt();
+            person.ConnectionStatusValueId = rblStatus.SelectedValueAsInt();
 
             var phoneNumberTypeIds = new List<int>();
 
@@ -156,14 +162,30 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 .ToList()
                 .ForEach( n => person.PhoneNumbers.Remove( n ) );
 
-            person.Email = tbEmail.Text;
+            person.Email = tbEmail.Text.Trim();
 
             person.GivingGroupId = ddlGivingGroup.SelectedValueAsId();
 
             person.RecordStatusValueId = ddlRecordStatus.SelectedValueAsInt();
             person.RecordStatusReasonValueId = ddlReason.SelectedValueAsInt();
 
-            service.Save( person, CurrentPersonId );
+            if ( !person.IsValid )
+            {
+                return;
+            }
+            personService.Save( person, CurrentPersonId );
+
+            if ( orphanedPhotoId.HasValue )
+            {
+                BinaryFileService binaryFileService = new BinaryFileService(personService.RockContext);
+                var binaryFile = binaryFileService.Get( orphanedPhotoId.Value );
+                if ( binaryFile != null )
+                {
+                    // marked the old images as IsTemporary so they will get cleaned up later
+                    binaryFile.IsTemporary = true;
+                    binaryFileService.Save( binaryFile, CurrentPersonId );
+                }
+            }
 
             Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
         }
@@ -194,7 +216,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             dpAnniversaryDate.SelectedDate = Person.AnniversaryDate;
             rblGender.SelectedValue = Person.Gender.ConvertToString();
             rblMaritalStatus.SelectedValue = Person.MaritalStatusValueId.HasValue ? Person.MaritalStatusValueId.Value.ToString() : string.Empty;
-            rblStatus.SelectedValue = Person.PersonStatusValueId.HasValue ? Person.PersonStatusValueId.Value.ToString() : string.Empty;
+            rblStatus.SelectedValue = Person.ConnectionStatusValueId.HasValue ? Person.ConnectionStatusValueId.Value.ToString() : string.Empty;
             tbEmail.Text = Person.Email;
 
             ddlRecordStatus.SelectedValue = Person.RecordStatusValueId.HasValue ? Person.RecordStatusValueId.Value.ToString() : string.Empty;

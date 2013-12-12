@@ -22,12 +22,23 @@ using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Groups
 {
-    [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false )]
-    [BooleanField( "Show Edit", "", true )]
-    [BooleanField( "Limit to Security Role Groups" )]
-    [CodeEditorField( "Location Point Image", "The Image Url to use when displaying one or more group location points.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, "http://maps.googleapis.com/maps/api/staticmap?sensor=false&size=350x200{% if points.size <= 1 %}&zoom=13{% endif %}&format=png&style=feature:all|saturation:0|hue:0xe7ecf0&style=feature:road|saturation:-70&style=feature:transit|visibility:off&style=feature:poi|visibility:off&style=feature:water|visibility:simplified|saturation:-60{% for point in points %}&markers=color:0x779cb1|{{ point.latitude }},{{ point.longitude }}{% endfor %}&visual_refresh=true", "Location Map", 0 )]
-    [CodeEditorField( "Location Polygon Image", "The Image Url to use when displaying a group location polygon.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, "http://maps.googleapis.com/maps/api/staticmap?sensor=false&size=350x200&format=png&style=feature:all|saturation:0|hue:0xe7ecf0&style=feature:road|saturation:-70&style=feature:transit|visibility:off&style=feature:poi|visibility:off&style=feature:water|visibility:simplified|saturation:-60&visual_refresh=true&path=fillcolor:0x779cb155|color:0xFFFFFF00|enc:{{ encoded_polygon }}", "Location Map", 1 )]
-    [BooleanField( "Combine Points", "Should all locations points be combined on one map.", true, "Location Map", 2 )]
+    [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false, "", "", 0 )]
+    [BooleanField( "Show Edit", "", true, "", 1 )]
+    [BooleanField( "Limit to Security Role Groups", "", false, "", 2 )]
+    [CodeEditorField( "Map HTML", "The HTML to use for displaying group location maps. Liquid syntax is used to render data from the following data structure: points[type, latitude, longitude], polygons[type, polygon_wkt, google_encoded_polygon]", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, false, @"
+    {% for point in points %}
+        <div class='group-location-map'>
+            <h4>{{ point.type }}</h4>
+            <img src='http://maps.googleapis.com/maps/api/staticmap?sensor=false&size=350x200&zoom=13&format=png&style=feature:all|saturation:0|hue:0xe7ecf0&style=feature:road|saturation:-70&style=feature:transit|visibility:off&style=feature:poi|visibility:off&style=feature:water|visibility:simplified|saturation:-60&markers=color:0x779cb1|{{ point.latitude }},{{ point.longitude }}&visual_refresh=true'/>
+        </div>
+    {% endfor %}
+    {% for polygon in polygons %}
+        <div class='group-location-map'>
+            <h4>{{ polygon.type }}</h4>
+            <img src='http://maps.googleapis.com/maps/api/staticmap?sensor=false&size=350x200&format=png&style=feature:all|saturation:0|hue:0xe7ecf0&style=feature:road|saturation:-70&style=feature:transit|visibility:off&style=feature:poi|visibility:off&style=feature:water|visibility:simplified|saturation:-60&visual_refresh=true&path=fillcolor:0x779cb155|color:0xFFFFFF00|enc:{{ polygon.google_encoded_polygon }}'/>
+        </div>
+    {% endfor %}
+", "", 3 )]
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
         #region Constants
@@ -192,8 +203,7 @@ namespace RockWeb.Blocks.Groups
                 var group = new Group { GroupTypeId = ddlGroupType.SelectedValueAsInt() ?? 0 };
                 if ( group.GroupTypeId > 0 )
                 {
-                    group.GroupType = new GroupTypeService().Get( group.GroupTypeId );
-                    ShowGroupTypeEditDetails( group, false );
+                    ShowGroupTypeEditDetails( GroupTypeCache.Read(group.GroupTypeId), group, false );
                 }
             }
         }
@@ -261,23 +271,23 @@ namespace RockWeb.Blocks.Groups
                         return;
                     }
 
-                    bool isSecurityRoleGroup = group.IsSecurityRole;
+                    bool isSecurityRoleGroup = group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
                     if ( isSecurityRoleGroup )
                     {
+                        Rock.Security.Role.Flush( group.Id );
                         foreach ( var auth in authService.Queryable().Where( a => a.GroupId.Equals( group.Id ) ).ToList() )
                         {
                             authService.Delete( auth, CurrentPersonId );
                             authService.Save( auth, CurrentPersonId );
                         }
-                    }
-
+                    } 
+                    
                     groupService.Delete( group, CurrentPersonId );
                     groupService.Save( group, CurrentPersonId );
 
                     if ( isSecurityRoleGroup )
                     {
                         Rock.Security.Authorization.Flush();
-                        Rock.Security.Role.Flush( group.Id );
                     }
                 }
             } );
@@ -289,7 +299,7 @@ namespace RockWeb.Blocks.Groups
                 qryParams["groupId"] = parentGroupId.ToString();
             }
 
-            NavigateToPage( this.CurrentPage.Guid, qryParams );
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>
@@ -442,7 +452,7 @@ namespace RockWeb.Blocks.Groups
             var qryParams = new Dictionary<string, string>();
             qryParams["groupId"] = group.Id.ToString();
 
-            NavigateToPage( this.CurrentPage.Guid, qryParams );
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>
@@ -454,7 +464,7 @@ namespace RockWeb.Blocks.Groups
         {
             if ( hfGroupId.Value.Equals( "0" ) )
             {
-                if ( this.CurrentPage.Layout.FileName.Equals( "TwoColumnLeft" ) )
+                if ( RockPage.Layout.FileName.Equals( "TwoColumnLeft" ) )
                 {
                     // Cancelling on Add.  Return to tree view with parent category selected
                     var qryParams = new Dictionary<string, string>();
@@ -465,7 +475,7 @@ namespace RockWeb.Blocks.Groups
                         qryParams["groupId"] = parentGroupId;
                     }
 
-                    NavigateToPage( this.CurrentPage.Guid, qryParams );
+                    NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
                 {
@@ -695,7 +705,6 @@ namespace RockWeb.Blocks.Groups
             using ( new UnitOfWorkScope() )
             {
                 var groupService = new GroupService();
-                var groupTypeService = new GroupTypeService();
                 var attributeService = new AttributeService();
 
                 LoadDropDowns();
@@ -711,7 +720,7 @@ namespace RockWeb.Blocks.Groups
                     if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse() )
                     {
                         // default GroupType for new Group to "Security Roles"  if LimittoSecurityRoleGroups
-                        var securityRoleGroupType = groupTypeService.Queryable().FirstOrDefault( a => a.Guid.Equals( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE ) ) );
+                        var securityRoleGroupType = GroupTypeCache.GetSecurityRoleGroupType();
                         if ( securityRoleGroupType != null )
                         {
                             ddlGroupType.SetValue( securityRoleGroupType.Id );
@@ -753,7 +762,7 @@ namespace RockWeb.Blocks.Groups
                     GroupLocationsState.Add( groupLocationState );
                 }
 
-                ShowGroupTypeEditDetails(group, true);
+                ShowGroupTypeEditDetails( GroupTypeCache.Read(group.GroupTypeId), group, true);
 
                 // if this block's attribute limit group to SecurityRoleGroups, don't let them edit the SecurityRole checkbox value
                 if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse() )
@@ -773,26 +782,18 @@ namespace RockWeb.Blocks.Groups
                         .ToList() );
                 BindGroupMemberAttributesGrid();
 
-                BindInheritedAttributes( group.GroupTypeId, groupTypeService, attributeService );
+                BindInheritedAttributes( group.GroupTypeId, attributeService );
             }
         }
 
-        private void ShowGroupTypeEditDetails(Group group, bool setValues)
+        private void ShowGroupTypeEditDetails(GroupTypeCache groupType, Group group, bool setValues)
         {
             if ( group != null )
             {
-                if ( group.GroupType == null )
-                {
-                    if ( group.GroupTypeId > 0 )
-                    {
-                        group.GroupType = new GroupTypeService().Get( group.GroupTypeId );
-                    }
-                }
-
                 // Save value to viewstate for use later when binding location grid
-                AllowMultipleLocations = group.GroupType != null && group.GroupType.AllowMultipleLocations;
+                AllowMultipleLocations = groupType != null && groupType.AllowMultipleLocations;
 
-                if ( group.GroupType != null && group.GroupType.LocationSelectionMode != GroupLocationPickerMode.None )
+                if ( groupType != null && groupType.LocationSelectionMode != GroupLocationPickerMode.None )
                 {
                     wpLocations.Visible = true;
                     wpLocations.Title = AllowMultipleLocations ? "Locations" : "Location";
@@ -830,7 +831,7 @@ namespace RockWeb.Blocks.Groups
             string groupIconHtml = string.Empty;
             if ( !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) )
             {
-                groupIconHtml = string.Format( "<i class='{0} fa-2x' ></i>", group.GroupType.IconCssClass );
+                groupIconHtml = string.Format( "<i class='{0}' ></i>", group.GroupType.IconCssClass );
             }
             else
             {
@@ -891,67 +892,54 @@ namespace RockWeb.Blocks.Groups
             Rock.Attribute.Helper.AddDisplayControls( group, attributeCategories, phAttributes );
 
             // Get all the group locations and group all those that have a geo-location into either points or polygons
-            var points = new List<Location>();
-            var polygons = new List<Location>();
+            var points = new List<GroupLocation>();
+            var polygons = new List<GroupLocation>();
             foreach ( GroupLocation groupLocation in group.GroupLocations )
             {
                 if ( groupLocation.Location != null )
                 {
                     if ( groupLocation.Location.GeoPoint != null )
                     {
-                        points.Add( groupLocation.Location );
+                        points.Add( groupLocation );
                     }
                     else if ( groupLocation.Location.GeoFence != null )
                     {
-                        polygons.Add( groupLocation.Location );
+                        polygons.Add( groupLocation );
                     }
                 }
             }
 
+            var dict = new Dictionary<string, object>();
             if ( points.Any() )
             {
                 var pointsList = new List<Dictionary<string, object>>();
-                foreach ( var locationPoint in points )
+                foreach ( var groupLocation in points)
                 {
                     var pointsDict = new Dictionary<string, object>();
-                    pointsDict.Add( "latitude", locationPoint.GeoPoint.Latitude );
-                    pointsDict.Add( "longitude", locationPoint.GeoPoint.Longitude );
+                    pointsDict.Add( "type", groupLocation.LocationTypeValue.Name );
+                    pointsDict.Add( "latitude", groupLocation.Location.GeoPoint.Latitude );
+                    pointsDict.Add( "longitude", groupLocation.Location.GeoPoint.Longitude );
                     pointsList.Add( pointsDict );
                 }
-
-                string locationPointImage = GetAttributeValue( "LocationPointImage" );
-
-                bool combinePoints = true;
-                if ( !bool.TryParse( GetAttributeValue( "CombinePoints" ), out combinePoints ) || combinePoints )
-                {
-                    var dict = new Dictionary<string, object>();
-                    dict.Add( "points", pointsList );
-                    phLocationMaps.Controls.Add( new LiteralControl( string.Format( "<img src='{0}'>", locationPointImage.ResolveMergeFields( dict ) ) ) );
-                }
-                else
-                {
-                    foreach ( var pointsDict in pointsList )
-                    {
-                        var singlePointsList = new List<Dictionary<string, object>>();
-                        singlePointsList.Add( pointsDict );
-
-                        var dict = new Dictionary<string, object>();
-                        dict.Add( "points", singlePointsList );
-                        phLocationMaps.Controls.Add( new LiteralControl( string.Format( "<img src='{0}'>", locationPointImage.ResolveMergeFields( dict ) ) ) );
-                    }
-                }
+                dict.Add( "points", pointsList );
             }
 
             if ( polygons.Any() )
             {
-                string locationPolygonImage = GetAttributeValue( "LocationPolygonImage" );
-                foreach ( var locationPolygon in polygons )
+                var polygonsList = new List<Dictionary<string, object>>();
+                foreach ( var groupLocation in polygons )
                 {
-                    var dict = new Dictionary<string, object>();
-                    dict.Add( "encoded_polygon", locationPolygon.EncodeGooglePolygon() );
-                    phLocationMaps.Controls.Add( new LiteralControl( string.Format( "<img src='{0}'>", locationPolygonImage.ResolveMergeFields( dict ) ) ) );
+                    var polygonDict = new Dictionary<string, object>();
+                    polygonDict.Add( "type", groupLocation.LocationTypeValue.Name);
+                    polygonDict.Add( "polygon_wkt", groupLocation.Location.GeoFence.AsText());
+                    polygonDict.Add( "google_encoded_polygon", groupLocation.Location.EncodeGooglePolygon() );
+                    polygonsList.Add( polygonDict );
                 }
+                dict.Add( "polygons", polygonsList );
             }
+
+            phMaps.Controls.Clear();
+            phMaps.Controls.Add( new LiteralControl( GetAttributeValue( "MapHTML" ).ResolveMergeFields( dict ) ) );
 
             btnSecurity.Visible = group.IsAuthorized( "Administrate", CurrentPerson );
             btnSecurity.Title = group.Name;
@@ -1061,13 +1049,13 @@ namespace RockWeb.Blocks.Groups
                         .Count();
         }
 
-        private void BindInheritedAttributes( int? inheritedGroupTypeId, GroupTypeService groupTypeService, AttributeService attributeService )
+        private void BindInheritedAttributes( int? inheritedGroupTypeId, AttributeService attributeService )
         {
             GroupMemberAttributesInheritedState = new List<InheritedAttribute>();
 
             while ( inheritedGroupTypeId.HasValue )
             {
-                var inheritedGroupType = groupTypeService.Get( inheritedGroupTypeId.Value );
+                var inheritedGroupType = GroupTypeCache.Read( inheritedGroupTypeId.Value );
                 if ( inheritedGroupType != null )
                 {
                     string qualifierValue = inheritedGroupType.Id.ToString();
@@ -1125,7 +1113,7 @@ namespace RockWeb.Blocks.Groups
             int? groupTypeId = ddlGroupType.SelectedValueAsId();
             if ( groupTypeId.HasValue )
             {
-                var groupType = new GroupTypeService().Get( groupTypeId.Value );
+                var groupType = GroupTypeCache.Read( groupTypeId.Value );
                 if ( groupType != null )
                 {
                     GroupLocationPickerMode groupTypeModes = groupType.LocationSelectionMode;
@@ -1175,7 +1163,7 @@ namespace RockWeb.Blocks.Groups
                                                 .Where( l => l.IsMappedLocation && !l.LocationTypeValue.Guid.Equals( previousLocationType ) ) )
                                             {
                                                 ddlMember.Items.Add( new ListItem(
-                                                    string.Format( "{0} ({1} {2})", familyGroupLocation.Location.ToString(), member.Person.FirstLastName, familyGroupLocation.LocationTypeValue.Name ),
+                                                    string.Format( "{0} {1} ({2})", member.Person.FirstLastName, familyGroupLocation.LocationTypeValue.Name, familyGroupLocation.Location.ToString() ),
                                                     string.Format( "{0}|{1}", familyGroupLocation.Location.Id, member.PersonId ) ) );
                                             }
                                         }
@@ -1190,7 +1178,7 @@ namespace RockWeb.Blocks.Groups
                             locpGroupLocation.AllowedPickerModes = modes;
                         }
 
-                        ddlLocationType.DataSource = groupType.LocationTypes.Select( l => l.LocationTypeValue ).ToList();
+                        ddlLocationType.DataSource = groupType.LocationTypeValues.ToList();
                         ddlLocationType.DataBind();
 
                         LocationTypeTab = (displayMemberTab && ddlMember.Items.Count > 0) ? MEMBER_LOCATION_TAB_TITLE : OTHER_LOCATION_TAB_TITLE;

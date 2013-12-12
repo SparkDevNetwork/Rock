@@ -294,9 +294,8 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void groupTypeEditor_DeleteGroupTypeClick( object sender, EventArgs e )
         {
-            GroupTypeService groupTypeService = new GroupTypeService();
             CheckinGroupTypeEditor groupTypeEditor = sender as CheckinGroupTypeEditor;
-            GroupType groupType = groupTypeService.Get( groupTypeEditor.GroupTypeGuid );
+            var groupType = GroupTypeCache.Read( groupTypeEditor.GroupTypeGuid );
             if ( groupType != null )
             {
                 // Warn if this GroupType or any of its child grouptypes (recursive) is being used as an Inherited Group Type. Probably shouldn't happen, but just in case
@@ -316,7 +315,7 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
         /// <returns></returns>
-        private static bool IsInheritedGroupTypeRecursive( GroupType groupType )
+        private static bool IsInheritedGroupTypeRecursive( GroupTypeCache groupType )
         {
             if ( new GroupTypeService().Queryable().Any( a => a.InheritedGroupType.Guid == groupType.Guid ) )
             {

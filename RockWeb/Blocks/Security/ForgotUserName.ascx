@@ -11,7 +11,7 @@
             <Rock:RockTextBox ID="tbEmail" runat="server" Label="Email" Required="true" ></Rock:RockTextBox>
         </fieldset>
 
-        <asp:Panel ID="pnlWarning" runat="server" Visible="false" CssClass="alert warning">
+        <asp:Panel ID="pnlWarning" runat="server" Visible="false" CssClass="alert alert-warning">
             <asp:Literal ID="lWarning" runat="server"></asp:Literal>
         </asp:Panel>
 

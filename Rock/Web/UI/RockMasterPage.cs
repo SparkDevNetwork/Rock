@@ -15,24 +15,15 @@ namespace Rock.Web.UI
     /// </summary>
     public class RockMasterPage : MasterPage
     {
-        private PageCache _currentPage = null;
+        private PageCache _pageCache = null;
 
         /// <summary>
-        /// Gets or sets the current page.
+        /// Sets the page.
         /// </summary>
-        /// <value>
-        /// The current page.
-        /// </value>
-        public PageCache CurrentPage
+        /// <param name="pageCache">The page cache.</param>
+        internal void SetPage(PageCache pageCache)
         {
-            get
-            {
-                return _currentPage;
-            }
-            set
-            {
-                _currentPage = value;
-            }
+            _pageCache = pageCache;
         }
 
         /// <summary>
@@ -46,9 +37,9 @@ namespace Rock.Web.UI
             if ( url.StartsWith( "~~" ) )
             {
                 string theme = "RockChMS";
-                if ( CurrentPage != null )
+                if ( _pageCache != null )
                 {
-                    theme = CurrentPage.Layout.Site.Theme;
+                    theme = _pageCache.Layout.Site.Theme;
                 }
                 themeUrl = "~/Themes/" + theme + ( url.Length > 2 ? url.Substring( 2 ) : string.Empty );
             }

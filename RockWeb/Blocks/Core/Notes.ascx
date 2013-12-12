@@ -29,7 +29,7 @@
                                     <asp:CheckBox ID="cbAlert" runat="server" Text="Alert" />
                                     <asp:CheckBox ID="cbPrivate" runat="server" Text="Private" />
                                 </div>
-                                <button class="btn btn-xs security pull-right" type="button" id="btnSecurity" runat="server"><i class="fa fa-lock"></i> Security</button>
+                                <button class="btn btn-xs security btn-action pull-right" type="button" id="btnSecurity" runat="server"><i class="fa fa-lock"></i></button>
                             </div>
                         </div>
 

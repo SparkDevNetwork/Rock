@@ -58,16 +58,20 @@
                     </p>
 
                     <div class="row">
-                        <asp:Literal ID="lblMainDetails" runat="server" />
-                        <asp:Literal ID="lFilters" runat="server" />
+                        <div class="col-md-6">
+                            <asp:Literal ID="lblMainDetails" runat="server" />
+                        </div>
+                        <div class="col-md-6">
+                            <asp:Literal ID="lFilters" runat="server" />
+                        </div>
                     </div>
 
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-sm" OnClick="btnEdit_Click" />
-                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-sm" OnClick="btnDelete_Click" />
-                        <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm pull-right" />
+                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link btn-sm" OnClick="btnDelete_Click" />
+                        <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-action pull-right" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                     </div>
 
