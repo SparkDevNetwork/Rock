@@ -378,6 +378,7 @@ namespace Rock.Model
         [DataMember]
         [Previewable]
         [MergeField]
+        [RegularExpression(@"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage= "The Email address is invalid")]
         public string Email { get; set; }
 
         /// <summary>
