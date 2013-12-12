@@ -316,27 +316,15 @@ namespace Rock
         }
 
         /// <summary>
-        /// Returns True for 'True', 'Yes', '1'
+        /// Returns True for 'True', 'Yes', 'T', 'Y', '1'
         /// </summary>
         /// <param name="str">The string.</param>
-        /// <param name="NullIsFalse">if set to <c>true</c> [null is false].</param>
         /// <returns></returns>
-        public static bool AsBoolean( this string str, bool NullIsFalse = true )
+        public static bool AsBoolean( this string str)
         {
-            if ( NullIsFalse )
-            {
-                if ( string.IsNullOrWhiteSpace( str ) )
-                {
-                    return false;
-                }
-            }
+            string[] trueStrings = new string[] { "true", "yes", "t", "y", "1" };
 
-            if ( str.Equals( "true", StringComparison.OrdinalIgnoreCase ) || str.Equals( "yes", StringComparison.OrdinalIgnoreCase ) || str.Equals( "1", StringComparison.OrdinalIgnoreCase ) )
-            {
-                return true;
-            }
-
-            return false;
+            return trueStrings.Contains( str.ToLower() );
         }
 
         /// <summary>
