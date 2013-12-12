@@ -23,8 +23,8 @@ namespace RockWeb.Blocks.Prayer
 {
     [TextField( "Welcome Introduction Text", "Some text (or HTML) to display on the first step.", false, "<h2>Welcome to our Prayer Ministry.</h2>", "", 1 )]
     [CategoryField( "Category", "A top level category. This controls which categories are shown when starting a prayer session.", false, "Rock.Model.PrayerRequest", "", "", false, "", "Filtering", 2, "CategoryGuid" )]
-    [BooleanField( "Enable Community Flagging", "If enabled, members of the prayer team will be able to flag prayer requests if they feel it is inappropriate.", false, "Flagging", 3 )]
-    [IntegerField( "Flag Limit", "Number of flags a prayer request has to get from the community before it is automatically unapproved.", false, 1, "Flagging", 4 )]
+    [BooleanField( "Enable Community Flagging", "If enabled, members of the prayer team will be able to a flag prayer request if they feel it is inappropriate.", false, "Flagging", 3 )]
+    [IntegerField( "Flag Limit", "The number of flags a prayer request has to get from the community before it is automatically unapproved.", false, 1, "Flagging", 4 )]
     [TextField( "Note Type", "The note type name for these prayer request comments.", false, "Prayer Comment", "Advanced", 0, "NoteType" )]
 
     public partial class PrayerSession : RockBlock
@@ -302,7 +302,7 @@ namespace RockWeb.Blocks.Prayer
         {
             string settingPrefix = string.Format( "prayer-categories-{0}-", this.BlockId );
 
-            var requestQuery = new PrayerRequestService().Queryable();
+            var prayerRequestQuery = new PrayerRequestService().GetActiveApprovedUnexpired();
 
             // Filter categories if one has been selected in the configuration
             if ( !string.IsNullOrEmpty( categoryGuid ) )
@@ -311,12 +311,13 @@ namespace RockWeb.Blocks.Prayer
                 var filterCategory = CategoryCache.Read( guid );
                 if ( filterCategory != null )
                 {
-                    requestQuery = requestQuery.Where( r => r.Category.ParentCategoryId == filterCategory.Id && r.IsActive == true  && r.IsApproved == true );
+                    prayerRequestQuery = prayerRequestQuery.Where( p => p.Category.ParentCategoryId == filterCategory.Id );
                 }
             }
 
-            var inUseCategories = requestQuery
-                .Select( pr => new { pr.Category.Id, pr.Category.Name } )
+            var inUseCategories = prayerRequestQuery
+                .Where( p => p.Category != null )
+                .Select( p => new { p.Category.Id, p.Category.Name } )
                 .GroupBy( g => new { g.Id, g.Name } )
                 .OrderBy( g => g.Key.Name )
                 .Select( a => new
@@ -343,6 +344,10 @@ namespace RockWeb.Blocks.Prayer
             return ( inUseCategories.Count() > 0 );
         }
 
+        /// <summary>
+        /// Saves the users selected prayer categories for use during the next prayer session.
+        /// </summary>
+        /// <param name="settingPrefix"></param>
         private void SaveUserPreferences( string settingPrefix )
         {
             var previouslyCheckedIds = this.GetUserPreference( settingPrefix ).SplitDelimitedValues();
@@ -372,7 +377,7 @@ namespace RockWeb.Blocks.Prayer
         private void SetAndDisplayPrayerRequests( RockCheckBoxList categoriesList )
         {
             PrayerRequestService service = new PrayerRequestService();
-            var prayerRequests = service.GetByCategoryIds( categoriesList.SelectedValuesAsInt, onlyApproved: true ).OrderByDescending( p => p.IsUrgent).ThenBy( p => p.PrayerCount );
+            var prayerRequests = service.GetByCategoryIds( categoriesList.SelectedValuesAsInt ).OrderByDescending( p => p.IsUrgent ).ThenBy( p => p.PrayerCount );
             List<int> list = prayerRequests.Select( p => p.Id ).ToList<int>();
 
             Session[ _sessionKey ] = list;

@@ -4,27 +4,12 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Data.SqlClient;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using System.Xml.Linq;
 
-using Rock;
-using Rock.Attribute;
-using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
-using Rock.Reporting.DataTransform.Person;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -65,7 +50,7 @@ namespace RockWeb.Blocks.Reporting
 
             var service = new PersonService();
             var people = service.Queryable().Where( p => p.LastName == "Turner" );
-            var parents = service.Transform(people, new Rock.Reporting.DataTransform.Person.ParentTransform());
+            var parents = service.Transform( people, new Rock.Reporting.DataTransform.Person.ParentTransform() );
 
             gReport.DataSource = parents.ToList();
             gReport.DataBind();

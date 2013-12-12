@@ -125,8 +125,8 @@
                 <div class="actions">
                     <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-sm" OnClick="btnEdit_Click" CausesValidation="false" />
                     <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
-                    <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-action btn-sm" OnClick="btnDelete_Click" CausesValidation="false" />
-                    <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm pull-right" />
+                    <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link btn-sm" OnClick="btnDelete_Click" CausesValidation="false" />
+                    <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-action pull-right" />
                 </div>
 
             </fieldset>

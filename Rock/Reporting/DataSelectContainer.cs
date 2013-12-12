@@ -52,9 +52,9 @@ namespace Rock.Reporting
             foreach ( var serviceEntry in Instance.Components )
             {
                 var component = serviceEntry.Value.Value;
-                if ( !entityTypeNames.Contains( component.EntityTypeName ) )
+                if ( !entityTypeNames.Contains( component.AppliesToEntityType ) )
                 {
-                    entityTypeNames.Add( component.EntityTypeName );
+                    entityTypeNames.Add( component.AppliesToEntityType );
                 }
             }
 
@@ -88,7 +88,7 @@ namespace Rock.Reporting
         public static List<DataSelectComponent> GetComponentsBySelectedEntityTypeName( string entityTypeName )
         {
             return Instance.Components
-                .Where( c => c.Value.Value.EntityTypeName == entityTypeName )
+                .Where( c => c.Value.Value.AppliesToEntityType == entityTypeName )
                 .Select( c => c.Value.Value )
                 .OrderBy( c => c.Order )
                 .ToList();
