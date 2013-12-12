@@ -23,6 +23,7 @@ namespace Rock.Storage.Provider
         /// Removes the file from the external storage medium associated with the provider.
         /// </summary>
         /// <param name="file">The file.</param>
+        /// <param name="context">The context.</param>
         public override void RemoveFile( BinaryFile file, HttpContext context )
         {
             // Database storage just stores everything in the BinaryFile table, so there is no external file data to delete
@@ -32,6 +33,7 @@ namespace Rock.Storage.Provider
         /// Saves the file to the external storage medium associated with the provider.
         /// </summary>
         /// <param name="file">The file.</param>
+        /// <param name="context">The context.</param>
         public override void SaveFile( BinaryFile file, HttpContext context )
         {
             // Database storage just stores everything in the BinaryFile table, so there is no external file data to save, but we do need to set the Url
@@ -42,6 +44,7 @@ namespace Rock.Storage.Provider
         /// Gets the file bytes from the external storage medium associated with the provider.
         /// </summary>
         /// <param name="file">The file.</param>
+        /// <param name="context">The context.</param>
         /// <returns></returns>
         public override byte[] GetFileContent( BinaryFile file, HttpContext context )
         {
