@@ -82,7 +82,7 @@
                 </div>
 
                 <div class="modal-body">
-                    <div id="modal-scroll-container" class="scroll-container">
+                    <div id="modal-scroll-container" class="scroll-container scroll-container-vertical">
                         <div class="scrollbar">
                             <div class="track">
                                 <div class="thumb">
