@@ -84,6 +84,9 @@
                         })
                         .on('rockTree:expand rockTree:collapse', function () {
                             scrollbCategory.tinyscrollbar_update();
+
+                            // update viewport height
+                            $(this).closest.height($('#treeview-content').height());
                         })
                         .rockTree({
                             restUrl: '<%= ResolveUrl( "~/api/categories/getchildren/" ) %>',
