@@ -25,7 +25,7 @@ namespace Rock.Migrations
             AddForeignKey("dbo.Person", "ConnectionStatusValueId", "dbo.DefinedValue", "Id");
             DropColumn("dbo.Person", "PersonStatusValueId");
 
-            Sql ( @"
+            Sql( @"
     UPDATE [Attribute] SET [Key] = 'DefaultConnectionStatus' WHERE [key] = 'DefaultPersonStatus'
 
     -- Delete values that may have been created by framework before running migration
@@ -60,6 +60,7 @@ namespace Rock.Migrations
 	    [FriendlyName] = 'Person Status'
     WHERE [Name] = 'Rock.PersonProfile.Badge.ConnectionStatus'
 " ); 
+            
             AddColumn( "dbo.Person", "PersonStatusValueId", c => c.Int() );
             DropForeignKey("dbo.Person", "ConnectionStatusValueId", "dbo.DefinedValue");
             DropIndex("dbo.Person", new[] { "ConnectionStatusValueId" });
