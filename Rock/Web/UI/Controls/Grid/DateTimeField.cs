@@ -21,7 +21,7 @@ namespace Rock.Web.UI.Controls
         public DateTimeField()
             : base()
         {
-            this.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
+            // Let the Header be left aligned (that's how Bootstrap wants it), but have the item be right-aligned
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
             this.DataFormatString = "{0:g}";
         }

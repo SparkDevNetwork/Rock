@@ -1,9 +1,9 @@
-using System;
 //
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -143,7 +143,7 @@ namespace Rock.Model
 
         #region Methods
 
-        public DataTable GetDataTable( RockContext context, Type entityType, List<EntityField> entityFields, List<AttributeCache> attributes, List<ReportField> selectComponents, out List<string> errorMessages )
+        public List<object> GetDataSource( RockContext context, Type entityType, List<EntityField> entityFields, List<AttributeCache> attributes, List<ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -168,10 +168,10 @@ namespace Rock.Model
                     var dynamicFields = new Dictionary<string, Type>();
                     entityFields.ForEach( f => dynamicFields.Add( string.Format( "Entity_{0}", f.Name ), f.PropertyType ) );
                     attributes.ForEach( a => dynamicFields.Add( string.Format( "Attribute_{0}", a.Id ), typeof( string ) ) );
-                    foreach( var reportField in selectComponents)
+                    foreach ( var reportField in selectComponents )
                     {
                         DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
-                        if (selectComponent != null)
+                        if ( selectComponent != null )
                         {
                             dynamicFields.Add( string.Format( "Data_{0}", selectComponent.ColumnPropertyName ), selectComponent.ColumnFieldType );
                         }
@@ -181,55 +181,42 @@ namespace Rock.Model
 
                     // Bind the dynamic fields to their expressions
                     var bindings = new List<MemberBinding>();
-                    entityFields.ForEach( f => bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "Entity_{0}", f.Name ) ), Expression.Property( paramExpression, f.Name ) ) ) );
-                    attributes.ForEach( a => bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "Attribute_{0}", a.Id ) ), GetAttributeValueExpression( attributeValues, attributeValueParameter, idExpression, a.Id ) ) ) );
-                    foreach( var reportField in selectComponents)
+                    entityFields.ForEach( f => bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "entity_{0}", f.Name ) ), Expression.Property( paramExpression, f.Name ) ) ) );
+                    attributes.ForEach( a => bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "attribute_{0}", a.Id ) ), GetAttributeValueExpression( attributeValues, attributeValueParameter, idExpression, a.Id ) ) ) );
+                    foreach ( var reportField in selectComponents )
                     {
                         DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
-                        if (selectComponent != null)
+                        if ( selectComponent != null )
                         {
-                            bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "Data_{0}", selectComponent.ColumnPropertyName ) ), selectComponent.GetExpression( context, idExpression, reportField.Selection ) ) );
+                            bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "data_{0}", selectComponent.ColumnPropertyName ) ), selectComponent.GetExpression( context, idExpression, reportField.Selection ) ) );
                         }
                     }
 
-                    Expression selector = Expression.Lambda( Expression.MemberInit( Expression.New( dynamicType.GetConstructor( Type.EmptyTypes ) ), bindings ), paramExpression );
-
+                    ConstructorInfo constructorInfo = dynamicType.GetConstructor( Type.EmptyTypes );
+                    NewExpression newExpression = Expression.New( constructorInfo );
+                    MemberInitExpression memberInitExpression = Expression.MemberInit( newExpression, bindings );
+                    Expression selector = Expression.Lambda( memberInitExpression, paramExpression );
                     Expression whereExpression = this.DataView.GetExpression( serviceInstance, paramExpression, out errorMessages );
 
-                    MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
+                    MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ) } );
                     if ( getMethod != null )
                     {
-                        var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression } );
+
+                        var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, sortProperty } );
                         var qry = getResult as IQueryable<IEntity>;
 
                         var selectExpression = Expression.Call( typeof( Queryable ), "Select", new Type[] { qry.ElementType, dynamicType }, Expression.Constant( qry ), selector );
                         var query = qry.Provider.CreateQuery( selectExpression );
 
-                        DataTable dt = new Service().GetDataTable( query.ToString(), CommandType.Text, null );
-
-                        // The select does not return fields with the same name as the generic type's field names (not sure why), so need to rename columns
-                        foreach ( var field in entityFields )
+                        // enumerate thru the query results and put into a list
+                        var reportResult = new List<object>();
+                        var enumerator = query.GetEnumerator();
+                        while ( enumerator.MoveNext() )
                         {
-                            RenameColumn( dt, field.Name, "Entity_" + field.Name );
+                            reportResult.Add( enumerator.Current );
                         }
 
-                        int colNum = 1;
-                        foreach ( var attribute in attributes )
-                        {
-                            RenameColumn( dt, string.Format( "C{0}", colNum ), string.Format( "Attribute_{0}", attribute.Id ) );
-                            colNum++;
-                        }
-                        foreach ( var reportField in selectComponents )
-                        {
-                            DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
-                            if ( selectComponent != null )
-                            {
-                                RenameColumn( dt, string.Format( "C{0}", colNum ), string.Format( "Data_{0}", selectComponent.ColumnPropertyName ) );
-                                colNum++;
-                            }
-                        }
-
-                        return dt;
+                        return reportResult;
                     }
                 }
             }
@@ -237,13 +224,13 @@ namespace Rock.Model
             return null;
         }
 
-        private Expression GetAttributeValueExpression(IQueryable<AttributeValue> attributeValues, ParameterExpression attributeValueParameter, Expression parentIdProperty, int attributeId)
+        private Expression GetAttributeValueExpression( IQueryable<AttributeValue> attributeValues, ParameterExpression attributeValueParameter, Expression parentIdProperty, int attributeId )
         {
-            MemberExpression attributeIdProperty = Expression.Property(attributeValueParameter, "AttributeId");
+            MemberExpression attributeIdProperty = Expression.Property( attributeValueParameter, "AttributeId" );
             MemberExpression entityIdProperty = Expression.Property( attributeValueParameter, "EntityId" );
-            Expression attributeIdConstant = Expression.Constant(attributeId);
+            Expression attributeIdConstant = Expression.Constant( attributeId );
 
-            Expression attributeIdCompare = Expression.Equal(attributeIdProperty, attributeIdConstant);
+            Expression attributeIdCompare = Expression.Equal( attributeIdProperty, attributeIdConstant );
             Expression entityIdCompre = Expression.Equal( entityIdProperty, Expression.Convert( parentIdProperty, typeof( int? ) ) );
             Expression andExpression = Expression.And( attributeIdCompare, entityIdCompre );
 
@@ -263,10 +250,10 @@ namespace Rock.Model
             return firstOrDefault;
         }
 
-        private void RenameColumn(DataTable dt, string colName, string newName)
+        private void RenameColumn( DataTable dt, string colName, string newName )
         {
             var col = dt.Columns[colName];
-            if (col != null)
+            if ( col != null )
             {
                 col.ColumnName = newName;
             }
