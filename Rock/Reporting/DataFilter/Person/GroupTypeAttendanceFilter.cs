@@ -96,9 +96,9 @@ namespace Rock.Reporting.DataTransform.Person
             string[] options = selection.Split( '|' );
             if ( options.Length >= 4 )
             {
-                var groupType = new GroupTypeService().Get( int.Parse( options[0] ) );
+                var groupType = Rock.Web.Cache.GroupTypeCache.Read( int.Parse( options[0] ) );
 
-                ComparisonType comparisonType = options[0].ConvertToEnum<ComparisonType>(ComparisonType.GreaterThanOrEqualTo);
+                ComparisonType comparisonType = options[0].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
 
                 s = string.Format( "Attended '{0}' {1} {2} times in the last {3} week(s)",
                     groupType != null ? groupType.Name : "?",

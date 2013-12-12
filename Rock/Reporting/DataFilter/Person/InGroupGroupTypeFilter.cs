@@ -102,7 +102,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
-                var groupType = new GroupTypeService().Get( selectionValues[0].AsInteger() ?? 0 );
+                var groupType = Rock.Web.Cache.GroupTypeCache.Read( selectionValues[0].AsInteger() ?? 0 );
 
                 var groupTypeRoleIdList = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsInteger() ).ToList();
 
@@ -161,19 +161,15 @@ function() {
         protected void groupTypePicker_SelectedIndexChanged( object sender, EventArgs e )
         {
             int groupTypeId = groupTypePicker.SelectedValueAsId() ?? 0;
-            var groupTypeService = new GroupTypeService();
-            var groupType = groupTypeService.Get( groupTypeId );
+            var groupType = Rock.Web.Cache.GroupTypeCache.Read( groupTypeId );
             if ( groupType != null )
             {
-                var groupTypeRoleService = new GroupTypeRoleService();
-                var list = groupTypeRoleService.Queryable().Where( a => a.GroupTypeId == groupType.Id ).OrderBy( a => a.Order ).ToList();
                 cblRole.Items.Clear();
-                foreach ( var item in list )
+                foreach ( var item in new GroupTypeRoleService().GetByGroupTypeId(groupType.Id ))
                 {
                     cblRole.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
                 }
-
-                cblRole.Visible = list.Count > 0;
+                cblRole.Visible = cblRole.Items.Count > 0;
             }
             else
             {

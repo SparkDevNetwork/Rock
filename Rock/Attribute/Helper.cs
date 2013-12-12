@@ -14,6 +14,7 @@ using System.Web.UI.WebControls;
 using Rock.Constants;
 
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -195,7 +196,7 @@ namespace Rock.Attribute
                 {
                     foreach ( string propertyCategory in propertyCategories )
                     {
-                        int attributeEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
+                        int attributeEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
                         var category = categoryService.Get( propertyCategory, attributeEntityTypeId, "EntityTypeId", entityTypeId.ToString() ).FirstOrDefault();
                         if ( category == null )
                         {
@@ -236,7 +237,7 @@ namespace Rock.Attribute
                 if ( attribute.Id == 0 )
                     attributeService.Add( attribute, currentPersonId );
                 else
-                    Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+                    AttributeCache.Flush( attribute.Id );
 
                 attributeService.Save( attribute, currentPersonId );
 
@@ -264,13 +265,13 @@ namespace Rock.Attribute
             var groupTypeIds = new List<int>();
             if ( entity is GroupMember || entity is Group || entity is GroupType )
             {
-                var groupService = new GroupService();
+                // Can't use GroupTypeCache here since it loads attributes and would result in a recursive stack overflow situation
                 var groupTypeService = new GroupTypeService();
-
                 GroupType groupType = null;
+
                 if ( entity is GroupMember )
                 {
-                    var group = ( (GroupMember)entity ).Group ?? groupService.Get( ( (GroupMember)entity ).GroupId );
+                    var group = ( (GroupMember)entity ).Group ?? new GroupService().Get( ( (GroupMember)entity ).GroupId );
                     groupType = group.GroupType ?? groupTypeService.Get( group.GroupTypeId );
                 }
                 else if ( entity is Group )

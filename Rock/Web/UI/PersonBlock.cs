@@ -61,9 +61,8 @@ namespace Rock.Web.UI
                 return PersonGroups( (int)Context.Items[itemKey] );
             }
 
-            var service = new GroupTypeService();
-            int groupTypeId = service.Queryable().Where( g => g.Guid == groupTypeGuid ).Select( g => g.Id ).FirstOrDefault();
-
+            var groupType = Rock.Web.Cache.GroupTypeCache.Read( groupTypeGuid );
+            int groupTypeId = groupType != null ? groupType.Id : 0;
             Context.Items.Add( itemKey, groupTypeId );
 
             return PersonGroups( groupTypeId );

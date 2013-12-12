@@ -559,6 +559,8 @@ namespace RockWeb.Blocks.Groups
 
                     } );
 
+                GroupTypeCache.Flush( groupType.Id );
+
             }
 
             NavigateToParentPage();
