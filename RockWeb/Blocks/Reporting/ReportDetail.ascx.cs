@@ -198,6 +198,8 @@ namespace RockWeb.Blocks.Reporting
                     for ( int i = 0; i < gReport.Columns.Count; i++ )
                     {
                         var boundField = gReport.Columns[i] as BoundField;
+                        
+                        // AttributeFields are named in format "Attribute_{attributeId}_{columnIndex}". We need the attributeId portion
                         if ( boundField != null && boundField.DataField.StartsWith( "Attribute_" ) )
                         {
                             if ( boundField is BoolField )
@@ -206,14 +208,18 @@ namespace RockWeb.Blocks.Reporting
                             }
                             else
                             {
-                                string attributeIdPortion = boundField.DataField.Substring( 10 );
-                                int attributeID = attributeIdPortion.AsInteger() ?? 0;
-                                if ( attributeID > 0 )
+                                string[] nameParts = boundField.DataField.Split( '_' );
+                                if ( nameParts.Count() > 1 )
                                 {
-                                    AttributeCache attr = AttributeCache.Read( attributeID );
-                                    var cell = e.Row.Cells[i];
-                                    string cellValue = HttpUtility.HtmlDecode( cell.Text ).Trim();
-                                    cell.Text = attr.FieldType.Field.FormatValue( cell, cellValue, attr.QualifierValues, true );
+                                    string attributeIdPortion = nameParts[1];
+                                    int attributeID = attributeIdPortion.AsInteger() ?? 0;
+                                    if ( attributeID > 0 )
+                                    {
+                                        AttributeCache attr = AttributeCache.Read( attributeID );
+                                        var cell = e.Row.Cells[i];
+                                        string cellValue = HttpUtility.HtmlDecode( cell.Text ).Trim();
+                                        cell.Text = attr.FieldType.Field.FormatValue( cell, cellValue, attr.QualifierValues, true );
+                                    }
                                 }
                             }
                         }
@@ -715,19 +721,21 @@ namespace RockWeb.Blocks.Reporting
                 Type entityType = EntityTypeCache.Read( report.EntityTypeId.Value ).GetEntityType();
                 List<EntityField> entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType );
 
-                var selectedEntityFields = new List<EntityField>();
-                var selectedAttributes = new List<AttributeCache>();
-                var selectedComponents = new List<ReportField>();
+                var selectedEntityFields = new Dictionary<int,EntityField>();
+                var selectedAttributes = new Dictionary<int, AttributeCache>();
+                var selectedComponents = new Dictionary<int, ReportField>();
 
                 gReport.Columns.Clear();
+                int columnIndex = 0;
                 foreach ( var reportField in report.ReportFields.OrderBy( a => a.Order ) )
                 {
+                    columnIndex++;
                     if ( reportField.ReportFieldType == ReportFieldType.Property )
                     {
                         var entityField = entityFields.FirstOrDefault( a => a.Name == reportField.Selection );
                         if ( entityField != null )
                         {
-                            selectedEntityFields.Add( entityField );
+                            selectedEntityFields.Add( columnIndex, entityField );
 
                             if ( reportField.ShowInGrid )
                             {
@@ -741,7 +749,7 @@ namespace RockWeb.Blocks.Reporting
                                     boundField = Grid.GetGridField( entityField.PropertyType );
                                 }
 
-                                boundField.DataField = "Entity_" + entityField.Name;
+                                boundField.DataField = string.Format( "Entity_{0}_{1}", entityField.Name, columnIndex );
                                 boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? entityField.Title : reportField.ColumnHeaderText;
                                 boundField.SortExpression = entityField.Name;
                                 gReport.Columns.Add( boundField );
@@ -754,7 +762,7 @@ namespace RockWeb.Blocks.Reporting
                         if ( attributeId.HasValue )
                         {
                             var attribute = AttributeCache.Read( attributeId.Value );
-                            selectedAttributes.Add( attribute );
+                            selectedAttributes.Add( columnIndex, attribute );
 
                             if ( reportField.ShowInGrid )
                             {
@@ -769,7 +777,7 @@ namespace RockWeb.Blocks.Reporting
                                     boundField = new BoundField();
                                 }
 
-                                boundField.DataField = string.Format( "Attribute_{0}", attribute.Id );
+                                boundField.DataField = string.Format( "Attribute_{0}_{1}", attribute.Id, columnIndex );
                                 boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? attribute.Name : reportField.ColumnHeaderText;
                                 boundField.SortExpression = null;
 
@@ -787,14 +795,14 @@ namespace RockWeb.Blocks.Reporting
                     }
                     else if ( reportField.ReportFieldType == ReportFieldType.DataSelectComponent )
                     {
-                        selectedComponents.Add( reportField );
+                        selectedComponents.Add( columnIndex, reportField );
                         if ( reportField.ShowInGrid )
                         {
                             DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
                             if ( selectComponent != null )
                             {
                                 var boundField = Grid.GetGridField( selectComponent.ColumnFieldType );
-                                boundField.DataField = string.Format( "Data_{0}", selectComponent.ColumnPropertyName );
+                                boundField.DataField = string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, columnIndex );
                                 boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? selectComponent.ColumnHeaderText : reportField.ColumnHeaderText;
                                 boundField.SortExpression = null;
                                 gReport.Columns.Add( boundField );
