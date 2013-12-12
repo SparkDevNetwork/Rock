@@ -327,7 +327,7 @@ namespace RockWeb.Blocks.Groups
             var group = groupMember.Group;
             if ( !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) )
             {
-                groupIconHtml = string.Format( "<i class='{0} fa-2x' ></i>", group.GroupType.IconCssClass );
+                groupIconHtml = string.Format( "<i class='{0}' ></i>", group.GroupType.IconCssClass );
             }
             else
             {
