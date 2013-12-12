@@ -46,6 +46,21 @@
                 var scrollbCategory = $('.treeview-scroll');
                 scrollbCategory.tinyscrollbar({ axis: 'x', sizethumb: 60, size: 200 });
 
+                // scrollbar hide/show
+                var timerScrollHide;
+                $("[id$='upCategoryTree']").on({
+                    mouseenter: function () {
+                        clearTimeout(timerScrollHide);
+                        $("[id$='upCategoryTree'] div[class~='scrollbar'] div[class='track'").fadeIn('fast');
+                    },
+                    mouseleave: function () {
+                        timerScrollHide = setTimeout(function () {
+                            $("[id$='upCategoryTree'] div[class~='scrollbar'] div[class='track'").fadeOut('slow');
+                        }, 1000);
+                    }
+                });
+
+
                 // update viewport height
                 resizeScrollbar(scrollbCategory);
 

@@ -89,7 +89,7 @@ namespace RockWeb.Blocks.Core
                 }
 
                 lbAddCategory.Visible = true;
-                lbAddItem.Visible = false;
+                lbAddItem.Enabled = false;
 
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Core
 
                                     if ( entity != null )
                                     {
-                                        lbAddCategory.Visible = false;
+                                        lbAddCategory.Enabled = false;
                                         category = entity.Category;
                                         if ( category != null )
                                         {
