@@ -162,13 +162,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 .ToList()
                 .ForEach( n => person.PhoneNumbers.Remove( n ) );
 
-            person.Email = tbEmail.Text;
+            person.Email = tbEmail.Text.Trim();
 
             person.GivingGroupId = ddlGivingGroup.SelectedValueAsId();
 
             person.RecordStatusValueId = ddlRecordStatus.SelectedValueAsInt();
             person.RecordStatusReasonValueId = ddlReason.SelectedValueAsInt();
 
+            if ( !person.IsValid )
+            {
+                return;
+            }
             personService.Save( person, CurrentPersonId );
 
             if ( orphanedPhotoId.HasValue )

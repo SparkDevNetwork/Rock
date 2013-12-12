@@ -2,7 +2,7 @@
 
 <asp:UpdatePanel ID="upEditPerson" runat="server">
     <ContentTemplate>
-
+        <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
         <div class="row">
 
             <div class="col-md-3">
