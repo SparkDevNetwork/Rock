@@ -91,12 +91,10 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
                 return false;
             }  
- 
-            if ( new Service<HtmlContent>().Queryable().Any( a => a.ApprovedByPersonId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, HtmlContent.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring HtmlContent,ApprovedByPersonId 
+            
+            // ignoring HtmlContent,LastModifiedPersonId 
  
             if ( new Service<MarketingCampaign>().Queryable().Any( a => a.ContactPersonId == item.Id ) )
             {
