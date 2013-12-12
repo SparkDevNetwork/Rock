@@ -631,6 +631,16 @@ namespace Rock.Web.UI.Controls
                 // get access to the List<> and its properties
                 IList data = (IList)this.DataSource;
                 Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
+                
+                // if the list is just List<object>, try to find out what the properties of specific type of object are by examining the first item in the list
+                if (oType == typeof(object))
+                {
+                    if (data.Count > 0)
+                    {
+                        oType = data[0].GetType();
+                    }
+                }
+
                 IList<PropertyInfo> props = new List<PropertyInfo>( oType.GetProperties() );
 
                 // print column headings
