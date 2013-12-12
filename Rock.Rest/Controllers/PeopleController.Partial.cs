@@ -113,7 +113,7 @@ namespace Rock.Rest.Controllers
                 PersonSearchResult personSearchResult = new PersonSearchResult();
                 personSearchResult.Name = lastFirst ? person.FullNameLastFirst : person.FullName;
                 personSearchResult.Age = person.Age.HasValue ? person.Age.Value : -1;
-                personSearchResult.PersonStatus = person.PersonStatusValue != null ? person.PersonStatusValue.Name : string.Empty;
+                personSearchResult.ConnectionStatus = person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Name : string.Empty;
                 personSearchResult.Gender = person.Gender.ConvertToString();
 
                 if ( person.RecordStatusValue != null )
@@ -252,7 +252,7 @@ namespace Rock.Rest.Controllers
                 html.AppendFormat( "<header><img src='{0}'/> <h3>{1}<small>{2}</small></h3></header>",
                     person.PhotoId.HasValue ? string.Format( imageUrlFormat, person.PhotoId.Value ) : imageNoPhoto,
                     person.FullName,
-                    person.PersonStatusValueId.HasValue ? person.PersonStatusValue.Name : string.Empty );
+                    person.ConnectionStatusValueId.HasValue ? person.ConnectionStatusValue.Name : string.Empty );
 
                 var spouse = person.GetSpouse();
                 if (spouse != null)
@@ -320,10 +320,10 @@ namespace Rock.Rest.Controllers
         public string Gender { get; set; }
 
         /// <summary>
-        /// Gets or sets the person status.
+        /// Gets or sets the connection status.
         /// </summary>
-        /// <value>The person status.</value>
-        public string PersonStatus { get; set; }
+        /// <value>The connection status.</value>
+        public string ConnectionStatus { get; set; }
 
         /// <summary>
         /// Gets or sets the record status.

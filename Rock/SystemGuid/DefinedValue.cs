@@ -270,17 +270,17 @@ namespace Rock.SystemGuid
 
         #endregion
 
-        #region Person Status
+        #region Person Connection Status
 
         /// <summary>
-        /// Member Person Status
+        /// Member Person Connection Status
         /// </summary>
-        public const string PERSON_STATUS_MEMBER = "E8848110-CDE3-400E-B6CD-C2BD309FAF38";
+        public const string PERSON_CONNECTION_STATUS_MEMBER = "E8848110-CDE3-400E-B6CD-C2BD309FAF38";
 
         /// <summary>
-        /// Visitor Person Status
+        /// Visitor Person Connection Status
         /// </summary>
-        public const string PERSON_STATUS_VISITOR = "1B439C81-68B1-44F1-8DDF-0B555823D0F8";
+        public const string PERSON_CONNECTION_STATUS_VISITOR = "1B439C81-68B1-44F1-8DDF-0B555823D0F8";
 
         #endregion
     }

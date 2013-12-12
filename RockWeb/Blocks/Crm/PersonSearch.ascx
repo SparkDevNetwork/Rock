@@ -15,9 +15,9 @@
             HeaderText="Age"  
             SortExpression="BirthYear,BirthMonth,BirthDay"  />
         <Rock:DefinedValueField
-            DataField="PersonStatusValueId"
-            HeaderText="Member Status"
-            SortExpression="PersonStatusValue.Name" />
+            DataField="ConnectionStatusValueId"
+            HeaderText="Connection Status"
+            SortExpression="ConnectionStatusValue.Name" />
         <Rock:DefinedValueField
             DataField="RecordStatusValueId"
             HeaderText="Record Status"

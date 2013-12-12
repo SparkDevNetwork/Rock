@@ -119,19 +119,19 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.Person"/> entities by the the Person's Person Status <see cref="Rock.Model.DefinedValue"/>.
+        /// Returns an enumerable collection of <see cref="Rock.Model.Person" /> entities by the the Person's Connection Status <see cref="Rock.Model.DefinedValue" />.
         /// </summary>
-        /// <param name="personStatusId">A <see cref="System.Int32"/> representing the Id of the Person Status <see cref="Rock.Model.DefinedValue"/> to search by.</param>
-        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be
+        /// <param name="personConnectionStatusId">A <see cref="System.Int32" /> representing the Id of the Person Connection Status <see cref="Rock.Model.DefinedValue" /> to search by.</param>
+        /// <param name="includeDeceased">A <see cref="System.Boolean" /> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be
         /// included, otherwise <c>false</c>.</param>
         /// <returns>
-        /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
+        /// An enumerable collection of <see cref="Rock.Model.Person" /> entities that match the search criteria.
         /// </returns>
-        public IEnumerable<Person> GetByPersonStatusId( int? personStatusId, bool includeDeceased = false )
+        public IEnumerable<Person> GetByPersonConnectionStatusId( int? personConnectionStatusId, bool includeDeceased = false )
         {
             return Repository.Find( t =>
                 ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value ) &&
-                ( t.PersonStatusValueId == personStatusId || ( personStatusId == null && t.PersonStatusValueId == null ) )
+                ( t.ConnectionStatusValueId == personConnectionStatusId || ( personConnectionStatusId == null && t.ConnectionStatusValueId == null ) )
             );
         }
 

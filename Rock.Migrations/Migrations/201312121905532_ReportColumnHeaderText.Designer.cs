@@ -13,7 +13,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201312121852389_ReportColumnHeaderText"; }
+            get { return "201312121905532_ReportColumnHeaderText"; }
         }
         
         string IMigrationMetadata.Source
