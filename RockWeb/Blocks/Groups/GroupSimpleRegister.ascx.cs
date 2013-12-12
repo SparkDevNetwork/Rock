@@ -195,7 +195,7 @@ namespace RockWeb.Blocks.Groups
                     var group = new Group();
                     group.Members.Add( groupMember );
                     group.Name = person.LastName + " Family";
-                    group.GroupType = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) );
+                    group.GroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
 
                     // Save person/family
                     var groupService = new GroupService();

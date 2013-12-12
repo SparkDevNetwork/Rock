@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.Collections.Generic;
+using System.Linq;
 using Rock.Data;
 
 namespace Rock.Model
@@ -22,6 +23,26 @@ namespace Rock.Model
         public IEnumerable<GroupType> GetByDefaultGroupRoleId( int? defaultGroupRoleId )
         {
             return Repository.Find( t => ( t.DefaultGroupRoleId == defaultGroupRoleId || ( defaultGroupRoleId == null && t.DefaultGroupRoleId == null ) ) );
+        }
+
+        /// <summary>
+        /// Gets the child group types.
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public IQueryable<GroupType> GetChildGroupTypes(int groupTypeId)
+        {
+            return Repository.AsQueryable().Where( t => t.ParentGroupTypes.Select( p => p.Id ).Contains( groupTypeId ) );
+        }
+
+        /// <summary>
+        /// Gets the parent group types.
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public IQueryable<GroupType> GetParentGroupTypes( int groupTypeId )
+        {
+            return Repository.AsQueryable().Where( t => t.ChildGroupTypes.Select( p => p.Id ).Contains( groupTypeId ) );
         }
 
         /// <summary>

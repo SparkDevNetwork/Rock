@@ -203,8 +203,7 @@ namespace RockWeb.Blocks.Groups
                 var group = new Group { GroupTypeId = ddlGroupType.SelectedValueAsInt() ?? 0 };
                 if ( group.GroupTypeId > 0 )
                 {
-                    group.GroupType = new GroupTypeService().Get( group.GroupTypeId );
-                    ShowGroupTypeEditDetails( group, false );
+                    ShowGroupTypeEditDetails( GroupTypeCache.Read(group.GroupTypeId), group, false );
                 }
             }
         }
@@ -706,7 +705,6 @@ namespace RockWeb.Blocks.Groups
             using ( new UnitOfWorkScope() )
             {
                 var groupService = new GroupService();
-                var groupTypeService = new GroupTypeService();
                 var attributeService = new AttributeService();
 
                 LoadDropDowns();
@@ -722,7 +720,7 @@ namespace RockWeb.Blocks.Groups
                     if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse() )
                     {
                         // default GroupType for new Group to "Security Roles"  if LimittoSecurityRoleGroups
-                        var securityRoleGroupType = groupTypeService.Queryable().FirstOrDefault( a => a.Guid.Equals( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE ) ) );
+                        var securityRoleGroupType = GroupTypeCache.GetSecurityRoleGroupType();
                         if ( securityRoleGroupType != null )
                         {
                             ddlGroupType.SetValue( securityRoleGroupType.Id );
@@ -764,7 +762,7 @@ namespace RockWeb.Blocks.Groups
                     GroupLocationsState.Add( groupLocationState );
                 }
 
-                ShowGroupTypeEditDetails(group, true);
+                ShowGroupTypeEditDetails( GroupTypeCache.Read(group.GroupTypeId), group, true);
 
                 // if this block's attribute limit group to SecurityRoleGroups, don't let them edit the SecurityRole checkbox value
                 if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse() )
@@ -784,26 +782,18 @@ namespace RockWeb.Blocks.Groups
                         .ToList() );
                 BindGroupMemberAttributesGrid();
 
-                BindInheritedAttributes( group.GroupTypeId, groupTypeService, attributeService );
+                BindInheritedAttributes( group.GroupTypeId, attributeService );
             }
         }
 
-        private void ShowGroupTypeEditDetails(Group group, bool setValues)
+        private void ShowGroupTypeEditDetails(GroupTypeCache groupType, Group group, bool setValues)
         {
             if ( group != null )
             {
-                if ( group.GroupType == null )
-                {
-                    if ( group.GroupTypeId > 0 )
-                    {
-                        group.GroupType = new GroupTypeService().Get( group.GroupTypeId );
-                    }
-                }
-
                 // Save value to viewstate for use later when binding location grid
-                AllowMultipleLocations = group.GroupType != null && group.GroupType.AllowMultipleLocations;
+                AllowMultipleLocations = groupType != null && groupType.AllowMultipleLocations;
 
-                if ( group.GroupType != null && group.GroupType.LocationSelectionMode != GroupLocationPickerMode.None )
+                if ( groupType != null && groupType.LocationSelectionMode != GroupLocationPickerMode.None )
                 {
                     wpLocations.Visible = true;
                     wpLocations.Title = AllowMultipleLocations ? "Locations" : "Location";
@@ -1059,13 +1049,13 @@ namespace RockWeb.Blocks.Groups
                         .Count();
         }
 
-        private void BindInheritedAttributes( int? inheritedGroupTypeId, GroupTypeService groupTypeService, AttributeService attributeService )
+        private void BindInheritedAttributes( int? inheritedGroupTypeId, AttributeService attributeService )
         {
             GroupMemberAttributesInheritedState = new List<InheritedAttribute>();
 
             while ( inheritedGroupTypeId.HasValue )
             {
-                var inheritedGroupType = groupTypeService.Get( inheritedGroupTypeId.Value );
+                var inheritedGroupType = GroupTypeCache.Read( inheritedGroupTypeId.Value );
                 if ( inheritedGroupType != null )
                 {
                     string qualifierValue = inheritedGroupType.Id.ToString();
@@ -1123,7 +1113,7 @@ namespace RockWeb.Blocks.Groups
             int? groupTypeId = ddlGroupType.SelectedValueAsId();
             if ( groupTypeId.HasValue )
             {
-                var groupType = new GroupTypeService().Get( groupTypeId.Value );
+                var groupType = GroupTypeCache.Read( groupTypeId.Value );
                 if ( groupType != null )
                 {
                     GroupLocationPickerMode groupTypeModes = groupType.LocationSelectionMode;
@@ -1188,7 +1178,7 @@ namespace RockWeb.Blocks.Groups
                             locpGroupLocation.AllowedPickerModes = modes;
                         }
 
-                        ddlLocationType.DataSource = groupType.LocationTypes.Select( l => l.LocationTypeValue ).ToList();
+                        ddlLocationType.DataSource = groupType.LocationTypeValues.ToList();
                         ddlLocationType.DataBind();
 
                         LocationTypeTab = (displayMemberTab && ddlMember.Items.Count > 0) ? MEMBER_LOCATION_TAB_TITLE : OTHER_LOCATION_TAB_TITLE;
