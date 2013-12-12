@@ -324,6 +324,12 @@ namespace Rock.Web.Cache
         }
         private List<int> parentGroupTypeIds = null;
 
+        /// <summary>
+        /// Gets the location type values.
+        /// </summary>
+        /// <value>
+        /// The location type values.
+        /// </value>
         public List<DefinedValueCache> LocationTypeValues
         {
             get
