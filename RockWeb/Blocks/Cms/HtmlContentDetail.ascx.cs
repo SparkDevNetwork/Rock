@@ -283,7 +283,7 @@ namespace RockWeb.Blocks.Cms
 
                 if ( content != null )
                 {
-                    html = content.Content.ResolveMergeFields( GetGlobalMergeFields() );
+                    html = content.Content.ResolveMergeFields( Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson ) );
                 }
                 else
                 {
@@ -375,30 +375,6 @@ namespace RockWeb.Blocks.Cms
             }
 
             return entityValue;
-        }
-
-        /// <summary>
-        /// Gets the global merge fields.
-        /// </summary>
-        /// <returns></returns>
-        public Dictionary<string, object> GetGlobalMergeFields()
-        {
-            var configValues = new Dictionary<string, object>();
-
-            var globalAttributeValues = new Dictionary<string, object>();
-            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-            foreach ( var attributeCache in globalAttributes.Attributes.OrderBy( a => a.Key ) )
-            {
-                if ( attributeCache.IsAuthorized( "View", null ) )
-                {
-                    string value = attributeCache.FieldType.Field.FormatValue( this, globalAttributes.AttributeValues[attributeCache.Key].Value, attributeCache.QualifierValues, false );
-                    globalAttributeValues.Add( attributeCache.Key, value );
-                }
-            }
-
-            configValues.Add( "GlobalAttribute", globalAttributeValues );
-
-            return configValues;
         }
 
         #endregion

@@ -126,8 +126,8 @@ namespace Rock.Communication.Transport
 
                 var recipientService = new CommunicationRecipientService();
 
-                var globalConfigValues = GetGlobalMergeFields();
-
+                var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+                
                 bool recipientFound = true;
                 while ( recipientFound )
                 {
