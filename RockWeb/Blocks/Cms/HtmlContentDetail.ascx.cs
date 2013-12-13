@@ -15,6 +15,7 @@ using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -61,7 +62,14 @@ namespace RockWeb.Blocks.Cms
             pnlVersionGrid.Visible = false;
             mdEdit.Show();
 
-            edtHtml.Toolbar = "RockCustomConfigFull";
+            edtHtml.Toolbar = HtmlEditor.ToolbarConfig.Full;
+            edtHtml.OnKeyPressScript = string.Format( @"
+   $('#{0}').removeClass('label label-success label-danger').addClass('label label-danger');
+   $('#{0}').text('Not-Approved');
+   $('#{1}').val('false');
+   $('#{2}').val('');
+   $('#{3}').hide();", lblApprovalStatus.ClientID, hfApprovalStatus.ClientID, hfApprovalStatusPersonId.ClientID, lblApprovalStatusPerson.ClientID );
+
             edtHtml.MergeFields.Clear();
             edtHtml.MergeFields.Add( "GlobalAttribute" );
 
@@ -476,14 +484,14 @@ namespace RockWeb.Blocks.Cms
 
             if ( approved )
             {
-                cssClass = "label HtmlContentApprovalStatus label-success";
+                cssClass = "label label-success";
             }
             else
             {
-                cssClass = "label HtmlContentApprovalStatus label-danger";
+                cssClass = "label label-danger";
             }
 
-            lApprovalStatus.Text = String.Format( "<span class='{0}'>{1}</span>", cssClass, approved ? "Approved" : "Not-Approved" );
+            lblApprovalStatus.Text = String.Format( "<span class='{0}'>{1}</span>", cssClass, approved ? "Approved" : "Not-Approved" );
 
             hfApprovalStatus.Value = approved.ToTrueFalse();
             lblApprovalStatusPerson.Visible = person != null;

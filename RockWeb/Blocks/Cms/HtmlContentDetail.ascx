@@ -24,7 +24,7 @@
 
                                     <div class="alert alert-action">
 
-                                        <asp:Literal ID="lApprovalStatus" runat="server" />
+                                        <asp:Label ID="lblApprovalStatus" runat="server" />
 
                                         <asp:Label ID="lblApprovalStatusPerson" runat="server" />
 
@@ -43,24 +43,19 @@
                                 <asp:Literal runat="server" ID="lVersion" Text="Version X | " />
                                 <asp:LinkButton runat="server" ID="btnShowVersionGrid" Text="History" OnClick="btnShowVersionGrid_Click" />
                             </div>
-                            
-                            
 
                             <!-- Edit Html -->
-
                             
                             <Rock:DateRangePicker ID="pDateRange" runat="server" Label="Display from" />
 
                             <Rock:HtmlEditor ID="edtHtml" runat="server" ResizeMaxWidth="720" Height="140" />
                             <Rock:RockCheckBox ID="cbOverwriteVersion" runat="server" Text="Don't save as a new version" />
 
-                            
-
                         </asp:Panel>
 
                         <asp:Panel ID="pnlVersionGrid" runat="server" Visible="false" Height="440">
 
-                            <div class="scroll-container version-grid-scroll" style="width: 720px">
+                            <div class="scroll-container version-grid-scroll scroll-container-vertical" style="width: 720px">
                                 <div class="scrollbar">
                                     <div class="track">
                                         <div class="thumb">
@@ -99,10 +94,6 @@
             Sys.Application.add_load(function () {
                 $('.version-grid-scroll').tinyscrollbar({ size: 150, sizethumb: 20 });
             });
-        </script>
-
-        <script type="text/javascript">
-            // TODO: change approval status to non-approved if the html content is edited
         </script>
 
     </ContentTemplate>
