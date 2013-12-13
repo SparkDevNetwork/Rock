@@ -9,10 +9,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -24,7 +26,6 @@ namespace RockWeb.Blocks.Groups
     [GroupTypesField( "Exclude Group Types", "The group types to exclude from the list (only valid if including all groups).", false, "", "", 3 )]
     [BooleanField( "Display Group Type Column", "Should the Group Type column be displayed?", true, "", 4 )]
     [BooleanField( "Display Description Column", "Should the Description column be displayed?", true, "", 5)]
-    [BooleanField( "Display Member Count Column", "Should the Members column be displayed?", true, "", 6 )]
     [ContextAware]
     public partial class GroupList : RockBlock
     {
@@ -42,20 +43,6 @@ namespace RockWeb.Blocks.Groups
             gGroups.Actions.ShowAdd = true;
             gGroups.Actions.AddClick += gGroups_Add;
             gGroups.GridRebind += gGroups_GridRebind;
-
-            bool canEdit = IsUserAuthorized( "Edit" );
-            gGroups.Actions.ShowAdd = canEdit;
-            gGroups.IsDeleteEnabled = canEdit;
-
-            bool showDescriptionColumn = GetAttributeValue( "DisplayDescriptionColumn" ).FromTrueFalse();
-            if (!showDescriptionColumn)
-            {
-                gGroups.TooltipField = "Description";
-            }
-            Dictionary<string, BoundField> boundFields = gGroups.Columns.OfType<BoundField>().ToDictionary( a => a.DataField );
-            boundFields["GroupTypeName"].Visible = GetAttributeValue( "DisplayGroupTypeColumn" ).FromTrueFalse();
-            boundFields["Description"].Visible = showDescriptionColumn;
-            boundFields["MembersCount"].Visible = GetAttributeValue( "DisplayMemberCountColumn" ).FromTrueFalse();
         }
 
         /// <summary>
@@ -166,59 +153,113 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindGrid()
         {
-            GroupService groupService = new GroupService();
-            SortProperty sortProperty = gGroups.SortProperty;
+            // Find all the Group Types
+            var groupTypeIds = new List<int>();
 
-            var qry = groupService.Queryable().Where( a => a.GroupType.ShowInGroupList );
-
-            List<Guid> includeGroupTypeGuids = GetAttributeValue( "IncludeGroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
-            if ( includeGroupTypeGuids.Count > 0 )
+            using ( new UnitOfWorkScope() )
             {
-                qry = qry.Where( a => includeGroupTypeGuids.Contains( a.GroupType.Guid ) );
-            }
+                var groupTypeService = new GroupTypeService();
+                var qry = groupTypeService.Queryable().Where( t => t.ShowInGroupList );
 
-            if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse() )
-            {
-                qry = qry.Where( a => a.IsSecurityRole );
-            }
-
-            List<Guid> excludeGroupTypeGuids = GetAttributeValue( "ExcludeGroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
-            if ( includeGroupTypeGuids.Count > 0 )
-            {
-                qry = qry.Where( a => !excludeGroupTypeGuids.Contains( a.GroupType.Guid ) );
-            }
-
-            /// Using Members.Count in a grid boundfield causes the entire Members list to be populated (select * ...) and then counted
-            /// Having the qry do the count just does a "select count(1) ..." which is much much faster, especially if the members list is large (a large list will lockup the webserver)
-            var selectQry = qry.Select( a =>
-                new
+                List<Guid> includeGroupTypeGuids = GetAttributeValue( "IncludeGroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+                if ( includeGroupTypeGuids.Count > 0 )
                 {
-                    a.Id,
-                    a.Order,
-                    a.Name,
-                    GroupTypeName = a.GroupType.Name,
-                    MembersCount = a.Members.Count(),
-                    a.Description,
-                    a.IsSystem
-                } );
-            
-            if ( sortProperty == null )
-            {
-                sortProperty = new SortProperty(new GridViewSortEventArgs( "Order, Name", SortDirection.Ascending));
+                    qry = qry.Where( t => includeGroupTypeGuids.Contains( t.Guid ) );
+                }
+                List<Guid> excludeGroupTypeGuids = GetAttributeValue( "ExcludeGroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+                if ( includeGroupTypeGuids.Count > 0 )
+                {
+                    qry = qry.Where( t => !excludeGroupTypeGuids.Contains( t.Guid ) );
+                }
+
+                foreach ( int groupTypeId in qry.Select( t => t.Id ) )
+                {
+                    var groupType = GroupTypeCache.Read( groupTypeId );
+                    if ( groupType != null && groupType.IsAuthorized( "View", CurrentPerson ) )
+                    {
+                        groupTypeIds.Add( groupTypeId );
+                    }
+                }
+
+                groupTypeIds = qry.Select( t => t.Id ).ToList();
+
+                SortProperty sortProperty = gGroups.SortProperty;
+                if ( sortProperty == null )
+                {
+                    sortProperty = new SortProperty( new GridViewSortEventArgs( "GroupTypeOrder, GroupTypeName, GroupOrder, Name", SortDirection.Ascending ) );
+                }
+                bool onlySecurityGroups =  GetAttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse();
+                bool showDescriptionColumn = GetAttributeValue( "DisplayDescriptionColumn" ).FromTrueFalse();
+                if ( !showDescriptionColumn )
+                {
+                    gGroups.TooltipField = "Description";
+                }
+                Dictionary<string, BoundField> boundFields = gGroups.Columns.OfType<BoundField>().ToDictionary( a => a.DataField );
+                boundFields["GroupTypeName"].Visible = GetAttributeValue( "DisplayGroupTypeColumn" ).FromTrueFalse();
+                boundFields["Description"].Visible = showDescriptionColumn;
+
+                // Person context will exist if used on a person detail page
+                var personContext = ContextEntity<Person>();
+                if ( personContext != null )
+                {
+                    boundFields["GroupRole"].Visible = true;
+                    boundFields["MemberCount"].Visible = false;
+
+                    gGroups.Actions.ShowAdd = false;
+                    gGroups.IsDeleteEnabled = false;
+                    gGroups.Columns.OfType<DeleteField>().ToList().ForEach( f => f.Visible = false);
+
+                    gGroups.DataSource = new GroupMemberService().Queryable()
+                        .Where( m => 
+                            m.PersonId == personContext.Id &&
+                            groupTypeIds.Contains(m.Group.GroupTypeId) &&
+                            (!onlySecurityGroups || m.Group.IsSecurityRole) )
+                        .Select( m => new 
+                            {
+                                Id = m.Group.Id,
+                                Name = m.Group.Name,
+                                GroupTypeName = m.Group.GroupType.Name,
+                                GroupOrder = m.Group.Order,
+                                GroupTypeOrder = m.Group.GroupType.Order,
+                                Description = m.Group.Description,
+                                IsSystem = m.Group.IsSystem,
+                                GroupRole = m.GroupRole.Name,
+                                MemberCount = 0
+                            })
+                        .Sort(sortProperty)
+                        .ToList();
+                }
+                else
+                {
+                    bool canEdit = IsUserAuthorized( "Edit" );
+                    gGroups.Actions.ShowAdd = canEdit;
+                    gGroups.IsDeleteEnabled = canEdit;
+
+                    boundFields["GroupRole"].Visible = false;
+                    boundFields["MemberCount"].Visible = true;
+
+                    gGroups.DataSource = new GroupService().Queryable()
+                        .Where( g => 
+                            groupTypeIds.Contains(g.GroupTypeId) &&
+                            (!onlySecurityGroups || g.IsSecurityRole) )
+                        .Select( g => new 
+                            {
+                                Id = g.Id,
+                                Name = g.Name,
+                                GroupTypeName = g.GroupType.Name,
+                                GroupOrder = g.Order,
+                                GroupTypeOrder = g.GroupType.Order,
+                                Description = g.Description,
+                                IsSystem = g.IsSystem,
+                                GroupRole = "",
+                                MemberCount = g.Members.Count()
+                            })
+                        .Sort(sortProperty)
+                        .ToList();
+                }
+
+                gGroups.DataBind();
             }
-
-            var list = selectQry.Sort( sortProperty ).ToList();
-
-            // if there is a Group context, limit groups to ones that have the Group context as an ancestor
-            Group parentGroup = ContextEntity<Group>();
-            if ( parentGroup != null )
-            {
-                var descendentIds = groupService.GetAllDescendents( parentGroup.Id ).Select( a => a.Id );
-                list = list.Where( a => descendentIds.Contains( a.Id ) ).ToList();
-            }
-
-            gGroups.DataSource = list;
-            gGroups.DataBind();
         }
 
         #endregion
