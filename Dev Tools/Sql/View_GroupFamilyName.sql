@@ -1,4 +1,3 @@
-create view vGroupFamilyName as
 select 
 	g.Id [GroupId], 
 	pn.PersonNames [FamilyName], 
