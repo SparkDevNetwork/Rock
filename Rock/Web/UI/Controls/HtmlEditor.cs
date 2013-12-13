@@ -163,17 +163,34 @@ namespace Rock.Web.UI.Controls
 
         #region Properties
 
-        public string Toolbar
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum ToolbarConfig
+        {
+            Light,
+            Full
+        }
+
+        /// <summary>
+        /// Gets or sets the toolbar.
+        /// </summary>
+        /// <value>
+        /// The toolbar.
+        /// </value>
+        public ToolbarConfig Toolbar
         {
             get
             {
-                string toolbar = ViewState["Toolbar"] as string;
-                if ( string.IsNullOrWhiteSpace( toolbar ) )
+                object toolbarObj = ViewState["Toolbar"];
+                if (toolbarObj != null)
                 {
-                    toolbar = "RockCustomConfigLight";
+                    return (ToolbarConfig)toolbarObj;
                 }
-
-                return toolbar;
+                else
+                {
+                    return ToolbarConfig.Light;
+                }
             }
 
             set
@@ -182,6 +199,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the maximum width of the resize.
+        /// </summary>
+        /// <value>
+        /// The maximum width of the resize.
+        /// </value>
         public int? ResizeMaxWidth
         {
             get
@@ -192,6 +215,25 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["ResizeMaxWidth"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the javascript that will get executed when the ckeditor 'on key' event occurs
+        /// </summary>
+        /// <value>
+        /// The on key press script.
+        /// </value>
+        public string OnKeyPressScript
+        {
+            get
+            {
+                return ViewState["OnKeyPressScript"] as string;
+            }
+
+            set
+            {
+                ViewState["OnKeyPressScript"] = value;
             }
         }
 
@@ -233,7 +275,6 @@ namespace Rock.Web.UI.Controls
             TextMode = TextBoxMode.MultiLine;
             Rows = 10;
             Columns = 80;
-
         }
 
         /// <summary>
@@ -278,40 +319,52 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            string ckInitScriptFormat = @"
+            // NOTE: Some of the plugins in the Full (72 plugin) build of CKEditor are buggy, so we are just using the Standard edition. 
+            // This is why some of the items don't appear in the RockCustomConfiguFull toolbar (like the Justify commands)
+            string ckeditorInitScriptFormat = @"
 var toolbar_RockCustomConfigLight =
 	[
-        {{ name: 'document', items: ['Source'] }},
-        {{ name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike', 'NumberedList', 'BulletedList', 'Link', 'Image', 'PasteFromWord', '-', 'RemoveFormat'] }},
-        {{ name: 'editing', items: ['Format'] }},
+        ['Source'],
+        ['Bold', 'Italic', 'Underline', 'Strike', 'NumberedList', 'BulletedList', 'Link', 'Image', 'PasteFromWord', '-', 'RemoveFormat'],
+        ['Format'],
 	];
 
 var toolbar_RockCustomConfigFull =
 	[
-        {{ name: 'document', items: ['Source'] }},
-        {{ name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'] }},
-        {{ name: 'editing', items: ['Find', 'Replace', '-', 'Scayt'] }},
-        {{ name: 'links', items: ['Link', 'Unlink', 'Anchor'] }},
-        {{ name: 'styles', items: ['Styles', 'Format'] }},
-                '/',
-        {{ name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat'] }},
-        {{
-            name: 'paragraph', items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-',
-              'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'Image', 'Table']
-        }},
+        ['Source'],
+        ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'],
+        ['Find', 'Replace', '-', 'Scayt'],
+        ['Link', 'Unlink', 'Anchor'],
+        ['Styles', 'Format'],
+        '/',
+        ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat'],
+        ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-'], 
+        ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
+        ['-', 'Image', 'Table'],
 	];	
 
 CKEDITOR.replace('{0}', {{ 
-  toolbar: toolbar_{1},
-  resize_maxWidth: '{2}'  
+  toolbar: toolbar_RockCustomConfig{1},
+  removeButtons: '',
+  resize_maxWidth: '{2}'{3}  
 }} );
             ";
 
+            string onkeyconfig = null;
 
+            if (!string.IsNullOrWhiteSpace(this.OnKeyPressScript))
+            {
+                onkeyconfig = @",
+  on: {  
+      key: function () { "
+      + this.OnKeyPressScript
+  + @"}
+  }";
+            }
 
-            string ckInitScript = string.Format( ckInitScriptFormat, this.ClientID, this.Toolbar, this.ResizeMaxWidth ?? 0 );
+            string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(), this.ResizeMaxWidth ?? 0, onkeyconfig );
 
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckInitScript, true );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckeditorInitScript, true );
 
             if ( MergeFields.Any() )
             {
@@ -364,8 +417,6 @@ CKEDITOR.replace('{0}', {{
 ";
             string script = string.Format( scriptFormat, _mergeFieldPicker.ID, this.ClientID );
             ScriptManager.RegisterStartupScript( _mergeFieldPicker, _mergeFieldPicker.GetType(), "merge_field_extension-" + _mergeFieldPicker.ID.ToString(), script, true );
-
-
         }
     }
 }
