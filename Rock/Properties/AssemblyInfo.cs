@@ -37,7 +37,7 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Revision and Build Numbers 
 // by using the '*' as shown below:
 //[assembly: AssemblyVersion( "0.0.0.*" )]    // I've read some things that make me think we should not do this... comments?
-[assembly: AssemblyVersion( "0.0.1.0" )]
-[assembly: AssemblyFileVersion( "0.0.1.0" )]
+[assembly: AssemblyVersion( "0.0.3.0" )]
+[assembly: AssemblyFileVersion( "0.0.3.0" )]
 
 
