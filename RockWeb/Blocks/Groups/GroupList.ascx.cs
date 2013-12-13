@@ -18,16 +18,14 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Groups
 {
-    [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false )]
-    [BooleanField( "Show User Count", "", true )]
-    [BooleanField( "Show Description", "", true )]
-    [BooleanField( "Show GroupType", "", true )]
-    [BooleanField( "Show IsSystem", "", true )]
-    [BooleanField( "Show Edit", "", true )]
-    [BooleanField( "Show Notification" )]
-    [BooleanField( "Limit to Security Role Groups" )]
-    [ContextAware( typeof( Group ) )]
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page", "", true, "", "", 0 )]
+    [GroupTypesField( "Include Group Types", "The group types to display in the list.  If none are selected, all group types will be included.", false, "", "", 1 )]
+    [BooleanField( "Limit to Security Role Groups", "Any groups can be flagged as a security group (even if they're not a security role).  Should the list of groups be limited to these groups?", false, "", 2)]
+    [GroupTypesField( "Exclude Group Types", "The group types to exclude from the list (only valid if including all groups).", false, "", "", 3 )]
+    [BooleanField( "Display Group Type Column", "Should the Group Type column be displayed?", true, "", 4 )]
+    [BooleanField( "Display Description Column", "Should the Description column be displayed?", true, "", 5)]
+    [BooleanField( "Display Member Count Column", "Should the Members column be displayed?", true, "", 6 )]
+    [ContextAware]
     public partial class GroupList : RockBlock
     {
         #region Control Methods
@@ -45,16 +43,19 @@ namespace RockWeb.Blocks.Groups
             gGroups.Actions.AddClick += gGroups_Add;
             gGroups.GridRebind += gGroups_GridRebind;
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" ) && GetAttributeValue( "ShowEdit" ).FromTrueFalse();
-            gGroups.Actions.ShowAdd = canAddEditDelete;
-            gGroups.IsDeleteEnabled = canAddEditDelete;
+            bool canEdit = IsUserAuthorized( "Edit" );
+            gGroups.Actions.ShowAdd = canEdit;
+            gGroups.IsDeleteEnabled = canEdit;
 
+            bool showDescriptionColumn = GetAttributeValue( "DisplayDescriptionColumn" ).FromTrueFalse();
+            if (!showDescriptionColumn)
+            {
+                gGroups.TooltipField = "Description";
+            }
             Dictionary<string, BoundField> boundFields = gGroups.Columns.OfType<BoundField>().ToDictionary( a => a.DataField );
-            boundFields["MembersCount"].Visible = GetAttributeValue( "ShowUserCount" ).FromTrueFalse();
-            boundFields["Description"].Visible = GetAttributeValue( "ShowDescription" ).FromTrueFalse();
-            boundFields["GroupTypeName"].Visible = GetAttributeValue( "ShowGroupType" ).FromTrueFalse();
-            boundFields["IsSystem"].Visible = GetAttributeValue( "ShowIsSystem" ).FromTrueFalse();
+            boundFields["GroupTypeName"].Visible = GetAttributeValue( "DisplayGroupTypeColumn" ).FromTrueFalse();
+            boundFields["Description"].Visible = showDescriptionColumn;
+            boundFields["MembersCount"].Visible = GetAttributeValue( "DisplayMemberCountColumn" ).FromTrueFalse();
         }
 
         /// <summary>
@@ -70,7 +71,10 @@ namespace RockWeb.Blocks.Groups
 
             base.OnLoad( e );
         }
+
         #endregion
+
+        #region Events
 
         #region Grid Events
 
@@ -153,6 +157,8 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
 
+        #endregion
+
         #region Internal Methods
 
         /// <summary>
@@ -162,15 +168,13 @@ namespace RockWeb.Blocks.Groups
         {
             GroupService groupService = new GroupService();
             SortProperty sortProperty = gGroups.SortProperty;
-            var qry = groupService.Queryable();
 
-            // limit GroupType selection to what Block Attributes allow
+            var qry = groupService.Queryable().Where( a => a.GroupType.ShowInGroupList );
 
-            List<Guid> groupTypeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
-
-            if ( groupTypeGuids.Count > 0 )
+            List<Guid> includeGroupTypeGuids = GetAttributeValue( "IncludeGroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+            if ( includeGroupTypeGuids.Count > 0 )
             {
-                qry = qry.Where( a => groupTypeGuids.Contains( a.GroupType.Guid ) );
+                qry = qry.Where( a => includeGroupTypeGuids.Contains( a.GroupType.Guid ) );
             }
 
             if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse() )
@@ -178,7 +182,11 @@ namespace RockWeb.Blocks.Groups
                 qry = qry.Where( a => a.IsSecurityRole );
             }
 
-            qry = qry.Where( a => a.GroupType.ShowInGroupList );
+            List<Guid> excludeGroupTypeGuids = GetAttributeValue( "ExcludeGroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+            if ( includeGroupTypeGuids.Count > 0 )
+            {
+                qry = qry.Where( a => !excludeGroupTypeGuids.Contains( a.GroupType.Guid ) );
+            }
 
             /// Using Members.Count in a grid boundfield causes the entire Members list to be populated (select * ...) and then counted
             /// Having the qry do the count just does a "select count(1) ..." which is much much faster, especially if the members list is large (a large list will lockup the webserver)
