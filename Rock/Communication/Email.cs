@@ -134,7 +134,7 @@ namespace Rock.Communication
         /// <param name="recipients">The recipients.</param>
         public void Send( Dictionary<string, Dictionary<string, object>> recipients )
         {
-            var configValues = TransportComponent.GetGlobalMergeFields();
+            var configValues = GlobalAttributesCache.GetMergeFields( null );
 
             List<string> cc = SplitRecipient( Cc );
             List<string> bcc = SplitRecipient( Bcc );
@@ -146,7 +146,7 @@ namespace Rock.Communication
 
                 var mergeObjects = recipient.Value;
 
-                // Combine the global and config file merge values with the recipient specific merge values
+                // Combine the global merge values with the recipient specific merge values
                 configValues.ToList().ForEach( g => mergeObjects.Add( g.Key, g.Value ) );
 
                 // Resolve any merge codes in the subject and body
@@ -155,20 +155,6 @@ namespace Rock.Communication
 
                 Email.Send( From, to, cc, bcc, subject, body );
             }
-        }
-
-        private string ResolveConfigValue( string value, Dictionary<string, object> globalAttributes )
-        {
-            string result = value.ResolveMergeFields( globalAttributes );
-
-            // If anything was resolved, keep resolving until nothing changed.
-            while ( result != value )
-            {
-                value = result;
-                result = ResolveConfigValue( result, globalAttributes );
-            }
-
-            return result;
         }
 
         private List<string> SplitRecipient( string recipients )
