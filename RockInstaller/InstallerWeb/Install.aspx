@@ -13,19 +13,7 @@
 
 <script language="CS" runat="server">
 	
-	
-	//
-	// some constants
-	//
-	const string internetCheckSite = "www.google.com";
-	const string dotNetVersionRequired = "4.5";
-	const double iisVersionRequired = 7.0;
-    const string rockInstallFile = "http://rockchms.blob.core.windows.net/install/rock-chms-latest.zip";
 
-    const string rockLogoIco = "http://rockchms.blob.core.windows.net/install/rock-chms.ico";
-    const string rockStyles = "http://rockchms.blob.core.windows.net/install/install.css";
-    const string rockWelcomeImg = "http://rockchms.blob.core.windows.net/install/welcome.jpg";
-	
 	//
 	// page events
 	//
@@ -178,7 +166,6 @@
 		    pDatabaseConfig.Visible = false;
 		    pWelcome.Visible = false;
 		    
-		    
 		}
 	   
     }
@@ -191,7 +178,7 @@
         // download install file
     	bool downloadSuccessful = false;
     	string checkMessages = string.Empty;
-    	downloadSuccessful = DownloadFile(rockInstallFile, Server.MapPath(".") + @"\RockInstall.zip", out checkMessages);
+    	downloadSuccessful = DownloadFile(InstallSetting.RockInstallFile, Server.MapPath(".") + @"\RockInstall.zip", out checkMessages);
     	
     	// change active panels
     	pTestEnv.Visible = false;
@@ -228,7 +215,7 @@
 			
 			
 			lDownloadTitle.Text = "Download Successful";
-    		lDownloadDetails.Text = "<p>The Rock ChMS has been downloaded and installed on your web server.  The next step is to create the database.</p><div class='alert alert-info'><strong>Letting You Know:</strong> We'll be loading a new page as the database is created. This could take a couple of minutes also. Good things come to those who wait.</div>";
+    		lDownloadDetails.Text = "<p>The Rock ChMS has been downloaded and installed on your web server.  The next step is to setup and configure the database.</p><div class='alert alert-info'><strong>Letting You Know:</strong> We'll be loading a new page as the database is created. This could take a couple of minutes also. Good things come to those who wait.</div>";
     	} else {
     		lDownloadTitle.Text = "Error on Download";
     		lDownloadDetails.Text = checkMessages;
@@ -276,12 +263,12 @@
 		<link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css'>
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
         <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
-        <link rel="stylesheet" href="<%=rockStyles %>">
+        <link rel="stylesheet" href="<%=InstallSetting.RockStyles %>">
 		
         <script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
         		
-		<link href="<%=rockLogoIco %>" rel="shortcut icon">
-		<link href="<%=rockLogoIco %>" type="image/ico" rel="icon">
+		<link href="<%=InstallSetting.RockLogoIco %>" rel="shortcut icon">
+		<link href="<%=InstallSetting.RockLogoIco %>" type="image/ico" rel="icon">
 		
 	</head>
 	<body>
@@ -289,15 +276,13 @@
 		<asp:ScriptManager ID="ScriptManager1" runat="server" EnablePartialRendering="true" AsyncPostBackTimeout="900" />
 		<asp:UpdateProgress id="updateProgress" runat="server">
 		     <ProgressTemplate>
-		            <div style="color: #fff; position: fixed; text-align: center; height: 100%; width: 100%; top: 0; right: 0; left: 0; z-index: 9999999; background-color: #343434; opacity: 0.97;">
-		            	<asp:Image ID="imgUpdateProgress" runat="server" ImageUrl="./waiting.gif" AlternateText="Creating ..." ToolTip="Creating ..." style="padding: 10px;position:fixed;top:45%;left:50%;" />
+		         
+                <div class="updateprogress-status">
+                    <i class="fa fa-refresh fa-spin fa-4x" ></i><br />
+                    This could take a few minutes...
+                </div>      
 		            
-		            	<div class="alert alert-info">
-		            		<h4>Heads Up</h4>
-		            		Depending on your server this could take a couple of minutes. Don't worry, it'll be done soon!
-						</div>
-		            
-		            </div>
+		        <div class="updateprogress-bg"></div>
 		     </ProgressTemplate>
 		</asp:UpdateProgress>
 		<asp:UpdatePanel ID="GettingStartedUpdatePanel" runat="server" UpdateMode="Conditional">
@@ -309,7 +294,7 @@
 						<asp:Panel id="pWelcome" Visible="true" runat="server">
 							<h1>Rock Installer</h1>
 							
-                            <img src="<%=rockWelcomeImg %>"  />
+                            <img src="<%=InstallSetting.RockWelcomeImg %>"  />
 							<asp:Label id="lTest" runat="server"></asp:Label>
 							
                             <asp:Literal ID="lSslWarning" runat="server">

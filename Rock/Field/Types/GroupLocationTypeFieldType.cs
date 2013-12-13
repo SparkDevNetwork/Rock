@@ -148,13 +148,16 @@ namespace Rock.Field.Types
                 Guid groupTypeGuid = Guid.Empty;
                 if ( Guid.TryParse( configurationValues[GROUP_TYPE_KEY].Value, out groupTypeGuid ) )
                 {
-                    Rock.Model.GroupTypeService groupTypeService = new Model.GroupTypeService();
-                    var groupType = groupTypeService.Get( groupTypeGuid );
-                    if ( groupType != null )
+                    var groupType = Rock.Web.Cache.GroupTypeCache.Read( groupTypeGuid );
+                    if (groupType != null)
                     {
-                        foreach ( var definedValue in groupType.LocationTypes.Select( l => l.LocationTypeValue ) )
+                        var locationTypeValues = groupType.LocationTypeValues;
+                        if ( locationTypeValues != null )
                         {
-                            editControl.Items.Add( new ListItem( definedValue.Name, definedValue.Id.ToString() ) );
+                            foreach ( var locationTypeValue in locationTypeValues )
+                            {
+                                editControl.Items.Add( new ListItem( locationTypeValue.Name, locationTypeValue.Id.ToString() ) );
+                            }
                         }
                     }
                 }

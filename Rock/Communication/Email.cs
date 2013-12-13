@@ -70,46 +70,6 @@ namespace Rock.Communication
         public string Body { get; set; }
 
         /// <summary>
-        /// Gets or sets the SMTP server.
-        /// </summary>
-        /// <value>
-        /// The SMTP server.
-        /// </value>
-        public string Server { get; set; }
-
-        /// <summary>
-        /// Gets or sets the SMTP port.
-        /// </summary>
-        /// <value>
-        /// The SMTP port.
-        /// </value>
-        public int Port { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether to use SSL.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [use SSL]; otherwise, <c>false</c>.
-        /// </value>
-        public bool UseSSL { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the SMTP user.
-        /// </summary>
-        /// <value>
-        /// The name of the SMTP user.
-        /// </value>
-        public string UserName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the SMTP password.
-        /// </summary>
-        /// <value>
-        /// The SMTP password.
-        /// </value>
-        public string Password { get; set; }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="Email" /> class.
         /// </summary>
         /// <param name="templateGuid">The template GUID.</param>
@@ -165,9 +125,7 @@ namespace Rock.Communication
             List<string> cc = SplitRecipient( Cc );
             List<string> bcc = SplitRecipient( Bcc );
 
-            SetSMTPParameters();
-
-            Email.Send( From, to, cc, bcc, Subject, Body, Server, Port, UseSSL, UserName, Password );
+            Email.Send( From, to, cc, bcc, Subject, Body );
         }
 
         /// <summary>
@@ -176,12 +134,10 @@ namespace Rock.Communication
         /// <param name="recipients">The recipients.</param>
         public void Send( Dictionary<string, Dictionary<string, object>> recipients )
         {
-            var configValues = TransportComponent.GetGlobalMergeFields();
+            var configValues = GlobalAttributesCache.GetMergeFields( null );
 
             List<string> cc = SplitRecipient( Cc );
             List<string> bcc = SplitRecipient( Bcc );
-
-            SetSMTPParameters();
 
             foreach ( KeyValuePair<string, Dictionary<string, object>> recipient in recipients )
             {
@@ -190,50 +146,15 @@ namespace Rock.Communication
 
                 var mergeObjects = recipient.Value;
 
-                // Combine the global and config file merge values with the recipient specific merge values
+                // Combine the global merge values with the recipient specific merge values
                 configValues.ToList().ForEach( g => mergeObjects.Add( g.Key, g.Value ) );
 
                 // Resolve any merge codes in the subject and body
                 string subject = Subject.ResolveMergeFields( mergeObjects );
                 string body = Body.ResolveMergeFields( mergeObjects );
 
-                Email.Send( From, to, cc, bcc, subject, body, Server, Port, UseSSL, UserName, Password );
+                Email.Send( From, to, cc, bcc, subject, body );
             }
-        }
-
-        private void SetSMTPParameters( )
-        {
-            var globalAttributes = GlobalAttributesCache.Read();
-
-            this.Server = globalAttributes.GetValue( "SMTPServer" );
-
-            int port = 0;
-            if ( !Int32.TryParse( globalAttributes.GetValue( "SMTPPort" ), out port ) )
-                port = 0;
-            this.Port = port;
-
-            bool useSSL = false;
-            if ( !bool.TryParse( globalAttributes.GetValue( "SMTPUseSSL" ), out useSSL ) )
-                useSSL = false;
-            this.UseSSL = useSSL;
-
-            this.UserName = globalAttributes.GetValue( "SMTPUserName" );
-            this.Password = globalAttributes.GetValue( "SMTPPassword" );
-        }
-
-
-        private string ResolveConfigValue( string value, Dictionary<string, object> globalAttributes )
-        {
-            string result = value.ResolveMergeFields( globalAttributes );
-
-            // If anything was resolved, keep resolving until nothing changed.
-            while ( result != value )
-            {
-                value = result;
-                result = ResolveConfigValue( result, globalAttributes );
-            }
-
-            return result;
         }
 
         private List<string> SplitRecipient( string recipients )
@@ -253,16 +174,29 @@ namespace Rock.Communication
         /// <param name="bcc">The BCC.</param>
         /// <param name="subject">The subject.</param>
         /// <param name="body">The body.</param>
-        /// <param name="server">The server.</param>
-        /// <param name="port">The port.</param>
-        /// <param name="useSSL">if set to <c>true</c> [use SSL].</param>
-        /// <param name="userName">Name of the user.</param>
-        /// <param name="password">The password.</param>
-        public static void Send( string from, List<string> to, List<string> cc, List<string> bcc, string subject, string body, 
-            string server, int port, bool useSSL, string userName, string password)
+        public static void Send( string from, List<string> to, List<string> cc, List<string> bcc, string subject, string body)
         {
+            var globalAttributes = GlobalAttributesCache.Read();
+
+            string server = globalAttributes.GetValue( "SMTPServer" );
             if ( !string.IsNullOrEmpty( server ) )
             {
+                int port = 0;
+                if ( !Int32.TryParse( globalAttributes.GetValue( "SMTPPort" ), out port ) )
+                    port = 0;
+
+                bool useSSL = false;
+                if ( !bool.TryParse( globalAttributes.GetValue( "SMTPUseSSL" ), out useSSL ) )
+                    useSSL = false;
+
+                string userName = globalAttributes.GetValue( "SMTPUserName" );
+                string password = globalAttributes.GetValue( "SMTPPassword" );
+            
+                if (string.IsNullOrWhiteSpace(from))
+                {
+                    from = globalAttributes.GetValue( "OrganizationEmail" );
+                }
+
                 MailMessage message = new MailMessage();
                 message.From = new MailAddress( from );
 

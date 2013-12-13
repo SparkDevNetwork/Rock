@@ -2,7 +2,7 @@
 
 <asp:UpdatePanel ID="upEditPerson" runat="server">
     <ContentTemplate>
-
+        <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
         <div class="row">
 
             <div class="col-md-3">
@@ -28,7 +28,7 @@
                     </Rock:RockRadioButtonList>
 
                     <Rock:RockRadioButtonList ID="rblMaritalStatus" runat="server" RepeatDirection="Horizontal" Label="Marital Status" />
-                    <Rock:RockRadioButtonList ID="rblStatus" runat="server" Label="Person Status" />
+                    <Rock:RockRadioButtonList ID="rblStatus" runat="server" Label="Connection Status" />
 
                 </fieldset>
 

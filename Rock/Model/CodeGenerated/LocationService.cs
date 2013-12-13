@@ -114,6 +114,7 @@ namespace Rock.Model
             target.ParentLocationId = source.ParentLocationId;
             target.Name = source.Name;
             target.IsActive = source.IsActive;
+            target.LocationTypeValueId = source.LocationTypeValueId;
             target.GeoPoint = source.GeoPoint;
             target.GeoFence = source.GeoFence;
             target.IsNamedLocation = source.IsNamedLocation;

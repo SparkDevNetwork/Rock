@@ -88,26 +88,27 @@ namespace Rock.Rest.Controllers
                 var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
                 string imageUrlFormat = Path.Combine( appPath, "GetImage.ashx?id={0}&width=15&height=15" );
 
-                GroupTypeService groupTypeService = new GroupTypeService();
-
                 foreach ( var group in qry )
                 {
                     if ( group.IsAuthorized( "View", user.Person ) )
                     {
                         groupList.Add( group );
-                        group.GroupType = group.GroupType ?? groupTypeService.Get( group.GroupTypeId );
                         var treeViewItem = new TreeViewItem();
                         treeViewItem.Id = group.Id.ToString();
                         treeViewItem.Name = System.Web.HttpUtility.HtmlEncode( group.Name );
 
                         // if there a IconCssClass is assigned, use that as the Icon.  Otherwise, use the SmallIcon (if assigned)
-                        if ( !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) )
+                        var groupType = Rock.Web.Cache.GroupTypeCache.Read( group.GroupTypeId );
+                        if ( groupType != null )
                         {
-                            treeViewItem.IconCssClass = group.GroupType.IconCssClass;
-                        }
-                        else
-                        {
-                            treeViewItem.IconSmallUrl = group.GroupType.IconSmallFileId != null ? string.Format( imageUrlFormat, group.GroupType.IconSmallFileId ) : string.Empty;
+                            if ( !string.IsNullOrWhiteSpace( groupType.IconCssClass ) )
+                            {
+                                treeViewItem.IconCssClass = groupType.IconCssClass;
+                            }
+                            else
+                            {
+                                treeViewItem.IconSmallUrl = groupType.IconSmallFileId != null ? string.Format( imageUrlFormat, groupType.IconSmallFileId ) : string.Empty;
+                            }
                         }
 
                         groupNameList.Add( treeViewItem );

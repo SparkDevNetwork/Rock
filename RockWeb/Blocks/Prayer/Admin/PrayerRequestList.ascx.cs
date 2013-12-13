@@ -24,11 +24,11 @@ namespace RockWeb.Blocks.Prayer
     [IntegerField( "Group Category Id", "The id of a 'top level' Category.  Only prayer requests under this category will be shown.", false, -1, "Filtering", 1, "GroupCategoryId" )]
     public partial class PrayerRequestList : Rock.Web.UI.RockBlock
     {
-        #region Private BlockType Attributes
+        #region Fields
         /// <summary>
         /// The prayer request key parameter used in the QueryString for detail page.
         /// </summary>
-        private static readonly string PrayerRequestKeyParameter = "prayerRequestId";
+        private static readonly string _PrayerRequestKeyParameter = "prayerRequestId";
         /// <summary>
         /// The block instance configured group category id.  This causes only requests for the appropriate root/group-level category to be seen.
         /// </summary>
@@ -40,11 +40,11 @@ namespace RockWeb.Blocks.Prayer
         /// <summary>
         /// Holds whether or not the person can add, edit, and delete.
         /// </summary>
-        bool canAddEditDelete = false;
+        bool _canAddEditDelete = false;
         /// <summary>
         /// Holds whether or not the person can approve requests.
         /// </summary>
-        bool canApprove = false;
+        bool _canApprove = false;
         #endregion
 
         #region Filter's User Preference Setting Keys
@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Prayer
         }
         #endregion
 
-        #region Control Methods
+        #region Base Control Methods
 
         /// <summary>
         /// Handles the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -85,10 +85,10 @@ namespace RockWeb.Blocks.Prayer
             gPrayerRequests.GridRebind += gPrayerRequests_GridRebind;
 
             // Block Security and special attributes (RockPage takes care of "View")
-            canApprove = IsUserAuthorized( "Approve" );
-            canAddEditDelete = IsUserAuthorized( "Edit" );
-            gPrayerRequests.Actions.ShowAdd = canAddEditDelete;
-            gPrayerRequests.IsDeleteEnabled = canAddEditDelete;
+            _canApprove = IsUserAuthorized( "Approve" );
+            _canAddEditDelete = IsUserAuthorized( "Edit" );
+            gPrayerRequests.Actions.ShowAdd = _canAddEditDelete;
+            gPrayerRequests.IsDeleteEnabled = _canAddEditDelete;
         }
 
         /// <summary>
@@ -281,6 +281,7 @@ namespace RockWeb.Blocks.Prayer
                     FullName = a.FirstName + " " + a.LastName,
                     CategoryName = a.Category.Name,
                     a.EnteredDate,
+                    a.ExpirationDate,
                     a.Text,
                     a.FlagCount,
                     a.IsApproved,
@@ -380,7 +381,15 @@ namespace RockWeb.Blocks.Prayer
                 prayerRequests = prayerRequests.Where( a => a.EnteredDate < endDate );
             }
 
-            // Sort by the given property otherwise sort by the EnteredDate
+            // Don't show expired prayer requests.
+            // TODO save users filter setting?
+            if ( !cbShowExpired.Checked )
+            {
+                prayerRequests = prayerRequests.Where( a => DateTime.Today <= a.ExpirationDate );
+            }
+
+            // Sort by the given property otherwise sort by the EnteredDate (and Id)
+            // (this is a hack because the Date field alone doesn't sort in the descending direction well)
             if ( sortProperty != null )
             {
                 gPrayerRequests.DataSource = prayerRequests.Sort( sortProperty ).ToList();
@@ -390,7 +399,7 @@ namespace RockWeb.Blocks.Prayer
                 // TODO Figure out how to tell Grid what Direction and Property it's sorting on
                 //sortProperty.Direction = SortDirection.Ascending;
                 //sortProperty.Property = "EnteredDate";
-                gPrayerRequests.DataSource = prayerRequests.OrderBy( p => p.EnteredDate ).ToList();
+                gPrayerRequests.DataSource = prayerRequests.OrderByDescending( p => p.EnteredDate ).ThenByDescending( p => p.Id ).ToList();
             }
 
             gPrayerRequests.DataBind();
@@ -403,7 +412,7 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gPrayerRequests_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", PrayerRequestKeyParameter, 0 );
+            NavigateToLinkedPage( "DetailPage", _PrayerRequestKeyParameter, 0 );
         }
 
         /// <summary>
@@ -413,7 +422,7 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPrayerRequests_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", PrayerRequestKeyParameter, (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", _PrayerRequestKeyParameter, (int)e.RowKeyValue );
         }
 
         /// <summary>
@@ -509,7 +518,7 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="GridViewRowEventArgs" /> instance containing the event data.</param>
         protected void gPrayerRequests_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-            if ( canApprove )
+            if ( _canApprove )
                 return;
 
             if ( e.Row.RowType == DataControlRowType.DataRow )

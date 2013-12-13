@@ -18,8 +18,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a numerically measurable statistic or Metric in RockChMS.  An example of a metric can include 
-    /// weekly membership count, number of children who check-in to preschool, etc.
+    /// Metric Service class
     /// </summary>
     public partial class MetricService : Service<Metric>
     {

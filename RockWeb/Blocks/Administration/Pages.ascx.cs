@@ -26,7 +26,7 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region Control Methods
+        #region Base Control Methods
 
         protected override void OnInit( EventArgs e )
         {
@@ -74,7 +74,9 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region Grid Events
+        #region Events
+
+        #region Grid 
 
         void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
@@ -170,67 +172,75 @@ namespace RockWeb.Blocks.Administration
 
         protected void lbSave_Click( object sender, EventArgs e )
         {
-            Rock.Model.Page page;
-            var pageService = new PageService();
-
-            int pageId = 0;
-            if ( !Int32.TryParse( hfPageId.Value, out pageId ) )
-                pageId = 0;
-
-            if ( pageId == 0 )
+            if ( Page.IsValid )
             {
-                page = new Rock.Model.Page();
+                Rock.Model.Page page;
+                var pageService = new PageService();
 
-                if ( _page != null )
+                int pageId = 0;
+                if ( !Int32.TryParse( hfPageId.Value, out pageId ) )
+                    pageId = 0;
+
+                if ( pageId == 0 )
                 {
-                    page.ParentPageId = _page.Id;
-                    page.LayoutId = _page.LayoutId;
+                    page = new Rock.Model.Page();
+
+                    if ( _page != null )
+                    {
+                        page.ParentPageId = _page.Id;
+                        page.LayoutId = _page.LayoutId;
+                    }
+                    else
+                    {
+                        page.ParentPageId = null;
+                        page.LayoutId = PageCache.Read( RockPage.PageId ).LayoutId;
+                    }
+
+                    page.Title = dtbPageName.Text;
+                    page.EnableViewState = true;
+                    page.IncludeAdminFooter = true;
+
+                    Rock.Model.Page lastPage =
+                        pageService.GetByParentPageId( _page.Id ).
+                            OrderByDescending( b => b.Order ).FirstOrDefault();
+
+                    if ( lastPage != null )
+                        page.Order = lastPage.Order + 1;
+                    else
+                        page.Order = 0;
+
+                    pageService.Add( page, CurrentPersonId );
+
                 }
                 else
+                    page = pageService.Get( pageId );
+
+                page.LayoutId = ddlLayout.SelectedValueAsInt().Value;
+                page.Name = dtbPageName.Text;
+
+                if ( page.IsValid )
                 {
-                    page.ParentPageId = null;
-                    page.LayoutId = PageCache.Read( RockPage.PageId ).LayoutId;
+                    pageService.Save( page, CurrentPersonId );
+
+                    if ( _page != null )
+                    {
+                        Rock.Security.Authorization.CopyAuthorization( _page, page, CurrentPersonId );
+                        _page.FlushChildPages();
+                    }
+
+                    BindGrid();
                 }
 
-                page.Title = dtbPageName.Text;
-                page.EnableViewState = true;
-                page.IncludeAdminFooter = true;
-
-                Rock.Model.Page lastPage =
-                    pageService.GetByParentPageId( _page.Id ).
-                        OrderByDescending( b => b.Order ).FirstOrDefault();
-
-                if ( lastPage != null )
-                    page.Order = lastPage.Order + 1;
-                else
-                    page.Order = 0;
-
-                pageService.Add( page, CurrentPersonId );
-
+                rGrid.Visible = true;
+                pnlDetails.Visible = false;
             }
-            else
-                page = pageService.Get( pageId );
-
-            page.LayoutId = ddlLayout.SelectedValueAsInt().Value;
-            page.Name = dtbPageName.Text;
-
-            pageService.Save( page, CurrentPersonId );
-
-            if ( _page != null )
-            {
-                Rock.Security.Authorization.CopyAuthorization( _page, page, CurrentPersonId );
-                _page.FlushChildPages();
-            }
-
-            BindGrid();
-
-            rGrid.Visible = true; 
-            pnlDetails.Visible = false;
         }
 
         #endregion
 
-        #region Internal Methods
+        #endregion
+
+        #region Methods
 
         private void BindGrid()
         {

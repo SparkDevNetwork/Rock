@@ -19,7 +19,7 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     public partial class ZoneBlocks : RockBlock
     {
-        #region Control Methods
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -121,6 +121,8 @@ namespace RockWeb.Blocks.Administration
             }
         }
         #endregion
+
+        #region Events
 
         #region Grid Events
 
@@ -355,7 +357,29 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region Internal Methods
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlBlockType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlBlockType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            if ( string.IsNullOrWhiteSpace( tbBlockName.Text ) )
+            {
+                var parts = ddlBlockType.SelectedItem.Text.Split( new char[] { '-' } );
+                if ( parts.Length > 1 )
+                {
+                    tbBlockName.Text = parts[parts.Length - 1].Trim();
+                }
+                else
+                {
+                    tbBlockName.Text = ddlBlockType.SelectedItem.Text;
+                }
+            }
+        }
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Binds the grids.
@@ -454,27 +478,6 @@ namespace RockWeb.Blocks.Administration
 
             pnlLists.Visible = false;
             pnlDetails.Visible = true;
-        }
-
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlBlockType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlBlockType_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            if ( string.IsNullOrWhiteSpace( tbBlockName.Text ) )
-            {
-                var parts = ddlBlockType.SelectedItem.Text.Split( new char[] { '-' } );
-                if ( parts.Length > 1 )
-                {
-                    tbBlockName.Text = parts[parts.Length - 1].Trim();
-                }
-                else
-                {
-                    tbBlockName.Text = ddlBlockType.SelectedItem.Text;
-                }
-            }
         }
 
         #endregion

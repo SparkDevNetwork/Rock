@@ -15,6 +15,7 @@ namespace Rock.Install.Utilities
         const string dotNetVersionRequired = "4.5";
         const double iisVersionRequired = 7.0;
         
+
         /// <summary>
         /// Checks that Rock is not already on the file system by checking for the existance of
         /// the web.ConnectionStrings.config
@@ -196,7 +197,7 @@ namespace Rock.Install.Utilities
                 // since the database exists make sure it's empty
                 if (!CheckSqlServerEmpty(dbServer, dbUsername, dbPassword, dbDatabase))
                 {
-                    errorDetails = String.Format("The database '{0}' is not empty. To protect your existing data Rock must be installed into a empty database. <a href='http://www.rockchms.com/installer/help/sqlserver-empty.html' class='btn btn-info btn-xs'>Let's Fix It Together</a>");
+                    errorDetails = String.Format("The database '{0}' is not empty. To protect your existing data Rock must be installed into a empty database. <a href='http://www.rockchms.com/installer/help/sqlserver-empty.html' class='btn btn-info btn-xs'>Let's Fix It Together</a>", dbDatabase);
                     return false;
                 }
             }

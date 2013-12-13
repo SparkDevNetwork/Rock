@@ -5,15 +5,9 @@
 //
 
 using System;
-using System.Configuration;
-using System.Data;
-using System.Data.SqlClient;
-using System.IO;
-using System.Net;
 using System.Web;
+using Rock;
 using Rock.Model;
-using Rock.Storage;
-using Rock.Storage.Provider;
 
 namespace RockWeb
 {
@@ -22,8 +16,6 @@ namespace RockWeb
     /// </summary>
     public class GetFile : IHttpAsyncHandler
     {
-        // TODO: Does security need to be taken into consideration in order to view a file?
-
         /// <summary>
         /// Called to initialize an asynchronous call to the HTTP handler. 
         /// </summary>
@@ -37,36 +29,23 @@ namespace RockWeb
             {
                 var queryString = context.Request.QueryString;
 
-                if ( !( queryString["id"] == null || queryString["guid"] == null ) )
-                {
-                    throw new Exception( "file id must be provided" );
-                }
+                int fileId = queryString["id"].AsInteger() ?? 0;
+                Guid fileGuid = queryString["guid"].AsGuid();
 
-                var id = !string.IsNullOrEmpty( queryString["id"] ) ? queryString["id"] : queryString["guid"];
-                int fileId;
-                Guid fileGuid = Guid.Empty;
-
-                if ( !( int.TryParse( id, out fileId ) || Guid.TryParse( id, out fileGuid ) ) )
+                if ( fileId == 0 && fileGuid.Equals( Guid.Empty ) )
                 {
                     throw new Exception( "file id key must be a guid or an int" );
                 }
 
-                SqlConnection conn = new SqlConnection( string.Format( "{0};Asynchronous Processing=true;", ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString ) );
-                conn.Open();
-                SqlCommand cmd = conn.CreateCommand();
-                cmd.CommandText = "BinaryFile_sp_getByID";
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.Add( new SqlParameter( "@Id", fileId ) );
-                cmd.Parameters.Add( new SqlParameter( "@Guid", fileGuid ) );
-
-                // store our Command to be later retrieved by EndProcessRequest
-                context.Items.Add( "cmd", cmd );
-
-                // start async DB read
-                return cmd.BeginExecuteReader( cb, context,
-                    CommandBehavior.SequentialAccess |  // doesn't load whole column into memory
-                    CommandBehavior.SingleRow |         // performance improve since we only want one row
-                    CommandBehavior.CloseConnection );  // close connection immediately after read
+                BinaryFileService binaryFileService = new BinaryFileService();
+                if ( fileGuid != Guid.Empty )
+                {
+                    return binaryFileService.BeginGet( cb, context, fileGuid );
+                }
+                else
+                {
+                    return binaryFileService.BeginGet( cb, context, fileId );
+                }
             }
             catch ( Exception ex )
             {
@@ -85,67 +64,33 @@ namespace RockWeb
         /// <param name="result">An IAsyncResult that contains information about the status of the process.</param>
         public void EndProcessRequest( IAsyncResult result )
         {
+            // restore the context from the asyncResult.AsyncState 
             HttpContext context = (HttpContext)result.AsyncState;
 
             try
             {
-                // restore the command from the context
-                SqlCommand cmd = (SqlCommand)context.Items["cmd"];
-                using ( SqlDataReader reader = cmd.EndExecuteReader( result ) )
+                context.Response.Clear();
+
+                BinaryFile binaryFile = new BinaryFileService().EndGet( result, context );
+                if ( binaryFile != null )
                 {
-                    reader.Read();
-                    context.Response.Clear();
+                    context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", binaryFile.FileName ) );
+                    context.Response.ContentType = binaryFile.MimeType;
 
-                    // Columns must be read in Sequential Order
-                    string fileName = (string)reader["FileName"];
-                    string mimeType = (string)reader["MimeType"];
-                    string url = (string)reader["Url"];
-                    string entityTypeName = (string)reader["StorageTypeName"];
-
-                    context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", fileName ) );
-                    context.Response.ContentType = mimeType;
-                    var provider = ProviderContainer.GetComponent( entityTypeName );
-
-                    if ( provider is Database )
+                    if ( binaryFile.Data != null )
                     {
-                        context.Response.BinaryWrite( (byte[])reader["Content"] );
-                    }
-                    else
-                    {
-                        Stream stream;
-
-                        if ( url.StartsWith( "~/" ) )
+                        if ( binaryFile.Data.Content != null )
                         {
-                            var path = context.Server.MapPath( url );
-                            var fileInfo = new FileInfo( path );
-                            stream = fileInfo.Open( FileMode.Open, FileAccess.Read );
-                        }
-                        else
-                        {
-                            var request = WebRequest.Create( url );
-                            var response = request.GetResponse();
-                            stream = response.GetResponseStream();
-                        }
-
-                        if ( stream != null )
-                        {
-                            using ( var memoryStream = new MemoryStream() )
-                            {
-                                stream.CopyTo( memoryStream );
-                                stream.Close();
-                                context.Response.BinaryWrite( memoryStream.ToArray() );
-                            }
-                        }
-                        else
-                        {
-                            context.Response.StatusCode = 404;
-                            context.Response.StatusDescription = "Unable to find the requested file.";
+                            context.Response.BinaryWrite( binaryFile.Data.Content );
+                            context.Response.Flush();
+                            context.ApplicationInstance.CompleteRequest();
+                            return;
                         }
                     }
-
-                    context.Response.Flush();
-                    context.ApplicationInstance.CompleteRequest();
                 }
+
+                context.Response.StatusCode = 404;
+                context.Response.StatusDescription = "Unable to find the requested file.";
             }
             catch ( Exception ex )
             {

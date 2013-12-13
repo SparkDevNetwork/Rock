@@ -169,8 +169,6 @@ namespace RockWeb.Blocks.Core
                 dl.Add( "Query String", BuildQueryStringList( baseException.QueryString ) );
             }
 
-            dl.StartSecondColumn();
-
 
             dl.Add( "User", baseException.CreatedByPersonId != null ? baseException.CreatedByPerson.FullName : "Anonymous" );
             dl.Add( "Exception Date", string.Format( "{0:g}", baseException.ExceptionDateTime ) );
