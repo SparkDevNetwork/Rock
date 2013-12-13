@@ -131,6 +131,26 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public RequiredFieldValidator RequiredFieldValidator { get; set; }
 
+        /// <summary>
+        /// Gets or sets the group of controls for which the control that is derived from the <see cref="T:System.Web.UI.WebControls.ListControl" /> class causes validation when it posts back to the server.
+        /// </summary>
+        /// <returns>The group of controls for which the derived <see cref="T:System.Web.UI.WebControls.ListControl" /> causes validation when it posts back to the server. The default is an empty string ("").</returns>
+        public override string ValidationGroup
+        {
+            get
+            {
+                return base.ValidationGroup;
+            }
+            set
+            {
+                base.ValidationGroup = value;
+                if ( RequiredFieldValidator != null )
+                {
+                    RequiredFieldValidator.ValidationGroup = value;
+                }
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -144,6 +164,24 @@ namespace Rock.Web.UI.Controls
             HelpBlock = new HelpBlock();
         }
 
+        /// <summary>
+        /// Handles the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains event data.</param>
+        protected override void OnLoad( System.EventArgs e )
+        {
+            base.OnLoad( e );
+
+            // If a radiobutton list has no items selected, then there is not anything included in
+            // the control state for this control, so on postback a value is not set, and the 
+            // creation of child controls will not be called.  this presents a problem when using
+            // validation since it is during the CreateChildControls that the validator is rewired 
+            // to the control.  Because of this, always ensure child controls on a postback
+            if (Page.IsPostBack)
+            {
+                EnsureChildControls();
+            }
+        }
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>

@@ -17,35 +17,54 @@ namespace Rock.Model
     public partial class PrayerRequestService
     {
         /// <summary>
-        /// Returns an enumerable collection of the <see cref="Rock.Model.PrayerRequest">PrayerRequests</see> that are in a specified <see cref="Rock.Model.Category"/> or any of it's subcategories.
+        /// Returns a collection of active <see cref="Rock.Model.PrayerRequest">PrayerRequests</see> that
+        /// are in a specified <see cref="Rock.Model.Category"/> or any of it's subcategories.
         /// </summary>
-        /// <param name="categoryId">A <see cref="System.Int32"/> representing the CategoryId of the <see cref="Rock.Model.Category"/> to retrieve PrayerRequests for.</param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.PrayerRequest"/> that are in the specified <see cref="Rock.Model.Category"/> or any of it's subcategories.</returns>
-        public IEnumerable<PrayerRequest> GetByCategoryId( int categoryId )
+        /// <param name="categoryIds">A <see cref="System.Collections.Generic.List{Int32}"/> of
+        /// the <see cref="Rock.Model.Category"/> IDs to retrieve PrayerRequests for.</param>
+        /// <param name="onlyApproved">set false to include un-approved requests.</param>
+        /// <param name="onlyUnexpired">set false to include expired requests.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.PrayerRequest"/> that
+        /// are in the specified <see cref="Rock.Model.Category"/> or any of it's subcategories.</returns>
+        public IEnumerable<PrayerRequest> GetByCategoryIds( List<int> categoryIds, bool onlyApproved = true, bool onlyUnexpired = true )
         {
             PrayerRequest prayerRequest = new PrayerRequest();
             Type type = prayerRequest.GetType();
 
-            // Not sure if I can/should rely on the Rock.Web.* here.  Is there a more correct way?
             var prayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type );
 
-            return GetByCategoryId( prayerRequestEntityTypeId, categoryId );
-         }
+            // Get all PrayerRequest category Ids that are the **parent or child** of the given categoryIds.
+            CategoryService categoryService = new CategoryService();
+            IEnumerable<int> expandedCategoryIds = categoryService.GetByEntityTypeId( prayerRequestEntityTypeId )
+                .Where( c => categoryIds.Contains( c.Id ) || categoryIds.Contains( c.ParentCategoryId ?? -1 ) )
+                .Select( a => a.Id );
+
+            // Now find the active PrayerRequests that have any of those category Ids.
+            var list = Repository.Find( p => p.IsActive == true && categoryIds.Contains( p.CategoryId ?? -1 ) );
+
+            if ( onlyApproved )
+            {
+                list = list.Where( p => p.IsApproved == true );
+            }
+
+            if ( onlyUnexpired )
+            {
+                list = list.Where( p => DateTime.Today <= p.ExpirationDate );
+            }
+
+            return list;
+        }
 
         /// <summary>
-        /// Gets an enumerable collection of  PrayerRequests by category id (for the prayer request entity type id
+        /// Returns a active, approved, unexpired <see cref="Rock.Model.PrayerRequest">PrayerRequests</see>
+        /// order by urgency and then by total prayer count.
         /// </summary>
-        /// <param name="prayerRequestEntityTypeId">A <see cref="System.Int32" /> representing the The prayer request entity type id.</param>
-        /// <param name="categoryId">A <see cref="System.Int32"/> representing the CategoryId </param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.PrayerRequest">PrayerRequests</see> that match the search criteria.</returns>
-        public IEnumerable<PrayerRequest> GetByCategoryId( int? prayerRequestEntityTypeId, int categoryId )
+        /// <returns>A queryable collection of <see cref="Rock.Model.PrayerRequest">PrayerRequest</see>.</returns>
+        public IQueryable<PrayerRequest> GetActiveApprovedUnexpired()
         {
-            // Get all the category Ids for the PrayerRequest entity and that are the parent or child of the given categoryId.
-            CategoryService categoryService = new CategoryService();
-            IEnumerable<int> categoryIds = categoryService.GetByEntityTypeId( prayerRequestEntityTypeId ).Where( c => c.Id == categoryId || c.ParentCategoryId == categoryId ).Select( a => a.Id );
-
-            // Now find the PrayerRequests that have any of those category Ids.
-            return Repository.Find( t => categoryIds.Contains( t.CategoryId ?? -1 ) );
+            return Repository.AsQueryable()
+                .Where( p => p.IsActive == true && p.IsApproved == true && DateTime.Today <= p.ExpirationDate )
+                .OrderByDescending( p => p.IsUrgent ).ThenBy( p => p.PrayerCount );
         }
     }
 }

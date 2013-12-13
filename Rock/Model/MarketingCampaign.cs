@@ -51,6 +51,7 @@ namespace Rock.Model
         [MergeField]
         [MaxLength( 254 )]
         [DataMember]
+        [RegularExpression(@"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage= "The Contact Email address is invalid")]
         public string ContactEmail { get; set; }
 
         /// <summary>

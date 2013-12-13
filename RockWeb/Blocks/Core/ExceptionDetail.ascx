@@ -12,7 +12,9 @@
                 <fieldset>
                     <legend>Summary</legend>
                     <div class="row">
-                        <asp:Literal ID="lExceptionSummary" runat="server" />
+                        <div class="col-md-12">
+                            <asp:Literal ID="lExceptionSummary" runat="server" />
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-md-3">

@@ -82,6 +82,26 @@
     }
 }
 
+// make links in alerts the same color as the text with a nice dotted underline
+.alert-success a {
+    color: @alert-success-text;
+    border-bottom: 1px dotted @alert-success-text;
+}
+
+.alert-info a {
+    color: @alert-info-text;
+    border-bottom: 1px dotted @alert-info-text;
+}
+
+.alert-warning a {
+    color: @alert-warning-text;
+    border-bottom: 1px dotted @alert-warning-text;
+}
+
+.alert-danger a {
+    color: @alert-danger-text;
+    border-bottom: 1px dotted @alert-danger-text;
+}
 
 
 /* extension of Bootstrap 3 panel */
@@ -113,14 +133,19 @@
 }
 
 .panel-treeview {
-    .panel-variant(@accent-color; @accent-bold-text-color; @accent-bold-color; @accent-color;);
+    .panel-variant(@accent-color; @accent-bold-text-color; @accent-light-color; @accent-color;);
+
+
+        background-color: @body-bg;
+
 
     .panel-heading {
         padding-bottom: 0;
+        background-color: @accent-light-color;
 
         .treeview-actions {
             margin-top: 6px;
-            background-color: @accent-color;
+            background-color: @accent-light-color;
 
             .col {
                 padding-right: 0;
@@ -137,9 +162,11 @@
         }
     }
 
-    .treeview-frame {
-        overflow-x: scroll;
+    .panel-body {
+        background-color: @body-bg;
     }
+
+    
 }
 
 .panel-info {
@@ -164,16 +191,28 @@
 
 // extensions for buttons
 // .button-variant(@color; @background; @border) {}
+.btn.aspNetDisabled {
+    cursor: not-allowed;
+    pointer-events: none; // Future-proof disabling of clicks
+    .opacity(.65);
+    .box-shadow(none);
+}
+
 .btn-action {
-    .button-variant(@accent-semibold-text-color; @accent-semibold-color; darken(@accent-semibold-color, 10%))
+    .button-variant(@accent-semibold-text-color; @accent-semibold-color; darken(@accent-semibold-color, 10%));
 }
 
 .btn-security {
-    .button-variant(@accent-semibold-text-color; @accent-semibold-color; darken(@accent-semibold-color, 10%))
+    .button-variant(@accent-semibold-text-color; @accent-semibold-color; darken(@accent-semibold-color, 10%));
 }
 
 .btn-edit {
-    .button-variant(#222; white; darken(white, 10%))
+    .button-variant(#222; white; darken(white, 10%));
+}
+
+/* extension of alerts */
+.alert-action {
+    .alert-variant(@accent-color; @accent-color; @accent-text-color);
 }
 
 /* modify BS3 to use fontawesome for carousel icons */

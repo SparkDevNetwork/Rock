@@ -2,6 +2,7 @@
 // Load Master Styles
 // -------------------------
 @import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_rock-variables.less";
 @import "_variables.less";
 
 
@@ -93,5 +94,17 @@ footer {
 
     .footer-address {
         float: right;
+    }
+}
+
+#splash.error {
+    
+    background-color: @gray-lighter;
+    
+    #content {
+        margin-top: 20px;
+        background-color: @body-bg;
+        border-radius: @border-radius-base;
+        padding: 20px;
     }
 }

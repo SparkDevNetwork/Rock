@@ -10,6 +10,7 @@
             
             <div class="panel-heading">
                 <h3 class="panel-title"><asp:Literal ID="lTitle" runat="server"></asp:Literal></h3>
+
             
             
             <div class="treeview-actions row">
@@ -26,11 +27,42 @@
             </div>
                 </div>
 
-            <div class="panel-body treeview-frame">
-                <div id="treeview-content"></div>
-            </div>
+                    <div class="treeview-scroll scroll-container scroll-container-horizontal">
+                
+                        <div class="viewport">
+                            <div class="overview">
+                                <div class="panel-body treeview-frame">
+                                    <div id="treeview-content"></div>
+                                </div>
+                            </div>
+                    
+                        </div>
+                        <div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
+                    </div>
+
 
             <script type="text/javascript">
+
+                var scrollbCategory = $('.treeview-scroll');
+                scrollbCategory.tinyscrollbar({ axis: 'x', sizethumb: 60, size: 200 });
+
+                // scrollbar hide/show
+                var timerScrollHide;
+                $("[id$='upCategoryTree']").on({
+                    mouseenter: function () {
+                        clearTimeout(timerScrollHide);
+                        $("[id$='upCategoryTree'] div[class~='scrollbar'] div[class='track'").fadeIn('fast');
+                    },
+                    mouseleave: function () {
+                        timerScrollHide = setTimeout(function () {
+                            $("[id$='upCategoryTree'] div[class~='scrollbar'] div[class='track'").fadeOut('slow');
+                        }, 1000);
+                    }
+                });
+
+
+                // update viewport height
+                resizeScrollbar(scrollbCategory);
 
                 $(function () {
                     var $selectedId = $('#hfSelectedCategoryId'),
@@ -65,6 +97,12 @@
                             if (window.location.search !== itemSearch) {
                                 window.location.search = itemSearch;
                             }
+                            
+                        })
+                        .on('rockTree:rendered', function () {
+                            
+                            // update viewport height
+                            resizeScrollbar(scrollbCategory);
 
                         })
                         .rockTree({
@@ -78,6 +116,14 @@
                             expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null
                         });
                 });
+
+                function resizeScrollbar(scrollControl) {
+                    var overviewHeight = $(scrollControl).find('.overview').height();
+
+                    $(scrollControl).find('.viewport').height(overviewHeight);
+
+                    scrollbCategory.tinyscrollbar_update('relative');
+                }
             </script>
         </div>
     </ContentTemplate>

@@ -26,7 +26,7 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Giving Page", "The page used to set up a person's giving profile.", key: "GivingPage", order: 2 )]
     [DateField( "Start Date", "Date all pledges will begin on.", key: "DefaultStartDate", order: 3 )]
     [DateField( "End Date", "Date all pledges will end.", key: "DefaultEndDate", order: 4 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_STATUS, "New User Status", "Person status to assign to a new user.", key: "DefaultPersonStatus", order: 5 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "New User Status", "Person conection status to assign to a new user.", key: "DefaultConnectionStatus", order: 5 )]
     public partial class CreatePledge : RockBlock
     {
         /// <summary>
@@ -292,13 +292,13 @@ namespace RockWeb.Blocks.Finance
 
             if ( person == null )
             {
-                var definedValue = DefinedValueCache.Read( new Guid( GetAttributeValue( "DefaultPersonStatus" ) ) );
+                var definedValue = DefinedValueCache.Read( new Guid( GetAttributeValue( "DefaultConnectionStatus" ) ) );
                 person = new Person
                 {
                     GivenName = tbFirstName.Text,
                     LastName = tbLastName.Text,
                     Email = tbEmail.Text,
-                    PersonStatusValueId = definedValue.Id,
+                    ConnectionStatusValueId = definedValue.Id,
                 };
 
                 personService.Add( person, CurrentPersonId );

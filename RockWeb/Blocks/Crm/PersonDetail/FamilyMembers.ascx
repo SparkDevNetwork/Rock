@@ -23,7 +23,7 @@
                                 <asp:Repeater ID="rptrMembers" runat="server">
                                     <ItemTemplate>
                                         <li class="member">
-                                            <a href='<%# Eval("PersonId") %>'>
+                                            <a href='<%# FormatPersonLink(Eval("PersonId").ToString()) %>'>
                                                 <asp:Image ID="imgPerson" runat="server" />
                                                 <div>
                                                     <h4><%# Eval("Person.FirstName") %></h4>

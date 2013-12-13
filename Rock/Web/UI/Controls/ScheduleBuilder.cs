@@ -1229,8 +1229,8 @@ END:VCALENDAR
             writer.AddAttribute( "id", this.ClientID );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.Write( @"
-            <div class='scroll-container'>
+            writer.Write(@"
+            <div class='scroll-container scroll-container-horizontal'>
                 <div class='scrollbar'>
                     <div class='track'>
                         <div class='thumb'>
@@ -1243,7 +1243,7 @@ END:VCALENDAR
 
                         <!-- modal body -->
                         <div class=''>
-" );
+");
 
             // Start DateTime
             _dpStartDateTime.RenderControl( writer );

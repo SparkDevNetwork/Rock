@@ -22,7 +22,7 @@
                             <li>
                                 <Rock:PersonLink runat="server"
                                     PersonId='<%# Eval("PersonId") %>'
-                                    PersonName='<%# Eval("Person.FullName") %>'
+                                    PersonName='<%# Eval("Person.FirstLastName") %>'
                                     Role='<%# ShowRole ? Eval("GroupRole.Name") : "" %>'
                                     PhotoId='<%# Eval("Person.PhotoId") %>' />
                                 <div class="actions pull-right">

@@ -109,7 +109,18 @@ namespace RockWeb.Blocks.Security
 
             if ( !valid )
             {
-                DisplayError( "Invalid Login Information" );
+                string helpUrl = string.Empty;
+
+                if (!string.IsNullOrWhiteSpace(GetAttributeValue("HelpPage")))
+                {
+                    helpUrl = LinkedPageUrl("HelpPage");
+                }
+                else
+                {
+                    helpUrl = ResolveRockUrl("~/ForgotUserName");
+                }
+                
+                DisplayError( String.Format("Sorry, we couldn't find an account matching that username/password. Can we help you <a href='{0}'>recover your accout information</a>?", helpUrl) );
             }
         }
 

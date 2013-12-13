@@ -44,7 +44,11 @@ namespace RockWeb.Blocks.Core
         {
             base.OnLoad( e );
 
+
             lTitle.Text = GetAttributeValue("Title");
+
+            RockPage.AddScriptLink("~/Scripts/jquery.tinyscrollbar.js");
+
 
             // Get EntityTypeName
             Guid entityTypeGuid = Guid.Empty;
@@ -85,7 +89,7 @@ namespace RockWeb.Blocks.Core
                 }
 
                 lbAddCategory.Visible = true;
-                lbAddItem.Visible = false;
+                lbAddItem.Enabled = false;
 
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
@@ -119,7 +123,7 @@ namespace RockWeb.Blocks.Core
 
                                     if ( entity != null )
                                     {
-                                        lbAddCategory.Visible = false;
+                                        lbAddCategory.Enabled = false;
                                         category = entity.Category;
                                         if ( category != null )
                                         {

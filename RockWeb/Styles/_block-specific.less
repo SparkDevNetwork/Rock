@@ -10,6 +10,8 @@
     7. Data Views - block for creating data views
     8. Schedule Builder - block for building schedules
     9. Error Page - styles for the error page.
+    10. Group Viewer - styles for the group viewer block.
+    11. Communication Blocks - styles for the communication blocks
 
 */
 
@@ -316,4 +318,36 @@ span.cke_skin_kama
 // -------------------------
 #splash.error  #content {
     width: 750px;
+    margin: 0 auto;
+}
+
+// 10. Group Viewer
+// -------------------------
+.group-location-map {
+
+    float: right;
+
+    img {
+        border: 1px solid @accent-semibold-color;
+    }
+}
+
+@media (max-width: @screen-md-min) {
+
+    .group-location-map {
+        float: left;
+    }
+}
+
+// 11. Communication Blocks
+// -------------------------
+.communication {
+
+    .recipients {
+        margin-top: 25px;
+
+        .control-label {
+            margin-top: 6px;
+        }
+    }
 }

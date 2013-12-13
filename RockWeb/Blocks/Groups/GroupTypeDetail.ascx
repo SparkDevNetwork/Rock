@@ -28,7 +28,9 @@
                 </p>
 
                 <div class="row">
-                    <asp:Literal ID="lblMainDetails" runat="server" />
+                    <div class="cold-md-12">
+                        <asp:Literal ID="lblMainDetails" runat="server" />
+                    </div>
                 </div>
 
             </div>

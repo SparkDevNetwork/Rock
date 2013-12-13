@@ -49,9 +49,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\WebGrease.1.3.0\lib\Antlr3.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="CKEditor.NET">
-      <HintPath>..\packages\CKEditor.3.6.4\CKEditor.NET.dll</HintPath>
-    </Reference>
     <Reference Include="CronExpressionDescriptor">
       <HintPath>..\packages\CronExpressionDescriptor.1.7.1\lib\net35\CronExpressionDescriptor.dll</HintPath>
     </Reference>
@@ -64,11 +61,11 @@
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.6.0.1\lib\net45\EntityFramework.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.0.2-beta1\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.6.0.1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.0.2-beta1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="EPPlus">
       <HintPath>..\libs\EPPlus\EPPlus.dll</HintPath>
@@ -184,6 +181,7 @@
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
     <Compile Include="Communication\Transport\Twilio.cs" />
+    <Compile Include="Data\LinqRuntimeTypeBuilder.cs" />
     <Compile Include="Field\Types\GroupLocationTypeFieldType.cs" />
     <Compile Include="Field\Types\CodeEditorFieldType.cs" />
     <Compile Include="Field\Types\TimeFieldType.cs" />
@@ -204,6 +202,7 @@
     <Compile Include="Model\CodeGenerated\LayoutService.cs" />
     <Compile Include="Model\CodeGenerated\ReportFieldService.cs" />
     <Compile Include="Model\DbGeographyConverter.cs" />
+    <Compile Include="Model\FinancialTransactionImageService.partial.cs" />
     <Compile Include="Model\LayoutService.Partial.cs" />
     <Compile Include="Model\Layout.cs" />
     <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
@@ -218,6 +217,9 @@
     <Compile Include="Reporting\DataFilter\Person\DistanceFromFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupFilter.cs" />
+    <Compile Include="Reporting\DataSelect\Person\FamilyNameSelect.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Reporting\DataSelect\Person\LastContributionSelect.cs" />
     <Compile Include="Reporting\DataSelectContainer.cs" />
     <Compile Include="Reporting\EntityHelper.cs" />
@@ -253,7 +255,7 @@
     <Compile Include="PersonProfile\Badge\eRA.cs" />
     <Compile Include="PersonProfile\Badge\RecordStatus.cs" />
     <Compile Include="PersonProfile\Badge\Campus.cs" />
-    <Compile Include="PersonProfile\Badge\PersonStatus.cs" />
+    <Compile Include="PersonProfile\Badge\ConnectionStatus.cs" />
     <Compile Include="PersonProfile\Badge\Serving.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -265,6 +267,7 @@
     <Compile Include="SystemGuid\SiteDomain.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\Cache\CategoryCache.cs" />
+    <Compile Include="Web\Cache\GroupTypeCache.cs" />
     <Compile Include="Web\Cache\LayoutCache.cs" />
     <Compile Include="Web\DescriptionList.cs" />
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />

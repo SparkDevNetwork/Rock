@@ -385,6 +385,9 @@ namespace Rock.Web.UI
             var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
             _scriptManager.Scripts.Add( new ScriptReference( string.Format( "https://maps.googleapis.com/maps/api/js?key={0}&sensor=false&libraries=drawing", googleAPIKey ) ) );
 
+            // add ckeditor
+            _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/ckeditor/ckeditor.js" ) );
+
             // Recurse the page controls to find the rock page title and zone controls
             Page.Trace.Warn( "Recursing layout to find zones" );
             Zones = new Dictionary<string, KeyValuePair<string, Zone>>();
@@ -584,12 +587,6 @@ namespace Rock.Web.UI
                         _pageCache.Layout.SiteId, _pageCache.LayoutId, _pageCache.Id, _pageCache.Layout.FileName, ResolveUrl( "~" ) );
                     ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "rock-js-object", script, true );
 
-                    // Add dummy default button to prevent modalPopupExtender dialogs from displaying when enter key is pressed
-                    var btnDummy = new Button();
-                    btnDummy.Attributes.Add( "style", "display:none" );
-                    this.Form.Controls.Add( btnDummy );
-                    this.Form.DefaultButton = btnDummy.UniqueID;
-
                     AddTriggerPanel();
 
                     // Add config elements
@@ -767,29 +764,7 @@ namespace Rock.Web.UI
                     foreach ( var pageReference in pageReferences )
                     {
                         pageReference.BreadCrumbs.ForEach( c => BreadCrumbs.Add( c ) );
-                    }
-
-                    // Add favicon and apple touch icons to page
-                    Page.Trace.Warn( "Adding favicons and appletouch links" );
-                    if ( _pageCache.Layout.Site.FaviconUrl != null )
-                    {
-                        System.Web.UI.HtmlControls.HtmlLink faviconLink = new System.Web.UI.HtmlControls.HtmlLink();
-
-                        faviconLink.Attributes.Add( "rel", "shortcut icon" );
-                        faviconLink.Attributes.Add( "href", ResolveUrl( "~/" + _pageCache.Layout.Site.FaviconUrl ) );
-
-                        AddHtmlLink( faviconLink );
-                    }
-
-                    if ( _pageCache.Layout.Site.AppleTouchIconUrl != null )
-                    {
-                        System.Web.UI.HtmlControls.HtmlLink touchLink = new System.Web.UI.HtmlControls.HtmlLink();
-
-                        touchLink.Attributes.Add( "rel", "apple-touch-icon" );
-                        touchLink.Attributes.Add( "href", ResolveUrl( "~/" + _pageCache.Layout.Site.AppleTouchIconUrl ) );
-
-                        AddHtmlLink( touchLink );
-                    }
+                    } 
 
                     // Add the page admin footer if the user is authorized to edit the page
                     if ( _pageCache.IncludeAdminFooter && canAdministratePage )

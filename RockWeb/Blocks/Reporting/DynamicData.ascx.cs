@@ -29,15 +29,16 @@ namespace RockWeb.Blocks.Reporting
     /// Block to display dynamic report, html, xml, or transformed xml based on a SQL query or stored procedure.
     /// </summary>
     [Description( "Block to display dynamic report, html, xml, or transformed xml based on a SQL query or stored procedure." )]
-    [BooleanField( "Update Page", "If True, provides fields for updating the parent page's Name and Description", true )] 
-    [TextField( "Query", "The query to execute", false )]
-    [TextField( "Query Params", "Parameters to pass to query", false )]
-    [TextField( "Url Mask", "The Url to redirect to when a row is clicked", false )]
-    [BooleanField( "Show Columns", "Should the 'Columns' specified below be the only ones shown (vs. the only ones hidden)")]
-    [TextField( "Columns", "The columns to hide or show", false )]
-    [TextField( "Xslt File Path", "The Xslt file path relative to the current theme's Assets/Xslt folder (if query returns xml that should be transformed)", false)]
-    [BooleanField( "Person Report", "Is this report a list of people.?" )]
-    [TextField( "Merge Fields", "Any fields to make available as merge fields for any new communications", false )]
+    [BooleanField( "Update Page", "If True, provides fields for updating the parent page's Name and Description", true, "", 0 )] 
+    [CodeEditorField( "Query", "The query to execute", CodeEditorMode.Sql, CodeEditorTheme.Rock, 400, false, "", "", 1 )]
+    [TextField( "Query Params", "Parameters to pass to query", false, "", "", 2 )]
+    [TextField( "Url Mask", "The Url to redirect to when a row is clicked", false, "", "", 3 )]
+    [BooleanField( "Show Columns", "Should the 'Columns' specified below be the only ones shown (vs. the only ones hidden)", false, "", 4)]
+    [TextField( "Columns", "The columns to hide or show", false, "", "", 5 )]
+    [CodeEditorField( "Formatted Output", "Optional formatting to apply to the returned results.  If left blank, a grid will be displayed. Example: {% for row in rows %} {{ row.FirstName }}<br/> {% endfor %}",
+        CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, "", "", 7 )]
+    [BooleanField( "Person Report", "Is this report a list of people.?", false, "", 8 )]
+    [TextField( "Merge Fields", "Any fields to make available as merge fields for any new communications", false, "", "", 9 )]
     public partial class DynamicData : RockBlock
     { 
         #region Control Methods
@@ -94,12 +95,12 @@ namespace RockWeb.Blocks.Reporting
                     tbName.Visible = updatePage;
                     tbDesc.Visible = updatePage;
 
-                    tbQuery.Text = GetAttributeValue( "Query" );
+                    ceQuery.Text = GetAttributeValue( "Query" );
                     tbParams.Text = GetAttributeValue( "QueryParams" );
                     tbUrlMask.Text = GetAttributeValue( "UrlMask" );
                     ddlHideShow.SelectedValue = GetAttributeValue( "ShowColumns");
                     tbColumns.Text = GetAttributeValue( "Columns" );
-                    tbXslt.Text = GetAttributeValue( "XsltFilePath" );
+                    ceFormattedOutput.Text = GetAttributeValue( "FormattedOutput" );
                     cbPersonReport.Checked = Boolean.Parse( GetAttributeValue( "PersonReport" ) );
                     tbMergeFields.Text = GetAttributeValue( "MergeFields" );
                 }
@@ -126,7 +127,7 @@ namespace RockWeb.Blocks.Reporting
             BindGrid();
         }
 
-        protected void btnSave_Click( object sender, EventArgs e )
+        protected void lbSave_Click( object sender, EventArgs e )
         {
             if ( updatePage )
             {
@@ -141,17 +142,24 @@ namespace RockWeb.Blocks.Reporting
                     service.Save( page, CurrentPersonId );
 
                     Rock.Web.Cache.PageCache.Flush( page.Id );
+                    pageCache = PageCache.Read( RockPage.PageId );
+
+                    var breadCrumb = RockPage.BreadCrumbs.Where( c => c.Url == RockPage.PageReference.BuildUrl() ).FirstOrDefault();
+                    if (breadCrumb != null)
+                    {
+                        breadCrumb.Name = pageCache.BreadCrumbText;
+                    }
 
                     Page.Title = tbName.Text;
                 }
             }
 
-            SetAttributeValue( "Query", tbQuery.Text );
+            SetAttributeValue( "Query", ceQuery.Text );
             SetAttributeValue( "QueryParams", tbParams.Text );
             SetAttributeValue( "UrlMask", tbUrlMask.Text );
             SetAttributeValue( "Columns", tbColumns.Text );
             SetAttributeValue( "ShowColumns", ddlHideShow.SelectedValue );
-            SetAttributeValue( "XsltFilePath", tbXslt.Text );
+            SetAttributeValue( "FormattedOutput", ceFormattedOutput.Text );
             SetAttributeValue( "PersonReport", cbPersonReport.Checked.ToString());
             SetAttributeValue( "MergeFields", tbMergeFields.Text );
             SaveAttributeValues( CurrentPersonId );
@@ -193,62 +201,36 @@ namespace RockWeb.Blocks.Reporting
                     var parameters = GetParameters();
                     DataTable dataTable = new Service().GetDataTable( query, ( parameters != null ? CommandType.StoredProcedure : CommandType.Text ), parameters );
 
-                    if ( dataTable.Columns.Count == 1 && dataTable.Rows.Count == 1 && dataTable.Columns[0].ColumnName.ToLower() == "html" )
-                    {
-                        gReport.Visible = false;
-                        phHtml.Visible = true;
-                        xmlContent.Visible = false;
-                        
-                        phHtml.Controls.Clear();
-                        phHtml.Controls.Add( new LiteralControl( dataTable.Rows[0][0].ToString() ) );
-                    }
-
-                    else if ( dataTable.Columns.Count == 1 && dataTable.Rows.Count == 1 && dataTable.Columns[0].ColumnName.ToLower() == "xml" )
-                    {
-                        gReport.Visible = false;
-
-                        XDocument xDocument = XDocument.Parse( dataTable.Rows[0][0].ToString() );
-
-                        string xsltFile = GetAttributeValue( "XsltFilePath" );
-                        if ( !string.IsNullOrWhiteSpace( xsltFile ) )
-                        {
-                            phHtml.Visible = false;
-                            xmlContent.Visible = true;
-
-                            xmlContent.DocumentContent = xDocument.ToString();
-                            xmlContent.TransformSource = Server.MapPath( ResolveRockUrl( "~~/Assets/Xslt/" + xsltFile) );
-                        }
-                        else
-                        {
-                            phHtml.Visible = true;
-                            xmlContent.Visible = false;
-
-                            StringBuilder sb = new StringBuilder();
-                            TextWriter tr = new StringWriter( sb );
-                            xDocument.Save( tr );
-
-                            phHtml.Controls.Clear();
-                            phHtml.Controls.Add( new LiteralControl( Server.HtmlEncode( sb.ToString() ).Replace( " ", "&nbsp;" ).Replace( "\n", "<br/>" ) ) );
-                        }
-                    }
-
-                    else
+                    if (string.IsNullOrWhiteSpace(ceFormattedOutput.Text))
                     {
                         gReport.Visible = true;
                         phHtml.Visible = false;
-                        xmlContent.Visible = false;
 
                         AddGridColumns( dataTable );
                         SetDataKeyNames();
                         gReport.DataSource = GetSortedView( dataTable ); ;
                         gReport.DataBind();
                     }
+                    else
+                    {
+                        gReport.Visible = false;
+                        phHtml.Visible = true;
+                        
+                        var dropRows = new List<DataRowDrop>();
+                        foreach(DataRow row in dataTable.Rows)
+                        {
+                            dropRows.Add(new DataRowDrop(row));
+                        }
+                        var dropTable = new Dictionary<string, object>();
+                        dropTable.Add("rows", dropRows);
+
+                        phHtml.Controls.Add( new LiteralControl( ceFormattedOutput.Text.ResolveMergeFields( dropTable ) ) );
+                    }
                 }
                 catch ( System.Exception ex )
                 {
                     gReport.Visible = false;
                     phHtml.Visible = false;
-                    xmlContent.Visible = false;
 
                     nbError.Text = ex.Message;
                     nbError.Visible = true;
@@ -389,5 +371,24 @@ namespace RockWeb.Blocks.Reporting
 
         #endregion
 
+        class DataRowDrop : DotLiquid.Drop
+        {
+            private readonly DataRow _dataRow;
+
+            public DataRowDrop(DataRow dataRow)
+            {
+                _dataRow = dataRow;
+            }
+
+            public override object BeforeMethod( string method )
+            {
+                if ( _dataRow.Table.Columns.Contains( method ) )
+                {
+                    return _dataRow[method];
+                }
+                return null;
+            }
+
+        }
     }
 }

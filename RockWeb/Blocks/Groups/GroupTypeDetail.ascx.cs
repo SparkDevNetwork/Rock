@@ -452,8 +452,27 @@ namespace RockWeb.Blocks.Groups
                 groupType.ShowInGroupList = cbShowInGroupList.Checked;
                 groupType.ShowInNavigation = cbShowInNavigation.Checked;
                 groupType.IconCssClass = tbIconCssClass.Text;
-                groupType.IconSmallFileId = imgIconSmall.BinaryFileId;
-                groupType.IconLargeFileId = imgIconLarge.BinaryFileId;
+                List<int> orphanedBinaryFileIdList = new List<int>();
+
+                if ( groupType.IconSmallFileId != imgIconSmall.BinaryFileId )
+                {
+                    if ( groupType.IconSmallFileId.HasValue )
+                    {
+                        orphanedBinaryFileIdList.Add( groupType.IconSmallFileId.Value );
+                    }
+
+                    groupType.IconSmallFileId = imgIconSmall.BinaryFileId;
+                }
+
+                if ( groupType.IconLargeFileId != imgIconLarge.BinaryFileId )
+                {
+                    if ( groupType.IconLargeFileId.HasValue )
+                    {
+                        orphanedBinaryFileIdList.Add( groupType.IconLargeFileId.Value );
+                    }
+
+                    groupType.IconLargeFileId = imgIconLarge.BinaryFileId;
+                }
                 groupType.TakesAttendance = cbTakesAttendance.Checked;
                 groupType.AttendanceRule = ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
                 groupType.AttendancePrintTo = ddlAttendancePrintTo.SelectedValueAsEnum<PrintTo>();
@@ -526,7 +545,21 @@ namespace RockWeb.Blocks.Groups
                             }
                         }
 
+                        BinaryFileService binaryFileService = new BinaryFileService();
+                        foreach ( int binaryFileId in orphanedBinaryFileIdList )
+                        {
+                            var binaryFile = binaryFileService.Get( binaryFileId );
+                            if ( binaryFile != null )
+                            {
+                                // marked the old images as IsTemporary so they will get cleaned up later
+                                binaryFile.IsTemporary = true;
+                                binaryFileService.Save( binaryFile, CurrentPersonId );
+                            }
+                        }
+
                     } );
+
+                GroupTypeCache.Flush( groupType.Id );
 
             }
 

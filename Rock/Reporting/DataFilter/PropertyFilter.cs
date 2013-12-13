@@ -31,6 +31,7 @@ namespace Rock.Reporting.DataFilter
         #region Private Fields
 
         private string _clientFormatSelection = string.Empty;
+        private Type _entityFieldsEntityType = null;
         private List<EntityField> _entityFields = null;
 
         #endregion
@@ -665,8 +666,9 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         private List<EntityField> GetEntityFields(Type entityType)
         {
-            if ( _entityFields == null )
+            if ( _entityFields == null || entityType != _entityFieldsEntityType )
             {
+                _entityFieldsEntityType = entityType;
                 _entityFields = EntityHelper.GetEntityFields( entityType );
             }
 

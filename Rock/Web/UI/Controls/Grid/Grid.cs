@@ -631,6 +631,16 @@ namespace Rock.Web.UI.Controls
                 // get access to the List<> and its properties
                 IList data = (IList)this.DataSource;
                 Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
+                
+                // if the list is just List<object>, try to find out what the properties of specific type of object are by examining the first item in the list
+                if (oType == typeof(object))
+                {
+                    if (data.Count > 0)
+                    {
+                        oType = data[0].GetType();
+                    }
+                }
+
                 IList<PropertyInfo> props = new List<PropertyInfo>( oType.GetProperties() );
 
                 // print column headings
@@ -1123,11 +1133,11 @@ namespace Rock.Web.UI.Controls
                 baseType = propertyType.GetGenericArguments()[0];
             }
 
-            if ( baseType == typeof( Boolean ) )
+            if ( baseType == typeof( Boolean ) || baseType == typeof( Boolean? ) )
             {
                 bf = new BoolField();
             }
-            else if ( baseType == typeof( DateTime ) )
+            else if ( baseType == typeof( DateTime ) || baseType == typeof( DateTime? ) )
             {
                 bf = new DateField();
             }
@@ -1135,9 +1145,11 @@ namespace Rock.Web.UI.Controls
             {
                 bf = new EnumField();
             }
-            else if ( baseType == typeof( decimal ) || baseType == typeof( int ) )
+            else if ( baseType == typeof( decimal ) || baseType == typeof( decimal? ) ||
+                baseType == typeof( int ) || baseType == typeof( int? ) )
             {
                 bf = new BoundField();
+                bf.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
                 bf.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
             }
 

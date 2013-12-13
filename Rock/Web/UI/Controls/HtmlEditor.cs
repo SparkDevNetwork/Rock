@@ -6,10 +6,9 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
-using CKEditor.NET;
 
 namespace Rock.Web.UI.Controls
 {
@@ -17,7 +16,7 @@ namespace Rock.Web.UI.Controls
     /// Control for rendering an html editor
     /// </summary>
     [ToolboxData( "<{0}:LabeledHtmlEditor runat=server></{0}:LabeledHtmlEditor>" )]
-    public class HtmlEditor : CKEditorControl, IRockControl
+    public class HtmlEditor : TextBox, IRockControl
     {
         #region IRockControl implementation
 
@@ -134,6 +133,23 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public RequiredFieldValidator RequiredFieldValidator { get; set; }
 
+        /// <summary>
+        /// Gets or sets the group of controls for which the <see cref="T:System.Web.UI.WebControls.TextBox" /> control causes validation when it posts back to the server.
+        /// </summary>
+        /// <returns>The group of controls for which the <see cref="T:System.Web.UI.WebControls.TextBox" /> control causes validation when it posts back to the server. The default value is an empty string ("").</returns>
+        public override string ValidationGroup
+        {
+            get
+            {
+                return base.ValidationGroup;
+            }
+            set
+            {
+                base.ValidationGroup = value;
+                RequiredFieldValidator.ValidationGroup = value;
+            }
+        }
+
         #endregion
 
         #region Controls
@@ -146,6 +162,80 @@ namespace Rock.Web.UI.Controls
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum ToolbarConfig
+        {
+            Light,
+            Full
+        }
+
+        /// <summary>
+        /// Gets or sets the toolbar.
+        /// </summary>
+        /// <value>
+        /// The toolbar.
+        /// </value>
+        public ToolbarConfig Toolbar
+        {
+            get
+            {
+                object toolbarObj = ViewState["Toolbar"];
+                if (toolbarObj != null)
+                {
+                    return (ToolbarConfig)toolbarObj;
+                }
+                else
+                {
+                    return ToolbarConfig.Light;
+                }
+            }
+
+            set
+            {
+                ViewState["Toolbar"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the maximum width of the resize.
+        /// </summary>
+        /// <value>
+        /// The maximum width of the resize.
+        /// </value>
+        public int? ResizeMaxWidth
+        {
+            get
+            {
+                return ViewState["ResizeMaxWidth"] as int?;
+            }
+
+            set
+            {
+                ViewState["ResizeMaxWidth"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the javascript that will get executed when the ckeditor 'on key' event occurs
+        /// </summary>
+        /// <value>
+        /// The on key press script.
+        /// </value>
+        public string OnKeyPressScript
+        {
+            get
+            {
+                return ViewState["OnKeyPressScript"] as string;
+            }
+
+            set
+            {
+                ViewState["OnKeyPressScript"] = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the merge fields to make available.  This should include either a list of
@@ -181,6 +271,10 @@ namespace Rock.Web.UI.Controls
             RequiredFieldValidator = new RequiredFieldValidator();
             RequiredFieldValidator.ValidationGroup = this.ValidationGroup;
             HelpBlock = new HelpBlock();
+
+            TextMode = TextBoxMode.MultiLine;
+            Rows = 10;
+            Columns = 80;
         }
 
         /// <summary>
@@ -207,7 +301,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _mergeFieldPicker );
         }
 
-       /// <summary>
+        /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
@@ -225,18 +319,68 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            // NOTE: Some of the plugins in the Full (72 plugin) build of CKEditor are buggy, so we are just using the Standard edition. 
+            // This is why some of the items don't appear in the RockCustomConfiguFull toolbar (like the Justify commands)
+            string ckeditorInitScriptFormat = @"
+var toolbar_RockCustomConfigLight =
+	[
+        ['Source'],
+        ['Bold', 'Italic', 'Underline', 'Strike', 'NumberedList', 'BulletedList', 'Link', 'Image', 'PasteFromWord', '-', 'RemoveFormat'],
+        ['Format'],
+	];
+
+var toolbar_RockCustomConfigFull =
+	[
+        ['Source'],
+        ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'],
+        ['Find', 'Replace', '-', 'Scayt'],
+        ['Link', 'Unlink', 'Anchor'],
+        ['Styles', 'Format'],
+        '/',
+        ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat'],
+        ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-'], 
+        ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
+        ['-', 'Image', 'Table'],
+	];	
+
+CKEDITOR.replace('{0}', {{ 
+  toolbar: toolbar_RockCustomConfig{1},
+  removeButtons: '',
+  resize_maxWidth: '{2}'{3}  
+}} );
+            ";
+
+            string onkeyconfig = null;
+
+            if (!string.IsNullOrWhiteSpace(this.OnKeyPressScript))
+            {
+                onkeyconfig = @",
+  on: {  
+      key: function () { "
+      + this.OnKeyPressScript
+  + @"}
+  }";
+            }
+
+            string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(), this.ResizeMaxWidth ?? 0, onkeyconfig );
+
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckeditorInitScript, true );
+
             if ( MergeFields.Any() )
             {
                 _mergeFieldPicker.MergeFields = this.MergeFields;
                 _mergeFieldPicker.RenderControl( writer );
 
-                AddScript();
+                AddMergeFieldScript();
             }
 
             base.RenderControl( writer );
         }
 
-        private void AddScript()
+        /// <summary>
+        /// Adds the merge field script.
+        /// </summary>
+        private void AddMergeFieldScript()
         {
             string scriptFormat = @"
         $('#btnSelectNone_{0}').click(function (e) {{

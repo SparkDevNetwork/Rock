@@ -100,6 +100,7 @@ namespace Rock.Model
             target.Zone = source.Zone;
             target.Order = source.Order;
             target.Name = source.Name;
+            target.CssClass = source.CssClass;
             target.OutputCacheDuration = source.OutputCacheDuration;
             target.Id = source.Id;
             target.Guid = source.Guid;

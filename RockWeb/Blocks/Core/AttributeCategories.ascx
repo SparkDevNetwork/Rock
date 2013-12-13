@@ -26,9 +26,17 @@
         <Rock:ModalDialog ID="modalDetails" runat="server" Title="Category" ValidationGroup="EntityTypeName">
             <Content>
                 <asp:HiddenField ID="hfIdValue" runat="server" />
-                <fieldset>
-                    <Rock:RockTextBox ID="tbName" runat="server" Label="Name" Required="true" ValidationGroup="EntityTypeName" />
-                    <Rock:EntityTypePicker ID="entityTypePicker" runat="server" Required="true" Label="Entity Type" IncludeGlobalOption="true" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockTextBox ID="tbName" runat="server" Label="Name" Required="true" ValidationGroup="EntityTypeName" />
+                        <Rock:EntityTypePicker ID="entityTypePicker" runat="server" Required="true" Label="Entity Type" IncludeGlobalOption="true" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" />
+                        <Rock:ImageUploader ID="imgIconSmall" runat="server" Label="Small Icon Image" />
+                        <Rock:ImageUploader ID="imgIconLarge" runat="server" Label="Large Icon Image" />
+                    </div>
+                </div>
                 </fieldset>
             </Content>
         </Rock:ModalDialog>

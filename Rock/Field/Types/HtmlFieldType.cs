@@ -25,8 +25,8 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var editor = new HtmlEditor { ID = id }; 
-            editor.Toolbar = "RockCustomConfigLight";
+            var editor = new HtmlEditor { ID = id };
+            editor.Toolbar = HtmlEditor.ToolbarConfig.Light;
             return editor;
         }
     }

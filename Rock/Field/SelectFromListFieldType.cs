@@ -35,7 +35,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            CheckBoxList editControl = new CheckBoxList { ID = id };
+            RockCheckBoxList editControl = new RockCheckBoxList { ID = id };
             editControl.RepeatDirection = RepeatDirection.Horizontal;
 
             foreach ( var item in ListSource )
@@ -57,9 +57,9 @@ namespace Rock.Field.Types
         {
             List<string> values = new List<string>();
 
-            if ( control != null && control is CheckBoxList )
+            if ( control != null && control is RockCheckBoxList )
             {
-                CheckBoxList cbl = (CheckBoxList)control;
+                RockCheckBoxList cbl = (RockCheckBoxList)control;
                 foreach ( ListItem li in cbl.Items )
                     if ( li.Selected )
                         values.Add( li.Value );
@@ -82,9 +82,9 @@ namespace Rock.Field.Types
                 List<string> values = new List<string>();
                 values.AddRange( value.Split( ',' ) );
 
-                if ( control != null && control is CheckBoxList )
+                if ( control != null && control is RockCheckBoxList )
                 {
-                    CheckBoxList cbl = (CheckBoxList)control;
+                    RockCheckBoxList cbl = (RockCheckBoxList)control;
                     foreach ( ListItem li in cbl.Items )
                         li.Selected = values.Contains( li.Value );
                 }

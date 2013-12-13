@@ -171,11 +171,6 @@ namespace RockWeb.Blocks.Cms
                         }
                     }
 
-                    site.FaviconUrl = tbFaviconUrl.Text;
-                    site.AppleTouchIconUrl = tbAppleTouchIconUrl.Text;
-                    site.FacebookAppId = tbFacebookAppId.Text;
-                    site.FacebookAppSecret = tbFacebookAppSecret.Text;
-
                     if (!site.DefaultPageId.HasValue && !newSite)
                     {
                         ppDefaultPage.ShowErrorMessage( "Default Page is required." );
@@ -208,7 +203,13 @@ namespace RockWeb.Blocks.Cms
                         // Create the layouts for the site, and find the first one
                         var layoutService = new LayoutService();
                         layoutService.RegisterLayouts( Request.MapPath( "~" ), siteCache, CurrentPersonId );
-                        var layout = layoutService.GetBySiteId( siteCache.Id ).FirstOrDefault();
+
+                        var layouts = layoutService.GetBySiteId( siteCache.Id );
+                        Layout layout = layouts.FirstOrDefault( l => l.FileName.Equals("FullWidth", StringComparison.OrdinalIgnoreCase));
+                        if (layout == null)
+                        {
+                            layout = layouts.FirstOrDefault();
+                        }
                         if ( layout != null )
                         {
                             var pageService = new PageService();
@@ -358,10 +359,12 @@ namespace RockWeb.Blocks.Cms
         {
             if ( site.Id == 0 )
             {
+                nbDefaultPageNotice.Visible = true;
                 lReadOnlyTitle.Text = ActionTitle.Add(Rock.Model.Site.FriendlyTypeName).FormatAsHtmlTitle();
             }
             else
             {
+                nbDefaultPageNotice.Visible = false;
                 lReadOnlyTitle.Text = site.Name.FormatAsHtmlTitle();
             }
 
@@ -408,8 +411,6 @@ namespace RockWeb.Blocks.Cms
             tbErrorPage.Text = site.ErrorPage;
 
             tbSiteDomains.Text = string.Join( "\n", site.SiteDomains.Select( dom => dom.Domain ).ToArray() );
-            tbFaviconUrl.Text = site.FaviconUrl;
-            tbAppleTouchIconUrl.Text = site.AppleTouchIconUrl;
             tbFacebookAppId.Text = site.FacebookAppId;
             tbFacebookAppSecret.Text = site.FacebookAppSecret;
         }

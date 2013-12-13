@@ -33,11 +33,13 @@
     <Reference Include="DotLiquid">
       <HintPath>..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework">
-      <HintPath>..\packages\EntityFramework.6.0.1\lib\net45\EntityFramework.dll</HintPath>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\EntityFramework.6.0.2-beta1\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework.SqlServer">
-      <HintPath>..\packages\EntityFramework.6.0.1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\EntityFramework.6.0.2-beta1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -78,6 +80,86 @@
     <Compile Include="Migrations\201312042251282_UpdateEmailTemplates.Designer.cs">
       <DependentUpon>201312042251282_UpdateEmailTemplates.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201312052359158_UpdateSiteMapToPageMap.cs" />
+    <Compile Include="Migrations\201312052359158_UpdateSiteMapToPageMap.Designer.cs">
+      <DependentUpon>201312052359158_UpdateSiteMapToPageMap.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312060704559_SiteUpdateRemoveIcons.cs" />
+    <Compile Include="Migrations\201312060704559_SiteUpdateRemoveIcons.Designer.cs">
+      <DependentUpon>201312060704559_SiteUpdateRemoveIcons.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312062229010_FixPathToErrorPageOnStarkSite.cs" />
+    <Compile Include="Migrations\201312062229010_FixPathToErrorPageOnStarkSite.Designer.cs">
+      <DependentUpon>201312062229010_FixPathToErrorPageOnStarkSite.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312091725419_BinaryFileRootPathAttribute.cs" />
+    <Compile Include="Migrations\201312091725419_BinaryFileRootPathAttribute.Designer.cs">
+      <DependentUpon>201312091725419_BinaryFileRootPathAttribute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312091737178_UpdateRenameStoredProcs.cs" />
+    <Compile Include="Migrations\201312091737178_UpdateRenameStoredProcs.Designer.cs">
+      <DependentUpon>201312091737178_UpdateRenameStoredProcs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312091918239_UpdateItemsToIsSystem.cs" />
+    <Compile Include="Migrations\201312091918239_UpdateItemsToIsSystem.Designer.cs">
+      <DependentUpon>201312091918239_UpdateItemsToIsSystem.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312092011514_HtmlContentLastModified.cs" />
+    <Compile Include="Migrations\201312092011514_HtmlContentLastModified.Designer.cs">
+      <DependentUpon>201312092011514_HtmlContentLastModified.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312092306168_MarketingAdLayoutChanges.cs" />
+    <Compile Include="Migrations\201312092306168_MarketingAdLayoutChanges.Designer.cs">
+      <DependentUpon>201312092306168_MarketingAdLayoutChanges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312092315267_HtmlContentDetail.cs" />
+    <Compile Include="Migrations\201312092315267_HtmlContentDetail.Designer.cs">
+      <DependentUpon>201312092315267_HtmlContentDetail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312100236061_AddPrayerSessionBlock.cs" />
+    <Compile Include="Migrations\201312100236061_AddPrayerSessionBlock.Designer.cs">
+      <DependentUpon>201312100236061_AddPrayerSessionBlock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312101739202_FixMyAccountRoute.cs" />
+    <Compile Include="Migrations\201312101739202_FixMyAccountRoute.Designer.cs">
+      <DependentUpon>201312101739202_FixMyAccountRoute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312102004063_AccountNumberSecureNonUnique.cs" />
+    <Compile Include="Migrations\201312102004063_AccountNumberSecureNonUnique.Designer.cs">
+      <DependentUpon>201312102004063_AccountNumberSecureNonUnique.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312102031566_NoteContextFix.cs" />
+    <Compile Include="Migrations\201312102031566_NoteContextFix.Designer.cs">
+      <DependentUpon>201312102031566_NoteContextFix.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312102315538_CommunicationBlockNameChange.cs" />
+    <Compile Include="Migrations\201312102315538_CommunicationBlockNameChange.Designer.cs">
+      <DependentUpon>201312102315538_CommunicationBlockNameChange.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312111655133_RESTControllerListDetail.cs" />
+    <Compile Include="Migrations\201312111655133_RESTControllerListDetail.Designer.cs">
+      <DependentUpon>201312111655133_RESTControllerListDetail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312111944001_EmailTemplateRemoveFromAddresses.cs" />
+    <Compile Include="Migrations\201312111944001_EmailTemplateRemoveFromAddresses.Designer.cs">
+      <DependentUpon>201312111944001_EmailTemplateRemoveFromAddresses.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312120016249_HideSecurityGroups.cs" />
+    <Compile Include="Migrations\201312120016249_HideSecurityGroups.Designer.cs">
+      <DependentUpon>201312120016249_HideSecurityGroups.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312121845402_LoginExperienceUpdates.cs" />
+    <Compile Include="Migrations\201312121845402_LoginExperienceUpdates.Designer.cs">
+      <DependentUpon>201312121845402_LoginExperienceUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312121858278_ConnectionStatus.cs" />
+    <Compile Include="Migrations\201312121858278_ConnectionStatus.Designer.cs">
+      <DependentUpon>201312121858278_ConnectionStatus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312121905532_ReportColumnHeaderText.cs" />
+    <Compile Include="Migrations\201312121905532_ReportColumnHeaderText.Designer.cs">
+      <DependentUpon>201312121905532_ReportColumnHeaderText.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -114,6 +196,67 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201312042251282_UpdateEmailTemplates.resx">
       <DependentUpon>201312042251282_UpdateEmailTemplates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312052359158_UpdateSiteMapToPageMap.resx">
+      <DependentUpon>201312052359158_UpdateSiteMapToPageMap.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312060704559_SiteUpdateRemoveIcons.resx">
+      <DependentUpon>201312060704559_SiteUpdateRemoveIcons.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312062229010_FixPathToErrorPageOnStarkSite.resx">
+      <DependentUpon>201312062229010_FixPathToErrorPageOnStarkSite.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312091725419_BinaryFileRootPathAttribute.resx">
+      <DependentUpon>201312091725419_BinaryFileRootPathAttribute.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312091737178_UpdateRenameStoredProcs.resx">
+      <DependentUpon>201312091737178_UpdateRenameStoredProcs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312091918239_UpdateItemsToIsSystem.resx">
+      <DependentUpon>201312091918239_UpdateItemsToIsSystem.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312092011514_HtmlContentLastModified.resx">
+      <DependentUpon>201312092011514_HtmlContentLastModified.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312092306168_MarketingAdLayoutChanges.resx">
+      <DependentUpon>201312092306168_MarketingAdLayoutChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312092315267_HtmlContentDetail.resx">
+      <DependentUpon>201312092315267_HtmlContentDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312100236061_AddPrayerSessionBlock.resx">
+      <DependentUpon>201312100236061_AddPrayerSessionBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312101739202_FixMyAccountRoute.resx">
+      <DependentUpon>201312101739202_FixMyAccountRoute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312102004063_AccountNumberSecureNonUnique.resx">
+      <DependentUpon>201312102004063_AccountNumberSecureNonUnique.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312102031566_NoteContextFix.resx">
+      <DependentUpon>201312102031566_NoteContextFix.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312102315538_CommunicationBlockNameChange.resx">
+      <DependentUpon>201312102315538_CommunicationBlockNameChange.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312111655133_RESTControllerListDetail.resx">
+      <DependentUpon>201312111655133_RESTControllerListDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312111944001_EmailTemplateRemoveFromAddresses.resx">
+      <DependentUpon>201312111944001_EmailTemplateRemoveFromAddresses.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312120016249_HideSecurityGroups.resx">
+      <DependentUpon>201312120016249_HideSecurityGroups.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312121845402_LoginExperienceUpdates.resx">
+      <DependentUpon>201312121845402_LoginExperienceUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312121858278_ConnectionStatus.resx">
+      <DependentUpon>201312121858278_ConnectionStatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312121905532_ReportColumnHeaderText.resx">
+      <DependentUpon>201312121905532_ReportColumnHeaderText.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
