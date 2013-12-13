@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Linq.Expressions;
@@ -194,7 +195,7 @@ namespace Rock.Model
                                 qry = qry.Sort( grid.SortProperty );
                             }
 
-                            return qry.ToList();
+                            return qry.AsNoTracking().ToList();
                         };
                     }
                 }
