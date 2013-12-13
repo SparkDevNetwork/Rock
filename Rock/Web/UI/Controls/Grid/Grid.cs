@@ -433,6 +433,36 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Handles the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            if ( this.ShowConfirmDeleteDialog && this.Enabled && this.IsDeleteEnabled )
+            {
+                string deleteButtonScriptFormat = @"
+   $('#{0} .grid-delete-button').on( 'click', function (event) {{
+  return Rock.dialogs.confirmDelete(event, '{1}');
+}});";
+                string deleteButtonScript = string.Format( deleteButtonScriptFormat, this.ClientID, this.RowItemText );
+                ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-delete-confirm-script-" + this.ClientID, deleteButtonScript, true );
+            }
+
+
+            string clickScript = string.Format( "__doPostBack('{0}', 'RowSelected$' + dataRowIndexValue);", this.UniqueID );
+
+            string gridSelectCellScriptFormat = @"
+   $('#{0} .grid-select-cell').on( 'click', function (event) {{
+  var dataRowIndexValue = $(this).closest('tr').attr('data-row-index');
+  {1}
+}});";
+            string gridSelectCellScript = string.Format( gridSelectCellScriptFormat, this.ClientID, clickScript );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-select-cell-script-" + this.ClientID, gridSelectCellScript, true );
+            
+            base.OnLoad( e );
+        }
+
+        /// <summary>
         /// Handles the CommunicateClick event of the Actions control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -913,6 +943,7 @@ namespace Rock.Web.UI.Controls
                         {
                             string key = dataKey.ToString();
                             e.Row.Attributes.Add( "datakey", key );
+                            e.Row.Attributes.Add( "data-row-index", e.Row.RowIndex.ToString() );
                         }
                     }
 
@@ -946,14 +977,11 @@ namespace Rock.Web.UI.Controls
 
             if ( RowSelected != null && e.Row.RowType == DataControlRowType.DataRow )
             {
-                string clickUrl = Page.ClientScript.GetPostBackClientHyperlink( this, "RowSelected$" + e.Row.RowIndex );
-
                 foreach ( var col in RowSelectedColumns)
                 {
                     var cell = e.Row.Cells[col.Key];
                     cell.AddCssClass( col.Value );
                     cell.AddCssClass( "grid-select-cell" );
-                    cell.Attributes["onclick"] = clickUrl;
                 }
             }
         }
