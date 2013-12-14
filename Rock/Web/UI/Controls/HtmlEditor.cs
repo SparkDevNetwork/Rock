@@ -183,7 +183,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 object toolbarObj = ViewState["Toolbar"];
-                if (toolbarObj != null)
+                if ( toolbarObj != null )
                 {
                     return (ToolbarConfig)toolbarObj;
                 }
@@ -322,11 +322,15 @@ namespace Rock.Web.UI.Controls
             // NOTE: Some of the plugins in the Full (72 plugin) build of CKEditor are buggy, so we are just using the Standard edition. 
             // This is why some of the items don't appear in the RockCustomConfiguFull toolbar (like the Justify commands)
             string ckeditorInitScriptFormat = @"
+
+CKEDITOR.config.extraPlugins = 'rockmergefield,rockimagebrowser,rockdocumentbrowser';
+
 var toolbar_RockCustomConfigLight =
 	[
         ['Source'],
         ['Bold', 'Italic', 'Underline', 'Strike', 'NumberedList', 'BulletedList', 'Link', 'Image', 'PasteFromWord', '-', 'RemoveFormat'],
-        ['Format'],
+        ['Format'], 
+        ['rockmergefield', 'rockimagebrowser', 'rockdocumentbrowser']
 	];
 
 var toolbar_RockCustomConfigFull =
@@ -341,9 +345,11 @@ var toolbar_RockCustomConfigFull =
         ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-'], 
         ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
         ['-', 'Image', 'Table'],
+        ['rockmergefield', 'rockimagebrowser', 'rockdocumentbrowser']
 	];	
 
 CKEDITOR.replace('{0}', {{ 
+  allowedContent: true,  
   toolbar: toolbar_RockCustomConfig{1},
   removeButtons: '',
   resize_maxWidth: '{2}'{3}  
@@ -352,7 +358,7 @@ CKEDITOR.replace('{0}', {{
 
             string onkeyconfig = null;
 
-            if (!string.IsNullOrWhiteSpace(this.OnKeyPressScript))
+            if ( !string.IsNullOrWhiteSpace( this.OnKeyPressScript ) )
             {
                 onkeyconfig = @",
   on: {  
