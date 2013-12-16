@@ -2,15 +2,17 @@
 
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
-        <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-        <Rock:GridFilter ID="rFilter" runat="server">
-            <Rock:DataTextBox ID="tbNameFilter" runat="server" SourceTypeName="Rock.Model.BlockType, Rock" PropertyName="Name" Required="false" CausesValidation="false" Label="Name contains" />
-            <Rock:DataTextBox ID="tbPathFilter" runat="server" SourceTypeName="Rock.Model.BlockType, Rock" PropertyName="Path" Required="false" CausesValidation="false" Label="Path contains" />
-            <Rock:RockCheckBox ID="cbExcludeSystem" runat="server" Label="Exclude 'System' types?" />
+        <Rock:GridFilter ID="gfSettings" runat="server">
+            <Rock:RockTextBox ID="tbNameFilter" runat="server" Label="Name" />
+            <Rock:RockTextBox ID="tbPathFilter" runat="server" Label="Path" />
+            <Rock:RockDropDownList ID="ddlCategoryFilter" runat="server" Label="Category" />
+            <Rock:RockCheckBox ID="cbExcludeSystem" runat="server" Label="Exclude 'System' types?" Text="Yes" />
         </Rock:GridFilter>
+        <Rock:ModalAlert ID="mdGridWarning" runat="server" />
         <Rock:Grid ID="gBlockTypes" runat="server" AllowSorting="true" OnRowDataBound="gBlockTypes_RowDataBound" OnRowSelected="gBlockTypes_Edit" TooltipField="Description">
             <Columns>
                 <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                <asp:BoundField HeaderText="Category" DataField="Category" SortExpression="Category" />
                 <asp:BoundField HeaderText="Path" DataField="Path" SortExpression="Path" />
                 <Rock:BadgeField HeaderText="Usage" DataField="BlocksCount" SortExpression="BlocksCount"
                     ImportantMin="0" ImportantMax="0" InfoMin="1" InfoMax="1" SuccessMin="2" />
@@ -19,6 +21,9 @@
                 <Rock:DeleteField OnClick="gBlockTypes_Delete" />
             </Columns>
         </Rock:Grid>
+        <div class="actions">
+            <asp:LinkButton id="btnRefreshAll" runat="server" Text="Reload All Block Type Attributes" CssClass="btn btn-link" CausesValidation="false" OnClick="btnRefreshAll_Click" />
+        </div>
     </ContentTemplate>
 </asp:UpdatePanel>
 

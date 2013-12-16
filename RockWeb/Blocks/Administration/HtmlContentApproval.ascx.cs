@@ -6,14 +6,22 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+
 using Rock;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    [DisplayName( "HTML Content Approval" )]
+    [Category( "Administration" )]
+    [Description( "" )]
     public partial class HtmlContentApproval : Rock.Web.UI.RockBlock
     {
         #region Fields

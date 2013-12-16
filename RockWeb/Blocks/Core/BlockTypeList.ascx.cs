@@ -22,7 +22,8 @@ namespace RockWeb.Blocks.Core
     [LinkedPage("Detail Page")]
     public partial class BlockTypeList : RockBlock
     {
-        #region Control Methods
+
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -31,7 +32,7 @@ namespace RockWeb.Blocks.Core
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
+            gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
 
             gBlockTypes.RowItemText = "Block Type";
             gBlockTypes.DataKeyNames = new string[] { "id" };
@@ -43,6 +44,8 @@ namespace RockWeb.Blocks.Core
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
             gBlockTypes.Actions.ShowAdd = canAddEditDelete;
             gBlockTypes.IsDeleteEnabled = canAddEditDelete;
+
+            BindFilter();
         }
 
         /// <summary>
@@ -53,7 +56,13 @@ namespace RockWeb.Blocks.Core
         {
             if ( !Page.IsPostBack )
             {
+                tbNameFilter.Text = gfSettings.GetUserPreference( "Name" );
+                tbPathFilter.Text = gfSettings.GetUserPreference( "Path" );
+                ddlCategoryFilter.SetValue( gfSettings.GetUserPreference( "Category" ) );
+                cbExcludeSystem.Checked = !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Exclude System" ) );
+
                 new BlockTypeService().RegisterBlockTypes( Request.MapPath( "~" ), Page, CurrentPersonId );
+
                 BindGrid();
             }
 
@@ -62,16 +71,19 @@ namespace RockWeb.Blocks.Core
 
         #endregion
 
-        #region Grid Events
+        #region Events
 
         /// <summary>
         /// Handles the Apply Filter event for the GridFilter
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
-            // We're not saving any filters here because the ones we're using are transient in nature.
+            gfSettings.SaveUserPreference( "Name", tbNameFilter.Text );
+            gfSettings.SaveUserPreference( "Path", tbPathFilter.Text );
+            gfSettings.SaveUserPreference( "Category", ddlCategoryFilter.SelectedValue);
+            gfSettings.SaveUserPreference( "Exclude System", cbExcludeSystem.Checked ? "Yes" : string.Empty );
             BindGrid();
         }
 
@@ -155,9 +167,34 @@ namespace RockWeb.Blocks.Core
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnRefreshAll control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnRefreshAll_Click( object sender, EventArgs e )
+        {
+            new BlockTypeService().RegisterBlockTypes( Request.MapPath( "~" ), Page, CurrentPersonId, true );
+            BindGrid();
+        }
+        
         #endregion
 
-        #region Internal Methods
+        #region Methods
+
+        private void BindFilter()
+        {
+            ddlCategoryFilter.Items.Clear();
+            ddlCategoryFilter.Items.Add( string.Empty );
+            foreach(string category in new BlockTypeService().Queryable()
+                .Where( b => b.Category != null && b.Category != "")
+                .OrderBy( b=> b.Category)
+                .Select( b => b.Category)
+                .Distinct())
+            {
+                ddlCategoryFilter.Items.Add( category );
+            }
+        }
 
         /// <summary>
         /// Binds the grid.
@@ -170,21 +207,29 @@ namespace RockWeb.Blocks.Core
             var blockTypes = blockTypeService.Queryable();
 
             // Exclude system blocks if checked.
-            if ( cbExcludeSystem.Checked )
+            if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference("Exclude System") ) )
             {
                 blockTypes = blockTypes.Where( b => b.IsSystem == false );
             }
 
             // Filter by Name
-            if ( !string.IsNullOrEmpty( tbNameFilter.Text.Trim() ) )
+            string nameFilter = gfSettings.GetUserPreference( "Name" );
+            if ( !string.IsNullOrEmpty( nameFilter.Trim() ) )
             {
-                blockTypes = blockTypes.Where( b => b.Name.Contains( tbNameFilter.Text.Trim() ) );
+                blockTypes = blockTypes.Where( b => b.Name.Contains( nameFilter.Trim() ) );
             }
 
             // Filter by Path
-            if ( !string.IsNullOrEmpty( tbPathFilter.Text.Trim() ) )
+            string path = gfSettings.GetUserPreference( "Path" );
+            if ( !string.IsNullOrEmpty( path.Trim() ) )
             {
-                blockTypes = blockTypes.Where( b => b.Path.Contains( tbPathFilter.Text.Trim() ) );
+                blockTypes = blockTypes.Where( b => b.Path.Contains( path.Trim() ) );
+            }
+
+            string category = gfSettings.GetUserPreference( "Category" );
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                blockTypes = blockTypes.Where( b => b.Category == category );
             }
 
             var selectQry = blockTypes.Select( a =>
@@ -192,6 +237,7 @@ namespace RockWeb.Blocks.Core
                 {
                     a.Id,
                     a.Name,
+                    a.Category,
                     a.Description,
                     a.Path,
                     BlocksCount = a.Blocks.Count(),
@@ -226,5 +272,6 @@ namespace RockWeb.Blocks.Core
         }
 
         #endregion
-    }
+
+}
 }

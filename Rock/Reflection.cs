@@ -136,7 +136,34 @@ namespace Rock
         }
 
         /// <summary>
-        /// Returnes the Description Attribute value for a given type
+        /// Returns the DisplayName Attribute value for a given type
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static string GetDisplayName( Type type )
+        {
+            foreach ( var nameAttribute in type.GetCustomAttributes( typeof( DisplayNameAttribute ), true ) )
+            {
+                return ( (DisplayNameAttribute)nameAttribute ).DisplayName;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Returns the Category Attribute value for a given type
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static string GetCategory( Type type )
+        {
+            foreach ( var categoryAttribute in type.GetCustomAttributes( typeof( CategoryAttribute ), true ) )
+            {
+                return ( (CategoryAttribute)categoryAttribute ).Category;
+            }
+            return null;
+        }
+        /// <summary>
+        /// Returns the Description Attribute value for a given type
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>

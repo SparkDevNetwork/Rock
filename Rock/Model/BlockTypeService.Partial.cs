@@ -53,10 +53,11 @@ namespace Rock.Model
         /// <summary>
         /// Registers any block types that are not currently registered in RockChMS.
         /// </summary>
-        /// <param name="physWebAppPath">A <see cref="System.String"/> containing the physical path to RockChMS on the server.</param>
-        /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
-        /// <param name="currentPersonId">A <see cref="System.Int32"/> that contains the Id of the currently logged on <see cref="Rock.Model.Person"/>.</param>
-        public void RegisterBlockTypes( string physWebAppPath, System.Web.UI.Page page, int? currentPersonId )
+        /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to RockChMS on the server.</param>
+        /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
+        /// <param name="currentPersonId">A <see cref="System.Int32" /> that contains the Id of the currently logged on <see cref="Rock.Model.Person" />.</param>
+        /// <param name="refreshAll">if set to <c>true</c> will refresh name, category, and description for all block types (not just the new ones)</param>
+        public void RegisterBlockTypes( string physWebAppPath, System.Web.UI.Page page, int? currentPersonId, bool refreshAll = false)
         {
             // Dictionary for block types.  Key is path, value is friendly name
             var list = new Dictionary<string, string>();
@@ -68,43 +69,54 @@ namespace Rock.Model
             FindAllBlocksInPath( physWebAppPath, list, "Plugins" );
 
             // Get a list of the BlockTypes already registered (via the path)
-            var registered = from r in Repository.GetAll() select r.Path;
+            var registered = Repository.GetAll();
 
-            // for each unregistered BlockType
-            foreach ( string path in list.Keys.Except( registered, StringComparer.CurrentCultureIgnoreCase ) )
+            // for each BlockType
+            foreach ( string path in list.Keys)
             {
-                // Attempt to load the control
-                System.Web.UI.Control control = page.LoadControl( path );
-                if ( control is Rock.Web.UI.RockBlock )
+                if ( refreshAll || !registered.Any( b => b.Path.Equals( path, StringComparison.OrdinalIgnoreCase ) ) )
                 {
-                    // Parse the relative path to get the name
-                    var nameParts = list[path].Split( '/' );
-                    for ( int i = 0; i < nameParts.Length; i++ )
+                    // Attempt to load the control
+                    System.Web.UI.Control control = page.LoadControl( path );
+                    if ( control is Rock.Web.UI.RockBlock )
                     {
-                        if (i == nameParts.Length - 1)
+                        var blockType = registered.First( b => b.Path.Equals( path, StringComparison.OrdinalIgnoreCase ) );
+                        if ( blockType == null )
                         {
-                            nameParts[i] = Path.GetFileNameWithoutExtension(nameParts[i]);
+                            // Create new BlockType record and save it
+                            blockType = new BlockType();
+                            blockType.Path = path;
+                            blockType.Guid = new Guid();
+                            this.Add( blockType, currentPersonId );
                         }
-                        nameParts[i] = nameParts[i].SplitCase();
+
+                        Type controlType = control.GetType();
+
+                        // Update Name, Category, and Description based on block's attribute definitions
+                        blockType.Name = Rock.Reflection.GetDisplayName( controlType ) ?? string.Empty;
+                        if ( string.IsNullOrWhiteSpace( blockType.Name ) )
+                        {
+                            // Parse the relative path to get the name
+                            var nameParts = list[path].Split( '/' );
+                            for ( int i = 0; i < nameParts.Length; i++ )
+                            {
+                                if ( i == nameParts.Length - 1 )
+                                {
+                                    nameParts[i] = Path.GetFileNameWithoutExtension( nameParts[i] );
+                                }
+                                nameParts[i] = nameParts[i].SplitCase();
+                            }
+                            blockType.Name = string.Join( " > ", nameParts );
+                        }
+                        if ( blockType.Name.Length > 100 )
+                        {
+                            blockType.Name = blockType.Name.Truncate( 100 );
+                        }
+                        blockType.Category = Rock.Reflection.GetCategory( controlType ) ?? string.Empty;
+                        blockType.Description = Rock.Reflection.GetDescription( controlType ) ?? string.Empty;
+
+                        this.Save( blockType, currentPersonId );
                     }
-
-                    // Create new BlockType record and save it
-                    BlockType blockType = new BlockType();
-                    blockType.Path = path;
-                    blockType.Guid = new Guid();
-
-                    blockType.Name = string.Join( " - ", nameParts );
-
-                    // limit name to 100 chars so it fits into the .Name column
-                    if (blockType.Name.Length > 100)
-                    {
-                        blockType.Name = blockType.Name.Substring( 0, 97 ) + "...";
-                    }
-                    
-                    blockType.Description = Rock.Reflection.GetDescription( control.GetType() ) ?? string.Empty;
-
-                    this.Add( blockType, currentPersonId );
-                    this.Save( blockType, currentPersonId );
                 }
             }
         }

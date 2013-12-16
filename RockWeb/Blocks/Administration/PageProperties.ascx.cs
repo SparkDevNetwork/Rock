@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Web.Routing;
@@ -25,6 +26,9 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
+    [DisplayName( "Page Properties" )]
+    [Category( "Administration" )]
+    [Description( "" )]
     public partial class PageProperties : RockBlock
     {
 
