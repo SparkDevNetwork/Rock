@@ -219,6 +219,7 @@ namespace RockWeb.Blocks.Cms
                             page.Name = page.Title;
                             page.EnableViewState = true;
                             page.IncludeAdminFooter = true;
+                            page.MenuDisplayChildPages = true;
 
                             var lastPage = pageService.GetByParentPageId( null ).
                                 OrderByDescending( b => b.Order ).FirstOrDefault();
