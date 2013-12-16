@@ -352,7 +352,8 @@ CKEDITOR.replace('{0}', {{
   allowedContent: true,  
   toolbar: toolbar_RockCustomConfig{1},
   removeButtons: '',
-  resize_maxWidth: '{2}'{3}  
+  height: '{2}',
+  resize_maxWidth: '{3}'{4}  
 }} );
             ";
 
@@ -368,7 +369,7 @@ CKEDITOR.replace('{0}', {{
   }";
             }
 
-            string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(), this.ResizeMaxWidth ?? 0, onkeyconfig );
+            string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(), this.Height, this.ResizeMaxWidth ?? 0, onkeyconfig );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckeditorInitScript, true );
 
