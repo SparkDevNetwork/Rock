@@ -11,19 +11,48 @@ using System.Linq;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm
 {
+    [LinkedPage("Person Detail Page")]
     public partial class PersonSearch : Rock.Web.UI.RockBlock
     {
-        #region Control Methods
+        #region Base Control Methods
+
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            gPeople.DataKeyNames = new string[] { "id" };
+            gPeople.Actions.ShowAdd = false;
+            gPeople.GridRebind += gPeople_GridRebind;
+        }
 
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            if ( !Page.IsPostBack )
+            {
+                BindGrid();
+            }
+        }
+
+        #endregion
+
+        #region Events
+
+        void gPeople_GridRebind( object sender, EventArgs e )
+        {
             BindGrid();
+        }
+
+        protected void gPeople_RowSelected( object sender, RowEventArgs e )
+        {
+            NavigateToLinkedPage( "PersonDetailPage", "PersonId", (int)e.RowKeyId );
         }
 
         #endregion
@@ -113,5 +142,5 @@ namespace RockWeb.Blocks.Crm
 
         #endregion
 
-    }
+}
 }

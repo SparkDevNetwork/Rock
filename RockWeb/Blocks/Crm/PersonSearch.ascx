@@ -1,15 +1,12 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PersonSearch.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonSearch" %>
 
-<Rock:Grid ID="gPeople" runat="server" EmptyDataText="No People Found" AllowSorting="true">
+<Rock:Grid ID="gPeople" runat="server" EmptyDataText="No People Found" AllowSorting="true" OnRowSelected="gPeople_RowSelected">
     <Columns>
-        <asp:HyperLinkField 
-            DataNavigateUrlFields="Id" 
-            DataNavigateUrlFormatString="~/person/{0}"
-            DataTextField="FullNameLastFirst" 
-            SortExpression="LastName,FirstName"
-            HeaderText="Person"  />
         <asp:BoundField 
-            HeaderStyle-HorizontalAlign="Right"
+            DataField="FullNameLastFirst"  
+            HeaderText="Person"  
+            SortExpression="LastName,FirstName"  />
+        <asp:BoundField 
             ItemStyle-HorizontalAlign="Right" 
             DataField="Age"  
             HeaderText="Age"  
