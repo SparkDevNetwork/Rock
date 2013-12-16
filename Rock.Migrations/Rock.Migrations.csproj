@@ -168,6 +168,10 @@
     <Compile Include="Migrations\201312160454085_BlockTypeCategory.Designer.cs">
       <DependentUpon>201312160454085_BlockTypeCategory.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201312161446138_AddAudit.cs" />
+    <Compile Include="Migrations\201312161446138_AddAudit.Designer.cs">
+      <DependentUpon>201312161446138_AddAudit.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -271,6 +275,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201312160454085_BlockTypeCategory.resx">
       <DependentUpon>201312160454085_BlockTypeCategory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312161446138_AddAudit.resx">
+      <DependentUpon>201312161446138_AddAudit.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
