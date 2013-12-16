@@ -160,6 +160,10 @@
     <Compile Include="Migrations\201312121905532_ReportColumnHeaderText.Designer.cs">
       <DependentUpon>201312121905532_ReportColumnHeaderText.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201312160425464_AddPersonToNote.cs" />
+    <Compile Include="Migrations\201312160425464_AddPersonToNote.Designer.cs">
+      <DependentUpon>201312160425464_AddPersonToNote.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -257,6 +261,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201312121905532_ReportColumnHeaderText.resx">
       <DependentUpon>201312121905532_ReportColumnHeaderText.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312160425464_AddPersonToNote.resx">
+      <DependentUpon>201312160425464_AddPersonToNote.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

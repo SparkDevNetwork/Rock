@@ -104,8 +104,9 @@ namespace RockWeb.Blocks.Core
                 note.IsSystem = false;
                 note.NoteTypeId = noteType.Id;
                 note.EntityId = contextEntity.Id;
+                note.CreatedByPersonId = CurrentPersonId;
                 note.CreationDateTime = DateTime.Now;
-                note.Caption = cbPrivate.Checked ? "You - Personal Note" : CurrentPerson.FullName;
+                note.Caption = cbPrivate.Checked ? "You - Personal Note" : string.Empty;
                 note.IsAlert = cbAlert.Checked;
                 note.Text = tbNewNote.Text;
 
@@ -165,7 +166,7 @@ namespace RockWeb.Blocks.Core
                 var note = service.Get( noteEditor.NoteId );
                 if ( note != null && note.IsAuthorized( "Edit", CurrentPerson ) )
                 {
-                    note.Caption = noteEditor.IsPrivate ? "You - Personal Note" : CurrentPerson.FullName;
+                    note.Caption = noteEditor.IsPrivate ? "You - Personal Note" : string.Empty;
                     note.IsAlert = noteEditor.IsAlert;
                     note.Text = noteEditor.Text;
 

@@ -41,7 +41,16 @@ namespace Rock.Web.UI.Controls
             {
                 this.NoteId = value.Id;
                 this.SourceTypeValueId = value.SourceTypeValueId;
-                this.Caption = value.Caption;
+
+                if (string.IsNullOrWhiteSpace(value.Caption) && value.CreatedByPerson != null)
+                {
+                    this.Caption = value.CreatedByPerson.FullName;
+                }
+                else
+                {
+                    this.Caption = value.Caption;
+                }
+
                 this.CreatedDateTime = value.CreationDateTime;
                 this.Text = value.Text;
                 this.IsAlert = value.IsAlert.HasValue && value.IsAlert.Value;
