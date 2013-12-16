@@ -38,8 +38,7 @@
 
         // add quick fade-in effect to the page
         $(document).ready(function () {
-            $("body").css("display", "none");
-            $("body").fadeIn(400);
+            $("body").rockFadeIn();
         });
     </script>
 

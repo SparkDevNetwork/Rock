@@ -92,8 +92,7 @@
 <script>
     // fade-in effect for the panel
     function FadePanelIn() {
-        $("[id$='upPrayerSession']").css("display", "none");
-        $("[id$='upPrayerSession']").fadeIn(400);
+        $("[id$='upPrayerSession']").rockFadeIn();
     }
     $(document).ready(function () { FadePanelIn(); });
     Sys.WebForms.PageRequestManager.getInstance().add_endRequest(FadePanelIn);

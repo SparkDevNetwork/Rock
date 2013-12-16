@@ -399,6 +399,35 @@
                 </div>
             </div>
 
+             <h2 runat="server">Rock jQuery UI Library</h2>
+            To help promote consistance we have created a standard Rock jQuery UI Library.  Below are the current functions with their usage patters.
+            
+            <h3>rockFadeIn()</h3>
+            <p>Use this to fade in a selected DOM object in. The function hides the selector and then fades it in. Using this object will help provide
+                consistant fade behavior.
+            </p>
+            <strong>Usage Examples</strong>
+            <ul>
+                <li>PrayerSession.ascx - Used when moving from one prayer request to another.</li>
+                <li>Check-in Layouts - Used to fade in the `&lt;body&gt;`</li>
+            </ul>
+            <div runat="server" class="r-example">
+                <div class="js-fadepanel alert alert-info">
+                    I Fade In
+                </div>
+
+                <a href="#" class="js-fadebutton btn btn-sm btn-action">Press To Fade</a>
+
+                <script>
+                    $('.js-fadebutton').on("click", function () {
+                        $('.js-fadepanel').rockFadeIn();
+                        return false;
+                    });
+                </script>
+
+            </div>
+
+
 
         </asp:Panel>
     </ContentTemplate>
