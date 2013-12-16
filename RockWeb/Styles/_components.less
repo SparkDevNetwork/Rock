@@ -251,16 +251,23 @@ ul.rock-tree ul {
     }
 }
 
-// used to wrap the trees in certain cases
-.treeview-group {
-    background-color: @body-bg;
-    border-radius: @border-radius-base;
-    border: 1px solid @accent-color;
+// treeview wrapper
+.treeview {
+    
+    margin-bottom: 12px;
+
+    .treeview-actions {
+        margin-bottom: 12px;
+    }
+
+    .treeview-scroll {
+        background-color: @body-bg;
+        border-radius: @border-radius-base;
+        border: 1px solid @accent-color;
+    }
 }
 
-.tree-actions {
-    margin-bottom: 12px;
-}
+
 
 // 4. Person List
 // -------------------------
