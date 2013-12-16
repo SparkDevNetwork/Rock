@@ -10,7 +10,6 @@
         </Rock:GridFilter>
         <Rock:Grid ID="rGridGivingProfile" AllowSorting="false" runat="server" EmptyDataText="No Scheduled Contributions Found" ShowConfirmDeleteDialog="true" OnRowSelected="rGridGivingProfile_Edit">
             <Columns>
-                <asp:BoundField DataField="Id" HeaderText="Id" />
                 <asp:BoundField DataField="AuthorizedPerson" HeaderText="Contributor" />
                 <asp:BoundField DataField="TransactionFrequencyValue" HeaderText="Frequency" />
                 <asp:BoundField DataField="StartDate" HeaderText="Start Date" />
@@ -19,7 +18,7 @@
                 <asp:BoundField DataField="GatewayEntityTypeId" HeaderText="Gateway" />
                 <asp:BoundField DataField="TransactionCode" HeaderText="Transaction Code" />
                 <asp:BoundField DataField="GatewayScheduleId" HeaderText="Schedule ID" />
-                <asp:BoundField DataField="IsActive" HeaderText="Active" />
+                <Rock:BoolField DataField="IsActive" HeaderText="Active" />
                 <asp:BoundField DataField="CardReminderDate" HeaderText="Expiration Date" />
                 <Rock:DeleteField OnClick="rGridGivingProfile_Delete" />
             </Columns>
