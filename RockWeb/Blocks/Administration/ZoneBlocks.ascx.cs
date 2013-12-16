@@ -373,7 +373,7 @@ namespace RockWeb.Blocks.Administration
         {
             if ( string.IsNullOrWhiteSpace( tbBlockName.Text ) )
             {
-                var parts = ddlBlockType.SelectedItem.Text.Split( new char[] { '-' } );
+                var parts = ddlBlockType.SelectedItem.Text.Split( new char[] { '>' } );
                 if ( parts.Length > 1 )
                 {
                     tbBlockName.Text = parts[parts.Length - 1].Trim();
