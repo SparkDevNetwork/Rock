@@ -23,7 +23,6 @@ namespace RockWeb.Blocks.Core
     [TextField("Entity Type Qualifier Property", "", false)]
     [TextField("Entity type Qualifier Value", "", false)]
     [TextField( "Page Parameter Key", "The page parameter to look for" )]
-    [TextField("Title", "Title to put in the panel header")]
     public partial class CategoryTreeView : RockBlock
     {
         /// <summary>
@@ -43,9 +42,6 @@ namespace RockWeb.Blocks.Core
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
-
-            lTitle.Text = GetAttributeValue("Title");
 
             RockPage.AddScriptLink("~/Scripts/jquery.tinyscrollbar.js");
 
@@ -88,7 +84,7 @@ namespace RockWeb.Blocks.Core
                     selectedEntityType = "category";
                 }
 
-                lbAddCategory.Visible = true;
+                lbAddCategory.Enabled = true;
                 lbAddItem.Enabled = false;
 
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
@@ -102,7 +98,7 @@ namespace RockWeb.Blocks.Core
                     if ( selectedEntityType.Equals( "category" ) )
                     {
                         category = new CategoryService().Get( int.Parse( itemId ) );
-                        lbAddItem.Visible = true;
+                        lbAddItem.Enabled = true;
                     }
                     else
                     {
