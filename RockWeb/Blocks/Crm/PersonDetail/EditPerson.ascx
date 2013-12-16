@@ -3,6 +3,11 @@
 <asp:UpdatePanel ID="upEditPerson" runat="server">
     <ContentTemplate>
         <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+
+        <div class="banner">
+            <h1><asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
+        </div>
+
         <div class="row">
 
             <div class="col-md-3">
