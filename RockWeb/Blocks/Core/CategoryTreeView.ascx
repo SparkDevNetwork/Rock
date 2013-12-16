@@ -7,17 +7,19 @@
         <asp:HiddenField ID="hfInitialCategoryParentIds" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfSelectedCategoryId" runat="server" ClientIDMode="Static" />
         
-        <div class="tree-actions">
-            <asp:LinkButton ID="lbAddCategory" runat="server" CssClass="add btn btn-mini btn-action" ToolTip="Add Category" CausesValidation="false" OnClick="lbAddCategory_Click">
-                    <i class="fa fa-plus"></i> Category
-            </asp:LinkButton>
         
-            <asp:LinkButton ID="lbAddItem" runat="server" CssClass="add btn btn-mini btn-action" ToolTip="Add Group" CausesValidation="false" OnClick="lbAddItem_Click">
-                    <i class="fa fa-plus"></i> <asp:Literal ID="lAddItem" runat="server" Text="Add Group" />
-            </asp:LinkButton>
-        </div>
 
-        <div class="treeview treeview-group">
+        <div class="treeview">
+
+            <div class="treeview-actions">
+                <asp:LinkButton ID="lbAddCategory" runat="server" CssClass="add btn btn-mini btn-action" ToolTip="Add Category" CausesValidation="false" OnClick="lbAddCategory_Click">
+                        <i class="fa fa-plus"></i> Category
+                </asp:LinkButton>
+        
+                <asp:LinkButton ID="lbAddItem" runat="server" CssClass="add btn btn-mini btn-action" ToolTip="Add Group" CausesValidation="false" OnClick="lbAddItem_Click">
+                        <i class="fa fa-plus"></i> <asp:Literal ID="lAddItem" runat="server" Text="Add Group" />
+                </asp:LinkButton>
+            </div>
 
             <div class="treeview-scroll scroll-container scroll-container-horizontal">
                 
@@ -26,11 +28,12 @@
                         <div class="panel-body treeview-frame">
                             <div id="treeview-content"></div>
                         </div>
-                    </div>
-                    
+                    </div> 
                 </div>
+
                 <div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
             </div>
+
         </div>
 
             <script type="text/javascript">
@@ -58,10 +61,6 @@
                         }, 1000);
                     }
                 });
-
-
-                // update viewport height
-                resizeScrollbar(scrollbCategory);
 
                 $(function () {
                     var $selectedId = $('#hfSelectedCategoryId'),
@@ -121,7 +120,7 @@
 
                     $(scrollControl).find('.viewport').height(overviewHeight);
 
-                    scrollbCategory.tinyscrollbar_update('relative');
+                    scrollControl.tinyscrollbar_update('relative');
                 }
 
                 
