@@ -4,8 +4,10 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+
 using Rock.Attribute;
 
 using Rock;
@@ -21,6 +23,9 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
+    [DisplayName("External File List")]
+    [Category( "Administration" )]
+    [Description( "Will list all of the binary files with the type of External File.  This provides a way for users to select any one of these files." )]
     public partial class ExternalFileList : RockBlock
     {
         #region Base Control Methods
