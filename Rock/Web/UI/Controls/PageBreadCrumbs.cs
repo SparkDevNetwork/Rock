@@ -7,12 +7,34 @@ using System.Web.UI;
 
 namespace Rock.Web.UI.Controls
 {
+    
     /// <summary>
     /// Displays a bootstrap badge
     /// </summary>
     [ToolboxData( "<{0}:PageBreadCrumbs runat=server></{0}:PageBreadCrumbs>" )]
     public class PageBreadCrumbs : Control
     {
+
+        /// <summary>
+        /// Gets or sets the javascript that will get executed when the ckeditor 'on key' event occurs
+        /// </summary>
+        /// <value>
+        /// The on key press script.
+        /// </value>
+        public string PreText
+        {
+            get
+            {
+                return ViewState["PreText"] as string;
+            }
+
+            set
+            {
+                ViewState["PreText"] = value;
+            }
+        }
+        
+        
         /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
@@ -28,6 +50,7 @@ namespace Rock.Web.UI.Controls
                     var crumbs = rockPage.BreadCrumbs;
                     if ( crumbs != null )
                     {
+                        writer.Write(this.PreText);
                         writer.AddAttribute( HtmlTextWriterAttribute.Class, "breadcrumb" );
                         writer.RenderBeginTag( HtmlTextWriterTag.Ul );
 
