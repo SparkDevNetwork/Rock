@@ -144,9 +144,9 @@ namespace RockWeb.Blocks.Prayer
             note.IsAlert = false;
             note.NoteTypeId = noteType.Id;
             note.EntityId = contextEntity.Id;
+            note.CreatedByPersonId = CurrentPersonId;
             note.CreationDateTime = DateTime.Now;
             note.Text = tbNewNote.Text;
-            note.Caption = CurrentPerson.FullName;
 
             if ( noteType.Sources != null )
             {
@@ -232,7 +232,12 @@ namespace RockWeb.Blocks.Prayer
             divDetail.AddCssClass( "detail" );
 
             // Add the name/caption
-            divDetail.Controls.Add( new LiteralControl( string.Format("<strong>{0}</strong> <span class='text-muted'>{1}</span>", note.Caption, note.CreationDateTime.ToRelativeDateString() ) ) );
+            string caption = note.Caption;
+            if (string.IsNullOrWhiteSpace(caption) && note.CreatedByPerson != null)
+            {
+                caption = note.CreatedByPerson.FullName;
+            }
+            divDetail.Controls.Add( new LiteralControl( string.Format("<strong>{0}</strong> <span class='text-muted'>{1}</span>", caption, note.CreationDateTime.ToRelativeDateString() ) ) );
 
             var pText = new HtmlGenericControl( "p" );
             divDetail.Controls.Add( pText );
@@ -301,25 +306,26 @@ namespace RockWeb.Blocks.Prayer
                 return;
             }
 
-            Note note = new Note();
             NoteService noteService = new NoteService();
-            note = noteService.Get( noteId );
-
-            note.Text = dtbText.Text;
-            note.Caption = dtbCaption.Text;
-
-            if ( !Page.IsValid )
+            Note note = noteService.Get( noteId );
+            if ( note != null )
             {
-                return;
-            }
+                note.Text = dtbText.Text;
+                note.Caption = dtbCaption.Text;
 
-            if ( !note.IsValid )
-            {
-                // field controls render error messages
-                return;
-            }
+                if ( !Page.IsValid )
+                {
+                    return;
+                }
 
-            noteService.Save( note, CurrentPersonId );
+                if ( !note.IsValid )
+                {
+                    // field controls render error messages
+                    return;
+                }
+
+                noteService.Save( note, CurrentPersonId );
+            }
         }
 
         protected void lbCancel_Click( object sender, EventArgs e )

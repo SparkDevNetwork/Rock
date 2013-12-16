@@ -251,18 +251,17 @@ namespace RockWeb.Blocks.Prayer
                     var bbtnDeleteComment = e.Item.FindControl( "bbtnDeleteComment" ) as BootstrapButton;
                     var lCommenterIcon = e.Item.FindControl( "lCommenterIcon" ) as Literal;
 
-                    note.LoadAttributes();
-                    var personId = note.GetAttributeValue( "NoteCreator" );
-                    if ( personId != null )
+                    if (note.CreatedByPerson != null)
                     {
-                        lCommenterIcon.Text = GetPhotoUrl( new PersonService().Get( personId.AsInteger() ?? 0 ), useIconIfEmpty: false, useBlankImageIfEmpty: true, cssClassName: "media-object" );
+                        lCommenterIcon.Text = GetPhotoUrl( note.CreatedByPerson, useIconIfEmpty: false, useBlankImageIfEmpty: true, cssClassName: "media-object" );
+                        lCommentBy.Text = Server.HtmlEncode( note.CreatedByPerson.FullName );
                     }
                     else
                     {
                         lCommenterIcon.Text = "<i class='fa fa-user'></i> ";
+                        lCommentBy.Text = string.Empty;
                     }
 
-                    lCommentBy.Text = Server.HtmlEncode( note.Caption );
                     lCommentDate.Text = note.CreationDateTime.ToRelativeDateString( 6 ) ;
                     lCommentText.Text = Server.HtmlEncode( note.Text );
 
@@ -526,16 +525,12 @@ namespace RockWeb.Blocks.Prayer
             note.IsAlert = false;
             note.NoteTypeId = PrayerCommentNoteTypeId;
             note.EntityId = prayerRequestId;
+            note.CreatedByPersonId = CurrentPersonId;
             note.CreationDateTime = DateTime.Now;
             note.Text = tbComment.Text;
-            note.Caption = CurrentPerson.FullName;
 
             service.Add( note, CurrentPersonId );
             service.Save( note, CurrentPersonId );
-
-            note.LoadAttributes();
-            note.SetAttributeValue( "NoteCreator", CurrentPersonId.ToStringSafe() );
-            Rock.Attribute.Helper.SaveAttributeValues( note, CurrentPersonId );
 
             tbComment.Text = "";
 
