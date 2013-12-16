@@ -45,6 +45,7 @@
     <title></title>
 
     <script src="<%# ResolveUrl("~/Scripts/modernizr.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/jquery-1.10.2.min.js") %>"></script>
 
     <asp:ContentPlaceHolder ID="css" runat="server" />
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css") %>"/>
