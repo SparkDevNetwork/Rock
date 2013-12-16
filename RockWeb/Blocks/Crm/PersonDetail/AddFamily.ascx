@@ -6,6 +6,11 @@
         <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
         <asp:Panel ID="pnlFamilyData" runat="server">
+            
+            <div class="banner">
+                <h1><asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
+            </div>
+            
             <div class="row">
 
                 <div class="col-md-4">
@@ -42,6 +47,7 @@
 
             <div class="row">
                 <div class="col-md-12">
+                    <h4>Family Members</h4>
                     <Rock:NewFamilyMembers id="nfmMembers" runat="server" OnAddFamilyMemberClick="nfmMembers_AddFamilyMemberClick" />
                 </div>
             </div>
