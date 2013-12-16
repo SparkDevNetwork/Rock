@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="false" CodeFile="HtmlContentDetail.ascx.cs" Inherits="RockWeb.Blocks.Cms.HtmlContentDetail" %>
 
-<asp:UpdatePanel runat="server" ID="upPanel" ChildrenAsTriggers="false" UpdateMode="Conditional">
+<asp:UpdatePanel runat="server" ID="upnlHtmlContent" ChildrenAsTriggers="false" UpdateMode="Conditional">
     <ContentTemplate>
         <%-- View Panel --%>
         <asp:Panel ID="pnlView" runat="server">
@@ -10,16 +10,16 @@
         </asp:Panel>
 
         <%-- Edit Panel --%>
-        <Rock:ModalDialog ID="mdEdit" runat="server" OnSaveClick="btnSave_Click" Title="Edit Html" PopupDragHandleControlID="edtHtml">
+        <Rock:ModalDialog ID="mdEdit" runat="server" OnSaveClick="lbSave_Click" Title="Edit Html" PopupDragHandleControlID="edtHtml">
             <Content>
 
-                <asp:UpdatePanel runat="server" ID="upEdit">
+                <asp:UpdatePanel runat="server" ID="upnlEdit">
                     <ContentTemplate>
                         <asp:HiddenField ID="hfVersion" runat="server" />
                         <asp:Panel ID="pnlEdit" runat="server" Visible="false" Height="440">
 
                             <!-- Approval -->
-                            <asp:UpdatePanel ID="upApproval" runat="server">
+                            <asp:UpdatePanel ID="upnlApproval" runat="server">
                                 <ContentTemplate>
 
                                     <div class="alert alert-action">
@@ -41,14 +41,16 @@
                             
                             <div class="pull-right">
                                 <asp:Literal runat="server" ID="lVersion" Text="Version X | " />
-                                <asp:LinkButton runat="server" ID="btnShowVersionGrid" Text="History" OnClick="btnShowVersionGrid_Click" />
+                                <asp:LinkButton runat="server" ID="lbShowVersionGrid" Text="History" OnClick="lbShowVersionGrid_Click" />
                             </div>
 
                             <!-- Edit Html -->
                             
-                            <Rock:DateRangePicker ID="pDateRange" runat="server" Label="Display from" />
+                            <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Display from" />
 
-                            <Rock:HtmlEditor ID="edtHtml" runat="server" ResizeMaxWidth="720" Height="140" />
+                            <Rock:HtmlEditor ID="htmlEditor" runat="server" ResizeMaxWidth="720" Height="140"  />
+                            <Rock:CodeEditor ID="ceHtml" runat="server" EditorHeight="280" />
+
                             <Rock:RockCheckBox ID="cbOverwriteVersion" runat="server" Text="Don't save as a new version" />
 
                         </asp:Panel>
@@ -81,7 +83,7 @@
                                 </div>
                             </div>
 
-                            <asp:LinkButton runat="server" ID="btnReturnToEdit" CssClass="btn btn-primary" Text="Back" OnClick="btnReturnToEdit_Click" />
+                            <asp:LinkButton runat="server" ID="lbReturnToEdit" CssClass="btn btn-primary" Text="Back" OnClick="lbReturnToEdit_Click" />
 
                         </asp:Panel>
 

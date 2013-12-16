@@ -242,6 +242,25 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the javascript that will get executed when the codeeditor 'on change' event occurs
+        /// </summary>
+        /// <value>
+        /// The on key press script.
+        /// </value>
+        public string OnKeyPressScript
+        {
+            get
+            {
+                return ViewState["OnKeyPressScript"] as string;
+            }
+
+            set
+            {
+                ViewState["OnKeyPressScript"] = value;
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -329,9 +348,11 @@ namespace Rock.Web.UI.Controls
 
                 ce_{0}.getSession().on('change', function(e) {{
                     document.getElementById('{0}').value = ce_{0}.getValue();
+                    {3}
                 }});
 ";
-            string script = string.Format( scriptFormat, this.ClientID, EditorThemeAsString( this.EditorTheme ), EditorModeAsString( this.EditorMode ) );
+
+            string script = string.Format( scriptFormat, this.ClientID, EditorThemeAsString( this.EditorTheme ), EditorModeAsString( this.EditorMode ), this.OnKeyPressScript );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "codeeditor_" + this.ID, script, true );
 
             base.RenderControl( writer );
