@@ -12,9 +12,14 @@
 
             <div class="col-md-3">
                 <Rock:ImageUploader ID="imgPhoto" runat="server" Label="Photo" />
+
+                <fieldset>
+                    <Rock:RockDropDownList ID="ddlRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" />
+                    <Rock:RockDropDownList ID="ddlReason" runat="server" Label="Reason" Visible="false"></Rock:RockDropDownList>
+                </fieldset>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-9">
 
                 <fieldset>
                     <Rock:RockDropDownList ID="ddlTitle" runat="server" CssClass="input-width-md" Label="Title"/>
@@ -44,16 +49,22 @@
                         <asp:Repeater ID="rContactInfo" runat="server">
                             <ItemTemplate>
                                 <div class="form-group">
-                                    <div class="control-label col-md-2"><%# Eval("NumberTypeValue.Name")  %></div>
-                                    <div class="controls col-md-10">
+                                    <div class="control-label col-sm-2"><%# Eval("NumberTypeValue.Name")  %></div>
+                                    <div class="controls col-sm-10">
                                         <div class="row">
-                                            <div class="col-sm-9">
+                                            <div class="col-sm-7">
                                                 <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />
                                                 <Rock:RockTextBox ID="tbPhone" PrependText="<i class='fa fa-phone-square'></i>" runat="server" Text='<%# Eval("NumberFormatted")  %>' />
                                             </div>    
-                                            <div class="col-sm-3">
-                                                <asp:CheckBox ID="cbSms" runat="server" Text="sms" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' />
-                                                <asp:CheckBox ID="cbUnlisted" runat="server" Text="unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' />
+                                            <div class="col-sm-5">
+                                                <div class="row">
+                                                    <div class="col-xs-6">
+                                                        <asp:CheckBox ID="cbSms"  runat="server" Text="sms" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' />
+                                                    </div>
+                                                    <div class="col-xs-6">
+                                                        <asp:CheckBox ID="cbUnlisted" runat="server" Text="unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' />
+                                                    </div>
+                                                </div>
                                             </div>
 
                                         </div>
@@ -76,15 +87,6 @@
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                     <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                 </div>
-
-            </div>
-
-            <div class="col-md-3">
-
-                <fieldset>
-                    <Rock:RockDropDownList ID="ddlRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" /><br />
-                    <Rock:RockDropDownList ID="ddlReason" runat="server" Label="Reason" Visible="false"></Rock:RockDropDownList>
-                </fieldset>
 
             </div>
 
