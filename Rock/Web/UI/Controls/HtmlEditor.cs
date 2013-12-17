@@ -324,9 +324,6 @@ namespace Rock.Web.UI.Controls
             // NOTE: Some of the plugins in the Full (72 plugin) build of CKEditor are buggy, so we are just using the Standard edition. 
             // This is why some of the items don't appear in the RockCustomConfiguFull toolbar (like the Justify commands)
             string ckeditorInitScriptFormat = @"
-
-CKEDITOR.config.extraPlugins = 'rockmergefield,rockimagebrowser,rockdocumentbrowser';
-
 var toolbar_RockCustomConfigLight =
 	[
         ['Source'],
@@ -355,8 +352,11 @@ CKEDITOR.replace('{0}', {{
   toolbar: toolbar_RockCustomConfig{1},
   removeButtons: '',
   height: '{2}',
+  extraPlugins: '{5}',
   resize_maxWidth: '{3}'{4}  
 }} );
+
+//CKEDITOR.config.extraPlugins = '{5}';
             ";
 
             string onkeyconfig = null;
@@ -371,7 +371,16 @@ CKEDITOR.replace('{0}', {{
   }";
             }
 
-            string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(), this.Height, this.ResizeMaxWidth ?? 0, onkeyconfig );
+            List<string> enabledPlugins = new List<string>();
+            if ( MergeFields.Any() )
+            {
+                enabledPlugins.Add( "rockmergefield" );
+            }
+
+            enabledPlugins.Add( "rockimagebrowser" );
+            enabledPlugins.Add( "rockdocumentbrowser" );
+
+            string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(), this.Height, this.ResizeMaxWidth ?? 0, onkeyconfig, enabledPlugins.AsDelimited(",") );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckeditorInitScript, true );
 

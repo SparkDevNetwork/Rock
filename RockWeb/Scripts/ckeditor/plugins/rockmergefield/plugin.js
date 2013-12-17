@@ -8,8 +8,14 @@
                         // show the merge field picker, which is defined in HtmlEditor.cs
                         var editorId = $(sender.element.$).attr('id')
                         var pickerId = editorId + "_mfPicker";
-                        $('#' + pickerId).find('.picker-menu').show(0, function () {
-                            $('#' + pickerId).find('.picker-menu').focus();
+                        var editorDiv = $('#' + editorId);
+                        var pickerMenu = $('#' + pickerId).find('.picker-menu');
+
+                        // center pickerMenu where the mouseclick was
+                        pickerMenu.css("left", event.x - pickerMenu.width()/2);
+
+                        pickerMenu.show(0, function (s, e) {
+                            pickerMenu.focus();
                         })
                         
                     }
