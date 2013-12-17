@@ -77,14 +77,20 @@ namespace RockWeb.Blocks.Prayer
             if ( !Page.IsPostBack )
             {
                 DisplayCategories();
+                lbStart.Focus();
                 GetNoteType();
                 lbFlag.Visible = _enableCommunityFlagging;
+            }
+
+            if ( lbNext.Visible )
+            {
+                lbNext.Focus();
             }
         }
 
         #endregion
 
-        #region Event Handlers
+        #region Events
 
         /// <summary>
         /// Handler that saves the user's category preferences and starts a prayer session
@@ -104,6 +110,8 @@ namespace RockWeb.Blocks.Prayer
             {
                 nbSelectCategories.Visible = false;
             }
+
+            lbNext.Focus();
 
             pnlChooseCategories.Visible = false;
 
@@ -139,6 +147,7 @@ namespace RockWeb.Blocks.Prayer
             {
                 pnlFinished.Visible = true;
                 pnlPrayer.Visible = false;
+                lbStartAgain.Focus();
             }
         }
 
@@ -164,7 +173,8 @@ namespace RockWeb.Blocks.Prayer
             pnlFinished.Visible = false;
             pnlNoPrayerRequestsMessage.Visible = false;
             pnlPrayer.Visible = false;
-            
+            lbStart.Focus();                
+
             DisplayCategories();
         }
 
@@ -245,16 +255,10 @@ namespace RockWeb.Blocks.Prayer
                     var bbtnDeleteComment = e.Item.FindControl( "bbtnDeleteComment" ) as BootstrapButton;
                     var lCommenterIcon = e.Item.FindControl( "lCommenterIcon" ) as Literal;
 
-                    if (note.CreatedByPerson != null)
-                    {
-                        lCommenterIcon.Text = GetPhotoUrl( note.CreatedByPerson, useIconIfEmpty: false, useBlankImageIfEmpty: true, cssClassName: "media-object" );
-                        lCommentBy.Text = Sanitizer.GetSafeHtmlFragment( note.CreatedByPerson.FullName );
-                    }
-                    else
-                    {
-                        lCommenterIcon.Text = "<i class='fa fa-user fa-3x'></i> ";
-                        lCommentBy.Text = string.Empty;
-                    }
+                    lCommenterIcon.Text = GetPhotoUrl( note.CreatedByPerson, useIconIfEmpty: true, cssClassName: "media-object" );
+
+                    lCommentBy.Text = (note.CreatedByPerson != null) ? 
+                        Sanitizer.GetSafeHtmlFragment( note.CreatedByPerson.FullName ) : note.Caption;
 
                     lCommentDate.Text = note.CreationDateTime.ToRelativeDateString( 6 ) ;
                     lCommentText.Text = Sanitizer.GetSafeHtmlFragment( note.Text );
@@ -473,29 +477,19 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         /// <param name="person"></param>
         /// <param name="useIconIfEmpty">set to true to use a bootstrap icon if the person has no photo.</param>
-        /// <param name="useBlankImageIfEmpty">set to true to use the no-photo image if the person has no photo.</param>
         /// <param name="cssClassName">If supplied, will be used for the css class of the image </param>
         /// <returns></returns>
-        private string GetPhotoUrl( Person person, bool useIconIfEmpty = false, bool useBlankImageIfEmpty = false, string cssClassName = "" )
+        private string GetPhotoUrl( Person person, bool useIconIfEmpty = false, string cssClassName = "" )
         {
             string personIconHtml = string.Empty;
-            if ( person != null && person.PhotoId.HasValue )
+            if ( person != null )
             {
-                var getImageUrl = ResolveRockUrl( "~/GetImage.ashx" );
-                string imageUrlFormat = "<img src='" + getImageUrl + "?id={0}&width=50&height=50' class='{1}'/>";
-                personIconHtml = string.Format( imageUrlFormat, person.PhotoId.Value.ToString(), cssClassName );
+                personIconHtml = string.Format( "<img src='{0}&width=50&height=50' style='width:50px; height:50px' alt='{1}' class='{2}'/>",
+                    person.PhotoUrl, person.FullName, cssClassName );
             }
             else if ( useIconIfEmpty )
             {
-                personIconHtml = string.Format( "<i class='fa fa-user fa-3x {0}'></i> ", cssClassName );
-            }
-            else if ( useBlankImageIfEmpty )
-            {
-                var getImageUrl = ResolveRockUrl( "~/Assets/Images/person-no-photo.svg" );
-                string imageUrlFormat = "<img src='" + getImageUrl + "' style='width:50px; height:50px alt='{0}' class='{1}' />";
-
-                var fullname = ( person != null ) ? person.FullName : "";
-                personIconHtml = string.Format( imageUrlFormat, Server.HtmlEncode( fullname ), cssClassName );
+                personIconHtml = string.Format( "<i class='fa fa-user fa-4x {0}' style='width:50px; height:50px'></i> ", cssClassName );
             }
 
             return personIconHtml;
@@ -534,7 +528,7 @@ namespace RockWeb.Blocks.Prayer
         private void ShowComments( PrayerRequest prayerRequest )
         {
             var notes = new List<Note>();
-            notes = new NoteService().Get( (int)PrayerCommentNoteTypeId, prayerRequest.Id ).ToList();
+            notes = new NoteService().Get( (int)PrayerCommentNoteTypeId, prayerRequest.Id ).OrderBy( n => n.CreationDateTime ).ToList();
             lMeIconHtml.Text = GetPhotoUrl( CurrentPerson, useIconIfEmpty: true, cssClassName: "media-object" );
             rptComments.DataSource = notes;
             rptComments.DataBind();
@@ -551,6 +545,11 @@ namespace RockWeb.Blocks.Prayer
         /// <returns>a string that has been scrubbed of any html with carriage returns converted to html br</returns>
         public static string ScrubHtmlAndConvertCrLfToBr( string str )
         {
+            if ( str == null )
+            {
+                return string.Empty;
+            }
+
             // Note: \u00A7 is the section symbol
 
             // First we convert newlines and carriage returns to a character that can

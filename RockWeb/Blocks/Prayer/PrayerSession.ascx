@@ -38,7 +38,7 @@
             </div>
 
             <div class="actions">
-                <asp:LinkButton ID="lbNext" runat="server" Text="Next <i class='fa fa-chevron-right'></i>" CssClass="btn btn-primary" OnClick="lbNext_Click" />
+                <asp:LinkButton ID="lbNext" TabIndex="1" runat="server" Text="Next <i class='fa fa-chevron-right'></i>" CssClass="btn btn-primary" OnClick="lbNext_Click" />
                 <asp:LinkButton ID="lbFlag" runat="server" Text="<i class='fa fa-flag'></i> Flag" CssClass="btn btn-warning" ToolTip="Flag as inappropriate so that an administrator can review the content." CausesValidation="false" OnClick="lbFlag_Click" />
                 <asp:LinkButton ID="lbStop" runat="server" Text="End Session" CssClass="btn btn-link" CausesValidation="false" OnClick="lbStop_Click" />
                 <p class="text-right"><Rock:HighlightLabel ID="hlblNumber" runat="server" LabelType="Default" Text="# 0" ToolTip="x of y" /></p>
@@ -47,19 +47,13 @@
             <!-- Comments -->
 
             <asp:Panel ID="pnlComments" runat="server" DefaultButton="bbtnSaveComment">
-                <div class="media">
-                    <p class="pull-left"><asp:Literal ID="lMeIconHtml" runat="server" /></p>
-                    <Rock:BootstrapButton ID="bbtnSaveComment" runat="server" CssClass="btn btn-default pull-right"  OnClick="bbtnSaveComment_Click" >Post</Rock:BootstrapButton>
-                    <div class="media-body">
-                        <Rock:RockTextBox ID="tbComment" runat="server" Placeholder="Write a comment..."></Rock:RockTextBox>
-                    </div>
-                </div>
+
 
                 <asp:Repeater ID="rptComments" runat="server">
                     <ItemTemplate>
                         <%-- <Rock:NoteEditor ID="noteEditor" runat="server" Note='<%# Container.DataItem as Rock.Model.Note %>'></Rock:NoteEditor>--%>
                         <div class="media">
-                            <a class="pull-left" href="#"><asp:Literal ID="lCommenterIcon" runat="server" /></a>
+                            <p class="pull-left"><asp:Literal ID="lCommenterIcon" runat="server" /></p>
                             <Rock:BootstrapButton ID="bbtnDeleteComment" CssClass="pull-right" runat="server" Text="<i class='fa fa-trash-o'></i>" ></Rock:BootstrapButton>
                             <div class="media-body">
                                 <h5 class="media-heading">
@@ -71,6 +65,15 @@
                         </div>
                     </ItemTemplate>
                 </asp:Repeater>
+
+                <div class="media">
+                    <p class="pull-left"><asp:Literal ID="lMeIconHtml" runat="server" /></p>
+                    <Rock:BootstrapButton ID="bbtnSaveComment" TabIndex="3" runat="server" CssClass="btn btn-default pull-right"  OnClick="bbtnSaveComment_Click" >Post</Rock:BootstrapButton>
+                    <div class="media-body">
+                        <Rock:RockTextBox ID="tbComment" TabIndex="2" runat="server" Placeholder="Write a comment..."></Rock:RockTextBox>
+                    </div>
+                </div>
+
             </asp:Panel>
         </div>
         </asp:Panel>
