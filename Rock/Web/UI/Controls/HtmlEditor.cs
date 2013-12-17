@@ -296,7 +296,9 @@ namespace Rock.Web.UI.Controls
             RockControlHelper.CreateChildControls( this, Controls );
 
             _mergeFieldPicker = new MergeFieldPicker();
-            _mergeFieldPicker.ID = string.Format( "{0}_mfPicker", this.ID );
+            _mergeFieldPicker.ID = string.Format( "{0}_mfPicker", this.ClientID );
+            _mergeFieldPicker.CssClass = "";
+            _mergeFieldPicker.HidePickerLabel = true;
             _mergeFieldPicker.SetValue( string.Empty );
             Controls.Add( _mergeFieldPicker );
         }
@@ -330,7 +332,7 @@ var toolbar_RockCustomConfigLight =
         ['Source'],
         ['Bold', 'Italic', 'Underline', 'Strike', 'NumberedList', 'BulletedList', 'Link', 'Image', 'PasteFromWord', '-', 'RemoveFormat'],
         ['Format'], 
-        ['rockmergefield', 'rockimagebrowser', 'rockdocumentbrowser']
+        ['rockmergefield', '-', 'rockimagebrowser', '-', 'rockdocumentbrowser']
 	];
 
 var toolbar_RockCustomConfigFull =
@@ -345,7 +347,7 @@ var toolbar_RockCustomConfigFull =
         ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-'], 
         ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
         ['-', 'Image', 'Table'],
-        ['rockmergefield', 'rockimagebrowser', 'rockdocumentbrowser']
+        ['rockmergefield', '-', 'rockimagebrowser', '-','rockdocumentbrowser']
 	];	
 
 CKEDITOR.replace('{0}', {{ 
