@@ -80,7 +80,7 @@ namespace Rock.Model
                     System.Web.UI.Control control = page.LoadControl( path );
                     if ( control is Rock.Web.UI.RockBlock )
                     {
-                        var blockType = registered.First( b => b.Path.Equals( path, StringComparison.OrdinalIgnoreCase ) );
+                        var blockType = registered.FirstOrDefault( b => b.Path.Equals( path, StringComparison.OrdinalIgnoreCase ) );
                         if ( blockType == null )
                         {
                             // Create new BlockType record and save it
