@@ -408,6 +408,14 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool ShowDropDown { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [hide picker label].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [hide picker label]; otherwise, <c>false</c>.
+        /// </value>
+        public bool HidePickerLabel { get; set; }
+
         #endregion
 
         #region Constructors
@@ -568,15 +576,19 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "id", this.ID.ToString() );
                 writer.AddAttribute( "class", "picker picker-select" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.Write( @"
+
+                if ( !HidePickerLabel )
+                {
+                    writer.Write( @"
                     <a class='picker-label' href='#'>
                         <i class='{2}'></i>
                         <span id='selectedItemLabel_{0}' class='selected-names'>{1}</span>
                         <b class='caret pull-right'></b>
                     </a>", this.ID, this.ItemName, this.IconCssClass );
-                writer.WriteLine();
+                    writer.WriteLine();
 
-                _btnSelectNone.RenderControl( writer );
+                    _btnSelectNone.RenderControl( writer );
+                }
 
                 // picker menu
                 writer.AddAttribute( "class", "picker-menu dropdown-menu" );

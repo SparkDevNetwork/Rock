@@ -431,3 +431,8 @@ table.inherited-attribute-grid tr td:nth-child(2),
 table.attribute-grid tr th:nth-child(3) {
     width: 550px;
 }
+
+/* CKEditor Plugin Buttons to override ckeditor hiding labels on those buttons*/
+span.cke_button__rockmergefield_label {
+    display: inline;
+}

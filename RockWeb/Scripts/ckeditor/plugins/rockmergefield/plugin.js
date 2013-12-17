@@ -1,19 +1,25 @@
 ﻿(function () {
     CKEDITOR.plugins.add('rockmergefield', {
         init: function (editor) {
+            editor.addCommand(
+                'showMergeFieldPicker', {
+                    exec: function (sender) {
 
-            editor.addCommand('insertMergeField', {
-                exec: function (editor) {
-                    editor.insertHtml('{{some merge field}}');
+                        // show the merge field picker, which is defined in HtmlEditor.cs
+                        var editorId = $(sender.element.$).attr('id')
+                        var pickerId = editorId + "_mfPicker";
+                        $('#' + pickerId).find('.picker-menu').show(0, function () {
+                            $('#' + pickerId).find('.picker-menu').focus();
+                        })
+                        
+                    }
                 }
-            });
+                );
 
-            var newbutton = editor.ui.add('rockmergefield', CKEDITOR.UI_BUTTON, {
-                label: 'Insert Merge Field',
-                command: 'insertMergeField',
-                icon: this.path + 'rockmergefield.png',
-                text: 'Hello World',
-                toolbar: 'mode,10'
+            editor.ui.add('rockmergefield', CKEDITOR.UI_BUTTON, {
+                label: 'Merge Field',
+                command: 'showMergeFieldPicker',
+                icon: this.path + 'rockmergefield.png'
             });
         }
     });
