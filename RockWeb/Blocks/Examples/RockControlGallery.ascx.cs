@@ -40,6 +40,10 @@ namespace RockWeb.Blocks.Examples
             geoPicker.SelectGeography += geoPicker_SelectGeography;
             geoPicker1.SelectGeography += geoPicker1_SelectGeography;
 
+            htmlEditorLight.MergeFields.Add( "GlobalAttribute" );
+            htmlEditorLight.MergeFields.Add( "Rock.Model.Person" );
+            
+
             List<string> list = ReadExamples();
             int i = -1;
             foreach ( var example in pnlDetails.ControlsOfTypeRecursive<HtmlControl>() )

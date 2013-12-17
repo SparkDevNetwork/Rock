@@ -353,12 +353,12 @@
             <a id="HtmlEditor"></a>
             <h2 runat="server">Rock:HtmlEditor</h2>
             <div runat="server" class="r-example">
-                <Rock:HtmlEditor ID="htmlEdit" runat="server" Label="HtmlEditor" Toolbar="Full"/>
+                <Rock:HtmlEditor ID="htmlEditorFull" runat="server" Label="HtmlEditor" Toolbar="Full"/>
             </div>
 
             <h2 runat="server">Rock:HtmlEditor</h2>
             <div runat="server" class="r-example">
-                <Rock:HtmlEditor ID="HtmlEditor1" runat="server" Label="HtmlEditor" Toolbar="Light"/>
+                <Rock:HtmlEditor ID="htmlEditorLight" runat="server" Label="HtmlEditor" Toolbar="Light" />
             </div>
 
             <a id="CodeEditor"></a>
