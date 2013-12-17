@@ -128,6 +128,9 @@ namespace RockWeb.Blocks.Prayer
                 prayerRequest = new PrayerRequest { Id = 0, IsActive = true, IsApproved = true, AllowComments = true };
             }
 
+            if ( prayerRequest == null )
+                return;
+
             hfPrayerRequestId.Value = prayerRequest.Id.ToString();
 
             // render UI based on Authorized and IsSystem
@@ -382,6 +385,11 @@ namespace RockWeb.Blocks.Prayer
         /// <returns>a string that has been scrubbed of any html with carriage returns converted to html br</returns>
         public static string ScrubHtmlAndConvertCrLfToBr( string str )
         {
+            if ( str == null )
+            {
+                return string.Empty;
+            }
+
             // Note: \u00A7 is the section symbol
 
             // First we convert newlines and carriage returns to a character that can
