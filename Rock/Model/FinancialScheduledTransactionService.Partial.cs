@@ -22,8 +22,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="givingGroupId">The giving group identifier.</param>
+        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
         /// <returns>
-        /// The <see cref="Rock.Model.FinancialTransaction"/> that matches the transaction code, this value will be null if a match is not found.
+        /// The <see cref="Rock.Model.FinancialTransaction" /> that matches the transaction code, this value will be null if a match is not found.
         /// </returns>
         public IQueryable<FinancialScheduledTransaction> Get( int personId, int? givingGroupId, bool includeInactive )
         {
@@ -45,7 +46,6 @@ namespace Rock.Model
                     .OrderByDescending( t => t.IsActive )
                     .ThenByDescending( t => t.StartDate );
             }
-            return null;
         }
     }
 }

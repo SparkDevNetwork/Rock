@@ -78,8 +78,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 lEmail.Text = Person.Email;
 
-                tlPersonTags.EntityTypeId = Person.TypeId;
-                tlPersonTags.EntityGuid = Person.Guid;
+                taglPersonTags.EntityTypeId = Person.TypeId;
+                taglPersonTags.EntityGuid = Person.Guid;
+                taglPersonTags.GetTagValues( CurrentPersonId );
 
                 blStatus.ComponentGuids = GetAttributeValue( "Badges" );
             }
