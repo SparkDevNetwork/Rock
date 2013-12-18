@@ -20,6 +20,6 @@
             HeaderText="Record Status"
             SortExpression="RecordStatusValue.Name"  />
     </Columns>
-</Rock:Grid>
+</Rock:Grid> 
 
 
