@@ -22,22 +22,16 @@ namespace RockWeb.Blocks.Finance
 {
 
     /// <summary>
-    /// 
+    /// Lists scheduled transactions for current or selected user (if context for person is not configured, will display for currently logged in person).
     /// </summary>
     [DisplayName("Giving Profile List")]
-    [Category("Finance")]
-    [Description("Block to list giving profiles for current or selected user (if context for person is not configured, will display for currently logged in person")]
+    [Category("Financial")]
+    [Description("Lists scheduled transactions for current or selected user (if context for person is not configured, will display for currently logged in person).")]
 
     [LinkedPage("Detail Page")]
     [ContextAware( typeof( Person ) )]
     public partial class GivingProfileList : Rock.Web.UI.RockBlock
     {
-        #region Fields
-
-        private bool _canConfigure = false;
-
-        #endregion
-
         #region Properties
 
         /// <summary>
