@@ -67,6 +67,19 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the category of the BlockType.  Blocks will be grouped by category when displayed to user
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> that represents the category of the BlockType.
+        /// </value>
+        /// <example>
+        /// Security
+        /// </example>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Category { get; set; }
         
         /// <summary>
         /// Gets or sets the user defined description of the BlockType. 

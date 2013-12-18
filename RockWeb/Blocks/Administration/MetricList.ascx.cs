@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Web.UI;
@@ -21,6 +22,9 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// User control for managing metrics
     /// </summary>
+    [DisplayName( "Metric List" )]
+    [Category( "Administration" )]
+    [Description( "" )]
     [LinkedPage( "Detail Page" )]
     public partial class MetricList : Rock.Web.UI.RockBlock
     {        

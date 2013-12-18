@@ -160,6 +160,30 @@
     <Compile Include="Migrations\201312121905532_ReportColumnHeaderText.Designer.cs">
       <DependentUpon>201312121905532_ReportColumnHeaderText.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201312160425464_AddPersonToNote.cs" />
+    <Compile Include="Migrations\201312160425464_AddPersonToNote.Designer.cs">
+      <DependentUpon>201312160425464_AddPersonToNote.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312160454085_BlockTypeCategory.cs" />
+    <Compile Include="Migrations\201312160454085_BlockTypeCategory.Designer.cs">
+      <DependentUpon>201312160454085_BlockTypeCategory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312161446138_AddAudit.cs" />
+    <Compile Include="Migrations\201312161446138_AddAudit.Designer.cs">
+      <DependentUpon>201312161446138_AddAudit.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312162055116_PageLayoutUpdates.cs" />
+    <Compile Include="Migrations\201312162055116_PageLayoutUpdates.Designer.cs">
+      <DependentUpon>201312162055116_PageLayoutUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312162149358_PersonSearchAddAttribute.cs" />
+    <Compile Include="Migrations\201312162149358_PersonSearchAddAttribute.Designer.cs">
+      <DependentUpon>201312162149358_PersonSearchAddAttribute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312162306186_FixPrayerRequestDetailsPageContext.cs" />
+    <Compile Include="Migrations\201312162306186_FixPrayerRequestDetailsPageContext.Designer.cs">
+      <DependentUpon>201312162306186_FixPrayerRequestDetailsPageContext.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -257,6 +281,24 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201312121905532_ReportColumnHeaderText.resx">
       <DependentUpon>201312121905532_ReportColumnHeaderText.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312160425464_AddPersonToNote.resx">
+      <DependentUpon>201312160425464_AddPersonToNote.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312160454085_BlockTypeCategory.resx">
+      <DependentUpon>201312160454085_BlockTypeCategory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312161446138_AddAudit.resx">
+      <DependentUpon>201312161446138_AddAudit.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312162055116_PageLayoutUpdates.resx">
+      <DependentUpon>201312162055116_PageLayoutUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312162149358_PersonSearchAddAttribute.resx">
+      <DependentUpon>201312162149358_PersonSearchAddAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312162306186_FixPrayerRequestDetailsPageContext.resx">
+      <DependentUpon>201312162306186_FixPrayerRequestDetailsPageContext.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -636,10 +636,18 @@ namespace Rock.Web.UI
                             blockWrapper.Attributes.Add( "zoneloc", block.BlockLocation.ToString() );
                             blockWrapper.ClientIDMode = ClientIDMode.Static;
                             FindZone( block.Zone ).Controls.Add( blockWrapper );
-                            blockWrapper.Attributes.Add( "class", "block-instance " +
-                                ( string.IsNullOrWhiteSpace( block.CssClass ) ? "" : block.CssClass.Trim() + " " ) +
-                                ( canAdministrate || canEdit ? "can-configure " : "" ) +
-                                block.BlockType.Name.ToLower().Replace( ' ', '-' ) );
+
+                            string blockTypeCss = block.BlockType.Name;
+                            var parts = blockTypeCss.Split( new char[] { '>' } );
+                            if ( parts.Length > 1 )
+                            {
+                                blockTypeCss = parts[parts.Length - 1].Trim();
+                            }
+                            blockTypeCss = blockTypeCss.Replace( ' ', '-' ).ToLower();
+                            
+                            blockWrapper.Attributes.Add( "class", "block-instance " + blockTypeCss +
+                                ( string.IsNullOrWhiteSpace( block.CssClass ) ? "" :  " " + block.CssClass.Trim() ) +
+                                ( canAdministrate || canEdit ? " can-configure " : "" ) );
 
                             // Check to see if block is configured to use a "Cache Duration'
                             string blockCacheKey = string.Format( "Rock:BlockOutput:{0}", block.Id );
