@@ -5,6 +5,28 @@
     Rock.dialogs = (function () {
         var _dialogs = {},
             exports = {
+                confirm: function (msg, callback) {
+                    bootbox.dialog({
+                        message: msg,
+                        buttons: {
+                            ok: {
+                                label: 'OK',
+                                className: 'btn-primary',
+                                callback: function () {
+                                    callback(true);
+                                }
+                            },
+                            cancel: {
+                                label: 'Cancel',
+                                className: 'btn-secondary',
+                                callback: function () {
+                                    callback(false);
+                                }
+                            }
+                        }
+                    });
+                },
+
                 confirmDelete: function (e, nameText, additionalMsg) {
                     e.preventDefault();
                     var msg = 'Are you sure you want to delete this ' + nameText + '?';
