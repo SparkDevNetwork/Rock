@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net;
+using System.Net.Http;
 using System.Web;
 using System.Web.Http;
 using System.Web.Routing;
+using ImageResizer;
 using Rock.Rest.Filters;
 using Rock.Web.UI.Controls;
 
@@ -20,7 +23,7 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// The root content folder
         /// </summary>
-        private const string rootContentFolder = "~/Content";
+        private const string RootContentFolder = "~/Content";
 
         /// <summary>
         /// Adds the routes.
@@ -45,6 +48,17 @@ namespace Rock.Rest.Controllers
                     controller = "FileBrowser",
                     action = "GetFiles"
                 } );
+
+            routes.MapHttpRoute(
+                name: "FileBrowserGetFileThumbnail",
+                routeTemplate: "api/FileBrowser/GetFileThumbnail",
+                defaults: new
+                {
+                    controller = "FileBrowser",
+                    action = "GetFileThumbnail",
+                    width = System.Web.Http.RouteParameter.Optional,
+                    height = System.Web.Http.RouteParameter.Optional
+                } );
         }
 
         /// <summary>
@@ -58,7 +72,7 @@ namespace Rock.Rest.Controllers
         {
             fileFilter = string.IsNullOrWhiteSpace( fileFilter ) ? "*.*" : fileFilter;
 
-            string physicalRootFolder = System.Web.VirtualPathUtility.ToAbsolute( rootContentFolder );
+            string physicalRootFolder = System.Web.VirtualPathUtility.ToAbsolute( RootContentFolder );
             string contentFolderName = Path.Combine( physicalRootFolder, folderName );
             List<TreeViewItem> directoryFileList = new List<TreeViewItem>();
 
@@ -97,7 +111,7 @@ namespace Rock.Rest.Controllers
         {
             fileFilter = string.IsNullOrWhiteSpace( fileFilter ) ? "*.*" : fileFilter;
 
-            string physicalRootFolder = System.Web.VirtualPathUtility.ToAbsolute( rootContentFolder );
+            string physicalRootFolder = System.Web.VirtualPathUtility.ToAbsolute( RootContentFolder );
             string contentFolderName = Path.Combine( physicalRootFolder, folderName );
 
             List<FileItem> fileList = new List<FileItem>();
@@ -109,22 +123,27 @@ namespace Rock.Rest.Controllers
             }
 
             List<string> files = Directory.GetFiles( contentFolderName, fileFilter ).OrderBy( a => a ).ToList();
-            foreach (var file in files)
+            foreach ( var file in files )
             {
                 FileInfo fileInfo = new FileInfo( file );
+
+                string relativeFilePath = fileInfo.FullName.Substring( 0, RootContentFolder.Length );
+                string appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
+
+                // construct the thumbNailUrl so that browser will get the thumbnail image from our GetFileThumbnail()
+                string thumbNailUrl = string.Format( "api/FileBrowser/GetFileThumbnail?{0}&width=100&height=100", HttpUtility.UrlEncode( relativeFilePath ) );
 
                 FileItem fileItem = new FileItem
                 {
                     FileName = fileInfo.Name,
-                    RelativeFilePath = fileInfo.FullName.Substring( 0, rootContentFolder.Length ),
-                    Bytes = fileInfo.Length,
-                    LastModifiedDateTime = fileInfo.LastWriteTime
+                    RelativeFilePath = relativeFilePath,
+                    Size = fileInfo.Length,
+                    LastModifiedDateTime = fileInfo.LastWriteTime,
+                    ThumbNailUrl = Path.Combine( appPath, thumbNailUrl )
                 };
 
-                fileList.Add(fileItem);
+                fileList.Add( fileItem );
             }
-
-
 
             return fileList.AsQueryable();
         }
@@ -132,37 +151,69 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Gets the file thumbnail
         /// </summary>
-        /// <example>
-        /// <![CDATA[ <img src='api/FileBrowser/GetFile?%5cExternal+Site%5cMarketing%5cFunnyCat.gif ]]>
-        /// </example>
         /// <param name="relativeFilePath">The relative file path.</param>
+        /// <param name="width">The width.</param>
+        /// <param name="height">The height.</param>
         /// <returns></returns>
-        public Stream GetFileThumbnail( string relativeFilePath, int width, int height)
+        /// <example>
+        ///   <![CDATA[ <img src='api/FileBrowser/GetFileThumbnail?relativeFilePath=External+Site%5cMarketing%5cFunnyCat.gif&width=100&height=100 ]]>
+        /// </example>
+        public HttpResponseMessage GetFileThumbnail( string relativeFilePath, int? width = 100, int? height = 100 )
         {
-            string physicalRootFolder = System.Web.VirtualPathUtility.ToAbsolute( rootContentFolder );
-            string fullPath = Path.Combine(physicalRootFolder, relativeFilePath);
+            string physicalRootFolder = HttpContext.Current.Request.MapPath( RootContentFolder );
 
-            // default width/height to 100 if not specified
+            string fullPath = Path.Combine( physicalRootFolder, relativeFilePath.Replace( "/", "\\" ) );
+
+            // default width/height to 100 if they specified a zero or negative param
             width = width <= 0 ? 100 : width;
             height = height <= 0 ? 100 : height;
 
-
-            // return Null if the file doesn't exist
-            if (!File.Exists(fullPath))
+            // return a 404 if the file doesn't exist
+            if ( !File.Exists( fullPath ) )
             {
-                return null;
+                throw new HttpResponseException( new System.Net.Http.HttpResponseMessage( HttpStatusCode.NotFound ) );
             }
 
             try
             {
-                System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap( fullPath );
-                
-                // TODO get a resized thumbnail image
+                using ( Image image = Image.FromFile( fullPath ) )
+                {
+                    string mimeType = string.Empty;
+                    
+                    // try to figure out the MimeType by using the ImageCodeInfo class
+                    var codecs = ImageCodecInfo.GetImageEncoders();
+                    ImageCodecInfo codecInfo = codecs.FirstOrDefault( a => a.FormatID == image.RawFormat.Guid );
+                    if ( codecInfo != null )
+                    {
+                        mimeType = codecInfo.MimeType;
+                    }
+
+                    // load the image into a stream, then use ImageResizer to resize it to the specified width and height (same technique as RockWeb GetImage.ashx.cs)
+                    var origImageStream = new MemoryStream();
+                    image.Save( origImageStream, image.RawFormat );
+                    origImageStream.Position = 0;
+                    var resizedStream = new MemoryStream();
+
+                    ImageBuilder.Current.Build( origImageStream, resizedStream, new ResizeSettings { Width = width ?? 100, Height = height ?? 100 } );
+
+                    HttpResponseMessage result = new HttpResponseMessage( HttpStatusCode.OK );
+                    resizedStream.Position = 0;
+                    result.Content = new StreamContent(resizedStream);
+                    result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue( mimeType );
+                    return result;
+                }
             }
             catch
             {
-                // intentionally ignore exception and return null
-                return null;
+                // intentionally ignore exception and assume it isn't an image, then just return a no-picture as the thumbnail
+                string noimageFileName = HttpContext.Current.Request.MapPath( "~/Assets/Images/no-picture.svg" );
+                FileStream fs = new FileStream( noimageFileName, FileMode.Open );
+                fs.Position = 0;
+
+                HttpResponseMessage result = new HttpResponseMessage( HttpStatusCode.OK );
+                result.Content = new StreamContent( fs );
+                result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue( "image/svg+xml" );
+                return result;
             }
         }
 
@@ -178,7 +229,7 @@ namespace Rock.Rest.Controllers
             /// The name of the file.
             /// </value>
             public string FileName { get; set; }
-            
+
             /// <summary>
             /// Gets or sets the thumb nail URL.
             /// </summary>
@@ -186,7 +237,7 @@ namespace Rock.Rest.Controllers
             /// The thumb nail URL.
             /// </value>
             public string ThumbNailUrl { get; set; }
-            
+
             /// <summary>
             /// Gets or sets the relative file path.
             /// </summary>
@@ -194,15 +245,15 @@ namespace Rock.Rest.Controllers
             /// The relative file path.
             /// </value>
             public string RelativeFilePath { get; set; }
-            
+
             /// <summary>
-            /// Gets or sets the bytes.
+            /// Gets or sets the size of the file in bytes
             /// </summary>
             /// <value>
-            /// The bytes.
+            /// The size.
             /// </value>
-            public long Bytes { get; set; }
-            
+            public long Size { get; set; }
+
             /// <summary>
             /// Gets or sets the last modified date time.
             /// </summary>
