@@ -51,8 +51,17 @@
                     .on('rockTree:selected', function (e, id) {
                         var groupSearch = '?groupId=' + id;
                         if (window.location.search.indexOf(groupSearch) === -1) {
-                            $('#hfSelectedGroupId').val(id); // Todo: Is this necessary, since we're redirecting on the next line?
-                            window.location.search = groupSearch;
+                            var postUrl = window.location.href.split('?')[0] + groupSearch;
+
+                            // get the data-id values of rock-tree items that are showing children (in other words, Expanded Nodes)
+                            var expandedDataIds = $(e.currentTarget).find('.rocktree-children').closest('.rocktree-item').map(function () { return $(this).attr('data-id') }).get().join(',');
+
+                            // to a form post to the newUrl
+                            var form = $('<form action="' + postUrl + '" method="post">' +
+                                            '<input type="hidden" name="expandedIds" value="' + expandedDataIds + '" />' +
+                                         '</form>');
+                            $('body').append(form);
+                            $(form).submit();
                         }
                     })
                     .on('rockTree:rendered', function () {
