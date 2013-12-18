@@ -13,7 +13,7 @@
 
             <Rock:PersonProfileBadgeList id="blStatus" runat="server" />
 
-            <ul class="nav pull-right">
+<%--        <ul class="nav pull-right">
                 <li class="dropdown">
                     <a class="persondetails-actions dropdown-toggle" data-toggle="dropdown" href="#" tabindex="0">
                         <i class="fa fa-cog"></i>
@@ -30,7 +30,7 @@
                         <li><a href="">Report Data Error</a></li>
                     </ul>
                 </li>
-            </ul>
+            </ul>--%>
 
         </div>
     </div> <!-- end row -->
@@ -44,7 +44,7 @@
         <div class="col-md-4">
             <div class="summary">
                 <div class="tags clearfix">
-                    <Rock:TagList ID="tlPersonTags" runat="server" />
+                    <Rock:TagList ID="taglPersonTags" runat="server"/>
                 </div>
                 <div class="demographics">
                     <asp:Literal ID="lAge" runat="server" />
