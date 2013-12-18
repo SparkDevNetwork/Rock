@@ -11,6 +11,8 @@
                 this.entityGuid = options.entityGuid;
                 this.entityQualifierColumn = options.entityQualifierColumn;
                 this.entityQualifierValue = options.entityQualifierValue;
+                this.preventTagCreation = options.preventTagCreation;
+                this.delaySave = options.delaySave;
             },
             exports;
 
@@ -22,6 +24,7 @@
                 restUrl = Rock.settings.get('baseUrl') + 'api/tags';
             restUrl += '/' + tagList.entityTypeId;
             restUrl += '/' + tagList.currentPersonId;
+            restUrl += '/' + tagName;
 
             if (tagList.entityQualifierColumn) {
                 restUrl += '/' + tagList.entityQualifierColumn;
@@ -35,13 +38,18 @@
                 url: restUrl,
                 statusCode: {
                     404: function () {
-                        Rock.dialogs.confirm('A tag called "' + tagName + '" does not exist. Do you want to create a new personal tag?', function (result) {
-                            if (result) {
-                                tagList.addTag(tagName);
-                            } else {
-                                $('#' + tagList.controlId).removeTag(tagName);
-                            }
-                        });
+                        if (tagList.preventTagCreation) {
+                            $('#' + tagList.controlId).removeTag(tagName);
+                        }
+                        else {
+                            Rock.dialogs.confirm('A tag called "' + tagName + '" does not exist. Do you want to create a new personal tag?', function (result) {
+                                if (result) {
+                                    tagList.addTag(tagName);
+                                } else {
+                                    $('#' + tagList.controlId).removeTag(tagName);
+                                }
+                            });
+                        }
                     },
                     200: function () {
                         tagList.addTag(tagName);
@@ -53,28 +61,32 @@
         TagList.prototype.addTag = function (tagName) {
             // `addTag` is invoked by `verifyTag` on an instance of a `TagList` object.
             // `this` is the current TagList instance in scope.
+
             var tagList = this,
-                restUrl = Rock.settings.get('baseUrl') + 'api/taggeditems' 
+                restUrl = Rock.settings.get('baseUrl') + 'api/taggeditems'
             restUrl += '/' + tagList.entityTypeId;
             restUrl += '/' + tagList.currentPersonId;
             restUrl += '/' + tagList.entityGuid;
             restUrl += '/' + tagName;
 
-            if (tagList.entityQualifierColumn) {
-                restUrl += '/' + tagList.entityQualifierColumn;
-            }
-
-            if (tagList.entityQualifierValue) {
-                restUrl += '/' + tagList.entityQualifierValue;
-            }
-
-            $.ajax({
-                type: 'POST',
-                url: restUrl,
-                error: function (xhr, status, error) {
-                    console.log('AddTag() status: ' + status + ' [' + error + ']: ' + xhr.responseText);
+            // only attempt to add tag if an entityGuid exists
+            if (!tagList.delaySave) {
+                if (tagList.entityQualifierColumn) {
+                    restUrl += '/' + tagList.entityQualifierColumn;
                 }
-            });
+
+                if (tagList.entityQualifierValue) {
+                    restUrl += '/' + tagList.entityQualifierValue;
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: restUrl,
+                    error: function (xhr, status, error) {
+                        console.log('AddTag() status: ' + status + ' [' + error + ']: ' + xhr.responseText);
+                    }
+                });
+            }
         };
 
         TagList.prototype.removeTag = function (tagName) {
@@ -88,21 +100,25 @@
             restUrl += '/' + tagList.entityGuid;
             restUrl += '/' + tagName;
 
-            if (tagList.entityQualifierColumn) {
-                restUrl += '/' + tagList.entityQualifierColumn;
-            }
-
-            if (tagList.entityQualifierValue) {
-                restUrl += '/' + tagList.entityQualifierValue;
-            }
-
-            $.ajax({
-                type: 'DELETE',
-                url: restUrl,
-                error: function (xhr, status, error) {
-                    console.log('RemoveTag() status: ' + status + ' [' + error + ']: ' + xhr.responseText);
+            // only attempt to remove tag if an entityGuid exists
+            if (!tagList.delaySave) {
+                if (tagList.entityQualifierColumn) {
+                    restUrl += '/' + tagList.entityQualifierColumn;
                 }
-            });
+
+                if (tagList.entityQualifierValue) {
+                    restUrl += '/' + tagList.entityQualifierValue;
+                }
+
+                $.ajax({
+                    type: 'DELETE',
+                    url: restUrl,
+                    error: function (xhr, status, error) {
+                        console.log('RemoveTag() status: ' + status + ' [' + error + ']: ' + xhr.responseText);
+                    }
+                });
+            }
+
         };
 
         TagList.prototype.initialize = function () {
