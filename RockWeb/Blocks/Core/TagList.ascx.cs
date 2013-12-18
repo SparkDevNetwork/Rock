@@ -303,6 +303,9 @@ namespace RockWeb.Blocks.Core
                 {
                     Id = t.Id,
                     Name = t.Name,
+                    EntityTypeName = t.EntityType.FriendlyName,
+                    EntityTypeQualifierColumn = t.EntityTypeQualifierColumn,
+                    EntityTypeQualifierValue = t.EntityTypeQualifierValue,
                     Owner = t.OwnerId.HasValue ? t.Owner.FullNameLastFirst : "Public"
                 } ).ToList();
 
