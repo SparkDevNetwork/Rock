@@ -101,7 +101,13 @@ namespace Rock.Web.UI.Controls
                 ParentGrid = deleteField.ParentGrid;
                 LinkButton lbDelete = new LinkButton();
                 lbDelete.CausesValidation = false;
-                lbDelete.CssClass = "btn btn-danger btn-sm";
+                lbDelete.CssClass = "btn btn-danger btn-sm grid-delete-button";
+                if ( lbDelete.Enabled && ( !ParentGrid.Enabled || !ParentGrid.IsDeleteEnabled ) )
+                {
+                    lbDelete.AddCssClass( "disabled" );
+                    lbDelete.Enabled = false;
+                }
+
                 lbDelete.ToolTip = "Delete";
 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
@@ -110,41 +116,12 @@ namespace Rock.Web.UI.Controls
 
                 lbDelete.Click += lbDelete_Click;
                 lbDelete.DataBinding += lbDelete_DataBinding;
-                lbDelete.PreRender += lbDelete_PreRender;
 
                 // make sure delete button is registered for async postback (needed just in case the grid was created at runtime)
                 var sm = ScriptManager.GetCurrent( this.ParentGrid.Page );
                 sm.RegisterAsyncPostBackControl( lbDelete );
 
                 cell.Controls.Add( lbDelete );
-            }
-        }
-
-        /// <summary>
-        /// Handles the PreRender event of the lbDelete control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        void lbDelete_PreRender( object sender, EventArgs e )
-        {
-            LinkButton lbDelete = sender as LinkButton;
-            if ( lbDelete.Enabled && ( !ParentGrid.Enabled || !ParentGrid.IsDeleteEnabled ) )
-            {
-                lbDelete.AddCssClass( "disabled" );
-                lbDelete.Enabled = false;
-            }
-            
-            if ( lbDelete.Enabled &&
-                ParentGrid.ShowConfirmDeleteDialog && 
-                ParentGrid.Enabled && 
-                ParentGrid.IsDeleteEnabled )
-            {
-                lbDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", ParentGrid.RowItemText );
-            }
-            else
-            {
-                lbDelete.Attributes.Remove( "onclick" );
             }
         }
 
