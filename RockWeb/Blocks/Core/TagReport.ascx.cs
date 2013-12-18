@@ -96,45 +96,59 @@ namespace RockWeb.Blocks.Core
                 int id = int.MinValue;
                 if ( int.TryParse( tagId, out id ) && id > 0 )
                 {
-                    using ( new Rock.Data.UnitOfWorkScope() )
+                    Tag _tag = new TagService().Get( id );
+                    if ( _tag != null )
                     {
-                        Tag _tag = new TagService().Get( id );
-                        if ( _tag != null )
+                        var entityTypeCache = EntityTypeCache.Read( _tag.EntityTypeId );
+                        if ( entityTypeCache != null )
                         {
-                            var entityTypeCache = EntityTypeCache.Read( _tag.EntityTypeId );
-                            if ( entityTypeCache != null )
+                            EntityTypeName = entityTypeCache.FriendlyName.Replace( " ", "" );
+
+                            Type entityType = entityTypeCache.GetEntityType();
+
+                            lTaggedTitle.Text = "Tagged " + entityType.Name.Pluralize();
+
+                            if ( entityType != null )
                             {
-                                EntityTypeName = entityTypeCache.FriendlyName.Replace( " ", "" );
+                                gReport.CreatePreviewColumns( entityType );
 
-                                Type entityType = entityTypeCache.GetEntityType();
-
-                                lTaggedTitle.Text = "Tagged " + entityType.Name.Pluralize();
-
-                                if ( entityType != null )
+                                if ( entityTypeCache.Name == "Rock.Model.Person" )
                                 {
-                                    gReport.CreatePreviewColumns( entityType );
+                                    gReport.PersonIdField = "Id";
+                                }
 
-                                    if ( entityTypeCache.Name == "Rock.Model.Person" )
+                                // Get the context type since this may be for a non-rock core object
+                                Type contextType = null;
+                                var contexts = Rock.Reflection.SearchAssembly( entityType.Assembly, typeof( System.Data.Entity.DbContext ) );
+                                if ( contexts.Any() )
+                                {
+                                    contextType = contexts.First().Value;
+                                }
+
+                                Type[] modelType = { entityType };
+                                Type genericServiceType = typeof( Rock.Data.Service<> );
+                                Type modelServiceType = genericServiceType.MakeGenericType( modelType );
+
+                                if ( modelServiceType != null )
+                                {
+                                    Object serviceInstance = null;
+
+                                    if ( contextType != null )
                                     {
-                                        gReport.PersonIdField = "Id";
+                                        var context = Activator.CreateInstance( contextType );
+                                        serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { context } );
+                                    }
+                                    else
+                                    {
+                                        serviceInstance = Activator.CreateInstance( modelServiceType );
                                     }
 
-                                    Type[] modelType = { entityType };
-                                    Type genericServiceType = typeof( Rock.Data.Service<> );
-                                    Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-
-                                    object serviceInstance = Activator.CreateInstance( modelServiceType );
-
-                                    var guids = _tag.TaggedItems.Select( t => t.EntityGuid ).ToList();
                                     if ( serviceInstance != null )
                                     {
-                                        Type[] guidType = { typeof( Guid ) };
-                                        Type genericList = typeof( List<> );
-                                        Type guidList = genericList.MakeGenericType( guidType );
-
-                                        MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetByGuids", new Type[] { guidList } );
+                                        MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetByGuids", new Type[] { typeof( List<Guid> ) } );
                                         if ( getMethod != null )
                                         {
+                                            var guids = _tag.TaggedItems.Select( t => t.EntityGuid ).ToList();
                                             gReport.DataSource = getMethod.Invoke( serviceInstance, new object[] { guids } );
                                             gReport.DataBind();
                                         }
