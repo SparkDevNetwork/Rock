@@ -29,8 +29,8 @@ namespace Rock.Model
         {
             return Repository.AsQueryable()
                 .Where( t => t.EntityTypeId == entityTypeId &&
-                    ( t.EntityTypeQualifierColumn == null  || t.EntityTypeQualifierColumn == entityQualifierColumn ) &&
-                    ( t.EntityTypeQualifierValue == null || t.EntityTypeQualifierValue == entityQualifierValue ) &&
+                    ( t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == "" || t.EntityTypeQualifierColumn == entityQualifierColumn ) &&
+                    ( t.EntityTypeQualifierValue == null || t.EntityTypeQualifierValue == "" || t.EntityTypeQualifierValue == entityQualifierValue ) &&
                     ( t.OwnerId == null || (ownerId.HasValue && t.OwnerId == ownerId) ) 
                     )
                 .OrderBy( t => t.Name );
@@ -51,8 +51,8 @@ namespace Rock.Model
         {
             return Repository.AsQueryable()
                 .Where( t => t.EntityTypeId == entityTypeId &&
-                    ( t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == entityQualifierColumn ) &&
-                    ( t.EntityTypeQualifierValue == null || t.EntityTypeQualifierValue == entityQualifierValue ) &&
+                    ( t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == "" || t.EntityTypeQualifierColumn == entityQualifierColumn ) &&
+                    ( t.EntityTypeQualifierValue == null || t.EntityTypeQualifierValue == "" || t.EntityTypeQualifierValue == entityQualifierValue ) &&
                     ( t.OwnerId == null || ( ownerId.HasValue && t.OwnerId == ownerId ) ) &&
                     ( t.Name == name)
                     )
