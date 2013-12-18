@@ -30,7 +30,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.TaggedItem">TaggedItems</see> that match the provided criteria.</returns>
         public IQueryable<TaggedItem> Get( int entityTypeId, string entityQualifierColumn, string entityQualifierValue, int? ownerId, Guid entityGuid )
         {
-            return Repository.AsQueryable()
+            return Repository.AsQueryable("Tag")
                 .Where( t => t.Tag.EntityTypeId == entityTypeId &&
                     ( t.Tag.EntityTypeQualifierColumn == entityQualifierColumn || (t.Tag.EntityTypeQualifierColumn == null && entityQualifierColumn == null)) &&
                     ( t.Tag.EntityTypeQualifierValue == entityQualifierValue || (t.Tag.EntityTypeQualifierValue == null && entityQualifierValue == null)) &&

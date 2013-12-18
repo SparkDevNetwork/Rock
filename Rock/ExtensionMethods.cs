@@ -320,9 +320,14 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static bool AsBoolean( this string str)
+        public static bool AsBoolean( this string str )
         {
             string[] trueStrings = new string[] { "true", "yes", "t", "y", "1" };
+
+            if ( string.IsNullOrWhiteSpace( str ) )
+            {
+                return false;
+            }
 
             return trueStrings.Contains( str.ToLower() );
         }
@@ -359,7 +364,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The STR.</param>
         /// <returns></returns>
-        public static Guid AsGuid( this string str)
+        public static Guid AsGuid( this string str )
         {
             Guid value;
             if ( Guid.TryParse( str, out value ) )
