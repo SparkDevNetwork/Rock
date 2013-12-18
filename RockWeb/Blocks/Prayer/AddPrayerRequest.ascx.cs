@@ -11,6 +11,7 @@ using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Microsoft.Security.Application;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -147,7 +148,7 @@ namespace RockWeb.Blocks.Prayer
 
             if ( isAutoApproved )
             {
-                prayerRequest.ApprovedByPersonId = CurrentPerson.Id;
+                prayerRequest.ApprovedByPersonId = CurrentPersonId;
                 prayerRequest.ApprovedOnDate = DateTime.Now;
                 var expireDays = Convert.ToDouble( GetAttributeValue( "ExpireDays" ) );
                 prayerRequest.ExpirationDate = DateTime.Now.AddDays( expireDays );
@@ -162,11 +163,13 @@ namespace RockWeb.Blocks.Prayer
                 categoryId = category.Id;
             }
             prayerRequest.CategoryId = categoryId;
-            prayerRequest.FirstName = HttpUtility.HtmlEncode( dtbFirstName.Text.Trim() );
-            prayerRequest.LastName = HttpUtility.HtmlEncode( dtbLastName.Text.Trim() );
-            prayerRequest.Email = dtbEmail.Text.Trim();
-            prayerRequest.Text = HttpUtility.HtmlEncode( dtbRequest.Text.Trim() );
+            prayerRequest.RequestedByPersonId = CurrentPersonId;
 
+            prayerRequest.FirstName = Sanitizer.GetSafeHtmlFragment( dtbFirstName.Text.Trim() );
+            prayerRequest.LastName = Sanitizer.GetSafeHtmlFragment( dtbLastName.Text.Trim() );
+            prayerRequest.Email = dtbEmail.Text.Trim();
+            prayerRequest.Text = dtbRequest.Text.Trim();
+            
             if ( _enableUrgentFlag )
             {
                 prayerRequest.IsUrgent = cbIsUrgent.Checked;

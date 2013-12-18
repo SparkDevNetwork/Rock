@@ -402,7 +402,7 @@
              <h2 runat="server">Rock jQuery UI Library</h2>
             To help promote consistance we have created a standard Rock jQuery UI Library.  Below are the current functions with their usage patters.
             
-            <h3>rockFadeIn()</h3>
+            <h3 runat="server">rockFadeIn()</h3>
             <p>Use this to fade in a selected DOM object in. The function hides the selector and then fades it in. Using this object will help provide
                 consistant fade behavior.
             </p>
@@ -424,10 +424,19 @@
                         return false;
                     });
                 </script>
-
             </div>
 
+            <p>Tip: When used within an UpdatePanel, you'll want to add your fade-in handler to the <code>endRequest</code> event of the PageRequestManager similar to this:</p>
+            <div runat="server" class="r-example">
+                <script>
+                    function FadePanelIn() {
+                        $("[id$='upYourPanel']").rockFadeIn();
+                    }
 
+                    $(document).ready(function () { FadePanelIn(); });
+                    Sys.WebForms.PageRequestManager.getInstance().add_endRequest(FadePanelIn);
+                </script>
+            </div>
 
         </asp:Panel>
     </ContentTemplate>

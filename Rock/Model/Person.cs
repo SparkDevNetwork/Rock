@@ -462,7 +462,7 @@ namespace Rock.Model
         /// Gets the URL of the person's photo.
         /// </summary>
         /// <value>
-        /// URL of the photo.
+        /// URL of the photo
         /// </value>
         public virtual string PhotoUrl
         {
@@ -475,11 +475,11 @@ namespace Rock.Model
                 {
                     if (this.Gender == Model.Gender.Female)
                     {
-                        return VirtualPathUtility.ToAbsolute("~/Assets/Images/person-no-photo-female.svg");
+                        return VirtualPathUtility.ToAbsolute("~/Assets/Images/person-no-photo-female.svg?");
                     }
                     else
                     {
-                        return VirtualPathUtility.ToAbsolute("~/Assets/Images/person-no-photo-male.svg");
+                        return VirtualPathUtility.ToAbsolute("~/Assets/Images/person-no-photo-male.svg?");
                     }
                 }
             }
