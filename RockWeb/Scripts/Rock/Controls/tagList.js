@@ -35,12 +35,13 @@
                 url: restUrl,
                 statusCode: {
                     404: function () {
-                        var result = confirm('A tag called "' + tagName + '" does not exist. Do you want to create a new personal tag?');
-                        if (result) {
-                            tagList.addTag(tagName);
-                        } else {
-                            $('#' + tagList.controlId).removeTag(tagName);
-                        }
+                        Rock.dialogs.confirm('A tag called "' + tagName + '" does not exist. Do you want to create a new personal tag?', function (result) {
+                            if (result) {
+                                tagList.addTag(tagName);
+                            } else {
+                                $('#' + tagList.controlId).removeTag(tagName);
+                            }
+                        });
                     },
                     200: function () {
                         tagList.addTag(tagName);
