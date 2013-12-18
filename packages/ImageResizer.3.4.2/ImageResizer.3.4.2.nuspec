@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
-<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>ImageResizer</id>
-    <version>3.3.3</version>
+    <version>3.4.2</version>
     <title>ImageResizer</title>
     <authors>Nathanael Jones,  Imazen</authors>
     <owners>Nathanael Jones,  Imazen</owners>
@@ -54,9 +54,9 @@ Search 'ImageResizer' on nuget.org, or visit imageresizing.net to see 40+ plugin
 
 Third parties have made some excellent UI wrappers and plugins, including Eksponent CropUp, FluentExtensions, jQuery NailThumb, WebCropImage, and mindrevolution's ResponsivePresets. Check out our own StudioJS for an amazing image editing studio based on the REST API.</description>
     <summary>Lightweight HttpModule, REST API, &amp; managed API for *safe* server-side image processing.</summary>
-    <tags>ImageResizer image resize crop rotate jpeg jpg gif png server-safe-imaging nuget-needs-tokenization nuget-needs-markdown-descriptions</tags>
-    <references>
-      <reference file="ImageResizer.dll" />
-    </references>
+    <releaseNotes />
+    <copyright />
+    <language />
+    <tags>ImageResizer image resize crop rotate jpeg jpg gif png server-safe-imaging nuget-needs-tokenization nuget-needs-markdown-descriptions imaging</tags>
   </metadata>
 </package>
