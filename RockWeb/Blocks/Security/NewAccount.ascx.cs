@@ -18,13 +18,16 @@ using Rock.Model;
 namespace RockWeb.Blocks.Security
 {
     [BooleanField( "Check for Duplicates", "Should people with the same email and last name be presented as a possible pre-existing record for user to choose from.", true, "", 0, "Duplicates")]
-    [TextField( "Found Duplicate Caption", "", false,"There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?", "Captions", 0 )]
-    [TextField( "Existing Account Caption", "", false, "{0}, you already have an existing account.  Would you like us to email you the username?", "Captions", 1 )]
-    [TextField( "Sent Login Caption", "", false, "Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password.", "Captions", 2 )]
-    [TextField( "Confirm Caption", "", false, "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.", "Captions", 3 )]
-    [TextField( "Success Caption", "", false, "{0}, Your account has been created", "Captions", 4 )]
-    [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)" )]
-    [LinkedPage( "Login Page", "Page to navigate to when user elects to login (if blank will use 'Login' page route)" )]
+    [TextField( "Found Duplicate Caption", "", false,"There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?", "Captions", 1 )]
+    [TextField( "Existing Account Caption", "", false, "{0}, you already have an existing account.  Would you like us to email you the username?", "Captions", 2 )]
+    [TextField( "Sent Login Caption", "", false, "Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password.", "Captions", 3 )]
+    [TextField( "Confirm Caption", "", false, "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.", "Captions", 4 )]
+    [TextField( "Success Caption", "", false, "{0}, Your account has been created", "Captions", 5 )]
+    [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", true, "", "Pages", 6 )]
+    [LinkedPage( "Login Page", "Page to navigate to when user elects to login (if blank will use 'Login' page route)", true, "", "Pages", 7 )]
+    [EmailTemplateField( "Forgot Username", "Forgot Username Email Template", false, Rock.SystemGuid.EmailTemplate.SECURITY_FORGOT_USERNAME, "Email Templates", 8, "ForgotUsernameTemplate" )]
+    [EmailTemplateField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.EmailTemplate.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 9, "ConfirmAccountTemplate" )]
+    [EmailTemplateField( "Account Created", "Account Created Email Template", false, Rock.SystemGuid.EmailTemplate.SECURITY_ACCOUNT_CREATED, "Email Templates", 10, "AccountCreatedTemplate" )]
     public partial class NewAccount : Rock.Web.UI.RockBlock
     {
         PlaceHolder[] PagePanels = new PlaceHolder[6];
@@ -297,7 +300,7 @@ namespace RockWeb.Blocks.Security
                     var recipients = new Dictionary<string, Dictionary<string, object>>();
                     recipients.Add( person.Email, mergeObjects );
 
-                    Email email = new Email( Rock.SystemGuid.EmailTemplate.SECURITY_FORGOT_USERNAME );
+                    Email email = new Email( GetAttributeValue( "ForgotUsernameTemplate" ) );
                     email.Send( recipients );
                 }
                 else
@@ -332,7 +335,7 @@ namespace RockWeb.Blocks.Security
                 var recipients = new Dictionary<string, Dictionary<string, object>>();
                 recipients.Add( person.Email, mergeObjects );
 
-                Email email = new Email( Rock.SystemGuid.EmailTemplate.SECURITY_CONFIRM_ACCOUNT );
+                Email email = new Email( GetAttributeValue( "ConfirmAccountTemplate" ) );
                 email.Send( recipients );
 
                 ShowPanel( 4 );
@@ -369,7 +372,7 @@ namespace RockWeb.Blocks.Security
                     var recipients = new Dictionary<string, Dictionary<string, object>>();
                     recipients.Add( person.Email, mergeObjects );
 
-                    Email email = new Email( Rock.SystemGuid.EmailTemplate.SECURITY_ACCOUNT_CREATED );
+                    Email email = new Email( GetAttributeValue( "AccountCreatedTemplate" ) );
                     email.Send( recipients );
 
                     lSuccessCaption.Text = GetAttributeValue( "SuccessCaption" );

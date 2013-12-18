@@ -9,6 +9,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Microsoft.Security.Application;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -25,11 +26,14 @@ namespace RockWeb.Blocks.Prayer
 
     public partial class PrayerRequestDetail : RockBlock, IDetailBlock
     {
-        #region Private BlockType Attributes
-        private static readonly string PrayerRequestKeyParameter = "prayerRequestId";
+        #region Fields
+        private static readonly string _prayerRequestKeyParameter = "prayerRequestId";
         #endregion
 
-        #region Control Methods
+        #region Properties
+        #endregion
+
+        #region Base Control Methods
 
         /// <summary>
         /// Handles the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -48,10 +52,10 @@ namespace RockWeb.Blocks.Prayer
         {
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( PrayerRequestKeyParameter );
+                string itemId = PageParameter( _prayerRequestKeyParameter );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
-                    ShowDetail( PrayerRequestKeyParameter, int.Parse( itemId ) );
+                    ShowDetail( _prayerRequestKeyParameter, int.Parse( itemId ) );
                 }
                 else
                 {
@@ -62,6 +66,9 @@ namespace RockWeb.Blocks.Prayer
             base.OnLoad( e );
         }
 
+        #endregion
+
+        #region Events
         /// <summary>
         /// Handles the edit Click event of the lbEdit control.
         /// </summary>
@@ -75,13 +82,37 @@ namespace RockWeb.Blocks.Prayer
         }
 
         /// <summary>
+        /// Handles the Click event of the lbSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void lbSave_Click( object sender, EventArgs e )
+        {
+            SaveRequest();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void lbCancel_Click( object sender, EventArgs e )
+        {
+            NavigateToParentPage();
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
         /// Shows the prayer request's detail.
         /// </summary>
         /// <param name="itemKey">The item key.</param>
         /// <param name="itemKeyValue">The item key value.</param>
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
-            if ( !itemKey.Equals( PrayerRequestKeyParameter ) )
+            if ( !itemKey.Equals( _prayerRequestKeyParameter ) )
             {
                 return;
             }
@@ -96,6 +127,9 @@ namespace RockWeb.Blocks.Prayer
             {
                 prayerRequest = new PrayerRequest { Id = 0, IsActive = true, IsApproved = true, AllowComments = true };
             }
+
+            if ( prayerRequest == null )
+                return;
 
             hfPrayerRequestId.Value = prayerRequest.Id.ToString();
 
@@ -127,9 +161,6 @@ namespace RockWeb.Blocks.Prayer
                 }
             }
         }
-        #endregion
-
-        #region View & Edit Details
 
         /// <summary>
         /// Shows the readonly details.
@@ -141,10 +172,10 @@ namespace RockWeb.Blocks.Prayer
             lActionTitle.Text = string.Format( "{0} Prayer Request", prayerRequest.FullName ).FormatAsHtmlTitle();
 
             DescriptionList descriptionList = new DescriptionList();
-            descriptionList.Add( "Name", prayerRequest.FullName );
+            descriptionList.Add( "Name", Sanitizer.GetSafeHtmlFragment( prayerRequest.FullName ) );
             descriptionList.Add( "Category", prayerRequest.Category != null ? prayerRequest.Category.Name : "" );
-            descriptionList.Add( "Request", HttpUtility.HtmlEncode( prayerRequest.Text ) );
-            descriptionList.Add( "Answer", HttpUtility.HtmlEncode( prayerRequest.Answer ) );
+            descriptionList.Add( "Request", ScrubHtmlAndConvertCrLfToBr( prayerRequest.Text ) );
+            descriptionList.Add( "Answer", ScrubHtmlAndConvertCrLfToBr( prayerRequest.Answer ) );
             lMainDetails.Text = descriptionList.Html;
 
             ShowStatus( prayerRequest, this.CurrentPerson, hlblFlaggedMessageRO );
@@ -182,8 +213,8 @@ namespace RockWeb.Blocks.Prayer
 
             dtbFirstName.Text = prayerRequest.FirstName;
             dtbLastName.Text = prayerRequest.LastName;
-            dtbText.Text =  HttpUtility.HtmlDecode( prayerRequest.Text );
-            dtbAnswer.Text = HttpUtility.HtmlDecode( prayerRequest.Answer );
+            dtbText.Text =  prayerRequest.Text;
+            dtbAnswer.Text = prayerRequest.Answer;
 
             // If no expiration date is set, then use the default setting.
             if ( !prayerRequest.ExpirationDate.HasValue )
@@ -229,7 +260,7 @@ namespace RockWeb.Blocks.Prayer
             {
                 badgePrayerCount.Text = string.Format( "{0} prayers", prayerRequest.PrayerCount ?? 0 );
             }
-            badgePrayerCount.ToolTip = string.Format( "{0} prayers so far.", prayerRequest.PrayerCount ?? 0 );
+            badgePrayerCount.ToolTip = string.Format( "{0} prayers offered by the team for this request.", prayerRequest.PrayerCount ?? 0 );
         }
 
         /// <summary>
@@ -259,16 +290,6 @@ namespace RockWeb.Blocks.Prayer
             {
                 lblApprovedByPerson.Visible = false;
             }
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbSave control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void lbSave_Click( object sender, EventArgs e )
-        {
-            SaveRequest();
         }
 
         /// <summary>
@@ -334,8 +355,8 @@ namespace RockWeb.Blocks.Prayer
             prayerRequest.IsPublic = cbIsPublic.Checked;
             prayerRequest.FirstName = dtbFirstName.Text;
             prayerRequest.LastName = dtbLastName.Text;
-            prayerRequest.Text = HttpUtility.HtmlEncode( dtbText.Text );
-            prayerRequest.Answer = HttpUtility.HtmlEncode( dtbAnswer.Text );
+            prayerRequest.Text = dtbText.Text.Trim();
+            prayerRequest.Answer = dtbAnswer.Text.Trim();
 
             if ( !Page.IsValid )
             {
@@ -353,16 +374,32 @@ namespace RockWeb.Blocks.Prayer
             NavigateToParentPage();
         }
 
-        /// <summary>
-        /// Handles the Click event of the lbCancel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void lbCancel_Click( object sender, EventArgs e )
-        {
-            NavigateToParentPage();       
-        }
         #endregion
 
+        # region Possible Extension Method -- but it depends on Microsoft.Security.Application.Sanitizer
+
+        /// <summary>
+        /// Scrubs any html from the string but converts carriage returns into html &lt;br/&gt; suitable for web display.
+        /// </summary>
+        /// <param name="str">a string that may contain unsanitized html and carriage returns</param>
+        /// <returns>a string that has been scrubbed of any html with carriage returns converted to html br</returns>
+        public static string ScrubHtmlAndConvertCrLfToBr( string str )
+        {
+            if ( str == null )
+            {
+                return string.Empty;
+            }
+
+            // Note: \u00A7 is the section symbol
+
+            // First we convert newlines and carriage returns to a character that can
+            // pass through the Sanitizer.
+            str = str.Replace( Environment.NewLine, "\u00A7" ).Replace( "\x0A", "\u00A7" );
+
+            // Now we pass it to sanitizer and then convert those section-symbols to <br/>
+            return Sanitizer.GetSafeHtmlFragment( str ).ConvertCrLfToHtmlBr().Replace( "\u00A7", "<br/>" );
+        }
+
+        #endregion
     }
 }

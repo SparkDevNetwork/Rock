@@ -183,7 +183,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 object toolbarObj = ViewState["Toolbar"];
-                if (toolbarObj != null)
+                if ( toolbarObj != null )
                 {
                     return (ToolbarConfig)toolbarObj;
                 }
@@ -296,7 +296,9 @@ namespace Rock.Web.UI.Controls
             RockControlHelper.CreateChildControls( this, Controls );
 
             _mergeFieldPicker = new MergeFieldPicker();
-            _mergeFieldPicker.ID = string.Format( "{0}_mfPicker", this.ID );
+            _mergeFieldPicker.ID = string.Format( "{0}_mfPicker", this.ClientID );
+            _mergeFieldPicker.CssClass = "";
+            _mergeFieldPicker.HidePickerLabel = true;
             _mergeFieldPicker.SetValue( string.Empty );
             Controls.Add( _mergeFieldPicker );
         }
@@ -326,7 +328,8 @@ var toolbar_RockCustomConfigLight =
 	[
         ['Source'],
         ['Bold', 'Italic', 'Underline', 'Strike', 'NumberedList', 'BulletedList', 'Link', 'Image', 'PasteFromWord', '-', 'RemoveFormat'],
-        ['Format'],
+        ['Format'], 
+        ['rockmergefield', '-', 'rockimagebrowser', '-', 'rockdocumentbrowser']
 	];
 
 var toolbar_RockCustomConfigFull =
@@ -341,18 +344,24 @@ var toolbar_RockCustomConfigFull =
         ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-'], 
         ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
         ['-', 'Image', 'Table'],
+        ['rockmergefield', '-', 'rockimagebrowser', '-','rockdocumentbrowser']
 	];	
 
 CKEDITOR.replace('{0}', {{ 
+  allowedContent: true,  
   toolbar: toolbar_RockCustomConfig{1},
   removeButtons: '',
-  resize_maxWidth: '{2}'{3}  
+  height: '{2}',
+  extraPlugins: '{5}',
+  resize_maxWidth: '{3}'{4}  
 }} );
+
+//CKEDITOR.config.extraPlugins = '{5}';
             ";
 
             string onkeyconfig = null;
 
-            if (!string.IsNullOrWhiteSpace(this.OnKeyPressScript))
+            if ( !string.IsNullOrWhiteSpace( this.OnKeyPressScript ) )
             {
                 onkeyconfig = @",
   on: {  
@@ -362,7 +371,16 @@ CKEDITOR.replace('{0}', {{
   }";
             }
 
-            string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(), this.ResizeMaxWidth ?? 0, onkeyconfig );
+            List<string> enabledPlugins = new List<string>();
+            if ( MergeFields.Any() )
+            {
+                enabledPlugins.Add( "rockmergefield" );
+            }
+
+            enabledPlugins.Add( "rockimagebrowser" );
+            enabledPlugins.Add( "rockdocumentbrowser" );
+
+            string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(), this.Height, this.ResizeMaxWidth ?? 0, onkeyconfig, enabledPlugins.AsDelimited(",") );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckeditorInitScript, true );
 

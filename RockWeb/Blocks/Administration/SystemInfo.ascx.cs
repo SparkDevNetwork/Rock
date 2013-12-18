@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.IO;
 using System.Text;
@@ -21,6 +22,12 @@ using Rock.VersionInfo;
 
 namespace RockWeb.Blocks.Administration
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    [DisplayName( "System Information" )]
+    [Category( "Administration" )]
+    [Description( "" )]
     public partial class SystemInfo : Rock.Web.UI.RockBlock
     {
 

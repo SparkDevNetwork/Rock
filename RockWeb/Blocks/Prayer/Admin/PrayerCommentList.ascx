@@ -9,7 +9,7 @@
             <Rock:Grid ID="gPrayerComments" runat="server" AllowSorting="true" RowItemText="comment" OnRowSelected="gPrayerComments_Edit" ExcelExportEnabled="false">
                 <Columns>
                     <Rock:DateTimeField DataField="CreationDateTime" HeaderText="Time" SortExpression="CreationDateTime"/>
-                    <asp:BoundField DataField="Caption" HeaderText="From" SortExpression="Text" />
+                    <asp:BoundField DataField="CreatedByPerson.FullName" HeaderText="From" SortExpression="Text" />
                     <asp:BoundField DataField="Text" HeaderText="Comment" SortExpression="Text" />
                     <Rock:DeleteField OnClick="gPrayerComments_Delete" />
                 </Columns>

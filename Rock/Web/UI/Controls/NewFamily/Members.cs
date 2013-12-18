@@ -169,7 +169,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Tfoot );
                 writer.RenderBeginTag( HtmlTextWriterTag.Tr );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Colspan, "9" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Colspan, ShowNickName ? "9" : "8" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 writer.RenderEndTag();
 

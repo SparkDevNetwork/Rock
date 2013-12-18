@@ -6,45 +6,47 @@
         <asp:HiddenField ID="hfInitialItemId" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfInitialCategoryParentIds" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfSelectedCategoryId" runat="server" ClientIDMode="Static" />
-        <div class="treeview treeview-group panel panel-treeview">
-            
-            <div class="panel-heading">
-                <h3 class="panel-title"><asp:Literal ID="lTitle" runat="server"></asp:Literal></h3>
+        
+        
 
-            
-            
-            <div class="treeview-actions row">
-                <div class="col-xs-6 col">
-                    <asp:LinkButton ID="lbAddCategory" runat="server" CssClass="add btn btn-mini" ToolTip="Add Category" CausesValidation="false" OnClick="lbAddCategory_Click">
-                            <i class="fa fa-plus"></i> Category
-                    </asp:LinkButton>
-                </div>
-                <div class="col-xs-6 col">
-                    <asp:LinkButton ID="lbAddItem" runat="server" CssClass="add btn btn-mini" ToolTip="Add Group" CausesValidation="false" OnClick="lbAddItem_Click">
-                            <i class="fa fa-plus"></i> <asp:Literal ID="lAddItem" runat="server" Text="Add Group" />
-                    </asp:LinkButton>
-                </div>
+        <div class="treeview">
+
+            <div class="treeview-actions">
+                <asp:LinkButton ID="lbAddCategory" runat="server" CssClass="add btn btn-mini btn-action" ToolTip="Add Category" CausesValidation="false" OnClick="lbAddCategory_Click">
+                        <i class="fa fa-plus"></i> Category
+                </asp:LinkButton>
+        
+                <asp:LinkButton ID="lbAddItem" runat="server" CssClass="add btn btn-mini btn-action" ToolTip="Add Group" CausesValidation="false" OnClick="lbAddItem_Click">
+                        <i class="fa fa-plus"></i> <asp:Literal ID="lAddItem" runat="server" Text="Add Group" />
+                </asp:LinkButton>
             </div>
+
+            <div class="treeview-scroll scroll-container scroll-container-horizontal">
+                
+                <div class="viewport">
+                    <div class="overview">
+                        <div class="panel-body treeview-frame">
+                            <div id="treeview-content"></div>
+                        </div>
+                    </div> 
                 </div>
 
-                    <div class="treeview-scroll scroll-container scroll-container-horizontal">
-                
-                        <div class="viewport">
-                            <div class="overview">
-                                <div class="panel-body treeview-frame">
-                                    <div id="treeview-content"></div>
-                                </div>
-                            </div>
-                    
-                        </div>
-                        <div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
-                    </div>
+                <div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
+            </div>
 
+        </div>
 
             <script type="text/javascript">
 
                 var scrollbCategory = $('.treeview-scroll');
                 scrollbCategory.tinyscrollbar({ axis: 'x', sizethumb: 60, size: 200 });
+
+                // resize scrollbar when the window resizes
+                $( document ).ready(function() {
+                    $(window).on('resize', function () {
+                        resizeScrollbar(scrollbCategory);
+                    });
+                });
 
                 // scrollbar hide/show
                 var timerScrollHide;
@@ -59,10 +61,6 @@
                         }, 1000);
                     }
                 });
-
-
-                // update viewport height
-                resizeScrollbar(scrollbCategory);
 
                 $(function () {
                     var $selectedId = $('#hfSelectedCategoryId'),
@@ -122,9 +120,11 @@
 
                     $(scrollControl).find('.viewport').height(overviewHeight);
 
-                    scrollbCategory.tinyscrollbar_update('relative');
+                    scrollControl.tinyscrollbar_update('relative');
                 }
+
+                
             </script>
-        </div>
+
     </ContentTemplate>
 </asp:UpdatePanel>
