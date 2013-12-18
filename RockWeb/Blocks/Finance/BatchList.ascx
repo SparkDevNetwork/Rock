@@ -24,7 +24,7 @@
                         </ItemTemplate>
                     </asp:TemplateField>
                     <asp:BoundField DataField="Name" HeaderText="Title" SortExpression="Name" />
-                    <Rock:EnumField DataField="Status" HeaderText="Status" SortExpression="Status" />
+                    
                     <asp:BoundField DataField="ControlAmount" HeaderText="Control Amount" />
                     <asp:TemplateField HeaderText="Transaction Total">
                         <ItemTemplate>
@@ -42,6 +42,7 @@
                         </ItemTemplate>
                     </asp:TemplateField>
                     <asp:BoundField DataField="Campus" HeaderText="Campus" />
+                    <Rock:EnumField DataField="Status" HeaderText="Status" SortExpression="Status" />
                     <Rock:DeleteField OnClick="rGridBatch_Delete" />
                 </Columns>
             </Rock:Grid>
