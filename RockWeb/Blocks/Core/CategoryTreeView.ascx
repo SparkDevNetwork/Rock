@@ -93,7 +93,17 @@
                             $selectedId.val(id);
                             
                             if (window.location.search !== itemSearch) {
-                                window.location.search = itemSearch;
+                                var postUrl = window.location.href.split('?')[0] + itemSearch;
+
+                                // get the data-id values of rock-tree items that are showing children (in other words, Expanded Nodes)
+                                var expandedDataIds = $(e.currentTarget).find('.rocktree-children').closest('.rocktree-item').map(function () { return $(this).attr('data-id') }).get().join(',');
+
+                                // to a form post to the newUrl
+                                var form = $('<form action="' + postUrl + '" method="post">' +
+                                                '<input type="hidden" name="expandedIds" value="' + expandedDataIds + '" />' +
+                                             '</form>');
+                                $('body').append(form);
+                                $(form).submit();
                             }
                             
                         })
