@@ -178,7 +178,14 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public enum ToolbarConfig
         {
+            /// <summary>
+            /// A lighter more airy view
+            /// </summary>
             Light,
+
+            /// <summary>
+            /// The full monty
+            /// </summary>
             Full
         }
 
