@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -27,6 +28,10 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// Add a new one-time or scheduled transaction
     /// </summary>
+    [DisplayName( "Add Transaction" )]
+    [Category( "Financial" )]
+    [Description( "Creates a new finacial transaction or scheduled transaction." )]
+
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", false, "", "", 0, "CCGateway" )]
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "ACH Card Gateway", "The payment gateway to use for ACH (bank account) transactions", false, "", "", 1, "ACHGateway" )]
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving - ", "", 2 )]
@@ -155,7 +160,7 @@ achieve our mission.  We are so grateful for your commitment.
         
         #endregion
 
-        #region overridden control methods
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -706,7 +711,7 @@ achieve our mission.  We are so grateful for your commitment.
 
         #endregion
 
-        #region Private Methods
+        #region Methods
 
         #region Methods for the Payment Info Page (panel)
 
@@ -1551,7 +1556,7 @@ achieve our mission.  We are so grateful for your commitment.
 
         // Hide or show a div based on selection of checkbox
         $('input:checkbox.toggle-input').unbind('click').on('click', function () {{
-            $(this).parents('div.form-group:first').next('.toggle-content').slideToggle();
+            $(this).parents('.checkbox').next('.toggle-content').slideToggle();
         }});
 
         // Disable the submit button as soon as it's clicked to prevent double-clicking
