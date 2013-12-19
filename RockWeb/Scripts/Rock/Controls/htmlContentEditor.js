@@ -3,6 +3,14 @@
     window.Rock = window.Rock || {};
     Rock.controls = Rock.controls || {};
 
+    CKEDITOR.on('instanceReady', function (instance) {
+        instance.editor.on("change", function () {
+            this.updateElement();
+            var textAreaElement = this.element.$;
+            textAreaElement.innerText = textAreaElement.value;
+        });
+    });
+
     Rock.controls.htmlContentEditor = (function () {
         var HtmlEditor = function (options) {
             this.blockId = options.blockId;
@@ -107,4 +115,9 @@
 
         return exports;
     }());
+
 }(jQuery));
+
+function CK_jQ() {
+    for (instance in CKEDITOR.instances) { CKEDITOR.instances[instance].updateElement(); }
+}
