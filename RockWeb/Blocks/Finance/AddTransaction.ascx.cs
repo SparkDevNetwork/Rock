@@ -30,7 +30,7 @@ namespace RockWeb.Blocks.Finance
     /// </summary>
     [DisplayName( "Add Transaction" )]
     [Category( "Financial" )]
-    [Description( "Creates a new finacial transaction or scheduled transaction." )]
+    [Description( "Creates a new financial transaction or scheduled transaction." )]
 
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", false, "", "", 0, "CCGateway" )]
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "ACH Card Gateway", "The payment gateway to use for ACH (bank account) transactions", false, "", "", 1, "ACHGateway" )]
@@ -469,7 +469,7 @@ achieve our mission.  We are so grateful for your commitment.
             else
             {
                 SetPage( 0 );
-                ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Please check the configuration of this block and make sure a valid Credit Card and/or ACH Finacial Gateway has been selected." );
+                ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Please check the configuration of this block and make sure a valid Credit Card and/or ACH Financial Gateway has been selected." );
             }
             
         }
