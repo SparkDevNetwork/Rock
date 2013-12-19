@@ -28,7 +28,7 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     [DisplayName( "Page Properties" )]
     [Category( "Administration" )]
-    [Description( "" )]
+    [Description( "Displays the page properties." )]
     public partial class PageProperties : RockBlock
     {
 
