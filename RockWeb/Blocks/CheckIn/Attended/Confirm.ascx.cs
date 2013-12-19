@@ -26,6 +26,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
     /// <summary>
     /// Confirmation block for Attended Check-in
     /// </summary>
+    [DisplayName("Confirmation Block")]
+    [Category("Check-in > Attended")]
     [Description( "Attended Check-In Confirmation Block" )]
     [LinkedPage("Activity Select Page")]
     public partial class Confirm : CheckInBlock

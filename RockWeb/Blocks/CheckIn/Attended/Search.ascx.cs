@@ -25,6 +25,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
     /// <summary>
     /// Search block for Attended Check-in
     /// </summary>
+    [DisplayName("Family Select")]
+    [Category("Check-in > Attended")]
     [Description( "Attended Check-In Search block" )]
     [LinkedPage( "Admin Page" )]
     [BooleanField( "Show Key Pad", "Show the number key pad on the search screen", false)]

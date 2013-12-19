@@ -25,6 +25,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
     /// <summary>
     /// Family Select block for Attended Check-in
     /// </summary>
+    [DisplayName("Family Select")]
+    [Category("Check-in > Attended")]
     [Description( "Attended Check-In Family Select Block" )]
     [BooleanField( "Enable Add Buttons", "Show the add people/visitor/family buttons on the family select page?", true )]
     [TextField("Not Found Text", "What text should display when the nothing is found?", true, "Please add them using one of the buttons on the right")]
