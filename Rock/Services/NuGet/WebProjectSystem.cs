@@ -148,5 +148,26 @@ namespace Rock.Services.NuGet
             }
             return null;
         }
+
+        /// <summary>
+        /// Workaround until we get to NuGet 2.7 - Always add the file to the filesystem.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="stream"></param>
+        public override void AddFile( string path, Stream stream )
+        {
+            base.AddFile( path, stream );
+        }
+
+        /// <summary>
+        /// Workaround until we get to NuGet 2.7 - Always treat the file as though it does not exist so that it will be replaced.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public override bool FileExists( string path )
+        {
+            return false;
+        }
+
     }
 }
