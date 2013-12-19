@@ -208,7 +208,7 @@
                 <div class="well">
                     <legend>Make Giving Even Easier</legend>
                     <fieldset>
-                        <Rock:RockCheckBox ID="cbSaveAccount" runat="server" Label=" " Text="Save account information for future gifts" CssClass="toggle-input" />
+                        <Rock:RockCheckBox ID="cbSaveAccount" runat="server" Text="Save account information for future gifts" CssClass="toggle-input" />
                         <div id="divSaveAccount" runat="server" class="toggle-content">
                             <Rock:RockTextBox ID="txtSaveAccount" runat="server" Label="Name for this account" CssClass="input-large"></Rock:RockTextBox>
 
