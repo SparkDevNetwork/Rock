@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -18,25 +19,36 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
 {
+    /// <summary>
+    /// Prompts user for login credentials.
+    /// </summary>
+    [DisplayName( "Login" )]
+    [Category( "Security" )]
+    [Description( "Prompts user for login credentials." )]
+
     [LinkedPage( "New Account Page", "Page to navigate to when user selects 'Create New Account' (if blank will use 'NewAccountPage' page route)" )]
     [LinkedPage( "Help Page", "Page to navigate to when user selects 'Help' option (if blank will use 'ForgotUserName' page route)" )]
     public partial class Login : Rock.Web.UI.RockBlock
     {
+
+        #region Base Control Methods
+
         /// <summary>
-        /// Handles the Load event of the RockPage control.
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        protected void Page_Load( object sender, EventArgs e )
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
         {
-            pnlMessage.Visible = false;
+            base.OnInit( e );
+
+            phExternalLogins.Controls.Clear();
 
             // Look for active external authentication providers
             foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
             {
                 var component = serviceEntry.Value.Value;
 
-                if (component.IsActive && component.RequiresRemoteAuthentication)
+                if ( component.IsActive && component.RequiresRemoteAuthentication )
                 {
                     string loginTypeName = component.GetType().Name;
 
@@ -53,8 +65,8 @@ namespace RockWeb.Blocks.Security
                     }
 
                     LinkButton lbLogin = new LinkButton();
-                    phExternalLogins.Controls.Add(lbLogin);
-                    lbLogin.AddCssClass("btn btn-authenication " + loginTypeName.ToLower());
+                    phExternalLogins.Controls.Add( lbLogin );
+                    lbLogin.AddCssClass( "btn btn-authenication " + loginTypeName.ToLower() );
                     lbLogin.ID = "lb" + loginTypeName + "Login";
                     lbLogin.Click += lbLogin_Click;
                     lbLogin.CausesValidation = false;
@@ -73,6 +85,22 @@ namespace RockWeb.Blocks.Security
                 }
             }
         }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            pnlMessage.Visible = false;
+
+        }
+
+        #endregion
+
+        #region Events
 
         /// <summary>
         /// Handles the Click event of the btnLogin control.
@@ -190,6 +218,10 @@ namespace RockWeb.Blocks.Security
             }
         }
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Displays the error.
         /// </summary>
@@ -221,6 +253,8 @@ namespace RockWeb.Blocks.Security
                 RockPage.Layout.Site.RedirectToDefaultPage();
             }
         }
+
+        #endregion
     }
 
     // helpful links

@@ -77,7 +77,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     var category = CategoryCache.Read( guid );
                     if ( category != null )
                     {
-                        lCategoryName.Text = category.Name;
+                        if (!string.IsNullOrWhiteSpace(category.IconCssClass))
+                        {
+                            lCategoryName.Text = string.Format( "<i class='{0}'></i> {1}", category.IconCssClass, category.Name );
+                        }
+                        else
+                        {
+                            lCategoryName.Text = category.Name;
+                        }
 
                         foreach ( var attribute in new AttributeService().GetByCategoryId( category.Id ) )
                         {

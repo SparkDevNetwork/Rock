@@ -459,6 +459,33 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the URL of the person's photo.
+        /// </summary>
+        /// <value>
+        /// URL of the photo
+        /// </value>
+        public virtual string PhotoUrl
+        {
+            get {
+                if (this.PhotoId.HasValue)
+                {
+                    return VirtualPathUtility.ToAbsolute(String.Format("~/GetImage.ashx?id={0}", this.PhotoId));
+                }
+                else
+                {
+                    if (this.Gender == Model.Gender.Female)
+                    {
+                        return VirtualPathUtility.ToAbsolute("~/Assets/Images/person-no-photo-female.svg?");
+                    }
+                    else
+                    {
+                        return VirtualPathUtility.ToAbsolute("~/Assets/Images/person-no-photo-male.svg?");
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a collection containing the Person's <see cref="Rock.Model.UserLogin">UserLogins</see>.
         /// </summary>
         /// <value>

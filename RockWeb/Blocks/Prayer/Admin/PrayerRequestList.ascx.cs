@@ -486,6 +486,8 @@ namespace RockWeb.Blocks.Prayer
 
                 if ( prayerRequest != null )
                 {
+                    DeleteAllRelatedNotes( prayerRequest );
+
                     string errorMessage;
                     if ( !prayerRequestService.CanDelete( prayerRequest, out errorMessage ) )
                     {
@@ -499,6 +501,19 @@ namespace RockWeb.Blocks.Prayer
             } );
 
             BindGrid();
+        }
+
+        private void DeleteAllRelatedNotes( PrayerRequest prayerRequest )
+        {
+            var noteTypeService = new NoteTypeService();
+            var noteType = noteTypeService.Get( (int)_prayerRequestEntityTypeId, "Prayer Comment" );
+            var noteService = new NoteService();
+            var prayerComments = noteService.Get( noteType.Id, prayerRequest.Id );
+            foreach ( Note prayerComment in prayerComments )
+            {
+                noteService.Delete( prayerComment, CurrentPersonId );
+                noteService.Save( prayerComment, CurrentPersonId );
+            }
         }
 
         /// <summary>

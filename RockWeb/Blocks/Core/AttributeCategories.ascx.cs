@@ -248,24 +248,64 @@ namespace RockWeb.Blocks.Core
 
             if ( category == null )
             {
-                string QualifierValue = null;
-                if ( (entityTypePicker.SelectedEntityTypeId ?? 0) != 0 )
-                {
-                    QualifierValue = entityTypePicker.SelectedEntityTypeId.ToString();
-                }
-
                 category = new Category();
                 category.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
                 category.EntityTypeQualifierColumn = "EntityTypeId";
-                category.EntityTypeQualifierValue = QualifierValue;
                 service.Add( category, CurrentPersonId );
             }
 
             category.Name = tbName.Text;
 
+            string QualifierValue = null;
+            if ( ( entityTypePicker.SelectedEntityTypeId ?? 0 ) != 0 )
+            {
+                QualifierValue = entityTypePicker.SelectedEntityTypeId.ToString();
+            }
+            category.EntityTypeQualifierValue = QualifierValue;
+
+            category.IconCssClass = tbIconCssClass.Text;
+
+            List<int> orphanedBinaryFileIdList = new List<int>();
+
+            if ( category.IconSmallFileId != imgIconSmall.BinaryFileId )
+            {
+                if ( category.IconSmallFileId.HasValue )
+                {
+                    orphanedBinaryFileIdList.Add( category.IconSmallFileId.Value );
+                }
+
+                category.IconSmallFileId = imgIconSmall.BinaryFileId;
+            }
+
+            if ( category.IconLargeFileId != imgIconLarge.BinaryFileId )
+            {
+                if ( category.IconLargeFileId.HasValue )
+                {
+                    orphanedBinaryFileIdList.Add( category.IconLargeFileId.Value );
+                }
+
+                category.IconLargeFileId = imgIconLarge.BinaryFileId;
+            } 
+            
             if ( category.IsValid )
             {
-                service.Save( category, CurrentPersonId );
+                RockTransactionScope.WrapTransaction( () =>
+                {
+                    service.Save( category, CurrentPersonId );
+
+                    BinaryFileService binaryFileService = new BinaryFileService();
+                    foreach ( int binaryFileId in orphanedBinaryFileIdList )
+                    {
+                        var binaryFile = binaryFileService.Get( binaryFileId );
+                        if ( binaryFile != null )
+                        {
+                            // marked the old images as IsTemporary so they will get cleaned up later
+                            binaryFile.IsTemporary = true;
+                            binaryFileService.Save( binaryFile, CurrentPersonId );
+                        }
+                    }
+
+                } );
 
                 hfIdValue.Value = string.Empty;
                 modalDetails.Hide();
@@ -338,6 +378,7 @@ namespace RockWeb.Blocks.Core
         protected void ShowEdit( int categoryId )
         {
             var category = new CategoryService().Get(categoryId);
+
             tbName.Text = category != null ? category.Name : string.Empty;
             int entityTypeId = 0;
             if ( category == null || category.EntityTypeQualifierValue == null ||
@@ -359,6 +400,11 @@ namespace RockWeb.Blocks.Core
             }
 
             entityTypePicker.SelectedEntityTypeId = entityTypeId;
+
+            tbIconCssClass.Text = category.IconCssClass;
+            imgIconSmall.BinaryFileId = category.IconSmallFileId.HasValue ? category.IconSmallFileId.Value : None.Id;
+            imgIconLarge.BinaryFileId = category.IconLargeFileId.HasValue ? category.IconLargeFileId.Value : None.Id;
+
             hfIdValue.Value = categoryId.ToString();
             modalDetails.Show();
         }

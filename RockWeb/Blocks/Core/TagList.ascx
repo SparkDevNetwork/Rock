@@ -19,7 +19,11 @@
                 <Rock:ReorderField />
                 <asp:BoundField DataField="Id" HeaderText="Id" Visible="false" />
                 <asp:BoundField DataField="Name" HeaderText="Name" />
+                <asp:BoundField DataField="EntityTypeName" HeaderText="Entity Type" />
+                <asp:BoundField DataField="EntityTypeQualifierColumn" HeaderText="Qualifier Column" />
+                <asp:BoundField DataField="EntityTypeQualifierValue" HeaderText="Qualifier Value" />
                 <asp:BoundField DataField="Owner" HeaderText="Owner" />
+
                 <Rock:DeleteField OnClick="rGrid_Delete" />
             </Columns>
         </Rock:Grid>

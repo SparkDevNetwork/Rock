@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Web.UI;
@@ -24,6 +25,9 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// User input controls for metric details
     /// </summary>
+    [DisplayName( "Metric Detail" )]
+    [Category( "Administration" )]
+    [Description( "" )]
     public partial class MetricDetail : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods

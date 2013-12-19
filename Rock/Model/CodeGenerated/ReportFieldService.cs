@@ -99,6 +99,7 @@ namespace Rock.Model
             target.DataSelectComponentEntityTypeId = source.DataSelectComponentEntityTypeId;
             target.Selection = source.Selection;
             target.Order = source.Order;
+            target.ColumnHeaderText = source.ColumnHeaderText;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

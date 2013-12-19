@@ -44,7 +44,7 @@
                         <ItemTemplate>
                             <li class="member">
                                 <a href='<%# basePersonUrl + Eval("Id") %>'>
-                                    <asp:Image ID="imgPerson" runat="server" ImageUrl="~/Assets/Images/person-no-photo.svg" />
+                                    <asp:Image ID="imgPerson" runat="server" ImageUrl="~/Assets/Images/person-no-photo-mail.svg" />
                                     <h4><%# Eval("FirstName") %> <%# Eval("LastName") %></h4>
                                 </a>
                                 <asp:RadioButtonList ID="rblRole" runat="server" DataValueField="Id" DataTextField="Name" />

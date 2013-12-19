@@ -126,9 +126,9 @@ namespace Rock.Model
                 return false;
             }  
             
-            // ignoring Person,MaritalStatusValueId 
+            // ignoring Person,ConnectionStatusValueId 
             
-            // ignoring Person,PersonConnectionValueId 
+            // ignoring Person,MaritalStatusValueId 
             
             // ignoring Person,RecordStatusReasonValueId 
             

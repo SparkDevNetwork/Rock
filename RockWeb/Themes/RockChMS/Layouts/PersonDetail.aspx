@@ -107,10 +107,10 @@
             </div>
 
             <div class="row">
-                <div class="col-md-8">
+                <div class="col-md-4">
                     <Rock:Zone Name="Section D1" runat="server" />
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-8">
                     <Rock:Zone Name="Section D2" runat="server" />
                 </div>
             </div>

@@ -224,7 +224,9 @@ function() {
             DateTime startDate = selectionValues[2].AsDateTime() ?? DateTime.MinValue;
             DateTime endDate = selectionValues[3].AsDateTime() ?? DateTime.MaxValue;
 
-            var financialTransactionQry = new FinancialTransactionService().Queryable()
+            Rock.Data.RockContext context = serviceInstance.GetPropertyValue( "RockContext" ) as Rock.Data.RockContext;
+
+            var financialTransactionQry = new FinancialTransactionService( context ).Queryable()
                 .Where( xx => xx.TransactionDateTime >= startDate && xx.TransactionDateTime < endDate )
                 .GroupBy( xx => xx.AuthorizedPersonId ).Select( xx =>
                     new
@@ -244,7 +246,7 @@ function() {
 
             var innerQry = financialTransactionQry.Select( xx => xx.PersonId ?? 0 ).AsQueryable();
 
-            var qry = new Rock.Data.Service<Rock.Model.Person>().Queryable()
+            var qry = new PersonService( context ).Queryable()
                 .Where( p => innerQry.Any( xx => xx == p.Id ) );
 
             Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );

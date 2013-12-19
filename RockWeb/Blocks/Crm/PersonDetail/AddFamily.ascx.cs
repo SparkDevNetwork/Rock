@@ -71,6 +71,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             bool showNickName = false;
             nfmMembers.ShowNickName = bool.TryParse( GetAttributeValue( "NickName" ), out showNickName ) && showNickName;
+
+            lTitle.Text = ("Add Family").FormatAsHtmlTitle(); 
         }
 
         /// <summary>
