@@ -10,6 +10,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Microsoft.Security.Application;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -21,10 +22,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Prayer
 {
-    [TextField( "Welcome Introduction Text", "Some text (or HTML) to display on the first step.", false, "<h2>Welcome to our Prayer Ministry.</h2>", "", 1 )]
+    [TextField( "Welcome Introduction Text", "Some text (or HTML) to display on the first step.", false, "<h2>Let's get ready to pray...</h2>", "", 1 )]
     [CategoryField( "Category", "A top level category. This controls which categories are shown when starting a prayer session.", false, "Rock.Model.PrayerRequest", "", "", false, "", "Filtering", 2, "CategoryGuid" )]
-    [BooleanField( "Enable Community Flagging", "If enabled, members of the prayer team will be able to a flag prayer request if they feel it is inappropriate.", false, "Flagging", 3 )]
-    [IntegerField( "Flag Limit", "The number of flags a prayer request has to get from the community before it is automatically unapproved.", false, 1, "Flagging", 4 )]
+    [BooleanField( "Enable Prayer Team Flagging", "If enabled, members of the prayer team can flag a prayer request if they feel the request is inappropriate and needs review by an administrator.", false, "Flagging", 3, "EnableCommunityFlagging" )]
+    [IntegerField( "Flag Limit", "The number of flags a prayer request has to get from the prayer team before it is automatically unapproved.", false, 1, "Flagging", 4 )]
     [TextField( "Note Type", "The note type name for these prayer request comments.", false, "Prayer Comment", "Advanced", 0, "NoteType" )]
 
     public partial class PrayerSession : RockBlock
@@ -76,18 +77,20 @@ namespace RockWeb.Blocks.Prayer
             if ( !Page.IsPostBack )
             {
                 DisplayCategories();
+                lbStart.Focus();
                 GetNoteType();
                 lbFlag.Visible = _enableCommunityFlagging;
+            }
+
+            if ( lbNext.Visible )
+            {
+                lbNext.Focus();
             }
         }
 
         #endregion
 
         #region Events
-
-        #endregion
-
-        #region Event Handlers
 
         /// <summary>
         /// Handler that saves the user's category preferences and starts a prayer session
@@ -107,6 +110,8 @@ namespace RockWeb.Blocks.Prayer
             {
                 nbSelectCategories.Visible = false;
             }
+
+            lbNext.Focus();
 
             pnlChooseCategories.Visible = false;
 
@@ -128,23 +133,21 @@ namespace RockWeb.Blocks.Prayer
             index++;
 
             List<int> prayerRequestIds  = (List<int>) Session[ _sessionKey ];
-            if ( prayerRequestIds.Count - 1 >= index )
+            int currentNumber = index + 1;
+            if ( currentNumber <= prayerRequestIds.Count )
             {
-                hlblNumber.Text = ( index + 1 ).ToString();
-                hlblNumber.Text = string.Format( "# {0}", hlblNumber.Text, prayerRequestIds.Count );
-                hlblNumber.ToolTip = string.Format( "{0} of {1}", hlblNumber.Text, prayerRequestIds.Count );
+                UpdateSessionCountLabel( currentNumber, prayerRequestIds.Count );
 
                 hfPrayerIndex.Value = index.ToString();
                 PrayerRequestService service = new PrayerRequestService();
                 PrayerRequest request = service.Get( prayerRequestIds[index] );
-                ShowPrayerRequest( request );
-                // save because the prayer count was just modified.
-                service.Save( request, this.CurrentPersonId );
+                ShowPrayerRequest( request, service );
             }
             else
             {
                 pnlFinished.Visible = true;
                 pnlPrayer.Visible = false;
+                lbStartAgain.Focus();
             }
         }
 
@@ -170,7 +173,8 @@ namespace RockWeb.Blocks.Prayer
             pnlFinished.Visible = false;
             pnlNoPrayerRequestsMessage.Visible = false;
             pnlPrayer.Visible = false;
-            
+            lbStart.Focus();                
+
             DisplayCategories();
         }
 
@@ -251,20 +255,13 @@ namespace RockWeb.Blocks.Prayer
                     var bbtnDeleteComment = e.Item.FindControl( "bbtnDeleteComment" ) as BootstrapButton;
                     var lCommenterIcon = e.Item.FindControl( "lCommenterIcon" ) as Literal;
 
-                    note.LoadAttributes();
-                    var personId = note.GetAttributeValue( "NoteCreator" );
-                    if ( personId != null )
-                    {
-                        lCommenterIcon.Text = GetPhotoUrl( new PersonService().Get( personId.AsInteger() ?? 0 ), useIconIfEmpty: false, useBlankImageIfEmpty: true, cssClassName: "media-object" );
-                    }
-                    else
-                    {
-                        lCommenterIcon.Text = "<i class='fa fa-user'></i> ";
-                    }
+                    lCommenterIcon.Text = GetPhotoUrl( note.CreatedByPerson, useIconIfEmpty: true, cssClassName: "media-object" );
 
-                    lCommentBy.Text = Server.HtmlEncode( note.Caption );
+                    lCommentBy.Text = (note.CreatedByPerson != null) ? 
+                        Sanitizer.GetSafeHtmlFragment( note.CreatedByPerson.FullName ) : note.Caption;
+
                     lCommentDate.Text = note.CreationDateTime.ToRelativeDateString( 6 ) ;
-                    lCommentText.Text = Server.HtmlEncode( note.Text );
+                    lCommentText.Text = Sanitizer.GetSafeHtmlFragment( note.Text );
 
                     // TODO figure out how to determine who the note "owner" is.
                     bbtnDeleteComment.Visible = note.IsAuthorized( "Administrate", CurrentPerson );
@@ -274,9 +271,53 @@ namespace RockWeb.Blocks.Prayer
             }
         }
 
+        /// <summary>
+        /// Saves the comment for the prayer request being viewed.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void bbtnSaveComment_Click( object sender, EventArgs e )
+        {
+            if ( string.IsNullOrWhiteSpace( tbComment.Text ) )
+            {
+                return;
+            }
+
+            int prayerRequestId = hfIdValue.ValueAsInt();
+
+            NoteService service = new NoteService();
+
+            var note = new Note();
+            note.IsSystem = false;
+            note.IsAlert = false;
+            note.NoteTypeId = PrayerCommentNoteTypeId;
+            note.EntityId = prayerRequestId;
+            note.CreatedByPersonId = CurrentPersonId;
+            note.CreationDateTime = DateTime.Now;
+            note.Text = Sanitizer.GetSafeHtmlFragment( tbComment.Text.Trim() );
+
+            service.Add( note, CurrentPersonId );
+            service.Save( note, CurrentPersonId );
+
+            tbComment.Text = "";
+
+            ShowComments( prayerRequestId );
+        }
+
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Updates the Hightlight label that shows how many prayers have been made out of the total for this session.
+        /// </summary>
+        /// <param name="currentNumber"></param>
+        /// <param name="total"></param>
+        private void UpdateSessionCountLabel( int currentNumber, int total )
+        {
+            hlblNumber.Text = string.Format( "{0} of {1}", currentNumber, total );
+            hlblNumber.ToolTip = string.Format( "You've prayed for {0} out of {1} requests.", currentNumber, total );
+        }
 
         /// <summary>
         /// Displays any 'active' prayer categories or shows a message if there are none.
@@ -383,14 +424,10 @@ namespace RockWeb.Blocks.Prayer
             Session[ _sessionKey ] = list;
             if ( list.Count > 0 )
             {
-                hlblNumber.Text = "1";
-                hlblNumber.Text = string.Format( "# {0}", hlblNumber.Text, list.Count );
-                hlblNumber.ToolTip = string.Format( "{0} of {1}", hlblNumber.Text, list.Count );
+                UpdateSessionCountLabel( 1, list.Count );
                 hfPrayerIndex.Value = "0";
                 PrayerRequest request = prayerRequests.First();
-                ShowPrayerRequest( request );
-                // save because the prayer count was just modified.
-                service.Save( request, this.CurrentPersonId );
+                ShowPrayerRequest( request, service );
             }
         }
 
@@ -398,24 +435,25 @@ namespace RockWeb.Blocks.Prayer
         /// Displays the details for a single, given prayer request.
         /// </summary>
         /// <param name="prayerRequest"></param>
-        private void ShowPrayerRequest( PrayerRequest prayerRequest )
+        private void ShowPrayerRequest( PrayerRequest prayerRequest, PrayerRequestService service )
         {
             pnlPrayer.Visible = true;
             pPrayerAnswer.Visible = false;
 
             prayerRequest.PrayerCount = ( prayerRequest.PrayerCount ?? 0 ) + 1;
-            hlblPrayerCountTotal.Text = prayerRequest.PrayerCount.ToString() + " prayers";
-            badgePrayerCountTotal.Text = prayerRequest.PrayerCount.ToString();
+            hlblPrayerCountTotal.Text = prayerRequest.PrayerCount.ToString() + " team prayers";
             hlblUrgent.Visible = prayerRequest.IsUrgent ?? false;
             lTitle.Text = prayerRequest.FullName.FormatAsHtmlTitle();
-            lPrayerText.Text = Server.HtmlEncode( prayerRequest.Text );
+
+            //lPrayerText.Text = prayerRequest.Text.EncodeHtmlThenConvertCrLfToHtmlBr();
+            lPrayerText.Text = ScrubHtmlAndConvertCrLfToBr( prayerRequest.Text );
             hlblCategory.Text = prayerRequest.Category.Name;
 
-            // Answer?
+            // Show their answer if there is one on the request.
             if ( !string.IsNullOrWhiteSpace( prayerRequest.Answer ) )
             {
                 pPrayerAnswer.Visible = true;
-                lPrayerAnswerText.Text = prayerRequest.Answer;
+                lPrayerAnswerText.Text = prayerRequest.Answer.EncodeHtmlThenConvertCrLfToHtmlBr();
             }
 
             // put the request's id in the hidden field in case it needs to be flagged.
@@ -428,6 +466,9 @@ namespace RockWeb.Blocks.Prayer
             {
                 ShowComments( prayerRequest );
             }
+
+            // save because the prayer count was just modified.
+            service.Save( prayerRequest, this.CurrentPersonId );
         }
 
         /// <summary>
@@ -436,29 +477,19 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         /// <param name="person"></param>
         /// <param name="useIconIfEmpty">set to true to use a bootstrap icon if the person has no photo.</param>
-        /// <param name="useBlankImageIfEmpty">set to true to use the no-photo image if the person has no photo.</param>
         /// <param name="cssClassName">If supplied, will be used for the css class of the image </param>
         /// <returns></returns>
-        private string GetPhotoUrl( Person person, bool useIconIfEmpty = false, bool useBlankImageIfEmpty = false, string cssClassName = "" )
+        private string GetPhotoUrl( Person person, bool useIconIfEmpty = false, string cssClassName = "" )
         {
             string personIconHtml = string.Empty;
-            if ( person != null && person.PhotoId.HasValue )
+            if ( person != null )
             {
-                var getImageUrl = ResolveRockUrl( "~/GetImage.ashx" );
-                string imageUrlFormat = "<img src='" + getImageUrl + "?id={0}&width=50&height=50' class='{1}'/>";
-                personIconHtml = string.Format( imageUrlFormat, person.PhotoId.Value.ToString(), cssClassName );
+                personIconHtml = string.Format( "<img src='{0}&width=50&height=50' style='width:50px; height:50px' alt='{1}' class='{2}'/>",
+                    person.PhotoUrl, person.FullName, cssClassName );
             }
             else if ( useIconIfEmpty )
             {
-                personIconHtml = string.Format( "<i class='fa fa-user {0}'></i> ", cssClassName );
-            }
-            else if ( useBlankImageIfEmpty )
-            {
-                var getImageUrl = ResolveRockUrl( "~/Assets/Images/person-no-photo.svg" );
-                string imageUrlFormat = "<img src='" + getImageUrl + "' style='width:50px; height:50px alt='{0}' class='{1}' />";
-
-                var fullname = ( person != null ) ? person.FullName : "";
-                personIconHtml = string.Format( imageUrlFormat, Server.HtmlEncode( fullname ), cssClassName );
+                personIconHtml = string.Format( "<i class='fa fa-user fa-4x {0}' style='width:50px; height:50px'></i> ", cssClassName );
             }
 
             return personIconHtml;
@@ -497,7 +528,7 @@ namespace RockWeb.Blocks.Prayer
         private void ShowComments( PrayerRequest prayerRequest )
         {
             var notes = new List<Note>();
-            notes = new NoteService().Get( (int)PrayerCommentNoteTypeId, prayerRequest.Id ).ToList();
+            notes = new NoteService().Get( (int)PrayerCommentNoteTypeId, prayerRequest.Id ).OrderBy( n => n.CreationDateTime ).ToList();
             lMeIconHtml.Text = GetPhotoUrl( CurrentPerson, useIconIfEmpty: true, cssClassName: "media-object" );
             rptComments.DataSource = notes;
             rptComments.DataBind();
@@ -505,41 +536,31 @@ namespace RockWeb.Blocks.Prayer
 
         #endregion
 
+        # region Possible Extension Method -- but it depends on Microsoft.Security.Application.Sanitizer
+
         /// <summary>
-        /// Saves the comment for the prayer request being viewed.
+        /// Scrubs any html from the string but converts carriage returns into html &lt;br/&gt; suitable for web display.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected void bbtnSaveComment_Click( object sender, EventArgs e )
+        /// <param name="str">a string that may contain unsanitized html and carriage returns</param>
+        /// <returns>a string that has been scrubbed of any html with carriage returns converted to html br</returns>
+        public static string ScrubHtmlAndConvertCrLfToBr( string str )
         {
-            if ( string.IsNullOrWhiteSpace( tbComment.Text ) )
+            if ( str == null )
             {
-                return;
+                return string.Empty;
             }
 
-            int prayerRequestId = hfIdValue.ValueAsInt();
+            // Note: \u00A7 is the section symbol
 
-            NoteService service = new NoteService();
+            // First we convert newlines and carriage returns to a character that can
+            // pass through the Sanitizer.
+            str = str.Replace( Environment.NewLine, "\u00A7" ).Replace( "\x0A", "\u00A7" );
 
-            var note = new Note();
-            note.IsSystem = false;
-            note.IsAlert = false;
-            note.NoteTypeId = PrayerCommentNoteTypeId;
-            note.EntityId = prayerRequestId;
-            note.CreationDateTime = DateTime.Now;
-            note.Text = tbComment.Text;
-            note.Caption = CurrentPerson.FullName;
-
-            service.Add( note, CurrentPersonId );
-            service.Save( note, CurrentPersonId );
-
-            note.LoadAttributes();
-            note.SetAttributeValue( "NoteCreator", CurrentPersonId.ToStringSafe() );
-            Rock.Attribute.Helper.SaveAttributeValues( note, CurrentPersonId );
-
-            tbComment.Text = "";
-
-            ShowComments( prayerRequestId );
+            // Now we pass it to sanitizer and then convert those section-symbols to <br/>
+            return Sanitizer.GetSafeHtmlFragment( str ).ConvertCrLfToHtmlBr().Replace( "\u00A7", "<br/>" );
         }
-}
+
+        #endregion
+
+    }
 }

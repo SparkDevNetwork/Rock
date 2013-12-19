@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
@@ -16,6 +17,12 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    [DisplayName( "Security" )]
+    [Category( "Administration" )]
+    [Description( "" )]
     public partial class Security : Rock.Web.UI.RockBlock
     {
         #region Fields

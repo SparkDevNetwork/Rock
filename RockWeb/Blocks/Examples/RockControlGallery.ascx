@@ -70,7 +70,7 @@
             </div>
 
 
-
+            <a id="Grid"></a>
             <h2 runat="server">Rock:Grid</h2>
             <div runat="server" class="r-example">
                 <Rock:Grid ID="gExample" runat="server" AllowSorting="true">
@@ -232,6 +232,7 @@
                 <Rock:MergeFieldPicker ID="LabeledCheckBox4" runat="server" Label="Rock:MergeFieldPicker" />
             --%>
 
+            <a id="BinaryFilePicker"></a>
             <h2 runat="server">BinaryFilePicker, BinaryFileTypePicker</h2>
 
             <div runat="server" class="r-example">
@@ -308,6 +309,7 @@
                 <Rock:HighlightLabel ID="HighlightLabel2" runat="server" LabelType="Danger" IconCssClass="fa fa-flag" Text="errors" />
             </div>
 
+            <a id="Toggle"></a>
             <h2 runat="server">Rock:Toggle</h2>
             <p>A toggle switch for those cases when a simple checkbox just won't do.</p>
             <div runat="server" class="r-example">
@@ -324,12 +326,14 @@
                 <Rock:Toggle ID="toggle3" runat="server" CssClass="switch-mini" />
             </div>
 
+            <a id="BootstrapButton"></a>
             <h2 runat="server">Rock:BootstrapButton</h2>
             <div runat="server" class="r-example">
                 <Rock:BootstrapButton ID="lbSave" runat="server" Text="Click Me" CssClass="btn btn-primary"
                     DataLoadingText="&lt;i class='fa fa-spinner fa-spin fa-2x'&gt;&lt;/i&gt; Saving" />
             </div>
 
+            <a id="NoteEditor"></a>
             <h2 runat="server">Rock:NoteEditor</h2>
             <div id="Div3" runat="server" class="r-example">
                 <section class="panel-note">
@@ -337,6 +341,7 @@
                 </section>
             </div>
 
+            <a id="AttributeEditor"></a>
             <h2 runat="server">Rock:AttributeEditor</h2>
             <div runat="server" class="r-example">
                 <asp:LinkButton ID="btnShowAttributeEditor" runat="server" CssClass="btn btn-link" Text="Attribute Editor..." OnClick="btnShowAttributeEditor_Click" CausesValidation="false" />
@@ -345,11 +350,18 @@
                 </asp:Panel>
             </div>
 
+            <a id="HtmlEditor"></a>
             <h2 runat="server">Rock:HtmlEditor</h2>
             <div runat="server" class="r-example">
-                <Rock:HtmlEditor ID="htmlEdit" runat="server" Label="HtmlEditor" />
+                <Rock:HtmlEditor ID="htmlEditorFull" runat="server" Label="HtmlEditor" Toolbar="Full"/>
             </div>
 
+            <h2 runat="server">Rock:HtmlEditor</h2>
+            <div runat="server" class="r-example">
+                <Rock:HtmlEditor ID="htmlEditorLight" runat="server" Label="HtmlEditor" Toolbar="Light" />
+            </div>
+
+            <a id="CodeEditor"></a>
             <h2 runat="server">Rock:CodeEditor</h2>
             <div runat="server" class="r-example">
                 <Rock:CodeEditor ID="ceScript" runat="server" EditorTheme="Rock" Label="Script" EditorMode="Html" EditorHeight="300">
@@ -387,6 +399,44 @@
                 </div>
             </div>
 
+             <h2 runat="server">Rock jQuery UI Library</h2>
+            To help promote consistance we have created a standard Rock jQuery UI Library.  Below are the current functions with their usage patters.
+            
+            <h3 runat="server">rockFadeIn()</h3>
+            <p>Use this to fade in a selected DOM object in. The function hides the selector and then fades it in. Using this object will help provide
+                consistant fade behavior.
+            </p>
+            <strong>Usage Examples</strong>
+            <ul>
+                <li>PrayerSession.ascx - Used when moving from one prayer request to another.</li>
+                <li>Check-in Layouts - Used to fade in the `&lt;body&gt;`</li>
+            </ul>
+            <div runat="server" class="r-example">
+                <div class="js-fadepanel alert alert-info">
+                    I Fade In
+                </div>
+
+                <a href="#" class="js-fadebutton btn btn-sm btn-action">Press To Fade</a>
+
+                <script>
+                    $('.js-fadebutton').on("click", function () {
+                        $('.js-fadepanel').rockFadeIn();
+                        return false;
+                    });
+                </script>
+            </div>
+
+            <p>Tip: When used within an UpdatePanel, you'll want to add your fade-in handler to the <code>endRequest</code> event of the PageRequestManager similar to this:</p>
+            <div runat="server" class="r-example">
+                <script>
+                    function FadePanelIn() {
+                        $("[id$='upYourPanel']").rockFadeIn();
+                    }
+
+                    $(document).ready(function () { FadePanelIn(); });
+                    Sys.WebForms.PageRequestManager.getInstance().add_endRequest(FadePanelIn);
+                </script>
+            </div>
 
         </asp:Panel>
     </ContentTemplate>

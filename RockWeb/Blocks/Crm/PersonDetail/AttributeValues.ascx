@@ -4,11 +4,11 @@
 <ContentTemplate>
 
     <section class="panel panel-persondetails">
-        <div class="panel-heading clearfix">
+        <div class="panel-heading rollover-container clearfix">
             <h3 class="panel-title pull-left">
                 <asp:Literal ID="lCategoryName" runat="server" />
             </h3>
-            <div class="actions pull-right" style="display: none;">
+            <div class="actions rollover-item pull-right">
                 <asp:LinkButton ID="lbEdit" runat="server" CssClass="edit" OnClick="lbEdit_Click"><i class="fa fa-pencil"></i></asp:LinkButton>
             </div>
         </div>

@@ -63,6 +63,7 @@ namespace RockWeb.Blocks.Groups
                     lbAddGroup.Visible = false;
                 }
 
+                // get the parents of the selected item so we can tell the treeview to expand those
                 List<string> parentIdList = new List<string>();
                 while ( group != null )
                 {
@@ -70,6 +71,20 @@ namespace RockWeb.Blocks.Groups
                     if ( group != null )
                     {
                         parentIdList.Insert( 0, group.Id.ToString() );
+                    }
+                }
+
+                // also get any additional expanded nodes that were sent in the Post
+                string postedExpandedIds = this.Request.Params["expandedIds"];
+                if ( !string.IsNullOrWhiteSpace( postedExpandedIds ) )
+                {
+                    var postedExpandedIdList = postedExpandedIds.Split( ',' ).ToList();
+                    foreach ( var id in postedExpandedIdList )
+                    {
+                        if ( !parentIdList.Contains( id ) )
+                        {
+                            parentIdList.Add( id );
+                        }
                     }
                 }
 

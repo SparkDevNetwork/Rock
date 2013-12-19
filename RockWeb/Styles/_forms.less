@@ -12,7 +12,7 @@
 // 1. Bootstrap Overrides / Additions
 // -------------------------
 
-.form-actions { /* adding BS2 form-actions back*/
+.form-actions { // adding BS2 form-actions back
     padding: 12px 16px;
     background-color: @accent-color;
     color: @accent-text-color;
@@ -22,6 +22,10 @@ legend {
     font-weight: @font-weight-light;
     color: @text-color;
     border-width: 0;
+}
+
+.checkbox-inline:first-child { // when inline checkbox lists wrap the first one on the first line sticks out more than subseqent lines. Confirmed that this is the same behavior on the BS site.  
+    padding-left: 30px;
 }
 
 // 2. Data Lists
@@ -62,7 +66,7 @@ dl { // todo this is needed? 9/27/13
 
 .form-control.input-width-md,
 .input-group.input-width-md {
-    width: 150px;
+    width: 140px;
 }
 
 .form-control.input-width-lg,
@@ -85,13 +89,13 @@ dl { // todo this is needed? 9/27/13
 
     .form-control,
     .input-group {
-        margin-right: 12px;
+        margin-right: 6px;
         float: left;
     }
 
     & > span {
         float: left;
-        margin: 8px 12px 0 0
+        margin: 8px 6px 0 0
     }
 
     & > label {

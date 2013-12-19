@@ -26,6 +26,7 @@ namespace RockWeb.Blocks.Finance
     /// </summary>
     [ContextAware]
     [LinkedPage("Detail Page")]
+    [TextField("Title", "Title to display above the grid. Leave blank to hide.", false)]
     public partial class TransactionList : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -64,6 +65,10 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 DisplayError( "You are not authorized to edit these transactions" );
+            }
+
+            if (!string.IsNullOrEmpty(GetAttributeValue("Title"))) {
+                lTitle.Text = "<h4>" + GetAttributeValue("Title") + "</h4>";
             }
         }
 

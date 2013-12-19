@@ -205,6 +205,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         private void ShowDetails()
         {
+
+            lTitle.Text = String.Format("Edit: {0}", Person.FullName).FormatAsHtmlTitle();
+            
             imgPhoto.BinaryFileId = Person.PhotoId;
             ddlTitle.SelectedValue = Person.TitleValueId.HasValue ? Person.TitleValueId.Value.ToString() : string.Empty;
             tbGivenName.Text = Person.GivenName;
