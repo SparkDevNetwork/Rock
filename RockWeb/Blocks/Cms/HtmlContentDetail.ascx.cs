@@ -209,8 +209,12 @@ namespace RockWeb.Blocks.Cms
                 htmlContent.IsApproved = !requireApproval || hfApprovalStatus.Value.AsBoolean();
                 if ( htmlContent.IsApproved )
                 {
-                    htmlContent.ApprovedByPersonId = hfApprovalStatusPersonId.ValueAsInt();
-                    htmlContent.ApprovedDateTime = DateTime.Now;
+                    int personId = hfApprovalStatusPersonId.ValueAsInt();
+                    if (personId > 0)
+                    {
+                        htmlContent.ApprovedByPersonId = personId;
+                        htmlContent.ApprovedDateTime = DateTime.Now;
+                    }
                 }
             }
 
