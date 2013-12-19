@@ -33,20 +33,24 @@ namespace Rock.Rest.Controllers
         {
             routes.MapHttpRoute(
                 name: "FileBrowserGetSubFolders",
-                routeTemplate: "api/FileBrowser/GetSubFolders/{folderName}/{fileFilter}",
+                routeTemplate: "api/FileBrowser/GetSubFolders",
                 defaults: new
                 {
                     controller = "FileBrowser",
-                    action = "GetSubFolders"
+                    action = "GetSubFolders",
+                    folderName = System.Web.Http.RouteParameter.Optional,
+                    fileFilter = System.Web.Http.RouteParameter.Optional
                 } );
 
             routes.MapHttpRoute(
                 name: "FileBrowserGetFiles",
-                routeTemplate: "api/FileBrowser/GetFiles/{folderName}/{fileFilter}",
+                routeTemplate: "api/FileBrowser/GetFiles",
                 defaults: new
                 {
                     controller = "FileBrowser",
-                    action = "GetFiles"
+                    action = "GetFiles",
+                    folderName = System.Web.Http.RouteParameter.Optional,
+                    fileFilter = System.Web.Http.RouteParameter.Optional
                 } );
 
             routes.MapHttpRoute(
@@ -68,12 +72,12 @@ namespace Rock.Rest.Controllers
         /// <param name="fileFilter">The file filter.</param>
         /// <returns></returns>
         [Authenticate]
-        public IQueryable<TreeViewItem> GetSubFolders( string folderName, string fileFilter )
+        public IQueryable<TreeViewItem> GetSubFolders( string folderName = "", string fileFilter = "*.*" )
         {
             fileFilter = string.IsNullOrWhiteSpace( fileFilter ) ? "*.*" : fileFilter;
 
-            string physicalRootFolder = System.Web.VirtualPathUtility.ToAbsolute( RootContentFolder );
-            string contentFolderName = Path.Combine( physicalRootFolder, folderName );
+            string physicalRootFolder = HttpContext.Current.Request.MapPath( RootContentFolder );
+            string contentFolderName = Path.Combine( physicalRootFolder, folderName.TrimStart(new char[] { '/', '\\' } ));
             List<TreeViewItem> directoryFileList = new List<TreeViewItem>();
 
             if ( !Directory.Exists( contentFolderName ) )
@@ -89,7 +93,7 @@ namespace Rock.Rest.Controllers
                 DirectoryInfo directoryInfo = new DirectoryInfo( directoryPath );
                 TreeViewItem directoryNode = new TreeViewItem
                 {
-                    HasChildren = directoryInfo.EnumerateFiles( fileFilter ).Any(),
+                    HasChildren = directoryInfo.EnumerateFiles( fileFilter).Any() || directoryInfo.EnumerateDirectories().Any(),
                     IconCssClass = "fa fa-folder",
                     Id = directoryInfo.FullName.Remove( 0, physicalRootFolder.Length ),
                     Name = directoryInfo.Name
@@ -107,12 +111,12 @@ namespace Rock.Rest.Controllers
         /// <param name="folderName">Name of the folder.</param>
         /// <param name="fileFilter">The file filter.</param>
         /// <returns></returns>
-        public IQueryable<FileItem> GetFiles( string folderName, string fileFilter )
+        public IQueryable<FileItem> GetFiles( string folderName = "", string fileFilter = "*.*" )
         {
             fileFilter = string.IsNullOrWhiteSpace( fileFilter ) ? "*.*" : fileFilter;
 
-            string physicalRootFolder = System.Web.VirtualPathUtility.ToAbsolute( RootContentFolder );
-            string contentFolderName = Path.Combine( physicalRootFolder, folderName );
+            string physicalRootFolder = HttpContext.Current.Request.MapPath( RootContentFolder );
+            string contentFolderName = Path.Combine( physicalRootFolder, folderName.TrimStart( new char[] { '/', '\\' } ) );
 
             List<FileItem> fileList = new List<FileItem>();
 
@@ -127,19 +131,21 @@ namespace Rock.Rest.Controllers
             {
                 FileInfo fileInfo = new FileInfo( file );
 
-                string relativeFilePath = fileInfo.FullName.Substring( 0, RootContentFolder.Length );
-                string appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
+                string relativeFilePath = fileInfo.FullName.Substring( physicalRootFolder.Length );
+
+                string apiUrl = VirtualPathUtility.ToAbsolute("~/api/FileBrowser/GetFileThumbnail" );
 
                 // construct the thumbNailUrl so that browser will get the thumbnail image from our GetFileThumbnail()
-                string thumbNailUrl = string.Format( "api/FileBrowser/GetFileThumbnail?{0}&width=100&height=100", HttpUtility.UrlEncode( relativeFilePath ) );
+                string thumbNailUrl = apiUrl + string.Format( "?relativeFilePath={0}&width=100&height=100", HttpUtility.UrlEncode( relativeFilePath ) );
 
                 FileItem fileItem = new FileItem
                 {
-                    FileName = fileInfo.Name,
+                    Id = relativeFilePath,
+                    Name = "<img src='" + thumbNailUrl + "' width=100 height=100 /><br />" + fileInfo.Name,
+                    IconSmallUrl = thumbNailUrl,
                     RelativeFilePath = relativeFilePath,
                     Size = fileInfo.Length,
-                    LastModifiedDateTime = fileInfo.LastWriteTime,
-                    ThumbNailUrl = Path.Combine( appPath, thumbNailUrl )
+                    LastModifiedDateTime = fileInfo.LastWriteTime
                 };
 
                 fileList.Add( fileItem );
@@ -162,7 +168,7 @@ namespace Rock.Rest.Controllers
         {
             string physicalRootFolder = HttpContext.Current.Request.MapPath( RootContentFolder );
 
-            string fullPath = Path.Combine( physicalRootFolder, relativeFilePath.Replace( "/", "\\" ) );
+            string fullPath = Path.Combine( physicalRootFolder, relativeFilePath.Replace( "/", "\\" ).TrimStart( new char[] { '/', '\\' } ));
 
             // default width/height to 100 if they specified a zero or negative param
             width = width <= 0 ? 100 : width;
@@ -176,43 +182,52 @@ namespace Rock.Rest.Controllers
 
             try
             {
-                using ( Image image = Image.FromFile( fullPath ) )
-                {
-                    string mimeType = string.Empty;
-                    
-                    // try to figure out the MimeType by using the ImageCodeInfo class
-                    var codecs = ImageCodecInfo.GetImageEncoders();
-                    ImageCodecInfo codecInfo = codecs.FirstOrDefault( a => a.FormatID == image.RawFormat.Guid );
-                    if ( codecInfo != null )
-                    {
-                        mimeType = codecInfo.MimeType;
-                    }
-
-                    // load the image into a stream, then use ImageResizer to resize it to the specified width and height (same technique as RockWeb GetImage.ashx.cs)
-                    var origImageStream = new MemoryStream();
-                    image.Save( origImageStream, image.RawFormat );
-                    origImageStream.Position = 0;
-                    var resizedStream = new MemoryStream();
-
-                    ImageBuilder.Current.Build( origImageStream, resizedStream, new ResizeSettings { Width = width ?? 100, Height = height ?? 100 } );
-
-                    HttpResponseMessage result = new HttpResponseMessage( HttpStatusCode.OK );
-                    resizedStream.Position = 0;
-                    result.Content = new StreamContent(resizedStream);
-                    result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue( mimeType );
-                    return result;
-                }
+                return ResizeAndSendImage( width, height, fullPath );
             }
             catch
             {
                 // intentionally ignore exception and assume it isn't an image, then just return a no-picture as the thumbnail
-                string noimageFileName = HttpContext.Current.Request.MapPath( "~/Assets/Images/no-picture.svg" );
-                FileStream fs = new FileStream( noimageFileName, FileMode.Open );
-                fs.Position = 0;
+
+                //TODO ask about picture
+                string noimageFileName = HttpContext.Current.Request.MapPath( "~/Assets/Images/chip-shocked.png" );
+
+                return ResizeAndSendImage( width, height, noimageFileName );
+            }
+        }
+
+        /// <summary>
+        /// Resizes the and send image.
+        /// </summary>
+        /// <param name="width">The width.</param>
+        /// <param name="height">The height.</param>
+        /// <param name="fullPath">The full path.</param>
+        /// <returns></returns>
+        private static HttpResponseMessage ResizeAndSendImage( int? width, int? height, string fullPath )
+        {
+            using ( Image image = Image.FromFile( fullPath ) )
+            {
+                string mimeType = string.Empty;
+
+                // try to figure out the MimeType by using the ImageCodeInfo class
+                var codecs = ImageCodecInfo.GetImageEncoders();
+                ImageCodecInfo codecInfo = codecs.FirstOrDefault( a => a.FormatID == image.RawFormat.Guid );
+                if ( codecInfo != null )
+                {
+                    mimeType = codecInfo.MimeType;
+                }
+
+                // load the image into a stream, then use ImageResizer to resize it to the specified width and height (same technique as RockWeb GetImage.ashx.cs)
+                var origImageStream = new MemoryStream();
+                image.Save( origImageStream, image.RawFormat );
+                origImageStream.Position = 0;
+                var resizedStream = new MemoryStream();
+
+                ImageBuilder.Current.Build( origImageStream, resizedStream, new ResizeSettings { Width = width ?? 100, Height = height ?? 100 } );
 
                 HttpResponseMessage result = new HttpResponseMessage( HttpStatusCode.OK );
-                result.Content = new StreamContent( fs );
-                result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue( "image/svg+xml" );
+                resizedStream.Position = 0;
+                result.Content = new StreamContent( resizedStream );
+                result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue( mimeType );
                 return result;
             }
         }
@@ -220,24 +235,8 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// 
         /// </summary>
-        public class FileItem
+        public class FileItem : TreeViewItem
         {
-            /// <summary>
-            /// Gets or sets the name of the file.
-            /// </summary>
-            /// <value>
-            /// The name of the file.
-            /// </value>
-            public string FileName { get; set; }
-
-            /// <summary>
-            /// Gets or sets the thumb nail URL.
-            /// </summary>
-            /// <value>
-            /// The thumb nail URL.
-            /// </value>
-            public string ThumbNailUrl { get; set; }
-
             /// <summary>
             /// Gets or sets the relative file path.
             /// </summary>
