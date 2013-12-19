@@ -52,7 +52,7 @@ namespace Rock.Web.UI.Controls
                         hfFilter.Value = service.Key.ToString();
                 }
 
-            writer.AddAttribute( "class", "smartsearch" );
+            writer.AddAttribute( "class", "smartsearch " + this.CssClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             base.RenderControl( writer );
