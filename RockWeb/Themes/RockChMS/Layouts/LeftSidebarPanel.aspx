@@ -3,40 +3,36 @@
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
 
-        <!-- Page Header -->
-    <header>
-        
-        <!-- Brand Bar -->
-        <div class="navbar navbar-default navbar-static-top brandbar" role="navigation">
-            <div class="container">
+    <!-- Page Header -->
+    <header class="pagerheader">
+        <div class="container">
+            
+                <!-- Brand Bar -->
 			    <div class="navbar-header">
-                    
                     <asp:HyperLink ID="hlHome" runat="server" CssClass="navbar-brand" NavigateUrl="~" ToolTip="Rock ChMS">
-                        <asp:Image ID="imgHome" runat="server" AlternateText="Rock ChMS" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="brandbar-logo" />
+                        <asp:Image ID="imgLogo" runat="server" AlternateText="Rock ChMS" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="brandbar-logo" />
                     </asp:HyperLink>
                     
-                    <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".pageheader-collapse">
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
+                    <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".pagenav">
+                        <i class="fa fa-bars fa-2x"></i>
                     </button>
+			    </div>	
 
-			    </div>	
-                <div class="navbar-collapse collapse pageheader-collapse">   
-                    <div class="navbar-right">
-                        <Rock:Zone Name="Header" runat="server" />
-                    </div>
-                    <div class="navbar-right navbar-text">				
-					    <Rock:SearchField ID="searchField" runat="server" />
-                    </div>
-			    </div>	
-            </div>
+                <div class="pull-right header-zone">
+                    <Rock:Zone Name="Header" runat="server" />
+                </div>
+			
+				<Rock:SearchField ID="searchField" CssClass="pull-right" runat="server" />
+
         </div>
 
+
         <!-- Main Navigation -->
-	    <nav class="navbar navbar-static-top pagenav">
+	    <nav class="pagenav navbar-collapse collapse">
             <div class="container">
-                <Rock:Zone Name="Navigation" runat="server" />
+                <div class="">
+                    <Rock:Zone Name="Navigation" runat="server" />
+                </div>
             </div>									
 	    </nav>
 		
