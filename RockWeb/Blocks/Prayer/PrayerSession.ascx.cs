@@ -255,7 +255,7 @@ namespace RockWeb.Blocks.Prayer
                     var bbtnDeleteComment = e.Item.FindControl( "bbtnDeleteComment" ) as BootstrapButton;
                     var lCommenterIcon = e.Item.FindControl( "lCommenterIcon" ) as Literal;
 
-                    lCommenterIcon.Text = GetPhotoUrl( note.CreatedByPerson, useIconIfEmpty: true, cssClassName: "media-object" );
+                    lCommenterIcon.Text = GetPhotoUrl( note.CreatedByPerson, cssClassName: "media-object" );
 
                     lCommentBy.Text = (note.CreatedByPerson != null) ? 
                         Sanitizer.GetSafeHtmlFragment( note.CreatedByPerson.FullName ) : note.Caption;
@@ -435,6 +435,7 @@ namespace RockWeb.Blocks.Prayer
         /// Displays the details for a single, given prayer request.
         /// </summary>
         /// <param name="prayerRequest"></param>
+        /// <param name="service"></param>
         private void ShowPrayerRequest( PrayerRequest prayerRequest, PrayerRequestService service )
         {
             pnlPrayer.Visible = true;
@@ -472,27 +473,27 @@ namespace RockWeb.Blocks.Prayer
         }
 
         /// <summary>
-        /// Gets an appropriate URL for a photo of the given person.  Uses the person's photo if available
-        /// or can use an Icon or the 'blank' (no photo) image from Rock Assets.
+        /// Gets an appropriate URL for a photo of the given person. Uses the person's photo if available
+        /// or the 'blank' (no photo) images from Rock Assets.
         /// </summary>
-        /// <param name="person"></param>
-        /// <param name="useIconIfEmpty">set to true to use a bootstrap icon if the person has no photo.</param>
-        /// <param name="cssClassName">If supplied, will be used for the css class of the image </param>
-        /// <returns></returns>
-        private string GetPhotoUrl( Person person, bool useIconIfEmpty = false, string cssClassName = "" )
+        /// <param name="person">A person</param>
+        /// <param name="cssClassName">If supplied, will be used for the css class of the image.</param>
+        /// <returns>An html img tag (string) of the requested photo.</returns>
+        private string GetPhotoUrl( Person person, string cssClassName = "" )
         {
             string personIconHtml = string.Empty;
+            int? photoId = null;
+            Gender gender = Gender.Male;
+            string altText = string.Empty;
+
             if ( person != null )
             {
-                personIconHtml = string.Format( "<img src='{0}&width=50&height=50' style='width:50px; height:50px' alt='{1}' class='{2}'/>",
-                    person.PhotoUrl, person.FullName, cssClassName );
-            }
-            else if ( useIconIfEmpty )
-            {
-                personIconHtml = string.Format( "<i class='fa fa-user fa-4x {0}' style='width:50px; height:50px'></i> ", cssClassName );
+                photoId = person.PhotoId;
+                gender = person.Gender;
+                altText = person.FullName;
             }
 
-            return personIconHtml;
+            return Person.GetPhotoImageTag( photoId, gender, 50, 50, altText, cssClassName );
         }
 
         /// <summary>
@@ -529,7 +530,7 @@ namespace RockWeb.Blocks.Prayer
         {
             var notes = new List<Note>();
             notes = new NoteService().Get( (int)PrayerCommentNoteTypeId, prayerRequest.Id ).OrderBy( n => n.CreationDateTime ).ToList();
-            lMeIconHtml.Text = GetPhotoUrl( CurrentPerson, useIconIfEmpty: true, cssClassName: "media-object" );
+            lMeIconHtml.Text = GetPhotoUrl( CurrentPerson, cssClassName: "media-object" );
             rptComments.DataSource = notes;
             rptComments.DataBind();
         }
