@@ -22,9 +22,13 @@ using Rock.Web.UI.Controls;
 
 using System.Text;
 using System.Text.RegularExpressions;
+using System.ComponentModel;
 
 namespace RockWeb.Blocks.Cms
 {
+    [DisplayName("Ad List")]
+    [Category("CMS")]
+    [Description("Renders a filtered list of ads for use on public sites.")]
     [IntegerField( "Max Items", "", true, int.MinValue, "", 0 )]
     [LinkedPage( "Detail Page", "", false, "", "", 1 )]
     [CustomCheckboxListField( "Image Types", "The types of images to display",

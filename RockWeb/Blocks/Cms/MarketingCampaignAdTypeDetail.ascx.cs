@@ -15,12 +15,16 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
+using System.ComponentModel;
 
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
     /// 
     /// </summary>
+    [DisplayName("Marketing Campaign - Ad Type Detail")]
+    [Category("CMS")]
+    [Description("Displays the details for an ad type.")]
     public partial class MarketingCampaignAdTypeDetail : RockBlock, IDetailBlock
     {
         #region Child Grid States

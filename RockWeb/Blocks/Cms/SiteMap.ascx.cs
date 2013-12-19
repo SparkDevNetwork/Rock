@@ -10,10 +10,14 @@ using System.Text;
 using Rock.Model;
 using Rock.Web;
 using Rock.Web.UI;
+using System.ComponentModel;
 
 
 namespace RockWeb.Blocks.Cms
 {
+    [DisplayName("Site Map")]
+    [Category("CMS")]
+    [Description("Displays a site map in a tree view.")]
     public partial class SiteMap : RockBlock
     {
         /// <summary>
