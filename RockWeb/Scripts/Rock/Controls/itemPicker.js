@@ -18,7 +18,8 @@
                         multiselect: this.options.allowMultiSelect,
                         restUrl: this.options.restUrl,
                         restParams: this.options.restParams,
-                        expandedIds: this.options.expandedIds
+                        expandedIds: this.options.expandedIds,
+                        id: this.options.startingId
                     },
                     $hfItemIds = $('#hfItemId_' + this.options.controlId),
                     $hfExpandedIds = $('#hfInitialItemParentIds_' + this.options.controlId);
@@ -68,7 +69,7 @@
                         $hfItemNames.val(selectedNames.join(','));
                         $spanNames.text(selectedNames.join(', '));
                     })
-                    .on('rockTree:expand rockTree:collapse', function () {
+                    .on('rockTree:expand rockTree:collapse rockTree:dataBound', function () {
                         self.updateScrollbar();
                     });
 
