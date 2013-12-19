@@ -374,6 +374,9 @@ namespace Rock.Web.UI
             // wire up navigation event
             _scriptManager.Navigate += new EventHandler<HistoryEventArgs>(scriptManager_Navigate);
 
+            // add ckeditor
+            _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/ckeditor/ckeditor.js" ) );
+
             // Add library and UI bundles during init, that way theme developers will only
             // need to worry about registering any custom scripts or script bundles they need
             _scriptManager.Scripts.Add( new ScriptReference { Name = "WebFormsBundle" } );
@@ -384,9 +387,6 @@ namespace Rock.Web.UI
             // add Google Maps API
             var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
             _scriptManager.Scripts.Add( new ScriptReference( string.Format( "https://maps.googleapis.com/maps/api/js?key={0}&sensor=false&libraries=drawing", googleAPIKey ) ) );
-
-            // add ckeditor
-            _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/ckeditor/ckeditor.js" ) );
 
             // Recurse the page controls to find the rock page title and zone controls
             Page.Trace.Warn( "Recursing layout to find zones" );
