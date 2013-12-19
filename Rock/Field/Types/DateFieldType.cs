@@ -59,7 +59,7 @@ namespace Rock.Field.Types
                     {
                         bool displayDiff = false;
                         if ( bool.TryParse( configurationValues["displayDiff"].Value, out displayDiff ) && displayDiff )
-                            formattedValue += " " + dateValue.ToElapsedString( true, false );
+                            formattedValue += " (" + dateValue.ToElapsedString( true, false ) + ")";
                     }
                 }
             }

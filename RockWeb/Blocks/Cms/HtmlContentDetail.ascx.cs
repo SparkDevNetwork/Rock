@@ -324,7 +324,7 @@ namespace RockWeb.Blocks.Cms
                     v.Id,
                     v.Version,
                     VersionText = "Version " + v.Version.ToString(),
-                    ModifiedDateTime = v.LastModifiedDateTime.ToElapsedString(),
+                    ModifiedDateTime = "(" + v.LastModifiedDateTime.ToElapsedString() + ")",
                     ModifiedByPerson = v.LastModifiedPerson,
                     Approved = v.IsApproved,
                     ApprovedByPerson = v.ApprovedByPerson,
