@@ -12,12 +12,16 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using System.ComponentModel;
 
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
     /// 
     /// </summary>
+    [DisplayName("Site List")]
+    [Category("CMS")]
+    [Description("Lists sites defined in the system.")]
     [LinkedPage("Detail Page")]
     public partial class SiteList : RockBlock
     {
