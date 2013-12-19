@@ -22,7 +22,7 @@
                 }
                 );
 
-            editor.ui.add('rockmergefield', CKEDITOR.UI_BUTTON, {
+            editor.ui.addButton && editor.ui.addButton('rockmergefield', {
                 label: 'Merge Field',
                 command: 'showMergeFieldPicker',
                 icon: this.path + 'rockmergefield.png'
