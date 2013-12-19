@@ -31,7 +31,7 @@ namespace RockWeb.Blocks.Cms
 {{ SummaryText }}<br/><br/>
 {{ DetailHtml }}
 " )]
-    public partial class ViewAdDetail : Rock.Web.UI.RockBlock
+    public partial class AdDetail : Rock.Web.UI.RockBlock
     {
         protected override void OnLoad( EventArgs e )
         {

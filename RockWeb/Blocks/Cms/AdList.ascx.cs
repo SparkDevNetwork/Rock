@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Cms
     [BooleanField("Enable Debug", "Flag indicating that the control should output the ad data that will be passed to Liquid for parsing.", false)]
 
     [ContextAware( typeof( Campus ) )]
-    public partial class MarketingCampaignAds : RockBlock
+    public partial class AdList : RockBlock
     {
 
         /// <summary>
