@@ -24,7 +24,7 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     [DisplayName( "Metric Value List" )]
     [Category( "Administration" )]
-    [Description( "" )]
+    [Description( "Displays a list of metric values for a specific metric." )]
     public partial class MetricValueList : Rock.Web.UI.RockBlock, Rock.Web.UI.ISecondaryBlock
     {       
         #region Base Control Methods

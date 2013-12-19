@@ -23,7 +23,7 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     [DisplayName( "Pages" )]
     [Category( "Administration" )]
-    [Description( "" )]
+    [Description( "Lists pages in Rock." )]
     public partial class Pages : Rock.Web.UI.RockBlock
     {
         #region Fields

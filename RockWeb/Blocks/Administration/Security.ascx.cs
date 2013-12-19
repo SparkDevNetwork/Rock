@@ -22,7 +22,7 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     [DisplayName( "Security" )]
     [Category( "Administration" )]
-    [Description( "" )]
+    [Description( "Displays security settings for a specific entity." )]
     public partial class Security : Rock.Web.UI.RockBlock
     {
         #region Fields

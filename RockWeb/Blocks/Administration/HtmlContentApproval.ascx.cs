@@ -20,8 +20,8 @@ namespace RockWeb.Blocks.Administration
     /// 
     /// </summary>
     [DisplayName( "HTML Content Approval" )]
-    [Category( "Administration" )]
-    [Description( "" )]
+    [Category( "CMS" )]
+    [Description( "Lists HTML content blocks that need approval." )]
     public partial class HtmlContentApproval : Rock.Web.UI.RockBlock
     {
         #region Fields
