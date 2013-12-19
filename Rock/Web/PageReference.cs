@@ -13,6 +13,7 @@ using System.Web.Routing;
 
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Model;
 
 namespace Rock.Web
 {
@@ -421,15 +422,22 @@ namespace Rock.Web
 
                                 foreach ( var block in page.Blocks.Where( b=> b.BlockLocation == Model.BlockLocation.Page) )
                                 {
-                                    System.Web.UI.Control control = rockPage.TemplateControl.LoadControl(block.BlockType.Path);
-                                    if ( control is RockBlock )
+                                    try
                                     {
-                                        RockBlock rockBlock = control as RockBlock;
-                                        rockBlock.CurrentPageReference = parentPageReference;
-                                        rockBlock.SetBlock( block );
-                                        rockBlock.GetBreadCrumbs( parentPageReference ).ForEach( c => parentPageReference.BreadCrumbs.Add( c ) );
+                                        System.Web.UI.Control control = rockPage.TemplateControl.LoadControl(block.BlockType.Path);
+                                        if (control is RockBlock)
+                                        {
+                                            RockBlock rockBlock = control as RockBlock;
+                                            rockBlock.CurrentPageReference = parentPageReference;
+                                            rockBlock.SetBlock(block);
+                                            rockBlock.GetBreadCrumbs(parentPageReference).ForEach(c => parentPageReference.BreadCrumbs.Add(c));
+                                        }
+                                        control = null;
                                     }
-                                    control = null;
+                                    catch (Exception ex)
+                                    {
+                                        ExceptionLogService.LogException(ex, HttpContext.Current, currentPage.Id, currentPage.Layout.SiteId, rockPage.CurrentPerson.Id);
+                                    }
                                 }
 
                             }
