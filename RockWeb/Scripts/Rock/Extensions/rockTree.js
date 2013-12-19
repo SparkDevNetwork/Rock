@@ -486,8 +486,18 @@
         // of RockTree from $el.data, if not present, create a new instance
         // of RockTree and stash it there, then initialize the tree.
         return this.each(function () {
-            var $el = $(this),
-                rockTree = $el.data('rockTree') || new RockTree(this, settings);
+            var $el = $(this);
+            var rockTree = $el.data('rockTree');
+            
+            if (!rockTree) {
+                // create a new rocktree
+                rockTree = new RockTree(this, settings);
+            }
+            else
+            {
+                // use the existing rocktree but update the settings
+                rockTree.options = settings;
+            }
 
             $el.data('rockTree', rockTree);
             rockTree.init();
