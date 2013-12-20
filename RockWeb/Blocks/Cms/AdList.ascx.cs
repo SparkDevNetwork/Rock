@@ -22,9 +22,13 @@ using Rock.Web.UI.Controls;
 
 using System.Text;
 using System.Text.RegularExpressions;
+using System.ComponentModel;
 
 namespace RockWeb.Blocks.Cms
 {
+    [DisplayName("Ad List")]
+    [Category("CMS")]
+    [Description("Renders a filtered list of ads for use on public sites.")]
     [IntegerField( "Max Items", "", true, int.MinValue, "", 0 )]
     [LinkedPage( "Detail Page", "", false, "", "", 1 )]
     [CustomCheckboxListField( "Image Types", "The types of images to display",
@@ -46,7 +50,7 @@ namespace RockWeb.Blocks.Cms
     [BooleanField("Enable Debug", "Flag indicating that the control should output the ad data that will be passed to Liquid for parsing.", false)]
 
     [ContextAware( typeof( Campus ) )]
-    public partial class MarketingCampaignAds : RockBlock
+    public partial class AdList : RockBlock
     {
 
         /// <summary>

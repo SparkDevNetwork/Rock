@@ -6,12 +6,16 @@
 using System;
 using System.Web.UI;
 using Rock.Web.UI;
+using System.ComponentModel;
 
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
     /// 
     /// </summary>
+    [DisplayName("Current Person")]
+    [Category("CMS")]
+    [Description("Displays the name of the currenly logged in user.")]
     public partial class CurrentPerson : RockBlock
     {
         #region Control Methods

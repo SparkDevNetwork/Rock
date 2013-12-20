@@ -19,6 +19,8 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.CheckIn
 {
+    [DisplayName("Administration")]
+    [Category("Check-in")]
     [Description( "Check-in Administration block" )]
     [BooleanField( "Allow Manual Setup", "If enabled, the block will allow the kiosk to be setup manually if it was not set via other means.", true )]
     [BooleanField( "Enable Location Sharing", "If enabled, the block will attempt to determine the kiosk's location via location sharing geocode.", false, "Geo Location", 0 )]

@@ -19,15 +19,19 @@ using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI.Controls;
+using System.ComponentModel;
 
 namespace RockWeb.Blocks.Cms
 {
+    [DisplayName("Ad Detail")]
+    [Category("CMS")]
+    [Description("Displays the details of an ad for public consuption.")]
     [CodeEditorField( "Layout", "The layout of the Ad details", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, true, @"
 <h1>{{ MarketingCampaign.Title }}</h1><br/><br/>
 {{ SummaryText }}<br/><br/>
 {{ DetailHtml }}
 " )]
-    public partial class ViewAdDetail : Rock.Web.UI.RockBlock
+    public partial class AdDetail : Rock.Web.UI.RockBlock
     {
         protected override void OnLoad( EventArgs e )
         {

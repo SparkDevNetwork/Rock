@@ -6,9 +6,13 @@
 
 using System;
 using Rock.Attribute;
+using System.ComponentModel;
 
 namespace RockWeb.Blocks.Cms
 {
+    [DisplayName("Redirect")]
+    [Category("CMS")]
+    [Description("Redirects the page to the URL provided.")]
     [TextField( "Url", "The path to redirect to" )]
     public partial class Redirect : Rock.Web.UI.RockBlock
     {

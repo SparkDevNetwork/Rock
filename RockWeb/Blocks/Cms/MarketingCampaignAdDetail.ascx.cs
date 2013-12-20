@@ -14,12 +14,16 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
+using System.ComponentModel;
 
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
     /// 
     /// </summary>
+    [DisplayName("Marketing Campaign - Ad Detail")]
+    [Category("CMS")]
+    [Description("Displays tha details for an Ad.")]
     [AdditionalActions( new string[] { "Approve" } )]
     public partial class MarketingCampaignAdDetail : RockBlock, IDetailBlock
     {
