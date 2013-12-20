@@ -195,151 +195,156 @@ achieve our mission.  We are so grateful for your commitment.
 
                     if ( scheduledTransaction != null )
                     {
-                        SelectedAccounts = new List<AccountItem>();
-
                         ScheduledTransactionId = txnId;
                         foreach( var txnDetail in scheduledTransaction.ScheduledTransactionDetails)
                         {
                             var availableAccount = AvailableAccounts.Where( a => a.Id == txnDetail.AccountId).FirstOrDefault();
-                            if (availableAccount != null)
+                            if ( availableAccount != null )
                             {
-                                var accountItem = new AccountItem(availableAccount, )
+                                var accountItem = new AccountItem( availableAccount.Id, availableAccount.Order, availableAccount.Name, availableAccount.CampusId );
+                                accountItem.Amount = txnDetail.Amount;
+                                SelectedAccounts.Add( accountItem );
+                            }
                         }
                     }
                 }
             }
 
-            // Enable payment options based on the configured gateways
-            bool ccEnabled = false;
-            bool achEnabled = false;
-            var supportedFrequencies = new List<DefinedValueCache>();
-
-            string ccGatewayGuid = GetAttributeValue( "CCGateway" );
-            if ( !string.IsNullOrWhiteSpace( ccGatewayGuid ) )
+            // Don't bother with anything else, if we don't have a valid person and transaction id
+            if ( TargetPerson != null && ScheduledTransactionId.HasValue )
             {
-                _ccGateway = GatewayContainer.GetComponent( ccGatewayGuid );
-                if ( _ccGateway != null )
+                // Enable payment options based on the configured gateways
+                bool ccEnabled = false;
+                bool achEnabled = false;
+                var supportedFrequencies = new List<DefinedValueCache>();
+
+                string ccGatewayGuid = GetAttributeValue( "CCGateway" );
+                if ( !string.IsNullOrWhiteSpace( ccGatewayGuid ) )
                 {
-                    ccEnabled = true;
-                    txtCardFirstName.Visible = _ccGateway.SplitNameOnCard;
-                    txtCardLastName.Visible = _ccGateway.SplitNameOnCard;
-                    txtCardName.Visible = !_ccGateway.SplitNameOnCard;
-                    mypExpiration.MinimumYear = DateTime.Now.Year;
-                }
-            }
-
-            string achGatewayGuid = GetAttributeValue( "ACHGateway" );
-            if ( !string.IsNullOrWhiteSpace( achGatewayGuid ) )
-            {
-                _achGateway = GatewayContainer.GetComponent( achGatewayGuid );
-                achEnabled = _achGateway != null;
-            }
-
-            hfCurrentPage.Value = "1";
-            RockPage page = Page as RockPage;
-            if ( page != null )
-            {
-                page.PageNavigate += page_PageNavigate;
-            }
-
-            hfPaymentTab.Value = "None";
-
-            if ( ccEnabled || achEnabled )
-            {
-                if ( ccEnabled )
-                {
-                    supportedFrequencies = _ccGateway.SupportedPaymentSchedules;
-                    divCCPaymentInfo.AddCssClass( "tab-pane" );
-                    divCCPaymentInfo.Visible = ccEnabled;
-                }
-
-                if ( achEnabled )
-                {
-                    supportedFrequencies = _achGateway.SupportedPaymentSchedules;
-                    divACHPaymentInfo.AddCssClass( "tab-pane" );
-                    divACHPaymentInfo.Visible = achEnabled;
-                }
-
-                if ( ccEnabled && achEnabled )
-                {
-                    // If CC and ACH gateways are different, only allow frequencies supported by both payment gateways (if different)
-                    if ( _ccGateway.TypeId != _achGateway.TypeId )
+                    _ccGateway = GatewayContainer.GetComponent( ccGatewayGuid );
+                    if ( _ccGateway != null )
                     {
-                        supportedFrequencies = _ccGateway.SupportedPaymentSchedules
-                            .Where( c =>
-                                _achGateway.SupportedPaymentSchedules
-                                    .Select( a => a.Id )
-                                    .Contains( c.Id ) )
-                            .ToList();
+                        ccEnabled = true;
+                        txtCardFirstName.Visible = _ccGateway.SplitNameOnCard;
+                        txtCardLastName.Visible = _ccGateway.SplitNameOnCard;
+                        txtCardName.Visible = !_ccGateway.SplitNameOnCard;
+                        mypExpiration.MinimumYear = DateTime.Now.Year;
                     }
                 }
 
-                if ( supportedFrequencies.Any() )
+                string achGatewayGuid = GetAttributeValue( "ACHGateway" );
+                if ( !string.IsNullOrWhiteSpace( achGatewayGuid ) )
                 {
-                    var oneTimeFrequency = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME );
-                    divRepeatingPayments.Visible = true;
+                    _achGateway = GatewayContainer.GetComponent( achGatewayGuid );
+                    achEnabled = _achGateway != null;
+                }
 
-                    btnFrequency.DataSource = supportedFrequencies;
-                    btnFrequency.DataBind();
+                hfCurrentPage.Value = "1";
+                RockPage page = Page as RockPage;
+                if ( page != null )
+                {
+                    page.PageNavigate += page_PageNavigate;
+                }
 
-                    // If gateway didn't specifically support one-time, add it anyway for immediate gifts
-                    if ( !supportedFrequencies.Where( f => f.Id == oneTimeFrequency.Id ).Any() )
+                hfPaymentTab.Value = "None";
+
+                if ( ccEnabled || achEnabled )
+                {
+                    if ( ccEnabled )
                     {
-                        btnFrequency.Items.Insert( 0, new ListItem( oneTimeFrequency.Name, oneTimeFrequency.Id.ToString() ) );
+                        supportedFrequencies = _ccGateway.SupportedPaymentSchedules;
+                        divCCPaymentInfo.AddCssClass( "tab-pane" );
+                        divCCPaymentInfo.Visible = ccEnabled;
                     }
-                    btnFrequency.SelectedValue = oneTimeFrequency.Id.ToString();
-                    dtpStartDate.SelectedDate = DateTime.Today;
+
+                    if ( achEnabled )
+                    {
+                        supportedFrequencies = _achGateway.SupportedPaymentSchedules;
+                        divACHPaymentInfo.AddCssClass( "tab-pane" );
+                        divACHPaymentInfo.Visible = achEnabled;
+                    }
+
+                    if ( ccEnabled && achEnabled )
+                    {
+                        // If CC and ACH gateways are different, only allow frequencies supported by both payment gateways (if different)
+                        if ( _ccGateway.TypeId != _achGateway.TypeId )
+                        {
+                            supportedFrequencies = _ccGateway.SupportedPaymentSchedules
+                                .Where( c =>
+                                    _achGateway.SupportedPaymentSchedules
+                                        .Select( a => a.Id )
+                                        .Contains( c.Id ) )
+                                .ToList();
+                        }
+                    }
+
+                    if ( supportedFrequencies.Any() )
+                    {
+                        var oneTimeFrequency = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME );
+                        divRepeatingPayments.Visible = true;
+
+                        btnFrequency.DataSource = supportedFrequencies;
+                        btnFrequency.DataBind();
+
+                        // If gateway didn't specifically support one-time, add it anyway for immediate gifts
+                        if ( !supportedFrequencies.Where( f => f.Id == oneTimeFrequency.Id ).Any() )
+                        {
+                            btnFrequency.Items.Insert( 0, new ListItem( oneTimeFrequency.Name, oneTimeFrequency.Id.ToString() ) );
+                        }
+                        btnFrequency.SelectedValue = oneTimeFrequency.Id.ToString();
+                        dtpStartDate.SelectedDate = DateTime.Today;
+                    }
+
+                    // Display Options
+                    btnAddAccount.Title = GetAttributeValue( "AddAccountText" );
+
+                    BindSavedAccounts();
+
+                    if ( rblSavedCC.Items.Count > 0 )
+                    {
+                        rblSavedCC.Items[0].Selected = true;
+                        rblSavedCC.Visible = true;
+                        divNewCard.Style[HtmlTextWriterStyle.Display] = "none";
+                    }
+                    else
+                    {
+                        rblSavedCC.Visible = false;
+                        divNewCard.Style[HtmlTextWriterStyle.Display] = "block";
+                    }
+
+                    if ( rblSavedAch.Items.Count > 0 )
+                    {
+                        rblSavedAch.Items[0].Selected = true;
+                        rblSavedAch.Visible = true;
+                        divNewBank.Style[HtmlTextWriterStyle.Display] = "none";
+                    }
+                    else
+                    {
+                        rblSavedAch.Visible = false;
+                        divNewCard.Style[HtmlTextWriterStyle.Display] = "block";
+                    }
+
+                    RegisterScript();
+
+                    // Resolve the text field merge fields
+                    var configValues = new Dictionary<string, object>();
+                    Rock.Web.Cache.GlobalAttributesCache.Read().AttributeValues
+                        .Where( v => v.Key.StartsWith( "Organization", StringComparison.CurrentCultureIgnoreCase ) )
+                        .ToList()
+                        .ForEach( v => configValues.Add( v.Key, v.Value.Value ) );
+                    phConfirmationHeader.Controls.Add( new LiteralControl( GetAttributeValue( "ConfirmationHeader" ).ResolveMergeFields( configValues ) ) );
+                    phConfirmationFooter.Controls.Add( new LiteralControl( GetAttributeValue( "ConfirmationFooter" ).ResolveMergeFields( configValues ) ) );
+                    phSuccessHeader.Controls.Add( new LiteralControl( GetAttributeValue( "SuccessHeader" ).ResolveMergeFields( configValues ) ) );
+                    phSuccessFooter.Controls.Add( new LiteralControl( GetAttributeValue( "SuccessFooter" ).ResolveMergeFields( configValues ) ) );
+
+                    // Temp values for testing...
+                    //txtCreditCard.Text = "5105105105105100";
+                    //txtCVV.Text = "023";
+
+                    //txtBankName.Text = "Test Bank";
+                    //txtRoutingNumber.Text = "111111118";
+                    //txtAccountNumber.Text = "1111111111";
                 }
-
-                // Display Options
-                btnAddAccount.Title = GetAttributeValue( "AddAccountText" );
-
-                BindSavedAccounts();
-
-                if ( rblSavedCC.Items.Count > 0 )
-                {
-                    rblSavedCC.Items[0].Selected = true;
-                    rblSavedCC.Visible = true;
-                    divNewCard.Style[HtmlTextWriterStyle.Display] = "none";
-                }
-                else
-                {
-                    rblSavedCC.Visible = false;
-                    divNewCard.Style[HtmlTextWriterStyle.Display] = "block";
-                }
-
-                if ( rblSavedAch.Items.Count > 0 )
-                {
-                    rblSavedAch.Items[0].Selected = true;
-                    rblSavedAch.Visible = true;
-                    divNewBank.Style[HtmlTextWriterStyle.Display] = "none";
-                }
-                else
-                {
-                    rblSavedAch.Visible = false;
-                    divNewCard.Style[HtmlTextWriterStyle.Display] = "block";
-                }
-
-                RegisterScript();
-
-                // Resolve the text field merge fields
-                var configValues = new Dictionary<string, object>();
-                Rock.Web.Cache.GlobalAttributesCache.Read().AttributeValues
-                    .Where( v => v.Key.StartsWith( "Organization", StringComparison.CurrentCultureIgnoreCase ) )
-                    .ToList()
-                    .ForEach( v => configValues.Add( v.Key, v.Value.Value ) );
-                phConfirmationHeader.Controls.Add( new LiteralControl( GetAttributeValue( "ConfirmationHeader" ).ResolveMergeFields( configValues ) ) );
-                phConfirmationFooter.Controls.Add( new LiteralControl( GetAttributeValue( "ConfirmationFooter" ).ResolveMergeFields( configValues ) ) );
-                phSuccessHeader.Controls.Add( new LiteralControl( GetAttributeValue( "SuccessHeader" ).ResolveMergeFields( configValues ) ) );
-                phSuccessFooter.Controls.Add( new LiteralControl( GetAttributeValue( "SuccessFooter" ).ResolveMergeFields( configValues ) ) );
-
-                // Temp values for testing...
-                //txtCreditCard.Text = "5105105105105100";
-                //txtCVV.Text = "023";
-
-                //txtBankName.Text = "Test Bank";
-                //txtRoutingNumber.Text = "111111118";
-                //txtAccountNumber.Text = "1111111111";
             }
         }
 
@@ -355,82 +360,87 @@ achieve our mission.  We are so grateful for your commitment.
             nbMessage.Visible = false;
             pnlDupWarning.Visible = false;
 
-            if ( _ccGateway != null || _achGateway != null )
+            if ( TargetPerson != null && ScheduledTransactionId.HasValue )
             {
-
-                // Save amounts from controls to the viewstate list
-                foreach ( RepeaterItem item in rptAccountList.Items )
+                if ( _ccGateway != null || _achGateway != null )
                 {
-                    var accountAmount = item.FindControl( "txtAccountAmount" ) as RockTextBox;
-                    if ( accountAmount != null )
+
+                    // Save amounts from controls to the viewstate list
+                    foreach ( RepeaterItem item in rptAccountList.Items )
                     {
-                        if ( SelectedAccounts.Count > item.ItemIndex )
+                        var accountAmount = item.FindControl( "txtAccountAmount" ) as RockTextBox;
+                        if ( accountAmount != null )
                         {
-                            decimal amount = decimal.MinValue;
-                            if ( decimal.TryParse( accountAmount.Text, out amount ) )
+                            if ( SelectedAccounts.Count > item.ItemIndex )
                             {
-                                SelectedAccounts[item.ItemIndex].Amount = amount;
+                                decimal amount = decimal.MinValue;
+                                if ( decimal.TryParse( accountAmount.Text, out amount ) )
+                                {
+                                    SelectedAccounts[item.ItemIndex].Amount = amount;
+                                }
                             }
                         }
                     }
+
+                    // Update the total amount
+                    lblTotalAmount.Text = SelectedAccounts.Sum( f => f.Amount ).ToString( "F2" );
+
+                    // Set the frequency date label based on if 'One Time' is selected or not
+                    if ( btnFrequency.Items.Count > 0 )
+                    {
+                        dtpStartDate.Label = btnFrequency.Items[0].Selected ? "When" : "First Gift";
+                    }
+
+                    liNone.RemoveCssClass( "active" );
+                    liCreditCard.RemoveCssClass( "active" );
+                    liACH.RemoveCssClass( "active" );
+                    divNonePaymentInfo.RemoveCssClass( "active" );
+                    divCCPaymentInfo.RemoveCssClass( "active" );
+                    divACHPaymentInfo.RemoveCssClass( "active" );
+
+                    switch ( hfPaymentTab.Value )
+                    {
+                        case "ACH":
+                            {
+                                liACH.AddCssClass( "active" );
+                                divACHPaymentInfo.AddCssClass( "active" );
+                                break;
+                            }
+                        case "CreditCard":
+                            {
+                                liCreditCard.AddCssClass( "active" );
+                                divCCPaymentInfo.AddCssClass( "active" );
+                                break;
+                            }
+                        default:
+                            {
+                                liNone.AddCssClass( "active" );
+                                divNonePaymentInfo.AddCssClass( "active" );
+                                break;
+                            }
+                    }
+
+                    // Show or Hide the Credit card entry panel based on if a saved account exists and it's selected or not.
+                    divNewCard.Style[HtmlTextWriterStyle.Display] = ( rblSavedCC.Items.Count == 0 || rblSavedCC.Items[rblSavedCC.Items.Count - 1].Selected ) ? "block" : "none";
+
+                    if ( !Page.IsPostBack )
+                    {
+                        SetPage( 1 );
+
+                        // Get the list of accounts that can be used
+                        BindAccounts();
+                    }
                 }
-
-                // Update the total amount
-                lblTotalAmount.Text = SelectedAccounts.Sum( f => f.Amount ).ToString( "F2" );
-
-                // Set the frequency date label based on if 'One Time' is selected or not
-                if ( btnFrequency.Items.Count > 0 )
+                else
                 {
-                    dtpStartDate.Label = btnFrequency.Items[0].Selected ? "When" : "First Gift";
-                }
-
-                liNone.RemoveCssClass( "active" );
-                liCreditCard.RemoveCssClass( "active" );
-                liACH.RemoveCssClass( "active" );
-                divNonePaymentInfo.RemoveCssClass( "active" );
-                divCCPaymentInfo.RemoveCssClass( "active" );
-                divACHPaymentInfo.RemoveCssClass( "active" );
-
-                switch ( hfPaymentTab.Value )
-                {
-                    case "ACH":
-                        {
-                            liACH.AddCssClass( "active" );
-                            divACHPaymentInfo.AddCssClass( "active" );
-                            break;
-                        }
-                    case "CreditCard":
-                        {
-                            liCreditCard.AddCssClass( "active" );
-                            divCCPaymentInfo.AddCssClass( "active" );
-                            break;
-                        }
-                    default:
-                        {
-                            liNone.AddCssClass( "active" );
-                            divNonePaymentInfo.AddCssClass( "active" );
-                            break;
-                        }
-                }
-
-                // Show or Hide the Credit card entry panel based on if a saved account exists and it's selected or not.
-                divNewCard.Style[HtmlTextWriterStyle.Display] = ( rblSavedCC.Items.Count == 0 || rblSavedCC.Items[rblSavedCC.Items.Count - 1].Selected ) ? "block" : "none";
-
-                // Show billing address based on if billing address checkbox is checked
-                divBillingAddress.Style[HtmlTextWriterStyle.Display] = cbBillingAddress.Checked ? "block" : "none";
-
-                if ( !Page.IsPostBack )
-                {
-                    SetPage( 1 );
-
-                    // Get the list of accounts that can be used
-                    BindAccounts();
+                    SetPage( 0 );
+                    ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Please check the configuration of this block and make sure a valid Credit Card and/or ACH Finacial Gateway has been selected." );
                 }
             }
             else
             {
                 SetPage( 0 );
-                ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Please check the configuration of this block and make sure a valid Credit Card and/or ACH Finacial Gateway has been selected." );
+                ShowMessage( NotificationBoxType.Danger, "Invalid Transaction", "The transaction you've selected either does not exist or is not valid." );
             }
 
         }
@@ -810,20 +820,6 @@ achieve our mission.  We are so grateful for your commitment.
             }
 
             PaymentInfo paymentInfo = GetPaymentInfo();
-            if ( txtCurrentName.Visible )
-            {
-                Person person = GetPerson( false );
-                if ( person != null )
-                {
-                    paymentInfo.FirstName = person.FirstName;
-                    paymentInfo.LastName = person.LastName;
-                }
-            }
-            else
-            {
-                paymentInfo.FirstName = txtFirstName.Text;
-                paymentInfo.LastName = txtLastName.Text;
-            }
 
             tdName.Description = paymentInfo.FullName;
             tdPhone.Description = paymentInfo.Phone;
@@ -874,12 +870,12 @@ achieve our mission.  We are so grateful for your commitment.
             }
 
             paymentInfo.Amount = SelectedAccounts.Sum( a => a.Amount );
-            paymentInfo.Email = txtEmail.Text;
-            paymentInfo.Phone = txtPhone.Text;
-            paymentInfo.Street = txtStreet.Text;
-            paymentInfo.City = txtCity.Text;
-            paymentInfo.State = ddlState.SelectedValue;
-            paymentInfo.Zip = txtZip.Text;
+            //paymentInfo.Email = txtEmail.Text;
+            //paymentInfo.Phone = txtPhone.Text;
+            //paymentInfo.Street = txtStreet.Text;
+            //paymentInfo.City = txtCity.Text;
+            //paymentInfo.State = ddlState.SelectedValue;
+            //paymentInfo.Zip = txtZip.Text;
 
             return paymentInfo;
         }
@@ -893,21 +889,11 @@ achieve our mission.  We are so grateful for your commitment.
             var cc = new CreditCardPaymentInfo( txtCreditCard.Text, txtCVV.Text, mypExpiration.SelectedDate.Value );
             cc.NameOnCard = _ccGateway.SplitNameOnCard ? txtCardFirstName.Text : txtCardName.Text;
             cc.LastNameOnCard = txtCardLastName.Text;
+            cc.BillingStreet = txtBillingStreet.Text;
+            cc.BillingCity = txtBillingCity.Text;
+            cc.BillingState = ddlBillingState.SelectedValue;
+            cc.BillingZip = txtBillingZip.Text;
 
-            if ( cbBillingAddress.Checked )
-            {
-                cc.BillingStreet = txtBillingStreet.Text;
-                cc.BillingCity = txtBillingCity.Text;
-                cc.BillingState = ddlBillingState.SelectedValue;
-                cc.BillingZip = txtBillingZip.Text;
-            }
-            else
-            {
-                cc.BillingStreet = txtStreet.Text;
-                cc.BillingCity = txtCity.Text;
-                cc.BillingState = ddlState.SelectedValue;
-                cc.BillingZip = txtZip.Text;
-            }
             return cc;
         }
 

@@ -75,8 +75,7 @@
                                     </ul>
                                     <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" />
                                     <Rock:NumberBox ID="txtCVV" Label="Card Security Code" runat="server" MaxLength="4" />
-                                    <Rock:RockCheckBox ID="cbBillingAddress" runat="server" Text="Enter a different billing address" CssClass="toggle-input" />
-                                    <div id="divBillingAddress" runat="server" class="toggle-content">
+                                    <div id="divBillingAddress" runat="server">
                                         <Rock:RockTextBox ID="txtBillingStreet" runat="server" Label="Billing Address"></Rock:RockTextBox>
                                         <div class="row">
                                             <div class="col-md-7">
