@@ -79,6 +79,6 @@
             </fieldset>
 
         </asp:Panel>
-
+        <hr />
     </ContentTemplate>
 </asp:UpdatePanel>

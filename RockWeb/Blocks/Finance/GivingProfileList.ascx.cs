@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -19,15 +20,31 @@ using System.Collections.Generic;
 
 namespace RockWeb.Blocks.Finance
 {
+
+    /// <summary>
+    /// Lists scheduled transactions for current or selected user (if context for person is not configured, will display for currently logged in person).
+    /// </summary>
+    [DisplayName("Giving Profile List")]
+    [Category("Financial")]
+    [Description("Lists scheduled transactions for current or selected user (if context for person is not configured, will display for currently logged in person).")]
+
     [LinkedPage("Detail Page")]
+    [ContextAware( typeof( Person ) )]
     public partial class GivingProfileList : Rock.Web.UI.RockBlock
     {
-        #region Fields
-        private bool _canConfigure = false;
+        #region Properties
+
+        /// <summary>
+        /// Gets the target person.
+        /// </summary>
+        /// <value>
+        /// The target person.
+        /// </value>
+        protected Person TargetPerson { get; private set; }
 
         #endregion
 
-        #region Control Methods
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -37,25 +54,24 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
-            rFBFilter.ApplyFilterClick += rFBFilter_ApplyFilterClick;
-            rFBFilter.DisplayFilterValue += rFBFilter_DisplayFilterValue;
+            gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
+            gfSettings.DisplayFilterValue += gfSettings_DisplayFilterValue;
 
-            _canConfigure = RockPage.IsAuthorized( "Edit", CurrentPerson );
+            bool canEdit = RockPage.IsAuthorized( "Edit", CurrentPerson );
 
-            if ( _canConfigure )
+            rGridGivingProfile.DataKeyNames = new string[] { "id" };
+            rGridGivingProfile.Actions.ShowAdd = canEdit;
+            rGridGivingProfile.IsDeleteEnabled = canEdit;
+
+            rGridGivingProfile.Actions.AddClick += rGridGivingProfile_Add;
+            rGridGivingProfile.GridRebind += rGridGivingProfile_GridRebind;
+
+            TargetPerson = ContextEntity<Person>();
+            if (TargetPerson == null)
             {
-                rGridGivingProfile.DataKeyNames = new string[] { "id" };
-                rGridGivingProfile.Actions.ShowAdd = true;
-
-                rGridGivingProfile.Actions.AddClick += rGridGivingProfile_Add;
-                rGridGivingProfile.GridRebind += rGridGivingProfile_GridRebind;
-                rGridGivingProfile.GridReorder += rGridGivingProfile_GridReorder;
-
+                TargetPerson = CurrentPerson;
             }
-            else
-            {
-                DisplayError( "You are not authorized to edit these profiles" );
-            }
+
         }
 
         /// <summary>
@@ -66,7 +82,8 @@ namespace RockWeb.Blocks.Finance
         {
             if ( !Page.IsPostBack )
             {
-                BindFilter();
+                cbIncludeInactive.Checked = !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Include Inactive" ) );
+
                 BindGrid();
             }
         }
@@ -76,53 +93,29 @@ namespace RockWeb.Blocks.Finance
         #region Events
 
         /// <summary>
-        /// Handles the filter display for each saved user value
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        protected void rFBFilter_DisplayFilterValue( object sender, Rock.Web.UI.Controls.GridFilter.DisplayFilterValueArgs e )
-        {
-            switch ( e.Key )
-            {
-                case "Date":
-                    DateTime GivingProfileDate = DateTime.Now;
-                    e.Value = GivingProfileDate.ToString();
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Handles the ApplyFilterClick event of the rFBFilter control.
+        /// Handles the ApplyFilterClick event of the gfSettings control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void rFBFilter_ApplyFilterClick( object sender, EventArgs e )
+        protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFBFilter.SaveUserPreference( "Start Date", dtpGivingProfileDate.SelectedDateTime.ToString() );
-            
+            gfSettings.SaveUserPreference( "Include Inactive", cbIncludeInactive.Checked ? "Yes" : "");
             BindGrid();
         }
 
         /// <summary>
-        /// Handles the Delete event of the grdFinancialGivingProfile control.
+        /// Gfs the settings_ display filter value.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void rGridGivingProfile_Delete( object sender, RowEventArgs e )
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        void gfSettings_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
-            var scheduledTransactionService = new FinancialScheduledTransactionService();
-
-            FinancialScheduledTransaction profile = scheduledTransactionService.Get( (int)rGridGivingProfile.DataKeys[e.RowIndex]["id"] );
-            if ( profile != null )
+            if (e.Key != "Include Inactive")
             {
-                scheduledTransactionService.Delete( profile, CurrentPersonId );
-                scheduledTransactionService.Save( profile, CurrentPersonId );
+                e.Value = string.Empty;
             }
-
-            BindGrid();
         }
-        
+
         /// <summary>
         /// Handles the RowSelected event of the rGridGivingProfile control.
         /// </summary>
@@ -140,54 +133,26 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rGridGivingProfile_Add( object sender, EventArgs e )
         {
-            BindFilter();
             ShowDetailForm( 0 );
         }
-                
-        #endregion
-
-        #region Internal Methods
+        
         /// <summary>
-        /// Binds the filter.
-        /// </summary>
-        private void BindFilter()
-        {
-            DateTime fromDate;
-            if ( !DateTime.TryParse( rFBFilter.GetUserPreference( "Start Date" ), out fromDate ) )
-            {
-                fromDate = DateTime.Today;
-            }
-            dtpGivingProfileDate.SelectedDateTime = fromDate;
-
-        }
-
-        /// <summary>
-        /// Binds the defined type dropdown.
-        /// </summary>
-        /// <param name="ListControl">The list control.</param>
-        /// <param name="definedTypeGuid">The defined type GUID.</param>
-        /// <param name="userPreferenceKey">The user preference key.</param>
-        private void BindDefinedTypeDropdown( ListControl ListControl, Guid definedTypeGuid, string userPreferenceKey )
-        {
-            ListControl.BindToDefinedType( DefinedTypeCache.Read( definedTypeGuid ) );
-            //ListControl.Items.Insert( 0, new ListItem( All.Text, All.Id.ToString() ) );
-
-            ListControl.SelectedValue = !string.IsNullOrWhiteSpace( rFBFilter.GetUserPreference( userPreferenceKey ) ) ?
-                ListControl.SelectedValue = rFBFilter.GetUserPreference( userPreferenceKey ) : null;
-        }
-
-        /// <summary>
-        /// Handles the GridReorder event of the grdFinancialGivingProfile control.
+        /// Handles the Delete event of the grdFinancialGivingProfile control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
-        private void rGridGivingProfile_GridReorder( object sender, GridReorderEventArgs e )
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void rGridGivingProfile_Delete( object sender, RowEventArgs e )
         {
-            var profileService = new FinancialScheduledTransactionService();
-            var queryable = profileService.Queryable();
+            // TODO: Can't just delete profile, need to inactivate it on gateway
+            //var scheduledTransactionService = new FinancialScheduledTransactionService();
 
-            List<FinancialScheduledTransaction> items = queryable.ToList();
-            profileService.Reorder( items, e.OldIndex, e.NewIndex, CurrentPersonId );
+            //FinancialScheduledTransaction profile = scheduledTransactionService.Get( (int)rGridGivingProfile.DataKeys[e.RowIndex]["id"] );
+            //if ( profile != null )
+            //{
+            //    scheduledTransactionService.Delete( profile, CurrentPersonId );
+            //    scheduledTransactionService.Save( profile, CurrentPersonId );
+            //}
+
             BindGrid();
         }
 
@@ -201,28 +166,20 @@ namespace RockWeb.Blocks.Finance
             BindGrid();
         }
 
+                
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Binds the grid.
         /// </summary>
         private void BindGrid()
         {
-            var profiles = new FinancialScheduledTransactionService().Queryable();
+            bool includeInactive = !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Include Inactive" ) );
 
-            SortProperty sortProperty = rGridGivingProfile.SortProperty;
-
-            if ( dtpGivingProfileDate.SelectedDateTime.HasValue )
-            {
-                profiles = profiles.Where( GivingProfile => GivingProfile.StartDate >= dtpGivingProfileDate.SelectedDateTime );
-            }
-
-            if ( sortProperty != null )
-            {
-                rGridGivingProfile.DataSource = profiles.Sort( sortProperty ).ToList();
-            }
-            else
-            {
-                rGridGivingProfile.DataSource = profiles.OrderBy( b => b.AuthorizedPersonId ).ToList();
-            }
+            rGridGivingProfile.DataSource = new FinancialScheduledTransactionService()
+                .Get(TargetPerson.Id, TargetPerson.GivingGroupId, includeInactive).ToList();
 
             rGridGivingProfile.DataBind();
         }
@@ -233,33 +190,10 @@ namespace RockWeb.Blocks.Finance
         /// <param name="id">The id.</param>
         protected void ShowDetailForm( int id )
         {
-            NavigateToLinkedPage( "DetailPage", "GivingProfileId", id );
-        }
-
-        /// <summary>
-        /// Displays the error.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        private void DisplayError( string message )
-        {
-            valSummaryTop.Controls.Clear();
-            valSummaryTop.Controls.Add( new LiteralControl( message ) );
-            valSummaryTop.Visible = true;
-        }
-
-        /// <summary>
-        /// Handles the RowDataBound event of the grdFinancialGivingProfile control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        protected void rGridGivingProfile_RowDataBound( object sender, GridViewRowEventArgs e )
-        {
-            FinancialScheduledTransaction profile = e.Row.DataItem as FinancialScheduledTransaction;
-            if ( profile != null )
-            {
-                //do stuff here
-              
-            }
+            var parms = new Dictionary<string, string>();
+            parms.Add( "GivingProfileId", id.ToString() );
+            parms.Add( "Person", TargetPerson.UrlEncodedKey );
+            NavigateToLinkedPage( "DetailPage", parms );
         }
 
         #endregion

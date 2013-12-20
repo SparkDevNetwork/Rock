@@ -20,6 +20,7 @@
                         <Rock:DataDropDownList ID="ddlEntityType" runat="server" SourceTypeName="Rock.Model.WorkflowTrigger, Rock" PropertyName="EntityType" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
                         <Rock:DataDropDownList ID="ddlQualifierColumn" runat="server" SourceTypeName="Rock.Model.WorkflowTrigger, Rock" PropertyName="EntityTypeQualifierColumn" Required="false" Help="Optional: Provide a specific column that you want to use as a filter for the trigger. You must also provide a value for this filter to work." />
                         <Rock:DataTextBox ID="tbQualifierValue" runat="server" SourceTypeName="Rock.Model.WorkflowTrigger, Rock" PropertyName="EntityTypeQualifierValue" Help="Optional: Provide a specific value for the property to filter on." />
+                        <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
                     </div>
                     <div class="col-md-6">
                         <Rock:DataDropDownList ID="ddlWorkflowType" runat="server" SourceTypeName="Rock.Model.WorkflowTrigger, Rock" PropertyName="WorkflowType" Required="true" Help="The workflow type to run when a change occurs." />

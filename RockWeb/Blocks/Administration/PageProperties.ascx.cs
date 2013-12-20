@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Web.Routing;
@@ -25,6 +26,9 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
+    [DisplayName( "Page Properties" )]
+    [Category( "Administration" )]
+    [Description( "Displays the page properties." )]
     public partial class PageProperties : RockBlock
     {
 
@@ -88,7 +92,7 @@ namespace RockWeb.Blocks.Administration
                         phAttributes.Controls.Clear();
                         Rock.Attribute.Helper.AddEditControls( _page, phAttributes, !Page.IsPostBack );
 
-                        var blockContexts = new List<EntityTypeCache>();
+                        var blockContexts = new Dictionary<string, string>();
                         foreach ( var block in _page.Blocks )
                         {
                             var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
@@ -97,9 +101,9 @@ namespace RockWeb.Blocks.Administration
                                 blockControl.SetBlock( block );
                                 foreach ( var context in blockControl.ContextTypesRequired )
                                 {
-                                    if ( !blockContexts.Contains( context ) )
+                                    if ( !blockContexts.ContainsKey( context.Name ) )
                                     {
-                                        blockContexts.Add( context );
+                                        blockContexts.Add( context.Name, context.FriendlyName );
                                     }
                                 }
                             }
@@ -107,17 +111,16 @@ namespace RockWeb.Blocks.Administration
 
                         phContextPanel.Visible = blockContexts.Count > 0;
 
-                        int i = 0;
-                        foreach ( EntityTypeCache context in blockContexts )
+                        foreach ( var context in blockContexts )
                         {
                             var tbContext = new RockTextBox();
-                            tbContext.ID = string.Format( "context_{0}", i++ );
+                            tbContext.ID = string.Format( "context_{0}", context.Key.Replace( '.', '_' ) );
                             tbContext.Required = true;
-                            tbContext.Label = context.FriendlyName + " Parameter Name";
+                            tbContext.Label = context.Value + " Parameter Name";
                             tbContext.Help = "The page parameter name that contains the id of this context entity.";
-                            if ( _page.PageContexts.ContainsKey( context.Name ) )
+                            if ( _page.PageContexts.ContainsKey( context.Key ) )
                             {
-                                tbContext.Text = _page.PageContexts[context.Name];
+                                tbContext.Text = _page.PageContexts[context.Key];
                             }
 
                             phContext.Controls.Add( tbContext );
@@ -340,7 +343,7 @@ namespace RockWeb.Blocks.Administration
                             if ( !string.IsNullOrWhiteSpace( tbContext.Text ) )
                             {
                                 var pageContext = new PageContext();
-                                pageContext.Entity = tbContext.Label;
+                                pageContext.Entity = tbContext.ID.Substring(8).Replace('_', '.');
                                 pageContext.IdParameter = tbContext.Text;
                                 page.PageContexts.Add( pageContext );
                             }

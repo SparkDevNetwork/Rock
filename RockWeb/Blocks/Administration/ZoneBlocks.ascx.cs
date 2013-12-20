@@ -5,18 +5,25 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+
 
 namespace RockWeb.Blocks.Administration
 {
     /// <summary>
     /// 
     /// </summary>
+    [DisplayName( "Zone Blocks" )]
+    [Category( "Administration" )]
+    [Description( "Displays the blocks for a given zone." )]
     public partial class ZoneBlocks : RockBlock
     {
         #region Base Control Methods
@@ -366,7 +373,7 @@ namespace RockWeb.Blocks.Administration
         {
             if ( string.IsNullOrWhiteSpace( tbBlockName.Text ) )
             {
-                var parts = ddlBlockType.SelectedItem.Text.Split( new char[] { '-' } );
+                var parts = ddlBlockType.SelectedItem.Text.Split( new char[] { '>' } );
                 if ( parts.Length > 1 )
                 {
                     tbBlockName.Text = parts[parts.Length - 1].Trim();
@@ -430,10 +437,35 @@ namespace RockWeb.Blocks.Administration
                 // Add any unregistered blocks
                 blockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page, CurrentPersonId );
 
-                ddlBlockType.DataSource = blockTypeService.Queryable().OrderBy( b => b.Name ).ToList();
-                ddlBlockType.DataTextField = "Name";
-                ddlBlockType.DataValueField = "Id";
-                ddlBlockType.DataBind();
+                // Load the block types
+                var blockTypes = blockTypeService.Queryable()
+                    .Select( b => new { b.Id, b.Name, b.Category, b.Description } )
+                    .ToList();
+
+                ddlBlockType.Items.Clear();
+
+                // Add the categorized block types
+                foreach ( var blockType in blockTypes
+                    .Where( b => b.Category != "" )
+                    .OrderBy( b => b.Category )
+                    .ThenBy( b => b.Name ) )
+                {
+                    var li = new ListItem( blockType.Name, blockType.Id.ToString() );
+                    li.Attributes.Add( "optiongroup", blockType.Category );
+                    li.Attributes.Add( "title", blockType.Description );
+                    ddlBlockType.Items.Add( li );
+                }
+
+                // Add the uncategorized block types
+                foreach ( var blockType in blockTypes
+                    .Where( b => b.Category == null || b.Category == "" )
+                    .OrderBy( b => b.Name ) )
+                {
+                    var li = new ListItem( blockType.Name, blockType.Id.ToString() );
+                    li.Attributes.Add( "optiongroup", "Other (not categorized)" );
+                    li.Attributes.Add( "title", blockType.Description );
+                    ddlBlockType.Items.Add( li );
+                }
             }
         }
 

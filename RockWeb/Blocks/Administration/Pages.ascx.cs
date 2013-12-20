@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Web.UI;
@@ -17,6 +18,12 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    [DisplayName( "Pages" )]
+    [Category( "Administration" )]
+    [Description( "Lists pages in Rock." )]
     public partial class Pages : Rock.Web.UI.RockBlock
     {
         #region Fields

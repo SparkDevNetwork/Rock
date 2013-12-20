@@ -22,12 +22,12 @@ namespace Rock.Attribute
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="defaultGroupTypeIds">The default group type ids.</param>
+        /// <param name="defaultTemplateGuid">The default template unique identifier.</param>
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public EmailTemplateFieldAttribute( string name, string description = "", bool required = true, string defaultGroupTypeIds = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultGroupTypeIds, category, order, key, typeof( Rock.Field.Types.EmailTemplateFieldType ).FullName )
+        public EmailTemplateFieldAttribute( string name, string description = "", bool required = true, string defaultTemplateGuid = "", string category = "", int order = 0, string key = null )
+            : base( name, description, required, defaultTemplateGuid, category, order, key, typeof( Rock.Field.Types.EmailTemplateFieldType ).FullName )
         {
         }
     }

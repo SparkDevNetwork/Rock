@@ -10,3 +10,4 @@
 /// <reference path="Rock/dialogs.js" />
 /// <reference path="bootstrap-datepicker.js" />
 /// <reference path="bootstrap-timepicker.js" />
+/// <reference path="ckeditor/ckeditor.js" />

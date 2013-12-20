@@ -35,11 +35,11 @@
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.6.0.2-beta1\lib\net45\EntityFramework.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.0.2\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.6.0.2-beta1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.0.2\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -160,6 +160,46 @@
     <Compile Include="Migrations\201312121905532_ReportColumnHeaderText.Designer.cs">
       <DependentUpon>201312121905532_ReportColumnHeaderText.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201312160425464_AddPersonToNote.cs" />
+    <Compile Include="Migrations\201312160425464_AddPersonToNote.Designer.cs">
+      <DependentUpon>201312160425464_AddPersonToNote.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312160454085_BlockTypeCategory.cs" />
+    <Compile Include="Migrations\201312160454085_BlockTypeCategory.Designer.cs">
+      <DependentUpon>201312160454085_BlockTypeCategory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312161446138_AddAudit.cs" />
+    <Compile Include="Migrations\201312161446138_AddAudit.Designer.cs">
+      <DependentUpon>201312161446138_AddAudit.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312162055116_PageLayoutUpdates.cs" />
+    <Compile Include="Migrations\201312162055116_PageLayoutUpdates.Designer.cs">
+      <DependentUpon>201312162055116_PageLayoutUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312162149358_PersonSearchAddAttribute.cs" />
+    <Compile Include="Migrations\201312162149358_PersonSearchAddAttribute.Designer.cs">
+      <DependentUpon>201312162149358_PersonSearchAddAttribute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312162306186_FixPrayerRequestDetailsPageContext.cs" />
+    <Compile Include="Migrations\201312162306186_FixPrayerRequestDetailsPageContext.Designer.cs">
+      <DependentUpon>201312162306186_FixPrayerRequestDetailsPageContext.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312182025446_AddTitleToTransactions.cs" />
+    <Compile Include="Migrations\201312182025446_AddTitleToTransactions.Designer.cs">
+      <DependentUpon>201312182025446_AddTitleToTransactions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312191507040_WorkflowTrigger_AddIsActive.cs" />
+    <Compile Include="Migrations\201312191507040_WorkflowTrigger_AddIsActive.Designer.cs">
+      <DependentUpon>201312191507040_WorkflowTrigger_AddIsActive.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312192125458_ChangeRootAdminPageName.cs" />
+    <Compile Include="Migrations\201312192125458_ChangeRootAdminPageName.Designer.cs">
+      <DependentUpon>201312192125458_ChangeRootAdminPageName.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312192308115_MoveHtmlContentApprovalBlock.cs" />
+    <Compile Include="Migrations\201312192308115_MoveHtmlContentApprovalBlock.Designer.cs">
+      <DependentUpon>201312192308115_MoveHtmlContentApprovalBlock.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -257,6 +297,36 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201312121905532_ReportColumnHeaderText.resx">
       <DependentUpon>201312121905532_ReportColumnHeaderText.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312160425464_AddPersonToNote.resx">
+      <DependentUpon>201312160425464_AddPersonToNote.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312160454085_BlockTypeCategory.resx">
+      <DependentUpon>201312160454085_BlockTypeCategory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312161446138_AddAudit.resx">
+      <DependentUpon>201312161446138_AddAudit.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312162055116_PageLayoutUpdates.resx">
+      <DependentUpon>201312162055116_PageLayoutUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312162149358_PersonSearchAddAttribute.resx">
+      <DependentUpon>201312162149358_PersonSearchAddAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312162306186_FixPrayerRequestDetailsPageContext.resx">
+      <DependentUpon>201312162306186_FixPrayerRequestDetailsPageContext.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312182025446_AddTitleToTransactions.resx">
+      <DependentUpon>201312182025446_AddTitleToTransactions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312191507040_WorkflowTrigger_AddIsActive.resx">
+      <DependentUpon>201312191507040_WorkflowTrigger_AddIsActive.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312192125458_ChangeRootAdminPageName.resx">
+      <DependentUpon>201312192125458_ChangeRootAdminPageName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312192308115_MoveHtmlContentApprovalBlock.resx">
+      <DependentUpon>201312192308115_MoveHtmlContentApprovalBlock.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

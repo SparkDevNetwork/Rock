@@ -227,7 +227,7 @@ Sys.Application.add_load(function () {
                         // add column
                         if (child.Visible)
                         {
-                            writer.AddAttribute("class", "col-md-4");
+                            writer.AddAttribute("class", "col-lg-4");
                             writer.RenderBeginTag(HtmlTextWriterTag.Div);
                         }
 

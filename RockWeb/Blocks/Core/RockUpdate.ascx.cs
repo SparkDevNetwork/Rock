@@ -16,6 +16,7 @@ using Rock.VersionInfo;
 using Rock.Web.Cache;
 
 using NuGet;
+using System.IO;
 
 namespace RockWeb.Blocks.Core
 {
@@ -90,24 +91,32 @@ namespace RockWeb.Blocks.Core
             {
                 if ( ! isUpdate )
                 {
-                    InstallFirstRockPackage();
-                    btnInstall.CssClass = "btn btn-primary disabled";
-                    btnInstall.Text = "Installed";
+                    if ( InstallFirstRockPackage() )
+                    {
+                        btnInstall.CssClass = "btn btn-primary disabled";
+                        btnInstall.Text = "Installed";
+                    }
                 }
                 else
                 {
-                    UpdateRockPackage();
-                    btnUpdate.CssClass = "btn btn-primary disabled";
-                    btnUpdate.Text = "Installed";
+                    if ( UpdateRockPackage() )
+                    {
+                        btnUpdate.CssClass = "btn btn-primary disabled";
+                        btnUpdate.Text = "Installed";
+                    }
                 }
-                badge.Visible = false;
+                ProcessFilesToDelete();
+
+                hlUpdates.Visible = false;
                 litRockVersion.Text = "";
             }
             catch ( Exception ex )
             {
-                // TODO Log the error and do something smart
                 nbErrors.Visible = true;
-                nbErrors.Text = string.Format( "Something went wrong.  Although the errors were written to the error log, here they are for your perusal:<br/>{0}", ex.Message );
+                nbSuccess.Visible = false;
+                btnInstall.Visible = false;
+                nbErrors.Text = string.Format( "Something went wrong.  Although the errors were written to the error log, they are listed for your review:<br/>{0}", ex.Message );
+                LogException( ex );
             }
             RemoveAppOffline();
         }
@@ -115,9 +124,46 @@ namespace RockWeb.Blocks.Core
         #endregion
 
         /// <summary>
+        /// Deletes each file listed in the App_Data/deletefile.lst and then deletes that file.
+        /// </summary>
+        private void ProcessFilesToDelete()
+        {
+            string deleteListFile = Request.MapPath( "~/App_Data/deletefile.lst" );
+
+            if ( !File.Exists( deleteListFile ) )
+            {
+                return;
+            }
+
+            using ( StreamReader file = new StreamReader( deleteListFile ) )
+            {
+                string filenameLine;
+                while ( ( filenameLine = file.ReadLine() ) != null )
+                {
+                    if ( !string.IsNullOrWhiteSpace( filenameLine ) )
+                    {
+                        if ( filenameLine.StartsWith( @"RockWeb\" ) )
+                        {
+                            filenameLine = filenameLine.Substring( 8 );
+                        }
+
+                        string physicalFile = Request.MapPath( filenameLine, "~/", false );
+                        if ( File.Exists( physicalFile ) )
+                        {
+                            File.Delete( physicalFile );
+                        }
+                    }
+                }
+                file.Close();
+            }
+            File.Delete( deleteListFile );
+        }
+
+        /// <summary>
         /// Installs the first RockPackage.
         /// </summary>
-        protected void InstallFirstRockPackage()
+        /// <returns>true if install was successful; false otherwise</returns>
+        protected bool InstallFirstRockPackage()
         {
             IEnumerable<string> errors = Enumerable.Empty<string>();
             var package = NuGetService.SourceRepository.FindPackage( rockPackageId );
@@ -133,24 +179,27 @@ namespace RockWeb.Blocks.Core
             }
             catch ( InvalidOperationException ex )
             {
-                errors.Concat( new[] { string.Format( "There is a problem with {0}: {1}", System.Web.HttpUtility.HtmlEncode( package.Title ), ex.Message ) } );
+                errors = errors.Concat( new[] { string.Format( "There is a problem with {0}: {1}", System.Web.HttpUtility.HtmlEncode( package.Title ), ex.Message ) } );
             }
 
             if ( errors != null && errors.Count() > 0 )
             {
                 nbErrors.Visible = true;
                 nbErrors.Text = errors.Aggregate( new StringBuilder( "<ul>" ), ( sb, s ) => sb.AppendFormat( "<li>{0}</li>", s ) ).Append( "</ul>" ).ToString();
+                return false;
             }
             else
             {
                 nbSuccess.Visible = true;
+                return true;
             }
         }
 
         /// <summary>
         /// Updates an existing RockPackage.
         /// </summary>
-        protected void UpdateRockPackage()
+        /// <returns>true if the update was successful; false if errors were encountered</returns>
+        protected bool UpdateRockPackage()
         {
             IEnumerable<string> errors = Enumerable.Empty<string>();
             var installed = NuGetService.GetInstalledPackage( rockPackageId );
@@ -164,17 +213,19 @@ namespace RockWeb.Blocks.Core
             }
             catch ( InvalidOperationException ex )
             {
-                errors.Concat( new[] { string.Format( "There is a problem with {0}: {1}", System.Web.HttpUtility.HtmlEncode( installed.Title ), ex.Message ) } );
+                errors = errors.Concat( new[] { string.Format( "There is a problem with {0}: {1}", System.Web.HttpUtility.HtmlEncode( installed.Title ), ex.Message ) } );
             }
 
             if ( errors != null && errors.Count() > 0 )
             {
                 nbErrors.Visible = true;
                 nbErrors.Text = errors.Aggregate( new StringBuilder( "<ul>" ), ( sb, s ) => sb.AppendFormat( "<li>{0}</li>", s ) ).Append( "</ul>" ).ToString();
+                return false;
             }
             else
             {
                 nbSuccess.Visible = true;
+                return true;
             }
         }
 
@@ -203,7 +254,7 @@ namespace RockWeb.Blocks.Core
                     {
                         btnInstall.Visible = true;
                         divPackage.Visible = true;
-                        badge.Visible = true;
+                        hlUpdates.Visible = true;
                         litPackageTitle.Text = System.Web.HttpUtility.HtmlEncode( package.Title );
                         litPackageDescription.Text = System.Web.HttpUtility.HtmlEncode( ( package.Description != null ) ? package.Description : package.Summary ) ; 
                         btnInstall.Text += string.Format( " to version {0}", package.Version );
@@ -222,7 +273,7 @@ namespace RockWeb.Blocks.Core
                     {
                         btnUpdate.Visible = true;
                         divPackage.Visible = true;
-                        badge.Visible = true;
+                        hlUpdates.Visible = true;
                         litPackageTitle.Text = System.Web.HttpUtility.HtmlEncode( latestPackage.Title );
                         litPackageDescription.Text = System.Web.HttpUtility.HtmlEncode( ( latestPackage.Description != null ) ? latestPackage.Description : latestPackage.Summary ); 
                         btnUpdate.Text += string.Format( " to version {0}", latestPackage.Version );
@@ -264,14 +315,42 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Simply creates an app_offline.htm file so no one else can hit the app.
+        /// Copies the app_offline-template.htm file to app_offline.htm so no one else can hit the app.
+        /// If the template file does not exist an app_offline.htm file will be created from scratch.
         /// </summary>
         private void WriteAppOffline()
         {
             var root = this.Request.PhysicalApplicationPath;
-            var file = System.IO.Path.Combine( root, "app_offline.htm" );
 
-            System.IO.File.WriteAllText( file, @"
+            var templateFile = System.IO.Path.Combine( root, "app_offline-template.htm" );
+            var offlineFile = System.IO.Path.Combine( root, "app_offline.htm" );
+
+            try
+            {
+                if ( File.Exists( templateFile ) )
+                {
+                    System.IO.File.Copy( templateFile, offlineFile, overwrite: true );
+                }
+                else
+                {
+                    CreateOfflineFileFromScratch( offlineFile );
+                }
+            }
+            catch ( Exception )
+            {
+                if ( ! File.Exists( offlineFile ) )
+                {
+                    CreateOfflineFileFromScratch( offlineFile );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Simply creates an app_offline.htm file so no one else can hit the app.
+        /// </summary>
+        private void CreateOfflineFileFromScratch( string offlineFile )
+        {
+            System.IO.File.WriteAllText( offlineFile, @"
 <html>
     <head>
     <title>Application Updating...</title>
