@@ -18,12 +18,16 @@ using Rock.Web.UI.Controls;
 using Site = Rock.Model.Site;
 using Rock.Constants;
 using Rock.Web;
+using System.ComponentModel;
 
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
     /// 
     /// </summary>
+    [DisplayName("Site Detail")]
+    [Category("CMS")]
+    [Description("Displays the details of a specific site.")]
     public partial class SiteDetail : RockBlock, IDetailBlock
     {
         #region Control Methods

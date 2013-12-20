@@ -20,10 +20,14 @@ using Rock.Attribute;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using System.ComponentModel;
 
 
 namespace RockWeb.Blocks.Cms
 {
+    [DisplayName("Page Menu")]
+    [Category("CMS")]
+    [Description("Renders a page menu based on a root page and liquid template.")]
     [CodeEditorField( "Template", "The liquid template to use for rendering. This template should be in the theme's 'Assets/Liquid' folder and should have an underscore prepended to the filename. ", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, true, @"
 {% include 'PageNav' %}
 " )]

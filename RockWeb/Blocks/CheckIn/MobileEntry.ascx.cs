@@ -6,6 +6,7 @@
 using System;
 using System.Web;
 using Rock.CheckIn;
+using System.ComponentModel;
 
 namespace RockWeb.Blocks.CheckIn
 {
@@ -13,6 +14,9 @@ namespace RockWeb.Blocks.CheckIn
     /// This block is responsible for setting the IsMobile cookie on the client for
     /// subsequent use by other checkin blocks.
     /// </summary>
+    [DisplayName("Mobile Entry")]
+    [Category("Check-in")]
+    [Description("Helps to configure the checkin for mobile devices.")]
     public partial class MobileEntry : CheckInBlock
     {
         protected override void OnInit( EventArgs e )

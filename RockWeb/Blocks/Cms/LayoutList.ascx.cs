@@ -15,12 +15,16 @@ using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using System.ComponentModel;
 
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
     /// 
     /// </summary>
+    [DisplayName("Layout List")]
+    [Category("CMS")]
+    [Description("Lists layouts for a site.")]
     [LinkedPage("Detail Page")]
     public partial class LayoutList : RockBlock, ISecondaryBlock
     {
