@@ -25,6 +25,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
     /// <summary>
     /// Admin block for Attended Check-in
     /// </summary>
+    [DisplayName("Check-in Administration")]
+    [Category("Check-in > Attended")]
     [Description( "Check-In Administration block" )]
     [BooleanField( "Enable Location Sharing", "If enabled, the block will attempt to determine the kiosk's location via location sharing geocode.", false, "Geo Location", 0 )]
     [IntegerField( "Time to Cache Kiosk GeoLocation", "Time in minutes to cache the coordinates of the kiosk. A value of zero (0) means cache forever. Default 20 minutes.", false, 20, "Geo Location", 1 )]

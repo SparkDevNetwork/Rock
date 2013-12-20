@@ -17,7 +17,9 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [Description( "Check-in Location Select block" )]
+    [DisplayName("Location Select")]
+    [Category("Check-in")]
+    [Description("Displays a list of locations a person is able to checkin to.")]
     [TextField( "Current Count Format", "How should current count be displayed", false, " Count: {0}" )]
     public partial class LocationSelect : CheckInBlock
     {

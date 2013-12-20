@@ -13,12 +13,16 @@ using Rock;
 using Rock.Constants;
 using Rock.Model;
 using Rock.Web.UI;
+using System.ComponentModel;
 
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
     /// 
     /// </summary>
+    [DisplayName("Route Detail")]
+    [Category("CMS")]
+    [Description("Displays the details of a page route.")]
     public partial class PageRouteDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
