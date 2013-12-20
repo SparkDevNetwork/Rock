@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Stark.ascx.cs" Inherits="RockWeb.Blocks.Utility.Stark" %>
 
-<asp:UpdatePanel ID="upStark" runat="server">
+<asp:UpdatePanel ID="upContent" runat="server">
     <ContentTemplate>
 
         <div class="alert alert-info">

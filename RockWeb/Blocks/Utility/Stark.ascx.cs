@@ -46,6 +46,7 @@ namespace RockWeb.Blocks.Utility
         {
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upContent );
 
             base.OnInit( e );
         }
