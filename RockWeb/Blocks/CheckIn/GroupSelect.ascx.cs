@@ -16,7 +16,9 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [Description( "Check-in Group Select block" )]
+    [DisplayName("Group Select")]
+    [Category("Check-in")]
+    [Description("Displays a list of groups that a person is configured to checkin to.")]
     public partial class GroupSelect : CheckInBlock
     {
         protected override void OnLoad( EventArgs e )

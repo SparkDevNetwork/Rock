@@ -10,12 +10,16 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using System.ComponentModel;
 
 namespace RockWeb.Blocks.CheckIn
 {
     /// <summary>
     /// 
     /// </summary>
+    [DisplayName("Check-in Configuration")]
+    [Category("Check-in")]
+    [Description("Helps to configure the check-in workflow.")]
     public partial class CheckinConfiguration : RockBlock, IDetailBlock
     {
         #region Control Methods

@@ -14,12 +14,16 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using System.ComponentModel;
 
 namespace RockWeb.Blocks.CheckIn
 {
     /// <summary>
     /// 
     /// </summary>
+    [DisplayName("Scedule Builder")]
+    [Category("Check-in")]
+    [Description("Helps to build schedules to be used for checkin.")]
     public partial class CheckinScheduleBuilder : RockBlock
     {
         #region Control Methods

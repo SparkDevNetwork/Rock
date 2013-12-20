@@ -22,7 +22,9 @@ namespace RockWeb.Blocks.CheckIn
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Check-in Success block" )]
+    [DisplayName("Success")]
+    [Category("Check-in")]
+    [Description("Displays the details of a successful checkin.")]
     [LinkedPage("Person Select Page")]
     public partial class Success : CheckInBlock
     {

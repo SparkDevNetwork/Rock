@@ -16,7 +16,9 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [Description( "Check-in Family Select Block" )]
+    [DisplayName("Family Select")]
+    [Category("Check-in")]
+    [Description( "Displays a list of families to select for checkin." )]
     public partial class FamilySelect : CheckInBlock
     {
         protected override void OnLoad( EventArgs e )
