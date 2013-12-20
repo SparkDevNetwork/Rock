@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Web.UI;
@@ -21,6 +22,9 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// User contols for managing metric values
     /// </summary>
+    [DisplayName( "Metric Value List" )]
+    [Category( "Administration" )]
+    [Description( "Displays a list of metric values for a specific metric." )]
     public partial class MetricValueList : Rock.Web.UI.RockBlock, Rock.Web.UI.ISecondaryBlock
     {       
         #region Base Control Methods

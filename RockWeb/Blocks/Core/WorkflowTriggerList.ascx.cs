@@ -32,6 +32,9 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
+            BindFilter();
+            gfWorkflowTrigger.ApplyFilterClick += gfWorkflowTrigger_ApplyFilterClick;
+
             gWorkflowTrigger.DataKeyNames = new string[] { "id" };
             gWorkflowTrigger.Actions.ShowAdd = true;
             gWorkflowTrigger.Actions.AddClick += gWorkflowTrigger_Add;
@@ -60,6 +63,12 @@ namespace RockWeb.Blocks.Core
         #endregion
 
         #region Grid Events (main grid)
+
+        protected void gfWorkflowTrigger_ApplyFilterClick( object sender, EventArgs e )
+        {
+            gfWorkflowTrigger.SaveUserPreference( "Include Inactive", cbIncludeInactive.Checked ? "Yes" : String.Empty );
+            BindGrid();
+        }
 
         /// <summary>
         /// Handles the Add event of the gWorkflowTrigger control.
@@ -124,12 +133,29 @@ namespace RockWeb.Blocks.Core
 
         #region Internal Methods
 
+        private void BindFilter()
+        {
+            if ( !Page.IsPostBack )
+            {
+                cbIncludeInactive.Checked = gfWorkflowTrigger.GetUserPreference( "Include Inactive" ) == "Yes";
+            }
+        }
+
         /// <summary>
         /// Binds the grid.
         /// </summary>
         private void BindGrid()
         {
-            gWorkflowTrigger.DataSource = new WorkflowTriggerService().Queryable()
+            var triggers = new WorkflowTriggerService().Queryable();
+
+            string includeInactive = gfWorkflowTrigger.GetUserPreference( "Include Inactive" );
+
+            if ( String.IsNullOrEmpty( includeInactive ) || !includeInactive.Contains( "Yes" ) )
+            {
+                triggers = triggers.Where( a => a.IsActive == true );
+            }
+
+            gWorkflowTrigger.DataSource = triggers
                 .OrderBy( w => w.EntityType.Name )
                 .ThenBy( w => w.EntityTypeQualifierColumn )
                 .ThenBy( w => w.EntityTypeQualifierValue ).Select( a =>
@@ -141,7 +167,8 @@ namespace RockWeb.Blocks.Core
                             a.EntityTypeQualifierColumn,
                             a.EntityTypeQualifierValue,
                             WorkflowTypeName = a.WorkflowType.Name,
-                            a.IsSystem
+                            a.IsSystem,
+                            a.IsActive
                         } ).ToList();
             
             gWorkflowTrigger.DataBind();

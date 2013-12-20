@@ -6,7 +6,7 @@
             <asp:HiddenField ID="hfBatchId" runat="server" />        
             <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
-            <div class="banner"><h1><asp:Literal ID="lActionTitle" runat="server" /></h1></div>
+            <div class="banner"><h1><asp:Literal ID="lTitle" runat="server" /></h1></div>
 
             <div id="pnlEditDetails" runat="server">
 

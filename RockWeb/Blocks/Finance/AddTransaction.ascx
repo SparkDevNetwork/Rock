@@ -112,7 +112,21 @@
                                     </ul>
                                     <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" />
                                     <Rock:NumberBox ID="txtCVV" Label="Card Security Code" runat="server" MaxLength="4" />
-                                    
+                                    <Rock:RockCheckBox ID="cbBillingAddress" runat="server" Text="Enter a different billing address" CssClass="toggle-input" />
+                                    <div id="divBillingAddress" runat="server" class="toggle-content">
+                                        <Rock:RockTextBox ID="txtBillingStreet" runat="server" Label="Billing Address"></Rock:RockTextBox>
+                                        <div class="row">
+                                            <div class="col-md-7">
+                                                <Rock:RockTextBox ID="txtBillingCity" runat="server" Label="City" />
+                                            </div>
+                                            <div class="col-md-2">
+                                                <Rock:StateDropDownList ID="ddlBillingState" runat="server" Label="State" UseAbbreviation="true" />
+                                            </div>
+                                            <div class="col-md-3">                                                
+                                                <Rock:RockTextBox ID="txtBillingZip" runat="server" Label="Zip" />
+                                            </div>
+                                        </div>
+                                    </div>                                    
                                 </div>
                             </fieldset>
                         </div>
@@ -133,21 +147,7 @@
                             </fieldset>
                         </div>
 
-                        <Rock:RockCheckBox ID="cbBillingAddress" runat="server" Text="Enter a different billing address" CssClass="toggle-input" />
-                        <div id="divBillingAddress" runat="server" class="toggle-content">
-                            <Rock:RockTextBox ID="txtBillingStreet" runat="server" Label="Billing Address"></Rock:RockTextBox>
-                            <div class="row">
-                                <div class="col-md-7">
-                                    <Rock:RockTextBox ID="txtBillingCity" runat="server" Label="City" />
-                                </div>
-                                <div class="col-md-2">
-                                    <Rock:StateDropDownList ID="ddlBillingState" runat="server" Label="State" UseAbbreviation="true" />
-                                </div>
-                                <div class="col-md-3">                                                
-                                    <Rock:RockTextBox ID="txtBillingZip" runat="server" Label="Zip" />
-                                </div>
-                            </div>
-                        </div>
+
                     </div>
                 </div> 
             </div>
@@ -208,7 +208,7 @@
                 <div class="well">
                     <legend>Make Giving Even Easier</legend>
                     <fieldset>
-                        <Rock:RockCheckBox ID="cbSaveAccount" runat="server" Label=" " Text="Save account information for future gifts" CssClass="toggle-input" />
+                        <Rock:RockCheckBox ID="cbSaveAccount" runat="server" Text="Save account information for future gifts" CssClass="toggle-input" />
                         <div id="divSaveAccount" runat="server" class="toggle-content">
                             <Rock:RockTextBox ID="txtSaveAccount" runat="server" Label="Name for this account" CssClass="input-large"></Rock:RockTextBox>
 

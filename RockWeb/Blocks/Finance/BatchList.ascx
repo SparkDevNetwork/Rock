@@ -18,13 +18,13 @@
             <Rock:Grid ID="rGridBatch" runat="server" OnRowDataBound="rGridBatch_RowDataBound" ShowConfirmDeleteDialog="true" OnRowSelected="rGridBatch_Edit">
                 <Columns>
                     <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
-                    <asp:BoundField DataField="Name" HeaderText="Title" SortExpression="Name" />
                     <asp:TemplateField HeaderText="Date">
                         <ItemTemplate>
                             <span><%# Eval("BatchStartDateTime") %></span>
                         </ItemTemplate>
                     </asp:TemplateField>
-                    <Rock:EnumField DataField="Status" HeaderText="Status" SortExpression="Status" />
+                    <asp:BoundField DataField="Name" HeaderText="Title" SortExpression="Name" />
+                    
                     <asp:BoundField DataField="ControlAmount" HeaderText="Control Amount" />
                     <asp:TemplateField HeaderText="Transaction Total">
                         <ItemTemplate>
@@ -42,6 +42,7 @@
                         </ItemTemplate>
                     </asp:TemplateField>
                     <asp:BoundField DataField="Campus" HeaderText="Campus" />
+                    <Rock:EnumField DataField="Status" HeaderText="Status" SortExpression="Status" />
                     <Rock:DeleteField OnClick="rGridBatch_Delete" />
                 </Columns>
             </Rock:Grid>

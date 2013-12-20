@@ -91,6 +91,8 @@
 
     & > a {
         text-decoration: none;
+        padding: 0 !important; // important to keep themes from changing this
+        margin: 0 !important; // important to keep themes from changing this
     }
 
     a i.fa {
@@ -135,7 +137,7 @@
 #cms-admin-footer {
     bottom: 0;
     height: 25px;
-    z-index: 300;
+    z-index: 9999;
     position: fixed;
     right: 0;
     margin-right: 25px;

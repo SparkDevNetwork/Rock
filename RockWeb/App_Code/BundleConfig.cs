@@ -42,7 +42,6 @@ public class BundleConfig
         //    "~/Scripts/WebForms/MsAjax/MicrosoftAjaxWebForms.js" ) );
 
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockLibs" ).Include(
-            "~/Scripts/jquery.js",
             "~/Scripts/jquery-ui-1.10.0.custom.min.js",
             "~/Scripts/bootstrap.min.js",
             "~/Scripts/bootstrap-timepicker.js",

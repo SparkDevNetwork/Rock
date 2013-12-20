@@ -292,8 +292,8 @@
 				        folderCssClass = node.isOpen ? self.options.iconClasses.branchOpen : self.options.iconClasses.branchClosed,
 				        leafCssClass = node.iconCssClass || self.options.iconClasses.leaf;
 
-				    $li.addClass('rock-tree-item')
-						.addClass(node.hasChildren ? 'rock-tree-folder' : 'rock-tree-leaf')
+				    $li.addClass('rocktree-item')
+						.addClass(node.hasChildren ? 'rocktree-folder' : 'rocktree-leaf')
 						.attr('data-id', node.id)
 						.attr('data-parent-id', node.parentId);
 
@@ -302,21 +302,21 @@
 				        $li.attr('data-' + includeAttrs[i], node[includeAttrs[i]]);
 				    }
 
-				    $li.append('<span class="rock-tree-name"> ' + node.name + '</span>');
+				    $li.append('<span class="rocktree-name"> ' + node.name + '</span>');
 				    
                     if (node.isSelected) {
-                        $li.find('.rock-tree-name').addClass('selected');
+                        $li.find('.rocktree-name').addClass('selected');
                     }
 
 				    if (node.hasChildren) {
-				        $li.prepend('<i class="rock-tree-icon ' + folderCssClass + '"></i>');
+				        $li.prepend('<i class="rocktree-icon ' + folderCssClass + '"></i>');
 
 				        if (node.iconCssClass) {
-				            $li.find('.rock-tree-name').prepend('<i class="' + node.iconCssClass + '"></i>');
+				            $li.find('.rocktree-name').prepend('<i class="' + node.iconCssClass + '"></i>');
 				        }
 				    } else {
 				        if (leafCssClass) {
-				            $li.find('.rock-tree-name').prepend('<i class="' + leafCssClass + '"></i>');
+				            $li.find('.rocktree-name').prepend('<i class="' + leafCssClass + '"></i>');
 				        }
 				    }
 
@@ -324,7 +324,7 @@
 
 				    if (node.hasChildren && node.children) {
 				        $childUl = $('<ul/>');
-				        $childUl.addClass('rock-tree-children');
+				        $childUl.addClass('rocktree-children');
 
                         if (!node.isOpen) {
                             $childUl.hide();
@@ -340,7 +340,7 @@
 
             // Clear tree and prepare to re-render
             this.$el.empty();
-            $ul.addClass('rock-tree');
+            $ul.addClass('rocktree');
             this.$el.append($ul);
 
             $.each(this.nodes, function (index, node) {
@@ -366,7 +366,7 @@
         
         // Remove loading spinner
         discardLoading: function ($element) {
-            $element.find('.rock-tree-loading').remove();
+            $element.find('.rocktree-loading').remove();
         },
         
         // Clears all selected nodes
@@ -395,7 +395,7 @@
             var self = this;
 
             // Expanding or collapsing a node...
-            this.$el.on('click', '.rock-tree-folder > .rock-tree-icon', function (e) {
+            this.$el.on('click', '.rocktree-folder > .rocktree-icon', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
 
@@ -431,11 +431,11 @@
             });
 
             // Selecting a node...
-            this.$el.on('click', '.rock-tree-item > span', function (e) {
+            this.$el.on('click', '.rocktree-item > span', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
 
-                var $rockTree = $(this).parents('.rock-tree'),
+                var $rockTree = $(this).parents('.rocktree'),
                     $item = $(this),
                     id = $item.parent('li').attr('data-id'),
                     node = _findNodeById(id, self.nodes),
@@ -486,8 +486,18 @@
         // of RockTree from $el.data, if not present, create a new instance
         // of RockTree and stash it there, then initialize the tree.
         return this.each(function () {
-            var $el = $(this),
-                rockTree = $el.data('rockTree') || new RockTree(this, settings);
+            var $el = $(this);
+            var rockTree = $el.data('rockTree');
+            
+            if (!rockTree) {
+                // create a new rocktree
+                rockTree = new RockTree(this, settings);
+            }
+            else
+            {
+                // use the existing rocktree but update the settings
+                rockTree.options = settings;
+            }
 
             $el.data('rockTree', rockTree);
             rockTree.init();
@@ -503,7 +513,7 @@
         restParams: null,
         local: null,
         multiselect: false,
-        loadingHtml: '<span class="rock-tree-loading"><i class="fa fa-refresh fa-spin"></i></span>',
+        loadingHtml: '<span class="rocktree-loading"><i class="fa fa-refresh fa-spin"></i></span>',
         iconClasses: {
             branchOpen: 'fa fa-caret-down',
             branchClosed: 'fa fa-caret-right',

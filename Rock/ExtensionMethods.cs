@@ -320,9 +320,14 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static bool AsBoolean( this string str)
+        public static bool AsBoolean( this string str )
         {
             string[] trueStrings = new string[] { "true", "yes", "t", "y", "1" };
+
+            if ( string.IsNullOrWhiteSpace( str ) )
+            {
+                return false;
+            }
 
             return trueStrings.Contains( str.ToLower() );
         }
@@ -359,7 +364,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The STR.</param>
         /// <returns></returns>
-        public static Guid AsGuid( this string str)
+        public static Guid AsGuid( this string str )
         {
             Guid value;
             if ( Guid.TryParse( str, out value ) )
@@ -452,7 +457,6 @@ namespace Rock
         /// <returns></returns>
         public static string FormatAsHtmlTitle( this string str )
         {
-
             // split first word from rest of string
             int endOfFirstWord = str.IndexOf( " " );
 
@@ -460,6 +464,36 @@ namespace Rock
                 return "<span class='first-word'>" + str.Substring( 0, endOfFirstWord ) + " </span> " + str.Substring( endOfFirstWord, str.Length - endOfFirstWord );
             else
                 return "<span class='first-word'>" + str + " </span>";
+        }
+
+        /// <summary>
+        /// Converts CR (carriage return) LF (line feed) to non-encoded html breaks (br).
+        /// </summary>
+        /// <param name="str">a string that contains CR LF</param>
+        /// <returns>a string with CRLF replaced with html <code>br</code></returns>
+        public static string ConvertCrLfToHtmlBr( this string str )
+        {
+            if ( str == null )
+            {
+                return string.Empty;
+            }
+
+            return str.Replace( Environment.NewLine, "<br/>" ).Replace( "\x0A", "<br/>" );
+        }
+
+        /// <summary>
+        /// Encodes any html and then converts CR (carriage return) LF (line feed) to unencoded html breaks (br).
+        /// </summary>
+        /// <param name="str">a string that contains unencoded HTML and CR LF</param>
+        /// <returns>an html encoded string with CRLF replaced with HTML <code>br</code></returns>
+        public static string EncodeHtmlThenConvertCrLfToHtmlBr( this string str )
+        {
+            if ( str == null )
+            {
+                return string.Empty;
+            }
+
+            return System.Web.HttpUtility.HtmlEncode( str ).ConvertCrLfToHtmlBr();
         }
 
         /// <summary>
@@ -695,7 +729,7 @@ namespace Rock
                     duration = string.Format( "{0:N0}{1}", end.TotalYears( start ), condensed ? "yrs" : " Years" );
             }
 
-            return "(" + duration + ( condensed ? "" : direction ) + ")";
+            return duration + ( condensed ? "" : direction );
 
         }
 

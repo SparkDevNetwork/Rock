@@ -33,6 +33,15 @@ namespace Rock.Model
         public bool IsSystem { get; set; }
 
         /// <summary>
+        /// Gets or sets a flag indicating if the WorkflowTrigger is active.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the WorkflowTrigger is active; otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool? IsActive { get; set; }
+
+        /// <summary>
         /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType" /> of the entities that this trigger applies to
         /// </summary>
         /// <value>

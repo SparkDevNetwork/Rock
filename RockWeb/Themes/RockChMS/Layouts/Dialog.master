@@ -41,10 +41,11 @@
 
 <html class="no-js">
 <head runat="server">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <title></title>
 
     <script src="<%# ResolveUrl("~/Scripts/modernizr.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/jquery-1.10.2.min.js") %>"></script>
 
     <asp:ContentPlaceHolder ID="css" runat="server" />
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css") %>"/>

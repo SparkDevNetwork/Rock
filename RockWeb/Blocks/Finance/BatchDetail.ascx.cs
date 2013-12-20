@@ -148,6 +148,14 @@ namespace RockWeb.Blocks.Finance
         /// <param name="financialBatch">The financial batch.</param>
         private void ShowReadOnly( FinancialBatch financialBatch )
         {
+            string batchDate = string.Empty;
+            if (financialBatch.BatchStartDateTime != null)
+            {
+                batchDate = financialBatch.BatchStartDateTime.Value.ToShortDateString();
+            }
+            
+            lTitle.Text = string.Format("{0} <small>{1}</small>", financialBatch.Name.FormatAsHtmlTitle(), batchDate );
+            
             SetEditMode( false );
 
             string campus = string.Empty;
@@ -175,11 +183,11 @@ namespace RockWeb.Blocks.Finance
         {
             if ( financialBatch.Id > 0 )
             {
-                lActionTitle.Text = ActionTitle.Edit( FinancialBatch.FriendlyTypeName ).FormatAsHtmlTitle();
+                lTitle.Text = ActionTitle.Edit( FinancialBatch.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( FinancialBatch.FriendlyTypeName ).FormatAsHtmlTitle();
+                lTitle.Text = ActionTitle.Add( FinancialBatch.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             SetEditMode( true );

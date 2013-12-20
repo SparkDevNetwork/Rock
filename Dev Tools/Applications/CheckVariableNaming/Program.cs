@@ -76,9 +76,13 @@ namespace CheckVariableNaming
             Dictionary<string, string> validPrefixes = initValidControlPrefixDict();
             Regex regex = new Regex( "(?<=<(asp|Rock):).*?(?=>)" );
             Regex ucRegex = new Regex( "(\\S+) .*?id=\"(.*?)\"", RegexOptions.IgnoreCase );
+
+            Console.BufferWidth = 160;
+            Console.BufferHeight = 9999;
+            Console.WindowWidth = 160;
             
             int violations = 0;
-            violations += AnalyzeVaribleNames( regex, ucRegex, validPrefixes, options );
+            violations += AnalyzeVariableNames( regex, ucRegex, validPrefixes, options );
 
             Console.WriteLine( "Number of Violations: {0}\n\nPress any key to continue.", violations );
             Console.ReadLine();
@@ -88,7 +92,7 @@ namespace CheckVariableNaming
         /// Analyze variable names by type and report any prefix violations found.
         /// </summary>
         /// <param name="searchDirectory">The search directory.</param>
-        private static int AnalyzeVaribleNames( Regex regex, Regex ucRegex, Dictionary<string, string> validPrefixes, Options options )
+        private static int AnalyzeVariableNames( Regex regex, Regex ucRegex, Dictionary<string, string> validPrefixes, Options options )
         {
             int numberFiles = 0;
             int numberControls = 0;
@@ -162,6 +166,7 @@ namespace CheckVariableNaming
         private static int ViolationsByFileName( SortedDictionary<string, List<ControlInstance>> lookup, Dictionary<string, string> validPrefixes )
         {
             int violations = 0;
+            List<string> results = new List<string>();
             foreach ( string controlType in lookup.Keys )
             {
                 Dictionary<string, List<ControlInstance>> fileTable = new Dictionary<string, List<ControlInstance>>();
@@ -183,15 +188,36 @@ namespace CheckVariableNaming
                 }
 
                 // Now rip through all the files in the fileTable and spew out each one's list of invalid control instance.
-                foreach ( string fileName in fileTable.Keys )
+                
+                foreach ( string fileName in fileTable.Keys)
                 {
                     foreach ( ControlInstance ci in fileTable[fileName] )
                     {
                         violations++;
-                        Console.WriteLine( string.Format( "Violation: {0}\t({1})\t{2} != {3}", fileName, ci.Type, ci.VariableName, ProperVariable( validPrefixes, ci ) ) );
+                        results.Add( string.Format( "Violation: {0}\t({1})\t{2} != {3}", fileName, ci.Type, ci.VariableName, ProperVariable( validPrefixes, ci ) ) );
                     }
                 }
             }
+
+            Console.WriteLine( "Enter Filter (example: HtmlContentDetail.ascx, or * for all)" );
+            string filter = Console.ReadLine();
+
+            int filteredCount = 0;
+            foreach ( var result in results.OrderBy( a => a ) )
+            {
+                if ( filter == "*" || result.Contains( filter ) )
+                {
+                    Console.WriteLine( result );
+                    filteredCount++;
+                }
+            }
+
+            if (filteredCount == 0)
+            {
+                Console.WriteLine( "No items found using filter: " + filter );
+            }
+
+
             return violations;
         }
 

@@ -459,6 +459,20 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the URL of the person's photo.
+        /// </summary>
+        /// <value>
+        /// URL of the photo
+        /// </value>
+        public virtual string PhotoUrl
+        {
+            get 
+            {
+                return Person.GetPhotoUrl( this.PhotoId, this.Gender );
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a collection containing the Person's <see cref="Rock.Model.UserLogin">UserLogins</see>.
         /// </summary>
         /// <value>
@@ -867,6 +881,89 @@ namespace Rock.Model
         #endregion
 
         #region Static Helper Methods
+
+        /// <summary>
+        /// Returns a URL for the person's photo.
+        /// </summary>
+        /// <param name="photoId">The photo identifier.</param>
+        /// <param name="gender">The gender.</param>
+        /// <returns></returns>
+        public static string GetPhotoUrl(int? photoId, Gender gender)
+        {
+            if ( photoId.HasValue )
+            {
+                return VirtualPathUtility.ToAbsolute( String.Format( "~/GetImage.ashx?id={0}", photoId ) );
+            }
+            else
+            {
+                if ( gender == Model.Gender.Female )
+                {
+                    return VirtualPathUtility.ToAbsolute( "~/Assets/Images/person-no-photo-female.svg?" );
+                }
+                else
+                {
+                    return VirtualPathUtility.ToAbsolute( "~/Assets/Images/person-no-photo-male.svg?" );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the photo image tag.
+        /// </summary>
+        /// <param name="photoId">The photo identifier.</param>
+        /// <param name="gender">The gender to use if the photoId is null.</param>
+        /// <param name="maxWidth">The maximum width (in px).</param>
+        /// <param name="maxHeight">The maximum height (in px).</param>
+        /// <param name="altText">The alt text to use on the image.</param>
+        /// <param name="className">The css class name to apply to the image.</param>
+        /// <returns>An html img tag (string) of the requested photo.</returns>
+        public static string GetPhotoImageTag(int? photoId, Gender gender, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
+        {
+            var photoUrl = new StringBuilder();
+            
+            photoUrl.Append( VirtualPathUtility.ToAbsolute( "~/" ) );
+
+            string styleString = string.Empty;
+
+            string altString = string.IsNullOrWhiteSpace( altText ) ? "" :
+                string.Format( " alt='{0}'", altText );
+            
+            string classString = string.IsNullOrWhiteSpace( className ) ? "" :
+                string.Format( " class='{0}'", className );
+
+            if ( photoId.HasValue )
+            {
+                photoUrl.AppendFormat( "GetImage.ashx?id={0}", photoId );
+                if ( maxWidth.HasValue )
+                {
+                    photoUrl.AppendFormat( "&maxwidth={0}", maxWidth.Value);
+                }
+                if ( maxHeight.HasValue )
+                {
+                    photoUrl.AppendFormat( "&maxheight={0}", maxHeight.Value);
+                }
+            }
+            else
+            {
+                if ( gender == Model.Gender.Female )
+                {
+                    photoUrl.Append("Assets/Images/person-no-photo-female.svg?");
+                }
+                else
+                {
+                    photoUrl.Append("Assets/Images/person-no-photo-male.svg?");
+                }
+
+                if (maxWidth.HasValue || maxHeight.HasValue)
+                {
+                    styleString = string.Format( " style='{0}{1}'",
+                        maxWidth.HasValue ? "max-width:" + maxWidth.Value.ToString() + "px; " : "",
+                        maxHeight.HasValue ? "max-height:" + maxHeight.Value.ToString() + "px;" : "" );
+                }
+            }
+
+            return string.Format( "<img src='{0}'{1}{2}{3}/>", photoUrl.ToString(), styleString, altString, classString );
+        }
 
         /// <summary>
         /// Adds the related person to the selected person's known relationships with a role of 'Can check in' which
