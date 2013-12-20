@@ -18,6 +18,8 @@ using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.CheckIn
 {
+    [DisplayName("Ability Level Select")]
+    [Category("Check-in")]
     [Description( "Check-in Ability Level Select block" )]
     public partial class AbilityLevelSelect : CheckInBlock
     {
