@@ -14,12 +14,16 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using System.ComponentModel;
 
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
     /// 
     /// </summary>
+    [DisplayName("Route List")]
+    [Category("CMS")]
+    [Description("Displays a list of page routes.")]
     [LinkedPage("Detail Page")]
     public partial class PageRouteList : RockBlock
     {

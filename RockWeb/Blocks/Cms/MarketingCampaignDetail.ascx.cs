@@ -18,12 +18,16 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using System.ComponentModel;
 
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
     /// 
     /// </summary>
+    [DisplayName("Marketing Campaign - Campaign Detail")]
+    [Category("CMS")]
+    [Description("Displays the details for campaign.")]
     [LinkedPage( "Event Page" )]
     public partial class MarketingCampaignDetail : RockBlock, IDetailBlock
     {

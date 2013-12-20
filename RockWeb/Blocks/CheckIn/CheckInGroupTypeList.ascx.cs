@@ -16,12 +16,16 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using System.ComponentModel;
 
 namespace RockWeb.Blocks.CheckIn
 {
     /// <summary>
     /// 
     /// </summary>
+    [DisplayName("Group Type List")]
+    [Category("Check-in")]
+    [Description("Lists groups types that are available for checkin.")]
     [LinkedPage( "Schedule Builder Page" )]
     [LinkedPage( "Configure Groups Page", "Page for configuration of Check-in Groups/Locations" )]
     public partial class CheckinGroupTypeList : RockBlock

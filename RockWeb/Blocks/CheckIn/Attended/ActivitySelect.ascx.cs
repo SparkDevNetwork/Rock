@@ -20,6 +20,8 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.CheckIn.Attended
 {
+    [DisplayName("Activity Select")]
+    [Category("Check-in > Attended")]
     [Description( "Attended Check-In Activity Select Block" )]
     public partial class ActivitySelect : CheckInBlock
     {
