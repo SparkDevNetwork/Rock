@@ -22,10 +22,10 @@ namespace Rock.Model
     public partial class Site : Model<Site>
     {
         /// <summary>
-        /// Gets or sets a flag indicating if this Site was created by and is part of the RockChMS core system/framework. This property is required.
+        /// Gets or sets a flag indicating if this Site was created by and is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> that is <c>true</c> if this Site is part of the RockChMS core system/framework, otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this Site is part of the Rock core system/framework, otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]

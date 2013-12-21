@@ -81,7 +81,7 @@ namespace Rock.Web
                     else
                     {
                         var siteService = new Rock.Model.SiteService();
-                        var rockSite = siteService.Get( new Guid( SystemGuid.Site.SITE_ROCK_CHMS ) );
+                        var rockSite = siteService.Get( new Guid( SystemGuid.Site.SITE_ROCK_INTERNAL ) );
                         if ( rockSite != null )
                         {
                             siteId = rockSite.Id;
@@ -143,11 +143,11 @@ namespace Rock.Web
             catch ( System.Web.HttpException )
             {
                 // The Selected theme and/or layout didn't exist, attempt first to use the layout in the default theme.
-                theme = "RockChMS";
+                theme = "Rock";
                 
                 // If not using the default layout, verify that Layout exists in the default theme directory
                 if ( layout != "Default" &&
-                    !File.Exists( requestContext.HttpContext.Server.MapPath( string.Format( "~/Themes/RockChMS/Layouts/{0}.aspx", layout ) ) ) )
+                    !File.Exists( requestContext.HttpContext.Server.MapPath( string.Format( "~/Themes/Rock/Layouts/{0}.aspx", layout ) ) ) )
                 {
                     // If selected layout doesn't exist in the default theme, switch to the Default layout
                     layout = "Default";

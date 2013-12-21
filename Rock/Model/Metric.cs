@@ -29,7 +29,7 @@ namespace Rock.Model
     public partial class Metric : Model<Metric>, IOrdered
     {
         /// <summary>
-        /// Gets or sets a flag indicating if this Metric is part of the RockChMS core system/framework. This property is required.
+        /// Gets or sets a flag indicating if this Metric is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
         /// A <see cref="System.Boolean"/> that is <c>true</c> if the Metric is part of the core system/framework; otherwise <c>false</c>.

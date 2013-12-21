@@ -13,7 +13,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents an a WorkflowTrigger in RockChMS. A WorkflowTrigger can be setup on an EntityType or a subset of entities to start/trigger a workflow
+    /// Represents an a WorkflowTrigger in Rock. A WorkflowTrigger can be setup on an EntityType or a subset of entities to start/trigger a workflow
     /// when a save or delete is performed on the entity. If the workflow does not complete successfully, the database action will not be performed.
     /// </summary>
     [Table( "WorkflowTrigger" )]
@@ -23,10 +23,10 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets a flag indicating if this WorkflowTrigger is part of RockChMS core system/framework.
+        /// Gets or sets a flag indicating if this WorkflowTrigger is part of Rock core system/framework.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this WorkflowTrigger is part of the RockChMs core system/framework; otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this WorkflowTrigger is part of the Rock core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
