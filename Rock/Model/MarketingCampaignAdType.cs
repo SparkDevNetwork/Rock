@@ -20,10 +20,10 @@ namespace Rock.Model
     public partial class MarketingCampaignAdType : Model<MarketingCampaignAdType>
     {
         /// <summary>
-        /// Gets or sets a flag indicating if this MarketingCampaignAdType is part of the RockChMS core system/framework. 
+        /// Gets or sets a flag indicating if this MarketingCampaignAdType is part of the Rock core system/framework. 
         /// </summary>
         /// <value>
-        ///   A <see cref="System.Boolean"/> flag that is <c>true</c> if this MarketingCAmpaignAdType is part of the RockChMS core system/framework; otherwise <c>false</c>.
+        ///   A <see cref="System.Boolean"/> flag that is <c>true</c> if this MarketingCAmpaignAdType is part of the Rock core system/framework; otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool IsSystem { get; set; }

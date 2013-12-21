@@ -7,7 +7,7 @@
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a Range of objects in RockChMS.
+    /// Represents a Range of objects in Rock.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class RangeValue<T>

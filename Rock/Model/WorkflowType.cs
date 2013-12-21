@@ -16,7 +16,7 @@ namespace Rock.Model
 {
     /// <summary>
     /// WorkflowType POCO Entity.
-    /// Represents a WorkflowType or workflow definition in RockChMS. WorkflowTypes are categorizable and orderable, through the implementation of <see cref="Rock.Data.ICategorized"/>
+    /// Represents a WorkflowType or workflow definition in Rock. WorkflowTypes are categorizable and orderable, through the implementation of <see cref="Rock.Data.ICategorized"/>
     /// and <see cref="Rock.Data.IOrdered"/> respectively. A WorkFlowType is a predetermined set of steps or <see cref="Rock.Model.WorkflowActivityType">activities</see>
     /// to be performed by the system, by a user or a combination of the two. A workflow can be used for any process that can have multiple steps that need to be performed in 
     /// a specific and constant order, and can have divergent paths based on input or data.  A workflow can either be persisted to the database, 
@@ -31,10 +31,10 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets a flag indicating if this WorkflowType is part of the RockChMS core system/framework.
+        /// Gets or sets a flag indicating if this WorkflowType is part of the Rock core system/framework.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> that is <c>true</c> if the WorkflowType is part of the RockChMS core system/framework; otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if the WorkflowType is part of the Rock core system/framework; otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool IsSystem { get; set; }

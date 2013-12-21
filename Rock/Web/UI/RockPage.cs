@@ -26,7 +26,7 @@ using Page = System.Web.UI.Page;
 namespace Rock.Web.UI
 {
     /// <summary>
-    /// RockPage is the base abstract class that all page templates in RockChMS should inherit from
+    /// RockPage is the base abstract class that all page templates in Rock should inherit from
     /// </summary>
     public abstract class RockPage : Page
     {

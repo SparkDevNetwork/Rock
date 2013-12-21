@@ -17,7 +17,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a persisted <see cref="Rock.Model.Workflow"/> execution/instance in RockChMS.
+    /// Represents a persisted <see cref="Rock.Model.Workflow"/> execution/instance in Rock.
     /// </summary>
     [Table( "Workflow" )]
     [DataContract]

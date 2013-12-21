@@ -17,7 +17,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents an individual webpage in RockChMS. A page is a container on a <see cref="Rock.Model.Site"/> that has a <see cref="Rock.Model.Layout"/> which
+    /// Represents an individual webpage in Rock. A page is a container on a <see cref="Rock.Model.Site"/> that has a <see cref="Rock.Model.Layout"/> which
     /// consists of one or more content area zones. Each content area zone on the page can contain zero or more <see cref="Rock.Model.Block">Blocks.</see>.
     /// 
     /// Pages are hierarchical, and are used to create the structure of the site.  Each page can have one parent Page and zero or more children pages, and the 
@@ -61,10 +61,10 @@ namespace Rock.Model
         public string Title { get; set; }
 
         /// <summary>
-        /// Gets or sets a flag indicating if the Page is part of the RockChMS core system/framework.
+        /// Gets or sets a flag indicating if the Page is part of the Rock core system/framework.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> that is <c>true</c> if this Page is part of the RockChMS core system/framework, otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this Page is part of the Rock core system/framework, otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool IsSystem { get; set; }

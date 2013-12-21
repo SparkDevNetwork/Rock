@@ -5,9 +5,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head id="Head1" runat="server">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Rock ChMS - License</title>
+    <title>Rock - License</title>
 
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Styles/theme.css") %>" />
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Rock/Styles/theme.css") %>" />
 
     <script src="<%= ResolveUrl("~/Scripts/jquery.js") %>"></script>
 
@@ -16,7 +16,7 @@
     <form id="form1" runat="server">
 
         <div id="content">
-            <img alt="Rock ChMS" id="logoImg" runat="server" class="pageheader-logo" src="#" />
+            <img alt="Rock" id="logoImg" runat="server" class="pageheader-logo" src="#" />
 
             <div id="content-box">
                 <div class="row">
@@ -45,7 +45,7 @@
                         </p>
 
                         <h1>Component Licenses</h1>
-                        The Rock ChMS was written using several other open-source projects and packages.  Each 
+                        Rock was written using several other open-source projects and packages.  Each 
                         of these is attributed below with their respective licenses.
 
                         <ul>

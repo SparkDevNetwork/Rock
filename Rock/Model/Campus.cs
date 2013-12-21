@@ -26,10 +26,10 @@ namespace Rock.Model
 
 
         /// <summary>
-        /// Gets or sets a flag indicating if the Campus is a part of the RockChMS system/framework. This property is required.
+        /// Gets or sets a flag indicating if the Campus is a part of the Rock system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> that is <c>true</c> if this Block is part of the RockChMS core system/framework, otherwise is <c>false</c>.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this Block is part of the Rock core system/framework, otherwise is <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]

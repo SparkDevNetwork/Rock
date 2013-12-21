@@ -14,8 +14,8 @@ namespace Rock.SystemGuid
     public static class Site
     {
         /// <summary>
-        /// Gets the default RockChMS Site guid
+        /// Gets the default Rock Site guid
         /// </summary>
-        public const string SITE_ROCK_CHMS= "C2D29296-6A87-47A9-A753-EE4E9159C4C4";
+        public const string SITE_ROCK_INTERNAL = "C2D29296-6A87-47A9-A753-EE4E9159C4C4";
     }
 }

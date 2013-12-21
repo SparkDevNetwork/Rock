@@ -29,9 +29,9 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Registers any layouts in a particular site's theme folder that do not currently have any layouts registered in RockChMS.
+        /// Registers any layouts in a particular site's theme folder that do not currently have any layouts registered in Rock.
         /// </summary>
-        /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to RockChMS on the server.</param>
+        /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to Rock on the server.</param>
         /// <param name="site">The site.</param>
         /// <param name="currentPersonId">A <see cref="System.Int32" /> that contains the Id of the currently logged on <see cref="Rock.Model.Person" />.</param>
         public void RegisterLayouts( string physWebAppPath, SiteCache site, int? currentPersonId )
