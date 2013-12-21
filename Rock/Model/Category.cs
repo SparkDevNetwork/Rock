@@ -15,7 +15,7 @@ using Rock.Security;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a category or group of entity objects in RockChMS. A category can be used to group entity instances of <see cref="Rock.Model.EntityType">EntityTypes</see>. 
+    /// Represents a category or group of entity objects in Rock. A category can be used to group entity instances of <see cref="Rock.Model.EntityType">EntityTypes</see>. 
     /// For an EntityType to be categorizable the EntityType will need to implement the <see cref="Rock.Data.ICategorized"/> interface.
     /// </summary>
     [Table( "Category" )]
@@ -26,10 +26,10 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets a flag indicating if this Category is part of the RockChMS core system/framework.
+        /// Gets or sets a flag indicating if this Category is part of the Rock core system/framework.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Category is part of the RockChMS core system/framework; otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Category is part of the Rock core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]

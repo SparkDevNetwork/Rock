@@ -16,7 +16,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a financial transaction in RockChMS.  This class implements the <c>FinancialTransactionBase</c> base class.
+    /// Represents a financial transaction in Rock.  This class implements the <c>FinancialTransactionBase</c> base class.
     /// </summary>
     [Table( "FinancialTransaction" )]
     [DataContract]

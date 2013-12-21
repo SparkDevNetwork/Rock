@@ -32,7 +32,7 @@ namespace RockWeb.Blocks.Core
     {
         #region Fields
         WebProjectManager nuGetService = null;
-        private string rockPackageId = "RockChMS";
+        private string rockPackageId = "Rock";
         private string rockUpdatePackageIdPrefix = "RockUpdate";
         /// <summary>
         /// Gets or sets the current view mode.
@@ -346,8 +346,8 @@ namespace RockWeb.Blocks.Core
 
             IPackage package = NuGetService.SourceRepository.FindPackage( packageId, version: null, allowPrereleaseVersions: false, allowUnlisted: false );
 
-            // TODO: change to "http://quarry.rockchms.com/Content/Images/Quarry/packageDefaultIcon-128x128.png";
-            imgIcon.ImageUrl = ( package.IconUrl == null ) ? "http://quarry.rockchms.com/Content/Images/packageDefaultIcon1.png" : package.IconUrl.ToString();
+            // TODO: change to "http://quarry.rockrms.com/Content/Images/Quarry/packageDefaultIcon-128x128.png";
+            imgIcon.ImageUrl = ( package.IconUrl == null ) ? "http://quarry.rockrms.com/Content/Images/packageDefaultIcon1.png" : package.IconUrl.ToString();
             lTitle.Text = package.Title;
             lAuthors.Text = string.Join( ",", package.Authors );
             lDescription.Text = package.Description;

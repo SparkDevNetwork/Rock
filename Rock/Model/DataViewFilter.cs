@@ -19,7 +19,7 @@ using Rock.Reporting;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a filter on a <see cref="Rock.Model.DataView"/> in RockChMS.
+    /// Represents a filter on a <see cref="Rock.Model.DataView"/> in Rock.
     /// </summary>
     [NotAudited]
     [Table( "DataViewFilter" )]

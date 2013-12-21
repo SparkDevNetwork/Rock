@@ -18,7 +18,7 @@ namespace Rock.Model
     /// Represents a <see cref="Rock.Model.Location"/> that is associated with a <see cref="Rock.Model.Group"/>.
     /// </summary>
     /// <remarks>
-    /// In RockChMS a <see cref="Rock.Model.Group"/> is defined any party or collection of <see cref="Rock.Model.Person">Persons</see>.  Examples of GroupLocaitons
+    /// In Rock a <see cref="Rock.Model.Group"/> is defined any party or collection of <see cref="Rock.Model.Person">Persons</see>.  Examples of GroupLocaitons
     /// could include a Person/Family's address, a Business' address, a church campus, a room where a Bible study meets.  Pretty much, it is any place where a 
     /// group of people meet or are located. 
     /// </remarks>

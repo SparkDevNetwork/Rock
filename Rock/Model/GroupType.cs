@@ -17,8 +17,8 @@ namespace Rock.Model
 {
 
     /// <summary>
-    /// Represents a type or category of <see cref="Rock.Model.Group">Groups</see> in RockChMS.  A GroupType is also used to configure how Groups that belong to a GroupType will operate
-    /// and how they will interact with other components of RockChMS.
+    /// Represents a type or category of <see cref="Rock.Model.Group">Groups</see> in Rock.  A GroupType is also used to configure how Groups that belong to a GroupType will operate
+    /// and how they will interact with other components of Rock.
     /// </summary>
     [Table( "GroupType" )]
     [FriendlyTypeName( "Group Type" )]
@@ -39,10 +39,10 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets a flag indicating if this GroupType is part of the RockChMS core system/framework.  This property is required.
+        /// Gets or sets a flag indicating if this GroupType is part of the Rock core system/framework.  This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> that is <c>true</c> if this GroupType is part of the RockChMS core system/framework.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this GroupType is part of the Rock core system/framework.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]

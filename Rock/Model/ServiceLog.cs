@@ -14,7 +14,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a log entry from when RockChMS makes a call to an external service.
+    /// Represents a log entry from when Rock makes a call to an external service.
     /// </summary>
     [Table( "ServiceLog" )]
     [DataContract]

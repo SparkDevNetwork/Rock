@@ -14,7 +14,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents an entry in the Exception Log. It is a record of an exception that was was thrown and logged by the RockChMS system/framework.
+    /// Represents an entry in the Exception Log. It is a record of an exception that was was thrown and logged by the Rock system/framework.
     /// These exceptions can include several status codes, the one most often seen is 500, but can also include 404 (when configured in Global Attributes) 
     /// and other status codes. These entities are not tracked by the <see cref="Rock.Model.Audit"/> model.
     /// </summary>

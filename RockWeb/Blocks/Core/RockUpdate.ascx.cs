@@ -23,7 +23,7 @@ namespace RockWeb.Blocks.Core
     public partial class RockUpdate : Rock.Web.UI.RockBlock
     {
         WebProjectManager nuGetService = null;
-        private string rockPackageId = "RockChMS";
+        private string rockPackageId = "Rock";
 
         /// <summary>
         /// Obtains a WebProjectManager from the Global "UpdateServerUrl" Attribute.

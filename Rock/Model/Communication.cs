@@ -20,7 +20,7 @@ using Rock.Communication;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a communication in RockChMS (i.e. email, SMS message, etc.).
+    /// Represents a communication in Rock (i.e. email, SMS message, etc.).
     /// </summary>
     [Table( "Communication" )]
     [DataContract]

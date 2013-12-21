@@ -23,10 +23,10 @@ namespace Rock.Model
     public partial class AttributeQualifier : Entity<AttributeQualifier>
     {
         /// <summary>
-        /// Gets or sets a flag indicating if the AttributeQualifer is part of the RockChMS core system/framework.
+        /// Gets or sets a flag indicating if the AttributeQualifer is part of the Rock core system/framework.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the AttributeQualifer is part of the RockChMS core system/framework; otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the AttributeQualifer is part of the Rock core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]

@@ -12,7 +12,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a <see cref="Rock.Model.Campus" /> in RockChMS where a <see cref="Rock.Model.MarketingCampaign"/> is being promoted at and/or being promoted for.  A <see cref="Rock.Model.MarketingCampaign"/> can be promoted 
+    /// Represents a <see cref="Rock.Model.Campus" /> in Rock where a <see cref="Rock.Model.MarketingCampaign"/> is being promoted at and/or being promoted for.  A <see cref="Rock.Model.MarketingCampaign"/> can be promoted 
     /// at one or more <see cref="Rock.Model.Campus"/>.
     /// </summary>
     [Table( "MarketingCampaignCampus")]
