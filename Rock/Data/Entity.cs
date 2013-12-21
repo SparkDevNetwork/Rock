@@ -27,10 +27,10 @@ namespace Rock.Data
         /// <summary>
         /// Gets or sets the value of the identifier.  This value is the primary field/key for the entity object.  This value is system and database
         /// dependent, and is not guaranteed to be unique. This id should only be used to identify an object internally to a single implementation
-        /// of RockChMS since this value has a very high probability of not being consistent in an external implementation of RockChMS.
+        /// of Rock since this value has a very high probability of not being consistent in an external implementation of Rock.
         /// </summary>
         /// <value>
-        /// Primary and system dependent <see cref="System.Int32" /> based identity/key of an entity object in RockChMS.
+        /// Primary and system dependent <see cref="System.Int32" /> based identity/key of an entity object in Rock.
         /// </value>
         [Key]
         [DataMember]
@@ -39,15 +39,15 @@ namespace Rock.Data
         /// <summary>
         /// Gets or sets a <see cref="System.Guid"/> value that is a guaranteed unique identifier for the entity object.  This value 
         /// is an alternate key for the object, and should be used when interacting with external systems and when comparing and synchronizing
-        /// objects across across data stores or external /implementations of RockChMS
+        /// objects across across data stores or external /implementations of Rock
         /// </summary>
         /// <remarks>
-        /// A good place for a Guid to be used is when comparing or syncing data across two implementations of RockChMS. For example, if you 
+        /// A good place for a Guid to be used is when comparing or syncing data across two implementations of Rock. For example, if you 
         /// were creating a <see cref="Rock.Web.UI.RockBlock"/> with a data migration that adds/remove a new defined value object to the database. You would want to 
-        /// search based on the Guid because it would be guaranteed to be unique across all implementations of RockChMS. 
+        /// search based on the Guid because it would be guaranteed to be unique across all implementations of Rock. 
         /// </remarks>
         /// <value>
-        /// A <see cref="System.Guid"/> value that will uniquely identify the entity/object across all implementations of RockChMS.
+        /// A <see cref="System.Guid"/> value that will uniquely identify the entity/object across all implementations of Rock.
         /// </value>
         [AlternateKey]
         [DataMember]
@@ -63,7 +63,7 @@ namespace Rock.Data
         #region Virtual Properties
 
         /// <summary>
-        /// Gets the <see cref="Rock.Model.EntityType"/> Id for the Entity object type in RockChMS. If an <see cref="Rock.Model.EntityType"/> is not found
+        /// Gets the <see cref="Rock.Model.EntityType"/> Id for the Entity object type in Rock. If an <see cref="Rock.Model.EntityType"/> is not found
         /// for the object type it will be created
         /// </summary>
         /// <value>

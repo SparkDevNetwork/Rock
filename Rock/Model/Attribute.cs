@@ -14,7 +14,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents an attribute or configuration setting in RockChMS
+    /// Represents an attribute or configuration setting in Rock
     /// </summary>
     [Table( "Attribute" )]
     [DataContract]
@@ -24,10 +24,10 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets a flag indicating if this Attribute is part of the RockChMS core system/framework. This property is required.
+        /// Gets or sets a flag indicating if this Attribute is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this Attribute is part of the RockChMS core system/framework; otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this Attribute is part of the Rock core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]

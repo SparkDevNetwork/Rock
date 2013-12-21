@@ -16,7 +16,7 @@ namespace Rock.Jobs
 {
     
     /// <summary>
-    /// Job that executes routine cleanup tasks on RockChMS
+    /// Job that executes routine cleanup tasks on Rock
     /// </summary>
     /// <author>Jon Edmiston/Chris Funk</author>
     /// <author>Spark Development Network</author>
@@ -39,7 +39,7 @@ namespace Rock.Jobs
         }
         
         /// <summary> 
-        /// Job that executes routine RockChMS cleanup tasks
+        /// Job that executes routine Rock cleanup tasks
         /// 
         /// Called by the <see cref="IScheduler" /> when a
         /// <see cref="ITrigger" /> fires that is associated with

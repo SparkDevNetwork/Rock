@@ -20,10 +20,10 @@ namespace Rock.Model
     public partial class AttributeValue : Model<AttributeValue>
     {
         /// <summary>
-        /// Gets or sets a flag indicating if this AttributeValue is part of the RockChMS core system/framework.
+        /// Gets or sets a flag indicating if this AttributeValue is part of the Rock core system/framework.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if is part of the RockChMS core system/framework.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if is part of the Rock core system/framework.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]

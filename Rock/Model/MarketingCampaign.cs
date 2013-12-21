@@ -14,7 +14,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a marketing campaign in RockChMS
+    /// Represents a marketing campaign in Rock
     /// </summary>
     [Table( "MarketingCampaign" )]
     [DataContract]

@@ -204,6 +204,10 @@
     <Compile Include="Migrations\201312192349366_RenamePublicAdBlocks.Designer.cs">
       <DependentUpon>201312192349366_RenamePublicAdBlocks.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201312202331444_RockRename.cs" />
+    <Compile Include="Migrations\201312202331444_RockRename.Designer.cs">
+      <DependentUpon>201312202331444_RockRename.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -334,6 +338,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201312192349366_RenamePublicAdBlocks.resx">
       <DependentUpon>201312192349366_RenamePublicAdBlocks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312202331444_RockRename.resx">
+      <DependentUpon>201312202331444_RockRename.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

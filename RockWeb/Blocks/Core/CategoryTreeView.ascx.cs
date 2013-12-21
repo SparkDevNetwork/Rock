@@ -84,7 +84,8 @@ namespace RockWeb.Blocks.Core
                     selectedEntityType = "category";
                 }
 
-                lbAddCategory.Enabled = true;
+                lbAddCategoryRoot.Enabled = true;
+                lbAddCategoryChild.Enabled = false;
                 lbAddItem.Enabled = false;
 
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
@@ -99,6 +100,7 @@ namespace RockWeb.Blocks.Core
                     {
                         category = new CategoryService().Get( int.Parse( itemId ) );
                         lbAddItem.Enabled = true;
+                        lbAddCategoryChild.Enabled = true;
                     }
                     else
                     {
@@ -119,7 +121,8 @@ namespace RockWeb.Blocks.Core
 
                                     if ( entity != null )
                                     {
-                                        lbAddCategory.Enabled = false;
+                                        lbAddCategoryRoot.Enabled = false;
+                                        lbAddCategoryChild.Enabled = false;
                                         category = entity.Category;
                                         if ( category != null )
                                         {
@@ -160,23 +163,6 @@ namespace RockWeb.Blocks.Core
             }
         }
 
-        /// <summary>
-        /// Handles the Click event of the lbAddCategory control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void lbAddCategory_Click( object sender, EventArgs e )
-        {
-            int parentCategoryId = 0;
-            if ( Int32.TryParse( hfSelectedCategoryId.Value, out parentCategoryId ) )
-            {
-                NavigateToLinkedPage( "DetailPage", "CategoryId", 0, "parentCategoryId", parentCategoryId );
-            }
-            else
-            {
-                NavigateToLinkedPage( "DetailPage", "CategoryId", 0 );
-            }
-        }
 
         /// <summary>
         /// Handles the Click event of the lbAddItem control.
@@ -191,5 +177,21 @@ namespace RockWeb.Blocks.Core
                 NavigateToLinkedPage( "DetailPage", PageParameterName, 0, "parentCategoryId", parentCategoryId );
             }
         }
-    }
+        protected void lbAddCategoryChild_Click(object sender, EventArgs e)
+        {
+            int parentCategoryId = 0;
+            if (Int32.TryParse(hfSelectedCategoryId.Value, out parentCategoryId))
+            {
+                NavigateToLinkedPage("DetailPage", "CategoryId", 0, "parentCategoryId", parentCategoryId);
+            }
+            else
+            {
+                NavigateToLinkedPage("DetailPage", "CategoryId", 0);
+            }
+        }
+        protected void lbAddCategoryRoot_Click(object sender, EventArgs e)
+        {
+            NavigateToLinkedPage("DetailPage", "CategoryId", 0);
+        }
+}
 }

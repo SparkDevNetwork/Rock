@@ -21,7 +21,7 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a person or a business in RockChMS.  
+    /// Represents a person or a business in Rock.  
     /// </summary>
     [Table( "Person" )]
     [DataContract]
@@ -40,10 +40,10 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets a flag indicating if this Person is part of the RockChMS core system/framework. This property is required.
+        /// Gets or sets a flag indicating if this Person is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this Person is part of the RockChMS core system/framework. This property is required.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this Person is part of the Rock core system/framework. This property is required.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]

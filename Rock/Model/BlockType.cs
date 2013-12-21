@@ -17,7 +17,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a a configurable and functional component or module that extends the base functionality of the RockChMS system/framework. A
+    /// Represents a a configurable and functional component or module that extends the base functionality of the Rock system/framework. A
     /// BlockType can be implemented one or more <see cref="Page">Pages</see> or <see cref="Layout">Layouts</see>.
     /// </summary>
     [Table( "BlockType" )]
@@ -28,10 +28,10 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets a flag indicating if this BlockType was created by and is a part of the RockChMS core system/framework. This property is required.
+        /// Gets or sets a flag indicating if this BlockType was created by and is a part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> that is <c>true</c> if this Block is part of the RockChMS core system/framework, otherwise is <c>false</c>.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this Block is part of the Rock core system/framework, otherwise is <c>false</c>.
         /// </value>
         /// <example>
         /// True

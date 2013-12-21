@@ -18,7 +18,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a user's RockChMS login and authentication credentials.
+    /// Represents a user's Rock login and authentication credentials.
     /// </summary>
     [Table( "UserLogin" )]
     [DataContract]
@@ -195,7 +195,7 @@ namespace Rock.Model
         public int? PersonId { get; set; }
 
         /// <summary>
-        /// Gets a flag indicating if the User authenticated with their last interaction with RockChMS (versus using an impersonation link).
+        /// Gets a flag indicating if the User authenticated with their last interaction with Rock (versus using an impersonation link).
         /// </summary>
         /// <value>
         ///   A <see cref="System.Boolean"/> value that is <c>true</c> if the user actually authenticated; otherwise <c>false</c>.

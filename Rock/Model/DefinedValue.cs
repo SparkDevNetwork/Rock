@@ -13,7 +13,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a DefinedValue instance in RockChMS. These values are sortable and can be secured (based on their <see cref="ParentAuthority"/>). 
+    /// Represents a DefinedValue instance in Rock. These values are sortable and can be secured (based on their <see cref="ParentAuthority"/>). 
     /// An example of a DefinedValue for a "State List" <see cref="Rock.Model.DefinedType"/> is Arizona.
     /// </summary>
     [Table( "DefinedValue" )]
@@ -21,10 +21,10 @@ namespace Rock.Model
     public partial class DefinedValue : Model<DefinedValue>, IOrdered
     {
         /// <summary>
-        /// Gets or sets a flag indicating if this DefinedValue is part of the RockChMS core system/framework. this property is required.
+        /// Gets or sets a flag indicating if this DefinedValue is part of the Rock core system/framework. this property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> that is <c>true</c> if it is part of the RockChMS core system/framework; otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if it is part of the Rock core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]

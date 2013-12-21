@@ -14,18 +14,18 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a scheduled job/routine in RockChMS. A job class can have multiple ServiceJob instances associated with it in the event that it has different attributes or 
-    /// has multiple schedules.  For more information on how to create a job see https://github.com/SparkDevNetwork/Rock-ChMS/wiki/Rock-Jobs
+    /// Represents a scheduled job/routine in Rock. A job class can have multiple ServiceJob instances associated with it in the event that it has different attributes or 
+    /// has multiple schedules.  For more information on how to create a job see https://github.com/SparkDevNetwork/Rock/wiki/Rock-Jobs
     /// </summary>
     [Table( "ServiceJob" )]
     [DataContract]
     public partial class ServiceJob : Model<ServiceJob>
     {
         /// <summary>
-        /// Gets or sets a flag indicating if this Job is part of the RockChMS core system/framework
+        /// Gets or sets a flag indicating if this Job is part of the Rock core system/framework
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Job is part of the RockChMS core system/framework;
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Job is part of the Rock core system/framework;
         /// otherwise <c>false</c>.
         /// </value>
         [DataMember]

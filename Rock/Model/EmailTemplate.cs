@@ -15,17 +15,17 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a RockChMS email template.
+    /// Represents a Rock email template.
     /// </summary>
     [Table( "EmailTemplate" )]
     [DataContract]
     public partial class EmailTemplate : Model<EmailTemplate>
     {
         /// <summary>
-        /// Gets or sets a flag indicating if the email template is part of the RockChMS core system/framework.
+        /// Gets or sets a flag indicating if the email template is part of the Rock core system/framework.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the EmailTemplate is part of the RockChMS core system/framework otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the EmailTemplate is part of the Rock core system/framework otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// A <see cref="System.String" /> representing the category that this EmailTemplate belongs to.
         /// </value>
         /// <remarks>
-        /// There are plans to update this to implement ICategorized and <see cref="Rock.Model.Category"/>. See https://github.com/SparkDevNetwork/Rock-ChMS/issues/142
+        /// There are plans to update this to implement ICategorized and <see cref="Rock.Model.Category"/>. See https://github.com/SparkDevNetwork/Rock/issues/142
         /// </remarks>
         [MaxLength( 100 )]
         [DataMember]
