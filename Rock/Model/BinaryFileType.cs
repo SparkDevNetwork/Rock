@@ -56,24 +56,6 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.BinaryFile"/> that is used as the small icon representing this BinaryFileType.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.BinaryFile"/> that is used as the small icon. If a file based icon is not used, or a small icon isn't used this value will be null.
-        /// </value>
-        [DataMember]
-        public int? IconSmallFileId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.BinaryFile"/> that is as used as the large icon representing this BinaryFileType.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.BinaryFile"/> that is used as the large icon. If a file based icon is not used, or a large icon is not used, this value will be null.
-        /// </value>
-        [DataMember]
-        public int? IconLargeFileId { get; set; }
-
-        /// <summary>
         /// Gets or sets the CSS class that is used for a vector/CSS icon.
         /// </summary>
         /// <value>
@@ -103,22 +85,6 @@ namespace Rock.Model
         #endregion
 
         #region Virtual Properties
-
-        /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.BinaryFile"/> that represents the small icon.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.BinaryFile"/> that represents the small icon.
-        /// </value>
-        public virtual BinaryFile IconSmallFile { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.BinaryFile"/> that represents the large icon.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.BinaryFile"/> that represents the large icon
-        /// </value>
-        public virtual BinaryFile IconLargeFile { get; set; }
 
         /// <summary>
         /// Gets the count of <see cref="Rock.Model.BinaryFile" /> entities that are children of this <see cref="Rock.Model.BinaryFileType"/>.
@@ -191,8 +157,6 @@ namespace Rock.Model
         /// </summary>
         public BinaryFileTypeConfiguration()
         {
-            this.HasOptional( f => f.IconSmallFile ).WithMany().HasForeignKey( f => f.IconSmallFileId ).WillCascadeOnDelete( false );
-            this.HasOptional( f => f.IconLargeFile ).WithMany().HasForeignKey( f => f.IconLargeFileId ).WillCascadeOnDelete( false );
         }
     }
 

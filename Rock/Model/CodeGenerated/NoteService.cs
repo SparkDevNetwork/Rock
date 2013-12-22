@@ -98,6 +98,7 @@ namespace Rock.Model
             target.EntityId = source.EntityId;
             target.SourceTypeValueId = source.SourceTypeValueId;
             target.Caption = source.Caption;
+            target.CreatedByPersonId = source.CreatedByPersonId;
             target.CreationDateTime = source.CreationDateTime;
             target.IsAlert = source.IsAlert;
             target.Text = source.Text;

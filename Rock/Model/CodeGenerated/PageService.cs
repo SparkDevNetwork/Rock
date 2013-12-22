@@ -125,7 +125,6 @@ namespace Rock.Model
             target.Order = source.Order;
             target.OutputCacheDuration = source.OutputCacheDuration;
             target.Description = source.Description;
-            target.IconFileId = source.IconFileId;
             target.IconCssClass = source.IconCssClass;
             target.IncludeAdminFooter = source.IncludeAdminFooter;
             target.Id = source.Id;

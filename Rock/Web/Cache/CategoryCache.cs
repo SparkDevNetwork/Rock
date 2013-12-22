@@ -88,22 +88,6 @@ namespace Rock.Web.Cache
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the icon small file id.
-        /// </summary>
-        /// <value>
-        /// The icon small file id.
-        /// </value>
-        public int? IconSmallFileId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the icon large file id.
-        /// </summary>
-        /// <value>
-        /// The icon large file id.
-        /// </value>
-        public int? IconLargeFileId { get; set; }
-
-        /// <summary>
         /// Gets or sets the icon CSS class.
         /// </summary>
         /// <value>
@@ -189,8 +173,6 @@ namespace Rock.Web.Cache
                 this.EntityTypeQualifierColumn = category.EntityTypeQualifierColumn;
                 this.EntityTypeQualifierValue = category.EntityTypeQualifierValue;
                 this.Name = category.Name;
-                this.IconSmallFileId = category.IconSmallFileId;
-                this.IconLargeFileId = category.IconLargeFileId;
                 this.IconCssClass = category.IconCssClass;
             }
         }

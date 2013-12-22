@@ -266,27 +266,7 @@ namespace RockWeb.Blocks.Core
             category.IconCssClass = tbIconCssClass.Text;
 
             List<int> orphanedBinaryFileIdList = new List<int>();
-
-            if ( category.IconSmallFileId != imgIconSmall.BinaryFileId )
-            {
-                if ( category.IconSmallFileId.HasValue )
-                {
-                    orphanedBinaryFileIdList.Add( category.IconSmallFileId.Value );
-                }
-
-                category.IconSmallFileId = imgIconSmall.BinaryFileId;
-            }
-
-            if ( category.IconLargeFileId != imgIconLarge.BinaryFileId )
-            {
-                if ( category.IconLargeFileId.HasValue )
-                {
-                    orphanedBinaryFileIdList.Add( category.IconLargeFileId.Value );
-                }
-
-                category.IconLargeFileId = imgIconLarge.BinaryFileId;
-            } 
-            
+           
             if ( category.IsValid )
             {
                 RockTransactionScope.WrapTransaction( () =>
@@ -402,8 +382,6 @@ namespace RockWeb.Blocks.Core
             entityTypePicker.SelectedEntityTypeId = entityTypeId;
 
             tbIconCssClass.Text = category.IconCssClass;
-            imgIconSmall.BinaryFileId = category.IconSmallFileId.HasValue ? category.IconSmallFileId.Value : None.Id;
-            imgIconLarge.BinaryFileId = category.IconLargeFileId.HasValue ? category.IconLargeFileId.Value : None.Id;
 
             hfIdValue.Value = categoryId.ToString();
             modalDetails.Show();

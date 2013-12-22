@@ -96,6 +96,7 @@ namespace Rock.Model
             target.IsSystem = source.IsSystem;
             target.Path = source.Path;
             target.Name = source.Name;
+            target.Category = source.Category;
             target.Description = source.Description;
             target.Id = source.Id;
             target.Guid = source.Guid;
