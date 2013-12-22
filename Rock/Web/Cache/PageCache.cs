@@ -476,7 +476,6 @@ namespace Rock.Web.Cache
                 this.Order = page.Order;
                 this.OutputCacheDuration = page.OutputCacheDuration;
                 this.Description = page.Description;
-                this.IconFileId = page.IconFileId;
                 this.IncludeAdminFooter = page.IncludeAdminFooter;
 
                 this.PageContexts = new Dictionary<string, string>();

@@ -828,24 +828,8 @@ namespace RockWeb.Blocks.Groups
         {
             SetEditMode( false );
 
-            string groupIconHtml = string.Empty;
-            if ( !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) )
-            {
-                groupIconHtml = string.Format( "<i class='{0}' ></i>", group.GroupType.IconCssClass );
-            }
-            else
-            {
-                var getImageUrl = ResolveRockUrl( "~/GetImage.ashx" );
-                string imageUrlFormat = "<img src='" + getImageUrl + "GetImage.ashx?id={0}&width=50&height=50' />";
-                if ( group.GroupType.IconLargeFileId != null )
-                {
-                    groupIconHtml = string.Format( imageUrlFormat, group.GroupType.IconLargeFileId );
-                }
-                else if ( group.GroupType.IconSmallFileId != null )
-                {
-                    groupIconHtml = string.Format( imageUrlFormat, group.GroupType.IconSmallFileId );
-                }
-            }
+            string groupIconHtml = !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) ?
+                groupIconHtml = string.Format( "<i class='{0}' ></i>", group.GroupType.IconCssClass ) : "";
 
             hfGroupId.SetValue( group.Id );
             lGroupIconHtml.Text = groupIconHtml;

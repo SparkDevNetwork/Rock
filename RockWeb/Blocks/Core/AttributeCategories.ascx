@@ -11,6 +11,7 @@
                 <Columns>
                     <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
                     <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                    <asp:BoundField DataField="IconCssClass" HeaderText="Icon Class" SortExpression="IconCssClass" />
                     <asp:TemplateField>
                         <HeaderTemplate>Entity Type</HeaderTemplate>
                         <ItemTemplate>
@@ -29,12 +30,10 @@
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbName" runat="server" Label="Name" Required="true" ValidationGroup="EntityTypeName" />
-                        <Rock:EntityTypePicker ID="entityTypePicker" runat="server" Required="true" Label="Entity Type" IncludeGlobalOption="true" />
+                        <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" />
-                        <Rock:ImageUploader ID="imgIconSmall" runat="server" Label="Small Icon Image" />
-                        <Rock:ImageUploader ID="imgIconLarge" runat="server" Label="Large Icon Image" />
+                        <Rock:EntityTypePicker ID="entityTypePicker" runat="server" Required="true" Label="Entity Type" IncludeGlobalOption="true" />
                     </div>
                 </div>
                 </fieldset>

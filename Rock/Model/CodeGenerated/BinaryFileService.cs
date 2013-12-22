@@ -57,28 +57,10 @@ namespace Rock.Model
         public bool CanDelete( BinaryFile item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            
-            // ignoring BinaryFileType,IconLargeFileId 
-            
-            // ignoring BinaryFileType,IconSmallFileId 
-            
-            // ignoring Category,IconLargeFileId 
-            
-            // ignoring Category,IconSmallFileId 
  
             if ( new Service<FinancialTransactionImage>().Queryable().Any( a => a.BinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, FinancialTransactionImage.FriendlyTypeName );
-                return false;
-            }  
-            
-            // ignoring GroupType,IconLargeFileId 
-            
-            // ignoring GroupType,IconSmallFileId 
- 
-            if ( new Service<Page>().Queryable().Any( a => a.IconFileId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Page.FriendlyTypeName );
                 return false;
             }  
  

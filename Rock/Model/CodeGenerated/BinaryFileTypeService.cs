@@ -102,8 +102,6 @@ namespace Rock.Model
             target.IsSystem = source.IsSystem;
             target.Name = source.Name;
             target.Description = source.Description;
-            target.IconSmallFileId = source.IconSmallFileId;
-            target.IconLargeFileId = source.IconLargeFileId;
             target.IconCssClass = source.IconCssClass;
             target.StorageEntityTypeId = source.StorageEntityTypeId;
             target.AllowCaching = source.AllowCaching;

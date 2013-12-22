@@ -87,26 +87,6 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the BinaryFileId of the <see cref="Rock.Model.BinaryFile"/> that is being used as the small icon. This property is only used for file based icons.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the BinaryFileId of the <see cref="Rock.Model.BinaryFile"/> that is being used as the small icon. This value will be
-        /// null if a CSS based 
-        /// </value>
-        [DataMember]
-        public int? IconSmallFileId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the BinaryFileId of the <see cref="Rock.Model.BinaryFile"/> that is being used as the large icon. This property is only used for file based icons.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the BinaryFileId of the <see cref="Rock.Model.BinaryFile"/> that is being used as the large icon. This
-        /// property will be null if a CSS based icon is being used 
-        /// </value>
-        [DataMember]
-        public int? IconLargeFileId { get; set; }
-
-        /// <summary>
         /// Gets or sets the name of the icon CSS class. This property is only used for CSS based icons.
         /// </summary>
         /// <value>
@@ -144,24 +124,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual EntityType EntityType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.BinaryFile"/> that is being used as the small icon file.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.BinaryFile"/> that is being used as the small icon file. If a CSS based icon is being used, this value will be null.
-        /// </value>
-        [DataMember]
-        public virtual BinaryFile IconSmallFile { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.BinaryFile"/> that is being used as the large icon file.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.BinaryFile" /> that is being used as the large icon file. If a CSS based icon is being used, this value will be used.
-        /// </value>
-        [DataMember]
-        public virtual BinaryFile IconLargeFile { get; set; }
 
         /// <summary>
         /// Gets the parent authority where security authorizations are being inherited from.
@@ -215,8 +177,6 @@ namespace Rock.Model
         {
             this.HasOptional( p => p.ParentCategory ).WithMany( p => p.ChildCategories).HasForeignKey( p => p.ParentCategoryId).WillCascadeOnDelete( false );
             this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.IconSmallFile ).WithMany().HasForeignKey( p => p.IconSmallFileId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.IconLargeFile ).WithMany().HasForeignKey( p => p.IconLargeFileId ).WillCascadeOnDelete( false );
         }
     }
 
