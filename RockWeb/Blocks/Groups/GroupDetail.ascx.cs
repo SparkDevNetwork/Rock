@@ -1147,7 +1147,7 @@ namespace RockWeb.Blocks.Groups
                                                 .Where( l => l.IsMappedLocation && !l.LocationTypeValue.Guid.Equals( previousLocationType ) ) )
                                             {
                                                 ddlMember.Items.Add( new ListItem(
-                                                    string.Format( "{0} {1} ({2})", member.Person.FirstLastName, familyGroupLocation.LocationTypeValue.Name, familyGroupLocation.Location.ToString() ),
+                                                    string.Format( "{0} {1} ({2})", member.Person.FullName, familyGroupLocation.LocationTypeValue.Name, familyGroupLocation.Location.ToString() ),
                                                     string.Format( "{0}|{1}", familyGroupLocation.Location.Id, member.PersonId ) ) );
                                             }
                                         }

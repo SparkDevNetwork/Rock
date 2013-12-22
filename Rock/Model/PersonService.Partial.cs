@@ -68,6 +68,12 @@ namespace Rock.Model
         /// <returns></returns>
         public override bool Save( Person item, int? personId )
         {
+            // Set the nickname if a value was not entered
+            if ( string.IsNullOrWhiteSpace( item.NickName ) )
+            {
+                item.NickName = item.FirstName;
+            }
+
             // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
             if ( item.PhotoId.HasValue )
             {
@@ -78,7 +84,7 @@ namespace Rock.Model
                     binaryFile.IsTemporary = false;
                 }
             }
-            
+
             return base.Save( item, personId );
         }
 
@@ -256,7 +262,7 @@ namespace Rock.Model
             }
             if ( !string.IsNullOrWhiteSpace( firstName ) )
             {
-                qry = qry.Where( p => p.FirstName.StartsWith( firstName ) );
+                qry = qry.Where( p => p.FirstName.StartsWith( firstName ) || p.NickName.StartsWith( firstName ) );
             }
 
             return qry;
@@ -539,5 +545,6 @@ namespace Rock.Model
         }
 
         #endregion
+
     }
 }

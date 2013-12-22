@@ -96,7 +96,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void BindGrid()
         {
             var selectedPeopleList = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
-                .People.Where( p => p.Selected ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
+                .People.Where( p => p.Selected ).OrderBy( p => p.Person.FullNameReversed ).ToList();
 
             var checkInList = new List<CheckIn>();
             foreach ( var person in selectedPeopleList )
