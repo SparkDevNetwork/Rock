@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
@@ -612,6 +613,12 @@ namespace Rock.Web.UI
                         PageReference.BreadCrumbs.Add( new BreadCrumb( bcName, PageReference.BuildUrl() ) );
                     }
 
+                    // Add the Google Analytics Code script if a code was specified for the site
+                    if (!string.IsNullOrWhiteSpace(_pageCache.Layout.Site.GoogleAnalyticsCode))
+                    {
+                        AddGoogleAnalytics( _pageCache.Layout.Site.GoogleAnalyticsCode );
+                    }
+
                     // Load the blocks and insert them into page zones
                     Page.Trace.Warn( "Loading Blocks" );
                     foreach ( Rock.Web.Cache.BlockCache block in _pageCache.Blocks )
@@ -1032,6 +1039,30 @@ namespace Rock.Web.UI
         public void AddScriptLink(string path)
         {
             RockPage.AddScriptLink( this, path );
+        }
+
+        /// <summary>
+        /// Adds the google analytics script
+        /// </summary>
+        /// <param name="code">The GoogleAnalyticsCode.</param>
+        private void AddGoogleAnalytics( string code )
+        {
+            string scriptTemplate = Application["GoogleAnalyticsScript"] as string;
+            if (scriptTemplate == null)
+            {
+                string scriptFile = MapPath("~/App_Data/GoogleAnalytics.txt");
+                if ( File.Exists( scriptFile ) )
+                {
+                    scriptTemplate = File.ReadAllText( scriptFile );
+                    Application["GoogleAnalyticsScript"] = scriptTemplate;
+                }
+            }
+
+            if ( scriptTemplate != null )
+            {
+                string script = string.Format( scriptTemplate, code );
+                AddScriptToHead( this.Page, script, true );
+            }
         }
 
         #endregion
@@ -1697,6 +1728,38 @@ namespace Rock.Web.UI
                 scriptManager.Scripts.Add( new ScriptReference( path ) );
             }
         }
+
+        /// <summary>
+        /// Adds the script to head.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="script">The script.</param>
+        /// <param name="AddScriptTags">if set to <c>true</c> [add script tags].</param>
+        public static void AddScriptToHead(Page page, string script, bool AddScriptTags)
+        {
+            if ( page != null && page.Header != null )
+            {
+                var header = page.Header;
+                
+                Literal l = new Literal();
+                
+                if ( AddScriptTags )
+                {
+                    l.Text = string.Format( @"
+    <script type=""text/javascript"">       
+{0}
+    </script>
+
+", script );
+                }
+                else
+                {
+                    l.Text = script;
+                }
+
+                header.Controls.Add( l );
+            }
+        } 
 
         #region User Preferences
 
