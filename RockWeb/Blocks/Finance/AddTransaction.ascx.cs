@@ -823,7 +823,7 @@ achieve our mission.  We are so grateful for your commitment.
                         {
                             // Create Person
                             person = new Person();
-                            person.GivenName = txtFirstName.Text;
+                            person.FirstName = txtFirstName.Text;
                             person.LastName = txtLastName.Text;
                             person.Email = txtEmail.Text;
 

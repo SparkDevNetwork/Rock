@@ -196,7 +196,7 @@ namespace RockWeb.Blocks.Core
                         var person = new PersonService().Get( personId.Value );
                         if ( person != null )
                         {
-                            e.Value = person.FullNameLastFirst;
+                            e.Value = person.FullNameReversed;
                         }
                         else
                         {
@@ -306,7 +306,7 @@ namespace RockWeb.Blocks.Core
                     EntityTypeName = t.EntityType.FriendlyName,
                     EntityTypeQualifierColumn = t.EntityTypeQualifierColumn,
                     EntityTypeQualifierValue = t.EntityTypeQualifierValue,
-                    Owner = t.OwnerId.HasValue ? t.Owner.FullNameLastFirst : "Public"
+                    Owner = t.OwnerId.HasValue ? t.Owner.FullNameReversed : "Public"
                 } ).ToList();
 
                 rGrid.DataBind();

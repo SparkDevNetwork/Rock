@@ -295,7 +295,7 @@ namespace RockWeb.Blocks.Finance
                 var definedValue = DefinedValueCache.Read( new Guid( GetAttributeValue( "DefaultConnectionStatus" ) ) );
                 person = new Person
                 {
-                    GivenName = tbFirstName.Text,
+                    FirstName = tbFirstName.Text,
                     LastName = tbLastName.Text,
                     Email = tbEmail.Text,
                     ConnectionStatusValueId = definedValue.Id,

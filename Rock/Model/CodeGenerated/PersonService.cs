@@ -170,7 +170,7 @@ namespace Rock.Model
             target.ConnectionStatusValueId = source.ConnectionStatusValueId;
             target.IsDeceased = source.IsDeceased;
             target.TitleValueId = source.TitleValueId;
-            target.GivenName = source.GivenName;
+            target.FirstName = source.FirstName;
             target.NickName = source.NickName;
             target.MiddleName = source.MiddleName;
             target.LastName = source.LastName;
