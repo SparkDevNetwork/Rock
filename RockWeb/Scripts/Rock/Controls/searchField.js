@@ -37,7 +37,7 @@
                         var keyVal = self.$el.parents('.smartsearch').find('input:hidden').val(),
                             $li = self.$el.parents('.smartsearch').find('li[data-key="' + keyVal + '"]'),
                             targetUrl = $li.attr('data-target'),
-                            url = Rock.settings.get('baseUrl') + targetUrl.replace('{0}', encodeURIComponent(term));
+                            url = Rock.settings.get('baseUrl') + targetUrl.replace('{0}', encodeURIComponent(term)).replace('.', '');
 
                         window.location = url;
                     };
