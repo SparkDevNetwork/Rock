@@ -1283,6 +1283,7 @@ achieve our mission.  We are so grateful for your commitment.
                     {
                         scheduledTransaction.TransactionFrequencyValueId = schedule.TransactionFrequencyValue.Id;
                         scheduledTransaction.AuthorizedPersonId = person.Id;
+                        scheduledTransaction.GatewayEntityTypeId = EntityTypeCache.Read( gateway.TypeGuid ).Id;
 
                         foreach ( var account in SelectedAccounts.Where( a => a.Amount > 0 ) )
                         {
