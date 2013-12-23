@@ -10,7 +10,7 @@ body {
 	background-color: #3c3c3c;
 	color: #333;
 	font-family: 'Open Sans', sans-serif;
-	background-image: url("http://rockchms.blob.core.windows.net/install/header-texture.png");
+	background-image: url("http://storage.rockrms.com/install/header-texture.png");
 }
 			
 div#content {
@@ -52,7 +52,7 @@ ul li i[class^="icon-"] {
 } 
 			
 div#content > h1 {
-	background: url("http://rockchms.blob.core.windows.net/install/header-logo.png") no-repeat scroll 0 0 transparent;
+	background: url("http://storage.rockrms.com/install/header-logo.png") no-repeat scroll 0 0 transparent;
 	color: #E7E7E7;
 	display: block;
 	float: left;

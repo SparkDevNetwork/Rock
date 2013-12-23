@@ -21,13 +21,13 @@
 	//
     const string dotNetVersionRequired = "4.5";
 	const string internetCheckSite = "www.google.com";
-    const string rockZipAssemblyFile = "http://rockchms.blob.core.windows.net/install/Ionic.Zip.dll";
-    const string rockInstallFile = "http://rockchms.blob.core.windows.net/install/Install.aspx";
-    const string rockConfigureFile = "http://rockchms.blob.core.windows.net/install/Configure.aspx";
-    const string rockUtilitiesAssembly = "http://rockchms.blob.core.windows.net/install/Rock.Install.Utilities.dll";
-    
-    const string rockLogoIco = "http://rockchms.blob.core.windows.net/install/rock-chms.ico";
-    const string rockStyles = "http://rockchms.blob.core.windows.net/install/install.css";
+    const string rockZipAssemblyFile = "http://storage.rockrms.com/install/Ionic.Zip.dll";
+    const string rockInstallFile = "http://storage.rockrms.com/install/Install.aspx";
+    const string rockConfigureFile = "http://storage.rockrms.com/install/Configure.aspx";
+    const string rockUtilitiesAssembly = "http://storage.rockrms.com/install/Rock.Install.Utilities.dll";
+
+    const string rockLogoIco = "http://storage.rockrms.com/install/rock-chms.ico";
+    const string rockStyles = "http://storage.rockrms.com/install/install.css";
         
         
 	//
