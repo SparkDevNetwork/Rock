@@ -653,7 +653,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             {
                                 // added new person
                                 groupMember.Person = new Person();
-                                groupMember.Person.GivenName = familyMember.FirstName;
+                                groupMember.Person.FirstName = familyMember.FirstName;
                                 groupMember.Person.LastName = familyMember.LastName;
                                 groupMember.Person.Gender = familyMember.Gender;
                                 groupMember.Person.BirthDate = familyMember.BirthDate;
@@ -998,7 +998,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( person != null )
             {
                 Id = person.Id;
-                FirstName = person.GivenName;
+                FirstName = person.FirstName;
                 LastName = person.LastName;
                 Gender = person.Gender;
                 BirthDate = person.BirthDate;

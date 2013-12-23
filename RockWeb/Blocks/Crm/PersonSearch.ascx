@@ -3,7 +3,7 @@
 <Rock:Grid ID="gPeople" runat="server" EmptyDataText="No People Found" AllowSorting="true" OnRowSelected="gPeople_RowSelected">
     <Columns>
         <asp:BoundField 
-            DataField="FullNameLastFirst"  
+            DataField="FullNameReversed"  
             HeaderText="Person"  
             SortExpression="LastName,FirstName"  />
         <asp:BoundField 

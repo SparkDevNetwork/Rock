@@ -51,9 +51,9 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Registers any block types that are not currently registered in RockChMS.
+        /// Registers any block types that are not currently registered in Rock.
         /// </summary>
-        /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to RockChMS on the server.</param>
+        /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to Rock on the server.</param>
         /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
         /// <param name="currentPersonId">A <see cref="System.Int32" /> that contains the Id of the currently logged on <see cref="Rock.Model.Person" />.</param>
         /// <param name="refreshAll">if set to <c>true</c> will refresh name, category, and description for all block types (not just the new ones)</param>

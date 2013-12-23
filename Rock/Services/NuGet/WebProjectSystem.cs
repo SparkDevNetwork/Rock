@@ -157,6 +157,11 @@ namespace Rock.Services.NuGet
         public override void AddFile( string path, Stream stream )
         {
             base.AddFile( path, stream );
+
+            if ( path.Equals( Path.Combine( "App_Data", "deletefile.lst" ) ) )
+            {
+                ProcessFilesToDelete( path );
+            }
         }
 
         /// <summary>
@@ -169,5 +174,36 @@ namespace Rock.Services.NuGet
             return false;
         }
 
+
+        /// <summary>
+        /// Deletes each file listed in the App_Data/deletefile.lst and then deletes that file.
+        /// </summary>
+        private void ProcessFilesToDelete( string deleteListFile )
+        {
+            using ( StreamReader file = new StreamReader( deleteListFile ) )
+            {
+                string filenameLine;
+                while ( ( filenameLine = file.ReadLine() ) != null )
+                {
+                    if ( !string.IsNullOrWhiteSpace( filenameLine ) )
+                    {
+                        if ( filenameLine.StartsWith( @"RockWeb\" ) )
+                        {
+                            filenameLine = filenameLine.Substring( 8 );
+                        }
+
+                        string physicalFile = System.Web.HttpContext.Current.Server.MapPath( Path.Combine( "~", filenameLine ) );
+                        
+                        if ( File.Exists( physicalFile ) )
+                        {
+                            // TODO guard against things like file is temporarily locked, wait then try delete, etc.
+                            File.Delete( physicalFile );
+                        }
+                    }
+                }
+                file.Close();
+            }
+            File.Delete( deleteListFile );
+        }
     }
 }

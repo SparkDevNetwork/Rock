@@ -16,7 +16,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a PageContext object in RockChMS.  A PageContext entity is an entity object that can be shared amongst all of the <see cref="Rock.Model.Block">Blocks</see> on a page.
+    /// Represents a PageContext object in Rock.  A PageContext entity is an entity object that can be shared amongst all of the <see cref="Rock.Model.Block">Blocks</see> on a page.
     /// </summary>
     /// <remarks>
     /// A good example of this is a <see cref="Rock.Model.Person"/> that is shared amongst all of the <see cref="Rock.Model.Block">Blocks</see> on the Person Detail Page.
@@ -26,7 +26,7 @@ namespace Rock.Model
     public partial class PageContext : Model<PageContext>
     {
         /// <summary>
-        /// Gets or sets a flag indicating if this PageContext is a part of the RockChMS core system/framework. This property is required.
+        /// Gets or sets a flag indicating if this PageContext is a part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
         /// A <see cref="System.Boolean"/> that is <c>true</c> if the PageContext is part of the core system/framework, otherwise <c>false</c>.

@@ -22,7 +22,7 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a Report (based off of a <see cref="Rock.Model.DataView"/> in RockChMS.
+    /// Represents a Report (based off of a <see cref="Rock.Model.DataView"/> in Rock.
     /// </summary>
     [Table( "Report" )]
     [DataContract]
@@ -31,10 +31,10 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets a flag indicating if this Report is part of the RockChMS core system/framework. This property is required.
+        /// Gets or sets a flag indicating if this Report is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        ///  A <see cref="System.Boolean"/> that is <c>true</c> if the Report is part of the RockChMS core system/framework; otherwise <c>false</c>.
+        ///  A <see cref="System.Boolean"/> that is <c>true</c> if the Report is part of the Rock core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]

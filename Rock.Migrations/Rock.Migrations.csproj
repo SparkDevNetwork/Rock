@@ -204,6 +204,22 @@
     <Compile Include="Migrations\201312192349366_RenamePublicAdBlocks.Designer.cs">
       <DependentUpon>201312192349366_RenamePublicAdBlocks.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201312202331444_RockRename.cs" />
+    <Compile Include="Migrations\201312202331444_RockRename.Designer.cs">
+      <DependentUpon>201312202331444_RockRename.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312221305134_GoogleAnalytics.cs" />
+    <Compile Include="Migrations\201312221305134_GoogleAnalytics.Designer.cs">
+      <DependentUpon>201312221305134_GoogleAnalytics.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312221451050_RemoveIconFileFields.cs" />
+    <Compile Include="Migrations\201312221451050_RemoveIconFileFields.Designer.cs">
+      <DependentUpon>201312221451050_RemoveIconFileFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312221636197_RefactorPersonName.cs" />
+    <Compile Include="Migrations\201312221636197_RefactorPersonName.Designer.cs">
+      <DependentUpon>201312221636197_RefactorPersonName.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -334,6 +350,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201312192349366_RenamePublicAdBlocks.resx">
       <DependentUpon>201312192349366_RenamePublicAdBlocks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312202331444_RockRename.resx">
+      <DependentUpon>201312202331444_RockRename.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312221305134_GoogleAnalytics.resx">
+      <DependentUpon>201312221305134_GoogleAnalytics.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312221451050_RemoveIconFileFields.resx">
+      <DependentUpon>201312221451050_RemoveIconFileFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312221636197_RefactorPersonName.resx">
+      <DependentUpon>201312221636197_RefactorPersonName.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

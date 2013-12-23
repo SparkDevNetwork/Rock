@@ -85,9 +85,6 @@ namespace Rock.Rest.Controllers
                 List<Group> groupList = new List<Group>();
                 List<TreeViewItem> groupNameList = new List<TreeViewItem>();
 
-                var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-                string imageUrlFormat = Path.Combine( appPath, "GetImage.ashx?id={0}&width=15&height=15" );
-
                 foreach ( var group in qry )
                 {
                     if ( group.IsAuthorized( "View", user.Person ) )
@@ -97,18 +94,11 @@ namespace Rock.Rest.Controllers
                         treeViewItem.Id = group.Id.ToString();
                         treeViewItem.Name = System.Web.HttpUtility.HtmlEncode( group.Name );
 
-                        // if there a IconCssClass is assigned, use that as the Icon.  Otherwise, use the SmallIcon (if assigned)
+                        // if there a IconCssClass is assigned, use that as the Icon.
                         var groupType = Rock.Web.Cache.GroupTypeCache.Read( group.GroupTypeId );
                         if ( groupType != null )
                         {
-                            if ( !string.IsNullOrWhiteSpace( groupType.IconCssClass ) )
-                            {
-                                treeViewItem.IconCssClass = groupType.IconCssClass;
-                            }
-                            else
-                            {
-                                treeViewItem.IconSmallUrl = groupType.IconSmallFileId != null ? string.Format( imageUrlFormat, groupType.IconSmallFileId ) : string.Empty;
-                            }
+                            treeViewItem.IconCssClass = groupType.IconCssClass;
                         }
 
                         groupNameList.Add( treeViewItem );

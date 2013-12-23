@@ -200,6 +200,22 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets or sets the error page.
+        /// </summary>
+        /// <value>
+        /// The error page.
+        /// </value>
+        public string ErrorPage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the google analytics code.
+        /// </summary>
+        /// <value>
+        /// The google analytics code.
+        /// </value>
+        public string GoogleAnalyticsCode { get; set; }
+
+        /// <summary>
         /// Gets or sets the facebook app id.
         /// </summary>
         /// <value>
@@ -214,14 +230,6 @@ namespace Rock.Web.Cache
         /// The facebook app secret.
         /// </value>
         public string FacebookAppSecret { get; set; }
-
-        /// <summary>
-        /// Gets or sets the error page.
-        /// </summary>
-        /// <value>
-        /// The error page.
-        /// </value>
-        public string ErrorPage { get; set; }
 
         /// <summary>
         /// Gets the default page.
@@ -263,6 +271,7 @@ namespace Rock.Web.Cache
                 this.RegistrationPageId = site.RegistrationPageId;
                 this.RegistrationPageRouteId = site.RegistrationPageRouteId;
                 this.ErrorPage = site.ErrorPage;
+                this.GoogleAnalyticsCode = site.GoogleAnalyticsCode;
                 this.FacebookAppId = site.FacebookAppId;
                 this.FacebookAppSecret = site.FacebookAppSecret;
             }

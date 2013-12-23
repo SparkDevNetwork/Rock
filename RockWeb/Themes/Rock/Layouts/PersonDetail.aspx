@@ -9,8 +9,8 @@
             
                 <!-- Brand Bar -->
 			    <div class="navbar-header">
-                    <asp:HyperLink ID="hlHome" runat="server" CssClass="navbar-brand" NavigateUrl="~" ToolTip="Rock ChMS">
-                        <asp:Image ID="imgLogo" runat="server" AlternateText="Rock ChMS" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="brandbar-logo" />
+                    <asp:HyperLink ID="hlHome" runat="server" CssClass="navbar-brand" NavigateUrl="~" ToolTip="Rock">
+                        <asp:Image ID="imgLogo" runat="server" AlternateText="Rock" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="brandbar-logo" />
                     </asp:HyperLink>
                     
                     <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".pagenav">

@@ -7,7 +7,7 @@
             <div class="col-md-12">
                 <asp:Literal ID="litRockVersion" runat="server"></asp:Literal>
                 <div class="pull-right">
-                    <Rock:HighlightLabel ID="hlUpdates" runat="server" LabelType="Danger" Visible="false" ToolTipToolTip="There are one or more updates available." Text="updates available" />
+                    <Rock:HighlightLabel ID="hlUpdates" runat="server" LabelType="Danger" Visible="false" ToolTip="There are one or more updates available." Text="updates available" />
                 </div>
             </div>
         </div>

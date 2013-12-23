@@ -21,7 +21,7 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a person or a business in RockChMS.  
+    /// Represents a person or a business in Rock.  
     /// </summary>
     [Table( "Person" )]
     [DataContract]
@@ -40,10 +40,10 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets a flag indicating if this Person is part of the RockChMS core system/framework. This property is required.
+        /// Gets or sets a flag indicating if this Person is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this Person is part of the RockChMS core system/framework. This property is required.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this Person is part of the Rock core system/framework. This property is required.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -128,18 +128,17 @@ namespace Rock.Model
         public int? TitleValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the given name of the Person.
+        /// Gets or sets the first name of the Person.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the given name of the Person.
+        /// A <see cref="System.String"/> representing the first name of the Person.
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        [MergeField]
-        public string GivenName { get; set; }
+        public string FirstName { get; set; }
 
         /// <summary>
-        /// Gets or sets the nick name of the Person. 
+        /// Gets or sets the nick name of the Person.  If a nickname was not entered, the first name is used.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the nick name of the Person.
@@ -160,7 +159,6 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        [MergeField]
         public string MiddleName { get; set; }
 
         /// <summary>
@@ -174,87 +172,6 @@ namespace Rock.Model
         [Previewable]
         [MergeField]
         public string LastName { get; set; }
-
-        /// <summary>
-        /// Gets the Full Name of the Person using the Title FirstName LastName format.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> representing the Full Name of a Person using the Title FirstName LastName format.
-        /// </value>
-        [DataMember]
-        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
-        [MergeField]
-        public string FullName
-        {
-            get
-            {
-                var fullName = new StringBuilder();
-
-                if ( TitleValue != null && !string.IsNullOrWhiteSpace( TitleValue.Name ) )
-                    fullName.AppendFormat( "{0} ", TitleValue.Name );
-
-                fullName.AppendFormat( "{0} {1}", FirstName, LastName );
-
-                if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Name ) )
-                    fullName.AppendFormat( " {0}", SuffixValue.Name );
-
-                return fullName.ToString();
-            }
-
-            // TODO: Private set currently not needed, but not possible to remove without a migration. 
-            // Consider removing during migration flattening.
-            private set { }
-        }
-
-        /// <summary>
-        /// Gets the FirstName of the Person. It will use the NickName if one is provided, otherwise the GivenName.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> representing the FirstName of the Person. If the NickName is not null, it will be returned; otherwise returns the GivenName.
-        /// </value>
-        [DataMember]
-        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
-        [Previewable]
-        [MergeField]
-        public string FirstName
-        {
-            get
-            {
-                return string.IsNullOrEmpty( NickName ) ? GivenName : NickName;
-            }
-
-            // TODO: Private set currently not needed, but not possible to remove without a migration. 
-            // Consider removing during migration flattening.
-            private set { }
-        }
-
-        /// <summary>
-        /// Gets the full name of the Person using the LastName, FirstName format.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> representing the full name of a Person using the LastName, FirstName format
-        /// </value>
-        [DataMember]
-        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
-        [MergeField]
-        public string FullNameLastFirst
-        {
-            get
-            {
-                var fullName = new StringBuilder();
-                fullName.Append( LastName );
-
-                if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Name ) )
-                    fullName.AppendFormat( " {0}", SuffixValue.Name );
-
-                fullName.AppendFormat( ", {0}", FirstName );
-                return fullName.ToString();
-            }
-
-            // TODO: Private set currently not needed, but not possible to remove without a migration. 
-            // Consider removing during migration flattening.
-            private set { }
-        }
 
         /// <summary>
         /// Gets or sets the Id of the Person's name Suffix <see cref="Rock.Model.DefinedValue"/>.
@@ -437,25 +354,94 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets the first name of the last.
+        /// Gets the Full Name of the Person using the Title FirstName LastName format.
         /// </summary>
         /// <value>
-        /// The first name of the last.
+        /// A <see cref="System.String"/> representing the Full Name of a Person using the Title FirstName LastName format.
         /// </value>
-        public virtual string FirstLastName
+        [DataMember]
+        public virtual string FullName
         {
-            get { return string.Format( "{0} {1}", FirstName, LastName ); }
+            get
+            {
+                var fullName = new StringBuilder();
+
+                fullName.AppendFormat( "{0} {1}", NickName, LastName );
+
+                if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Name ) )
+                    fullName.AppendFormat( " {0}", SuffixValue.Name );
+
+                return fullName.ToString();
+            }
         }
 
+
         /// <summary>
-        /// Gets the last name of the first.
+        /// Gets the full name of the Person using the LastName, FirstName format.
         /// </summary>
         /// <value>
-        /// The last name of the first.
+        /// A <see cref="System.String"/> representing the full name of a Person using the LastName, FirstName format
         /// </value>
-        public virtual string LastFirstName
+        [DataMember]
+        public virtual string FullNameReversed
         {
-            get { return string.Format( "{0}, {1}", LastName, FirstName ); }
+            get
+            {
+                var fullName = new StringBuilder();
+                fullName.Append( LastName );
+
+                if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Name ) )
+                    fullName.AppendFormat( " {0}", SuffixValue.Name );
+
+                fullName.AppendFormat( ", {0}", NickName );
+                return fullName.ToString();
+            }
+        }
+
+
+        /// <summary>
+        /// Gets the Full Name of the Person using the Title FirstName LastName format.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the Full Name of a Person using the Title FirstName LastName format.
+        /// </value>
+        [DataMember]
+        public virtual string FullNameFormal
+        {
+            get
+            {
+                var fullName = new StringBuilder();
+
+                fullName.AppendFormat( "{0} {1}", FirstName, LastName );
+
+                if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Name ) )
+                    fullName.AppendFormat( " {0}", SuffixValue.Name );
+
+                return fullName.ToString();
+            }
+        }
+
+
+        /// <summary>
+        /// Gets the full name of the Person using the LastName, FirstName format.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the full name of a Person using the LastName, FirstName format
+        /// </value>
+        [DataMember]
+        public virtual string FullNameFormalReversed
+        {
+            get
+            {
+                var fullName = new StringBuilder();
+                fullName.Append( LastName );
+
+                if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Name ) )
+                    fullName.AppendFormat( " {0}", SuffixValue.Name );
+
+                fullName.AppendFormat( ", {0}", FirstName );
+                return fullName.ToString();
+            }
         }
 
         /// <summary>

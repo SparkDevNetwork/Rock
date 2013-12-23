@@ -14,7 +14,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents the merge history for people in RockChMS. When a person is found to have a duplicate <see cref="Rock.Model.Person"/> entity in the database
+    /// Represents the merge history for people in Rock. When a person is found to have a duplicate <see cref="Rock.Model.Person"/> entity in the database
     /// the duplicate entities need to be merged together into one record to avoid confusion and to ensure that we have accurate contact, involvement, and 
     /// contribution data. It also helps to avoid situations where an individual is counted or contacted multiple times.
     /// 

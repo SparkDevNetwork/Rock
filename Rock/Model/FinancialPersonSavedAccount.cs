@@ -16,7 +16,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents an bank or debit/credit card that a <see cref="Rock.Model.Person"/> has saved to RockChMS for future reuse. Please
+    /// Represents an bank or debit/credit card that a <see cref="Rock.Model.Person"/> has saved to Rock for future reuse. Please
     /// note that account number is not actually stored here. The reference/profile number is stored here as well as a masked 
     /// version of the account number.
     /// </summary>

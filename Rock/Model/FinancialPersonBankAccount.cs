@@ -16,8 +16,8 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a relationship between a person and a bank account in RockChMS. A person can be related to multiple bank accounts 
-    /// but a bank account can only be related to an individual person in RockChMS.
+    /// Represents a relationship between a person and a bank account in Rock. A person can be related to multiple bank accounts 
+    /// but a bank account can only be related to an individual person in Rock.
     /// </summary>
     [Table( "FinancialPersonBankAccount" )]
     [DataContract]

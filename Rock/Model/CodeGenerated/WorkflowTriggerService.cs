@@ -94,6 +94,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this WorkflowTrigger target, WorkflowTrigger source )
         {
             target.IsSystem = source.IsSystem;
+            target.IsActive = source.IsActive;
             target.EntityTypeId = source.EntityTypeId;
             target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;

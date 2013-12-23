@@ -15,7 +15,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a PageRoute object in RockChMS. All pages in RockChMS are accessed via a PageRoute. The default route that is used in RockChMS
+    /// Represents a PageRoute object in Rock. All pages in Rock are accessed via a PageRoute. The default route that is used in Rock
     /// is /page/{pageId} (for example /page/113 tells Rock to load the <see cref="Rock.Model.Page"/> associated with PageId 113). This model allows
     /// for custom page routes to be created, which in turn allows us to use Friendlier Urls (for example the default New Account page can be accessed by /NewAccount 
     /// as well as /page/4).
@@ -25,10 +25,10 @@ namespace Rock.Model
     public partial class PageRoute : Model<PageRoute>
     {
         /// <summary>
-        /// Gets or sets a flag indicating if the PageRoute is part of of the RockChMS core system/framework. This property is required.
+        /// Gets or sets a flag indicating if the PageRoute is part of of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the PageRoute is part of the RockChMS core system/framework, otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the PageRoute is part of the Rock core system/framework, otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]

@@ -198,18 +198,14 @@
                                 Help ="The term to use for groups of this group type."/>
                             <Rock:DataTextBox ID="tbGroupMemberTerm" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="GroupMemberTerm" Required="true" 
                                 Help="The term to use for members in groups of this group type."/>
+                            <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="IconCssClass"
+                                Help="The Font Awesome icon class to use when displaying groups of thie group type." />
+                        </div>
+                        <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbShowInGroupList" runat="server" Label="Show in Group Lists" Text="Yes" 
                                 Help="Check this option to include groups of this type in the GroupList block's list of groups." />
                             <Rock:RockCheckBox ID="cbShowInNavigation" runat="server" Label="Show in Navigation" Text="Yes" 
                                 Help="Check this option to include groups of this type in the GroupTreeView block's navigation control." />
-                        </div>
-                        <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="IconCssClass"
-                                Help="The Font Awesome icon class to use when displaying groups of thie group type.  If a value is included here, the Small and Large Icon values will be ignored." />
-                            <Rock:ImageUploader ID="imgIconSmall" runat="server" Label="Small Icon Image"
-                                Help="The icon to use when Rock displays a group's small icon (i.e. in navigation)." />
-                            <Rock:ImageUploader ID="imgIconLarge" runat="server" Label="Large Icon Image"
-                                Help="The icon to use when Rock displays a group's large icon (i.e. when editing a group)." />
                         </div>
                     </div>
                 </Rock:PanelWidget>
