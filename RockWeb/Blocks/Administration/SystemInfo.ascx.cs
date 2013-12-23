@@ -27,7 +27,7 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     [DisplayName( "System Information" )]
     [Category( "Administration" )]
-    [Description( "" )]
+    [Description( "Displays system information on the installed version of Rock." )]
     public partial class SystemInfo : Rock.Web.UI.RockBlock
     {
 

@@ -21,10 +21,10 @@ namespace Rock.Model
     public partial class PhoneNumber : Model<PhoneNumber>
     {
         /// <summary>
-        /// Gets or sets a flag indicating if the PhoneNumber is part of the RockChMS core system/framework. This property is required.
+        /// Gets or sets a flag indicating if the PhoneNumber is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean" /> value that is <c>true</c> if the PhoneNumber is part of the RockChMS core system/framework; otherwise <c>false</c>.
+        /// A <see cref="System.Boolean" /> value that is <c>true</c> if the PhoneNumber is part of the Rock core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]

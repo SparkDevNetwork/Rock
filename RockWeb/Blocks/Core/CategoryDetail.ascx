@@ -20,14 +20,12 @@
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="Name" />
                             <Rock:CategoryPicker ID="cpParentCategory" runat="server" Label="Parent Category" />
-                            <Rock:RockLiteral ID="lblEntityTypeQualifierColumn" runat="server" Label="Entity Type Qualifier Column" />
-                            <Rock:RockLiteral ID="lblEntityTypeQualifierValue" runat="server" Label="Entity Type Qualifier Value" />
                             <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockLiteral ID="lblEntityTypeName" runat="server" Label="Entity Type" />
-                            <Rock:ImageUploader ID="imgIconSmall" runat="server" Label="Small Icon Image" />
-                            <Rock:ImageUploader ID="imgIconLarge" runat="server" Label="Large Icon Image" />
+                            <Rock:RockLiteral ID="lblEntityTypeQualifierColumn" runat="server" Label="Entity Type Qualifier Column" />
+                            <Rock:RockLiteral ID="lblEntityTypeQualifierValue" runat="server" Label="Entity Type Qualifier Value" />
                         </div>
                     </div>
 

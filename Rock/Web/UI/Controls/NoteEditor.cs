@@ -431,7 +431,7 @@ namespace Rock.Web.UI.Controls
 
             // Heading
             writer.RenderBeginTag( HtmlTextWriterTag.H5 );
-            writer.Write( Caption );
+            writer.Write( Caption.EncodeHtmlThenConvertCrLfToHtmlBr() );
             if ( CreatedDateTime.HasValue )
             {
                 writer.Write( " " );
@@ -442,7 +442,7 @@ namespace Rock.Web.UI.Controls
             }
             writer.RenderEndTag();
 
-            writer.Write( Text );
+            writer.Write( Text.EncodeHtmlThenConvertCrLfToHtmlBr() );
 
             writer.RenderEndTag();  // Details Div
 

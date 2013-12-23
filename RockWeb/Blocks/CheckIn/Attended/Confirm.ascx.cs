@@ -26,6 +26,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
     /// <summary>
     /// Confirmation block for Attended Check-in
     /// </summary>
+    [DisplayName("Confirmation Block")]
+    [Category("Check-in > Attended")]
     [Description( "Attended Check-In Confirmation Block" )]
     [LinkedPage("Activity Select Page")]
     public partial class Confirm : CheckInBlock
@@ -94,7 +96,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void BindGrid()
         {
             var selectedPeopleList = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
-                .People.Where( p => p.Selected ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
+                .People.Where( p => p.Selected ).OrderBy( p => p.Person.FullNameReversed ).ToList();
 
             var checkInList = new List<CheckIn>();
             foreach ( var person in selectedPeopleList )

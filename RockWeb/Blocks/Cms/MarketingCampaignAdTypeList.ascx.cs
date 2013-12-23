@@ -12,12 +12,16 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using System.ComponentModel;
 
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
     /// 
     /// </summary>
+    [DisplayName("Marketing Campaign - Ad Type List")]
+    [Category("CMS")]
+    [Description("Lists ad types in the system.")]
     [LinkedPage("Detail Page")]
     public partial class MarketingCampaignAdTypeList : RockBlock
     {

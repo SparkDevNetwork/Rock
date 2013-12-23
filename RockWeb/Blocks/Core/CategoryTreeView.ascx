@@ -12,13 +12,21 @@
         <div class="treeview">
 
             <div class="treeview-actions">
-                <asp:LinkButton ID="lbAddCategory" runat="server" CssClass="add btn btn-mini btn-action" ToolTip="Add Category" CausesValidation="false" OnClick="lbAddCategory_Click">
-                        <i class="fa fa-plus"></i> Category
-                </asp:LinkButton>
+               
+                <div class="btn-group">
+                    <button type="button" class="btn btn-action btn-mini dropdown-toggle" data-toggle="dropdown">
+                        <i class="fa fa-plus-circle"></i> Add Category <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><asp:LinkButton ID="lbAddCategoryRoot" OnClick="lbAddCategoryRoot_Click" Text="Add Top-Level" runat="server"></asp:LinkButton></li>
+                        <li><asp:LinkButton ID="lbAddCategoryChild" OnClick="lbAddCategoryChild_Click" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
+                    </ul>
+                </div>
         
                 <asp:LinkButton ID="lbAddItem" runat="server" CssClass="add btn btn-mini btn-action" ToolTip="Add Group" CausesValidation="false" OnClick="lbAddItem_Click">
-                        <i class="fa fa-plus"></i> <asp:Literal ID="lAddItem" runat="server" Text="Add Group" />
+                        <i class="fa fa-plus-circle"></i> <asp:Literal ID="lAddItem" runat="server" Text="Add Group" />
                 </asp:LinkButton>
+
             </div>
 
             <div class="treeview-scroll scroll-container scroll-container-horizontal">

@@ -84,8 +84,8 @@ namespace Rock.Rest.Controllers
         public IQueryable<PersonSearchResult> Search( string name, bool includeHtml)
         {
             int count = 20;
-            bool lastFirst;
-            IOrderedQueryable<Person> sortedPersonQry = new PersonService().Queryable().QueryByName( name, out lastFirst );
+            bool reversed;
+            IOrderedQueryable<Person> sortedPersonQry = new PersonService().Queryable().QueryByName( name, out reversed );
 
             var topQry = sortedPersonQry.Take( count );
             List<Person> sortedPersonList = topQry.ToList();
@@ -109,7 +109,7 @@ namespace Rock.Rest.Controllers
             foreach ( var person in sortedPersonList)
             {
                 PersonSearchResult personSearchResult = new PersonSearchResult();
-                personSearchResult.Name = lastFirst ? person.FullNameLastFirst : person.FullName;
+                personSearchResult.Name = reversed ? person.FullNameReversed : person.FullName;
                 personSearchResult.Age = person.Age.HasValue ? person.Age.Value : -1;
                 personSearchResult.ConnectionStatus = person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Name : string.Empty;
                 personSearchResult.Gender = person.Gender.ConvertToString();
@@ -131,7 +131,7 @@ namespace Rock.Rest.Controllers
                 {
                     string imageHtml = null;
 
-                    imageHtml = person.PhotoUrl;
+                    imageHtml = Person.GetPhotoImageTag(person.PhotoId, person.Gender, 65, 65);
 
                     string personInfo = string.Empty;
 
@@ -239,8 +239,8 @@ namespace Rock.Rest.Controllers
             if ( person != null )
             {
                 var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-                html.AppendFormat( "<header><img src='{0}'/> <h3>{1}<small>{2}</small></h3></header>",
-                    person.PhotoUrl,
+                html.AppendFormat( "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
+                    Person.GetPhotoImageTag(person.PhotoId, person.Gender, 65,65),
                     person.FullName,
                     person.ConnectionStatusValueId.HasValue ? person.ConnectionStatusValue.Name : string.Empty );
 

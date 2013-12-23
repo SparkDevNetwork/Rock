@@ -24,7 +24,7 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     [DisplayName( "Metric List" )]
     [Category( "Administration" )]
-    [Description( "" )]
+    [Description( "Displays a list of metrics defined in the system." )]
     [LinkedPage( "Detail Page" )]
     public partial class MetricList : Rock.Web.UI.RockBlock
     {        

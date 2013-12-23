@@ -17,7 +17,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a Scheduled event in RockChMS.  Several places where this has been used includes Check-in scheduling and Kiosk scheduling.
+    /// Represents a Scheduled event in Rock.  Several places where this has been used includes Check-in scheduling and Kiosk scheduling.
     /// </summary>
     [Table( "Schedule" )]
     [DataContract]

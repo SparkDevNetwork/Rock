@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                WorkflowTrigger = new WorkflowTrigger { Id = 0, WorkflowTriggerType = WorkflowTriggerType.PostSave };
+                WorkflowTrigger = new WorkflowTrigger { Id = 0, WorkflowTriggerType = WorkflowTriggerType.PostSave, IsActive=true };
                 lActionTitle.Text = ActionTitle.Add( WorkflowTrigger.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
@@ -112,10 +112,12 @@ namespace RockWeb.Blocks.Core
             hfWorkflowTriggerId.Value = WorkflowTrigger.Id.ToString(); 
             ddlEntityType.SetValue( WorkflowTrigger.EntityTypeId );
             LoadColumnNames();
+            ddlQualifierColumn.SetValue( WorkflowTrigger.EntityTypeQualifierColumn );
             tbQualifierValue.Text = WorkflowTrigger.EntityTypeQualifierValue;
             ddlWorkflowType.SetValue( WorkflowTrigger.WorkflowTypeId );
             rblTriggerType.SelectedValue = WorkflowTrigger.WorkflowTriggerType.ConvertToInt().ToString();
             tbWorkflowName.Text = WorkflowTrigger.WorkflowName ?? string.Empty;
+            cbIsActive.Checked = WorkflowTrigger.IsActive ?? false;
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -145,6 +147,7 @@ namespace RockWeb.Blocks.Core
             ddlWorkflowType.Enabled = !readOnly;
             rblTriggerType.Enabled = !readOnly;
             tbWorkflowName.ReadOnly = readOnly;
+            cbIsActive.Enabled = !readOnly;
 
             btnSave.Visible = !readOnly;
 
@@ -222,6 +225,7 @@ namespace RockWeb.Blocks.Core
             WorkflowTrigger.EntityTypeQualifierValue = tbQualifierValue.Text;
             WorkflowTrigger.WorkflowTypeId = ddlWorkflowType.SelectedValueAsInt().Value;
             WorkflowTrigger.WorkflowTriggerType = (WorkflowTriggerType)System.Enum.Parse( typeof( WorkflowTriggerType ), rblTriggerType.SelectedValue );
+            WorkflowTrigger.IsActive = cbIsActive.Checked;
             if ( string.IsNullOrWhiteSpace( tbWorkflowName.Text ) )
             {
                 WorkflowTrigger.WorkflowName = null;

@@ -27,7 +27,7 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     [DisplayName( "Metric Detail" )]
     [Category( "Administration" )]
-    [Description( "" )]
+    [Description( "Displays the details of a specific metric." )]
     public partial class MetricDetail : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods

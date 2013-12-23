@@ -323,26 +323,15 @@ namespace RockWeb.Blocks.Groups
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
 
-            string groupIconHtml = string.Empty;
             var group = groupMember.Group;
             if ( !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) )
             {
-                groupIconHtml = string.Format( "<i class='{0}' ></i>", group.GroupType.IconCssClass );
+                lGroupIconHtml.Text = string.Format( "<i class='{0}' ></i>", group.GroupType.IconCssClass );
             }
             else
             {
-                var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-                string imageUrlFormat = "<img src='" + appPath + "GetImage.ashx?id={0}&width=50&height=50' />";
-                if ( group.GroupType.IconLargeFileId != null )
-                {
-                    groupIconHtml = string.Format( imageUrlFormat, group.GroupType.IconLargeFileId );
-                }
-                else if ( group.GroupType.IconSmallFileId != null )
-                {
-                    groupIconHtml = string.Format( imageUrlFormat, group.GroupType.IconSmallFileId );
-                }
+                lGroupIconHtml.Text = string.Empty;
             }
-            lGroupIconHtml.Text = groupIconHtml;
 
             if ( groupMember.Id.Equals( 0 ) )
             {

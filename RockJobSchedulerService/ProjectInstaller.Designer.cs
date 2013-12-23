@@ -42,7 +42,7 @@
             // 
             // serviceInstaller1
             // 
-            this.serviceInstaller1.Description = "Job Scheduler for the Rock ChMS";
+            this.serviceInstaller1.Description = "Job Scheduler for Rock";
             this.serviceInstaller1.DisplayName = "Rock Job Scheduler";
             this.serviceInstaller1.ServiceName = "Rock Job Scheduler";
             this.serviceInstaller1.StartType = System.ServiceProcess.ServiceStartMode.Automatic;

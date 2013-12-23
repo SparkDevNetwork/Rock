@@ -17,7 +17,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents an individual webpage in RockChMS. A page is a container on a <see cref="Rock.Model.Site"/> that has a <see cref="Rock.Model.Layout"/> which
+    /// Represents an individual webpage in Rock. A page is a container on a <see cref="Rock.Model.Site"/> that has a <see cref="Rock.Model.Layout"/> which
     /// consists of one or more content area zones. Each content area zone on the page can contain zero or more <see cref="Rock.Model.Block">Blocks.</see>.
     /// 
     /// Pages are hierarchical, and are used to create the structure of the site.  Each page can have one parent Page and zero or more children pages, and the 
@@ -61,10 +61,10 @@ namespace Rock.Model
         public string Title { get; set; }
 
         /// <summary>
-        /// Gets or sets a flag indicating if the Page is part of the RockChMS core system/framework.
+        /// Gets or sets a flag indicating if the Page is part of the Rock core system/framework.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> that is <c>true</c> if this Page is part of the RockChMS core system/framework, otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this Page is part of the Rock core system/framework, otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool IsSystem { get; set; }
@@ -256,16 +256,6 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id the <see cref="Rock.Model.BinaryFile"/> that is being used as an icon for the Page
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.BinaryFile"/> that is being used for the Page Icon, if a file
-        /// based icon is not used this value will be null.
-        /// </value>
-        [DataMember]
-        public int? IconFileId { get; set; }
-
-        /// <summary>
         /// Gets or sets the icon CSS class name for a font vector based icon.
         /// </summary>
         /// <value>
@@ -309,15 +299,6 @@ namespace Rock.Model
         /// </value>
         public virtual Layout Layout { get; set; }
         
-        /// <summary>
-        /// Gets or sets the page icon's <see cref="Rock.Model.BinaryFile"/> for file based icons.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.BinaryFile" /> for file based icons, if a file based icon is not used this value will be null.
-        /// </value>
-        [DataMember]
-        public virtual BinaryFile IconFile { get; set; }
-
         /// <summary>
         /// Gets or sets the collection of <see cref="Rock.Model.Block">Blocks</see> that are used on the page.
         /// </summary>
@@ -429,7 +410,6 @@ namespace Rock.Model
         {
             this.HasOptional( p => p.ParentPage ).WithMany( p => p.Pages ).HasForeignKey( p => p.ParentPageId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.Layout ).WithMany( p => p.Pages ).HasForeignKey( p => p.LayoutId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.IconFile ).WithMany().HasForeignKey( p => p.IconFileId ).WillCascadeOnDelete( false );
         }
     }
 

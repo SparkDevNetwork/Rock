@@ -133,15 +133,14 @@ namespace Rock.Web.UI.Controls
 
             if ( this.Enabled )
             {
-                string personName = string.Empty;
+                Rock.Model.Person person = null;
 
                 int? personId = _hfPersonId.ValueAsInt();
                 if ( personId.HasValue )
                 {
-                    personName = new Rock.Model.PersonService().Queryable()
+                    person = new Rock.Model.PersonService().Queryable( "SuffixValue" )
                         .Where( p => p.Id == personId.Value )
-                        .Select( p => p.FullName )
-                        .FirstOrDefault() ?? string.Empty;
+                        .FirstOrDefault();
                 }
 
                 writer.Write( string.Format(@"
@@ -166,7 +165,7 @@ namespace Rock.Web.UI.Controls
             </div>
         </div>
     </div>		
-", this.ID, personName ) );
+", this.ID, person != null ? person.FullName : "" ) );
 
             }
         }

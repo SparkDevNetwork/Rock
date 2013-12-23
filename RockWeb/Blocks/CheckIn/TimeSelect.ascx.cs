@@ -16,7 +16,9 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [Description( "Check-in Time Select block" )]
+    [DisplayName("Time Select")]
+    [Category("Check-in")]
+    [Description("Displays a list of times to checkin for.")]
     public partial class TimeSelect : CheckInBlock
     {
         protected override void OnLoad( EventArgs e )

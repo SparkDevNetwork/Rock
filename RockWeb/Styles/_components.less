@@ -50,6 +50,10 @@
         span {
             float: left;
             margin-right: 6px;
+            width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .caret {
@@ -257,7 +261,11 @@ ul.rocktree ul {
     margin-bottom: 12px;
 
     .treeview-actions {
-        margin-bottom: 12px;
+        margin-bottom: 8px;
+
+        .btn {
+            margin-bottom: 4px;
+        }
     }
 
     .treeview-scroll {
@@ -709,9 +717,9 @@ div.tagsinput div
 	font-size: 12px;
 	background-color: @smartsearch-bg;
 	border: 1px solid @smartsearch-border-color;
-    height: 26px;
+    height: 30px;
     border-radius: @border-radius-base;
-    padding: 0 6px;
+    padding: 2px 6px;
 
     &:focus {
         border-color: #595959;

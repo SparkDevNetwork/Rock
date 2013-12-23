@@ -19,7 +19,7 @@ namespace Rock.Model
     /// Represents A collection of <see cref="Rock.Model.Person"/> entities. This can be a family, small group, Bible study, security group,  etc. Groups can be hierarchical.
     /// </summary>
     /// <remarks>
-    /// In RockChMS any collection or defined subset of people are considered a group.
+    /// In Rock any collection or defined subset of people are considered a group.
     /// </remarks>
     [Table( "Group" )]
     [DataContract]
@@ -29,10 +29,10 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets a flag indicating if this Group is a part of the RockChMS core system/framework. This property is required.
+        /// Gets or sets a flag indicating if this Group is a part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this Group is part of the RockChMS core system/framework; otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this Group is part of the Rock core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]

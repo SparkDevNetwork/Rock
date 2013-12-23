@@ -16,7 +16,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a persisted WorkflowActivity in RockChMS
+    /// Represents a persisted WorkflowActivity in Rock
     /// </summary>
     [Table( "WorkflowActivity" )]
     [DataContract]
