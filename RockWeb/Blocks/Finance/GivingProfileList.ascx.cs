@@ -191,7 +191,7 @@ namespace RockWeb.Blocks.Finance
         protected void ShowDetailForm( int id )
         {
             var parms = new Dictionary<string, string>();
-            parms.Add( "GivingProfileId", id.ToString() );
+            parms.Add( "Txn", id.ToString() );
             parms.Add( "Person", TargetPerson.UrlEncodedKey );
             NavigateToLinkedPage( "DetailPage", parms );
         }

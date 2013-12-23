@@ -81,11 +81,6 @@ achieve our mission.  We are so grateful for your commitment.
         #region Properties
 
         /// <summary>
-        /// Gets or sets the target person.
-        /// </summary>
-        protected Person TargetPerson { get; private set; }
-
-        /// <summary>
         /// Gets or sets the accounts that are available for user to add to the list.
         /// </summary>
         protected List<AccountItem> AvailableAccounts
@@ -123,6 +118,15 @@ achieve our mission.  We are so grateful for your commitment.
             {
                 ViewState["SelectedAccounts"] = value;
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the target person identifier.
+        /// </summary>
+        protected int? TargetPersonId
+        {
+            get { return ViewState["TargetPersonId"] as int?; }
+            set { ViewState["TargetPersonId"] = value; }
         }
 
         /// <summary>
@@ -164,136 +168,25 @@ achieve our mission.  We are so grateful for your commitment.
         {
             base.OnInit( e );
 
-            // If impersonation is allowed, and a valid person key was used, set the target to that person
-            bool allowImpersonation = false;
-            if ( bool.TryParse( GetAttributeValue( "Impersonation" ), out allowImpersonation ) && allowImpersonation )
+            if (!Page.IsPostBack)
             {
-                string personKey = PageParameter( "Person" );
-                if ( !string.IsNullOrWhiteSpace( personKey ) )
+                var scheduledTransaction = GetScheduledTransaction( true );
+
+                if ( scheduledTransaction != null )
                 {
-                    TargetPerson = new PersonService().GetByUrlEncodedKey( personKey );
-                }
-            }
-            if ( TargetPerson == null )
-            {
-                TargetPerson = CurrentPerson;
-            }
+                    SetAccounts( scheduledTransaction );
+                    SetFrequency( scheduledTransaction );
 
-            // Verify that transaction id is valid for selected person
-            if ( !Page.IsPostBack && TargetPerson != null )
-            {
-                GetAccounts();
+                    dtpStartDate.SelectedDate = scheduledTransaction.NextPaymentDate;
 
-                int txnId = int.MinValue;
-                if (int.TryParse(PageParameter( "Txn" ), out txnId))
-                {
-                    var scheduledTransaction = new FinancialScheduledTransactionService().Queryable("ScheduledTransactionDetails")
-                        .Where( t =>
-                            t.Id == txnId && 
-                            ( t.AuthorizedPersonId == TargetPerson.Id || t.AuthorizedPerson.GivingGroupId == TargetPerson.GivingGroupId ) )
-                        .FirstOrDefault();
-
-                    if ( scheduledTransaction != null )
+                    hfCurrentPage.Value = "1";
+                    RockPage page = Page as RockPage;
+                    if ( page != null )
                     {
-                        ScheduledTransactionId = txnId;
-                        foreach( var txnDetail in scheduledTransaction.ScheduledTransactionDetails)
-                        {
-                            var availableAccount = AvailableAccounts.Where( a => a.Id == txnDetail.AccountId).FirstOrDefault();
-                            if ( availableAccount != null )
-                            {
-                                var accountItem = new AccountItem( availableAccount.Id, availableAccount.Order, availableAccount.Name, availableAccount.CampusId );
-                                accountItem.Amount = txnDetail.Amount;
-                                SelectedAccounts.Add( accountItem );
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Don't bother with anything else, if we don't have a valid person and transaction id
-            if ( TargetPerson != null && ScheduledTransactionId.HasValue )
-            {
-                // Enable payment options based on the configured gateways
-                bool ccEnabled = false;
-                bool achEnabled = false;
-                var supportedFrequencies = new List<DefinedValueCache>();
-
-                string ccGatewayGuid = GetAttributeValue( "CCGateway" );
-                if ( !string.IsNullOrWhiteSpace( ccGatewayGuid ) )
-                {
-                    _ccGateway = GatewayContainer.GetComponent( ccGatewayGuid );
-                    if ( _ccGateway != null )
-                    {
-                        ccEnabled = true;
-                        txtCardFirstName.Visible = _ccGateway.SplitNameOnCard;
-                        txtCardLastName.Visible = _ccGateway.SplitNameOnCard;
-                        txtCardName.Visible = !_ccGateway.SplitNameOnCard;
-                        mypExpiration.MinimumYear = DateTime.Now.Year;
-                    }
-                }
-
-                string achGatewayGuid = GetAttributeValue( "ACHGateway" );
-                if ( !string.IsNullOrWhiteSpace( achGatewayGuid ) )
-                {
-                    _achGateway = GatewayContainer.GetComponent( achGatewayGuid );
-                    achEnabled = _achGateway != null;
-                }
-
-                hfCurrentPage.Value = "1";
-                RockPage page = Page as RockPage;
-                if ( page != null )
-                {
-                    page.PageNavigate += page_PageNavigate;
-                }
-
-                hfPaymentTab.Value = "None";
-
-                if ( ccEnabled || achEnabled )
-                {
-                    if ( ccEnabled )
-                    {
-                        supportedFrequencies = _ccGateway.SupportedPaymentSchedules;
-                        divCCPaymentInfo.AddCssClass( "tab-pane" );
-                        divCCPaymentInfo.Visible = ccEnabled;
+                        page.PageNavigate += page_PageNavigate;
                     }
 
-                    if ( achEnabled )
-                    {
-                        supportedFrequencies = _achGateway.SupportedPaymentSchedules;
-                        divACHPaymentInfo.AddCssClass( "tab-pane" );
-                        divACHPaymentInfo.Visible = achEnabled;
-                    }
-
-                    if ( ccEnabled && achEnabled )
-                    {
-                        // If CC and ACH gateways are different, only allow frequencies supported by both payment gateways (if different)
-                        if ( _ccGateway.TypeId != _achGateway.TypeId )
-                        {
-                            supportedFrequencies = _ccGateway.SupportedPaymentSchedules
-                                .Where( c =>
-                                    _achGateway.SupportedPaymentSchedules
-                                        .Select( a => a.Id )
-                                        .Contains( c.Id ) )
-                                .ToList();
-                        }
-                    }
-
-                    if ( supportedFrequencies.Any() )
-                    {
-                        var oneTimeFrequency = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME );
-                        divRepeatingPayments.Visible = true;
-
-                        btnFrequency.DataSource = supportedFrequencies;
-                        btnFrequency.DataBind();
-
-                        // If gateway didn't specifically support one-time, add it anyway for immediate gifts
-                        if ( !supportedFrequencies.Where( f => f.Id == oneTimeFrequency.Id ).Any() )
-                        {
-                            btnFrequency.Items.Insert( 0, new ListItem( oneTimeFrequency.Name, oneTimeFrequency.Id.ToString() ) );
-                        }
-                        btnFrequency.SelectedValue = oneTimeFrequency.Id.ToString();
-                        dtpStartDate.SelectedDate = DateTime.Today;
-                    }
+                    hfPaymentTab.Value = "None";
 
                     // Display Options
                     btnAddAccount.Title = GetAttributeValue( "AddAccountText" );
@@ -360,7 +253,7 @@ achieve our mission.  We are so grateful for your commitment.
             nbMessage.Visible = false;
             pnlDupWarning.Visible = false;
 
-            if ( TargetPerson != null && ScheduledTransactionId.HasValue )
+            if ( ScheduledTransactionId.HasValue )
             {
                 if ( _ccGateway != null || _achGateway != null )
                 {
@@ -388,7 +281,7 @@ achieve our mission.  We are so grateful for your commitment.
                     // Set the frequency date label based on if 'One Time' is selected or not
                     if ( btnFrequency.Items.Count > 0 )
                     {
-                        dtpStartDate.Label = btnFrequency.Items[0].Selected ? "When" : "First Gift";
+                        dtpStartDate.Label = btnFrequency.Items[0].Selected ? "When" : "Next Gift";
                     }
 
                     liNone.RemoveCssClass( "active" );
@@ -559,6 +452,156 @@ achieve our mission.  We are so grateful for your commitment.
 
         #region Private Methods
 
+        private FinancialScheduledTransaction GetScheduledTransaction(bool refresh = false)
+        {
+            Person targetPerson = null;
+
+            // If impersonation is allowed, and a valid person key was used, set the target to that person
+            bool allowImpersonation = false;
+            if ( bool.TryParse( GetAttributeValue( "Impersonation" ), out allowImpersonation ) && allowImpersonation )
+            {
+                string personKey = PageParameter( "Person" );
+                if ( !string.IsNullOrWhiteSpace( personKey ) )
+                {
+                    targetPerson = new PersonService().GetByUrlEncodedKey( personKey );
+                }
+            }
+            if ( targetPerson == null )
+            {
+                targetPerson = CurrentPerson;
+            }
+
+            // Verify that transaction id is valid for selected person
+            if ( targetPerson != null )
+            {
+                int txnId = int.MinValue;
+                if ( int.TryParse( PageParameter( "Txn" ), out txnId ) )
+                {
+                    var service = new FinancialScheduledTransactionService();
+                    var scheduledTransaction = new FinancialScheduledTransactionService().Queryable( "ScheduledTransactionDetails,GatewayEntityType" )
+                        .Where( t =>
+                            t.Id == txnId &&
+                            ( t.AuthorizedPersonId == targetPerson.Id || t.AuthorizedPerson.GivingGroupId == targetPerson.GivingGroupId ) )
+                        .FirstOrDefault();
+                    if (scheduledTransaction != null && refresh)
+                    {
+                        TargetPersonId = scheduledTransaction.AuthorizedPersonId;
+                        ScheduledTransactionId = scheduledTransaction.Id;
+            
+                        string errorMessages = string.Empty;
+                        service.UpdateStatus(scheduledTransaction, CurrentPersonId, out errorMessages );
+                        return scheduledTransaction;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private void SetAccounts(FinancialScheduledTransaction scheduledTransaction)
+        {
+            GetAccounts();
+
+            foreach ( var txnDetail in scheduledTransaction.ScheduledTransactionDetails )
+            {
+                var selectedAccount = SelectedAccounts.Where( a => a.Id == txnDetail.AccountId ).FirstOrDefault();
+                if ( selectedAccount != null )
+                {
+                    selectedAccount.Amount = txnDetail.Amount;
+                }
+                else
+                {
+                    var selected = AvailableAccounts.Where( a => a.Id == txnDetail.AccountId ).ToList();
+                    if ( selected != null )
+                    {
+                        selected.ForEach( a => a.Amount = txnDetail.Amount );
+                        AvailableAccounts = AvailableAccounts.Except( selected ).ToList();
+                        SelectedAccounts.AddRange( selected );
+                    }
+                }
+            }
+
+            BindAccounts();
+
+        }
+
+        private void SetFrequency(FinancialScheduledTransaction scheduledTransaction)
+        {
+            // Enable payment options based on the configured gateways
+            bool ccEnabled = false;
+            bool achEnabled = false;
+            var supportedFrequencies = new List<DefinedValueCache>();
+
+            var ccGatewayGuid = GetAttributeValue( "CCGateway" ).AsGuid();
+            if ( ccGatewayGuid.Equals(scheduledTransaction.GatewayEntityType.Guid ) )
+            {
+                _ccGateway = GatewayContainer.GetComponent( ccGatewayGuid.ToString() );
+                if ( _ccGateway != null )
+                {
+                    ccEnabled = true;
+                    txtCardFirstName.Visible = _ccGateway.SplitNameOnCard;
+                    txtCardLastName.Visible = _ccGateway.SplitNameOnCard;
+                    txtCardName.Visible = !_ccGateway.SplitNameOnCard;
+                    mypExpiration.MinimumYear = DateTime.Now.Year;
+                }
+            }
+
+            var achGatewayGuid = GetAttributeValue( "ACHGateway" ).AsGuid();
+            if ( achGatewayGuid.Equals(scheduledTransaction.GatewayEntityType.Guid ) )
+            {
+                _achGateway = GatewayContainer.GetComponent( achGatewayGuid.ToString() );
+                achEnabled = _achGateway != null;
+            }
+
+            if ( ccEnabled || achEnabled )
+            {
+                if ( ccEnabled )
+                {
+                    supportedFrequencies = _ccGateway.SupportedPaymentSchedules;
+                    divCCPaymentInfo.AddCssClass( "tab-pane" );
+                    divCCPaymentInfo.Visible = ccEnabled;
+                }
+
+                if ( achEnabled )
+                {
+                    supportedFrequencies = _achGateway.SupportedPaymentSchedules;
+                    divACHPaymentInfo.AddCssClass( "tab-pane" );
+                    divACHPaymentInfo.Visible = achEnabled;
+                }
+
+                if ( ccEnabled && achEnabled )
+                {
+                    // If CC and ACH gateways are different, only allow frequencies supported by both payment gateways (if different)
+                    if ( _ccGateway.TypeId != _achGateway.TypeId )
+                    {
+                        supportedFrequencies = _ccGateway.SupportedPaymentSchedules
+                            .Where( c =>
+                                _achGateway.SupportedPaymentSchedules
+                                    .Select( a => a.Id )
+                                    .Contains( c.Id ) )
+                            .ToList();
+                    }
+                }
+
+                if ( supportedFrequencies.Any() )
+                {
+                    var oneTimeFrequency = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME );
+                    divRepeatingPayments.Visible = true;
+
+                    btnFrequency.DataSource = supportedFrequencies;
+                    btnFrequency.DataBind();
+
+                    // If gateway didn't specifically support one-time, add it anyway for immediate gifts
+                    if ( !supportedFrequencies.Where( f => f.Id == oneTimeFrequency.Id ).Any() )
+                    {
+                        btnFrequency.Items.Insert( 0, new ListItem( oneTimeFrequency.Name, oneTimeFrequency.Id.ToString() ) );
+                    }
+
+                    btnFrequency.SelectedValue = scheduledTransaction.TransactionFrequencyValueId.ToString();
+                }
+            }
+        }
+
         #region Methods for the Payment Info Page (panel)
 
         /// <summary>
@@ -624,47 +667,17 @@ achieve our mission.  We are so grateful for your commitment.
         }
 
         /// <summary>
-        /// Gets the person.
-        /// </summary>
-        /// <param name="create">if set to <c>true</c> [create].</param>
-        /// <returns></returns>
-        private Person GetPerson( bool create )
-        {
-            Person person = null;
-
-            int personId = ViewState["PersonId"] as int? ?? 0;
-            if ( personId == 0 && TargetPerson != null )
-            {
-                person = TargetPerson;
-            }
-            else
-            {
-                using ( new UnitOfWorkScope() )
-                {
-                    var personService = new PersonService();
-
-                    if ( personId != 0 )
-                    {
-                        person = personService.Get( personId );
-                    }
-                }
-            }
-
-            return person;
-        }
-
-        /// <summary>
         /// Binds the saved accounts.
         /// </summary>
         private void BindSavedAccounts()
         {
             rblSavedCC.Items.Clear();
-
-            if ( TargetPerson != null )
+             
+            if ( TargetPersonId.HasValue )
             {
                 // Get the saved accounts for the currently logged in user
                 var savedAccounts = new FinancialPersonSavedAccountService()
-                    .GetByPersonId( TargetPerson.Id );
+                    .GetByPersonId( TargetPersonId.Value );
 
                 if ( _ccGateway != null )
                 {
@@ -975,80 +988,80 @@ achieve our mission.  We are so grateful for your commitment.
         /// <returns></returns>
         private bool ProcessConfirmation( out string errorMessage )
         {
-            if ( string.IsNullOrWhiteSpace( TransactionCode ) )
-            {
-                GatewayComponent gateway = hfPaymentTab.Value == "ACH" ? _achGateway : _ccGateway;
-                if ( gateway == null )
-                {
-                    errorMessage = "There was a problem creating the payment gateway information";
-                    return false;
-                }
+            errorMessage = string.Empty;
 
-                Person person = GetPerson( true );
-                if ( person == null )
-                {
-                    errorMessage = "There was a problem creating the person information";
-                    return false;
-                }
+            //if ( string.IsNullOrWhiteSpace( TransactionCode ) )
+            //{
+            //    GatewayComponent gateway = hfPaymentTab.Value == "ACH" ? _achGateway : _ccGateway;
+            //    if ( gateway == null )
+            //    {
+            //        errorMessage = "There was a problem creating the payment gateway information";
+            //        return false;
+            //    }
 
-                PaymentInfo paymentInfo = GetPaymentInfo();
-                if ( paymentInfo == null )
-                {
-                    errorMessage = "There was a problem creating the payment information";
-                    return false;
-                }
-                else
-                {
-                    paymentInfo.FirstName = person.FirstName;
-                    paymentInfo.LastName = person.LastName;
-                }
+            //    Person person = GetPerson( true );
+            //    if ( person == null )
+            //    {
+            //        errorMessage = "There was a problem creating the person information";
+            //        return false;
+            //    }
 
-                PaymentSchedule schedule = GetSchedule();
-                if ( schedule != null )
-                {
-                    schedule.PersonId = person.Id;
+            //    PaymentInfo paymentInfo = GetPaymentInfo();
+            //    if ( paymentInfo == null )
+            //    {
+            //        errorMessage = "There was a problem creating the payment information";
+            //        return false;
+            //    }
+            //    else
+            //    {
+            //        paymentInfo.FirstName = person.FirstName;
+            //        paymentInfo.LastName = person.LastName;
+            //    }
 
-                    var scheduledTransaction = gateway.AddScheduledPayment( schedule, paymentInfo, out errorMessage );
-                    if ( scheduledTransaction != null )
-                    {
-                        scheduledTransaction.TransactionFrequencyValueId = schedule.TransactionFrequencyValue.Id;
-                        scheduledTransaction.AuthorizedPersonId = person.Id;
+            //    PaymentSchedule schedule = GetSchedule();
+            //    if ( schedule != null )
+            //    {
+            //        schedule.PersonId = person.Id;
 
-                        foreach ( var account in SelectedAccounts.Where( a => a.Amount > 0 ) )
-                        {
-                            var transactionDetail = new FinancialScheduledTransactionDetail();
-                            transactionDetail.Amount = account.Amount;
-                            transactionDetail.AccountId = account.Id;
-                            scheduledTransaction.ScheduledTransactionDetails.Add( transactionDetail );
-                        }
+            //        var scheduledTransaction = gateway.AddScheduledPayment( schedule, paymentInfo, out errorMessage );
+            //        if ( scheduledTransaction != null )
+            //        {
+            //            scheduledTransaction.TransactionFrequencyValueId = schedule.TransactionFrequencyValue.Id;
+            //            scheduledTransaction.AuthorizedPersonId = person.Id;
 
-                        var transactionService = new FinancialScheduledTransactionService();
-                        transactionService.Add( scheduledTransaction, CurrentPersonId );
-                        transactionService.Save( scheduledTransaction, CurrentPersonId );
+            //            foreach ( var account in SelectedAccounts.Where( a => a.Amount > 0 ) )
+            //            {
+            //                var transactionDetail = new FinancialScheduledTransactionDetail();
+            //                transactionDetail.Amount = account.Amount;
+            //                transactionDetail.AccountId = account.Id;
+            //                scheduledTransaction.ScheduledTransactionDetails.Add( transactionDetail );
+            //            }
 
-                        ScheduleId = scheduledTransaction.GatewayScheduleId;
-                        TransactionCode = scheduledTransaction.TransactionCode;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    return false;
-                }
+            //            var transactionService = new FinancialScheduledTransactionService();
+            //            transactionService.Add( scheduledTransaction, CurrentPersonId );
+            //            transactionService.Save( scheduledTransaction, CurrentPersonId );
 
-                tdScheduleId.Description = ScheduleId;
+            //            ScheduleId = scheduledTransaction.GatewayScheduleId;
+            //            TransactionCode = scheduledTransaction.TransactionCode;
+            //        }
+            //        else
+            //        {
+            //            return false;
+            //        }
+            //    }
+            //    else
+            //    {
+            return false;
+            //    }
 
-                return true;
-            }
-            else
-            {
-                pnlDupWarning.Visible = true;
-                errorMessage = string.Empty;
-                return false;
-            }
+            //    tdScheduleId.Description = ScheduleId;
+            //    return true;
+            //}
+            //else
+            //{
+            //    pnlDupWarning.Visible = true;
+            //    return false;
+            //}
         }
 
         #endregion
