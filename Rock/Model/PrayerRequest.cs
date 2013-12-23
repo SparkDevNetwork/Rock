@@ -265,7 +265,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> containing the full name of the person who this prayer request is about in last name first name format.
         /// </value>
-        public virtual string FullNameLastFirst
+        public virtual string FullNameReversed
         {
             get
             {

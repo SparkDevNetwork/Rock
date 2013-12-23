@@ -399,7 +399,7 @@ namespace RockWeb.Blocks.Security
             Rock.Model.PersonService personService = new PersonService();
 
             Person person = new Person();
-            person.GivenName = tbFirstName.Text;
+            person.FirstName = tbFirstName.Text;
             person.LastName = tbLastName.Text;
             person.Email = tbEmail.Text;
             switch(ddlGender.SelectedValue)

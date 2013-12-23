@@ -16,12 +16,16 @@ using Rock.Web.UI;
 using Rock.Web;
 using Rock.Web.Cache;
 using System.IO;
+using System.ComponentModel;
 
 namespace RockWeb.Blocks.Crm
 {
     /// <summary>
     /// 
     /// </summary>
+    [DisplayName("Layout Detail")]
+    [Category("CMS")]
+    [Description("Displays the details for a specific layout.")]
     public partial class LayoutDetail : RockBlock, IDetailBlock
     {
         #region Control Methods

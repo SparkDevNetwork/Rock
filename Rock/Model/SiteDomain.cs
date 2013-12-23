@@ -13,8 +13,8 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a SiteDomain or URL that is associated with a <see cref="Rock.Model.Site"/> in RockChMS.  A domain (i.e. yourchurch.org) and a subdomain (sub.yourchurch.org) are considered
-    /// two different SiteDomains in RockChMS.
+    /// Represents a SiteDomain or URL that is associated with a <see cref="Rock.Model.Site"/> in Rock.  A domain (i.e. yourchurch.org) and a subdomain (sub.yourchurch.org) are considered
+    /// two different SiteDomains in Rock.
     /// </summary>
     /// <remarks>
     /// A SiteDomain must have a matching Binding setup in IIS otherwise it will not resolve.
@@ -24,7 +24,7 @@ namespace Rock.Model
     public partial class SiteDomain : Model<SiteDomain>
     {
         /// <summary>
-        /// Gets or sets a flag indicating if this SiteDomain was created by and is part of the RockChMS core system/framework. This property is required.
+        /// Gets or sets a flag indicating if this SiteDomain was created by and is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
         /// A <see cref="System.Boolean"/> that is <c>true</c> if the SiteDomain is part of the core system/framework.

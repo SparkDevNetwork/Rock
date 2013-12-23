@@ -23,7 +23,7 @@ namespace RockWeb.Blocks.Core
     public partial class RockUpdate : Rock.Web.UI.RockBlock
     {
         WebProjectManager nuGetService = null;
-        private string rockPackageId = "RockChMS";
+        private string rockPackageId = "Rock";
 
         /// <summary>
         /// Obtains a WebProjectManager from the Global "UpdateServerUrl" Attribute.
@@ -105,7 +105,6 @@ namespace RockWeb.Blocks.Core
                         btnUpdate.Text = "Installed";
                     }
                 }
-                ProcessFilesToDelete();
 
                 hlUpdates.Visible = false;
                 litRockVersion.Text = "";
@@ -122,42 +121,6 @@ namespace RockWeb.Blocks.Core
         }
 
         #endregion
-
-        /// <summary>
-        /// Deletes each file listed in the App_Data/deletefile.lst and then deletes that file.
-        /// </summary>
-        private void ProcessFilesToDelete()
-        {
-            string deleteListFile = Request.MapPath( "~/App_Data/deletefile.lst" );
-
-            if ( !File.Exists( deleteListFile ) )
-            {
-                return;
-            }
-
-            using ( StreamReader file = new StreamReader( deleteListFile ) )
-            {
-                string filenameLine;
-                while ( ( filenameLine = file.ReadLine() ) != null )
-                {
-                    if ( !string.IsNullOrWhiteSpace( filenameLine ) )
-                    {
-                        if ( filenameLine.StartsWith( @"RockWeb\" ) )
-                        {
-                            filenameLine = filenameLine.Substring( 8 );
-                        }
-
-                        string physicalFile = Request.MapPath( filenameLine, "~/", false );
-                        if ( File.Exists( physicalFile ) )
-                        {
-                            File.Delete( physicalFile );
-                        }
-                    }
-                }
-                file.Close();
-            }
-            File.Delete( deleteListFile );
-        }
 
         /// <summary>
         /// Installs the first RockPackage.

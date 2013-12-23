@@ -13,7 +13,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a transaction detail line item for a <see cref="Rock.Model.FinancialTransaction"/> in RockChMS.
+    /// Represents a transaction detail line item for a <see cref="Rock.Model.FinancialTransaction"/> in Rock.
     /// </summary>
     [Table( "FinancialTransactionDetail" )]
     [DataContract]

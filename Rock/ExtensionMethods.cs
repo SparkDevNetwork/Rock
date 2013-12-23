@@ -729,7 +729,7 @@ namespace Rock
                     duration = string.Format( "{0:N0}{1}", end.TotalYears( start ), condensed ? "yrs" : " Years" );
             }
 
-            return "(" + duration + ( condensed ? "" : direction ) + ")";
+            return duration + ( condensed ? "" : direction );
 
         }
 

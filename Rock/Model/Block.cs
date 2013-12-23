@@ -18,7 +18,7 @@ namespace Rock.Model
 {
 
     /// <summary>
-    /// Represents an implementation of a <see cref="Rock.Model.BlockType"/> in RockChMS. A block can be implemented on a Site's <see cref="Rock.Model.Layout"/> and appear on 
+    /// Represents an implementation of a <see cref="Rock.Model.BlockType"/> in Rock. A block can be implemented on a Site's <see cref="Rock.Model.Layout"/> and appear on 
     /// all pages on the site that uses that template or on an individual <see cref="Rock.Model.Page"/>.  
     /// 
     /// An example of a Block being implemented on a layout template would be an implementation of a HTML Content Block Type in the footer zone of a layout that contains the site's copyright notice.  
@@ -34,10 +34,10 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets a flag indicating if this Block was created by and is a part of the RockChMS core system/framework. This property is required.
+        /// Gets or sets a flag indicating if this Block was created by and is a part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> that is <c>true</c> if this Block is part of the RockChMS core system/framework, otherwise is <c>false</c>.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this Block is part of the Rock core system/framework, otherwise is <c>false</c>.
         /// </value>
         /// <example>
         /// True

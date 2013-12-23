@@ -486,7 +486,7 @@ namespace Rock.Data
         {
             Dictionary<string, PropertyInfo> properties = null;
 
-            foreach ( var trigger in TriggerCache.Triggers( entity.TypeName, triggerType ) )
+            foreach ( var trigger in TriggerCache.Triggers( entity.TypeName, triggerType ).Where( t => t.IsActive == true ) )
             {
                 bool match = true;
 

@@ -13,17 +13,17 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a member of a group in RockChMS. A group member is a <see cref="Rock.Model.Person"/> who has a relationship with a <see cref="Rock.Model.Group"/>.
+    /// Represents a member of a group in Rock. A group member is a <see cref="Rock.Model.Person"/> who has a relationship with a <see cref="Rock.Model.Group"/>.
     /// </summary>
     [Table( "GroupMember" )]
     [DataContract]
     public partial class GroupMember : Model<GroupMember>
     {
         /// <summary>
-        /// Gets or sets a flag indicating if this GroupMember is part of the RockChMS core system/framework. This property is required.
+        /// Gets or sets a flag indicating if this GroupMember is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this GroupMember is a part of the RockChMS core system/framework; otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this GroupMember is a part of the Rock core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]

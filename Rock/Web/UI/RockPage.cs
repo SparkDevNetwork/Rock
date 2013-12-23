@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
@@ -26,7 +27,7 @@ using Page = System.Web.UI.Page;
 namespace Rock.Web.UI
 {
     /// <summary>
-    /// RockPage is the base abstract class that all page templates in RockChMS should inherit from
+    /// RockPage is the base abstract class that all page templates in Rock should inherit from
     /// </summary>
     public abstract class RockPage : Page
     {
@@ -374,6 +375,9 @@ namespace Rock.Web.UI
             // wire up navigation event
             _scriptManager.Navigate += new EventHandler<HistoryEventArgs>(scriptManager_Navigate);
 
+            // add ckeditor
+            _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/ckeditor/ckeditor.js" ) );
+
             // Add library and UI bundles during init, that way theme developers will only
             // need to worry about registering any custom scripts or script bundles they need
             _scriptManager.Scripts.Add( new ScriptReference { Name = "WebFormsBundle" } );
@@ -384,9 +388,6 @@ namespace Rock.Web.UI
             // add Google Maps API
             var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
             _scriptManager.Scripts.Add( new ScriptReference( string.Format( "https://maps.googleapis.com/maps/api/js?key={0}&sensor=false&libraries=drawing", googleAPIKey ) ) );
-
-            // add ckeditor
-            _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/ckeditor/ckeditor.js" ) );
 
             // Recurse the page controls to find the rock page title and zone controls
             Page.Trace.Warn( "Recursing layout to find zones" );
@@ -610,6 +611,12 @@ namespace Rock.Web.UI
                     if (bcName != string.Empty)
                     {
                         PageReference.BreadCrumbs.Add( new BreadCrumb( bcName, PageReference.BuildUrl() ) );
+                    }
+
+                    // Add the Google Analytics Code script if a code was specified for the site
+                    if (!string.IsNullOrWhiteSpace(_pageCache.Layout.Site.GoogleAnalyticsCode))
+                    {
+                        AddGoogleAnalytics( _pageCache.Layout.Site.GoogleAnalyticsCode );
                     }
 
                     // Load the blocks and insert them into page zones
@@ -1032,6 +1039,30 @@ namespace Rock.Web.UI
         public void AddScriptLink(string path)
         {
             RockPage.AddScriptLink( this, path );
+        }
+
+        /// <summary>
+        /// Adds the google analytics script
+        /// </summary>
+        /// <param name="code">The GoogleAnalyticsCode.</param>
+        private void AddGoogleAnalytics( string code )
+        {
+            string scriptTemplate = Application["GoogleAnalyticsScript"] as string;
+            if (scriptTemplate == null)
+            {
+                string scriptFile = MapPath("~/App_Data/GoogleAnalytics.txt");
+                if ( File.Exists( scriptFile ) )
+                {
+                    scriptTemplate = File.ReadAllText( scriptFile );
+                    Application["GoogleAnalyticsScript"] = scriptTemplate;
+                }
+            }
+
+            if ( scriptTemplate != null )
+            {
+                string script = string.Format( scriptTemplate, code );
+                AddScriptToHead( this.Page, script, true );
+            }
         }
 
         #endregion
@@ -1697,6 +1728,38 @@ namespace Rock.Web.UI
                 scriptManager.Scripts.Add( new ScriptReference( path ) );
             }
         }
+
+        /// <summary>
+        /// Adds the script to head.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="script">The script.</param>
+        /// <param name="AddScriptTags">if set to <c>true</c> [add script tags].</param>
+        public static void AddScriptToHead(Page page, string script, bool AddScriptTags)
+        {
+            if ( page != null && page.Header != null )
+            {
+                var header = page.Header;
+                
+                Literal l = new Literal();
+                
+                if ( AddScriptTags )
+                {
+                    l.Text = string.Format( @"
+    <script type=""text/javascript"">       
+{0}
+    </script>
+
+", script );
+                }
+                else
+                {
+                    l.Text = script;
+                }
+
+                header.Controls.Add( l );
+            }
+        } 
 
         #region User Preferences
 

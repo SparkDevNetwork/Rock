@@ -14,7 +14,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// A DefinedType is a dictionary of consistent values for a particular thing in RockChMS. The individual items are refereed to as <see cref="Rock.Model.DefinedValue">DefinedValues</see> in RockChMS.  
+    /// A DefinedType is a dictionary of consistent values for a particular thing in Rock. The individual items are refereed to as <see cref="Rock.Model.DefinedValue">DefinedValues</see> in Rock.  
     /// Several classic examples of DefinedTypes can be Shirt Sizes, a Country List, etc. Defined Values can be categorized, ordered and can be furthered specified by a <see cref="Rock.Model.FieldType"/>
     /// </summary>
     /// <remarks>
@@ -27,10 +27,10 @@ namespace Rock.Model
     public partial class DefinedType : Model<DefinedType>, IOrdered
     {
         /// <summary>
-        /// Gets or sets a flag indicating if this DefinedType is part of the RockChMS core system/framework. This property is required.
+        /// Gets or sets a flag indicating if this DefinedType is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> that is <c>true</c> if this DefinedType is part of the RockChMS core system/framework; otherwise this value is <c>false</c>.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this DefinedType is part of the Rock core system/framework; otherwise this value is <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]

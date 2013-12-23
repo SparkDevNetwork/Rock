@@ -161,7 +161,7 @@ namespace Rock.Model
         /// A <see cref="Rock.Model.GroupMember"/> representing the <see cref="Rock.Model.Person"/> with the inverse relationship.
         /// </returns>
         /// <remarks>
-        /// In RockChMS, examples of inverse relationships include: Parent/Child, Can Check In/Check in By, Sibling/Sibling, Grandparent/Grandchild, etc.
+        /// In Rock, examples of inverse relationships include: Parent/Child, Can Check In/Check in By, Sibling/Sibling, Grandparent/Grandchild, etc.
         /// </remarks>
         public GroupMember GetInverseRelationship( GroupMember groupMember, bool createGroup, int? personId )
         {

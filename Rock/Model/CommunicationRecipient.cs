@@ -49,8 +49,8 @@ namespace Rock.Model
         /// </summary>
         /// <value>
         /// A <see cref="Rock.Model.CommunicationRecipientStatus"/> Enum representing the status of <see cref="Rock.Model.Communication"/> submission to the recipient.
-        /// This property will be  <c>CommunicationRecipientStatus.Pending</c> when RockChMS is waiting to send the <see cref="Rock.Model.Communication"/> to the recipient;
-        /// <c>CommunicationRecipientStatus.Success</c> when RockChMS has successfully sent the <see cref="Rock.Model.Communication"/> to the recipient;
+        /// This property will be  <c>CommunicationRecipientStatus.Pending</c> when Rock is waiting to send the <see cref="Rock.Model.Communication"/> to the recipient;
+        /// <c>CommunicationRecipientStatus.Success</c> when Rock has successfully sent the <see cref="Rock.Model.Communication"/> to the recipient;
         /// <c>CommunicationRecipientStatus.Failed</c> when the attempt to send the <see cref="Rock.Model.Communication"/> failed.
         /// <c>CommunicaitonRecipientStatus.Cancelled</c> when the attempt to send the <see cref="Rock.Model.Communication"/> was canceled.
         /// </value>

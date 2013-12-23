@@ -13,20 +13,20 @@ namespace Rock.Install.Utilities
         static string _internetCheckSite = "www.google.com";
         static string _dotNetVersionRequired = "4.5";
         static double _iisVersionRequired = 7.0;
-        static string _rockInstallFile = "http://rockchms.blob.core.windows.net/install/test-zip-file.zip";
+        static string _rockInstallFile = "http://storage.rockrms.com/install/test-zip-file.zip";
 
-        static string _rockLogoIco = "http://rockchms.blob.core.windows.net/install/rock-chms.ico";
+        static string _rockLogoIco = "http://storage.rockrms.com/install/rock-chms.ico";
         static string _rockStyles = "/install.css";
-        static string _rockWelcomeImg = "http://rockchms.blob.core.windows.net/install/welcome.jpg";
+        static string _rockWelcomeImg = "http://storage.rockrms.com/install/welcome.jpg";
 #else
         static string _internetCheckSite = "www.google.com";
         static string _dotNetVersionRequired = "4.5";
         static double _iisVersionRequired = 7.0;
-        static string _rockInstallFile = "http://rockchms.blob.core.windows.net/install/rock-chms-latest.zip";
+        static string _rockInstallFile = "http://storage.rockrms.com/install/rock-chms-latest.zip";
 
-        static string _rockLogoIco = "http://rockchms.blob.core.windows.net/install/rock-chms.ico";
-        static string _rockStyles = "http://rockchms.blob.core.windows.net/install/install.css";
-        static string _rockWelcomeImg = "http://rockchms.blob.core.windows.net/install/welcome.jpg";
+        static string _rockLogoIco = "http://storage.rockrms.com/install/rock-chms.ico";
+        static string _rockStyles = "http://storage.rockrms.com/install/install.css";
+        static string _rockWelcomeImg = "http://storage.rockrms.com/install/welcome.jpg";
 #endif
 
 

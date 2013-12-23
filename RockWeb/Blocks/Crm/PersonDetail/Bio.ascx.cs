@@ -36,14 +36,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 var pageCache = PageCache.Read( RockPage.PageId );
                 if ( pageCache != null )
                 {
-                    Page.Title = pageCache.Title + ": " + Person.FirstLastName;
+                    Page.Title = pageCache.Title + ": " + Person.FullName;
                 }
                 else
                 {
-                    Page.Title = Person.FirstLastName;
+                    Page.Title = Person.FullName;
                 }
 
-                lName.Text = Person.FirstLastName.FormatAsHtmlTitle();
+                lName.Text = Person.FullName.FormatAsHtmlTitle();
 
                 
                 var imgLink = new HtmlAnchor();

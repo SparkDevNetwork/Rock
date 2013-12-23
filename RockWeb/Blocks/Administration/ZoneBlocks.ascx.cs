@@ -23,7 +23,7 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     [DisplayName( "Zone Blocks" )]
     [Category( "Administration" )]
-    [Description( "" )]
+    [Description( "Displays the blocks for a given zone." )]
     public partial class ZoneBlocks : RockBlock
     {
         #region Base Control Methods

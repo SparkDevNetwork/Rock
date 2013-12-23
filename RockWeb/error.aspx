@@ -5,10 +5,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Rock ChMS - Error</title>
+    <title>Rock - Error</title>
 
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Styles/bootstrap.css") %>" />
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Styles/theme.css") %>" />
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Rock/Styles/bootstrap.css") %>" />
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Rock/Styles/theme.css") %>" />
 
     <!-- Icons -->
     <link rel="shortcut icon" href="<%= Page.ResolveUrl("~/Assets/Icons/favicon.ico") %>">
@@ -34,7 +34,7 @@
     
         
         <div id="content">
-            <img alt="Rock ChMS" id="logoImg" runat="server" class="pageheader-logo" src="#" />
+            <img alt="Rock" id="logoImg" runat="server" class="pageheader-logo" src="#" />
 
             <div id="content-box">
                 <div class="row">
@@ -58,7 +58,7 @@
                         
                         <asp:Panel ID="pnlException" runat="server" CssClass="error-wrap" Visible="false">
                             <h1>Ah Man... </h1>
-                            <p>An error has occurred while processing your request.  The Rock ChMS administrators have 
+                            <p>An error has occurred while processing your request.  The Rock administrators have 
                             been notified of this problem.</p>
 
                             <p style="text-align: center;">

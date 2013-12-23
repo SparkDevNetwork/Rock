@@ -4,13 +4,13 @@
 
 <html>
 <head>
-    <title>Rock ChMS - Keep Alive</title>
+    <title>Rock - Keep Alive</title>
 </head>
 <body>
 
     <div>
         <h1>I'm Alive!</h1>
-        You've run across the Rock ChMS Keep Alive page.  This page is called internally by the Rock code to keep the website loaded
+        You've run across the Rock Keep Alive page.  This page is called internally by the Rock code to keep the website loaded
         in Microsoft IIS (the webserver).  This is important for two reasons:
         <ol>
             <li>Keeping the website loaded makes it faster.</li>

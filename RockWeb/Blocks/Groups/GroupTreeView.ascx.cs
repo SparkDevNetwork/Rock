@@ -55,12 +55,12 @@ namespace RockWeb.Blocks.Groups
                 if ( group != null )
                 {
                     // show the Add button if the selected Group's GroupType can have children
-                    lbAddGroup.Visible = group.GroupType.ChildGroupTypes.Count > 0;
+                    lbAddGroupChild.Enabled = group.GroupType.ChildGroupTypes.Count > 0;
                 }
                 else
                 {
                     // hide the Add Button when adding a new Group
-                    lbAddGroup.Visible = false;
+                    lbAddGroupChild.Enabled = false;
                 }
 
                 // get the parents of the selected item so we can tell the treeview to expand those
@@ -93,7 +93,15 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 // let the Add button be visible if there is nothing selected
-                lbAddGroup.Visible = true;
+                lbAddGroupChild.Enabled = true;
+            }
+
+            // disable add child group if no group is selected
+            int selectedGroupId = hfSelectedGroupId.ValueAsInt();
+
+            if (selectedGroupId == 0)
+            {
+                lbAddGroupChild.Enabled = false;
             }
         }
 
@@ -102,10 +110,15 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void lbAddGroup_Click( object sender, EventArgs e )
+        protected void lbAddGroupRoot_Click(object sender, EventArgs e)
+        {
+            NavigateToLinkedPage("DetailPage", "groupId", 0, "parentGroupId", 0);
+        }
+
+        protected void lbAddGroupChild_Click(object sender, EventArgs e)
         {
             int groupId = hfSelectedGroupId.ValueAsInt();
-            NavigateToLinkedPage( "DetailPage", "groupId", 0, "parentGroupId", groupId );
+            NavigateToLinkedPage("DetailPage", "groupId", 0, "parentGroupId", groupId);
         }
-    }
+}
 }

@@ -22,10 +22,10 @@ namespace Rock.Model
     public partial class Tag : Model<Tag>, IOrdered
     {
         /// <summary>
-        /// Gets or sets a flag indicating if this Tag is part of the RockChMS core system/framework.
+        /// Gets or sets a flag indicating if this Tag is part of the Rock core system/framework.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> that is <c>true</c> if this Tag is part of the RockChMS core system/framework; otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this Tag is part of the Rock core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]

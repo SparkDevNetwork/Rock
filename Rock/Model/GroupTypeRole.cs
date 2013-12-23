@@ -14,7 +14,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a role that a <see cref="Rock.Model.GroupMember"/> can have in a <see cref="Rock.Model.Group"/>.  In RockChMS each member of a group has one 
+    /// Represents a role that a <see cref="Rock.Model.GroupMember"/> can have in a <see cref="Rock.Model.Group"/>.  In Rock each member of a group has one 
     /// or more <see cref="Rock.Model.GroupTypeRole">GroupRoles</see> assigned to them (for instance the leader of a group can have both a leader and member role). Examples
     /// of roles include leader, member, team leader, coach, host, etc.
     /// </summary>
@@ -26,10 +26,10 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets a flag indicating if this GroupRole is part of the RockChMS core system/framework. This property is required.
+        /// Gets or sets a flag indicating if this GroupRole is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this GroupRole is part of the RockChMS core system/framework; otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this GroupRole is part of the Rock core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]

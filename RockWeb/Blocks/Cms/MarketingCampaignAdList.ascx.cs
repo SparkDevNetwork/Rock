@@ -16,12 +16,16 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using System.ComponentModel;
 
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
     /// 
     /// </summary>
+    [DisplayName("Marketing Campaign - Ad List")]
+    [Category("CMS")]
+    [Description("Lists ads for a given campaign, or all ads.")]
     [BooleanField( "Show Marketing Campaign Title")]
     [ContextAware( typeof( MarketingCampaign ) )]
     [LinkedPage("Detail Page")]
