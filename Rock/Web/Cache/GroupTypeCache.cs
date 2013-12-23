@@ -119,24 +119,6 @@ namespace Rock.Web.Cache
         public bool ShowInNavigation { get; set; }
 
         /// <summary>
-        /// Gets or sets the icon small file identifier.
-        /// </summary>
-        /// <value>
-        /// The icon small file identifier.
-        /// </value>
-        [DataMember]
-        public int? IconSmallFileId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the icon large file identifier.
-        /// </summary>
-        /// <value>
-        /// The icon large file identifier.
-        /// </value>
-        [DataMember]
-        public int? IconLargeFileId { get; set; }
-
-        /// <summary>
         /// Gets or sets the icon CSS class.
         /// </summary>
         /// <value>
@@ -375,8 +357,6 @@ namespace Rock.Web.Cache
                 this.AllowMultipleLocations = groupType.AllowMultipleLocations;
                 this.ShowInGroupList = groupType.ShowInGroupList;
                 this.ShowInNavigation = groupType.ShowInNavigation;
-                this.IconSmallFileId = groupType.IconSmallFileId;
-                this.IconLargeFileId = groupType.IconLargeFileId;
                 this.IconCssClass = groupType.IconCssClass;
                 this.TakesAttendance = groupType.TakesAttendance;
                 this.AttendanceRule = groupType.AttendanceRule;

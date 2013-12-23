@@ -14,7 +14,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents an instance of when a <see cref="Rock.Model.Person">Person's</see> person detail data was viewed in RockChMS.  Includes data on who was viewed, the person who viewed their record, and when/where their record
+    /// Represents an instance of when a <see cref="Rock.Model.Person">Person's</see> person detail data was viewed in Rock.  Includes data on who was viewed, the person who viewed their record, and when/where their record
     /// was viewed.
     /// </summary>
     [Table( "PersonViewed" )]

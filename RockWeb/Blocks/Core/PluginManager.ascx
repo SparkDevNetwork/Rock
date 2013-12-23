@@ -26,7 +26,7 @@
                         <asp:TemplateField ItemStyle-VerticalAlign="Top">
                             <ItemTemplate>
                                 <ul class="list-unstyled">
-                                    <li><asp:Image runat="server" ID="imgIconUrl" alt="Plugin Icon" width="80" height="80" ImageUrl="http://quarry.rockchms.com/Content/Images/packageDefaultIcon1.png"  /></li>
+                                    <li><asp:Image runat="server" ID="imgIconUrl" alt="Plugin Icon" width="80" height="80" ImageUrl="http://quarry.rockrms.com/Content/Images/packageDefaultIcon1.png"  /></li>
                                     <li><a runat="server" id="lProjectUrl" href="#">Project Site</a></li>
                                 </ul>
                             </ItemTemplate>

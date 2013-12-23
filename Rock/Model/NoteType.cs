@@ -15,7 +15,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a type or category of <see cref="Rock.Model.Note">Notes</see> in RockChMS, and configures the type of entities that notes of this type apply to other settings
+    /// Represents a type or category of <see cref="Rock.Model.Note">Notes</see> in Rock, and configures the type of entities that notes of this type apply to other settings
     /// specific to the type of note.
     /// </summary>
     [Table( "NoteType" )]
@@ -26,7 +26,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets a flag indicating that this NoteType is part of the RockChMS core system/framework. This property is required.
+        /// Gets or sets a flag indicating that this NoteType is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this NoteType is part of the core system/framework, otherwise <c>false</c>.

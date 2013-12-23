@@ -13,8 +13,8 @@
     <script src="<%# ResolveUrl("~/Scripts/jquery-1.10.2.min.js") %>"></script>
 
     <!-- Included CSS Files -->
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Styles/bootstrap.css") %>"/>
-	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Styles/theme.css") %>"/>
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/Rock/Styles/bootstrap.css") %>"/>
+	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/Rock/Styles/theme.css") %>"/>
 	<link rel="stylesheet" href="<%# ResolveUrl("~/Styles/developer.css") %>"/>
 
     <script src="<%# ResolveUrl("~/Scripts/jquery.js") %>" ></script>
@@ -26,7 +26,7 @@
     <form id="form1" runat="server">
 
         <div id="content">
-            <asp:Image ID="Image1" runat="server" AlternateText="Rock ChMS" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="pageheader-logo" />
+            <asp:Image ID="Image1" runat="server" AlternateText="Rock" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="pageheader-logo" />
                 
             <div id="content-box" class="clearfix">
                 <Rock:Zone Name="Main" runat="server" />

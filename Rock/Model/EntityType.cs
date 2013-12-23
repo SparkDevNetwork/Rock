@@ -88,7 +88,7 @@ namespace Rock.Model
         #region virtual Properties
 
         /// <summary>
-        /// Gets a flag  indicating whether this instance is part of the RockChMS core system/framework.
+        /// Gets a flag  indicating whether this instance is part of the Rock core system/framework.
         /// </summary>
         /// <value>
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this instance is system; otherwise, <c>false</c>.

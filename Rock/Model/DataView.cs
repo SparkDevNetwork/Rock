@@ -21,7 +21,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a filterable dataview in RockChMS.
+    /// Represents a filterable dataview in Rock.
     /// </summary>
     [Table( "DataView" )]
     [DataContract]
@@ -31,10 +31,10 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets a flag indicating if this DataView is part of the RockChMS core system/framework.
+        /// Gets or sets a flag indicating if this DataView is part of the Rock core system/framework.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if it is part of the RockChMS core system/framework; otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if it is part of the Rock core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]

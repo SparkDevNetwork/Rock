@@ -9,8 +9,8 @@
             
                 <!-- Brand Bar -->
 			    <div class="navbar-header">
-                    <asp:HyperLink ID="hlHome" runat="server" CssClass="navbar-brand" NavigateUrl="~" ToolTip="Rock ChMS">
-                        <asp:Image ID="imgLogo" runat="server" AlternateText="Rock ChMS" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="brandbar-logo" />
+                    <asp:HyperLink ID="hlHome" runat="server" CssClass="navbar-brand" NavigateUrl="~" ToolTip="Rock">
+                        <asp:Image ID="imgLogo" runat="server" AlternateText="Rock" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="brandbar-logo" />
                     </asp:HyperLink>
                     
                     <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".pagenav">
@@ -53,8 +53,8 @@
     </header>
 
     <main class="container">
-
-        <!-- Start Content Area -->
+                
+        <!-- Content Area -->
 
         <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
                     
@@ -70,12 +70,19 @@
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-md-9">
-                <Rock:Zone Name="Main" runat="server" />
-            </div>
-            <div class="col-md-3">
-                <Rock:Zone Name="Sidebar 1" runat="server" />
+        
+        <div class="panel panel-default">
+            <div class="panel-body">
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <Rock:Zone Name="Sidebar 1" runat="server" />
+                    </div>
+                    <div class="col-md-9">
+                        <Rock:Zone Name="Main" runat="server" />               
+                    </div>
+                </div>
+
             </div>
         </div>
 
@@ -112,6 +119,3 @@
     </footer>
 
 </asp:Content>
-
-
-

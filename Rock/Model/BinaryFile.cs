@@ -15,7 +15,7 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents any file that has either been uploaded to or generated and saved to RockChMS.  
+    /// Represents any file that has either been uploaded to or generated and saved to Rock.  
     /// </summary>
     [Table( "BinaryFile" )]
     [DataContract]
@@ -35,7 +35,7 @@ namespace Rock.Model
         public bool IsTemporary { get; set; }
         
         /// <summary>
-        /// Gets or sets a flag indicating if this file is part of the RockChMS core system/framework.
+        /// Gets or sets a flag indicating if this file is part of the Rock core system/framework.
         /// </summary>
         /// <value>
         /// A <see cref="System.Boolean" /> value that is <c>true</c> if this file is part of the core system/framework; otherwise <c>false</c>.
@@ -64,7 +64,7 @@ namespace Rock.Model
         public string Url { get; set; }
         
         /// <summary>
-        /// Gets or sets the name of the file, including any extensions. This name is usually captured when the file is uploaded to RockChMS and this same name will be used when the file is downloaded. This property is required.
+        /// Gets or sets the name of the file, including any extensions. This name is usually captured when the file is uploaded to Rock and this same name will be used when the file is downloaded. This property is required.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the name of the file, including the extension.

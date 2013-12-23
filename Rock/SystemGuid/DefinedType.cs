@@ -9,7 +9,7 @@ using System;
 namespace Rock.SystemGuid
 {
     /// <summary>
-    /// Static Guids used by the Rock ChMS application
+    /// Static Guids used by the Rock application
     /// </summary>
     public class DefinedType
     {

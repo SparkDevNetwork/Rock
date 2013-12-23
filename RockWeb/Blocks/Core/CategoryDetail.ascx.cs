@@ -208,26 +208,6 @@ namespace RockWeb.Blocks.Core
 
                 List<int> orphanedBinaryFileIdList = new List<int>();
 
-                if ( category.IconSmallFileId != imgIconSmall.BinaryFileId )
-                {
-                    if (category.IconSmallFileId.HasValue)
-                    {
-                        orphanedBinaryFileIdList.Add( category.IconSmallFileId.Value );
-                    }
-
-                    category.IconSmallFileId = imgIconSmall.BinaryFileId;
-                }
-
-                if ( category.IconLargeFileId != imgIconLarge.BinaryFileId )
-                {
-                    if ( category.IconLargeFileId.HasValue )
-                    {
-                        orphanedBinaryFileIdList.Add( category.IconLargeFileId.Value );
-                    }
-
-                    category.IconLargeFileId = imgIconLarge.BinaryFileId;
-                }
-
                 if ( !Page.IsValid )
                 {
                     return;
@@ -399,8 +379,6 @@ namespace RockWeb.Blocks.Core
             lblEntityTypeQualifierValue.Visible = !string.IsNullOrWhiteSpace( category.EntityTypeQualifierValue );
             lblEntityTypeQualifierValue.Text = category.EntityTypeQualifierValue;
             tbIconCssClass.Text = category.IconCssClass;
-            imgIconSmall.BinaryFileId = category.IconSmallFileId.HasValue ? category.IconSmallFileId.Value : None.Id;
-            imgIconLarge.BinaryFileId = category.IconLargeFileId.HasValue ? category.IconLargeFileId.Value : None.Id;
         }
 
         /// <summary>
@@ -411,24 +389,8 @@ namespace RockWeb.Blocks.Core
         {
             SetEditMode( false );
 
-            string categoryIconHtml = string.Empty;
-            if ( !string.IsNullOrWhiteSpace( category.IconCssClass ) )
-            {
-                categoryIconHtml = string.Format( "<i class='{0} fa-2x' ></i>", category.IconCssClass );
-            }
-            else
-            {
-                var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-                string imageUrlFormat = "<img src='" + appPath + "GetImage.ashx?id={0}&width=50&height=50' />";
-                if ( category.IconLargeFileId != null )
-                {
-                    categoryIconHtml = string.Format( imageUrlFormat, category.IconLargeFileId );
-                }
-                else if ( category.IconSmallFileId != null )
-                {
-                    categoryIconHtml = string.Format( imageUrlFormat, category.IconSmallFileId );
-                }
-            }
+            string categoryIconHtml = !string.IsNullOrWhiteSpace( category.IconCssClass ) ?
+                categoryIconHtml = string.Format( "<i class='{0} fa-2x' ></i>", category.IconCssClass ) : "";
 
             hfCategoryId.SetValue( category.Id );
             lReadOnlyTitle.Text = category.Name.FormatAsHtmlTitle();

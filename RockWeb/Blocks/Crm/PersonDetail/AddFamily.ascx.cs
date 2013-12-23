@@ -233,7 +233,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     if ( familyMember.Person != null )
                     {
                         familyMemberRow.TitleValueId = familyMember.Person.TitleValueId;
-                        familyMemberRow.FirstName = familyMember.Person.GivenName;
+                        familyMemberRow.FirstName = familyMember.Person.FirstName;
                         familyMemberRow.NickName = familyMember.Person.NickName;
                         familyMemberRow.LastName = familyMember.Person.LastName;
                         familyMemberRow.Gender = familyMember.Person.Gender;
@@ -278,7 +278,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
 
                 groupMember.Person.TitleValueId = row.TitleValueId;
-                groupMember.Person.GivenName = row.FirstName;
+                groupMember.Person.FirstName = row.FirstName;
                 if ( nfmMembers.ShowNickName )
                 {
                     groupMember.Person.NickName = row.NickName;

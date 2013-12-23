@@ -50,6 +50,10 @@
         span {
             float: left;
             margin-right: 6px;
+            width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .caret {
@@ -257,7 +261,11 @@ ul.rocktree ul {
     margin-bottom: 12px;
 
     .treeview-actions {
-        margin-bottom: 12px;
+        margin-bottom: 8px;
+
+        .btn {
+            margin-bottom: 4px;
+        }
     }
 
     .treeview-scroll {

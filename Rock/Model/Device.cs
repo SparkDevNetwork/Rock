@@ -16,7 +16,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a device or component that interacts with and is manageable through RockChMS.  Examples of these can be check-in kiosks, giving kiosks, label printers, badge printers,
+    /// Represents a device or component that interacts with and is manageable through Rock.  Examples of these can be check-in kiosks, giving kiosks, label printers, badge printers,
     /// displays, etc.
     /// </summary>
     [Table("Device")]

@@ -578,7 +578,7 @@ namespace Rock.Web.UI.Controls
             // create default settings
             string filename = "export.xlsx";
             string workSheetName = "Export";
-            string title = "Rock ChMS Export";
+            string title = "Rock Export";
 
             MemoryStream ms = new MemoryStream();
             ExcelPackage excel = new ExcelPackage( ms );
@@ -593,7 +593,7 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                excel.Workbook.Properties.Title = "Rock ChMS Export";
+                excel.Workbook.Properties.Title = "Rock Export";
             }
 
             // add author info
@@ -604,7 +604,7 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                excel.Workbook.Properties.Author = "Rock ChMS";
+                excel.Workbook.Properties.Author = "Rock";
             }
 
             // add the page that created this

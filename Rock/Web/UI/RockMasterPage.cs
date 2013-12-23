@@ -36,7 +36,7 @@ namespace Rock.Web.UI
             string themeUrl = url;
             if ( url.StartsWith( "~~" ) )
             {
-                string theme = "RockChMS";
+                string theme = "Rock";
                 if ( _pageCache != null )
                 {
                     theme = _pageCache.Layout.Site.Theme;
