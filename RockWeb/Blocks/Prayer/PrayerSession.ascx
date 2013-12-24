@@ -28,7 +28,7 @@
                     <asp:Literal ID="lTitle" runat="server" />
                 </h1>
                 <Rock:HighlightLabel ID="hlblPrayerCountTotal" runat="server" IconCssClass="fa fa-users" LabelType="Info" Text="team: 0" ToolTip="The number of prayers offered by the team for this request." />
-                <Rock:HighlightLabel ID="hlblUrgent" runat="server" LabelType="Warning" Text="Urgent" Visible="false" ToolTip="This request has been flagged as urgently needing prayers." />
+                <Rock:HighlightLabel ID="hlblUrgent" runat="server" LabelType="Warning" Text="Urgent" Visible="false" />
                 <Rock:HighlightLabel ID="hlblCategory" runat="server" LabelType="Type" />
             </div>
             <div class="well" style="min-height:100px">
@@ -41,7 +41,7 @@
                 <asp:LinkButton ID="lbNext" TabIndex="1" runat="server" Text="Next <i class='fa fa-chevron-right'></i>" CssClass="btn btn-primary" OnClick="lbNext_Click" />
                 <asp:LinkButton ID="lbFlag" runat="server" Text="<i class='fa fa-flag'></i> Flag" CssClass="btn btn-warning" ToolTip="Flag as inappropriate so that an administrator can review the content." CausesValidation="false" OnClick="lbFlag_Click" />
                 <asp:LinkButton ID="lbStop" runat="server" Text="End Session" CssClass="btn btn-link" CausesValidation="false" OnClick="lbStop_Click" />
-                <p class="text-right"><Rock:HighlightLabel ID="hlblNumber" runat="server" LabelType="Default" Text="# 0" ToolTip="x of y" /></p>
+                <p class="text-right"><Rock:HighlightLabel ID="hlblNumber" runat="server" LabelType="Default" Text="# 0" /></p>
             </div>
 
             <!-- Comments -->
