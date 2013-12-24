@@ -157,6 +157,7 @@
                 <asp:PlaceHolder ID="phSuccessHeader" runat="server"></asp:PlaceHolder>
                 <dl class="dl-horizontal gift-success">
                     <Rock:TermDescription ID="tdScheduleId" runat="server" Term="Payment Schedule ID" />
+                    <Rock:TermDescription ID="tdTransactionCode" runat="server" Term="Confirmation Code" />
                 </dl>
             </div>
 

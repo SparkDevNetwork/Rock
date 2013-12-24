@@ -71,14 +71,32 @@ achieve our mission.  We are so grateful for your commitment.
     public partial class GivingProfileDetail : Rock.Web.UI.RockBlock
     {
 
-        #region Fields
-
-        private GatewayComponent _ccGateway;
-        private GatewayComponent _achGateway;
-
-        #endregion
-
         #region Properties
+
+        /// <summary>
+        /// Gets or sets the gateway.
+        /// </summary>
+        protected GatewayComponent Gateway
+        {
+            get 
+            { 
+                if (_gateway == null)
+                {
+                    Guid guid = ViewState["Gateway"] as Guid? ?? Guid.Empty;
+                    if (!guid.Equals(Guid.Empty))
+                    {
+                        _gateway = GatewayContainer.GetComponent(guid.ToString());
+                    }
+                }
+                return _gateway;
+            }
+            set 
+            { 
+                _gateway = value;
+                ViewState["Gateway"] = _gateway != null ? _gateway.TypeGuid : Guid.Empty; 
+            }
+        }
+        private GatewayComponent _gateway;
 
         /// <summary>
         /// Gets or sets the accounts that are available for user to add to the list.
@@ -158,7 +176,7 @@ achieve our mission.  We are so grateful for your commitment.
 
         #endregion
 
-        #region overridden control methods
+        #region base control methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -174,8 +192,11 @@ achieve our mission.  We are so grateful for your commitment.
 
                 if ( scheduledTransaction != null )
                 {
-                    SetAccounts( scheduledTransaction );
+                    Gateway = GetGateway(scheduledTransaction);
+
+                    GetAccounts( scheduledTransaction );
                     SetFrequency( scheduledTransaction );
+                    SetSavedAccounts( );
 
                     dtpStartDate.SelectedDate = scheduledTransaction.NextPaymentDate;
 
@@ -186,36 +207,7 @@ achieve our mission.  We are so grateful for your commitment.
                         page.PageNavigate += page_PageNavigate;
                     }
 
-                    hfPaymentTab.Value = "None";
-
-                    // Display Options
                     btnAddAccount.Title = GetAttributeValue( "AddAccountText" );
-
-                    BindSavedAccounts();
-
-                    if ( rblSavedCC.Items.Count > 0 )
-                    {
-                        rblSavedCC.Items[0].Selected = true;
-                        rblSavedCC.Visible = true;
-                        divNewCard.Style[HtmlTextWriterStyle.Display] = "none";
-                    }
-                    else
-                    {
-                        rblSavedCC.Visible = false;
-                        divNewCard.Style[HtmlTextWriterStyle.Display] = "block";
-                    }
-
-                    if ( rblSavedAch.Items.Count > 0 )
-                    {
-                        rblSavedAch.Items[0].Selected = true;
-                        rblSavedAch.Visible = true;
-                        divNewBank.Style[HtmlTextWriterStyle.Display] = "none";
-                    }
-                    else
-                    {
-                        rblSavedAch.Visible = false;
-                        divNewCard.Style[HtmlTextWriterStyle.Display] = "block";
-                    }
 
                     RegisterScript();
 
@@ -229,6 +221,8 @@ achieve our mission.  We are so grateful for your commitment.
                     phConfirmationFooter.Controls.Add( new LiteralControl( GetAttributeValue( "ConfirmationFooter" ).ResolveMergeFields( configValues ) ) );
                     phSuccessHeader.Controls.Add( new LiteralControl( GetAttributeValue( "SuccessHeader" ).ResolveMergeFields( configValues ) ) );
                     phSuccessFooter.Controls.Add( new LiteralControl( GetAttributeValue( "SuccessFooter" ).ResolveMergeFields( configValues ) ) );
+
+                    hfPaymentTab.Value = "None";
 
                     // Temp values for testing...
                     //txtCreditCard.Text = "5105105105105100";
@@ -255,9 +249,8 @@ achieve our mission.  We are so grateful for your commitment.
 
             if ( ScheduledTransactionId.HasValue )
             {
-                if ( _ccGateway != null || _achGateway != null )
+                if ( Gateway != null )
                 {
-
                     // Save amounts from controls to the viewstate list
                     foreach ( RepeaterItem item in rptAccountList.Items )
                     {
@@ -277,12 +270,6 @@ achieve our mission.  We are so grateful for your commitment.
 
                     // Update the total amount
                     lblTotalAmount.Text = SelectedAccounts.Sum( f => f.Amount ).ToString( "F2" );
-
-                    // Set the frequency date label based on if 'One Time' is selected or not
-                    if ( btnFrequency.Items.Count > 0 )
-                    {
-                        dtpStartDate.Label = btnFrequency.Items[0].Selected ? "When" : "Next Gift";
-                    }
 
                     liNone.RemoveCssClass( "active" );
                     liCreditCard.RemoveCssClass( "active" );
@@ -327,7 +314,7 @@ achieve our mission.  We are so grateful for your commitment.
                 else
                 {
                     SetPage( 0 );
-                    ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Please check the configuration of this block and make sure a valid Credit Card and/or ACH Finacial Gateway has been selected." );
+                    ShowMessage( NotificationBoxType.Danger, "Transaction/Configuration Error", "This page is not configured to allow edits for the payment gateway associated with the selected transaction." );
                 }
             }
             else
@@ -354,37 +341,6 @@ achieve our mission.  We are so grateful for your commitment.
             SelectedAccounts.AddRange( selected );
 
             BindAccounts();
-        }
-
-        /// <summary>
-        /// Handles the PageNavigate event of the page control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="HistoryEventArgs"/> instance containing the event data.</param>
-        protected void page_PageNavigate( object sender, HistoryEventArgs e )
-        {
-            int pageId = e.State["GivingDetail"].AsInteger() ?? 0;
-            if ( pageId > 0 )
-            {
-                SetPage( pageId );
-            }
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnPrev control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnPrev_Click( object sender, EventArgs e )
-        {
-            // Previous should only be enabled on the confirmation page (2)
-
-            switch ( hfCurrentPage.Value.AsInteger() ?? 0 )
-            {
-                case 2:
-                    SetPage( 1 );
-                    break;
-            }
         }
 
         /// <summary>
@@ -429,6 +385,23 @@ achieve our mission.  We are so grateful for your commitment.
         }
 
         /// <summary>
+        /// Handles the Click event of the btnPrev control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnPrev_Click( object sender, EventArgs e )
+        {
+            // Previous should only be enabled on the confirmation page (2)
+
+            switch ( hfCurrentPage.Value.AsInteger() ?? 0 )
+            {
+                case 2:
+                    SetPage( 1 );
+                    break;
+            }
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnConfirm control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -448,9 +421,25 @@ achieve our mission.  We are so grateful for your commitment.
             }
         }
 
+        /// <summary>
+        /// Handles the PageNavigate event of the page control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="HistoryEventArgs"/> instance containing the event data.</param>
+        protected void page_PageNavigate( object sender, HistoryEventArgs e )
+        {
+            int pageId = e.State["GivingDetail"].AsInteger() ?? 0;
+            if ( pageId > 0 )
+            {
+                SetPage( pageId );
+            }
+        }
+
         #endregion
 
-        #region Private Methods
+        #region  Methods
+
+        #region Initialization
 
         private FinancialScheduledTransaction GetScheduledTransaction(bool refresh = false)
         {
@@ -498,116 +487,22 @@ achieve our mission.  We are so grateful for your commitment.
             return null;
         }
 
-        private void SetAccounts(FinancialScheduledTransaction scheduledTransaction)
+        private GatewayComponent GetGateway(FinancialScheduledTransaction scheduledTransaction)
         {
-            GetAccounts();
-
-            foreach ( var txnDetail in scheduledTransaction.ScheduledTransactionDetails )
+            if (scheduledTransaction.GatewayEntityType != null)
             {
-                var selectedAccount = SelectedAccounts.Where( a => a.Id == txnDetail.AccountId ).FirstOrDefault();
-                if ( selectedAccount != null )
+                Guid gatewayGuid = scheduledTransaction.GatewayEntityType.Guid;
+                var gateway = GatewayContainer.GetComponent(gatewayGuid.ToString());
+                if (gateway != null && gateway.IsActive)        
                 {
-                    selectedAccount.Amount = txnDetail.Amount;
-                }
-                else
-                {
-                    var selected = AvailableAccounts.Where( a => a.Id == txnDetail.AccountId ).ToList();
-                    if ( selected != null )
-                    {
-                        selected.ForEach( a => a.Amount = txnDetail.Amount );
-                        AvailableAccounts = AvailableAccounts.Except( selected ).ToList();
-                        SelectedAccounts.AddRange( selected );
-                    }
+                    return gateway;
                 }
             }
 
-            BindAccounts();
-
+            return null;
         }
 
-        private void SetFrequency(FinancialScheduledTransaction scheduledTransaction)
-        {
-            // Enable payment options based on the configured gateways
-            bool ccEnabled = false;
-            bool achEnabled = false;
-            var supportedFrequencies = new List<DefinedValueCache>();
-
-            var ccGatewayGuid = GetAttributeValue( "CCGateway" ).AsGuid();
-            if ( ccGatewayGuid.Equals(scheduledTransaction.GatewayEntityType.Guid ) )
-            {
-                _ccGateway = GatewayContainer.GetComponent( ccGatewayGuid.ToString() );
-                if ( _ccGateway != null )
-                {
-                    ccEnabled = true;
-                    txtCardFirstName.Visible = _ccGateway.SplitNameOnCard;
-                    txtCardLastName.Visible = _ccGateway.SplitNameOnCard;
-                    txtCardName.Visible = !_ccGateway.SplitNameOnCard;
-                    mypExpiration.MinimumYear = DateTime.Now.Year;
-                }
-            }
-
-            var achGatewayGuid = GetAttributeValue( "ACHGateway" ).AsGuid();
-            if ( achGatewayGuid.Equals(scheduledTransaction.GatewayEntityType.Guid ) )
-            {
-                _achGateway = GatewayContainer.GetComponent( achGatewayGuid.ToString() );
-                achEnabled = _achGateway != null;
-            }
-
-            if ( ccEnabled || achEnabled )
-            {
-                if ( ccEnabled )
-                {
-                    supportedFrequencies = _ccGateway.SupportedPaymentSchedules;
-                    divCCPaymentInfo.AddCssClass( "tab-pane" );
-                    divCCPaymentInfo.Visible = ccEnabled;
-                }
-
-                if ( achEnabled )
-                {
-                    supportedFrequencies = _achGateway.SupportedPaymentSchedules;
-                    divACHPaymentInfo.AddCssClass( "tab-pane" );
-                    divACHPaymentInfo.Visible = achEnabled;
-                }
-
-                if ( ccEnabled && achEnabled )
-                {
-                    // If CC and ACH gateways are different, only allow frequencies supported by both payment gateways (if different)
-                    if ( _ccGateway.TypeId != _achGateway.TypeId )
-                    {
-                        supportedFrequencies = _ccGateway.SupportedPaymentSchedules
-                            .Where( c =>
-                                _achGateway.SupportedPaymentSchedules
-                                    .Select( a => a.Id )
-                                    .Contains( c.Id ) )
-                            .ToList();
-                    }
-                }
-
-                if ( supportedFrequencies.Any() )
-                {
-                    var oneTimeFrequency = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME );
-                    divRepeatingPayments.Visible = true;
-
-                    btnFrequency.DataSource = supportedFrequencies;
-                    btnFrequency.DataBind();
-
-                    // If gateway didn't specifically support one-time, add it anyway for immediate gifts
-                    if ( !supportedFrequencies.Where( f => f.Id == oneTimeFrequency.Id ).Any() )
-                    {
-                        btnFrequency.Items.Insert( 0, new ListItem( oneTimeFrequency.Name, oneTimeFrequency.Id.ToString() ) );
-                    }
-
-                    btnFrequency.SelectedValue = scheduledTransaction.TransactionFrequencyValueId.ToString();
-                }
-            }
-        }
-
-        #region Methods for the Payment Info Page (panel)
-
-        /// <summary>
-        /// Gets the accounts.
-        /// </summary>
-        private void GetAccounts()
+        private void GetAccounts(FinancialScheduledTransaction scheduledTransaction)
         {
             var selectedGuids = GetAttributeValues( "Accounts" ).Select( Guid.Parse ).ToList();
             bool showAll = !selectedGuids.Any();
@@ -651,41 +546,100 @@ achieve our mission.  We are so grateful for your commitment.
                     }
                 }
             }
+
+            foreach ( var txnDetail in scheduledTransaction.ScheduledTransactionDetails )
+            {
+                var selectedAccount = SelectedAccounts.Where( a => a.Id == txnDetail.AccountId ).FirstOrDefault();
+                if ( selectedAccount != null )
+                {
+                    selectedAccount.Amount = txnDetail.Amount;
+                }
+                else
+                {
+                    var selected = AvailableAccounts.Where( a => a.Id == txnDetail.AccountId ).ToList();
+                    if ( selected != null )
+                    {
+                        selected.ForEach( a => a.Amount = txnDetail.Amount );
+                        AvailableAccounts = AvailableAccounts.Except( selected ).ToList();
+                        SelectedAccounts.AddRange( selected );
+                    }
+                }
+            }
+
+            BindAccounts();
+
         }
 
-        /// <summary>
-        /// Binds the accounts.
-        /// </summary>
-        private void BindAccounts()
+        private void SetFrequency(FinancialScheduledTransaction scheduledTransaction)
         {
-            rptAccountList.DataSource = SelectedAccounts.OrderBy( a => a.Order ).ToList();
-            rptAccountList.DataBind();
+            // Enable payment options based on the configured gateways
+            bool ccEnabled = false;
+            bool achEnabled = false;
 
-            btnAddAccount.Visible = AvailableAccounts.Any();
-            btnAddAccount.DataSource = AvailableAccounts;
-            btnAddAccount.DataBind();
+            if (Gateway != null)
+            {
+                if (Gateway.TypeGuid.Equals(GetAttributeValue( "CCGateway" ).AsGuid()))
+                {
+                    ccEnabled = true;
+                    txtCardFirstName.Visible = Gateway.SplitNameOnCard;
+                    txtCardLastName.Visible = Gateway.SplitNameOnCard;
+                    txtCardName.Visible = !Gateway.SplitNameOnCard;
+                    mypExpiration.MinimumYear = DateTime.Now.Year;
+                }
+
+                if (Gateway.TypeGuid.Equals(GetAttributeValue( "ACHGateway" ).AsGuid()))
+                {
+                    achEnabled = true;
+                }
+            }
+
+            if ( ccEnabled || achEnabled )
+            {
+                if ( ccEnabled )
+                {
+                    divCCPaymentInfo.AddCssClass( "tab-pane" );
+                    divCCPaymentInfo.Visible = ccEnabled;
+                }
+
+                if ( achEnabled )
+                {
+                    divACHPaymentInfo.AddCssClass( "tab-pane" );
+                    divACHPaymentInfo.Visible = achEnabled;
+                }
+
+                if ( Gateway.SupportedPaymentSchedules.Any() )
+                {
+                    var oneTimeFrequency = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME );
+                    divRepeatingPayments.Visible = true;
+
+                    btnFrequency.DataSource = Gateway.SupportedPaymentSchedules;
+                    btnFrequency.DataBind();
+
+                    btnFrequency.SelectedValue = scheduledTransaction.TransactionFrequencyValueId.ToString();
+                }
+            }
         }
 
         /// <summary>
         /// Binds the saved accounts.
         /// </summary>
-        private void BindSavedAccounts()
+        private void SetSavedAccounts()
         {
             rblSavedCC.Items.Clear();
              
-            if ( TargetPersonId.HasValue )
+            if ( TargetPersonId.HasValue && TargetPersonId == CurrentPersonId )
             {
-                // Get the saved accounts for the currently logged in user
+                // Get the saved accounts for the target person
                 var savedAccounts = new FinancialPersonSavedAccountService()
                     .GetByPersonId( TargetPersonId.Value );
 
-                if ( _ccGateway != null )
+                if ( Gateway != null )
                 {
                     var ccCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) );
 
                     rblSavedCC.DataSource = savedAccounts
                         .Where( a =>
-                            a.FinancialTransaction.GatewayEntityTypeId == _ccGateway.TypeId &&
+                            a.FinancialTransaction.GatewayEntityTypeId == Gateway.TypeId &&
                             a.FinancialTransaction.CurrencyTypeValueId == ccCurrencyType.Id )
                         .OrderBy( a => a.Name )
                         .Select( a => new
@@ -698,15 +652,12 @@ achieve our mission.  We are so grateful for your commitment.
                     {
                         rblSavedCC.Items.Add( new ListItem( "Use a different card", "0" ) );
                     }
-                }
 
-                if ( _achGateway != null )
-                {
                     var achCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) );
 
                     rblSavedAch.DataSource = savedAccounts
                         .Where( a =>
-                            a.FinancialTransaction.GatewayEntityTypeId == _achGateway.TypeId &&
+                            a.FinancialTransaction.GatewayEntityTypeId == Gateway.TypeId &&
                             a.FinancialTransaction.CurrencyTypeValueId == achCurrencyType.Id )
                         .OrderBy( a => a.Name )
                         .Select( a => new
@@ -721,7 +672,35 @@ achieve our mission.  We are so grateful for your commitment.
                     }
                 }
             }
+
+            if ( rblSavedCC.Items.Count > 0 )
+            {
+                rblSavedCC.Items[0].Selected = true;
+                rblSavedCC.Visible = true;
+                divNewCard.Style[HtmlTextWriterStyle.Display] = "none";
+            }
+            else
+            {
+                rblSavedCC.Visible = false;
+                divNewCard.Style[HtmlTextWriterStyle.Display] = "block";
+            }
+
+            if ( rblSavedAch.Items.Count > 0 )
+            {
+                rblSavedAch.Items[0].Selected = true;
+                rblSavedAch.Visible = true;
+                divNewBank.Style[HtmlTextWriterStyle.Display] = "none";
+            }
+            else
+            {
+                rblSavedAch.Visible = false;
+                divNewCard.Style[HtmlTextWriterStyle.Display] = "block";
+            }
         }
+        
+        #endregion
+
+        #region Process User Actions
 
         /// <summary>
         /// Processes the payment information.
@@ -746,16 +725,10 @@ achieve our mission.  We are so grateful for your commitment.
                 errorMessages.Add( "Make sure the amount you've entered for each account is a positive amount" );
             }
 
-            // Get the payment schedule
-            PaymentSchedule schedule = GetSchedule();
-
-            if ( schedule != null )
+            // Make sure a repeating payment starts in the future
+            if ( !dtpStartDate.SelectedDate.HasValue || dtpStartDate.SelectedDate <= DateTime.Today )
             {
-                // Make sure a repeating payment starts in the future
-                if ( schedule.StartDate <= DateTime.Today )
-                {
-                    errorMessages.Add( "When scheduling a repeating payment, make sure the First Gift date is in the future (after today)" );
-                }
+                errorMessages.Add( "Make sure the Next  Gift date is in the future (after today)" );
             }
 
             if ( hfPaymentTab.Value == "ACH" )
@@ -792,7 +765,7 @@ achieve our mission.  We are so grateful for your commitment.
                 }
                 else
                 {
-                    if ( _ccGateway.SplitNameOnCard )
+                    if ( Gateway.SplitNameOnCard )
                     {
                         if ( string.IsNullOrWhiteSpace( txtCardFirstName.Text ) || string.IsNullOrWhiteSpace( txtCardLastName.Text ) )
                         {
@@ -833,12 +806,7 @@ achieve our mission.  We are so grateful for your commitment.
             }
 
             PaymentInfo paymentInfo = GetPaymentInfo();
-
             tdName.Description = paymentInfo.FullName;
-            tdPhone.Description = paymentInfo.Phone;
-            tdEmail.Description = paymentInfo.Email;
-            tdAddress.Description = string.Format( "{0} {1}, {2} {3}",
-                paymentInfo.Street, paymentInfo.City, paymentInfo.State, paymentInfo.Zip );
 
             rptAccountListConfirmation.DataSource = SelectedAccounts.Where( a => a.Amount != 0 );
             rptAccountListConfirmation.DataBind();
@@ -847,10 +815,159 @@ achieve our mission.  We are so grateful for your commitment.
 
             tdPaymentMethod.Description = paymentInfo.CurrencyTypeValue.Description;
             tdAccountNumber.Description = paymentInfo.MaskedNumber;
-            tdWhen.Description = schedule != null ? schedule.ToString() : "Today";
+
+            string nextDate = dtpStartDate.SelectedDate.HasValue ? dtpStartDate.SelectedDate.Value.ToShortDateString() : "?";
+            string frequency = DefinedValueCache.Read( btnFrequency.SelectedValueAsInt() ?? 0 ).Description;
+            tdWhen.Description = frequency + " starting on " + nextDate;
 
             return true;
         }
+
+        /// <summary>
+        /// Processes the confirmation.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        private bool ProcessConfirmation( out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            if ( string.IsNullOrWhiteSpace( TransactionCode ) )
+            {
+                if ( Gateway == null )
+                {
+                    errorMessage = "There was a problem creating the payment gateway information";
+                    return false;
+                }
+
+                using ( new UnitOfWorkScope() )
+                {
+                    var personService = new PersonService();
+                    var transactionService = new FinancialScheduledTransactionService();
+                    var transactionDetailService = new FinancialScheduledTransactionDetailService();
+
+                    FinancialScheduledTransaction scheduledTransaction = null;
+
+                    if ( ScheduledTransactionId.HasValue )
+                    {
+                        scheduledTransaction = transactionService.Get( ScheduledTransactionId.Value );
+                    }
+
+                    if ( scheduledTransaction == null )
+                    {
+                        errorMessage = "There was a problem getting the transaction information";
+                        return false;
+                    }
+
+                    if ( scheduledTransaction.AuthorizedPerson == null )
+                    {
+                        errorMessage = "There was a problem determining the person associated with the transaction";
+                        return false;
+                    }
+
+                    // Get the payment schedule
+                    scheduledTransaction.TransactionFrequencyValueId = btnFrequency.SelectedValueAsId().Value;
+                    if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > DateTime.Today )
+                    {
+                        scheduledTransaction.StartDate = dtpStartDate.SelectedDate.Value;
+                    }
+                    else
+                    {
+                        scheduledTransaction.StartDate = DateTime.MinValue;
+                    }
+
+                    PaymentInfo paymentInfo = GetPaymentInfo();
+                    if ( paymentInfo == null )
+                    {
+                        errorMessage = "There was a problem creating the payment information";
+                        return false;
+                    }
+                    else
+                    {
+                        paymentInfo.FirstName = scheduledTransaction.AuthorizedPerson.FirstName;
+                        paymentInfo.LastName = scheduledTransaction.AuthorizedPerson.LastName;
+                        paymentInfo.Email = scheduledTransaction.AuthorizedPerson.Email;
+
+                        bool displayPhone = false;
+                        if ( bool.TryParse( GetAttributeValue( "DisplayPhone" ), out displayPhone ) && displayPhone )
+                        {
+                            var phoneNumber = personService.GetPhoneNumber( scheduledTransaction.AuthorizedPerson, DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ) );
+                            paymentInfo.Phone = phoneNumber != null ? phoneNumber.NumberFormatted : string.Empty;
+                        }
+
+                        Guid addressTypeGuid = Guid.Empty;
+                        if ( !Guid.TryParse( GetAttributeValue( "AddressType" ), out addressTypeGuid ) )
+                        {
+                            addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
+                        }
+
+                        var address = personService.GetFirstLocation( scheduledTransaction.AuthorizedPerson, DefinedValueCache.Read( addressTypeGuid ).Id );
+                        if ( address != null )
+                        {
+                            paymentInfo.Street = address.Street1;
+                            paymentInfo.City = address.City;
+                            paymentInfo.State = address.State;
+                            paymentInfo.Zip = address.Zip;
+                        }
+                    }
+
+                    if ( Gateway.UpdateScheduledPayment( scheduledTransaction, paymentInfo, out errorMessage ) )
+                    {
+                        var selectedAccountIds = SelectedAccounts
+                            .Where( a => a.Amount > 0 )
+                            .Select( a => a.Id ).ToList();
+
+
+                        var deletedAccounts = scheduledTransaction.ScheduledTransactionDetails
+                            .Where( a => !selectedAccountIds.Contains( a.AccountId ) ).ToList();
+                        foreach ( var deletedAccount in deletedAccounts )
+                        {
+                            scheduledTransaction.ScheduledTransactionDetails.Remove( deletedAccount );
+                            transactionDetailService.Delete( deletedAccount, CurrentPersonId );
+                        }
+
+                        foreach ( var account in SelectedAccounts )
+                        {
+                            var detail = scheduledTransaction.ScheduledTransactionDetails
+                                .Where( d => d.AccountId == account.Id ).FirstOrDefault();
+                            if ( detail == null )
+                            {
+                                detail = new FinancialScheduledTransactionDetail();
+                                detail.AccountId = account.Id;
+                                scheduledTransaction.ScheduledTransactionDetails.Add( detail );
+                            }
+                            detail.Amount = account.Amount;
+                        }
+
+                        transactionService.Save( scheduledTransaction, CurrentPersonId );
+
+                        ScheduleId = scheduledTransaction.GatewayScheduleId;
+                        TransactionCode = scheduledTransaction.TransactionCode;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                    tdTransactionCode.Description = TransactionCode;
+                    tdTransactionCode.Visible = !string.IsNullOrWhiteSpace( TransactionCode );
+
+                    tdScheduleId.Description = ScheduleId;
+                    tdScheduleId.Visible = !string.IsNullOrWhiteSpace( ScheduleId );
+
+                    return true;
+                }
+            }
+            else
+            {
+                pnlDupWarning.Visible = true;
+                return false;
+            }
+        }
+               
+        #endregion
+
+        #region Build PaymentInfo 
 
         /// <summary>
         /// Gets the payment information.
@@ -883,12 +1000,6 @@ achieve our mission.  We are so grateful for your commitment.
             }
 
             paymentInfo.Amount = SelectedAccounts.Sum( a => a.Amount );
-            //paymentInfo.Email = txtEmail.Text;
-            //paymentInfo.Phone = txtPhone.Text;
-            //paymentInfo.Street = txtStreet.Text;
-            //paymentInfo.City = txtCity.Text;
-            //paymentInfo.State = ddlState.SelectedValue;
-            //paymentInfo.Zip = txtZip.Text;
 
             return paymentInfo;
         }
@@ -900,7 +1011,7 @@ achieve our mission.  We are so grateful for your commitment.
         private CreditCardPaymentInfo GetCCInfo()
         {
             var cc = new CreditCardPaymentInfo( txtCreditCard.Text, txtCVV.Text, mypExpiration.SelectedDate.Value );
-            cc.NameOnCard = _ccGateway.SplitNameOnCard ? txtCardFirstName.Text : txtCardName.Text;
+            cc.NameOnCard = Gateway.SplitNameOnCard ? txtCardFirstName.Text : txtCardName.Text;
             cc.LastNameOnCard = txtCardLastName.Text;
             cc.BillingStreet = txtBillingStreet.Text;
             cc.BillingCity = txtBillingCity.Text;
@@ -949,125 +1060,23 @@ achieve our mission.  We are so grateful for your commitment.
             return null;
         }
 
-        /// <summary>
-        /// Gets the payment schedule.
-        /// </summary>
-        /// <returns></returns>
-        private PaymentSchedule GetSchedule()
-        {
-            // If a one-time gift was selected for today's date, then treat as a onetime immediate transaction (not scheduled)
-            int oneTimeFrequencyId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
-            if ( btnFrequency.SelectedValue == oneTimeFrequencyId.ToString() && dtpStartDate.SelectedDate == DateTime.Today )
-            {
-                // one-time immediate payment
-                return null;
-            }
-
-            var schedule = new PaymentSchedule();
-            schedule.TransactionFrequencyValue = DefinedValueCache.Read( btnFrequency.SelectedValueAsId().Value );
-            if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > DateTime.Today )
-            {
-                schedule.StartDate = dtpStartDate.SelectedDate.Value;
-            }
-            else
-            {
-                schedule.StartDate = DateTime.MinValue;
-            }
-
-            return schedule;
-        }
-
         #endregion
 
-        #region Methods for the confirmation Page (panel)
+        #region Helper Methods
 
         /// <summary>
-        /// Processes the confirmation.
+        /// Binds the accounts.
         /// </summary>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        private bool ProcessConfirmation( out string errorMessage )
+        private void BindAccounts()
         {
-            errorMessage = string.Empty;
+            rptAccountList.DataSource = SelectedAccounts.OrderBy( a => a.Order ).ToList();
+            rptAccountList.DataBind();
 
-            //if ( string.IsNullOrWhiteSpace( TransactionCode ) )
-            //{
-            //    GatewayComponent gateway = hfPaymentTab.Value == "ACH" ? _achGateway : _ccGateway;
-            //    if ( gateway == null )
-            //    {
-            //        errorMessage = "There was a problem creating the payment gateway information";
-            //        return false;
-            //    }
-
-            //    Person person = GetPerson( true );
-            //    if ( person == null )
-            //    {
-            //        errorMessage = "There was a problem creating the person information";
-            //        return false;
-            //    }
-
-            //    PaymentInfo paymentInfo = GetPaymentInfo();
-            //    if ( paymentInfo == null )
-            //    {
-            //        errorMessage = "There was a problem creating the payment information";
-            //        return false;
-            //    }
-            //    else
-            //    {
-            //        paymentInfo.FirstName = person.FirstName;
-            //        paymentInfo.LastName = person.LastName;
-            //    }
-
-            //    PaymentSchedule schedule = GetSchedule();
-            //    if ( schedule != null )
-            //    {
-            //        schedule.PersonId = person.Id;
-
-            //        var scheduledTransaction = gateway.AddScheduledPayment( schedule, paymentInfo, out errorMessage );
-            //        if ( scheduledTransaction != null )
-            //        {
-            //            scheduledTransaction.TransactionFrequencyValueId = schedule.TransactionFrequencyValue.Id;
-            //            scheduledTransaction.AuthorizedPersonId = person.Id;
-
-            //            foreach ( var account in SelectedAccounts.Where( a => a.Amount > 0 ) )
-            //            {
-            //                var transactionDetail = new FinancialScheduledTransactionDetail();
-            //                transactionDetail.Amount = account.Amount;
-            //                transactionDetail.AccountId = account.Id;
-            //                scheduledTransaction.ScheduledTransactionDetails.Add( transactionDetail );
-            //            }
-
-            //            var transactionService = new FinancialScheduledTransactionService();
-            //            transactionService.Add( scheduledTransaction, CurrentPersonId );
-            //            transactionService.Save( scheduledTransaction, CurrentPersonId );
-
-            //            ScheduleId = scheduledTransaction.GatewayScheduleId;
-            //            TransactionCode = scheduledTransaction.TransactionCode;
-            //        }
-            //        else
-            //        {
-            //            return false;
-            //        }
-            //    }
-            //    else
-            //    {
-            return false;
-            //    }
-
-            //    tdScheduleId.Description = ScheduleId;
-            //    return true;
-            //}
-            //else
-            //{
-            //    pnlDupWarning.Visible = true;
-            //    return false;
-            //}
+            btnAddAccount.Visible = AvailableAccounts.Any();
+            btnAddAccount.DataSource = AvailableAccounts;
+            btnAddAccount.DataBind();
         }
-
-        #endregion
-
-        #region Methods used globally
-
+        
         /// <summary>
         /// Sets the page.
         /// </summary>
@@ -1217,6 +1226,8 @@ achieve our mission.  We are so grateful for your commitment.
 
         #endregion
 
+        #endregion
+
         #region Helper Classes
 
         /// <summary>
@@ -1248,8 +1259,6 @@ achieve our mission.  We are so grateful for your commitment.
                 CampusId = campusId;
             }
         }
-
-        #endregion
 
         #endregion
 
