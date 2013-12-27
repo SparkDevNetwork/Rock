@@ -397,7 +397,7 @@ namespace RockWeb.Blocks.Administraton
                     {
                         Id = e.Id,
                         ExceptionDateTime = e.ExceptionDateTime,
-                        FullName = e.CreatedByPerson.FullNameReversed,
+                        FullName = e.CreatedByPerson.LastName + ", " + e.CreatedByPerson.NickName,
                         Description = e.Description
                     } );
 
