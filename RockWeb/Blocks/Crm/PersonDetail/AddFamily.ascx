@@ -11,36 +11,27 @@
                 <h1><asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
             </div>
             
+
             <div class="row">
 
                 <div class="col-md-4">
-
-                    <fieldset>
-                        <Rock:RockTextBox ID="tbFamilyName" runat="server" Label="Family Name" Required="true" CssClass="input-meduim" />
-                    </fieldset>
-
+                    <Rock:CampusPicker ID="cpCampus" runat="server" Required="true" />
                 </div>
 
                 <div class="col-md-8">
-
-                    <fieldset>
-                        <Rock:CampusPicker ID="cpCampus" runat="server" Required="true" />
-                        <Rock:RockTextBox ID="tbStreet1" runat="server" Label="Address Line 1" />
-                        <Rock:RockTextBox ID="tbStreet2" runat="server" Label="Address Line 2" />
-
-                        <div class="row">
-                            <div class="col-lg-7">
-                                <Rock:RockTextBox ID="tbCity" Label="City"  runat="server" />
-                            </div>
-                            <div class="col-lg-2">
-                                <Rock:StateDropDownList ID="ddlState" Label="State" runat="server" UseAbbreviation="true" CssClass="input-mini" />
-                            </div>
-                            <div class="col-lg-3">
-                                <Rock:RockTextBox ID="tbZip" Label="Zip" runat="server" CssClass="input-small" />
-                            </div>
+                    <Rock:RockTextBox ID="tbStreet1" runat="server" Label="Address Line 1" />
+                    <Rock:RockTextBox ID="tbStreet2" runat="server" Label="Address Line 2" />
+                    <div class="row">
+                        <div class="col-lg-7">
+                            <Rock:RockTextBox ID="tbCity" Label="City"  runat="server" />
                         </div>
-
-                    </fieldset>
+                        <div class="col-lg-2">
+                            <Rock:StateDropDownList ID="ddlState" Label="State" runat="server" UseAbbreviation="true" CssClass="input-mini" />
+                        </div>
+                        <div class="col-lg-3">
+                            <Rock:RockTextBox ID="tbZip" Label="Zip" runat="server" CssClass="input-small" />
+                        </div>
+                    </div>
                 </div>
 
             </div>
@@ -51,7 +42,6 @@
                     <Rock:NewFamilyMembers id="nfmMembers" runat="server" OnAddFamilyMemberClick="nfmMembers_AddFamilyMemberClick" />
                 </div>
             </div>
-            
 
         </asp:Panel>
 

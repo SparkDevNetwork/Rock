@@ -211,7 +211,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             imgPhoto.BinaryFileId = Person.PhotoId;
             ddlTitle.SelectedValue = Person.TitleValueId.HasValue ? Person.TitleValueId.Value.ToString() : string.Empty;
             tbFirstName.Text = Person.FirstName;
-            tbNickName.Text = Person.NickName.Equals( Person.FirstName, StringComparison.OrdinalIgnoreCase ) ? "" : Person.NickName;
+            tbNickName.Text = string.IsNullOrWhiteSpace(Person.NickName) ? "" : (Person.NickName.Equals( Person.FirstName, StringComparison.OrdinalIgnoreCase ) ? "" : Person.NickName);
             tbMiddleName.Text = Person.MiddleName;
             tbLastName.Text = Person.LastName;
             ddlSuffix.SelectedValue = Person.SuffixValueId.HasValue ? Person.SuffixValueId.Value.ToString() : string.Empty;

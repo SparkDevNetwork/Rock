@@ -458,15 +458,15 @@ namespace Rock
         public static string FormatAsHtmlTitle( this string str )
         {
             // Remove any HTML
-            string sanitizedStr = str.SanitizeHtml();
+            string encodedStr = System.Web.HttpUtility.HtmlEncode( str );
 
             // split first word from rest of string
-            int endOfFirstWord = sanitizedStr.IndexOf( " " );
+            int endOfFirstWord = encodedStr.IndexOf( " " );
 
             if ( endOfFirstWord != -1 )
-                return "<span class='first-word'>" + sanitizedStr.Substring( 0, endOfFirstWord ) + " </span> " + sanitizedStr.Substring( endOfFirstWord, sanitizedStr.Length - endOfFirstWord );
+                return "<span class='first-word'>" + encodedStr.Substring( 0, endOfFirstWord ) + " </span> " + encodedStr.Substring( endOfFirstWord, encodedStr.Length - endOfFirstWord );
             else
-                return "<span class='first-word'>" + sanitizedStr + " </span>";
+                return "<span class='first-word'>" + encodedStr + " </span>";
         }
 
         /// <summary>
