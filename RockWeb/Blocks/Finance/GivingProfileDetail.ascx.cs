@@ -80,23 +80,20 @@ achieve our mission.  We are so grateful for your commitment.
         {
             get 
             { 
-                if (_gateway == null)
+                if (_gateway == null && _gatewayGuid.HasValue)
                 {
-                    Guid guid = ViewState["Gateway"] as Guid? ?? Guid.Empty;
-                    if (!guid.Equals(Guid.Empty))
-                    {
-                        _gateway = GatewayContainer.GetComponent(guid.ToString());
-                    }
+                    _gateway = GatewayContainer.GetComponent( _gatewayGuid.ToString() );
                 }
                 return _gateway;
             }
             set 
             { 
                 _gateway = value;
-                ViewState["Gateway"] = _gateway != null ? _gateway.TypeGuid : Guid.Empty; 
+                _gatewayGuid = _gateway.TypeGuid;
             }
         }
         private GatewayComponent _gateway;
+        private Guid? _gatewayGuid;
 
         /// <summary>
         /// Gets or sets the accounts that are available for user to add to the list.
@@ -105,18 +102,18 @@ achieve our mission.  We are so grateful for your commitment.
         {
             get
             {
-                var accounts = ViewState["AvailableAccounts"] as List<AccountItem>;
-                if ( accounts == null )
+                if ( _availableAccounts == null )
                 {
-                    accounts = new List<AccountItem>();
+                    _availableAccounts = new List<AccountItem>();
                 }
-                return accounts;
+                return _availableAccounts;
             }
             set
             {
-                ViewState["AvailableAccounts"] = value;
+                _availableAccounts = value;
             }
         }
+        private List<AccountItem> _availableAccounts;
 
         /// <summary>
         /// Gets or sets the accounts that are currently displayed to the user
@@ -125,59 +122,68 @@ achieve our mission.  We are so grateful for your commitment.
         {
             get
             {
-                var accounts = ViewState["SelectedAccounts"] as List<AccountItem>;
-                if ( accounts == null )
+                if ( _selectedAccounts == null )
                 {
-                    accounts = new List<AccountItem>();
+                    _selectedAccounts = new List<AccountItem>();
                 }
-                return accounts;
+                return _selectedAccounts;
             }
             set
             {
-                ViewState["SelectedAccounts"] = value;
+                _selectedAccounts = value;
             }
         }
+        private List<AccountItem> _selectedAccounts;
 
         /// <summary>
         /// Gets or sets the target person identifier.
         /// </summary>
-        protected int? TargetPersonId
-        {
-            get { return ViewState["TargetPersonId"] as int?; }
-            set { ViewState["TargetPersonId"] = value; }
-        }
+        protected int? TargetPersonId { get; set; }
 
         /// <summary>
         /// Gets or sets the payment scheduled transaction Id.
         /// </summary>
-        protected int? ScheduledTransactionId
-        {
-            get { return ViewState["ScheduledTransactionId"] as int?; }
-            set { ViewState["ScheduledTransactionId"] = value; }
-        }
+        protected int? ScheduledTransactionId { get; set; }
 
         /// <summary>
         /// Gets or sets the payment transaction code.
         /// </summary>
-        protected string TransactionCode
-        {
-            get { return ViewState["TransactionCode"] as string ?? string.Empty; }
-            set { ViewState["TransactionCode"] = value; }
-        }
-
+        protected string TransactionCode { get; set; }
+       
         /// <summary>
         /// Gets or sets the payment schedule id.
         /// </summary>
-        protected string ScheduleId
-        {
-            get { return ViewState["ScheduleId"] as string ?? string.Empty; }
-            set { ViewState["ScheduleId"] = value; }
-        }
+        protected string ScheduleId { get; set; }
 
         #endregion
 
         #region base control methods
 
+        protected override object SaveViewState()
+        {
+            ViewState["Gateway"] = _gatewayGuid;
+            ViewState["AvailableAccounts"] = AvailableAccounts;
+            ViewState["SelectedAccounts"] = SelectedAccounts;
+            ViewState["TargetPersonId"] = TargetPersonId;
+            ViewState["ScheduledTransactionId"] = ScheduledTransactionId;
+            ViewState["TransactionCode"] = TransactionCode;
+            ViewState["ScheduleId"] = ScheduleId;
+
+            return base.SaveViewState();
+        }
+
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            _gatewayGuid = ViewState["Gateway"] as Guid?;
+            AvailableAccounts = ViewState["AvailableAccounts"] as List<AccountItem>;
+            SelectedAccounts = ViewState["SelectedAccounts"] as List<AccountItem>;
+            TargetPersonId = ViewState["TargetPersonId"] as int?;
+            ScheduledTransactionId = ViewState["ScheduledTransactionId"] as int?;
+            TransactionCode = ViewState["TransactionCode"] as string ?? string.Empty;
+            ScheduleId = ViewState["ScheduleId"] as string ?? string.Empty;
+        }
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -467,18 +473,23 @@ achieve our mission.  We are so grateful for your commitment.
                 if ( int.TryParse( PageParameter( "Txn" ), out txnId ) )
                 {
                     var service = new FinancialScheduledTransactionService();
-                    var scheduledTransaction = new FinancialScheduledTransactionService().Queryable( "ScheduledTransactionDetails,GatewayEntityType" )
+                    var scheduledTransaction = service.Queryable( "ScheduledTransactionDetails,GatewayEntityType" )
                         .Where( t =>
                             t.Id == txnId &&
                             ( t.AuthorizedPersonId == targetPerson.Id || t.AuthorizedPerson.GivingGroupId == targetPerson.GivingGroupId ) )
                         .FirstOrDefault();
-                    if (scheduledTransaction != null && refresh)
+
+                    if (scheduledTransaction != null)
                     {
                         TargetPersonId = scheduledTransaction.AuthorizedPersonId;
                         ScheduledTransactionId = scheduledTransaction.Id;
-            
-                        string errorMessages = string.Empty;
-                        service.UpdateStatus(scheduledTransaction, CurrentPersonId, out errorMessages );
+
+                        if ( refresh )
+                        {
+                            string errorMessages = string.Empty;
+                            service.UpdateStatus( scheduledTransaction, CurrentPersonId, out errorMessages );
+                        }
+
                         return scheduledTransaction;
                     }
                 }
@@ -806,15 +817,28 @@ achieve our mission.  We are so grateful for your commitment.
             }
 
             PaymentInfo paymentInfo = GetPaymentInfo();
-            tdName.Description = paymentInfo.FullName;
+            if ( paymentInfo != null )
+            {
+                tdName.Visible = true;
+                tdPaymentMethod.Visible = true;
+                tdAccountNumber.Visible = true;
+
+                tdName.Description = paymentInfo.FullName;
+                tdTotal.Description = paymentInfo.Amount.ToString( "C" );
+                tdPaymentMethod.Description = paymentInfo.CurrencyTypeValue.Description;
+                tdAccountNumber.Description = paymentInfo.MaskedNumber;
+            }
+            else
+            {
+                tdName.Visible = false;
+                tdPaymentMethod.Visible = false;
+                tdAccountNumber.Visible = false;
+
+                tdTotal.Description = SelectedAccounts.Sum( a => a.Amount ).ToString( "C" );
+            }
 
             rptAccountListConfirmation.DataSource = SelectedAccounts.Where( a => a.Amount != 0 );
             rptAccountListConfirmation.DataBind();
-
-            tdTotal.Description = paymentInfo.Amount.ToString( "C" );
-
-            tdPaymentMethod.Description = paymentInfo.CurrencyTypeValue.Description;
-            tdAccountNumber.Description = paymentInfo.MaskedNumber;
 
             string nextDate = dtpStartDate.SelectedDate.HasValue ? dtpStartDate.SelectedDate.Value.ToShortDateString() : "?";
             string frequency = DefinedValueCache.Read( btnFrequency.SelectedValueAsInt() ?? 0 ).Description;
@@ -999,7 +1023,10 @@ achieve our mission.  We are so grateful for your commitment.
                 }
             }
 
-            paymentInfo.Amount = SelectedAccounts.Sum( a => a.Amount );
+            if ( paymentInfo != null )
+            {
+                paymentInfo.Amount = SelectedAccounts.Sum( a => a.Amount );
+            }
 
             return paymentInfo;
         }
