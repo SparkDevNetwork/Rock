@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -670,11 +671,11 @@ namespace Rock.Data
     /// </summary>
     public class Service
     {
-        private IRepository _repository;
+        private EFRepository _repository;
         /// <summary>
         /// Gets the Repository.
         /// </summary>
-        public IRepository Repository
+        public EFRepository Repository
         {
             get { return _repository; }
         }
@@ -684,15 +685,14 @@ namespace Rock.Data
         /// </summary>
         public Service()
         {
-            var factory = new RepositoryFactory();
-            _repository = factory.FindRepository();
+            _repository = new EFRepository();
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Service&lt;T&gt;"/> class.
         /// </summary>
         /// <param name="repository">The repository.</param>
-        public Service( IRepository repository )
+        public Service( EFRepository repository )
         {
             _repository = repository;
         }
@@ -713,6 +713,18 @@ namespace Rock.Data
         public IEnumerable ExecuteQuery( Type elementType, string query, params object[] parameters )
         {
             return _repository.ExecuteQuery( elementType, query, parameters );
+        }
+
+        /// <summary>
+        /// Gets the command.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public SqlCommand GetCommand(string query, CommandType commandType, Dictionary<string, object> parameters)
+        {
+            return _repository.GetCommand( query, commandType, parameters);
         }
 
         /// <summary>
