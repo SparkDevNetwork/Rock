@@ -223,10 +223,10 @@ achieve our mission.  We are so grateful for your commitment.
                         .Where( v => v.Key.StartsWith( "Organization", StringComparison.CurrentCultureIgnoreCase ) )
                         .ToList()
                         .ForEach( v => configValues.Add( v.Key, v.Value.Value ) );
-                    phConfirmationHeader.Controls.Add( new LiteralControl( GetAttributeValue( "ConfirmationHeader" ).ResolveMergeFields( configValues ) ) );
-                    phConfirmationFooter.Controls.Add( new LiteralControl( GetAttributeValue( "ConfirmationFooter" ).ResolveMergeFields( configValues ) ) );
-                    phSuccessHeader.Controls.Add( new LiteralControl( GetAttributeValue( "SuccessHeader" ).ResolveMergeFields( configValues ) ) );
-                    phSuccessFooter.Controls.Add( new LiteralControl( GetAttributeValue( "SuccessFooter" ).ResolveMergeFields( configValues ) ) );
+                    lConfirmationHeader.Text = GetAttributeValue( "ConfirmationHeader" ).ResolveMergeFields( configValues );
+                    lConfirmationFooter.Text = GetAttributeValue( "ConfirmationFooter" ).ResolveMergeFields( configValues );
+                    lSuccessHeader.Text = GetAttributeValue( "SuccessHeader" ).ResolveMergeFields( configValues );
+                    lSuccessFooter.Text = GetAttributeValue( "SuccessFooter" ).ResolveMergeFields( configValues );
 
                     hfPaymentTab.Value = "None";
 
@@ -593,8 +593,22 @@ achieve our mission.  We are so grateful for your commitment.
                 {
                     ccEnabled = true;
                     txtCardFirstName.Visible = Gateway.SplitNameOnCard;
+                    txtCardFirstName.Text = scheduledTransaction.AuthorizedPerson.FirstName;
                     txtCardLastName.Visible = Gateway.SplitNameOnCard;
+                    txtCardLastName.Text = scheduledTransaction.AuthorizedPerson.LastName;
                     txtCardName.Visible = !Gateway.SplitNameOnCard;
+                    txtCardName.Text = scheduledTransaction.AuthorizedPerson.FullName;
+
+                    var address = new PersonService().GetFirstLocation( scheduledTransaction.AuthorizedPerson,
+                        DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id );
+                    if ( address != null )
+                    {
+                        txtBillingStreet.Text = address.Street1;
+                        txtBillingCity.Text = address.City;
+                        ddlBillingState.SelectedValue = address.State;
+                        txtBillingZip.Text = address.Zip;
+                    }
+
                     mypExpiration.MinimumYear = DateTime.Now.Year;
                 }
 
@@ -610,6 +624,8 @@ achieve our mission.  We are so grateful for your commitment.
                 {
                     divCCPaymentInfo.AddCssClass( "tab-pane" );
                     divCCPaymentInfo.Visible = ccEnabled;
+
+
                 }
 
                 if ( achEnabled )
@@ -736,8 +752,15 @@ achieve our mission.  We are so grateful for your commitment.
                 errorMessages.Add( "Make sure the amount you've entered for each account is a positive amount" );
             }
 
+            string howOften = DefinedValueCache.Read( btnFrequency.SelectedValueAsId().Value ).Name;
+            DateTime when = DateTime.MinValue;
+
             // Make sure a repeating payment starts in the future
-            if ( !dtpStartDate.SelectedDate.HasValue || dtpStartDate.SelectedDate <= DateTime.Today )
+            if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > DateTime.Today )
+            {
+                when = dtpStartDate.SelectedDate.Value;
+            }
+            else
             {
                 errorMessages.Add( "Make sure the Next  Gift date is in the future (after today)" );
             }
@@ -767,7 +790,7 @@ achieve our mission.  We are so grateful for your commitment.
                     }
                 }
             }
-            else if ( hfPaymentTab.Value == "CC" )
+            else if ( hfPaymentTab.Value == "CreditCard" )
             {
                 // validate cc options
                 if ( rblSavedCC.Items.Count > 0 && ( rblSavedCC.SelectedValueAsInt() ?? 0 ) > 0 )
@@ -816,25 +839,55 @@ achieve our mission.  We are so grateful for your commitment.
                 return false;
             }
 
-            PaymentInfo paymentInfo = GetPaymentInfo();
-            if ( paymentInfo != null )
+            using ( new UnitOfWorkScope() )
             {
-                tdName.Visible = true;
-                tdPaymentMethod.Visible = true;
-                tdAccountNumber.Visible = true;
+                FinancialScheduledTransaction scheduledTransaction = null;
 
-                tdName.Description = paymentInfo.FullName;
-                tdTotal.Description = paymentInfo.Amount.ToString( "C" );
-                tdPaymentMethod.Description = paymentInfo.CurrencyTypeValue.Description;
-                tdAccountNumber.Description = paymentInfo.MaskedNumber;
-            }
-            else
-            {
-                tdName.Visible = false;
-                tdPaymentMethod.Visible = false;
-                tdAccountNumber.Visible = false;
+                if ( ScheduledTransactionId.HasValue )
+                {
+                    scheduledTransaction = new  FinancialScheduledTransactionService().Get( ScheduledTransactionId.Value );
+                }
 
-                tdTotal.Description = SelectedAccounts.Sum( a => a.Amount ).ToString( "C" );
+                if ( scheduledTransaction == null )
+                {
+                    errorMessage = "There was a problem getting the transaction information";
+                    return false;
+                }
+
+                if ( scheduledTransaction.AuthorizedPerson == null )
+                {
+                    errorMessage = "There was a problem determining the person associated with the transaction";
+                    return false;
+                }
+
+                PaymentInfo paymentInfo = GetPaymentInfo( new PersonService(), scheduledTransaction );
+                if ( paymentInfo != null )
+                {
+                    tdName.Description = paymentInfo.FullName;
+                    tdTotal.Description = paymentInfo.Amount.ToString( "C" );
+
+                    if (paymentInfo.CurrencyTypeValue != null)
+                    {
+                        tdPaymentMethod.Description = paymentInfo.CurrencyTypeValue.Description;
+                        tdPaymentMethod.Visible = true;
+                    }
+                    else
+                    {
+                        tdPaymentMethod.Visible = false;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(paymentInfo.MaskedNumber))
+                    {
+                        tdAccountNumber.Visible = false;
+                    }
+                    else
+                    {
+                        tdAccountNumber.Visible = true;
+                        tdAccountNumber.Description = paymentInfo.MaskedNumber;
+                    }
+
+                    tdWhen.Description = string.Format( "{0} starting on {1}", howOften, when.ToShortDateString());
+                }
             }
 
             rptAccountListConfirmation.DataSource = SelectedAccounts.Where( a => a.Amount != 0 );
@@ -900,7 +953,7 @@ achieve our mission.  We are so grateful for your commitment.
                         scheduledTransaction.StartDate = DateTime.MinValue;
                     }
 
-                    PaymentInfo paymentInfo = GetPaymentInfo();
+                    PaymentInfo paymentInfo = GetPaymentInfo( personService, scheduledTransaction );
                     if ( paymentInfo == null )
                     {
                         errorMessage = "There was a problem creating the payment information";
@@ -908,31 +961,7 @@ achieve our mission.  We are so grateful for your commitment.
                     }
                     else
                     {
-                        paymentInfo.FirstName = scheduledTransaction.AuthorizedPerson.FirstName;
-                        paymentInfo.LastName = scheduledTransaction.AuthorizedPerson.LastName;
-                        paymentInfo.Email = scheduledTransaction.AuthorizedPerson.Email;
 
-                        bool displayPhone = false;
-                        if ( bool.TryParse( GetAttributeValue( "DisplayPhone" ), out displayPhone ) && displayPhone )
-                        {
-                            var phoneNumber = personService.GetPhoneNumber( scheduledTransaction.AuthorizedPerson, DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ) );
-                            paymentInfo.Phone = phoneNumber != null ? phoneNumber.NumberFormatted : string.Empty;
-                        }
-
-                        Guid addressTypeGuid = Guid.Empty;
-                        if ( !Guid.TryParse( GetAttributeValue( "AddressType" ), out addressTypeGuid ) )
-                        {
-                            addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
-                        }
-
-                        var address = personService.GetFirstLocation( scheduledTransaction.AuthorizedPerson, DefinedValueCache.Read( addressTypeGuid ).Id );
-                        if ( address != null )
-                        {
-                            paymentInfo.Street = address.Street1;
-                            paymentInfo.City = address.City;
-                            paymentInfo.State = address.State;
-                            paymentInfo.Zip = address.Zip;
-                        }
                     }
 
                     if ( Gateway.UpdateScheduledPayment( scheduledTransaction, paymentInfo, out errorMessage ) )
@@ -997,7 +1026,7 @@ achieve our mission.  We are so grateful for your commitment.
         /// Gets the payment information.
         /// </summary>
         /// <returns></returns>
-        private PaymentInfo GetPaymentInfo()
+        private PaymentInfo GetPaymentInfo(PersonService personService, FinancialScheduledTransaction scheduledTransaction)
         {
             PaymentInfo paymentInfo = null;
             if ( hfPaymentTab.Value == "ACH" )
@@ -1011,7 +1040,7 @@ achieve our mission.  We are so grateful for your commitment.
                     paymentInfo = GetACHInfo();
                 }
             }
-            else if ( hfPaymentTab.Value == "CC" )
+            else if ( hfPaymentTab.Value == "CreditCard" )
             {
                 if ( rblSavedCC.Items.Count > 0 && ( rblSavedCC.SelectedValueAsId() ?? 0 ) > 0 )
                 {
@@ -1022,10 +1051,39 @@ achieve our mission.  We are so grateful for your commitment.
                     paymentInfo = GetCCInfo();
                 }
             }
+            else
+            {
+                paymentInfo = new PaymentInfo();
+            }
 
             if ( paymentInfo != null )
             {
                 paymentInfo.Amount = SelectedAccounts.Sum( a => a.Amount );
+                paymentInfo.FirstName = scheduledTransaction.AuthorizedPerson.FirstName;
+                paymentInfo.LastName = scheduledTransaction.AuthorizedPerson.LastName;
+                paymentInfo.Email = scheduledTransaction.AuthorizedPerson.Email;
+
+                bool displayPhone = false;
+                if ( bool.TryParse( GetAttributeValue( "DisplayPhone" ), out displayPhone ) && displayPhone )
+                {
+                    var phoneNumber = personService.GetPhoneNumber( scheduledTransaction.AuthorizedPerson, DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ) );
+                    paymentInfo.Phone = phoneNumber != null ? phoneNumber.NumberFormatted : string.Empty;
+                }
+
+                Guid addressTypeGuid = Guid.Empty;
+                if ( !Guid.TryParse( GetAttributeValue( "AddressType" ), out addressTypeGuid ) )
+                {
+                    addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
+                }
+
+                var address = personService.GetFirstLocation( scheduledTransaction.AuthorizedPerson, DefinedValueCache.Read( addressTypeGuid ).Id );
+                if ( address != null )
+                {
+                    paymentInfo.Street = address.Street1;
+                    paymentInfo.City = address.City;
+                    paymentInfo.State = address.State;
+                    paymentInfo.Zip = address.Zip;
+                }
             }
 
             return paymentInfo;
@@ -1184,7 +1242,7 @@ achieve our mission.  We are so grateful for your commitment.
         // Set the date prompt based on the frequency value entered
         $('#ButtonDropDown_btnFrequency .dropdown-menu a').click( function () {{
             var $when = $(this).parents('div.form-group:first').next(); 
-            if ($(this).attr('data-id') == '{2}') {{
+            if ($(this).attr('data-id') == '{3}') {{
                 $when.find('label:first').html('When');
             }} else {{
                 $when.find('label:first').html('First Gift');
@@ -1210,9 +1268,11 @@ achieve our mission.  We are so grateful for your commitment.
         $('a[data-toggle=""pill""]').on('shown.bs.tab', function (e) {{
             var tabHref = $(e.target).attr(""href"");
             if (tabHref == '#{0}') {{
-                $('#{1}').val('CreditCard');
+                $('#{2}').val('CreditCard');
+            }} else if (tabHref == '#{1}') {{
+                $('#{2}').val('ACH');
             }} else {{
-                $('#{1}').val('ACH');
+                $('#{2}').val('None');
             }}
         }});
 
@@ -1247,7 +1307,7 @@ achieve our mission.  We are so grateful for your commitment.
  
     }});
 
-", divCCPaymentInfo.ClientID, hfPaymentTab.ClientID, oneTimeFrequencyId );
+", divCCPaymentInfo.ClientID, divACHPaymentInfo.ClientID, hfPaymentTab.ClientID, oneTimeFrequencyId );
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
         }
 

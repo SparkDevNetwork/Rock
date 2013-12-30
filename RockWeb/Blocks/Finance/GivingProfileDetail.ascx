@@ -54,9 +54,10 @@
 
                             <div class="tab-content">
 
-                                <div id="divNonePaymentInfo" runat="server" visible="false">
+                                <div id="divNonePaymentInfo" runat="server" class="tab-pane">
                                     Keep the same payment info
                                 </div>
+
                                 <div id="divCCPaymentInfo" runat="server" visible="false">
                                     <fieldset>
                                         <Rock:RockRadioButtonList ID="rblSavedCC" runat="server" Label=" " CssClass="radio-list" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
@@ -121,12 +122,9 @@
 
             <div class="well">
                 <legend>Confirm Information</legend>
-                <asp:PlaceHolder ID="phConfirmationHeader" runat="server"></asp:PlaceHolder>
+                <asp:Literal ID="lConfirmationHeader" runat="server"></asp:Literal>
                 <dl class="dl-horizontal gift-confirmation">
                     <Rock:TermDescription ID="tdName" runat="server" Term="Name" />
-                    <Rock:TermDescription ID="tdPhone" runat="server" Term="Phone" />
-                    <Rock:TermDescription ID="tdEmail" runat="server" Term="Email" />
-                    <Rock:TermDescription ID="tdAddress" runat="server" Term="Address" />
                     <Rock:TermDescription runat="server" />
                     <asp:Repeater ID="rptAccountListConfirmation" runat="server">
                         <ItemTemplate>
@@ -140,7 +138,7 @@
                     <Rock:TermDescription ID="tdWhen" runat="server" Term="When" />
                 </dl>
             </div>
-            <asp:PlaceHolder ID="phConfirmationFooter" runat="server" />
+            <asp:Literal ID="lConfirmationFooter" runat="server"></asp:Literal>
             <asp:Panel ID="pnlDupWarning" runat="server" CssClass="alert alert-block">
                 <h4>Warning!</h4>
                 <p>
@@ -153,15 +151,14 @@
 
         <asp:Panel ID="pnlSuccess" runat="server" Visible="false">
             <div class="well">
-                <legend>Gift Information</legend>
-                <asp:PlaceHolder ID="phSuccessHeader" runat="server"></asp:PlaceHolder>
+                <asp:Literal ID="lSuccessHeader" runat="server"></asp:Literal>
                 <dl class="dl-horizontal gift-success">
                     <Rock:TermDescription ID="tdScheduleId" runat="server" Term="Payment Schedule ID" />
                     <Rock:TermDescription ID="tdTransactionCode" runat="server" Term="Confirmation Code" />
                 </dl>
             </div>
 
-            <asp:PlaceHolder ID="phSuccessFooter" runat="server" />
+            <asp:Literal ID="lSuccessFooter" runat="server"></asp:Literal>
 
         </asp:Panel>
 
