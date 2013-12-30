@@ -177,7 +177,7 @@ namespace Rock.Model
             SqlCommand cmd = conn.CreateCommand();
             cmd.CommandText = "spBinaryFileGet";
             cmd.CommandType = CommandType.StoredProcedure;
-            cmd.Parameters.Add( new SqlParameter( "@Id", fileId ) );
+            cmd.Parameters.Add( new SqlParameter( "@Id", fileId.HasValue ? fileId.Value : 0 ) );
             cmd.Parameters.Add( new SqlParameter( "@Guid", fileGuid ) );
 
             // store our Command to be later retrieved by EndGet
