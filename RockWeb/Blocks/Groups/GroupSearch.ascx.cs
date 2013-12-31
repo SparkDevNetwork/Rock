@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Groups
                         case ( "name" ):
 
                             groups = groupService.Queryable().
-                                Where( g => ( g.Name ).StartsWith( term ) ).
+                                Where( g => ( g.Name ).Contains( term ) ).
                                 OrderBy( g => g.Name ).
                                 ToList();
 
