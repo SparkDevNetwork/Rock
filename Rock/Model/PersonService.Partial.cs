@@ -34,7 +34,8 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.Person"/> entities, with deceased individuals either included or excluded based on the provided value.</returns>
         public IQueryable<Person> Queryable( bool includeDeceased )
         {
-            return base.Repository.AsQueryable().Where( p => includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value );
+            // Do an eager load of suffix since its used by all the FullName methods
+            return base.Repository.AsQueryable( "SuffixValue" ).Where( p => includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value );
         }
 
         /// <summary>

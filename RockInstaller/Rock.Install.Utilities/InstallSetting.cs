@@ -22,7 +22,7 @@ namespace Rock.Install.Utilities
         static string _internetCheckSite = "www.google.com";
         static string _dotNetVersionRequired = "4.5";
         static double _iisVersionRequired = 7.0;
-        static string _rockInstallFile = "http://storage.rockrms.com/install/rock-chms-latest.zip";
+        static string _rockInstallFile = "http://storage.rockrms.com/install/rock-install-latest.zip";
 
         static string _rockLogoIco = "http://storage.rockrms.com/install/rock-chms.ico";
         static string _rockStyles = "http://storage.rockrms.com/install/install.css";

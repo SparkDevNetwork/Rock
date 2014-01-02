@@ -9,6 +9,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 
 using Rock.Model;
+using System.Text.RegularExpressions;
 
 namespace Rock.Search.Person
 {
@@ -44,6 +45,10 @@ namespace Rock.Search.Person
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
+            // remove everything but numbers
+            Regex rgx = new Regex(@"[^\d]");
+            searchterm = rgx.Replace(searchterm, "");
+            
             var phoneNumberService = new PhoneNumberService();
 
             return phoneNumberService.Queryable().

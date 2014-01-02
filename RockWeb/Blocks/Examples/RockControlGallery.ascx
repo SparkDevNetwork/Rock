@@ -289,11 +289,11 @@
                 but we've added a few additional custom <code>LabelType</code> options to control the color.
             </p>
             <div runat="server" class="r-example">
-                <Rock:HighlightLabel ID="hlDefault" runat="server" LabelType="Default" Text="Default" />
+                <Rock:HighlightLabel ID="hlDefault" runat="server" LabelType="Default" Text="Default" ToolTip="More information is here." />
                 <Rock:HighlightLabel ID="hlPrimary" runat="server" LabelType="Primary" Text="Primary" />
                 <Rock:HighlightLabel ID="hlSuccess" runat="server" LabelType="Success" Text="Success" />
                 <Rock:HighlightLabel ID="hlInfo" runat="server" LabelType="Info" Text="Info" />
-                <Rock:HighlightLabel ID="hlWarning" runat="server" LabelType="Warning" Text="Warning" />
+                <Rock:HighlightLabel ID="hlWarning" runat="server" LabelType="Warning" Text="Warning"/>
                 <Rock:HighlightLabel ID="hlDanger" runat="server" LabelType="Danger" Text="Danger" />
                 <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" Text="Campus" />
                 <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" Text="Type" />
