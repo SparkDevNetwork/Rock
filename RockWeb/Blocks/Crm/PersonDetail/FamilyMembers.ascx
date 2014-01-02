@@ -16,7 +16,7 @@
                 
                         <div class="col-md-8 clearfix">
 
-                            <header class="title"><span class="first-word"><%# Eval("Name") %></span> Family</header>
+                            <header class="title"><%# FormatAsHtmlTitle(Eval("Name").ToString()) %></header>
 
                             <ul class="groupmembers">
 

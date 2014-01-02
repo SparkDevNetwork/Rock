@@ -283,6 +283,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     groupMember.Person.NickName = row.NickName;
                 }
+
+                if (string.IsNullOrWhiteSpace(groupMember.Person.NickName))
+                {
+                    groupMember.Person.NickName = groupMember.Person.FirstName;
+                }
+
                 groupMember.Person.LastName = row.LastName;
                 groupMember.Person.Gender = row.Gender;
                 groupMember.Person.BirthDate = row.BirthDate;
@@ -390,7 +396,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 {
                                     var groupService = new GroupService();
                                     var familyGroup = new Group();
-                                    familyGroup.Name = tbFamilyName.Text;
+                                    familyGroup.Name = familyMembers.FirstOrDefault().Person.LastName + " Family";
                                     familyGroup.GroupTypeId = familyGroupType.Id;
                                     familyGroup.CampusId = cpCampus.SelectedValueAsInt();
                                     familyMembers.ForEach( m => familyGroup.Members.Add( m ) );
