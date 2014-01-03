@@ -602,6 +602,7 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 group = new Group { Id = 0, IsActive = true, ParentGroupId = parentGroupId };
+                wpGeneral.Expanded = true;
             }
 
             if ( group == null )
