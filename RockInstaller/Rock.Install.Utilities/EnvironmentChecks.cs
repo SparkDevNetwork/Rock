@@ -345,7 +345,7 @@ namespace Rock.Install.Utilities
             {
                 testConnection.Open();
 
-                string sql = "SELECT count(*) FROM fn_my_permissions(NULL, 'DATABASE') where permission_name = 'CREATE TABLE'";
+                string sql = "SELECT count(*) FROM fn_my_permissions(NULL, 'DATABASE') where permission_name = 'CREATE DATABASE'";
                 SqlCommand emptyCommand = new SqlCommand(sql, testConnection);
 
                 // get count of db objects
