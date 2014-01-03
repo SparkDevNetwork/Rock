@@ -488,6 +488,7 @@
                         parseFloat(self.centerLatitude),
                         parseFloat(self.centerLongitude)),
                 zoom: 13,
+                streetViewControl: false,
                 mapTypeControlOptions: {
                     mapTypeIds: [google.maps.MapTypeId.ROADMAP, 'map_style']
                 }

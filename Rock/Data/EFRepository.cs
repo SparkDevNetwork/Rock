@@ -603,7 +603,7 @@ namespace Rock.Data
     /// <summary>
     /// Entity Framework repository for providing non entity specific methods
     /// </summary>
-    public class EFRepository : IRepository, IDisposable
+    public class EFRepository : IDisposable
     {
         /// <summary>
         /// 
@@ -746,7 +746,14 @@ namespace Rock.Data
             return null;
         }
 
-        private SqlCommand GetCommand( string query, CommandType commandType, Dictionary<string, object> parameters )
+        /// <summary>
+        /// Gets the command.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public SqlCommand GetCommand( string query, CommandType commandType, Dictionary<string, object> parameters )
         {
             if ( _context.Database.Connection is SqlConnection )
             {

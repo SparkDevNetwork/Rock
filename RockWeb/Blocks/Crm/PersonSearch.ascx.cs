@@ -14,6 +14,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI.Controls;
+using System.Text.RegularExpressions;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -83,6 +84,10 @@ namespace RockWeb.Blocks.Crm
                             break;
 
                         case ( "phone" ):
+
+                            // remove everything but numbers
+                            Regex rgx = new Regex(@"[^\d]");
+                            term = rgx.Replace(term, "");
 
                             var phoneService = new PhoneNumberService();
 

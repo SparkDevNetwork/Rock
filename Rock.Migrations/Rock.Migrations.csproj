@@ -220,6 +220,10 @@
     <Compile Include="Migrations\201312221636197_RefactorPersonName.Designer.cs">
       <DependentUpon>201312221636197_RefactorPersonName.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401032214266_AddGroupChildGroupTypes.cs" />
+    <Compile Include="Migrations\201401032214266_AddGroupChildGroupTypes.Designer.cs">
+      <DependentUpon>201401032214266_AddGroupChildGroupTypes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -362,6 +366,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201312221636197_RefactorPersonName.resx">
       <DependentUpon>201312221636197_RefactorPersonName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401032214266_AddGroupChildGroupTypes.resx">
+      <DependentUpon>201401032214266_AddGroupChildGroupTypes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
