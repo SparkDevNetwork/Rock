@@ -45,16 +45,7 @@ namespace Rock.Search.Person
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
-            // remove everything but numbers
-            Regex rgx = new Regex(@"[^\d]");
-            searchterm = rgx.Replace(searchterm, "");
-            
-            var phoneNumberService = new PhoneNumberService();
-
-            return phoneNumberService.Queryable().
-                Where( n => n.Number.Contains( searchterm ) ).
-                OrderBy( n => n.Number ).
-                Select( n => n.Number ).Distinct();
+            return new PhoneNumberService().GetNumbersBySearchterm( searchterm );
         }
     }
 }

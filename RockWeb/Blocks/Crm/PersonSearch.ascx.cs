@@ -85,32 +85,25 @@ namespace RockWeb.Blocks.Crm
 
                         case ( "phone" ):
 
-                            // remove everything but numbers
-                            Regex rgx = new Regex(@"[^\d]");
-                            term = rgx.Replace(term, "");
-
                             var phoneService = new PhoneNumberService();
+                            var personIds = phoneService.GetPersonIdsByNumber( term );
 
-                            var personIds = phoneService.Queryable().
-                                Where( n => n.Number.Contains( term ) ).
-                                Select( n => n.PersonId).Distinct();
-
-                            people = personService.Queryable().
-                                Where( p => personIds.Contains( p.Id ) ).
-                                OrderBy( p => p.LastName ).ThenBy( p => ( p.FirstName ) );
+                            people = personService.Queryable().Where( p => personIds.Contains( p.Id ) );
                                 
-
                             break;
 
                         case ( "address" ):
+
+                            var groupMemberService = new GroupMemberService();
+
+                            var personIds2 = groupMemberService.GetPersonIdsByHomeAddress( term );
+                            people = personService.Queryable().Where( p => personIds2.Contains( p.Id ) );
 
                             break;
 
                         case ( "email" ):
 
-                            people = personService.Queryable().
-                                Where( p => p.Email.Contains( term ) ).
-                                OrderBy( p => p.LastName ).ThenBy( p => ( p.FirstName ) );
+                            people = personService.Queryable().Where( p => p.Email.Contains( term ) );
 
                             break;
                     }
