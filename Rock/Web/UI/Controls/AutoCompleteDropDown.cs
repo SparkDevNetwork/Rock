@@ -161,14 +161,14 @@ namespace Rock.Web.UI.Controls
 
         #region Controls
 
-        public HiddenField _hfIdProperty;
-        public HiddenField _hfNameProperty;
-        public HiddenField _hfDropdownHeader;
-        public HiddenField _hfDropdownFooter;
-        public HiddenField _hfValue;
-        public HiddenField _hfTemplate;
-        public HiddenField _hfUrl;
-        public HiddenField _hfLimit;
+        private HiddenField _hfIdProperty;
+        private HiddenField _hfNameProperty;
+        private HiddenField _hfDropdownHeader;
+        private HiddenField _hfDropdownFooter;
+        private HiddenField _hfValue;
+        private HiddenField _hfTemplate;
+        private HiddenField _hfUrl;
+        private HiddenField _hfLimit;
 
         #endregion
 
@@ -348,6 +348,9 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AutoCompleteDropDown"/> class.
+        /// </summary>
         public AutoCompleteDropDown() : base()
         {
             RequiredFieldValidator = new HiddenFieldValidator();
@@ -367,6 +370,9 @@ namespace Rock.Web.UI.Controls
             // is also added in the AttributeEditor's OnInit since in that scenario this controls OnInit may not get run on the initial page load
         }
 
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
         protected override void CreateChildControls()
         {
             base.CreateChildControls();
