@@ -9,7 +9,7 @@
 
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Rock/Styles/theme.css") %>" />
 
-    <script src="<%= ResolveUrl("~/Scripts/jquery.js") %>"></script>
+    <script src="<%= ResolveUrl("~/Scripts/jquery-1.10.2.min.js") %>"></script>
 
 </head>
 <body id="splash" class="error">
@@ -69,6 +69,7 @@
                             <li><a href="#tinyscrollbar">Tiny Scrollbar</a> (MIT) - <a href="http://www.baijs.nl/tinyscrollbar/">Project Site</a> </li>
                             <li><a href="#epplus">EPPlus</a> (LGPL) - <a href="http://epplus.codeplex.com/">Project Site</a> </li>
                             <li><a href="#dotliquid">DotLiquid</a> (Apache) - <a href="http://dotliquidmarkup.org/">Project Site</a> </li>
+                            <li><a href="#liquidjs">Liquid.js</a> (MIT) - <a href="https://github.com/tonyheupel/liquid.js">Project Site</a> </li>
                             <li><a href="#bootbox">Bootbox.js</a> (MIT) - <a href="http://bootboxjs.com/">Project Site</a> </li>
                             <li><a href="#dday">DDay.iCal</a> (BSD) - <a href="http://www.ddaysoftware.com">Project Site</a> </li>
                             <li><a href="#exif">EXIFextractor</a> (Ms-RL) - <a href="http://www.codeproject.com/Articles/11305/EXIFectractor-library-extract-EXIF-information">Project Site</a> </li>
@@ -1242,6 +1243,34 @@ To apply the Apache License to your work, attach the following boilerplate notic
    Unless required by applicable law or agreed to in writing, software    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and    limitations under the License.
 
 </pre>
+
+                        <a name="liquidjs"></a>
+                        <h3>Liquid.js</h3>
+                        <pre>
+MIT License
+
+Copyright (c) 2005, 2006 Tobias Luetke
+Copyright (c) 2011, 2012 Marcel Jackwerth
+Copyright (c) 2011, 2012 Tony Heupel
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</pre>
 
                         <a name="bootbox"></a>
                         <h3>Bootbox.js</h3>

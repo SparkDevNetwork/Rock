@@ -27,9 +27,9 @@
                                     PhotoId='<%# Eval("Person.PhotoId") %>' />
                                 <div class="actions pull-right">
                                     <asp:LinkButton ID="lbEdit" runat="server" CssClass="edit" Text="Edit Relationship"
-                                         CommandName="EditRole" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-pencil"></i></asp:LinkButton>
-                                    <asp:LinkButton ID="lbRemove" runat="server" CssClass="edit remove-relationship" Text="Remove Relationship" 
-                                        CommandName="RemoveRole"  CommandArgument='<%# Eval("Id") %>'><i class="fa fa-times"></i></asp:LinkButton>
+                                        CommandName="EditRole" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-pencil"></i></asp:LinkButton>
+                                    <asp:LinkButton ID="lbRemove" runat="server" CssClass="edit remove-relationship" Text="Remove Relationship"
+                                        CommandName="RemoveRole" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-times"></i></asp:LinkButton>
                                 </div>
                             </li>
                         </ItemTemplate>
@@ -37,13 +37,16 @@
                 </ul>
             </div>
 
-            <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Relationship" Content-Height="380" ValidationGroup="NewRelationship" >
+            <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Relationship" Content-Height="380" ValidationGroup="NewRelationship">
                 <Content>
+
+                    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="NewRelationship" />
 
                     <div id="divExistingPerson" runat="server">
                         <fieldset>
-                            <Rock:GroupRolePicker ID="grpRole" runat="server" Label="Relationship Type" ValidationGroup="NewRelationship"  />
-                            <Rock:PersonPicker2 ID="ppPerson" runat="server" ValidationGroup="NewRelationship" />
+                            <Rock:GroupRolePicker ID="grpRole" runat="server" Label="Relationship Type" ValidationGroup="NewRelationship" />
+                            <Rock:AutoCompleteDropDown ID="acPerson" runat="server" Label="Person" Required="true" ValidationGroup="NewRelationship" />
+                            <asp:Panel ID="pnlSelectedPerson" runat="server" />
                         </fieldset>
                     </div>
 

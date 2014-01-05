@@ -12,7 +12,7 @@ namespace Rock.Financial
     /// <summary>
     /// Information about a payment to be processed by a financial gateway
     /// </summary>
-    public abstract class PaymentInfo
+    public class PaymentInfo
     {
         /// <summary>
         /// Gets or sets the amount.

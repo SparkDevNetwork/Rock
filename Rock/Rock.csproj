@@ -500,7 +500,6 @@
     <Compile Include="Web\UI\Controls\Pickers\ComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ComponentsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupTypePicker.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\PersonPicker2.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupRolePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GeoPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MonthDayPicker.cs" />

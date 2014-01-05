@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                         foreach ( var attribute in new AttributeService().GetByCategoryId( category.Id ) )
                         {
-                            if ( attribute.IsAuthorized( "Edit", CurrentPerson ) )
+                            if ( attribute.IsAuthorized( "View", CurrentPerson ) )
                             {
                                 AttributeList.Add( attribute.Id );
                             }
@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     string attributeValue = Person.GetAttributeValue( attribute.Key );
                     string formattedValue = string.Empty;
 
-                    if ( !EditMode )
+                    if ( !EditMode || !attribute.IsAuthorized( "Edit", CurrentPerson ) )
                     {
                         formattedValue = attribute.FieldType.Field.FormatValue( fsAttributes, attributeValue, attribute.QualifierValues, false );
                         if ( !string.IsNullOrWhiteSpace( formattedValue ) )
@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     var attribute = AttributeCache.Read( attributeId );
 
-                    if ( Person != null && EditMode )
+                    if ( Person != null && EditMode && attribute.IsAuthorized( "Edit", CurrentPerson ) )
                     {
                         Control attributeControl = fsAttributes.FindControl( string.Format( "attribute_field_{0}", attribute.Id ) );
                         if ( attributeControl != null )
