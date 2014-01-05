@@ -43,7 +43,8 @@
                     <div id="divExistingPerson" runat="server">
                         <fieldset>
                             <Rock:GroupRolePicker ID="grpRole" runat="server" Label="Relationship Type" ValidationGroup="NewRelationship"  />
-                            <Rock:PersonPicker2 ID="ppPerson" runat="server" ValidationGroup="NewRelationship" />
+                            <Rock:AutoCompleteDropDown ID="acPerson" runat="server" Label="Person" />
+                            <asp:Panel ID="pnlSelectedPerson" runat="server" />
                         </fieldset>
                     </div>
 
