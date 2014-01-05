@@ -28,7 +28,8 @@ namespace RockWeb.Blocks.Finance
     [Category("Financial")]
     [Description("Lists scheduled transactions for current or selected user (if context for person is not configured, will display for currently logged in person).")]
 
-    [LinkedPage("Detail Page")]
+    [LinkedPage("Edit Page")]
+    [LinkedPage("Add Page")]
     [ContextAware( typeof( Person ) )]
     public partial class GivingProfileList : Rock.Web.UI.RockBlock
     {
@@ -123,7 +124,10 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void rGridGivingProfile_Edit( object sender, RowEventArgs e )
         {
-            ShowDetailForm( (int)rGridGivingProfile.DataKeys[e.RowIndex]["id"] );
+            var parms = new Dictionary<string, string>();
+            parms.Add( "Txn", rGridGivingProfile.DataKeys[e.RowIndex]["id"].ToString() );
+            parms.Add( "Person", TargetPerson.UrlEncodedKey );
+            NavigateToLinkedPage( "EditPage", parms );
         }
 
         /// <summary>
@@ -133,7 +137,9 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rGridGivingProfile_Add( object sender, EventArgs e )
         {
-            ShowDetailForm( 0 );
+            var parms = new Dictionary<string, string>();
+            parms.Add( "Person", TargetPerson.UrlEncodedKey );
+            NavigateToLinkedPage( "AddPage", parms );
         }
         
         /// <summary>
@@ -191,7 +197,7 @@ namespace RockWeb.Blocks.Finance
         protected void ShowDetailForm( int id )
         {
             var parms = new Dictionary<string, string>();
-            parms.Add( "GivingProfileId", id.ToString() );
+            parms.Add( "Txn", id.ToString() );
             parms.Add( "Person", TargetPerson.UrlEncodedKey );
             NavigateToLinkedPage( "DetailPage", parms );
         }

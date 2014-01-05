@@ -136,6 +136,21 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             ddlNewPersonGender.BindToEnum( typeof( Gender ) );
 
+            acPerson.Url = "api/People/Search/%QUERY/false";
+            acPerson.NameProperty = "Name";
+            acPerson.IdProperty = "Id";
+            acPerson.Template = @"
+<div class='picker-select-item'>
+    <label>{{Name}}</label>
+    <div class='picker-select-item-details clearfix'>
+        {{ImageHtmlTag}}
+        <div class='contents'>
+            {% if Age >= 0 %}<em>({{ Age }} yrs old)</em>{% endif %}
+        </div>
+    </div>
+</div>
+";
+
         }
 
         /// <summary>
@@ -351,6 +366,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             tbNewPersonFirstName.Required = true;
             tbNewPersonLastName.Required = true;
             hfActiveTab.Value = "Existing";
+
+            acPerson.Value = string.Empty;
+            acPerson.Text = string.Empty;
+
             modalAddPerson.Show();
         }
 
@@ -363,12 +382,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             if ( hfActiveTab.Value == "Existing" )
             {
-                int? personId = ppExistingPerson.PersonId;
-                if ( personId.HasValue )
+                int personId = int.MinValue;
+                if (int.TryParse(acPerson.Value, out personId))
                 {
                     using ( new UnitOfWorkScope() )
                     {
-                        var person = new PersonService().Get( personId.Value );
+                        var person = new PersonService().Get( personId );
                         if ( person != null )
                         {
                             var familyMember = new FamilyMember();

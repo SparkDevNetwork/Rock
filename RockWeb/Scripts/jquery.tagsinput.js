@@ -396,7 +396,7 @@
 	
 	$.fn.tagsInput.importTags = function(obj,val) {			
 
-	    console.log("Obj: " + $(obj).attr('id') + "; Val: " + val);
+	    //console.log("Obj: " + $(obj).attr('id') + "; Val: " + val);
 
 	    $(obj).val('');
 		var id = $(obj).attr('id');

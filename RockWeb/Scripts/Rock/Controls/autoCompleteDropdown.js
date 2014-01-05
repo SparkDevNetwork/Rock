@@ -23,13 +23,13 @@
             constructor: AutoCompleteDropDown,
             initialize: function () {
                 var self = this,
-                    simpleEngine = {
+                    Liquid = require('liquid'),
+                    liquidEngine = {
                         compile: function (template) {
+                            var parsedTemplate = Liquid.Template.parse(template);
                             return {
                                 render: function (context) {
-                                    return template.replace(/\{\{(\w+)\}\}/g, function (match, p1) {
-                                        return context[p1];
-                                    });
+                                    return parsedTemplate.render(context);
                                 }
                             };
                         }
@@ -42,7 +42,7 @@
                     template: this.template,
                     header: this.header,
                     footer: this.footer,
-                    engine: simpleEngine,
+                    engine: liquidEngine,
                     remote: {
                         url: Rock.settings.get('baseUrl') + this.url,
                         filter: function (response) {
@@ -67,6 +67,9 @@
                 // Listen for typeahead's custom events and trigger search when hit
                 this.$el.on('typeahead:selected typeahead:autocompleted', function (e, obj, name) {
                     setValue(obj);
+                    if (typeof self.onSelected === "function") {
+                        self.onSelected(obj);
+                    }
                 });
 
             }
@@ -84,7 +87,6 @@
                 header: '',
                 footer: ''
             },
-            controls: {},
             initialize: function (options) {
                 var autoCompleteDropDown,
                     settings = $.extend({}, exports.defaults, options);
@@ -93,17 +95,14 @@
                 if (!settings.valueControlId) throw 'valueControlId is required';
                 if (!settings.url) throw 'url is required';
 
-                if (!exports.controls[settings.controlId]) {
-                    autoCompleteDropDown = new AutoCompleteDropDown(settings);
-                    exports.controls[settings.controlId] = autoCompleteDropDown;
-                } else {
-                    autoCompleteDropDown = exports.controls[settings.controlId];
-                }
+                autoCompleteDropDown = new AutoCompleteDropDown(settings);
 
                 // Delay initialization until after the DOM is ready
                 $(function () {
                     autoCompleteDropDown.initialize();
                 });
+
+                return autoCompleteDropDown;
             }
         };
 

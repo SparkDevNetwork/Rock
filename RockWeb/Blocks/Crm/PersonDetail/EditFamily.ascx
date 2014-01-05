@@ -172,7 +172,7 @@
 
                     <div id="divExistingPerson" runat="server" class="tab-pane active">
                         <fieldset>
-                            <Rock:PersonPicker2 ID="ppExistingPerson" runat="server" ValidationGroup="AddPerson"/>
+                            <Rock:AutoCompleteDropDown ID="acPerson" runat="server" Label="Person" Required="true" ValidationGroup="AddPerson" />
                             <Rock:RockCheckBox ID="cbRemoveOtherFamilies" runat="server" Checked="true" Text="Remove person from other families" ValidationGroup="AddPerson"/>
                         </fieldset>
                     </div>

@@ -82,7 +82,8 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gGroups_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "groupId", (int)e.RowKeyValue );
+            string paramName = ( ContextEntity<Person>() != null ) ? "groupMemberId" : "groupId";
+            NavigateToLinkedPage( "DetailPage", paramName, (int)e.RowKeyValue );
         }
 
         /// <summary>
@@ -216,7 +217,7 @@ namespace RockWeb.Blocks.Groups
                             (!onlySecurityGroups || m.Group.IsSecurityRole) )
                         .Select( m => new 
                             {
-                                Id = m.Group.Id,
+                                Id = m.Id,
                                 Name = m.Group.Name,
                                 GroupTypeName = m.Group.GroupType.Name,
                                 GroupOrder = m.Group.Order,
