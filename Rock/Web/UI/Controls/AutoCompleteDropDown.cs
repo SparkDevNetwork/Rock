@@ -312,8 +312,14 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 _hfUrl.Value = value;
             }
-        }        
-       
+        }
+
+        /// <summary>
+        /// Gets or sets the limit.
+        /// </summary>
+        /// <value>
+        /// The limit.
+        /// </value>
         public int Limit
         {
             get
@@ -326,8 +332,20 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 _hfLimit.Value = value.ToString();
             }
-        }      
-        
+        }
+
+        /// <summary>
+        /// Gets or sets the on client selected.
+        /// </summary>
+        /// <value>
+        /// The on client selected.
+        /// </value>
+        public string OnClientSelected
+        {
+            get { return ViewState["OnClientSelected"] as string; }
+            set { ViewState["OnClientSelected"] = value; }
+        }        
+
         #endregion
 
         public AutoCompleteDropDown() : base()
@@ -344,10 +362,9 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
 
-            string script = string.Format(
-                @"Rock.controls.autoCompleteDropDown.initialize({{ controlId: '{0}', name: '{0}', valueControlId: '{1}', url: $('#{2}').val(), idkey: $('#{3}').val(), valuekey: $('#{4}').val(), template: $('#{5}').val(), header: $('#{6}').val(), footer: $('#{7}').val(), limit: parseInt($('#{8}').val()) }});",
-                this.ClientID, _hfValue.ClientID, _hfUrl.ClientID, _hfIdProperty.ClientID, _hfNameProperty.ClientID, _hfTemplate.ClientID, _hfDropdownHeader.ClientID, _hfDropdownFooter.ClientID, _hfLimit.ClientID );
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "auto-complete-drop-down-" + this.ID, script, true );
+            RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/liquid.min.js" ) );
+            // Note: AddScriptLink will not add a script during partial postback (i.e. inside an update panel)  Because of this, this script 
+            // is also added in the AttributeEditor's OnInit since in that scenario this controls OnInit may not get run on the initial page load
         }
 
         protected override void CreateChildControls()
@@ -379,7 +396,7 @@ namespace Rock.Web.UI.Controls
 
             _hfTemplate = new HiddenField();
             _hfTemplate.ID = "hfResultTemplate";
-            _hfTemplate.Value = "<p>{{value}}</p>";
+            _hfTemplate.Value = "<p>{{Name}}</p>";
             Controls.Add( _hfTemplate );
 
             _hfUrl = new HiddenField();
@@ -414,6 +431,22 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
+            string selectedScript = string.Empty;
+            if (!string.IsNullOrWhiteSpace(OnClientSelected))
+            {
+                selectedScript = string.Format( @"
+    acdd.onSelected = function( selectedItem ) {{
+        {0}
+    }}
+", OnClientSelected );
+
+            }
+            string script = string.Format(@"
+    var acdd = Rock.controls.autoCompleteDropDown.initialize({{ controlId: '{0}', name: '{0}', valueControlId: '{1}', url: $('#{2}').val(), idkey: $('#{3}').val(), valuekey: $('#{4}').val(), template: $('#{5}').val(), header: $('#{6}').val(), footer: $('#{7}').val(), limit: parseInt($('#{8}').val()) }});
+    {9}
+", this.ClientID, _hfValue.ClientID, _hfUrl.ClientID, _hfIdProperty.ClientID, _hfNameProperty.ClientID, _hfTemplate.ClientID, _hfDropdownHeader.ClientID, _hfDropdownFooter.ClientID, _hfLimit.ClientID, selectedScript );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "auto-complete-drop-down-" + this.ID, script, true );
+
             if ( this.Visible )
             {
                 RockControlHelper.RenderControl( this, writer );

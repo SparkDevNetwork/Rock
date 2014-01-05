@@ -373,6 +373,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
             RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/ace/ace.js" ) );
+            RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/liquid.min.js" ) );
         }
 
         /// <summary>
