@@ -5,7 +5,7 @@
 //
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Text.RegularExpressions;
 using Rock.Data;
 
 namespace Rock.Model
@@ -23,6 +23,42 @@ namespace Rock.Model
         public IEnumerable<PhoneNumber> GetByPersonId( int personId )
         {
             return Repository.Find( t => t.PersonId == personId );
+        }
+
+        /// <summary>
+        /// Returns a list of phone numbers that match the given search term.
+        /// </summary>
+        /// <param name="searchterm">A partial phone number search string (everything but digits will be removed before attempting the search).</param>
+        /// <returns>A querable list of <see cref="System.String"/> phone numbers (as strings)</returns>
+        public IQueryable<string> GetNumbersBySearchterm( string searchterm )
+        {
+            return GetBySearchterm( searchterm ).OrderBy( n => n.Number ).
+                Select( n => n.Number ).Distinct();
+        }
+
+        /// <summary>
+        /// Returns a list of PersonIds <see cref="System.Int32"/> of people who have a phone number that match the given search term.
+        /// </summary>
+        /// <param name="searchterm">A partial phone number search string (everything but digits will be removed before attempting the search).</param>
+        /// <returns>A querable list of <see cref="System.Int32"/> PersonIds</returns>
+        public IQueryable<int> GetPersonIdsByNumber( string searchterm )
+        {
+            return GetBySearchterm( searchterm ).Select( n => n.PersonId ).Distinct();
+        }
+
+        /// <summary>
+        /// Returns a querable set of <see cref="Rock.Model.PhoneNumber">Phone Numbers</see> that match the given search term.
+        /// </summary>
+        /// <param name="searchterm">A partial phone number search string (everything but digits will be removed before attempting the search).</param>
+        /// <returns>A querable list of <see cref="Rock.Model.PhoneNumber">PhoneNumbers</see></returns>
+        public IQueryable<PhoneNumber> GetBySearchterm( string searchterm )
+        {
+            // remove everything but numbers
+            Regex rgx = new Regex( @"[^\d]" );
+            searchterm = rgx.Replace( searchterm, "" );
+
+            return Repository.AsQueryable().
+                Where( n => n.Number.Contains( searchterm ) );
         }
     }
 }
