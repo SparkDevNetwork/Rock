@@ -224,6 +224,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         {
                             if ( group.IsAuthorized( "View", CurrentPerson ) )
                             {
+                                phGroupTypeIcon.Controls.Clear();
                                 if ( !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) )
                                 {
                                     phGroupTypeIcon.Controls.Add(
