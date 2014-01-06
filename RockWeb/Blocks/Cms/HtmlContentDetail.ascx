@@ -10,7 +10,7 @@
         </asp:Panel>
 
         <%-- Edit Panel --%>
-        <Rock:ModalDialog ID="mdEdit" runat="server" OnSaveClick="lbSave_Click" Title="Edit Html" PopupDragHandleControlID="edtHtml">
+        <Rock:ModalDialog ID="mdEdit" runat="server" OnSaveClick="lbSave_Click" Title="Edit Html">
             <Content>
 
                 <asp:UpdatePanel runat="server" ID="upnlEdit">
@@ -38,17 +38,17 @@
                                     </div>
                                 </ContentTemplate>
                             </asp:UpdatePanel>
-                            
+
                             <div class="pull-right">
                                 <asp:Literal runat="server" ID="lVersion" Text="Version X | " />
                                 <asp:LinkButton runat="server" ID="lbShowVersionGrid" Text="History" OnClick="lbShowVersionGrid_Click" />
                             </div>
 
                             <!-- Edit Html -->
-                            
+
                             <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Display from" />
 
-                            <Rock:HtmlEditor ID="htmlEditor" runat="server" ResizeMaxWidth="720" Height="140"  />
+                            <Rock:HtmlEditor ID="htmlEditor" runat="server" ResizeMaxWidth="720" Height="140" />
                             <Rock:CodeEditor ID="ceHtml" runat="server" EditorHeight="280" />
 
                             <Rock:RockCheckBox ID="cbOverwriteVersion" runat="server" Text="Don't save as a new version" />
