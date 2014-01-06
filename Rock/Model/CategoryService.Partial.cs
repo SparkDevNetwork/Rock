@@ -33,7 +33,9 @@ namespace Rock.Model
                 query = query.Where( c => c.EntityTypeId == entityTypeId.Value );
             }
 
-            return query;
+            return query
+                .OrderBy( t => t.Order )
+                .ThenBy( t => t.Name );
         }
 
         /// <summary>
@@ -63,7 +65,8 @@ namespace Rock.Model
         {
             return Repository.AsQueryable()
                 .Where( t => ( t.EntityTypeId == entityTypeId || ( !entityTypeId.HasValue ) ))
-                .OrderBy( t => t.Name);
+                .OrderBy( t => t.Order)
+                .ThenBy( t => t.Name);
         }
 
     }

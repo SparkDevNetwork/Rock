@@ -251,6 +251,7 @@ namespace RockWeb.Blocks.Core
                 category = new Category();
                 category.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
                 category.EntityTypeQualifierColumn = "EntityTypeId";
+                category.Order = 0;
                 service.Add( category, CurrentPersonId );
             }
 
