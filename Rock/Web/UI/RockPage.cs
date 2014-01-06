@@ -72,6 +72,47 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Gets or sets the browser title.
+        /// </summary>
+        /// <value>
+        /// The browser title.
+        /// </value>
+        public string BrowserTitle
+        {
+            get { return base.Title; }
+            set { base.Title = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the template title.
+        /// </summary>
+        /// <value>
+        /// The template title.
+        /// </value>
+        public string TemplateTitle
+        {
+            get { return _pageCache.Title; }
+            set { _pageCache.Title = value; }
+        }
+
+        /// <summary>
+        /// Gets the title for the page and sets both the browser and template title
+        /// </summary>
+        /// <returns>The title of the page.</returns>
+        public new string Title
+        {
+            get
+            {
+                return BrowserTitle;
+            }
+            set
+            {
+                BrowserTitle = value;
+                TemplateTitle = value;
+            }
+        }
+
+        /// <summary>
         /// Gets the current <see cref="Rock.Model.Page">Page's</see> logical Rock Page Guid.
         /// </summary>
         /// <value>
@@ -561,9 +602,9 @@ namespace Rock.Web.UI
                     }
                     catch { }
 
-                    // set page title
+                    // intialize browser title to template title
                     Page.Trace.Warn( "Setting page title" );
-                    this.Title = _pageCache.Title;
+                    BrowserTitle = TemplateTitle;
 
                     // set viewstate on/off
                     this.EnableViewState = _pageCache.EnableViewState;

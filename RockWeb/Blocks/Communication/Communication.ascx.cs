@@ -568,7 +568,7 @@ namespace RockWeb.Blocks.Communication
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 communication = new CommunicationService().Get( itemKeyValue );
-                this.Page.Title = string.Format( "Communication #{0}", communication.Id );
+                RockPage.BrowserTitle = string.Format( "Communication #{0}", communication.Id );
                 this.AdditionalMergeFields = communication.AdditionalMergeFields.ToList();
 
                 lTitle.Text = ("Subject: " + communication.Subject).FormatAsHtmlTitle();
@@ -576,11 +576,11 @@ namespace RockWeb.Blocks.Communication
             else
             {
                 communication = new Rock.Model.Communication() { Status = CommunicationStatus.Transient };
-                this.Page.Title = "New Communication";
+                RockPage.BrowserTitle = "New Communication";
                 lTitle.Text = "New Communication".FormatAsHtmlTitle();
             }
 
-            PageTitle = this.Page.Title;
+            PageTitle = RockPage.BrowserTitle;
 
             if ( communication == null )
             {
