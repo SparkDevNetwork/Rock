@@ -10,7 +10,6 @@
             <Rock:Grid ID="rGrid" runat="server" RowItemText="setting" OnRowSelected="rGrid_Edit" TooltipField="Description">
                 <Columns>
                     <Rock:ReorderField />
-                    <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
                     <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                     <asp:BoundField DataField="IconCssClass" HeaderText="Icon Class" SortExpression="IconCssClass" />
                     <asp:TemplateField>
