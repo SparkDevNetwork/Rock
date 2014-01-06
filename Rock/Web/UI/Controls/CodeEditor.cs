@@ -246,18 +246,18 @@ namespace Rock.Web.UI.Controls
         /// Gets or sets the javascript that will get executed when the codeeditor 'on change' event occurs
         /// </summary>
         /// <value>
-        /// The on key press script.
+        /// The on change press script.
         /// </value>
-        public string OnKeyPressScript
+        public string OnChangeScript
         {
             get
             {
-                return ViewState["OnKeyPressScript"] as string;
+                return ViewState["OnChangeScript"] as string;
             }
 
             set
             {
-                ViewState["OnKeyPressScript"] = value;
+                ViewState["OnChangeScript"] = value;
             }
         }
 
@@ -352,7 +352,7 @@ namespace Rock.Web.UI.Controls
                 }});
 ";
 
-            string script = string.Format( scriptFormat, this.ClientID, EditorThemeAsString( this.EditorTheme ), EditorModeAsString( this.EditorMode ), this.OnKeyPressScript );
+            string script = string.Format( scriptFormat, this.ClientID, EditorThemeAsString( this.EditorTheme ), EditorModeAsString( this.EditorMode ), this.OnChangeScript );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "codeeditor_" + this.ID, script, true );
 
             base.RenderControl( writer );
