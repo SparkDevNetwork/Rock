@@ -20,9 +20,9 @@ using System.ComponentModel;
 
 namespace RockWeb.Blocks.Cms
 {
-    [DisplayName("HTML Content")]
-    [Category("CMS")]
-    [Description("Adds an editable HTML fragment to the page.")]
+    [DisplayName( "HTML Content" )]
+    [Category( "CMS" )]
+    [Description( "Adds an editable HTML fragment to the page." )]
     [AdditionalActions( new string[] { "Approve" } )]
     [BooleanField( "Use Code Editor", "Use the code editor instead of the WYSIWYG editor", false, "", 0 )]
     [CodeEditorField( "Pre-Text", "HTML text to render before the blocks main content.", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 1, "PreText" )]
@@ -214,7 +214,7 @@ namespace RockWeb.Blocks.Cms
                 if ( htmlContent.IsApproved )
                 {
                     int personId = hfApprovalStatusPersonId.ValueAsInt();
-                    if (personId > 0)
+                    if ( personId > 0 )
                     {
                         htmlContent.ApprovedByPersonId = personId;
                         htmlContent.ApprovedDateTime = DateTime.Now;
