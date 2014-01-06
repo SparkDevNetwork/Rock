@@ -21,13 +21,17 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Core
 {
     /// <summary>
-    /// User control for managing the attributes that are available for a specific entity
+    /// User control for managing attribute categories 
     /// </summary>
     public partial class AttributeCategories : RockBlock
     {
+        #region Fields
+
         bool _canConfigure = false;
 
-        #region Control Methods
+        #endregion
+
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -53,6 +57,7 @@ namespace RockWeb.Blocks.Core
                 rGrid.Actions.ShowAdd = true;
 
                 rGrid.Actions.AddClick += rGrid_Add;
+                rGrid.GridReorder += rGrid_GridReorder;
                 rGrid.GridRebind += rGrid_GridRebind;
                 rGrid.RowDataBound += rGrid_RowDataBound;
 
@@ -225,6 +230,21 @@ namespace RockWeb.Blocks.Core
             }
         }
 
+
+        void rGrid_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            using ( new UnitOfWorkScope() )
+            {
+                var categories = GetCategories();
+                if ( categories != null )
+                {
+                    new CategoryService().Reorder( categories.ToList(), e.OldIndex, e.NewIndex, CurrentPersonId );
+                }
+
+                BindGrid();
+            }
+        }
+        
         /// <summary>
         /// Handles the SaveClick event of the modalDetails control.
         /// </summary>
@@ -251,11 +271,16 @@ namespace RockWeb.Blocks.Core
                 category = new Category();
                 category.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
                 category.EntityTypeQualifierColumn = "EntityTypeId";
-                category.Order = 0;
+
+                var lastCategory = GetUnorderedCategories()
+                    .OrderByDescending( c => c.Order ).FirstOrDefault();
+                category.Order = lastCategory != null ? lastCategory.Order + 1 : 0;
+
                 service.Add( category, CurrentPersonId );
             }
 
             category.Name = tbName.Text;
+            category.Description = tbDescription.Text;
 
             string QualifierValue = null;
             if ( ( entityTypePicker.SelectedEntityTypeId ?? 0 ) != 0 )
@@ -312,6 +337,19 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
+            rGrid.DataSource = GetCategories().ToList();
+            rGrid.DataBind();
+        }
+
+        private IQueryable<Category> GetCategories()
+        {
+            return GetUnorderedCategories()
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name );
+        }
+
+        private IQueryable<Category> GetUnorderedCategories()
+        {
             string selectedValue = rFilter.GetUserPreference( "EntityType" );
 
             var attributeEntityTypeId = EntityTypeCache.Read(typeof(Rock.Model.Attribute)).Id;
@@ -336,21 +374,9 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
-            SortProperty sortProperty = rGrid.SortProperty;
-            if ( sortProperty != null )
-            {
-                queryable = queryable.
-                    Sort( sortProperty );
-            }
-            else
-            {
-                queryable = queryable.
-                    OrderBy( a => a.Name );
-            }
-
-            rGrid.DataSource = queryable.ToList();
-            rGrid.DataBind();
+            return queryable;
         }
+
 
         /// <summary>
         /// Shows the edit.
@@ -360,7 +386,17 @@ namespace RockWeb.Blocks.Core
         {
             var category = new CategoryService().Get(categoryId);
 
-            tbName.Text = category != null ? category.Name : string.Empty;
+            if ( category != null )
+            {
+                tbName.Text = category.Name;
+                tbDescription.Text = category.Description;
+            }
+            else
+            {
+                tbName.Text = string.Empty;
+                tbDescription.Text = string.Empty;
+            }
+
             int entityTypeId = 0;
             if ( category == null || category.EntityTypeQualifierValue == null ||
                 !int.TryParse( category.EntityTypeQualifierValue, out entityTypeId ) )
