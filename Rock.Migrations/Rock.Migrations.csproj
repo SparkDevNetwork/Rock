@@ -228,6 +228,14 @@
     <Compile Include="Migrations\201401061559036_CategoryOrderDescription.Designer.cs">
       <DependentUpon>201401061559036_CategoryOrderDescription.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401062203180_RenameAdultChildParentRoles.cs" />
+    <Compile Include="Migrations\201401062203180_RenameAdultChildParentRoles.Designer.cs">
+      <DependentUpon>201401062203180_RenameAdultChildParentRoles.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401062206577_AddGroupRoleFormerSpouse.cs" />
+    <Compile Include="Migrations\201401062206577_AddGroupRoleFormerSpouse.Designer.cs">
+      <DependentUpon>201401062206577_AddGroupRoleFormerSpouse.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -376,6 +384,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401061559036_CategoryOrderDescription.resx">
       <DependentUpon>201401061559036_CategoryOrderDescription.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401062203180_RenameAdultChildParentRoles.resx">
+      <DependentUpon>201401062203180_RenameAdultChildParentRoles.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401062206577_AddGroupRoleFormerSpouse.resx">
+      <DependentUpon>201401062206577_AddGroupRoleFormerSpouse.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
