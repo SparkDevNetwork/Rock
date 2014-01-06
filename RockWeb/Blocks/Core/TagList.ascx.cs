@@ -306,7 +306,7 @@ namespace RockWeb.Blocks.Core
                     EntityTypeName = t.EntityType.FriendlyName,
                     EntityTypeQualifierColumn = t.EntityTypeQualifierColumn,
                     EntityTypeQualifierValue = t.EntityTypeQualifierValue,
-                    Owner = t.OwnerId.HasValue ? t.Owner.FullNameReversed : "Public"
+                    Owner = t.OwnerId.HasValue ? t.Owner.NickName + " " + t.Owner.LastName : "Public"
                 } ).ToList();
 
                 rGrid.DataBind();
