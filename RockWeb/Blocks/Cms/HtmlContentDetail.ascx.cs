@@ -113,17 +113,17 @@ namespace RockWeb.Blocks.Cms
 
             htmlEditor.Toolbar = HtmlEditor.ToolbarConfig.Full;
 
-            string keyPressScriptFormat = @"
+            string onchangeScriptFormat = @"
    $('#{0}').removeClass('label label-success label-danger').addClass('label label-danger');
    $('#{0}').text('Not-Approved');
    $('#{1}').val('false');
    $('#{2}').val('');
    $('#{3}').hide();";
 
-            string keyPressScript = string.Format( keyPressScriptFormat, lblApprovalStatus.ClientID, hfApprovalStatus.ClientID, hfApprovalStatusPersonId.ClientID, lblApprovalStatusPerson.ClientID );
+            string onchangeScript = string.Format( onchangeScriptFormat, lblApprovalStatus.ClientID, hfApprovalStatus.ClientID, hfApprovalStatusPersonId.ClientID, lblApprovalStatusPerson.ClientID );
 
-            htmlEditor.OnKeyPressScript = keyPressScript;
-            ceHtml.OnKeyPressScript = keyPressScript;
+            htmlEditor.OnChangeScript = onchangeScript;
+            ceHtml.OnChangeScript = onchangeScript;
 
             htmlEditor.MergeFields.Clear();
             htmlEditor.MergeFields.Add( "GlobalAttribute" );
@@ -230,6 +230,9 @@ namespace RockWeb.Blocks.Cms
             {
                 // flush cache content 
                 this.FlushCacheItem( entityValue );
+
+                // force the updatepanel for the view to update since we have two update panels and we only want the View to update when it is edited and Saved
+                upnlHtmlContent.Update();
                 ShowView();
             }
             else
