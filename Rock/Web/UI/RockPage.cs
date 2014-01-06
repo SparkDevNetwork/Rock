@@ -16,12 +16,10 @@ using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Rock.Model;
 using Rock.Transactions;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-
 using Page = System.Web.UI.Page;
 
 namespace Rock.Web.UI
@@ -748,7 +746,6 @@ namespace Rock.Web.UI
                                 {
                                     Page.Trace.Warn( "\tSetting block properties" );
 
-                                    blockControl.CurrentPageReference = PageReference;
                                     blockControl.SetBlock( block );
 
                                     // Add any breadcrumbs to current page reference that the block creates
@@ -980,9 +977,9 @@ namespace Rock.Web.UI
         {
             _pageCache = pageCache;
 
-            HttpContext.Current.Items.Add( "Rock:PageId", _pageCache.Id );
-            HttpContext.Current.Items.Add( "Rock:LayoutId", _pageCache.LayoutId );
-            HttpContext.Current.Items.Add( "Rock:SiteId", _pageCache.Layout.SiteId );
+            SaveContextItem( "Rock:PageId", _pageCache.Id );
+            SaveContextItem( "Rock:LayoutId", _pageCache.LayoutId );
+            SaveContextItem( "Rock:SiteId", _pageCache.Layout.SiteId );
 
             if ( this.Master is RockMasterPage )
             {
@@ -1475,12 +1472,16 @@ namespace Rock.Web.UI
         public void SaveSharedItem( string key, object item )
         {
             string itemKey = string.Format( "{0}:Item:{1}", PageCache.CacheKey( PageId ), key );
+            SaveContextItem( itemKey, item );
+        }
 
+        private void SaveContextItem(string key, object item)
+        {
             System.Collections.IDictionary items = HttpContext.Current.Items;
-            if ( items.Contains( itemKey ) )
-                items[itemKey] = item;
+            if ( items.Contains( key ) )
+                items[key] = item;
             else
-                items.Add( itemKey, item );
+                items.Add( key, item );
         }
 
         /// <summary>
@@ -1513,16 +1514,25 @@ namespace Rock.Web.UI
         /// <returns>A <see cref="System.String"/> containing the parameter value; otherwise an empty string.</returns>
         public string PageParameter( string name )
         {
-            if ( String.IsNullOrEmpty( name ) )
-                return string.Empty;
+            if ( !string.IsNullOrWhiteSpace( name ) )
+            {
+                if ( Page.RouteData.Values.ContainsKey( name ) )
+                {
+                    return (string)Page.RouteData.Values[name];
+                }
 
-            if ( Page.RouteData.Values.ContainsKey( name ) )
-                return (string)Page.RouteData.Values[name];
+                if ( !String.IsNullOrEmpty( Request.QueryString[name] ) )
+                {
+                    return Request.QueryString[name];
+                }
 
-            if ( String.IsNullOrEmpty( Request.QueryString[name] ) )
-                return string.Empty;
-            else
-                return Request.QueryString[name];
+                if ( PageReference.Parameters.ContainsKey( name ) )
+                {
+                    return PageReference.Parameters[name];
+                }
+            }
+
+            return string.Empty;
         }
 
         /// <summary>
