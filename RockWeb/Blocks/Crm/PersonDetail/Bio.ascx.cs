@@ -7,7 +7,9 @@
 using System;
 using System.Linq;
 using System.Text;
+using System.Web.UI;
 using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
@@ -30,6 +32,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.js" ) );
+
             if ( Person != null )
             {
                 // Set the browser page title to include person's name
@@ -45,17 +51,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 lName.Text = Person.FullName.FormatAsHtmlTitle();
 
-                
-                var imgLink = new HtmlAnchor();
-                phImage.Controls.Add(imgLink);
-                imgLink.HRef = Person.PhotoUrl;
-                imgLink.Target = "_blank";
-
-                var img = new HtmlImage();
-                imgLink.Controls.Add(img);
-                img.Src = Person.PhotoUrl;
-                img.Alt = Person.FullName;
-                
+                // Setup Image
+                var imgTag = new LiteralControl( Rock.Model.Person.GetPhotoImageTag( Person.PhotoId, Person.Gender, 188, 188 ) );
+                if ( Person.PhotoId.HasValue )
+                {
+                    var imgLink = new HyperLink();
+                    imgLink.Attributes.Add( "href", Person.PhotoUrl );
+                    phImage.Controls.Add( imgLink );
+                    imgLink.Controls.Add( imgTag );
+                }
+                else
+                {
+                    phImage.Controls.Add( imgTag );
+                }
 
                 if ( Person.BirthDate.HasValue )
                 {
