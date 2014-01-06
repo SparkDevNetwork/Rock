@@ -5,7 +5,9 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
@@ -14,8 +16,12 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Groups
 {
     /// <summary>
-    /// 
+    /// Navigation Tree for groups
     /// </summary>
+    [DisplayName( "Group Tree View" )]
+    [Category( "Groups" )]
+    [Description( "Navigation Tree for groups" )]
+
     [TextField( "Treeview Title", "Group Tree View", false )]
     [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false )]
     [GroupField( "Group", "Select the root group to show in this block.", false )]
@@ -23,6 +29,42 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage("Detail Page")]
     public partial class GroupTreeView : RockBlock
     {
+
+        #region Fields
+
+        private string _groupId = string.Empty;
+
+        #endregion
+
+        #region Base Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            _groupId = PageParameter( "groupId" );
+
+            if ( string.IsNullOrWhiteSpace( _groupId ) )
+            {
+                // If no group was selected, try to find the first group and redirect
+                // back to current page with that group selected
+                var group = FindFirstGroup();
+                {
+                    if ( group != null )
+                    {
+                        _groupId = group.Id.ToString();
+
+                        // Update pageref for group detail block
+                        CurrentPageReference.Parameters.Add( "groupId", group.Id.ToString() );
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -44,13 +86,12 @@ namespace RockWeb.Blocks.Groups
                 groupTypeIds = string.IsNullOrWhiteSpace( groupTypeIds ) ? "0" : groupTypeIds;
             }
             hfGroupTypes.Value = groupTypeIds;
-            string groupId = PageParameter( "groupId" );
 
-            if ( !string.IsNullOrWhiteSpace( groupId ) )
+            if ( !string.IsNullOrWhiteSpace( _groupId ) )
             {
-                hfInitialGroupId.Value = groupId;
-                hfSelectedGroupId.Value = groupId;
-                Group group = ( new GroupService() ).Get( int.Parse( groupId ) );
+                hfInitialGroupId.Value = _groupId;
+                hfSelectedGroupId.Value = _groupId;
+                Group group = ( new GroupService() ).Get( int.Parse( _groupId ) );
 
                 if ( group != null )
                 {
@@ -105,6 +146,10 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
+        #endregion
+
+        #region Events
+
         /// <summary>
         /// Handles the Click event of the lbAddGroup control.
         /// </summary>
@@ -120,5 +165,27 @@ namespace RockWeb.Blocks.Groups
             int groupId = hfSelectedGroupId.ValueAsInt();
             NavigateToLinkedPage("DetailPage", "groupId", 0, "parentGroupId", groupId);
         }
-}
+
+        #endregion
+
+        #region Methods
+
+        private Group FindFirstGroup()
+        {
+            var groupService = new GroupService();
+            var qry = groupService.GetNavigationChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), hfGroupTypes.Value );
+
+            foreach ( var group in qry )
+            {
+                if ( group.IsAuthorized( "View", CurrentPerson ) )
+                {
+                    return group;
+                }
+            }
+
+            return null;
+        }
+
+        #endregion
+    }
 }
