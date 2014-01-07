@@ -49,6 +49,18 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the by schedule identifier.
+        /// </summary>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <returns></returns>
+        public FinancialScheduledTransaction GetByScheduleId( string scheduleId )
+        {
+            return Repository.AsQueryable()
+                .Where( t => t.GatewayScheduleId == scheduleId)
+                .FirstOrDefault();
+        }
+
+        /// <summary>
         /// Updates the status.
         /// </summary>
         /// <param name="scheduledTransaction">The scheduled transaction.</param>
