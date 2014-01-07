@@ -103,6 +103,10 @@
                 <Rock:ButtonDropDownList ID="bddlExample" runat="server" Label="Rock:ButtonDropDownList" />
             </div>
 
+            <div runat="server" class="r-example">
+                <Rock:AutoCompleteDropDown ID="acPersonExample" runat="server" Url="api/People/Search/%QUERY/false" NameProperty="Name" Template="<p>{{Name}}</p>" Limit="10" Label="Rock:AutoCompleteDropDown" />
+            </div>
+
 
             <a id="Input"></a>
             <h1 runat="server">Input</h1>

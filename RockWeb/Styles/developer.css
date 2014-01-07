@@ -301,6 +301,11 @@ small
     margin-top: 2px;
 }
 
+.persondetails-header .photo a {
+    cursor: -webkit-zoom-in;
+    cursor: -moz-zoom-in;    
+}
+
 
 @media (max-width: 767px) {
 	/* center the person image */

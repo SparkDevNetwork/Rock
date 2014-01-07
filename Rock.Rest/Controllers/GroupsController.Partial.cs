@@ -50,37 +50,9 @@ namespace Rock.Rest.Controllers
             var user = CurrentUser();
             if ( user != null )
             {
-                IQueryable<Group> qry;
-                if ( id == 0 )
-                {
-                    qry = Get().Where( a => a.ParentGroupId == null );
-                    if ( rootGroupId != 0 )
-                    {
-                        qry = qry.Where( a => a.Id == rootGroupId );
-                    }
-                }
-                else
-                {
-                    qry = Get().Where( a => a.ParentGroupId == id );
-                }
-
-                if ( limitToSecurityRoleGroups )
-                {
-                    qry = qry.Where( a => a.IsSecurityRole );
-                }
-
-                if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
-                {
-                    if ( groupTypeIds != "0" )
-                    {
-                        List<int> groupTypes = groupTypeIds.SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
-
-                        qry = qry.Where( a => groupTypes.Contains( a.GroupTypeId ) );
-                    }
-                }
-
-                // only fetch groups that should be shown in Navigation (Treeview, Menus, etc);
-                qry = qry.Where( a => a.GroupType.ShowInNavigation == true );
+                var groupService = new GroupService();
+                groupService.Repository.SetConfigurationValue( "ProxyCreationEnabled", "false" );
+                var qry = groupService.GetNavigationChildren( id, rootGroupId, limitToSecurityRoleGroups, groupTypeIds );
 
                 List<Group> groupList = new List<Group>();
                 List<TreeViewItem> groupNameList = new List<TreeViewItem>();

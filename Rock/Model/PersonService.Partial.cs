@@ -352,8 +352,6 @@ namespace Rock.Model
 
         #region Get Person
 
-
-
         /// <summary>
         /// Returns a <see cref="Rock.Model.Person"/> by their PersonId
         /// </summary>

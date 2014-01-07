@@ -71,6 +71,51 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the navigation children.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rootGroupId">The root group identifier.</param>
+        /// <param name="limitToSecurityRoleGroups">if set to <c>true</c> [limit to security role groups].</param>
+        /// <param name="groupTypeIds">The group type ids.</param>
+        /// <returns></returns>
+        public IQueryable<Group> GetNavigationChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, string groupTypeIds )
+        {
+            var qry = Repository.AsQueryable();
+
+            if ( id == 0 )
+            {
+                qry = qry.Where( a => a.ParentGroupId == null );
+                if ( rootGroupId != 0 )
+                {
+                    qry = qry.Where( a => a.Id == rootGroupId );
+                }
+            }
+            else
+            {
+                qry = qry.Where( a => a.ParentGroupId == id );
+            }
+
+            if ( limitToSecurityRoleGroups )
+            {
+                qry = qry.Where( a => a.IsSecurityRole );
+            }
+
+            if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
+            {
+                if ( groupTypeIds != "0" )
+                {
+                    List<int> groupTypes = groupTypeIds.SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
+
+                    qry = qry.Where( a => groupTypes.Contains( a.GroupTypeId ) );
+                }
+            }
+
+            qry = qry.Where( a => a.GroupType.ShowInNavigation == true );
+
+            return qry;
+        }
+
+        /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Group">Groups</see> that are descendants of a specified group.
         /// </summary>
         /// <param name="parentGroupId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/> to retrieve descendants for.</param>

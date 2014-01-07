@@ -279,7 +279,7 @@ namespace Rock.Migrations
                     [MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
                     [BreadCrumbDisplayName],[BreadCrumbDisplayIcon],
                     [Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
-                    [IconFileId],[IconCssClass],[Guid])
+                    [IconCssClass],[Guid])
                 VALUES(
                     '{2}','{2}',1,@ParentPageId,@LayoutId,
                     0,1,
@@ -287,7 +287,7 @@ namespace Rock.Migrations
                     0,0,1,0,
                     1,0,
                     @Order,0,'{3}',1,
-                    null,'{5}','{4}')
+                    '{5}','{4}')
 ",
                     parentPageGuid,
                     layoutGuid,
