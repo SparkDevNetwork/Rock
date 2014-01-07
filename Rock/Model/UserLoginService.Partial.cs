@@ -70,41 +70,49 @@ namespace Rock.Model
         /// <exception cref="System.ArgumentException">Thrown when the service does not exist or is not active.</exception>
         public UserLogin Create( Rock.Model.Person person,
             AuthenticationServiceType serviceType,
-            string serviceName,
+            int entityTypeId,
             string username,
             string password,
             bool isConfirmed,
             int? currentPersonId )
         {
-            UserLogin user = this.GetByUserName( username );
-            if ( user != null )
-                throw new ArgumentOutOfRangeException( "username", "Username already exists" );
-
-            DateTime createDate = DateTime.Now;
-
-            user = new UserLogin();
-            user.ServiceType = serviceType;
-            user.ServiceName = serviceName;
-            user.UserName = username;
-            user.IsConfirmed = isConfirmed;
-            user.CreationDateTime = createDate;
-            user.LastPasswordChangedDateTime = createDate;
-            if ( person != null )
-                user.PersonId = person.Id;
-
-            if ( serviceType == AuthenticationServiceType.Internal )
+            var entityType = EntityTypeCache.Read( entityTypeId );
+            if ( entityType != null )
             {
-                AuthenticationComponent authenticationComponent = GetComponent( serviceName );
-                if ( authenticationComponent == null )
-                    throw new ArgumentException( string.Format( "'{0}' service does not exist, or is not active", serviceName), "serviceName" );
+                UserLogin user = this.GetByUserName( username );
+                if ( user != null )
+                    throw new ArgumentOutOfRangeException( "username", "Username already exists" );
 
-                user.Password = authenticationComponent.EncodePassword( user, password );
+                DateTime createDate = DateTime.Now;
+
+                user = new UserLogin();
+                user.ServiceType = serviceType;
+                user.EntityTypeId = entityTypeId;
+                user.UserName = username;
+                user.IsConfirmed = isConfirmed;
+                user.CreationDateTime = createDate;
+                user.LastPasswordChangedDateTime = createDate;
+                if ( person != null )
+                    user.PersonId = person.Id;
+
+                if ( serviceType == AuthenticationServiceType.Internal )
+                {
+                    AuthenticationComponent authenticationComponent = GetComponent( entityType.Name );
+                    if ( authenticationComponent == null )
+                        throw new ArgumentException( string.Format( "'{0}' service does not exist, or is not active", entityType.FriendlyName ), "entityTypeId" );
+
+                    user.Password = authenticationComponent.EncodePassword( user, password );
+                }
+
+                this.Add( user, currentPersonId );
+                this.Save( user, currentPersonId );
+
+                return user;
             }
-
-            this.Add( user, currentPersonId );
-            this.Save( user, currentPersonId );
-
-            return user;
+            else
+            {
+                throw new ArgumentException( "Invalid EntityTypeId, entity does not exist", "entityTypeId" );
+            }
         }
 
         /// <summary>
@@ -119,9 +127,9 @@ namespace Rock.Model
             if ( user.ServiceType == AuthenticationServiceType.External )
                 throw new Exception( "Cannot change password on external service type" );
 
-            AuthenticationComponent authenticationComponent = GetComponent( user.ServiceName );
+            AuthenticationComponent authenticationComponent = AuthenticationContainer.GetComponent( user.EntityType.Name );
             if ( authenticationComponent == null )
-                throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.ServiceName ) );
+                throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.EntityType.FriendlyName ) );
 
             if ( !authenticationComponent.Authenticate( user, oldPassword ) )
                 return false;
@@ -142,9 +150,9 @@ namespace Rock.Model
             if ( user.ServiceType == AuthenticationServiceType.External )
                 throw new Exception( "Cannot change password on external service type" );
 
-            AuthenticationComponent authenticationComponent = GetComponent( user.ServiceName );
+            AuthenticationComponent authenticationComponent = GetComponent( user.EntityType.Name );
             if ( authenticationComponent == null )
-                throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.ServiceName ) );
+                throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.EntityType.FriendlyName ) );
 
             user.Password = authenticationComponent.EncodePassword( user, password );
             user.LastPasswordChangedDateTime = DateTime.Now;

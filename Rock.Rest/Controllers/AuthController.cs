@@ -50,11 +50,7 @@ namespace Rock.Rest.Controllers
                     var component = serviceEntry.Value.Value;
                     string componentName = component.GetType().FullName;
 
-                    if (
-                        userLogin.ServiceName == componentName &&
-                        component.AttributeValues.ContainsKey( "Active" ) &&
-                        bool.Parse( component.AttributeValues["Active"][0].Value )
-                    )
+                    if ( component.IsActive)
                     {
                         if ( component.Authenticate( userLogin, loginParameters.Password ) )
                         {
