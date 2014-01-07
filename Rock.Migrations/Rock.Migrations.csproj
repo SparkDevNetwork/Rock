@@ -244,6 +244,10 @@
     <Compile Include="Migrations\201401071612341_PrayerCategories.Designer.cs">
       <DependentUpon>201401071612341_PrayerCategories.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401071718059_PersonMarketingBinaryFileTypes.cs" />
+    <Compile Include="Migrations\201401071718059_PersonMarketingBinaryFileTypes.Designer.cs">
+      <DependentUpon>201401071718059_PersonMarketingBinaryFileTypes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -404,6 +408,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401071612341_PrayerCategories.resx">
       <DependentUpon>201401071612341_PrayerCategories.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401071718059_PersonMarketingBinaryFileTypes.resx">
+      <DependentUpon>201401071718059_PersonMarketingBinaryFileTypes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
