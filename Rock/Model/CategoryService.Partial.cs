@@ -33,7 +33,9 @@ namespace Rock.Model
                 query = query.Where( c => c.EntityTypeId == entityTypeId.Value );
             }
 
-            return query;
+            return query
+                .OrderBy( t => t.Order )
+                .ThenBy( t => t.Name );
         }
 
         /// <summary>
@@ -59,9 +61,12 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityTypeId">A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> to search by.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.Category">Categories</see> are used for the specified <see cref="Rock.Model.Category"/>.</returns>
-        public IEnumerable<Category> GetByEntityTypeId( int? entityTypeId )
+        public IQueryable<Category> GetByEntityTypeId( int? entityTypeId )
         {
-            return Repository.Find( t => ( t.EntityTypeId == entityTypeId || ( !entityTypeId.HasValue ) ) );// TODO - do categories need an order? as in: .OrderBy( t => t.Order );
+            return Repository.AsQueryable()
+                .Where( t => ( t.EntityTypeId == entityTypeId || ( !entityTypeId.HasValue ) ))
+                .OrderBy( t => t.Order)
+                .ThenBy( t => t.Name);
         }
 
     }

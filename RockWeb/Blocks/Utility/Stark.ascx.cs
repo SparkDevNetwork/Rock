@@ -20,7 +20,7 @@ using Rock.Attribute;
 namespace RockWeb.Blocks.Utility
 {
     /// <summary>
-    /// 
+    /// Template block for developers to use to start a new block.
     /// </summary>
     [DisplayName( "Stark" )]
     [Category( "Utility" )]

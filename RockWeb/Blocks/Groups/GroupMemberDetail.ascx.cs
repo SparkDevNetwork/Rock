@@ -54,9 +54,12 @@ namespace RockWeb.Blocks.Groups
             }
 
             var groupMember = new GroupMember { GroupId = hfGroupId.ValueAsInt() };
-            groupMember.LoadAttributes();
-            phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, false );
+            if ( groupMember != null )
+            {
+                groupMember.LoadAttributes();
+                phAttributes.Controls.Clear();
+                Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, false );
+            }
         }
 
         /// <summary>

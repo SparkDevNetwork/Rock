@@ -150,6 +150,15 @@ achieve our mission.  We are so grateful for your commitment.
         }
 
         /// <summary>
+        /// Gets or sets the currency type value identifier.
+        /// </summary>
+        protected int? CreditCardTypeValueId
+        {
+            get { return ViewState["CreditCardTypeValueId"] as int?; }
+            set { ViewState["CreditCardTypeValueId"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the payment schedule id.
         /// </summary>
         protected string ScheduleId
@@ -632,24 +641,52 @@ achieve our mission.  We are so grateful for your commitment.
             {
                 using ( new UnitOfWorkScope() )
                 {
-                    var transaction = new FinancialTransactionService().GetByTransactionCode( TransactionCode );
-                    if ( transaction != null && transaction.AuthorizedPersonId.HasValue )
+                    GatewayComponent gateway = hfPaymentTab.Value == "ACH" ? _achGateway : _ccGateway;
+                    var ccCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) );
+                    var achCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) );
+
+                    string errorMessage = string.Empty;
+
+                    Person authorizedPerson = null;
+                    string referenceNumber = string.Empty;
+                    int? currencyTypeValueId = hfPaymentTab.Value == "ACH" ? achCurrencyType.Id : ccCurrencyType.Id;
+
+                    if ( string.IsNullOrWhiteSpace( ScheduleId ) )
+                    {
+                        var transaction = new FinancialTransactionService().GetByTransactionCode( TransactionCode );
+                        if ( transaction != null )
+                        {
+                            authorizedPerson = transaction.AuthorizedPerson;
+                            referenceNumber = gateway.GetReferenceNumber( transaction, out errorMessage );
+                        }
+                    }
+                    else
+                    {
+                        var scheduledTransaction = new FinancialScheduledTransactionService().GetByScheduleId( ScheduleId );
+                        if ( scheduledTransaction != null )
+                        {
+                            authorizedPerson = scheduledTransaction.AuthorizedPerson;
+                            referenceNumber = gateway.GetReferenceNumber( scheduledTransaction, out errorMessage );
+                        }
+                    }
+
+                    if ( authorizedPerson != null )
                     {
                         if ( phCreateLogin.Visible )
                         {
                             var userLoginService = new Rock.Model.UserLoginService();
-                            var user = userLoginService.Create( transaction.AuthorizedPerson, Rock.Model.AuthenticationServiceType.Internal, "Rock.Security.Authentication.Database", txtUserName.Text, txtPassword.Text, false, CurrentPersonId );
+                            var user = userLoginService.Create( authorizedPerson, Rock.Model.AuthenticationServiceType.Internal, "Rock.Security.Authentication.Database", txtUserName.Text, txtPassword.Text, false, CurrentPersonId );
 
                             var mergeObjects = new Dictionary<string, object>();
                             mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
 
-                            var personDictionary = transaction.AuthorizedPerson.ToDictionary();
+                            var personDictionary = authorizedPerson.ToDictionary();
                             mergeObjects.Add( "Person", personDictionary );
 
                             mergeObjects.Add( "User", user.ToDictionary() );
 
                             var recipients = new Dictionary<string, Dictionary<string, object>>();
-                            recipients.Add( transaction.AuthorizedPerson.Email, mergeObjects );
+                            recipients.Add( authorizedPerson.Email, mergeObjects );
 
                             var email = new Rock.Communication.Email( GetAttributeValue( "ConfirmAccountTemplate" ) );
                             email.Send( recipients );
@@ -657,9 +694,6 @@ achieve our mission.  We are so grateful for your commitment.
 
                         var paymentInfo = GetPaymentInfo();
 
-                        GatewayComponent gateway = hfPaymentTab.Value == "ACH" ? _achGateway : _ccGateway;
-                        string errorMessage = string.Empty;
-                        string referenceNumber = gateway.GetReferenceNumber( transaction, out errorMessage );
                         if (errorMessage.Any())
                         {
                             nbSaveAccount.Title = "Invalid Transaction";
@@ -670,11 +704,14 @@ achieve our mission.  We are so grateful for your commitment.
                         else
                         {
                             var savedAccount = new FinancialPersonSavedAccount();
-                            savedAccount.PersonId = transaction.AuthorizedPersonId.Value;
-                            savedAccount.FinancialTransactionId = transaction.Id;
+                            savedAccount.PersonId = authorizedPerson.Id;
                             savedAccount.ReferenceNumber = referenceNumber;
                             savedAccount.Name = txtSaveAccount.Text;
                             savedAccount.MaskedAccountNumber = paymentInfo.MaskedNumber;
+                            savedAccount.TransactionCode = TransactionCode;
+                            savedAccount.GatewayEntityTypeId = gateway.TypeId;
+                            savedAccount.CurrencyTypeValueId = currencyTypeValueId;
+                            savedAccount.CreditCardTypeValueId = CreditCardTypeValueId;
 
                             var savedAccountService = new FinancialPersonSavedAccountService();
                             savedAccountService.Add( savedAccount, CurrentPersonId );
@@ -898,8 +935,8 @@ achieve our mission.  We are so grateful for your commitment.
 
                     rblSavedCC.DataSource = savedAccounts
                         .Where( a =>
-                            a.FinancialTransaction.GatewayEntityTypeId == _ccGateway.TypeId &&
-                            a.FinancialTransaction.CurrencyTypeValueId == ccCurrencyType.Id )
+                            a.GatewayEntityTypeId == _ccGateway.TypeId &&
+                            a.CurrencyTypeValueId == ccCurrencyType.Id )
                         .OrderBy( a => a.Name )
                         .Select( a => new
                         {
@@ -919,8 +956,8 @@ achieve our mission.  We are so grateful for your commitment.
 
                     rblSavedAch.DataSource = savedAccounts
                         .Where( a =>
-                            a.FinancialTransaction.GatewayEntityTypeId == _achGateway.TypeId &&
-                            a.FinancialTransaction.CurrencyTypeValueId == achCurrencyType.Id )
+                            a.GatewayEntityTypeId == _achGateway.TypeId &&
+                            a.CurrencyTypeValueId == achCurrencyType.Id )
                         .OrderBy( a => a.Name )
                         .Select( a => new
                         {
@@ -1184,13 +1221,13 @@ achieve our mission.  We are so grateful for your commitment.
                 if ( savedAccount != null )
                 {
                     var reference = new ReferencePaymentInfo();
-                    reference.TransactionCode = savedAccount.FinancialTransaction.TransactionCode;
+                    reference.TransactionCode = savedAccount.TransactionCode;
                     reference.ReferenceNumber = savedAccount.ReferenceNumber;
                     reference.MaskedAccountNumber = savedAccount.MaskedAccountNumber;
-                    reference.InitialCurrencyTypeValue = DefinedValueCache.Read( savedAccount.FinancialTransaction.CurrencyTypeValue );
+                    reference.InitialCurrencyTypeValue = DefinedValueCache.Read( savedAccount.CurrencyTypeValue );
                     if ( reference.InitialCurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) )
                     { 
-                        reference.InitialCreditCardTypeValue = DefinedValueCache.Read( savedAccount.FinancialTransaction.CreditCardTypeValue );
+                        reference.InitialCreditCardTypeValue = DefinedValueCache.Read( savedAccount.CreditCardTypeValue );
                     }
                     return reference;
                 }
@@ -1273,6 +1310,11 @@ achieve our mission.  We are so grateful for your commitment.
                     paymentInfo.LastName = person.LastName;
                 }
 
+                if ( paymentInfo.CreditCardTypeValue != null )
+                {
+                    CreditCardTypeValueId = paymentInfo.CreditCardTypeValue.Id;
+                } 
+
                 PaymentSchedule schedule = GetSchedule();
                 if ( schedule != null )
                 {
@@ -1283,6 +1325,7 @@ achieve our mission.  We are so grateful for your commitment.
                     {
                         scheduledTransaction.TransactionFrequencyValueId = schedule.TransactionFrequencyValue.Id;
                         scheduledTransaction.AuthorizedPersonId = person.Id;
+                        scheduledTransaction.GatewayEntityTypeId = EntityTypeCache.Read( gateway.TypeGuid ).Id;
 
                         foreach ( var account in SelectedAccounts.Where( a => a.Amount > 0 ) )
                         {
@@ -1315,11 +1358,7 @@ achieve our mission.  We are so grateful for your commitment.
                         transaction.Amount = paymentInfo.Amount;
                         transaction.TransactionTypeValueId = DefinedValueCache.Read(new Guid(Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION)).Id;
                         transaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
-
-                        if (paymentInfo.CreditCardTypeValue != null)
-                        {
-                            transaction.CreditCardTypeValueId = paymentInfo.CreditCardTypeValue.Id;
-                        }
+                        transaction.CreditCardTypeValueId = CreditCardTypeValueId;
 
                         Guid sourceGuid = Guid.Empty;
                         if (Guid.TryParse(GetAttributeValue("Source"), out sourceGuid))
