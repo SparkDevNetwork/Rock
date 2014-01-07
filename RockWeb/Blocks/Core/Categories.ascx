@@ -1,30 +1,23 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="AttributeCategories.ascx.cs" Inherits="RockWeb.Blocks.Core.AttributeCategories" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Categories.ascx.cs" Inherits="RockWeb.Blocks.Core.Categories" %>
 
-<asp:UpdatePanel ID="upPanel" runat="server">
+<asp:UpdatePanel ID="upnlCategories" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlList" runat="server">
 
-            <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
-                <Rock:EntityTypePicker ID="entityTypeFilter" runat="server" Required="false" Label="Entity Type" IncludeGlobalOption="true" />
-            </Rock:GridFilter>
-            <Rock:Grid ID="rGrid" runat="server" RowItemText="Category" OnRowSelected="rGrid_Edit" TooltipField="Description">
+            <Rock:Grid ID="gCategories" runat="server" RowItemText="Category" OnRowSelected="gCategories_Select" TooltipField="Description">
                 <Columns>
                     <Rock:ReorderField />
                     <asp:BoundField DataField="Name" HeaderText="Category" />
                     <asp:BoundField DataField="IconCssClass" HeaderText="Icon Class" />
-                    <asp:TemplateField>
-                        <HeaderTemplate>Entity Type</HeaderTemplate>
-                        <ItemTemplate>
-                            <asp:Literal ID="lEntityType" runat="server"></asp:Literal>
-                        </ItemTemplate>
-                    </asp:TemplateField>
-                    <Rock:DeleteField OnClick="rGrid_Delete" />
+                    <asp:BoundField DataField="ChildCount" HeaderText="Child Categories" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
+                    <Rock:EditField OnClick="gCategories_Edit"/>
+                    <Rock:DeleteField OnClick="gCategories_Delete" />
                 </Columns>
             </Rock:Grid>
 
         </asp:Panel>
 
-        <Rock:ModalDialog ID="modalDetails" runat="server" Title="Category" ValidationGroup="EntityTypeName">
+        <Rock:ModalDialog ID="mdDetails" runat="server" Title="Category" ValidationGroup="EntityTypeName">
             <Content>
 
                 <asp:HiddenField ID="hfIdValue" runat="server" />
@@ -45,7 +38,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:EntityTypePicker ID="entityTypePicker" runat="server" Required="true" Label="Entity Type" IncludeGlobalOption="true" />
+                        <Rock:CategoryPicker ID="catpParentCategory" runat="server" />
                     </div>
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" />
