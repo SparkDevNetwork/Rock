@@ -666,8 +666,8 @@ achieve our mission.  We are so grateful for your commitment.
 
                     rblSavedCC.DataSource = savedAccounts
                         .Where( a =>
-                            a.FinancialTransaction.GatewayEntityTypeId == Gateway.TypeId &&
-                            a.FinancialTransaction.CurrencyTypeValueId == ccCurrencyType.Id )
+                            a.GatewayEntityTypeId == Gateway.TypeId &&
+                            a.CurrencyTypeValueId == ccCurrencyType.Id )
                         .OrderBy( a => a.Name )
                         .Select( a => new
                         {
@@ -684,8 +684,8 @@ achieve our mission.  We are so grateful for your commitment.
 
                     rblSavedAch.DataSource = savedAccounts
                         .Where( a =>
-                            a.FinancialTransaction.GatewayEntityTypeId == Gateway.TypeId &&
-                            a.FinancialTransaction.CurrencyTypeValueId == achCurrencyType.Id )
+                            a.GatewayEntityTypeId == Gateway.TypeId &&
+                            a.CurrencyTypeValueId == achCurrencyType.Id )
                         .OrderBy( a => a.Name )
                         .Select( a => new
                         {
@@ -1130,13 +1130,13 @@ achieve our mission.  We are so grateful for your commitment.
                 if ( savedAccount != null )
                 {
                     var reference = new ReferencePaymentInfo();
-                    reference.TransactionCode = savedAccount.FinancialTransaction.TransactionCode;
+                    reference.TransactionCode = savedAccount.TransactionCode;
                     reference.ReferenceNumber = savedAccount.ReferenceNumber;
                     reference.MaskedAccountNumber = savedAccount.MaskedAccountNumber;
-                    reference.InitialCurrencyTypeValue = DefinedValueCache.Read( savedAccount.FinancialTransaction.CurrencyTypeValue );
+                    reference.InitialCurrencyTypeValue = DefinedValueCache.Read( savedAccount.CurrencyTypeValue );
                     if ( reference.InitialCurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) )
                     {
-                        reference.InitialCreditCardTypeValue = DefinedValueCache.Read( savedAccount.FinancialTransaction.CreditCardTypeValue );
+                        reference.InitialCreditCardTypeValue = DefinedValueCache.Read( savedAccount.CreditCardTypeValue );
                     }
                     return reference;
                 }

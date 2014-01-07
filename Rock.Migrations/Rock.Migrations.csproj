@@ -236,6 +236,10 @@
     <Compile Include="Migrations\201401062206577_AddGroupRoleFormerSpouse.Designer.cs">
       <DependentUpon>201401062206577_AddGroupRoleFormerSpouse.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401071224347_SavedAccountUpdates.cs" />
+    <Compile Include="Migrations\201401071224347_SavedAccountUpdates.Designer.cs">
+      <DependentUpon>201401071224347_SavedAccountUpdates.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -390,6 +394,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401062206577_AddGroupRoleFormerSpouse.resx">
       <DependentUpon>201401062206577_AddGroupRoleFormerSpouse.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401071224347_SavedAccountUpdates.resx">
+      <DependentUpon>201401071224347_SavedAccountUpdates.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

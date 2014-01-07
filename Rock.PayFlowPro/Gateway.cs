@@ -434,6 +434,18 @@ namespace Rock.PayFlowPro
             return string.Empty;
         }
 
+        /// <summary>
+        /// Gets an optional reference identifier needed to process future transaction from saved account.
+        /// </summary>
+        /// <param name="transaction">The transaction.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override string GetReferenceNumber( FinancialScheduledTransaction scheduledTransaction, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            return string.Empty;
+        }        
+        
         #endregion
 
         #region PayFlowPro Object Helper Methods
