@@ -189,7 +189,7 @@ namespace Rock.Rest.Controllers
                 // intentionally ignore exception and assume it isn't an image, then just return a no-picture as the thumbnail
 
                 //TODO ask about picture
-                string noimageFileName = HttpContext.Current.Request.MapPath( "~/Assets/Images/chip-shocked.png" );
+                string noimageFileName = HttpContext.Current.Request.MapPath( "~/Assets/Images/no-picture.svg" );
 
                 return ResizeAndSendImage( width, height, noimageFileName );
             }
@@ -204,31 +204,41 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         private static HttpResponseMessage ResizeAndSendImage( int? width, int? height, string fullPath )
         {
-            using ( Image image = Image.FromFile( fullPath ) )
+            if ( Path.GetExtension( fullPath ).Equals( ".svg", StringComparison.OrdinalIgnoreCase ) )
             {
-                string mimeType = string.Empty;
-
-                // try to figure out the MimeType by using the ImageCodeInfo class
-                var codecs = ImageCodecInfo.GetImageEncoders();
-                ImageCodecInfo codecInfo = codecs.FirstOrDefault( a => a.FormatID == image.RawFormat.Guid );
-                if ( codecInfo != null )
-                {
-                    mimeType = codecInfo.MimeType;
-                }
-
-                // load the image into a stream, then use ImageResizer to resize it to the specified width and height (same technique as RockWeb GetImage.ashx.cs)
-                var origImageStream = new MemoryStream();
-                image.Save( origImageStream, image.RawFormat );
-                origImageStream.Position = 0;
-                var resizedStream = new MemoryStream();
-
-                ImageBuilder.Current.Build( origImageStream, resizedStream, new ResizeSettings { Width = width ?? 100, Height = height ?? 100 } );
-
                 HttpResponseMessage result = new HttpResponseMessage( HttpStatusCode.OK );
-                resizedStream.Position = 0;
-                result.Content = new StreamContent( resizedStream );
-                result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue( mimeType );
+                result.Content = new StreamContent( new FileStream( fullPath, FileMode.Open, FileAccess.Read ) );
+                result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue( "image/svg+xml" );
                 return result;
+            }
+            else
+            {
+                using ( Image image = Image.FromFile( fullPath ) )
+                {
+                    string mimeType = string.Empty;
+
+                    // try to figure out the MimeType by using the ImageCodeInfo class
+                    var codecs = ImageCodecInfo.GetImageEncoders();
+                    ImageCodecInfo codecInfo = codecs.FirstOrDefault( a => a.FormatID == image.RawFormat.Guid );
+                    if ( codecInfo != null )
+                    {
+                        mimeType = codecInfo.MimeType;
+                    }
+
+                    // load the image into a stream, then use ImageResizer to resize it to the specified width and height (same technique as RockWeb GetImage.ashx.cs)
+                    var origImageStream = new MemoryStream();
+                    image.Save( origImageStream, image.RawFormat );
+                    origImageStream.Position = 0;
+                    var resizedStream = new MemoryStream();
+
+                    ImageBuilder.Current.Build( origImageStream, resizedStream, new ResizeSettings { Width = width ?? 100, Height = height ?? 100 } );
+
+                    HttpResponseMessage result = new HttpResponseMessage( HttpStatusCode.OK );
+                    resizedStream.Position = 0;
+                    result.Content = new StreamContent( resizedStream );
+                    result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue( mimeType );
+                    return result;
+                }
             }
         }
 

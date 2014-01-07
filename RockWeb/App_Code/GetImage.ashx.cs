@@ -94,13 +94,17 @@ namespace RockWeb
                         fileContent = binaryFile.Data.Content;
                     }
 
+                    // If we got the image from the binaryFileService, it might need to be resized and cached
                     if ( fileContent != null )
                     {
-                        // If we got the image from the binaryFileService, it might need to be resized and cached
+                        // If more than 1 query string param is passed in, assume resize is needed
                         if ( queryString.Count > 1 )
                         {
-                            // If more than 1 query string param is passed in, assume resize is needed
-                            fileContent = GetResized( queryString, fileContent );
+                            // if it isn't an SVG file, do a Resize
+                            if ( binaryFile.MimeType != "image/svg+xml" )
+                            {
+                                fileContent = GetResized( queryString, fileContent );
+                            }
                         }
 
                         if ( binaryFileMetaData.BinaryFileType_AllowCaching )
