@@ -30,7 +30,7 @@ namespace Rock.Model
         {
             if ( givingGroupId.HasValue )
             {
-                return Repository.AsQueryable()
+                return Repository.AsQueryable( "ScheduledTransactionDetails" )
                     .Where( t => 
                         t.AuthorizedPerson.GivingGroupId == givingGroupId.Value &&
                         (t.IsActive || includeInactive) )
@@ -39,7 +39,7 @@ namespace Rock.Model
             }
             else
             {
-                return Repository.AsQueryable()
+                return Repository.AsQueryable( "ScheduledTransactionDetails" )
                     .Where( t =>
                         t.AuthorizedPersonId == personId &&
                         ( t.IsActive || includeInactive ) )
