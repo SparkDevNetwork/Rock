@@ -141,7 +141,7 @@ namespace Rock.Rest.Controllers
                 FileItem fileItem = new FileItem
                 {
                     Id = relativeFilePath,
-                    Name = "<img src='" + thumbNailUrl + "' width=100 height=100 /><br />" + fileInfo.Name,
+                    Name = "<img src='" + thumbNailUrl + "' class='file-browser-image' /><br />" + fileInfo.Name,
                     IconSmallUrl = thumbNailUrl,
                     RelativeFilePath = relativeFilePath,
                     Size = fileInfo.Length,

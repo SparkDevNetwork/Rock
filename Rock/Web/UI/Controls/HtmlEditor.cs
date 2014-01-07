@@ -350,7 +350,7 @@ var toolbar_RockCustomConfigLight =
         ['Source'],
         ['Bold', 'Italic', 'Underline', 'Strike', 'NumberedList', 'BulletedList', 'Link', 'Image', 'PasteFromWord', '-', 'RemoveFormat'],
         ['Format'], 
-        ['rockmergefield', '-', 'rockimagebrowser', '-', 'rockdocumentbrowser']
+        ['rockmergefield', '-', 'rockfilebrowser']
 	];
 
 var toolbar_RockCustomConfigFull =
@@ -365,7 +365,7 @@ var toolbar_RockCustomConfigFull =
         ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-'], 
         ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
         ['-', 'Image', 'Table'],
-        ['rockmergefield', '-', 'rockimagebrowser', '-','rockdocumentbrowser']
+        ['rockmergefield', '-', 'rockfilebrowser']
 	];	
 
 CKEDITOR.replace('{0}', {{ 
@@ -398,8 +398,7 @@ CKEDITOR.replace('{0}', {{
                 enabledPlugins.Add( "rockmergefield" );
             }
 
-            enabledPlugins.Add( "rockimagebrowser" );
-            enabledPlugins.Add( "rockdocumentbrowser" );
+            enabledPlugins.Add( "rockfilebrowser" );
 
             string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(), this.Height, this.ResizeMaxWidth ?? 0, customOnChangeScript, enabledPlugins.AsDelimited( "," ) );
 

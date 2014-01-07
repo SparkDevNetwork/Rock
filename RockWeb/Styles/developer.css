@@ -437,13 +437,18 @@ table.attribute-grid tr th:nth-child(3) {
     width: 550px;
 }
 
-/* CKEditor Plugin Buttons to override ckeditor hiding labels on those buttons*/
+/* CKEditor Plugin Buttons to override ckeditor hiding labels on those buttons - MP*/
 span.cke_button__rockmergefield_label {
     display: inline;
 }
 
-/* the CKEditor dialog css overrides Fonts. So we need to do something to get the font-awesome fonts to show up in the CKEditor dialog. */
+/* the CKEditor dialog css overrides Fonts. So we need to do something to get the font-awesome fonts to show up in the CKEditor dialog. - MP */
 .cke_dialog_body i.fa {
     font-family:FontAwesome;
 }
 
+/* css for ckeditor rockfilebrowser images (see Rock.Rest\Controllers\FileBrowserController.cs ) */
+img.file-browser-image {
+    width: 70px;
+    height: 70px;
+}
