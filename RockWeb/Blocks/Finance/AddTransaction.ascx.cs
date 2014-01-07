@@ -675,7 +675,9 @@ achieve our mission.  We are so grateful for your commitment.
                         if ( phCreateLogin.Visible )
                         {
                             var userLoginService = new Rock.Model.UserLoginService();
-                            var user = userLoginService.Create( authorizedPerson, Rock.Model.AuthenticationServiceType.Internal, "Rock.Security.Authentication.Database", txtUserName.Text, txtPassword.Text, false, CurrentPersonId );
+                            var user = userLoginService.Create( authorizedPerson, Rock.Model.AuthenticationServiceType.Internal, 
+                                EntityTypeCache.Read(Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid()).Id,
+                                txtUserName.Text, txtPassword.Text, false, CurrentPersonId );
 
                             var mergeObjects = new Dictionary<string, object>();
                             mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );

@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Security
                         var component = serviceEntry.Value.Value;
                         string componentName = component.GetType().FullName;
 
-                        if (component.IsActive && !component.RequiresRemoteAuthentication && userLogin.ServiceName == componentName )
+                        if (component.IsActive && !component.RequiresRemoteAuthentication && userLogin.EntityTypeId == component.TypeId )
                         {
                             if ( component.Authenticate( userLogin, tbPassword.Text ) )
                             {

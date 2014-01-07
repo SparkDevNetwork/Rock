@@ -252,6 +252,10 @@
     <Compile Include="Migrations\201401071836000_AddAdListPage.Designer.cs">
       <DependentUpon>201401071836000_AddAdListPage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401072234209_UserLoginEntityType.cs" />
+    <Compile Include="Migrations\201401072234209_UserLoginEntityType.Designer.cs">
+      <DependentUpon>201401072234209_UserLoginEntityType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -418,6 +422,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401071836000_AddAdListPage.resx">
       <DependentUpon>201401071836000_AddAdListPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401072234209_UserLoginEntityType.resx">
+      <DependentUpon>201401072234209_UserLoginEntityType.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
