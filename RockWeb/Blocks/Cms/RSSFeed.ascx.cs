@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
+using System.ComponentModel;
+using System.ServiceModel.Syndication;
+using System.Xml;
+using System.Xml.Linq;
 
 using Rock;
 using Rock.Attribute;
@@ -12,6 +14,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Cms
 {
+
+    /// <summary>
+    /// Represents the 
+    /// </summary>
     public partial class RSSFeed : RockBlock
     {
         #region Control Methods
