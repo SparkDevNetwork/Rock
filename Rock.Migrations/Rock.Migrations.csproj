@@ -220,6 +220,42 @@
     <Compile Include="Migrations\201312221636197_RefactorPersonName.Designer.cs">
       <DependentUpon>201312221636197_RefactorPersonName.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401032214266_AddGroupChildGroupTypes.cs" />
+    <Compile Include="Migrations\201401032214266_AddGroupChildGroupTypes.Designer.cs">
+      <DependentUpon>201401032214266_AddGroupChildGroupTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401061559036_CategoryOrderDescription.cs" />
+    <Compile Include="Migrations\201401061559036_CategoryOrderDescription.Designer.cs">
+      <DependentUpon>201401061559036_CategoryOrderDescription.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401062203180_RenameAdultChildParentRoles.cs" />
+    <Compile Include="Migrations\201401062203180_RenameAdultChildParentRoles.Designer.cs">
+      <DependentUpon>201401062203180_RenameAdultChildParentRoles.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401062206577_AddGroupRoleFormerSpouse.cs" />
+    <Compile Include="Migrations\201401062206577_AddGroupRoleFormerSpouse.Designer.cs">
+      <DependentUpon>201401062206577_AddGroupRoleFormerSpouse.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401071224347_SavedAccountUpdates.cs" />
+    <Compile Include="Migrations\201401071224347_SavedAccountUpdates.Designer.cs">
+      <DependentUpon>201401071224347_SavedAccountUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401071612341_PrayerCategories.cs" />
+    <Compile Include="Migrations\201401071612341_PrayerCategories.Designer.cs">
+      <DependentUpon>201401071612341_PrayerCategories.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401071718059_PersonMarketingBinaryFileTypes.cs" />
+    <Compile Include="Migrations\201401071718059_PersonMarketingBinaryFileTypes.Designer.cs">
+      <DependentUpon>201401071718059_PersonMarketingBinaryFileTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401071836000_AddAdListPage.cs" />
+    <Compile Include="Migrations\201401071836000_AddAdListPage.Designer.cs">
+      <DependentUpon>201401071836000_AddAdListPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401072234209_UserLoginEntityType.cs" />
+    <Compile Include="Migrations\201401072234209_UserLoginEntityType.Designer.cs">
+      <DependentUpon>201401072234209_UserLoginEntityType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -362,6 +398,33 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201312221636197_RefactorPersonName.resx">
       <DependentUpon>201312221636197_RefactorPersonName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401032214266_AddGroupChildGroupTypes.resx">
+      <DependentUpon>201401032214266_AddGroupChildGroupTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401061559036_CategoryOrderDescription.resx">
+      <DependentUpon>201401061559036_CategoryOrderDescription.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401062203180_RenameAdultChildParentRoles.resx">
+      <DependentUpon>201401062203180_RenameAdultChildParentRoles.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401062206577_AddGroupRoleFormerSpouse.resx">
+      <DependentUpon>201401062206577_AddGroupRoleFormerSpouse.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401071224347_SavedAccountUpdates.resx">
+      <DependentUpon>201401071224347_SavedAccountUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401071612341_PrayerCategories.resx">
+      <DependentUpon>201401071612341_PrayerCategories.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401071718059_PersonMarketingBinaryFileTypes.resx">
+      <DependentUpon>201401071718059_PersonMarketingBinaryFileTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401071836000_AddAdListPage.resx">
+      <DependentUpon>201401071836000_AddAdListPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401072234209_UserLoginEntityType.resx">
+      <DependentUpon>201401072234209_UserLoginEntityType.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

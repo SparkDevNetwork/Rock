@@ -20,9 +20,9 @@ using System.ComponentModel;
 
 namespace RockWeb.Blocks.Cms
 {
-    [DisplayName("HTML Content")]
-    [Category("CMS")]
-    [Description("Adds an editable HTML fragment to the page.")]
+    [DisplayName( "HTML Content" )]
+    [Category( "CMS" )]
+    [Description( "Adds an editable HTML fragment to the page." )]
     [AdditionalActions( new string[] { "Approve" } )]
     [BooleanField( "Use Code Editor", "Use the code editor instead of the WYSIWYG editor", false, "", 0 )]
     [CodeEditorField( "Pre-Text", "HTML text to render before the blocks main content.", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 1, "PreText" )]
@@ -113,17 +113,17 @@ namespace RockWeb.Blocks.Cms
 
             htmlEditor.Toolbar = HtmlEditor.ToolbarConfig.Full;
 
-            string keyPressScriptFormat = @"
+            string onchangeScriptFormat = @"
    $('#{0}').removeClass('label label-success label-danger').addClass('label label-danger');
    $('#{0}').text('Not-Approved');
    $('#{1}').val('false');
    $('#{2}').val('');
    $('#{3}').hide();";
 
-            string keyPressScript = string.Format( keyPressScriptFormat, lblApprovalStatus.ClientID, hfApprovalStatus.ClientID, hfApprovalStatusPersonId.ClientID, lblApprovalStatusPerson.ClientID );
+            string onchangeScript = string.Format( onchangeScriptFormat, lblApprovalStatus.ClientID, hfApprovalStatus.ClientID, hfApprovalStatusPersonId.ClientID, lblApprovalStatusPerson.ClientID );
 
-            htmlEditor.OnKeyPressScript = keyPressScript;
-            ceHtml.OnKeyPressScript = keyPressScript;
+            htmlEditor.OnChangeScript = onchangeScript;
+            ceHtml.OnChangeScript = onchangeScript;
 
             htmlEditor.MergeFields.Clear();
             htmlEditor.MergeFields.Add( "GlobalAttribute" );
@@ -214,7 +214,7 @@ namespace RockWeb.Blocks.Cms
                 if ( htmlContent.IsApproved )
                 {
                     int personId = hfApprovalStatusPersonId.ValueAsInt();
-                    if (personId > 0)
+                    if ( personId > 0 )
                     {
                         htmlContent.ApprovedByPersonId = personId;
                         htmlContent.ApprovedDateTime = DateTime.Now;
@@ -230,6 +230,9 @@ namespace RockWeb.Blocks.Cms
             {
                 // flush cache content 
                 this.FlushCacheItem( entityValue );
+
+                // force the updatepanel for the view to update since we have two update panels and we only want the View to update when it is edited and Saved
+                upnlHtmlContent.Update();
                 ShowView();
             }
             else

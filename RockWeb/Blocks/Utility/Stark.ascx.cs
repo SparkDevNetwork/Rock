@@ -20,7 +20,7 @@ using Rock.Attribute;
 namespace RockWeb.Blocks.Utility
 {
     /// <summary>
-    /// 
+    /// Template block for developers to use to start a new block.
     /// </summary>
     [DisplayName( "Stark" )]
     [Category( "Utility" )]
@@ -45,21 +45,21 @@ namespace RockWeb.Blocks.Utility
 
         protected override void OnInit( EventArgs e )
         {
+            base.OnInit( e );
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upContent );
-
-            base.OnInit( e );
+            this.AddConfigurationUpdateTrigger( upnlContent );
         }
 
         protected override void OnLoad( EventArgs e )
         {
+            base.OnLoad( e );
+
             if ( !Page.IsPostBack )
             {
                 // added for your convience
             }
-
-            base.OnLoad( e );
         }
 
         #endregion

@@ -149,8 +149,6 @@ namespace RockWeb.Blocks.Reporting
                     {
                         breadCrumb.Name = pageCache.BreadCrumbText;
                     }
-
-                    Page.Title = tbName.Text;
                 }
             }
 

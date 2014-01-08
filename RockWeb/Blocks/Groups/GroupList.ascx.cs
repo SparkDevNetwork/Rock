@@ -26,6 +26,7 @@ namespace RockWeb.Blocks.Groups
     [GroupTypesField( "Exclude Group Types", "The group types to exclude from the list (only valid if including all groups).", false, "", "", 3 )]
     [BooleanField( "Display Group Type Column", "Should the Group Type column be displayed?", true, "", 4 )]
     [BooleanField( "Display Description Column", "Should the Description column be displayed?", true, "", 5)]
+    [BooleanField( "Display Filter", "Should filter be displayed to allow filtering by group type?", false, "", 6)]
     [ContextAware]
     public partial class GroupList : RockBlock
     {
@@ -39,10 +40,15 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnInit( e );
 
+            gfSettings.Visible = (GetAttributeValue("DisplayFilter") ?? "false").AsBoolean();
+            gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
+
             gGroups.DataKeyNames = new string[] { "id" };
             gGroups.Actions.ShowAdd = true;
             gGroups.Actions.AddClick += gGroups_Add;
             gGroups.GridRebind += gGroups_GridRebind;
+
+            BindFilter();
         }
 
         /// <summary>
@@ -65,6 +71,43 @@ namespace RockWeb.Blocks.Groups
 
         #region Grid Events
 
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the gfSettings control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
+        {
+            gfSettings.SaveUserPreference( "Group Type", gtpGroupType.SelectedValue );
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Rs the filter_ display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            switch ( e.Key )
+            {
+                case "Group Type":
+
+                    int id = int.MinValue;
+                    if ( int.TryParse( e.Value, out id ) )
+                    {
+                        var groupType = GroupTypeCache.Read( id );
+                        if ( groupType != null )
+                        {
+                            e.Value = groupType.Name;
+                        }
+                    }
+
+                    break;
+            }
+
+        }
+        
         /// <summary>
         /// Handles the Add event of the gGroups control.
         /// </summary>
@@ -149,40 +192,36 @@ namespace RockWeb.Blocks.Groups
         #region Internal Methods
 
         /// <summary>
+        /// Binds the filter.
+        /// </summary>
+        private void BindFilter()
+        {
+            var groupTypeIds = GetAvailableGroupTypes();
+            gtpGroupType.GroupTypes = new GroupTypeService().Queryable()
+                .Where( g => groupTypeIds.Contains( g.Id ) ).ToList();
+
+            gtpGroupType.SelectedValue = gfSettings.GetUserPreference( "Group Type" );
+        }
+
+        /// <summary>
         /// Binds the grid.
         /// </summary>
         private void BindGrid()
         {
             // Find all the Group Types
-            var groupTypeIds = new List<int>();
+            var groupTypeIds = GetAvailableGroupTypes();
+
+            if ( ( GetAttributeValue( "DisplayFilter" ) ?? "false" ).AsBoolean() )
+            {
+                int groupTypeFilter = int.MinValue;
+                if ( int.TryParse( gfSettings.GetUserPreference( "Group Type" ), out groupTypeFilter ) )
+                {
+                    groupTypeIds = groupTypeIds.Where( g => g == groupTypeFilter ).ToList();
+                }
+            }
 
             using ( new UnitOfWorkScope() )
             {
-                var groupTypeService = new GroupTypeService();
-                var qry = groupTypeService.Queryable().Where( t => t.ShowInGroupList );
-
-                List<Guid> includeGroupTypeGuids = GetAttributeValue( "IncludeGroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
-                if ( includeGroupTypeGuids.Count > 0 )
-                {
-                    qry = qry.Where( t => includeGroupTypeGuids.Contains( t.Guid ) );
-                }
-                List<Guid> excludeGroupTypeGuids = GetAttributeValue( "ExcludeGroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
-                if ( includeGroupTypeGuids.Count > 0 )
-                {
-                    qry = qry.Where( t => !excludeGroupTypeGuids.Contains( t.Guid ) );
-                }
-
-                foreach ( int groupTypeId in qry.Select( t => t.Id ) )
-                {
-                    var groupType = GroupTypeCache.Read( groupTypeId );
-                    if ( groupType != null && groupType.IsAuthorized( "View", CurrentPerson ) )
-                    {
-                        groupTypeIds.Add( groupTypeId );
-                    }
-                }
-
-                groupTypeIds = qry.Select( t => t.Id ).ToList();
-
                 SortProperty sortProperty = gGroups.SortProperty;
                 if ( sortProperty == null )
                 {
@@ -260,6 +299,42 @@ namespace RockWeb.Blocks.Groups
 
                 gGroups.DataBind();
             }
+        }
+
+
+        private List<int> GetAvailableGroupTypes()
+        {
+            var groupTypeIds = new List<int>();
+
+            using ( new UnitOfWorkScope() )
+            {
+                var groupTypeService = new GroupTypeService();
+                var qry = groupTypeService.Queryable().Where( t => t.ShowInGroupList );
+
+                List<Guid> includeGroupTypeGuids = GetAttributeValue( "IncludeGroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+                if ( includeGroupTypeGuids.Count > 0 )
+                {
+                    qry = qry.Where( t => includeGroupTypeGuids.Contains( t.Guid ) );
+                }
+                List<Guid> excludeGroupTypeGuids = GetAttributeValue( "ExcludeGroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+                if ( includeGroupTypeGuids.Count > 0 )
+                {
+                    qry = qry.Where( t => !excludeGroupTypeGuids.Contains( t.Guid ) );
+                }
+
+                foreach ( int groupTypeId in qry.Select( t => t.Id ) )
+                {
+                    var groupType = GroupTypeCache.Read( groupTypeId );
+                    if ( groupType != null && groupType.IsAuthorized( "View", CurrentPerson ) )
+                    {
+                        groupTypeIds.Add( groupTypeId );
+                    }
+                }
+
+                groupTypeIds = qry.Select( t => t.Id ).ToList();
+            }
+
+            return groupTypeIds;
         }
 
         #endregion

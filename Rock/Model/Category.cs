@@ -20,7 +20,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "Category" )]
     [DataContract]
-    public partial class Category : Model<Category>
+    public partial class Category : Model<Category>, IOrdered
     {
 
         #region Entity Properties
@@ -76,6 +76,16 @@ namespace Rock.Model
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int Order { get; set; }
+        
+        /// <summary>
         /// Gets or sets the Name of the Category
         /// </summary>
         /// <value>
@@ -86,6 +96,15 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the description.
+        /// </summary>
+        /// <value>
+        /// The description.
+        /// </value>
+        [DataMember]
+        public string Description { get; set; }
+        
         /// <summary>
         /// Gets or sets the name of the icon CSS class. This property is only used for CSS based icons.
         /// </summary>

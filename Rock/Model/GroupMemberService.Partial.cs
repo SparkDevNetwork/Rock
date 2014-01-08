@@ -150,6 +150,27 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets a list of <see cref="System.Int32"/> PersonIds who's home address matches the given search value.
+        /// </summary>
+        /// <param name="partialHomeAddress">a partial address search string</param>
+        /// <returns>A querable list of <see cref="System.Int32"/> PersonIds</returns>
+        public IQueryable<int> GetPersonIdsByHomeAddress( string partialHomeAddress )
+        {
+            Guid groupTypefamilyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            Guid homeAddressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
+            var homeAddressTypeValueId = Rock.Web.Cache.DefinedValueCache.Read( homeAddressTypeGuid ).Id;
+
+            return Queryable()
+                .Where( m => m.Group.GroupType.Guid == groupTypefamilyGuid )
+                .SelectMany( g => g.Group.GroupLocations )
+                .Where( gl => gl.GroupLocationTypeValueId == homeAddressTypeValueId &&
+                    // I would have liked to only use the Location.FullAddress but that field does not appear to be populated yet.
+                    ( gl.Location.FullAddress.Contains( partialHomeAddress ) ||  gl.Location.Street1.Contains( partialHomeAddress ) ) )
+                .SelectMany( gl => gl.Group.Members )
+                .Select( gm => gm.PersonId ).Distinct();
+        }
+
+        /// <summary>
         /// Gets the inverse relationship.
         /// Returns the <see cref="Rock.Model.GroupMember" /> who has an inverse relationship to the provided <see cref="Rock.Model.GroupMember" />.
         /// </summary>

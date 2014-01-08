@@ -1,10 +1,10 @@
-﻿CKEDITOR.dialog.add('rockimagebrowserDialog', function (editor) {
+﻿CKEDITOR.dialog.add('rockfilebrowserDialog', function (editor) {
     return {
         title: 'File Browser',
         minWidth: 800,
         minHeight: 200,
-        folderTreeId: 'image-browser-folder-tree_' + editor.id,
-        filesTreeId: 'image-browser-file-tree_' + editor.id,
+        folderTreeId: 'file-browser-folder-tree_' + editor.id,
+        filesTreeId: 'file-browser-file-tree_' + editor.id,
         contents: [
             {
                 id: 'tab0',
@@ -16,7 +16,7 @@
                         html: "" +
                         "<div class='row'>" +
                         "   <div class='col-md-6'>" +
-                        "       <div id='image-browser-folder-tree_" + editor.id + "' class='picker picker-select'> \n" +
+                        "       <div id='file-browser-folder-tree_" + editor.id + "' class='picker picker-select'> \n" +
                         "          <div id='treeview-scroll-container_" + editor.id + "' class='scroll-container scroll-container-vertical scroll-container-picker'> \n" +
                         "             <div class='scrollbar'> \n" +
                         "                 <div class='track'> \n" +
@@ -34,7 +34,7 @@
                         "       </div> \n" +
                         "   </div> \n" +
                         "   <div class='col-md-6'>" +
-                        "       <div id='image-browser-file-tree_" + editor.id + "' class='picker picker-select'> \n" +
+                        "       <div id='file-browser-file-tree_" + editor.id + "' class='picker picker-select'> \n" +
                         "          <div id='treeview-scroll-container-files_" + editor.id + "' class='scroll-container scroll-container-vertical scroll-container-picker'> \n" +
                         "             <div class='scrollbar'> \n" +
                         "                 <div class='track'> \n" +
@@ -45,7 +45,7 @@
                         "             </div> \n" +
                         "             <div class='viewport'> \n" +
                         "                 <div class='overview'> \n" +
-                        "                     <div id='treeviewFileItems_" + editor.id + "' class='treeview treeview-items'>Hello!!!</div> \n" +
+                        "                     <div id='treeviewFileItems_" + editor.id + "' class='treeview treeview-items'></div> \n" +
                         "                 </div> \n" +
                         "             </div> \n" +
                         "          </div> \n" +

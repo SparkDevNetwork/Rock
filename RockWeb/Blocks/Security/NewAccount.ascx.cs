@@ -10,10 +10,13 @@ using System.Linq;
 using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
+using Rock;
 using Rock.Constants;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Security
 {
@@ -435,7 +438,9 @@ namespace RockWeb.Blocks.Security
         private Rock.Model.UserLogin CreateUser( Person person, bool confirmed )
         {
             var userLoginService = new Rock.Model.UserLoginService();
-            return userLoginService.Create( person, Rock.Model.AuthenticationServiceType.Internal, "Rock.Security.Authentication.Database", tbUserName.Text, Password, confirmed, CurrentPersonId );
+            return userLoginService.Create( person, Rock.Model.AuthenticationServiceType.Internal, 
+                EntityTypeCache.Read(Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid()).Id, 
+                tbUserName.Text, Password, confirmed, CurrentPersonId );
         }
 
         #endregion
