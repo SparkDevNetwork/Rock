@@ -4,11 +4,10 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Web;
-using Rock.Model;
+
 using Rock.Extension;
+using Rock.Model;
 
 namespace Rock.Security
 {
@@ -17,6 +16,14 @@ namespace Rock.Security
     /// </summary>
     public abstract class AuthenticationComponent : Component
     {
+        /// <summary>
+        /// Gets the type of the service.
+        /// </summary>
+        /// <value>
+        /// The type of the service.
+        /// </value>
+        public abstract AuthenticationServiceType ServiceType { get; }
+
         /// <summary>
         /// Determines if user is directed to another site (i.e. Facebook, Gmail, Twitter, etc) to confirm approval of using
         /// that site's credentials for authentication.

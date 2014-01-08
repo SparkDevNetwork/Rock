@@ -42,7 +42,7 @@
 
 </script>
 
-<asp:UpdatePanel ID="upNewAccount" runat="server">
+<asp:UpdatePanel ID="upnlNewAccount" runat="server">
 <ContentTemplate>
 
     <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-danger"/>
@@ -63,7 +63,7 @@
                     </dl>
                     <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" Required="true" TextMode="Password" ></Rock:RockTextBox>
                     <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirmation" Required="true" TextMode="Password" ></Rock:RockTextBox>
-                    <asp:CompareValidator ID="cvPassword" runat="server" ControlToCompare="tbPassword" ControlToValidate="tbPasswordConfirm" ErrorMessage="Password and Confirmation do not match" Display="Dynamic" CssClass="validation-error"></asp:CompareValidator>
+                    <asp:CompareValidator ID="covalPassword" runat="server" ControlToCompare="tbPassword" ControlToValidate="tbPasswordConfirm" ErrorMessage="Password and Confirmation do not match" Display="Dynamic" CssClass="validation-error"></asp:CompareValidator>
 
                 </fieldset>
 
@@ -81,7 +81,7 @@
                         <asp:ListItem Text="Male" Value="M"></asp:ListItem>
                         <asp:ListItem Text="Female" Value="F"></asp:ListItem>
                     </Rock:RockDropDownList>
-                    <Rock:BirthdayPicker ID="bdpBirthDay" runat="server" Label="Birthday" />
+                    <Rock:BirthdayPicker ID="bdaypBirthDay" runat="server" Label="Birthday" />
                </fieldset>
 
             </div>

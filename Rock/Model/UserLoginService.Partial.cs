@@ -6,11 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.RegularExpressions;
 
-using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -86,7 +83,6 @@ namespace Rock.Model
                 DateTime createDate = DateTime.Now;
 
                 user = new UserLogin();
-                user.ServiceType = serviceType;
                 user.EntityTypeId = entityTypeId;
                 user.UserName = username;
                 user.IsConfirmed = isConfirmed;
@@ -141,12 +137,12 @@ namespace Rock.Model
         /// <returns>A <see cref="System.Boolean"/> value that indicates if the password change was successful. <c>true</c> if successful; otherwise <c>false</c>.</returns>
         public bool ChangePassword( UserLogin user, string oldPassword, string newPassword )
         {
-            if ( user.ServiceType == AuthenticationServiceType.External )
-                throw new Exception( "Cannot change password on external service type" );
-
             AuthenticationComponent authenticationComponent = AuthenticationContainer.GetComponent( user.EntityType.Name );
-            if ( authenticationComponent == null )
+            if ( authenticationComponent == null || !authenticationComponent.IsActive )
                 throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.EntityType.FriendlyName ) );
+
+            if ( authenticationComponent.ServiceType == AuthenticationServiceType.External )
+                throw new Exception( "Cannot change password on external service type" );
 
             if ( !authenticationComponent.Authenticate( user, oldPassword ) )
                 return false;
@@ -164,12 +160,12 @@ namespace Rock.Model
         /// <param name="password">A <see cref="System.String"/> representing the new password.</param>
         public void ChangePassword( UserLogin user, string password )
         {
-            if ( user.ServiceType == AuthenticationServiceType.External )
-                throw new Exception( "Cannot change password on external service type" );
-
             var authenticationComponent = AuthenticationContainer.GetComponent( user.EntityType.Name );
             if ( authenticationComponent == null || !authenticationComponent.IsActive )
                 throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.EntityType.FriendlyName ) );
+
+            if ( authenticationComponent.ServiceType == AuthenticationServiceType.External )
+                throw new Exception( "Cannot change password on external service type" );
 
             user.Password = authenticationComponent.EncodePassword( user, password );
             user.LastPasswordChangedDateTime = DateTime.Now;

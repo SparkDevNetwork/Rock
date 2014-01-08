@@ -4,24 +4,36 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using System.Web.UI.HtmlControls;
+using System.ComponentModel;
 using System.Web.Security;
 
 using Rock.Attribute;
-using Rock.Web;
 
 namespace RockWeb.Blocks.Security
 {
+    /// <summary>
+    /// Displays currently logged in user's name along with options to Login, Logout, or manage account.
+    /// </summary>
+    [DisplayName( "Login Status" )]
+    [Category( "Security" )]
+    [Description( "Displays currently logged in user's name along with options to Login, Logout, or manage account." )]
+
     [LinkedPage( "My Account Page", "Page for user to manage their account (if blank will use 'MyAccount' page route)" )]
     public partial class LoginStatus : Rock.Web.UI.RockBlock
     {
+
+        #region Fields
+
         string action = string.Empty;
 
+        #endregion
+
+        #region Base Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
@@ -34,6 +46,10 @@ namespace RockWeb.Blocks.Security
             hlMyAccount.NavigateUrl = url;
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -60,6 +76,15 @@ namespace RockWeb.Blocks.Security
             hfTest.Value = lbLoginLogout.Text;
         }
 
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Handles the Click event of the lbLoginLogout control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbLoginLogout_Click( object sender, EventArgs e )
         {
             if ( action == "Login" )
@@ -92,5 +117,8 @@ namespace RockWeb.Blocks.Security
 
             }
         }
+
+        #endregion
+
     }
 }
