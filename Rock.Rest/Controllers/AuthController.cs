@@ -5,6 +5,7 @@
 //
 using System.Net;
 using System.Web.Http;
+
 using Rock.Model;
 using Rock.Security;
 
@@ -43,20 +44,15 @@ namespace Rock.Rest.Controllers
 
             var userLoginService = new UserLoginService();
             var userLogin = userLoginService.GetByUserName( loginParameters.Username );
-            if ( userLogin != null && userLogin.ServiceType == AuthenticationServiceType.Internal )
+            if ( userLogin != null && userLogin.EntityType != null) 
             {
-                foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
+                var component = AuthenticationContainer.GetComponent(userLogin.EntityType.Name);
+                if ( component != null && component.IsActive)
                 {
-                    var component = serviceEntry.Value.Value;
-                    string componentName = component.GetType().FullName;
-
-                    if ( component.IsActive)
+                    if ( component.Authenticate( userLogin, loginParameters.Password ) )
                     {
-                        if ( component.Authenticate( userLogin, loginParameters.Password ) )
-                        {
-                            valid = true;
-                            Rock.Security.Authorization.SetAuthCookie( loginParameters.Username, false, false );
-                        }
+                        valid = true;
+                        Rock.Security.Authorization.SetAuthCookie( loginParameters.Username, false, false );
                     }
                 }
             }

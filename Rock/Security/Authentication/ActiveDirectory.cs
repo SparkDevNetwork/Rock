@@ -7,9 +7,9 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.DirectoryServices.AccountManagement;
+
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Web.UI;
 
 namespace Rock.Security.Authentication
 {
@@ -23,6 +23,17 @@ namespace Rock.Security.Authentication
     [TextField( "Domain", "The network domain that users belongs to", true, "", "Server", 1 )]
     public class ActiveDirectory : AuthenticationComponent
     {
+        /// <summary>
+        /// Gets the type of the service.
+        /// </summary>
+        /// <value>
+        /// The type of the service.
+        /// </value>
+        public override AuthenticationServiceType ServiceType
+        {
+            get { return AuthenticationServiceType.External; }
+        }
+
         /// <summary>
         /// Determines if user is directed to another site (i.e. Facebook, Gmail, Twitter, etc) to confirm approval of using
         /// that site's credentials for authentication.

@@ -93,7 +93,6 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this UserLogin target, UserLogin source )
         {
-            target.ServiceType = source.ServiceType;
             target.EntityTypeId = source.EntityTypeId;
             target.UserName = source.UserName;
             target.Password = source.Password;

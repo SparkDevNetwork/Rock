@@ -6,7 +6,6 @@
 
 using System;
 using System.ComponentModel;
-using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -115,21 +114,18 @@ namespace RockWeb.Blocks.Security
             {
                 var userLoginService = new UserLoginService();
                 var userLogin = userLoginService.GetByUserName( tbUserName.Text );
-                if ( userLogin != null && userLogin.ServiceType == AuthenticationServiceType.Internal )
+                if ( userLogin != null && userLogin.EntityType != null)
                 {
-                    foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
+                    var component = AuthenticationContainer.GetComponent(userLogin.EntityType.Name);
+                    if (component.IsActive && 
+                        component.ServiceType == AuthenticationServiceType.Internal &&
+                        !component.RequiresRemoteAuthentication)
                     {
-                        var component = serviceEntry.Value.Value;
-                        string componentName = component.GetType().FullName;
-
-                        if (component.IsActive && !component.RequiresRemoteAuthentication && userLogin.EntityTypeId == component.TypeId )
+                        if ( component.Authenticate( userLogin, tbPassword.Text ) )
                         {
-                            if ( component.Authenticate( userLogin, tbPassword.Text ) )
-                            {
-                                valid = true;
-                                string returnUrl = Request.QueryString["returnurl"];
-                                LoginUser( tbUserName.Text, returnUrl, cbRememberMe.Checked );
-                            }
+                            valid = true;
+                            string returnUrl = Request.QueryString["returnurl"];
+                            LoginUser( tbUserName.Text, returnUrl, cbRememberMe.Checked );
                         }
                     }
                 }
@@ -201,7 +197,7 @@ namespace RockWeb.Blocks.Security
         }
 
         /// <summary>
-        /// Handles the Click event of the btnCancel control.
+        /// Handles the Click event of the btnHelp control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
