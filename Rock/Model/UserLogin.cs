@@ -28,21 +28,6 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the type of authentication service used by this UserLogin. This property is required.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Model.AuthenticationServiceType"/> enum value representing the type of authentication service used by this UserLogin. 
-        /// </value>
-        /// <remarks>
-        /// Options include: 
-        /// <c>AuthenticationServiceType.Internal</c> which includes database and Active Directory
-        /// <c>AuthenticationServiceType.External</c> which includes Facebook, Google, oAuth, etc.
-        /// </remarks>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public AuthenticationServiceType ServiceType { get; set; }
-
-        /// <summary>
         /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the authentication service that this UserLogin user.
         /// </summary>
         /// <value>
