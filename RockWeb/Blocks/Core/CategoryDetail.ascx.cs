@@ -196,6 +196,7 @@ namespace RockWeb.Blocks.Core
                     category.EntityTypeId = entityTypeId;
                     category.EntityTypeQualifierColumn = entityTypeQualifierProperty;
                     category.EntityTypeQualifierValue = entityTypeQualifierValue;
+                    category.Order = 0;
                 }
                 else
                 {

@@ -100,7 +100,7 @@ namespace Rock.Rest.Controllers
                 }
             }
 
-            List<Category> categoryList = qry.ToList();
+            List<Category> categoryList = qry.OrderBy( c => c.Order).ThenBy(c => c.Name).ToList();
             List<CategoryItem> categoryItemList = new List<CategoryItem>();
 
             foreach ( var category in categoryList )

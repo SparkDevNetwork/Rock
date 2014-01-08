@@ -164,7 +164,7 @@ namespace Rock.Security.ExternalAuthentication
                                 personService.Save( person, null );
                             }
 
-                            user = userLoginService.Create( person, AuthenticationServiceType.External, this.GetType().FullName, facebookId, "fb", true, person.Id );
+                            user = userLoginService.Create( person, AuthenticationServiceType.External, this.TypeId, facebookId, "fb", true, person.Id );
                         }
                         catch ( Exception ex )
                         {

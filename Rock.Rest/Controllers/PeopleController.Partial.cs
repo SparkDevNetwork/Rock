@@ -110,6 +110,7 @@ namespace Rock.Rest.Controllers
             {
                 PersonSearchResult personSearchResult = new PersonSearchResult();
                 personSearchResult.Name = reversed ? person.FullNameReversed : person.FullName;
+                personSearchResult.ImageHtmlTag = Person.GetPhotoImageTag( person.PhotoId, person.Gender, 50, 50 );
                 personSearchResult.Age = person.Age.HasValue ? person.Age.Value : -1;
                 personSearchResult.ConnectionStatus = person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Name : string.Empty;
                 personSearchResult.Gender = person.Gender.ConvertToString();
@@ -296,6 +297,14 @@ namespace Rock.Rest.Controllers
         /// The full name last first.
         /// </value>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the image HTML tag.
+        /// </summary>
+        /// <value>
+        /// The image HTML tag.
+        /// </value>
+        public string ImageHtmlTag { get; set; } 
 
         /// <summary>
         /// Gets or sets the age.

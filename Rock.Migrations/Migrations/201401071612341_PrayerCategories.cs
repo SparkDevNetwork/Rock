@@ -1,0 +1,48 @@
+//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+namespace Rock.Migrations
+{
+    using System;
+    using System.Data.Entity.Migrations;
+    
+    /// <summary>
+    ///
+    /// </summary>
+    public partial class PrayerCategories : Rock.Migrations.RockMigration
+    {
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public override void Up()
+        {
+            AddPage( "0B213645-FA4E-44A5-8E4C-B2D8EF054985", "195BCD57-1C10-4969-886F-7324B6287B75", "Prayer Categories", "", "FA2A1171-9308-41C7-948C-C9EBEA5BD668", "fa fa-cloud-upload" ); // Site:Rock Internal
+            AddBlockType( "Core > Categories", "", "~/Blocks/Core/Categories.ascx", "620FC4A2-6587-409F-8972-22065919D9AC" );
+            AddBlockTypeAttribute( "620FC4A2-6587-409F-8972-22065919D9AC", "3549BAB6-FE1B-4333-AFC4-C5ACA01BB8EB", "Entity Type", "EntityType", "", "The entity type to manage categories for.", 0, @"", "C405A507-7889-4287-8342-105B89710044" );
+            AddBlock( "FA2A1171-9308-41C7-948C-C9EBEA5BD668", "", "620FC4A2-6587-409F-8972-22065919D9AC", "Categories", "Main", 0, "E0EF4ED1-A621-43A1-A75D-C6319F7F10D2" );
+            AddBlockAttributeValue( "E0EF4ED1-A621-43A1-A75D-C6319F7F10D2", "C405A507-7889-4287-8342-105B89710044", @"f13c8fd2-7702-4c79-a6a9-86440dd5de13" );
+
+            Sql( @"
+    UPDATE [Page] SET 
+        [MenuDisplayIcon] = 1,
+        [MenuDisplayChildPages] = 1,
+        [BreadCrumbDisplayName] = 0
+    WHERE [Guid] = 'FA2A1171-9308-41C7-948C-C9EBEA5BD668'
+" );
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+            DeleteBlock( "E0EF4ED1-A621-43A1-A75D-C6319F7F10D2" );
+            DeleteAttribute( "C405A507-7889-4287-8342-105B89710044" );
+            DeleteBlockType( "620FC4A2-6587-409F-8972-22065919D9AC" );
+            DeletePage( "FA2A1171-9308-41C7-948C-C9EBEA5BD668" );
+
+        }
+    }
+}

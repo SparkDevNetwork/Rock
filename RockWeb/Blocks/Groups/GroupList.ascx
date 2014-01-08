@@ -1,7 +1,10 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupList.ascx.cs" Inherits="RockWeb.Blocks.Groups.GroupList" %>
 
-<asp:UpdatePanel ID="upGroupList" runat="server">
+<asp:UpdatePanel ID="upnlGroupList" runat="server">
     <ContentTemplate>
+        <Rock:GridFilter ID="gfSettings" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
+            <Rock:GroupTypePicker ID="gtpGroupType" runat="server" Label="Group Type" />
+        </Rock:GridFilter>
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
         <Rock:Grid ID="gGroups" runat="server" AllowSorting="true" OnRowSelected="gGroups_Edit">
             <Columns>

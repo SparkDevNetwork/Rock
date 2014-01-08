@@ -18,6 +18,7 @@
 
                 this.$el.typeahead({
                     name: this.name,
+                    limit: 15,
                     remote: {
                         url: Rock.settings.get('baseUrl') + 'api/search?type=%TYPE&term=%QUERY',
                         replace: function (url, uriEncodedQuery) {
@@ -37,7 +38,7 @@
                         var keyVal = self.$el.parents('.smartsearch').find('input:hidden').val(),
                             $li = self.$el.parents('.smartsearch').find('li[data-key="' + keyVal + '"]'),
                             targetUrl = $li.attr('data-target'),
-                            url = Rock.settings.get('baseUrl') + targetUrl.replace('{0}', encodeURIComponent(term)).replace('.', '');
+                            url = Rock.settings.get('baseUrl') + targetUrl.replace('{0}', encodeURIComponent(term));
 
                         window.location = url;
                     };

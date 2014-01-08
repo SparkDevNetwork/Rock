@@ -9,7 +9,7 @@
 
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Rock/Styles/theme.css") %>" />
 
-    <script src="<%= ResolveUrl("~/Scripts/jquery.js") %>"></script>
+    <script src="<%= ResolveUrl("~/Scripts/jquery-1.10.2.min.js") %>"></script>
 
 </head>
 <body id="splash" class="error">
@@ -23,7 +23,7 @@
                     <div class="col-md-12">
 
 
-                        <h1>Rock Church Management System License</h1>
+                        <h1>Rock Relationship Management System License</h1>
 
                         <h3>Apache 2.0 License</h3>
                         <p>Copyright 2013 Spark Development Network</p>
@@ -69,6 +69,7 @@
                             <li><a href="#tinyscrollbar">Tiny Scrollbar</a> (MIT) - <a href="http://www.baijs.nl/tinyscrollbar/">Project Site</a> </li>
                             <li><a href="#epplus">EPPlus</a> (LGPL) - <a href="http://epplus.codeplex.com/">Project Site</a> </li>
                             <li><a href="#dotliquid">DotLiquid</a> (Apache) - <a href="http://dotliquidmarkup.org/">Project Site</a> </li>
+                            <li><a href="#liquidjs">Liquid.js</a> (MIT) - <a href="https://github.com/tonyheupel/liquid.js">Project Site</a> </li>
                             <li><a href="#bootbox">Bootbox.js</a> (MIT) - <a href="http://bootboxjs.com/">Project Site</a> </li>
                             <li><a href="#dday">DDay.iCal</a> (BSD) - <a href="http://www.ddaysoftware.com">Project Site</a> </li>
                             <li><a href="#exif">EXIFextractor</a> (Ms-RL) - <a href="http://www.codeproject.com/Articles/11305/EXIFectractor-library-extract-EXIF-information">Project Site</a> </li>
@@ -88,6 +89,10 @@
                             <li><a href="#ace-editor">Ace Code Editor</a> (BSD) - <a href="http://ace.c9.io/#nav=about">Project Site</a></li>
                             <li><a href="#csscript">CS Script</a> (Custom) - <a href="http://www.csscript.net/">Project Site</a></li>
                             <li><a href="#microsoftwebxdt">Microsoft.Web.Xdt</a> (Apache) - <a href="http://xdt.codeplex.com/">Project Site</a></li>
+                            <li><a href="#typeahead">typeahead.js</a> (MIT) - <a href="http://twitter.github.io/typeahead.js/">Project Site</a></li>
+                            <li><a href="#fluidbox">Fluidbox</a> (None) - <a href="http://terrymun.github.io/Fluidbox/">Project Site</a></li>
+                            <li><a href="#imagesloaded">imagesLoaded</a> (MIT) - <a href="http://imagesloaded.desandro.com/">Project Site</a></li>
+                            <li><a href="#spinkit">SpinKit</a> (MIT) - <a href="https://github.com/tobiasahlin/SpinKit">Project Site</a></li>
                         </ul>
 
 
@@ -1242,6 +1247,34 @@ To apply the Apache License to your work, attach the following boilerplate notic
 
 </pre>
 
+                        <a name="liquidjs"></a>
+                        <h3>Liquid.js</h3>
+                        <pre>
+MIT License
+
+Copyright (c) 2005, 2006 Tobias Luetke
+Copyright (c) 2011, 2012 Marcel Jackwerth
+Copyright (c) 2011, 2012 Tony Heupel
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</pre>
+
                         <a name="bootbox"></a>
                         <h3>Bootbox.js</h3>
                         <pre>
@@ -2258,6 +2291,90 @@ In no event and under no legal theory, whether in tort (including negligence), c
 
 While redistributing the Work or Derivative Works thereof, You may choose to offer, and charge a fee for, acceptance of support, warranty, indemnity, or other liability obligations and/or rights consistent with this License. However, in accepting such obligations, You may act only on Your own behalf and on Your sole responsibility, not on behalf of any other Contributor, and only if You agree to indemnify, defend, and hold each Contributor harmless for any liability incurred by, or claims asserted against, such Contributor by reason of your accepting any such warranty or additional liability.
 </pre>
+
+                        <a name="typeahead"></a>
+                        <h3>typeahead.js</h3>
+                        <pre>
+The MIT License (MIT)
+
+Copyright (c) <year> <copyright holders>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+</pre>
+
+                        <a name="fluidbox"></a>
+                        <h3>Fluidbox</h3>
+                        <pre>
+No license 
+</pre>
+                        <a name="imagesloaded"></a>
+                        <h3>imagesLoaded</h3>
+                        <pre>
+The MIT License (MIT)
+
+Copyright (c) <year> <copyright holders>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+</pre>
+
+                        <a name="spinkit"></a>
+                        <h3>SpinKit</h3>
+                        <pre>
+The MIT License (MIT)
+
+Copyright (c) <year> <copyright holders>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+</pre>
+
 
                     </div>
                 </div>

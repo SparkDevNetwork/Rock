@@ -145,7 +145,7 @@ namespace RockWeb.Blocks.Core
                     a.EntityId,
                     a.Properties,
                     a.DateTime,
-                    PersonName = a.Person.FullName
+                    PersonName = a.Person.NickName + " " + a.Person.LastName + ( a.Person.SuffixValueId.HasValue ? " " + a.Person.SuffixValue.Name : "" )
                 } );
 
             string entityTypeFilter = gAuditInformationListFilter.GetUserPreference( "EntityType" );

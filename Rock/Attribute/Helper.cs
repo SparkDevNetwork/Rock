@@ -205,6 +205,7 @@ namespace Rock.Attribute
                             category.EntityTypeId = attributeEntityTypeId;
                             category.EntityTypeQualifierColumn = "EntityTypeId";
                             category.EntityTypeQualifierValue = entityTypeId.ToString();
+                            category.Order = 0;
                         }
                         attribute.Categories.Add( category );
                     }
