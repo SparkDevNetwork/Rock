@@ -97,8 +97,8 @@ namespace Rock.Model
 
                 if ( serviceType == AuthenticationServiceType.Internal )
                 {
-                    AuthenticationComponent authenticationComponent = GetComponent( entityType.Name );
-                    if ( authenticationComponent == null )
+                    var authenticationComponent = AuthenticationContainer.GetComponent( entityType.Name );
+                    if ( authenticationComponent == null || !authenticationComponent.IsActive )
                         throw new ArgumentException( string.Format( "'{0}' service does not exist, or is not active", entityType.FriendlyName ), "entityTypeId" );
 
                     user.Password = authenticationComponent.EncodePassword( user, password );
@@ -112,6 +112,23 @@ namespace Rock.Model
             else
             {
                 throw new ArgumentException( "Invalid EntityTypeId, entity does not exist", "entityTypeId" );
+            }
+        }
+
+        /// <summary>
+        /// Updates the last login.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        public void UpdateLastLogin(string userName)
+        {
+            if ( !string.IsNullOrWhiteSpace( userName ) && !userName.StartsWith( "rckipid=" ) )
+            {
+                var userLogin = GetByUserName( userName );
+                if ( userLogin != null )
+                {
+                    userLogin.LastLoginDateTime = DateTime.Now;
+                    Save( userLogin, null );
+                }
             }
         }
 
@@ -150,8 +167,8 @@ namespace Rock.Model
             if ( user.ServiceType == AuthenticationServiceType.External )
                 throw new Exception( "Cannot change password on external service type" );
 
-            AuthenticationComponent authenticationComponent = GetComponent( user.EntityType.Name );
-            if ( authenticationComponent == null )
+            var authenticationComponent = AuthenticationContainer.GetComponent( user.EntityType.Name );
+            if ( authenticationComponent == null || !authenticationComponent.IsActive )
                 throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.EntityType.FriendlyName ) );
 
             user.Password = authenticationComponent.EncodePassword( user, password );
@@ -241,29 +258,6 @@ namespace Rock.Model
                 }
             }
 
-            return null;
-        }
-
-        /// <summary>
-        /// Gets a <see cref="Rock.Security.AuthenticationComponent"/> by the name of the authentication service.
-        /// </summary>
-        /// <param name="serviceName">A <see cref="System.String"/> containing the service name.</param>
-        /// <returns>The <see cref="Rock.Security.AuthenticationComponent"/> associated with the service.</returns>
-        private AuthenticationComponent GetComponent( string serviceName )
-        {
-            foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
-            {
-                var component = serviceEntry.Value.Value;
-                string componentName = component.GetType().FullName;
-                if (
-                    componentName == serviceName &&
-                    component.AttributeValues.ContainsKey( "Active" ) &&
-                    bool.Parse( component.AttributeValues["Active"][0].Value )
-                )
-                {
-                    return component;
-                }
-            }
             return null;
         }
 

@@ -241,6 +241,8 @@ namespace RockWeb.Blocks.Security
         /// <param name="rememberMe">if set to <c>true</c> [remember me].</param>
         private void LoginUser( string userName, string returnUrl, bool rememberMe )
         {
+            new UserLoginService().UpdateLastLogin( userName );
+
             Rock.Security.Authorization.SetAuthCookie( userName, rememberMe, false );
 
             if (!string.IsNullOrWhiteSpace(returnUrl))

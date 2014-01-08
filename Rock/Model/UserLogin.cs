@@ -323,7 +323,7 @@ namespace Rock.Model
         /// Returns the UserName of the user that is currently logged in.
         /// </summary>
         /// <returns>A <see cref="System.String"/> representing the UserName of the user that is currently logged in.</returns>
-        internal static string GetCurrentUserName()
+        public static string GetCurrentUserName()
         {
             if ( HostingEnvironment.IsHosted )
             {
