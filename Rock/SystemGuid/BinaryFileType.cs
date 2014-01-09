@@ -42,11 +42,5 @@ namespace Rock.SystemGuid
         /// The Marketing Campaign Ad Image file type guid
         /// </summary>
         public const string MARKETING_CAMPAIGN_AD_IMAGE = "8DBF874C-F3C2-4848-8137-C963C431EB0B";
-
-        /// <summary>
-        /// The Content File file type guid
-        /// for files that are stored on the filesystem in ~/Content/...
-        /// </summary>
-        public const string CONTENT_FILE = "24DCEF06-5D83-4159-BFA1-9BDD3C116393";
     }
 }

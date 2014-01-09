@@ -1,6 +1,6 @@
 ﻿CKEDITOR.dialog.add('rockfilebrowserDialog', function (editor) {
 
-    var imageUploaderHtml = "<div class='imageupload-group'> \n" +
+    var imageUploaderHtml = "<div class='imageupload-group' style='visibility:hidden'> \n" +
                             "	<div class='imageupload-thumbnail'> \n" +
                             "		<img id='" + editor.id + "_imageUploader_img' src='/Assets/Images/no-picture.svg'> \n" +
                             "		<input id='" + editor.id + "_imageUploader_hfBinaryFileId' type='hidden'> \n" +
@@ -80,6 +80,12 @@
             var filesControlId = 'file-browser-file-tree_' + eventParam.sender.definition.editorId;
             var imageUploaderIdPrefix = eventParam.sender.definition.editorId + "_imageUploader_";
 
+            // if the control already has the rockTree, set it to null to force it to create a new foldersRockTree
+            var foldersRockTree = $('#' + foldersControlId).closest('.js-rock-tree-folders').find('.treeview').data('rockTree');
+            if (foldersRockTree) {
+                $('#' + foldersControlId).closest('.js-rock-tree-folders').find('.treeview').data('rockTree', null);
+            }
+
             // make an itemPicker for the Folders Tree
             Rock.controls.itemPicker.initialize({
                 controlId: foldersControlId,
@@ -90,6 +96,10 @@
 
             // 
             $('#' + foldersControlId).find('.treeview').on('rockTree:selected', function (sender, itemId) {
+
+                // make the imageuploader visible when a folder is selected
+                var fileBrowser = $(this).closest('.js-file-browser');
+                $(fileBrowser).find('.imageupload-group').css('visibility', 'visible');
 
                 var folderParam = encodeURIComponent(itemId);
 
@@ -105,8 +115,7 @@
             // initialize the imageUploader
             Rock.controls.imageUploader.initialize({
                 controlId: imageUploaderIdPrefix + 'fu',
-                fileId: '0',
-                fileTypeGuid: '24DCEF06-5D83-4159-BFA1-9BDD3C116393', // Rock.SystemGuid.CONTENT_FILE
+                isBinaryFile: 'F',
                 hfFileId: imageUploaderIdPrefix + 'hfBinaryFileId',
                 imgThumbnail: imageUploaderIdPrefix + 'img',
                 aRemove: imageUploaderIdPrefix + 'rmv',
@@ -125,6 +134,21 @@
                         return false;
                     }
                 },
+                doneFunction: function(e, data) {
+                    var fileBrowser = $('#' + this.controlId).closest('.js-file-browser');
+                    var foldersRockTree = $(fileBrowser).find('.js-rock-tree-folders .treeview').data('rockTree');
+                    if (foldersRockTree && foldersRockTree.selectedNodes.length) {
+                        // get the current folder path from the first selected node
+                        var selectedNode = foldersRockTree.selectedNodes[0];
+
+                        // reselect the node to refresh the list of files
+                        foldersRockTree.$el.trigger('rockTree:selected', selectedNode.id);
+                    }
+                    else {
+                        // no directory selected
+                        return false;
+                    }
+                },
                 fileType: 'image'
             });
 
@@ -132,7 +156,6 @@
 
         },
         onOk: function (sender) {
-            debugger
             var dialog = this;
             var filesRockTree = $('#file-browser-file-tree_' + dialog.definition.editorId + ' .treeview').data('rockTree');
             if (filesRockTree && filesRockTree.selectedNodes.length) {
