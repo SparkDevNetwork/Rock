@@ -373,6 +373,7 @@ CKEDITOR.replace('{0}', {{
   toolbar: toolbar_RockCustomConfig{1},
   removeButtons: '',
   height: '{2}',
+  baseFloatZIndex: 200000,  // set zindex to be 200000 so it will be on top of our modals (100000)
   extraPlugins: '{5}',
   resize_maxWidth: '{3}',
   on : {{
