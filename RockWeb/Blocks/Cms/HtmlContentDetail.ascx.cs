@@ -113,17 +113,21 @@ namespace RockWeb.Blocks.Cms
 
             htmlEditor.Toolbar = HtmlEditor.ToolbarConfig.Full;
 
-            string onchangeScriptFormat = @"
+            // if the current user can't approve their own edits, set the approval to Not-Approved when they change something
+            if ( !IsUserAuthorized( "Approve" ) )
+            {
+                string onchangeScriptFormat = @"
    $('#{0}').removeClass('label label-success label-danger').addClass('label label-danger');
    $('#{0}').text('Not-Approved');
    $('#{1}').val('false');
    $('#{2}').val('');
    $('#{3}').hide();";
 
-            string onchangeScript = string.Format( onchangeScriptFormat, lblApprovalStatus.ClientID, hfApprovalStatus.ClientID, hfApprovalStatusPersonId.ClientID, lblApprovalStatusPerson.ClientID );
+                string onchangeScript = string.Format( onchangeScriptFormat, lblApprovalStatus.ClientID, hfApprovalStatus.ClientID, hfApprovalStatusPersonId.ClientID, lblApprovalStatusPerson.ClientID );
 
-            htmlEditor.OnChangeScript = onchangeScript;
-            ceHtml.OnChangeScript = onchangeScript;
+                htmlEditor.OnChangeScript = onchangeScript;
+                ceHtml.OnChangeScript = onchangeScript;
+            }
 
             htmlEditor.MergeFields.Clear();
             htmlEditor.MergeFields.Add( "GlobalAttribute" );
