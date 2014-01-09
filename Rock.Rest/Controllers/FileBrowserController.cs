@@ -10,6 +10,7 @@ using System.Web;
 using System.Web.Http;
 using System.Web.Routing;
 using ImageResizer;
+using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.UI.Controls;
 
@@ -18,7 +19,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
-    public partial class FileBrowserController : ApiController, IHasCustomRoutes
+    public partial class FileBrowserController : BinaryFilesController, IHasCustomRoutes
     {
         /// <summary>
         /// The root content folder
@@ -51,6 +52,15 @@ namespace Rock.Rest.Controllers
                     action = "GetFiles",
                     folderName = System.Web.Http.RouteParameter.Optional,
                     fileFilter = System.Web.Http.RouteParameter.Optional
+                } );
+
+            routes.MapHttpRoute(
+                name: "FileBrowserDeleteFile",
+                routeTemplate: "api/FileBrowser/DeleteFile",
+                defaults: new
+                {
+                    controller = "FileBrowser",
+                    action = "DeleteFile"
                 } );
 
             routes.MapHttpRoute(
@@ -127,21 +137,37 @@ namespace Rock.Rest.Controllers
             }
 
             List<string> files = Directory.GetFiles( contentFolderName, fileFilter ).OrderBy( a => a ).ToList();
+            string apiUrl = VirtualPathUtility.ToAbsolute( "~/api/FileBrowser/GetFileThumbnail" );
             foreach ( var file in files )
             {
                 FileInfo fileInfo = new FileInfo( file );
 
                 string relativeFilePath = fileInfo.FullName.Substring( physicalRootFolder.Length );
 
-                string apiUrl = VirtualPathUtility.ToAbsolute("~/api/FileBrowser/GetFileThumbnail" );
-
                 // construct the thumbNailUrl so that browser will get the thumbnail image from our GetFileThumbnail()
                 string thumbNailUrl = apiUrl + string.Format( "?relativeFilePath={0}&width=100&height=100", HttpUtility.UrlEncode( relativeFilePath ) );
+
+                string deleteScriptFormat = @"$.ajax({{ type: ""DELETE"", url: Rock.settings.get(""baseUrl"") + ""api/FileBrowser/DeleteFile?relativeFilePath={0}""}});";
+
+                string deleteScript = string.Format( deleteScriptFormat, HttpUtility.UrlEncode( relativeFilePath ) );
+
+                string nameHtmlFormat = @"
+<div class='rollover-container'>
+  <div class='rollover-item pull-right'>
+    <a title='delete' class='btn btn-xs btn-danger' onclick='{2}'>
+      <i class='fa fa-times'></i>
+    </a>
+  </div>
+  <img src='{0}' class='file-browser-image' />
+  <br />
+  <span class='file-name'>{1}</span>
+</div>
+";
 
                 FileItem fileItem = new FileItem
                 {
                     Id = relativeFilePath,
-                    Name = "<img src='" + thumbNailUrl + "' class='file-browser-image' /><br />" + fileInfo.Name,
+                    Name = string.Format( nameHtmlFormat, thumbNailUrl, fileInfo.Name, deleteScript ),
                     IconSmallUrl = thumbNailUrl,
                     RelativeFilePath = relativeFilePath,
                     Size = fileInfo.Length,
@@ -152,6 +178,43 @@ namespace Rock.Rest.Controllers
             }
 
             return fileList.AsQueryable();
+        }
+
+        /// <summary>
+        /// Deletes the file.
+        /// </summary>
+        /// <param name="relativeFilePath">The relative file path.</param>
+        [Authenticate]
+        public void DeleteFile( string relativeFilePath )
+        {
+            var binaryFileService = new BinaryFileService();
+            Guid contentFileGuid = Rock.SystemGuid.BinaryFiletype.CONTENT_FILE.AsGuid();
+
+            var binaryFile = binaryFileService.Queryable().Where( a => a.BinaryFileType.Guid == contentFileGuid ).Where( a => a.FileName == relativeFilePath ).FirstOrDefault();
+            if ( binaryFile != null )
+            {
+                // if this file is in binaryFile table, use the BinaryFileService to delete both the record and the physical file
+                this.Delete( binaryFile.Id );
+            }
+            else
+            {
+                // if this file is not in binaryFile table, just do a straight delete of the file
+                string physicalRootFolder = HttpContext.Current.Request.MapPath( RootContentFolder );
+                string fullPath = Path.Combine( physicalRootFolder, relativeFilePath.Replace( "/", "\\" ).TrimStart( new char[] { '/', '\\' } ) );
+                File.Delete( fullPath );
+            }
+        }
+
+        /// <summary>
+        /// Creates the folder.
+        /// </summary>
+        /// <param name="relativeFolderPath">The relative folder path.</param>
+        [Authenticate]
+        public void CreateFolder( string relativeFolderPath )
+        {
+            string physicalRootFolder = HttpContext.Current.Request.MapPath( RootContentFolder );
+            string fullFolderPath = Path.Combine( physicalRootFolder, relativeFolderPath.Replace( "/", "\\" ).TrimStart( new char[] { '/', '\\' } ) );
+            Directory.CreateDirectory( fullFolderPath );
         }
 
         /// <summary>
@@ -167,7 +230,6 @@ namespace Rock.Rest.Controllers
         public HttpResponseMessage GetFileThumbnail( string relativeFilePath, int? width = 100, int? height = 100 )
         {
             string physicalRootFolder = HttpContext.Current.Request.MapPath( RootContentFolder );
-
             string fullPath = Path.Combine( physicalRootFolder, relativeFilePath.Replace( "/", "\\" ).TrimStart( new char[] { '/', '\\' } ));
 
             // default width/height to 100 if they specified a zero or negative param

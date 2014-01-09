@@ -449,6 +449,6 @@ span.cke_button__rockmergefield_label {
 
 /* css for ckeditor rockfilebrowser images (see Rock.Rest\Controllers\FileBrowserController.cs ) */
 img.file-browser-image {
-    width: 70px;
-    height: 70px;
+    width: 50px;
+    height: 50px;
 }

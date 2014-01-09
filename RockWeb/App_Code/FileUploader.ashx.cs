@@ -58,6 +58,9 @@ namespace RockWeb
                 // Check to see if BinaryFileType info was sent
                 Guid fileTypeGuid = context.Request.QueryString["fileTypeGuid"].AsGuid();
 
+                // form post might include a folderPath param (content-file will do this)
+                string folderPath = context.Request.Form["folderPath"] ?? string.Empty;
+
                 RockContext rockContext = new RockContext();
                 BinaryFileType binaryFileType = new BinaryFileTypeService( rockContext ).Get( fileTypeGuid );
 
@@ -66,7 +69,7 @@ namespace RockWeb
                 binaryFile.IsTemporary = true;
                 binaryFile.BinaryFileTypeId = binaryFileType.Id;
                 binaryFile.MimeType = uploadedFile.ContentType;
-                binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
+                binaryFile.FileName = Path.Combine(folderPath, Path.GetFileName( uploadedFile.FileName ));
                 binaryFile.Data = new BinaryFileData();
 
                 //NOTE: GetFileBytes can get overridden by a child class (ImageUploader.ashx.cs for example)
