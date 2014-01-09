@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TagsByLetter.ascx.cs" Inherits="RockWeb.Blocks.Core.TagsByLetter" %>
 
-<asp:UpdatePanel ID="upTagCloud" runat="server">
+<asp:UpdatePanel ID="upnlTagCloud" runat="server">
     <ContentTemplate>
 
         <div class="nav nav-pills">
@@ -18,7 +18,7 @@
 <script>
     // fade-in effect for the panel
     function FadePanelIn() {
-        $("[id$='upTagCloud']").rockFadeIn();
+        $("[id$='upnlTagCloud']").rockFadeIn();
     }
     $(document).ready(function () { FadePanelIn(); });
     Sys.WebForms.PageRequestManager.getInstance().add_endRequest(FadePanelIn);
