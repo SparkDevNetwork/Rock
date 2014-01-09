@@ -755,7 +755,8 @@ div.tagsinput div
             outline: 0; // get rid of orange box in chrome
         }
     }
-    .dropdown-menu {
+    
+    .dropdown-menu { // smart search type menu
         font-size: 11px;
         right: 0;
         left: auto;
@@ -793,11 +794,12 @@ div.tagsinput div
 // ------------------------
 .title {
     font-weight: @title-default-weight;
+
+    .first-word {
+        font-weight: @title-firstword-weight;
+    }
 }
 
-.title .first-word {
-    font-weight: @title-firstword-weight;
-}
 
 // 11. Notifications
 // -------------------------
