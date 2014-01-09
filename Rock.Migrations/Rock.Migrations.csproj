@@ -268,6 +268,10 @@
     <Compile Include="Migrations\201401091947539_ChangeNameOfAttendeePage.Designer.cs">
       <DependentUpon>201401091947539_ChangeNameOfAttendeePage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401092004083_AdListPageOrderUpdate.cs" />
+    <Compile Include="Migrations\201401092004083_AdListPageOrderUpdate.Designer.cs">
+      <DependentUpon>201401092004083_AdListPageOrderUpdate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -446,6 +450,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401091947539_ChangeNameOfAttendeePage.resx">
       <DependentUpon>201401091947539_ChangeNameOfAttendeePage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401092004083_AdListPageOrderUpdate.resx">
+      <DependentUpon>201401092004083_AdListPageOrderUpdate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
