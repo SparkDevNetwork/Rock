@@ -16,6 +16,7 @@
                 dataType: 'json',
                 dropZone: $('#' + options.controlId).closest('.imageupload-dropzone'),
                 autoUpload: true,
+                submit: options.submitFunction,
                 done: function (e, data) {
                     var $el = $('#' + options.imgThumbnail);
                     $('#' + options.hfFileId).val(data.response().result.Id);
