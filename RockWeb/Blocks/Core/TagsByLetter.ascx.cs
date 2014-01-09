@@ -54,7 +54,7 @@ namespace RockWeb.Blocks.Core
         {
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upTagCloud );
+            this.AddConfigurationUpdateTrigger(upnlTagCloud);
 
             base.OnInit( e );
         }
@@ -179,6 +179,13 @@ namespace RockWeb.Blocks.Core
 
             tagOutput.Append("</ul>");
             letterOutput.Append("</ul>");
+
+            // if no tags add message instead
+            if (tags.Count() == 0)
+            {
+                tagOutput.Clear();
+                tagOutput.Append("<div class='alert alert-info'><h4>Note</h4>No personal tags exist.</div>");
+            }
 
             lTagList.Text = tagOutput.ToString();
             lLetters.Text = letterOutput.ToString();
