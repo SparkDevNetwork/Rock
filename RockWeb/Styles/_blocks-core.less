@@ -1,76 +1,12 @@
 ﻿/*
     Used to manage styles for specific blocks.
-    
-    1. SQL Command - block to query database directly
-    2. HTML Content - block to edit HTML on a page
-    3. Login - Styles for the login control
-    4. Notes - block to display, add, edit, delete notes
-    5. Add Family - block to add families to the database
-    6. Contributions - block add a contribution transaction
-    7. Data Views - block for creating data views
-    8. Schedule Builder - block for building schedules
-    9. Error Page - styles for the error page.
-    10. Group Viewer - styles for the group viewer block.
-    11. Communication Blocks - styles for the communication blocks
+
+    1. Notes - block to display, add, edit, delete notes
+    2. Schedule Builder - block for building schedules
 
 */
 
-// 1. SQL Command
-// -------------------------
-
-.sql-comand
-{
-    .panel
-    {
-        margin-bottom: 24px;
-    }
-}
-
-// 2. HTML Content
-// -------------------------
-
-.htmlcontent-edit-header {
-    padding: 6px 16px 0 16px;
-
-    .html-content-approve {
-        float: right;
-        margin-top: 4px;
-    }
-}
-
-
-
-
-/* CK Editor Tweaks */
-span.cke_skin_kama
-{
-    padding: 0 !important;
-}
-
-
-// 3. Login 
-// -------------------------
-
-.alt-authentication {
-    margin: 10px 0;
-
-    .btn-authenication {
-        background-color: @accent-color;
-        color: @accent-text-color;
-
-        &:hover {
-            background-color: darken(@accent-color, 10%);
-        }
-
-        &.facebook:before {
-            font-family: 'FontAwesome';
-            content: '';
-            margin-right: 4px;
-        }
-    }
-}
-
-// 4. Notes 
+// 1. Notes 
 // -------------------------
 .panel-note {
 
@@ -187,63 +123,7 @@ span.cke_skin_kama
     }
 }
 
-// 5. Add Families
-// -------------------------
-
-.table-familymembers .radio:first-child {
-    margin-top: 0;
-}
-
-// 6. Contributions
-// -------------------------
-
-.contribution-payment .tab-content {
-    margin-top: 12px;
-}
-
-
-// 7. Data Views
-// -------------------------
-
-/* data views */
-.filter-toogle {
-
-    padding-top: 6px;
-
-    & > span {
-        float: left;
-    }
-
-    .controls {
-        float: left;
-
-        .switch {
-	        margin: 0 6px;
-        }
-    }
-} 
-
-.filter-item-select {
-
-    span {
-        float: left;
-        padding: 8px 6px 0 0;
-    }
-
-    select {
-        float: left;
-        width: 250px;
-    }
-}
-
-// add top margin to checkbox lists in filters
-.field-criteria {
-    .checkbox-inline {
-        margin-top: 8px;
-    }
-}
-
-// 8. Schedule Builder
+// 2. Schedule Builder
 // -------------------------
 
 .recurrence-pattern-type {
@@ -310,44 +190,6 @@ span.cke_skin_kama
         .actions {
             float: left;
             margin-top: 5px;
-        }
-    }
-}
-
-// 9. Error Page
-// -------------------------
-#splash.error  #content {
-    width: 750px;
-    margin: 0 auto;
-}
-
-// 10. Group Viewer
-// -------------------------
-.group-location-map {
-
-    float: right;
-
-    img {
-        border: 1px solid @accent-semibold-color;
-    }
-}
-
-@media (max-width: @screen-md-min) {
-
-    .group-location-map {
-        float: left;
-    }
-}
-
-// 11. Communication Blocks
-// -------------------------
-.communication {
-
-    .recipients {
-        margin-top: 25px;
-
-        .control-label {
-            margin-top: 6px;
         }
     }
 }
