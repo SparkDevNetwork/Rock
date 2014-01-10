@@ -256,7 +256,7 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Session_Start( object sender, EventArgs e )
         {
-
+            new Rock.Model.UserLoginService().UpdateLastLogin( UserLogin.GetCurrentUserName() );
         }
 
         /// <summary>

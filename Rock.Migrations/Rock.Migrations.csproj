@@ -240,6 +240,46 @@
     <Compile Include="Migrations\201401071224347_SavedAccountUpdates.Designer.cs">
       <DependentUpon>201401071224347_SavedAccountUpdates.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401071612341_PrayerCategories.cs" />
+    <Compile Include="Migrations\201401071612341_PrayerCategories.Designer.cs">
+      <DependentUpon>201401071612341_PrayerCategories.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401071718059_PersonMarketingBinaryFileTypes.cs" />
+    <Compile Include="Migrations\201401071718059_PersonMarketingBinaryFileTypes.Designer.cs">
+      <DependentUpon>201401071718059_PersonMarketingBinaryFileTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401071836000_AddAdListPage.cs" />
+    <Compile Include="Migrations\201401071836000_AddAdListPage.Designer.cs">
+      <DependentUpon>201401071836000_AddAdListPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401072234209_UserLoginEntityType.cs" />
+    <Compile Include="Migrations\201401072234209_UserLoginEntityType.Designer.cs">
+      <DependentUpon>201401072234209_UserLoginEntityType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401081952447_UserAccounts.cs" />
+    <Compile Include="Migrations\201401081952447_UserAccounts.Designer.cs">
+      <DependentUpon>201401081952447_UserAccounts.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401091942376_TagsByLetterPage.cs" />
+    <Compile Include="Migrations\201401091942376_TagsByLetterPage.Designer.cs">
+      <DependentUpon>201401091942376_TagsByLetterPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401091947539_ChangeNameOfAttendeePage.cs" />
+    <Compile Include="Migrations\201401091947539_ChangeNameOfAttendeePage.Designer.cs">
+      <DependentUpon>201401091947539_ChangeNameOfAttendeePage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401092004083_AdListPageOrderUpdate.cs" />
+    <Compile Include="Migrations\201401092004083_AdListPageOrderUpdate.Designer.cs">
+      <DependentUpon>201401092004083_AdListPageOrderUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401092358192_AuditDetail.cs" />
+    <Compile Include="Migrations\201401092358192_AuditDetail.Designer.cs">
+      <DependentUpon>201401092358192_AuditDetail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401100511284_RemoveAuditDetail.cs" />
+    <Compile Include="Migrations\201401100511284_RemoveAuditDetail.Designer.cs">
+      <DependentUpon>201401100511284_RemoveAuditDetail.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -397,6 +437,36 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401071224347_SavedAccountUpdates.resx">
       <DependentUpon>201401071224347_SavedAccountUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401071612341_PrayerCategories.resx">
+      <DependentUpon>201401071612341_PrayerCategories.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401071718059_PersonMarketingBinaryFileTypes.resx">
+      <DependentUpon>201401071718059_PersonMarketingBinaryFileTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401071836000_AddAdListPage.resx">
+      <DependentUpon>201401071836000_AddAdListPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401072234209_UserLoginEntityType.resx">
+      <DependentUpon>201401072234209_UserLoginEntityType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401081952447_UserAccounts.resx">
+      <DependentUpon>201401081952447_UserAccounts.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401091942376_TagsByLetterPage.resx">
+      <DependentUpon>201401091942376_TagsByLetterPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401091947539_ChangeNameOfAttendeePage.resx">
+      <DependentUpon>201401091947539_ChangeNameOfAttendeePage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401092004083_AdListPageOrderUpdate.resx">
+      <DependentUpon>201401092004083_AdListPageOrderUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401092358192_AuditDetail.resx">
+      <DependentUpon>201401092358192_AuditDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401100511284_RemoveAuditDetail.resx">
+      <DependentUpon>201401100511284_RemoveAuditDetail.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

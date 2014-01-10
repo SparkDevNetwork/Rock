@@ -7,11 +7,11 @@
             <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
                 <Rock:EntityTypePicker ID="entityTypeFilter" runat="server" Required="false" Label="Entity Type" IncludeGlobalOption="true" />
             </Rock:GridFilter>
-            <Rock:Grid ID="rGrid" runat="server" RowItemText="setting" OnRowSelected="rGrid_Edit" TooltipField="Description">
+            <Rock:Grid ID="rGrid" runat="server" RowItemText="Category" OnRowSelected="rGrid_Edit" TooltipField="Description">
                 <Columns>
                     <Rock:ReorderField />
-                    <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                    <asp:BoundField DataField="IconCssClass" HeaderText="Icon Class" SortExpression="IconCssClass" />
+                    <asp:BoundField DataField="Name" HeaderText="Category" />
+                    <asp:BoundField DataField="IconCssClass" HeaderText="Icon Class" />
                     <asp:TemplateField>
                         <HeaderTemplate>Entity Type</HeaderTemplate>
                         <ItemTemplate>

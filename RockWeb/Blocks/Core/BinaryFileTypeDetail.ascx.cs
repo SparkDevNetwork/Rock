@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Core
             {
                 if ( pnlDetails.Visible )
                 {
-                    var storageEntityType = new EntityTypeService().Get( cpStorageType.SelectedValue.AsGuid() );
+                    var storageEntityType = EntityTypeCache.Read( cpStorageType.SelectedValue.AsGuid() );
                     if ( storageEntityType != null )
                     {
                         var binaryFileType = new BinaryFileType { StorageEntityTypeId = storageEntityType.Id };

@@ -24,32 +24,19 @@ namespace Rock.Model
     [DataContract]
     public partial class UserLogin : Model<UserLogin>
     {
-        /// <summary>
-        /// Gets or sets the type of authentication service used by this UserLogin. This property is required.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Model.AuthenticationServiceType"/> enum value representing the type of authentication service used by this UserLogin. 
-        /// </value>
-        /// <remarks>
-        /// Options include: 
-        /// <c>AuthenticationServiceType.Internal</c> which includes database and Active Directory
-        /// <c>AuthenticationServiceType.External</c> which includes Facebook, Google, oAuth, etc.
-        /// </remarks>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public AuthenticationServiceType ServiceType { get; set; }
+
+        #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the service class/type name of the authentication service that this UserLogin uses. This property is required.
+        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the authentication service that this UserLogin user.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the service class/type name.
+        /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that this DataView reports on.
         /// </value>
         [Required]
-        [MaxLength( 200 )]
         [DataMember( IsRequired = true )]
-        public string ServiceName { get; set; }
-
+        public int? EntityTypeId { get; set; }
+        
         /// <summary>
         /// Gets or sets the UserName that is associated with this UserLogin. This property is required.
         /// </summary>
@@ -97,6 +84,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.DateTime"/> representing the most recent date and time that a user successfully logged in with this UserLogin.
         /// </value>
+        [NotAudited]
         [DataMember]
         [MergeField]
         public DateTime? LastLoginDateTime { get; set; }
@@ -107,6 +95,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.DateTime"/> representing when the password was last changed.
         /// </value>
+        [NotAudited]
         [DataMember]
         [MergeField]
         public DateTime? LastPasswordChangedDateTime { get; set; }
@@ -126,6 +115,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if the user is currently online and logged in with this UserLogin; otherwise <c>false</c>.
         /// </value>
+        [NotAudited]
         [DataMember]
         public bool? IsOnLine { get; set; }
         
@@ -144,6 +134,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.DateTime"/> representing the date and time that the user login was last locked out.
         /// </value>
+        [NotAudited]
         [DataMember]
         public DateTime? LastLockedOutDateTime { get; set; }
         
@@ -194,6 +185,29 @@ namespace Rock.Model
         [DataMember]
         public int? PersonId { get; set; }
 
+        #endregion
+
+        #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.Person"/> that this UserLogin is associated with.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.Person"/> that this UserLogin is associated with.
+        /// </value>
+        [DataMember]
+        [MergeField]
+        public virtual Model.Person Person { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.EntityType"/> for the authentication service that this UserLogin user.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.EntityType"/> that this DataView reports on.
+        /// </value>
+        [DataMember]
+        public virtual EntityType EntityType { get; set; }
+
         /// <summary>
         /// Gets a flag indicating if the User authenticated with their last interaction with Rock (versus using an impersonation link).
         /// </summary>
@@ -217,15 +231,6 @@ namespace Rock.Model
             }
         }
 
-        /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> that this UserLogin is associated with.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.Person"/> that this UserLogin is associated with.
-        /// </value>
-        [DataMember]
-        [MergeField]
-        public virtual Model.Person Person { get; set; }
 
         /// <summary>
         /// Returns a boolean flag indicating if the provided action is allowed by default
@@ -263,12 +268,15 @@ namespace Rock.Model
         [MergeField]
         public virtual string ConfirmationCodeEncoded
         {
-
             get
             {
                 return HttpUtility.UrlEncode( ConfirmationCode );
             }
         }
+
+        #endregion
+
+        #region Public Methods
 
         /// <summary>
         /// Creates a <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of this UserLogin object.
@@ -296,13 +304,15 @@ namespace Rock.Model
             return this.UserName;
         }
 
+        #endregion
+
         #region Static Methods
 
         /// <summary>
         /// Returns the UserName of the user that is currently logged in.
         /// </summary>
         /// <returns>A <see cref="System.String"/> representing the UserName of the user that is currently logged in.</returns>
-        internal static string GetCurrentUserName()
+        public static string GetCurrentUserName()
         {
             if ( HostingEnvironment.IsHosted )
             {
@@ -321,6 +331,8 @@ namespace Rock.Model
 
     }
 
+    #region Entity Configuration
+
     /// <summary>
     /// User Configuration class.
     /// </summary>
@@ -332,8 +344,13 @@ namespace Rock.Model
         public UserLoginConfiguration()
         {
             this.HasOptional( p => p.Person ).WithMany( p => p.Users ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
+            this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
+
+    #endregion
+
+    #region Enums
 
     /// <summary>
     /// Type of authentication service used to authenticate user
@@ -350,4 +367,6 @@ namespace Rock.Model
         /// </summary>
         External = 1,
     }
+
+    #endregion
 }

@@ -1,5 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ConfirmAccount.ascx.cs" Inherits="RockWeb.Blocks.Security.ConfirmAccount" %>
-<asp:UpdatePanel runat="server">
+<asp:UpdatePanel ID="upnlContent" runat="server">
 <ContentTemplate>
 
     <asp:Panel ID="pnlCode" runat="server" Visible="false">
@@ -33,7 +33,7 @@
             <legend>Enter New Password</legend>
             <Rock:RockTextBox ID="tbPassword" runat="server" Label="New Password" Required="true" TextMode="Password" ></Rock:RockTextBox>
             <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirm Password" Required="true" TextMode="Password" ></Rock:RockTextBox>
-            <asp:CompareValidator ID="cvPassword" runat="server" ControlToCompare="tbPassword" ControlToValidate="tbPasswordConfirm" ErrorMessage="New Password and Confirm Password do not match" Display="Dynamic" CssClass="validation-error"></asp:CompareValidator>
+            <asp:CompareValidator ID="covalPassword" runat="server" ControlToCompare="tbPassword" ControlToValidate="tbPasswordConfirm" ErrorMessage="New Password and Confirm Password do not match" Display="Dynamic" CssClass="validation-error"></asp:CompareValidator>
         </fieldset>
 
         <div class="actions">

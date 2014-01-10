@@ -5,20 +5,33 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Web.UI;
+
 using Rock.Attribute;
 using Rock.Model;
 
 namespace RockWeb.Blocks.Security
 {
-    [TextField( "Invalid UserName Caption","", false, "The User Name/Password combination is not valid.", "Captions", 0 )]
+    /// <summary>
+    /// Block for user to change their password.
+    /// </summary>
+    [DisplayName( "Change Password" )]
+    [Category( "Security" )]
+    [Description( "Block for user to change their password." )]
+
+    [TextField( "Invalid UserName Caption", "", false, "The User Name/Password combination is not valid.", "Captions", 0 )]
     [TextField( "Invalid Password Caption","", false, "The User Name/Password combination is not valid.", "Captions", 1 )]
     [TextField( "Success Caption","", false, "Your password has been changed", "Captions", 2 )]
     public partial class ChangePassword : Rock.Web.UI.RockBlock
     {
 
-        #region Overridden RockPage Methods
+        #region Base Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -37,6 +50,11 @@ namespace RockWeb.Blocks.Security
 
         #region Events
 
+        /// <summary>
+        /// Handles the Click event of the btnChange control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnChange_Click( object sender, EventArgs e )
         {
             var userLoginService = new UserLoginService();
@@ -64,6 +82,10 @@ namespace RockWeb.Blocks.Security
             else
                 DisplayError( "InvalidUserNameCaption" );
         }
+
+        #endregion
+
+        #region Methods
 
         private void InvalidPassword()
         {
