@@ -419,7 +419,6 @@ namespace Rock.Data
                     {
                         var dbEntity = Context.Entry( entry.Entity );
 
-                        var modifiedProperties = new List<string>();
                         PropertyInfo[] properties = rockEntityType.GetProperties();
 
                         foreach ( PropertyInfo propInfo in properties )
@@ -429,12 +428,22 @@ namespace Rock.Data
                                 var dbPropertyEntry = dbEntity.Property( propInfo.Name );
                                 if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
                                 {
-                                    modifiedProperties.Add( propInfo.Name );
+                                    var currentValue = dbPropertyEntry.CurrentValue;
+                                    var originalValue = dbEntity.State != EntityState.Added ? dbPropertyEntry.OriginalValue : string.Empty;
+
+                                    var detail = new AuditDetail();
+                                    detail.Property = propInfo.Name;
+                                    detail.CurrentValue = currentValue != null ? currentValue.ToString() : string.Empty;
+                                    detail.OriginalValue = originalValue != null ? originalValue.ToString() : string.Empty;
+                                    if (detail.CurrentValue != detail.OriginalValue)
+                                    {
+                                        audit.Details.Add( detail );
+                                    }
                                 }
                             }
                         }
 
-                        if ( modifiedProperties.Count > 0 )
+                        if ( audit.Details.Any() )
                         {
                             var entityType = Rock.Web.Cache.EntityTypeCache.Read( rockEntity.TypeName, false );
                             if ( entityType != null )
@@ -444,7 +453,6 @@ namespace Rock.Data
                                 audit.EntityTypeId = entityType.Id;
                                 audit.EntityId = rockEntity.Id;
                                 audit.Title = rockEntity.ToString().Truncate( 195 );
-                                audit.Properties = modifiedProperties.AsDelimited( ";" );
                                 audits.Add( audit );
                             }
                         }

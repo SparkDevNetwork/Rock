@@ -18,31 +18,31 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Audit Service class
+    /// AuditDetail Service class
     /// </summary>
-    public partial class AuditService : Service<Audit>
+    public partial class AuditDetailService : Service<AuditDetail>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AuditService"/> class
+        /// Initializes a new instance of the <see cref="AuditDetailService"/> class
         /// </summary>
-        public AuditService()
+        public AuditDetailService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AuditService"/> class
+        /// Initializes a new instance of the <see cref="AuditDetailService"/> class
         /// </summary>
         /// <param name="repository">The repository.</param>
-        public AuditService(IRepository<Audit> repository) : base(repository)
+        public AuditDetailService(IRepository<AuditDetail> repository) : base(repository)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AuditService"/> class
+        /// Initializes a new instance of the <see cref="AuditDetailService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public AuditService(RockContext context) : base(context)
+        public AuditDetailService(RockContext context) : base(context)
         {
         }
 
@@ -54,7 +54,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( Audit item, out string errorMessage )
+        public bool CanDelete( AuditDetail item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -64,41 +64,39 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class AuditExtensionMethods
+    public static partial class AuditDetailExtensionMethods
     {
         /// <summary>
-        /// Clones this Audit object to a new Audit object
+        /// Clones this AuditDetail object to a new AuditDetail object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static Audit Clone( this Audit source, bool deepCopy )
+        public static AuditDetail Clone( this AuditDetail source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as Audit;
+                return source.Clone() as AuditDetail;
             }
             else
             {
-                var target = new Audit();
+                var target = new AuditDetail();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another Audit object to this Audit object
+        /// Copies the properties from another AuditDetail object to this AuditDetail object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this Audit target, Audit source )
+        public static void CopyPropertiesFrom( this AuditDetail target, AuditDetail source )
         {
-            target.EntityTypeId = source.EntityTypeId;
-            target.EntityId = source.EntityId;
-            target.Title = source.Title;
-            target.AuditType = source.AuditType;
-            target.DateTime = source.DateTime;
-            target.PersonId = source.PersonId;
+            target.AuditId = source.AuditId;
+            target.Property = source.Property;
+            target.OriginalValue = source.OriginalValue;
+            target.CurrentValue = source.CurrentValue;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

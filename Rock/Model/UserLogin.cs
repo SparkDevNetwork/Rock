@@ -84,6 +84,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.DateTime"/> representing the most recent date and time that a user successfully logged in with this UserLogin.
         /// </value>
+        [NotAudited]
         [DataMember]
         [MergeField]
         public DateTime? LastLoginDateTime { get; set; }
@@ -94,6 +95,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.DateTime"/> representing when the password was last changed.
         /// </value>
+        [NotAudited]
         [DataMember]
         [MergeField]
         public DateTime? LastPasswordChangedDateTime { get; set; }
@@ -113,6 +115,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if the user is currently online and logged in with this UserLogin; otherwise <c>false</c>.
         /// </value>
+        [NotAudited]
         [DataMember]
         public bool? IsOnLine { get; set; }
         
@@ -131,6 +134,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.DateTime"/> representing the date and time that the user login was last locked out.
         /// </value>
+        [NotAudited]
         [DataMember]
         public DateTime? LastLockedOutDateTime { get; set; }
         

@@ -164,6 +164,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<UserLogin>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, UserLogin.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<WorkflowTrigger>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, WorkflowTrigger.FriendlyTypeName );
