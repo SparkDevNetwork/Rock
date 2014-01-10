@@ -386,6 +386,9 @@
 
                 if (currentNode) {
                     currentNode.isSelected = true;
+
+                    // trigger the node as selected
+                    this.$el.trigger('rockTree:selected', currentNode.id);
                 }
             }
         },
