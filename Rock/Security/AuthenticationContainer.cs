@@ -6,9 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.ComponentModel.Composition.Hosting;
-using System.Linq;
-using System.Web;
 
 using Rock.Extension;
 
@@ -39,6 +36,25 @@ namespace Rock.Security
             Refresh();
         }
 
+        /// <summary>
+        /// Gets the component with the matching Entity Type Name
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <returns></returns>
+        public static AuthenticationComponent GetComponent( string entityTypeName )
+        {
+            foreach ( var serviceEntry in Instance.Components )
+            {
+                var component = serviceEntry.Value.Value;
+                if ( component.TypeName == entityTypeName )
+                {
+                    return component;
+                }
+            }
+
+            return null;
+        }
+        
         // MEF Import Definition
 #pragma warning disable
         [ImportMany( typeof( AuthenticationComponent ) )]

@@ -103,9 +103,10 @@ namespace Rock.Model
             target.LoginPageRouteId = source.LoginPageRouteId;
             target.RegistrationPageId = source.RegistrationPageId;
             target.RegistrationPageRouteId = source.RegistrationPageRouteId;
+            target.ErrorPage = source.ErrorPage;
+            target.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
             target.FacebookAppId = source.FacebookAppId;
             target.FacebookAppSecret = source.FacebookAppSecret;
-            target.ErrorPage = source.ErrorPage;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

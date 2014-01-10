@@ -30,31 +30,38 @@ namespace RockWeb
         /// <returns></returns>
         public override byte[] GetFileBytes( HttpContext context, HttpPostedFile uploadedFile )
         {
-            Bitmap bmp = new Bitmap( uploadedFile.InputStream );
-
-            // Check to see if we should flip the image.
-            var exif = new EXIFextractor( ref bmp, "\n" );
-            if ( exif["Orientation"] != null )
+            if ( uploadedFile.ContentType == "image/svg+xml" )
             {
-                RotateFlipType flip = OrientationToFlipType( exif["Orientation"].ToString() );
-                if ( flip != RotateFlipType.RotateNoneFlipNone ) // don't flip if orientation is correct
+                return base.GetFileBytes(context, uploadedFile);
+            }
+            else
+            {
+                Bitmap bmp = new Bitmap( uploadedFile.InputStream );
+
+                // Check to see if we should flip the image.
+                var exif = new EXIFextractor( ref bmp, "\n" );
+                if ( exif["Orientation"] != null )
                 {
-                    bmp.RotateFlip( flip );
-                    exif.setTag( 0x112, "1" ); // reset orientation tag
+                    RotateFlipType flip = OrientationToFlipType( exif["Orientation"].ToString() );
+                    if ( flip != RotateFlipType.RotateNoneFlipNone ) // don't flip if orientation is correct
+                    {
+                        bmp.RotateFlip( flip );
+                        exif.setTag( 0x112, "1" ); // reset orientation tag
+                    }
                 }
-            }
 
-            if ( context.Request.QueryString["enableResize"] != null )
-            {
-                Bitmap resizedBmp = RoughResize( bmp, 1024, 768 );
-                bmp = resizedBmp;
-            }
+                if ( context.Request.QueryString["enableResize"] != null )
+                {
+                    Bitmap resizedBmp = RoughResize( bmp, 1024, 768 );
+                    bmp = resizedBmp;
+                }
 
-            using ( var stream = new MemoryStream() )
-            {
-                bmp.Save( stream, ContentTypeToImageFormat( uploadedFile.ContentType ) );
-                byte[] result = stream.ToArray();
-                return result;
+                using ( var stream = new MemoryStream() )
+                {
+                    bmp.Save( stream, ContentTypeToImageFormat( uploadedFile.ContentType ) );
+                    byte[] result = stream.ToArray();
+                    return result;
+                }
             }
         }
 

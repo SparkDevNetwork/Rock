@@ -134,9 +134,9 @@ namespace Rock.Model
             target.EntityTypeId = source.EntityTypeId;
             target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+            target.Order = source.Order;
             target.Name = source.Name;
-            target.IconSmallFileId = source.IconSmallFileId;
-            target.IconLargeFileId = source.IconLargeFileId;
+            target.Description = source.Description;
             target.IconCssClass = source.IconCssClass;
             target.Id = source.Id;
             target.Guid = source.Guid;

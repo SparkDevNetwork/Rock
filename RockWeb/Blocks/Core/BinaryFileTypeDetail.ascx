@@ -21,9 +21,7 @@
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.BinaryFileType, Rock" PropertyName="Name" />
                         <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.BinaryFileType, Rock" PropertyName="Description" />
                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.BinaryFileType, Rock" PropertyName="IconCssClass" />
-                        <Rock:ImageUploader ID="imgIconSmall" runat="server" Label="Small Icon Image" />
-                        <Rock:ImageUploader ID="imgIconLarge" runat="server" Label="Large Icon Image" />
-                        <Rock:RockCheckBox ID="cbAllowCaching" runat="server" Label="Allows Caching" Help="If 'true' the file will be cached from the storage provider to the server's file system.  This is not recommended for files that need heightened security. " />
+                        <Rock:RockCheckBox ID="cbAllowCaching" runat="server" Label="Allows Caching" Text="Yes" Help="Should the file be cached from the storage provider to the server's file system.  This is not recommended for files that need heightened security. " />
                         <Rock:ComponentPicker ID="cpStorageType" runat="server" ContainerType="Rock.Storage.ProviderContainer, Rock" Label="Storage Type" Required="true" AutoPostBack="true"/>
                     </div>
                     <div class="col-md-6">

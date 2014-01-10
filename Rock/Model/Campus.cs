@@ -13,11 +13,8 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a physical or virtual Campus/Site for a church or ministry where worship services and other events are held.  
+    /// Represents a physical or virtual Campus/Site for an organization.  
     /// </summary>
-    /// <example>
-    /// Three campuses for Christ's Church of the Valley: Peoria, Scottsdale and Surprise.
-    /// </example>
     [Table( "Campus" )]
     [DataContract]
     public partial class Campus : Model<Campus>

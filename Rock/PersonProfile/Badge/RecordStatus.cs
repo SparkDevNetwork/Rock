@@ -51,9 +51,11 @@ namespace Rock.PersonProfile.Badge
                     var recordStatusValue = DefinedValueCache.Read( Person.RecordStatusValueId.Value );
                     if ( string.Compare( recordStatusValue.Guid.ToString(), Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE, true ) != 0 )
                     {
+                        var recordReasonValue = DefinedValueCache.Read( Person.RecordStatusReasonValueId.Value );
                         var label = new HighlightLabel();
                         label.LabelType = LabelType.Danger;
                         label.Text = recordStatusValue.Name;
+                        label.ToolTip = ( recordReasonValue != null ) ? recordReasonValue.Name : "";
                         return label;
                     }
                 }

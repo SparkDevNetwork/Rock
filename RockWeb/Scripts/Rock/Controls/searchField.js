@@ -18,6 +18,7 @@
 
                 this.$el.typeahead({
                     name: this.name,
+                    limit: 15,
                     remote: {
                         url: Rock.settings.get('baseUrl') + 'api/search?type=%TYPE&term=%QUERY',
                         replace: function (url, uriEncodedQuery) {

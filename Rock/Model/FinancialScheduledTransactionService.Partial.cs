@@ -30,7 +30,7 @@ namespace Rock.Model
         {
             if ( givingGroupId.HasValue )
             {
-                return Repository.AsQueryable()
+                return Repository.AsQueryable( "ScheduledTransactionDetails" )
                     .Where( t => 
                         t.AuthorizedPerson.GivingGroupId == givingGroupId.Value &&
                         (t.IsActive || includeInactive) )
@@ -39,13 +39,52 @@ namespace Rock.Model
             }
             else
             {
-                return Repository.AsQueryable()
+                return Repository.AsQueryable( "ScheduledTransactionDetails" )
                     .Where( t =>
                         t.AuthorizedPersonId == personId &&
                         ( t.IsActive || includeInactive ) )
                     .OrderByDescending( t => t.IsActive )
                     .ThenByDescending( t => t.StartDate );
             }
+        }
+
+        /// <summary>
+        /// Gets the by schedule identifier.
+        /// </summary>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <returns></returns>
+        public FinancialScheduledTransaction GetByScheduleId( string scheduleId )
+        {
+            return Repository.AsQueryable()
+                .Where( t => t.GatewayScheduleId == scheduleId)
+                .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Updates the status.
+        /// </summary>
+        /// <param name="scheduledTransaction">The scheduled transaction.</param>
+        /// <param name="currentPersonId">The current person identifier.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        public bool UpdateStatus(FinancialScheduledTransaction scheduledTransaction, int? currentPersonId, out string errorMessages)
+        {
+            if ( scheduledTransaction.GatewayEntityType != null )
+            {
+                var gateway = Rock.Financial.GatewayContainer.GetComponent( scheduledTransaction.GatewayEntityType.Guid.ToString() );
+                if ( gateway != null && gateway.IsActive )
+                {
+                    if ( gateway.GetScheduledPaymentStatus( scheduledTransaction, out errorMessages ) )
+                    {
+                        Save( scheduledTransaction, currentPersonId );
+                        return true;
+                    }
+                }
+            }
+
+            errorMessages = "Gateway is invalid or not active";
+            return false;
+
         }
     }
 }

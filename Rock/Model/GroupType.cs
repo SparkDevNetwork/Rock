@@ -138,24 +138,6 @@ namespace Rock.Model
         public bool ShowInNavigation { get; set; }
 
         /// <summary>
-        /// Gets the Id of the <see cref="Rock.Model.BinaryFile"/> image that is used for the GroupType's small icon.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the image that is used for the GroupType's small icon.
-        /// </value>
-        [DataMember]
-        public int? IconSmallFileId { get; set; }
-
-        /// <summary>
-        /// Gets or sets Id of the <see cref="Rock.Model.BinaryFile"/> image that is used for the GroupType's large icon.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the image that is used for the GroupType's large icon.
-        /// </value>
-        [DataMember]
-        public int? IconLargeFileId { get; set; }
-
-        /// <summary>
         /// Gets or sets the icon CSS class name for a font vector based icon.
         /// </summary>
         /// <value>
@@ -335,29 +317,6 @@ namespace Rock.Model
         public virtual GroupTypeRole DefaultGroupRole { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.BinaryFile"/> that is used as the small icon representing this GroupType. This is only used when the GroupType uses
-        /// an image/file based icon.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Model.BinaryFile"/> representing the image that is used as the small icon for this GroupType. This value will be null if no icon is provided or
-        /// if a font based icon is used.
-        /// 
-        /// </value>
-        [DataMember]
-        public virtual BinaryFile IconSmallFile { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.BinaryFile"/> that is used as the large icon representing this GroupType. This is only used when a GroupType uses
-        /// an image/file based icon.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Model.BinaryFile"/> representing the image that is used as the large icon for this GroupType. This value will be null if no icon is provided or
-        /// if a font based icon is used.
-        /// </value>
-        [DataMember]
-        public virtual BinaryFile IconLargeFile { get; set; }
-
-        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> that represents the purpose of the GroupType.
         /// </summary>
         /// <value>
@@ -435,8 +394,6 @@ namespace Rock.Model
         {
             this.HasMany( p => p.ChildGroupTypes ).WithMany( c => c.ParentGroupTypes ).Map( m => { m.MapLeftKey( "GroupTypeId" ); m.MapRightKey( "ChildGroupTypeId" ); m.ToTable( "GroupTypeAssociation" ); } );
             this.HasOptional( p => p.DefaultGroupRole ).WithMany().HasForeignKey( p => p.DefaultGroupRoleId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.IconSmallFile ).WithMany().HasForeignKey( p => p.IconSmallFileId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.IconLargeFile ).WithMany().HasForeignKey( p => p.IconLargeFileId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.InheritedGroupType ).WithMany().HasForeignKey( p => p.InheritedGroupTypeId ).WillCascadeOnDelete( false );
         }
     }

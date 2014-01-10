@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
             
             person.TitleValueId = ddlTitle.SelectedValueAsInt();
-            person.GivenName = tbGivenName.Text;
+            person.FirstName = tbFirstName.Text;
             person.NickName = tbNickName.Text;
             person.MiddleName = tbMiddleName.Text;
             person.LastName = tbLastName.Text;
@@ -210,8 +210,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             
             imgPhoto.BinaryFileId = Person.PhotoId;
             ddlTitle.SelectedValue = Person.TitleValueId.HasValue ? Person.TitleValueId.Value.ToString() : string.Empty;
-            tbGivenName.Text = Person.GivenName;
-            tbNickName.Text = Person.NickName;
+            tbFirstName.Text = Person.FirstName;
+            tbNickName.Text = string.IsNullOrWhiteSpace(Person.NickName) ? "" : (Person.NickName.Equals( Person.FirstName, StringComparison.OrdinalIgnoreCase ) ? "" : Person.NickName);
             tbMiddleName.Text = Person.MiddleName;
             tbLastName.Text = Person.LastName;
             ddlSuffix.SelectedValue = Person.SuffixValueId.HasValue ? Person.SuffixValueId.Value.ToString() : string.Empty;

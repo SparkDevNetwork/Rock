@@ -100,11 +100,8 @@ namespace Rock.Rest.Controllers
                 }
             }
 
-            List<Category> categoryList = qry.ToList();
+            List<Category> categoryList = qry.OrderBy( c => c.Order).ThenBy(c => c.Name).ToList();
             List<CategoryItem> categoryItemList = new List<CategoryItem>();
-
-            var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-            string imageUrlFormat = Path.Combine( appPath, "GetImage.ashx?id={0}&width=15&height=15" );
 
             foreach ( var category in categoryList )
             {
@@ -114,17 +111,7 @@ namespace Rock.Rest.Controllers
                     categoryItem.Id = category.Id.ToString();
                     categoryItem.Name = System.Web.HttpUtility.HtmlEncode( category.Name );
                     categoryItem.IsCategory = true;
-
-                    // if there a IconCssClass is assigned, use that as the Icon.  Otherwise, use the SmallIcon (if assigned)
-                    if ( !string.IsNullOrWhiteSpace( category.IconCssClass ) )
-                    {
-                        categoryItem.IconCssClass = category.IconCssClass;
-                    }
-                    else
-                    {
-                        categoryItem.IconSmallUrl = category.IconSmallFileId != null ? string.Format( imageUrlFormat, category.IconSmallFileId ) : string.Empty;
-                    }
-
+                    categoryItem.IconCssClass = category.IconCssClass;
                     categoryItemList.Add( categoryItem );
                 }
             }

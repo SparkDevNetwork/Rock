@@ -87,6 +87,9 @@
       <Private>True</Private>
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Web.XmlTransform">
+      <HintPath>..\packages\Microsoft.Web.Xdt.1.0.0\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -199,6 +202,8 @@
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Jobs\RunSQL.cs" />
+    <Compile Include="Model\AuditDetail.cs" />
+    <Compile Include="Model\CodeGenerated\AuditDetailService.cs" />
     <Compile Include="Model\CodeGenerated\LayoutService.cs" />
     <Compile Include="Model\CodeGenerated\ReportFieldService.cs" />
     <Compile Include="Model\DbGeographyConverter.cs" />
@@ -466,6 +471,7 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\Grid\RockBoundField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LinkButtonField.cs" />
     <Compile Include="Web\UI\Controls\IHasValidationGroup.cs" />
     <Compile Include="Web\UI\Controls\Pickers\EntityTypePicker.cs" />
@@ -477,6 +483,7 @@
     <Compile Include="Web\UI\Controls\Pickers\LocationAddressPicker.cs" />
     <Compile Include="Web\UI\Controls\RockControlHelper.cs" />
     <Compile Include="Web\UI\Controls\CodeEditor.cs" />
+    <Compile Include="Web\UI\Controls\AutoCompleteDropDown.cs" />
     <Compile Include="Web\UI\Controls\TermDescription.cs" />
     <Compile Include="Web\UI\Controls\Grid\DefinedValueField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LocationPicker.cs" />
@@ -496,7 +503,6 @@
     <Compile Include="Web\UI\Controls\Pickers\ComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ComponentsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupTypePicker.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\PersonPicker2.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupRolePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GeoPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MonthDayPicker.cs" />
@@ -557,6 +563,7 @@
     <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Web\UI\ISecondaryBlock.cs" />
     <Compile Include="Web\UI\ViewStateList.cs" />
+    <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGrade.cs" />

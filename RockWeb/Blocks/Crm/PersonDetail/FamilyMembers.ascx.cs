@@ -285,6 +285,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             return ResolveRockUrl( string.Format( "~/Person/{0}", personId ) );
         }
 
+        protected string FormatAsHtmlTitle(string str)
+        {
+            return str.FormatAsHtmlTitle();
+        }
+
         #endregion
 
     }

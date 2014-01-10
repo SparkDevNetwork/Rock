@@ -50,43 +50,12 @@ namespace Rock.Rest.Controllers
             var user = CurrentUser();
             if ( user != null )
             {
-                IQueryable<Group> qry;
-                if ( id == 0 )
-                {
-                    qry = Get().Where( a => a.ParentGroupId == null );
-                    if ( rootGroupId != 0 )
-                    {
-                        qry = qry.Where( a => a.Id == rootGroupId );
-                    }
-                }
-                else
-                {
-                    qry = Get().Where( a => a.ParentGroupId == id );
-                }
-
-                if ( limitToSecurityRoleGroups )
-                {
-                    qry = qry.Where( a => a.IsSecurityRole );
-                }
-
-                if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
-                {
-                    if ( groupTypeIds != "0" )
-                    {
-                        List<int> groupTypes = groupTypeIds.SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
-
-                        qry = qry.Where( a => groupTypes.Contains( a.GroupTypeId ) );
-                    }
-                }
-
-                // only fetch groups that should be shown in Navigation (Treeview, Menus, etc);
-                qry = qry.Where( a => a.GroupType.ShowInNavigation == true );
+                var groupService = new GroupService();
+                groupService.Repository.SetConfigurationValue( "ProxyCreationEnabled", "false" );
+                var qry = groupService.GetNavigationChildren( id, rootGroupId, limitToSecurityRoleGroups, groupTypeIds );
 
                 List<Group> groupList = new List<Group>();
                 List<TreeViewItem> groupNameList = new List<TreeViewItem>();
-
-                var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-                string imageUrlFormat = Path.Combine( appPath, "GetImage.ashx?id={0}&width=15&height=15" );
 
                 foreach ( var group in qry )
                 {
@@ -97,18 +66,11 @@ namespace Rock.Rest.Controllers
                         treeViewItem.Id = group.Id.ToString();
                         treeViewItem.Name = System.Web.HttpUtility.HtmlEncode( group.Name );
 
-                        // if there a IconCssClass is assigned, use that as the Icon.  Otherwise, use the SmallIcon (if assigned)
+                        // if there a IconCssClass is assigned, use that as the Icon.
                         var groupType = Rock.Web.Cache.GroupTypeCache.Read( group.GroupTypeId );
                         if ( groupType != null )
                         {
-                            if ( !string.IsNullOrWhiteSpace( groupType.IconCssClass ) )
-                            {
-                                treeViewItem.IconCssClass = groupType.IconCssClass;
-                            }
-                            else
-                            {
-                                treeViewItem.IconSmallUrl = groupType.IconSmallFileId != null ? string.Format( imageUrlFormat, groupType.IconSmallFileId ) : string.Empty;
-                            }
+                            treeViewItem.IconCssClass = groupType.IconCssClass;
                         }
 
                         groupNameList.Add( treeViewItem );

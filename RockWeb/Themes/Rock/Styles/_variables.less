@@ -23,6 +23,12 @@
 @text-selection-color: @adminbar-bg;
 @text-selection-text-color: @adminbar-text-color;
 
+// spacing multipliers / used to multiply by the grid-gutter-width to get spacing sizes
+@spacing-sm: 0.25;
+@spacing-md: 0.5;
+@spacing-lg: 1;
+@spacing-xl: 2;
+
 // Page Styling
 // -------------------------
 
@@ -106,11 +112,11 @@
 @pagelist-text-color: @accent-text-color;
 
 // Tags
-@tag-bg: #c4ced6;
-@tag-text-color: @accent-bold-text-color;
+@tag-bg: @accent-semibold-color;
+@tag-text-color: @accent-semibold-text-color;
 @tag-border-radius: @border-radius-base;
-@tag-dot-color: #d6d6d6;
-@tag-bg-alt: #aec2d4;
+@tag-dot-color: @accent-light-color;
+@tag-bg-alt: @accent-bold-color;
 
 // Smart Search
 @smartsearch-bg: rgba(255, 255, 255, .1);
@@ -248,9 +254,9 @@
 
 @btn-font-weight:                normal;
 
-@btn-default-color:              #fff;//#333;
-@btn-default-bg:                 #fff;
-@btn-default-border:             #ccc;
+@btn-default-color:              @accent-semibold-text-color;//#333;
+@btn-default-bg:                 @accent-semibold-color;
+@btn-default-border:             darken(@accent-semibold-color, 10%);
 
 @btn-primary-color:              #fff;
 @btn-primary-bg:                 @brand-primary;

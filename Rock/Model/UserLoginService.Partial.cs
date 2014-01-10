@@ -6,11 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.RegularExpressions;
 
-using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -70,41 +67,65 @@ namespace Rock.Model
         /// <exception cref="System.ArgumentException">Thrown when the service does not exist or is not active.</exception>
         public UserLogin Create( Rock.Model.Person person,
             AuthenticationServiceType serviceType,
-            string serviceName,
+            int entityTypeId,
             string username,
             string password,
             bool isConfirmed,
             int? currentPersonId )
         {
-            UserLogin user = this.GetByUserName( username );
-            if ( user != null )
-                throw new ArgumentOutOfRangeException( "username", "Username already exists" );
-
-            DateTime createDate = DateTime.Now;
-
-            user = new UserLogin();
-            user.ServiceType = serviceType;
-            user.ServiceName = serviceName;
-            user.UserName = username;
-            user.IsConfirmed = isConfirmed;
-            user.CreationDateTime = createDate;
-            user.LastPasswordChangedDateTime = createDate;
-            if ( person != null )
-                user.PersonId = person.Id;
-
-            if ( serviceType == AuthenticationServiceType.Internal )
+            var entityType = EntityTypeCache.Read( entityTypeId );
+            if ( entityType != null )
             {
-                AuthenticationComponent authenticationComponent = GetComponent( serviceName );
-                if ( authenticationComponent == null )
-                    throw new ArgumentException( string.Format( "'{0}' service does not exist, or is not active", serviceName), "serviceName" );
+                UserLogin user = this.GetByUserName( username );
+                if ( user != null )
+                    throw new ArgumentOutOfRangeException( "username", "Username already exists" );
 
-                user.Password = authenticationComponent.EncodePassword( user, password );
+                DateTime createDate = DateTime.Now;
+
+                user = new UserLogin();
+                user.EntityTypeId = entityTypeId;
+                user.UserName = username;
+                user.IsConfirmed = isConfirmed;
+                user.CreationDateTime = createDate;
+                user.LastPasswordChangedDateTime = createDate;
+                if ( person != null )
+                    user.PersonId = person.Id;
+
+                if ( serviceType == AuthenticationServiceType.Internal )
+                {
+                    var authenticationComponent = AuthenticationContainer.GetComponent( entityType.Name );
+                    if ( authenticationComponent == null || !authenticationComponent.IsActive )
+                        throw new ArgumentException( string.Format( "'{0}' service does not exist, or is not active", entityType.FriendlyName ), "entityTypeId" );
+
+                    user.Password = authenticationComponent.EncodePassword( user, password );
+                }
+
+                this.Add( user, currentPersonId );
+                this.Save( user, currentPersonId );
+
+                return user;
             }
+            else
+            {
+                throw new ArgumentException( "Invalid EntityTypeId, entity does not exist", "entityTypeId" );
+            }
+        }
 
-            this.Add( user, currentPersonId );
-            this.Save( user, currentPersonId );
-
-            return user;
+        /// <summary>
+        /// Updates the last login.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        public void UpdateLastLogin(string userName)
+        {
+            if ( !string.IsNullOrWhiteSpace( userName ) && !userName.StartsWith( "rckipid=" ) )
+            {
+                var userLogin = GetByUserName( userName );
+                if ( userLogin != null )
+                {
+                    userLogin.LastLoginDateTime = DateTime.Now;
+                    Save( userLogin, null );
+                }
+            }
         }
 
         /// <summary>
@@ -116,12 +137,12 @@ namespace Rock.Model
         /// <returns>A <see cref="System.Boolean"/> value that indicates if the password change was successful. <c>true</c> if successful; otherwise <c>false</c>.</returns>
         public bool ChangePassword( UserLogin user, string oldPassword, string newPassword )
         {
-            if ( user.ServiceType == AuthenticationServiceType.External )
-                throw new Exception( "Cannot change password on external service type" );
+            AuthenticationComponent authenticationComponent = AuthenticationContainer.GetComponent( user.EntityType.Name );
+            if ( authenticationComponent == null || !authenticationComponent.IsActive )
+                throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.EntityType.FriendlyName ) );
 
-            AuthenticationComponent authenticationComponent = GetComponent( user.ServiceName );
-            if ( authenticationComponent == null )
-                throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.ServiceName ) );
+            if ( authenticationComponent.ServiceType == AuthenticationServiceType.External )
+                throw new Exception( "Cannot change password on external service type" );
 
             if ( !authenticationComponent.Authenticate( user, oldPassword ) )
                 return false;
@@ -139,12 +160,12 @@ namespace Rock.Model
         /// <param name="password">A <see cref="System.String"/> representing the new password.</param>
         public void ChangePassword( UserLogin user, string password )
         {
-            if ( user.ServiceType == AuthenticationServiceType.External )
-                throw new Exception( "Cannot change password on external service type" );
+            var authenticationComponent = AuthenticationContainer.GetComponent( user.EntityType.Name );
+            if ( authenticationComponent == null || !authenticationComponent.IsActive )
+                throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.EntityType.FriendlyName ) );
 
-            AuthenticationComponent authenticationComponent = GetComponent( user.ServiceName );
-            if ( authenticationComponent == null )
-                throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.ServiceName ) );
+            if ( authenticationComponent.ServiceType == AuthenticationServiceType.External )
+                throw new Exception( "Cannot change password on external service type" );
 
             user.Password = authenticationComponent.EncodePassword( user, password );
             user.LastPasswordChangedDateTime = DateTime.Now;
@@ -233,29 +254,6 @@ namespace Rock.Model
                 }
             }
 
-            return null;
-        }
-
-        /// <summary>
-        /// Gets a <see cref="Rock.Security.AuthenticationComponent"/> by the name of the authentication service.
-        /// </summary>
-        /// <param name="serviceName">A <see cref="System.String"/> containing the service name.</param>
-        /// <returns>The <see cref="Rock.Security.AuthenticationComponent"/> associated with the service.</returns>
-        private AuthenticationComponent GetComponent( string serviceName )
-        {
-            foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
-            {
-                var component = serviceEntry.Value.Value;
-                string componentName = component.GetType().FullName;
-                if (
-                    componentName == serviceName &&
-                    component.AttributeValues.ContainsKey( "Active" ) &&
-                    bool.Parse( component.AttributeValues["Active"][0].Value )
-                )
-                {
-                    return component;
-                }
-            }
             return null;
         }
 

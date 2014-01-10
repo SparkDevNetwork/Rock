@@ -175,7 +175,6 @@ namespace RockWeb.Blocks.Administration
                 tbPageName.Text = _page.Name;
                 tbPageTitle.Text = _page.Title;
                 ppParentPage.SetValue( pageService.Get( page.ParentPageId ?? 0 ) );
-                imgIcon.BinaryFileId = page.IconFileId;
                 tbIconCssClass.Text = _page.IconCssClass;
 
                 cbPageTitle.Checked = _page.PageDisplayTitle;
@@ -281,11 +280,6 @@ namespace RockWeb.Blocks.Administration
 
                     int? orphanedIconFileId = null;
 
-                    if ( page.IconFileId != imgIcon.BinaryFileId )
-                    {
-                        orphanedIconFileId = page.IconFileId;
-                        page.IconFileId = imgIcon.BinaryFileId;
-                    }
                     page.IconCssClass = tbIconCssClass.Text;
 
                     page.PageDisplayTitle = cbPageTitle.Checked;

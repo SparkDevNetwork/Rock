@@ -172,7 +172,7 @@ namespace RockWeb.Blocks.Groups
 
                 var personMatches = personService.GetByEmail( txtEmail.Text ).Where( p =>
                     p.LastName.Equals( txtLastName.Text, StringComparison.OrdinalIgnoreCase ) &&
-                    ( ( p.GivenName != null && p.GivenName.Equals( txtFirstName.Text, StringComparison.OrdinalIgnoreCase ) ) ||
+                    ( ( p.FirstName != null && p.FirstName.Equals( txtFirstName.Text, StringComparison.OrdinalIgnoreCase ) ) ||
                     ( p.NickName != null && p.NickName.Equals( txtFirstName.Text, StringComparison.OrdinalIgnoreCase ) ) ) );
 
                 if ( personMatches.Count() == 1 )
@@ -182,7 +182,7 @@ namespace RockWeb.Blocks.Groups
                 else
                 {
                     Person person = new Person();
-                    person.GivenName = txtFirstName.Text;
+                    person.FirstName = txtFirstName.Text;
                     person.LastName = txtLastName.Text;
                     person.Email = txtEmail.Text;
 

@@ -128,10 +128,14 @@ namespace Rock.Model
         private Storage.ProviderComponent DetermineBinaryFileStorageProvider( BinaryFile item )
         {
             Rock.Storage.ProviderComponent storageProvider = null;
-            item.StorageEntityType = item.StorageEntityType ?? new EntityTypeService(this.RockContext).Get( item.StorageEntityTypeId ?? 0 );
-            if ( item.StorageEntityType != null )
+
+            if ( item != null )
             {
-                storageProvider = Rock.Storage.ProviderContainer.GetComponent( item.StorageEntityType.Name );
+                item.StorageEntityType = item.StorageEntityType ?? new EntityTypeService( this.RockContext ).Get( item.StorageEntityTypeId ?? 0 );
+                if ( item.StorageEntityType != null )
+                {
+                    storageProvider = Rock.Storage.ProviderContainer.GetComponent( item.StorageEntityType.Name );
+                }
             }
 
             return storageProvider;
@@ -177,7 +181,7 @@ namespace Rock.Model
             SqlCommand cmd = conn.CreateCommand();
             cmd.CommandText = "spBinaryFileGet";
             cmd.CommandType = CommandType.StoredProcedure;
-            cmd.Parameters.Add( new SqlParameter( "@Id", fileId ) );
+            cmd.Parameters.Add( new SqlParameter( "@Id", fileId.HasValue ? fileId.Value : 0 ) );
             cmd.Parameters.Add( new SqlParameter( "@Guid", fileGuid ) );
 
             // store our Command to be later retrieved by EndGet

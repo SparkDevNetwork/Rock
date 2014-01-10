@@ -17,6 +17,7 @@ namespace Rock.Model
     /// Represents the data/content of a <see cref="Rock.Model.BinaryFile"/> this entity can either be used to temporary store the 
     /// file content in memory or can be persisted to the database. 
     /// </summary>
+    [NotAudited]
     [Table( "BinaryFileData" )]
     [DataContract]
     public partial class BinaryFileData : Model<BinaryFileData>

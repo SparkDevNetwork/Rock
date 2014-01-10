@@ -316,7 +316,7 @@ namespace RockWeb.Blocks.Prayer
         private void UpdateSessionCountLabel( int currentNumber, int total )
         {
             hlblNumber.Text = string.Format( "{0} of {1}", currentNumber, total );
-            hlblNumber.ToolTip = string.Format( "You've prayed for {0} out of {1} requests.", currentNumber, total );
+            //hlblNumber.ToolTip = string.Format( "You've prayed for {0} out of {1} requests.", currentNumber, total );
         }
 
         /// <summary>

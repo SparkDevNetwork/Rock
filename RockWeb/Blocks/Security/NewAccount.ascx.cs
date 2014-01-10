@@ -6,18 +6,29 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock.Constants;
+
+using Rock;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Model;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Security
 {
-    [BooleanField( "Check for Duplicates", "Should people with the same email and last name be presented as a possible pre-existing record for user to choose from.", true, "", 0, "Duplicates")]
+    /// <summary>
+    /// Block for user to create a new login account.
+    /// </summary>
+    [DisplayName( "New Account" )]
+    [Category( "Security" )]
+    [Description( "Block for user to create a new login account." )]
+
+    [BooleanField( "Check for Duplicates", "Should people with the same email and last name be presented as a possible pre-existing record for user to choose from.", true, "", 0, "Duplicates" )]
     [TextField( "Found Duplicate Caption", "", false,"There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?", "Captions", 1 )]
     [TextField( "Existing Account Caption", "", false, "{0}, you already have an existing account.  Would you like us to email you the username?", "Captions", 2 )]
     [TextField( "Sent Login Caption", "", false, "Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password.", "Captions", 3 )]
@@ -30,10 +41,21 @@ namespace RockWeb.Blocks.Security
     [EmailTemplateField( "Account Created", "Account Created Email Template", false, Rock.SystemGuid.EmailTemplate.SECURITY_ACCOUNT_CREATED, "Email Templates", 10, "AccountCreatedTemplate" )]
     public partial class NewAccount : Rock.Web.UI.RockBlock
     {
+
+        #region Fields
+
         PlaceHolder[] PagePanels = new PlaceHolder[6];
+
+        #endregion
 
         #region Properties
 
+        /// <summary>
+        /// Gets or sets the password.
+        /// </summary>
+        /// <value>
+        /// The password.
+        /// </value>
         protected string Password
         {
             get
@@ -47,6 +69,12 @@ namespace RockWeb.Blocks.Security
             }
         }
 
+        /// <summary>
+        /// Gets or sets the password confirm.
+        /// </summary>
+        /// <value>
+        /// The password confirm.
+        /// </value>
         protected string PasswordConfirm
         {
             get
@@ -62,8 +90,12 @@ namespace RockWeb.Blocks.Security
 
         #endregion
 
-        #region Overridden RockPage Methods
+        #region Base Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
@@ -73,6 +105,10 @@ namespace RockWeb.Blocks.Security
             lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" );
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( System.EventArgs e )
         {
             base.OnLoad( e );
@@ -93,6 +129,10 @@ namespace RockWeb.Blocks.Security
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnPreRender( EventArgs e )
         {
             base.OnPreRender( e );
@@ -109,6 +149,11 @@ namespace RockWeb.Blocks.Security
 
         #region User Info Panel
 
+        /// <summary>
+        /// Handles the Click event of the btnUserInfoNext control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnUserInfoNext_Click( object sender, EventArgs e )
         {
             Password = tbPassword.Text;
@@ -137,11 +182,21 @@ namespace RockWeb.Blocks.Security
 
         #region Duplicates Panel
 
+        /// <summary>
+        /// Handles the Click event of the btnDuplicatesPrev control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDuplicatesPrev_Click( object sender, EventArgs e )
         {
             DisplayUserInfo( Direction.Back );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnDuplicatesNext control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDuplicatesNext_Click( object sender, EventArgs e )
         {
             int personId = Int32.Parse( Request.Form["DuplicatePerson"] );
@@ -164,16 +219,31 @@ namespace RockWeb.Blocks.Security
 
         #region Send Login Panel
 
+        /// <summary>
+        /// Handles the Click event of the btnSendPrev control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSendPrev_Click( object sender, EventArgs e )
         {
             DisplayDuplicates( Direction.Back );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSendYes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSendYes_Click( object sender, EventArgs e )
         {
             DisplaySentLogin( Direction.Forward );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSendLogin control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSendLogin_Click( object sender, EventArgs e )
         {
             string loginUrl = LinkedPageUrl( "LoginPage" );
@@ -190,7 +260,7 @@ namespace RockWeb.Blocks.Security
 
         #endregion
 
-        #region Private Methods
+        #region Methods
 
         private void ShowErrorMessage( string message )
         {
@@ -281,10 +351,13 @@ namespace RockWeb.Blocks.Security
                     var userLoginService = new UserLoginService();
                     foreach ( UserLogin user in userLoginService.GetByPersonId( person.Id ) )
                     {
-                        if ( user.ServiceType == AuthenticationServiceType.Internal )
+                        if ( user.EntityType != null )
                         {
-                            var userDictionary = user.ToDictionary();
-                            users.Add( userDictionary );
+                            var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
+                            if ( component.ServiceType == AuthenticationServiceType.Internal )
+                            {
+                                users.Add( user.ToDictionary() );
+                            }
                         }
                     }
 
@@ -399,7 +472,7 @@ namespace RockWeb.Blocks.Security
             Rock.Model.PersonService personService = new PersonService();
 
             Person person = new Person();
-            person.GivenName = tbFirstName.Text;
+            person.FirstName = tbFirstName.Text;
             person.LastName = tbLastName.Text;
             person.Email = tbEmail.Text;
             switch(ddlGender.SelectedValue)
@@ -415,7 +488,7 @@ namespace RockWeb.Blocks.Security
                     break;
             }
 
-            var birthday = bdpBirthDay.SelectedDate;
+            var birthday = bdaypBirthDay.SelectedDate;
             if ( birthday.HasValue )
             {
                 person.BirthMonth = birthday.Value.Month;
@@ -435,14 +508,20 @@ namespace RockWeb.Blocks.Security
         private Rock.Model.UserLogin CreateUser( Person person, bool confirmed )
         {
             var userLoginService = new Rock.Model.UserLoginService();
-            return userLoginService.Create( person, Rock.Model.AuthenticationServiceType.Internal, "Rock.Security.Authentication.Database", tbUserName.Text, Password, confirmed, CurrentPersonId );
+            return userLoginService.Create( person, Rock.Model.AuthenticationServiceType.Internal, 
+                EntityTypeCache.Read(Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid()).Id, 
+                tbUserName.Text, Password, confirmed, CurrentPersonId );
         }
 
         #endregion
     }
 
+    #region Enumerations
+
     enum Direction {
         Forward,
         Back
     }
+
+    #endregion
 }

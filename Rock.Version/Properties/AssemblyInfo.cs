@@ -10,22 +10,22 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Rock.Version")]
+[assembly: AssemblyTitle( "Rock.Version" )]
 [assembly: AssemblyDescription( "This assembly represents the official version number for Rock." )]
 [assembly: AssemblyConfiguration( "" )]
 [assembly: AssemblyCompany( "Spark Development Network" )]
 [assembly: AssemblyProduct( "Rock" )]
-[assembly: AssemblyCopyright( "Copyright © Spark Development Network 2011-2013" )]
+[assembly: AssemblyCopyright( "Copyright © Spark Development Network 2011-2014" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 
 // COM, set the ComVisible attribute to true on that type.
-[assembly: ComVisible(false)]
+[assembly: ComVisible( false )]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("8db1acaa-10dd-4afb-bd0e-2f823dbb345d")]
+[assembly: Guid( "8db1acaa-10dd-4afb-bd0e-2f823dbb345d" )]
 
 // 
 // WARNING: Before you monkey with any of these values
@@ -51,6 +51,6 @@ using System.Runtime.InteropServices;
 // This is the "official" product name that will be shown to people. 
 // It's shown in the SystemInfo details and perhaps the RockUpdate page.
 // JICK - J(on) / (N)ick versioning system.
-[assembly: AssemblyInformationalVersion( "Rock Humphreys 1.0 (alpha)" )]     // 0.0.2
+[assembly: AssemblyInformationalVersion( "Rock Humphreys 1.1 (alpha)" )]
 //[assembly: AssemblyInformationalVersion( "Rock McKinley 0.7 (beta)" )]    // 1.0.7
 //[assembly: AssemblyInformationalVersion( "Rock McKinley 1.0" )]           // 1.1.0
