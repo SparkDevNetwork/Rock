@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
@@ -18,10 +19,16 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
 {
-    [LinkedPage( "Detail Page" )]
+    /// <summary>
+    /// An audit log of all the entities and their properties that have been added, updated, or deleted.
+    /// </summary>
+    [DisplayName( "Audit Information List" )]
+    [Category( "Core" )]
+    [Description( "An audit log of all the entities and their properties that have been added, updated, or deleted." )]
+
     public partial class AuditInformationList : RockBlock
     {
-        #region Control Methods
+        #region Base Control Methods
 
         /// <summary>
         /// Handles the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -31,11 +38,12 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
+            etpEntityTypeFilter.EntityTypes = new EntityTypeService().GetEntities().OrderBy( t => t.FriendlyName ).ToList();
+
+            gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
+            gfSettings.DisplayFilterValue += gfSettings_DisplayFilterValue;
+
             gAuditInformationList.DataKeyNames = new string[] { "id" };
-            //_canApprove = IsUserAuthorized( "Approve" );
-            //ppApprovedByFilter.Visible = _canApprove;
-            gAuditInformationListFilter.ApplyFilterClick += gAuditInformationListFilter_ApplyFilterClick;
-            gAuditInformationListFilter.DisplayFilterValue += gAuditInformationListFilter_DisplayFilterValue;
             gAuditInformationList.GridRebind += gAuditInformationList_GridRebind;
         }
 
@@ -59,36 +67,64 @@ namespace RockWeb.Blocks.Core
         #region Events
 
         /// <summary>
-        /// Handles the ApplyFilterClick event of the gAuditInformationListFilter control.
+        /// Handles the ApplyFilterClick event of the gfSettings control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void gAuditInformationListFilter_ApplyFilterClick( object sender, EventArgs e )
+        void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
-            if ( ddlEntityTypeFilter.SelectedIndex > 0 )
-            {
-                gAuditInformationListFilter.SaveUserPreference( "EntityType", ddlEntityTypeFilter.SelectedValue );
-            }
-            else
-            {
-                gAuditInformationListFilter.SaveUserPreference( "EntityType", "" );
-            }
-            
-            if ( !string.IsNullOrWhiteSpace( txtEntityIdFilter.Text ) )
-            {
-                gAuditInformationListFilter.SaveUserPreference( "EntityId", txtEntityIdFilter.Text );
-            }
-            else
-            {
-                gAuditInformationListFilter.SaveUserPreference( "EntityId", "" );
-            }
+            gfSettings.SaveUserPreference( "Entity Type", etpEntityTypeFilter.SelectedValue );
+            gfSettings.SaveUserPreference( "Entity Id", tbEntityIdFilter.Text );
+            int? personId = ppWhoFilter.PersonId;
+            gfSettings.SaveUserPreference( "Who", personId.HasValue ?  personId.ToString() : string.Empty );
 
             BindGrid();
         }
 
-        void gAuditInformationListFilter_DisplayFilterValue( object sender, Rock.Web.UI.Controls.GridFilter.DisplayFilterValueArgs e )
+        /// <summary>
+        /// Gs the audit information list filter_ display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        void gfSettings_DisplayFilterValue( object sender, Rock.Web.UI.Controls.GridFilter.DisplayFilterValueArgs e )
         {
-            
+            switch ( e.Key )
+            {
+                case "Entity Type":
+                    {
+                        if ( e.Value != "" )
+                        {
+                            var entityType = Rock.Web.Cache.EntityTypeCache.Read( int.Parse( e.Value ) );
+                            if ( entityType != null )
+                            {
+                                e.Value = entityType.FriendlyName;
+                            }
+                        }
+                        break;
+                    }
+                case "Who":
+                    {
+                        int personId = int.MinValue;
+                        if (int.TryParse(e.Value, out personId))
+                        {
+                            var person = new PersonService().Get(personId);
+                            if (person != null)
+                            {
+                                e.Value = person.FullName;
+                            }
+                        }
+                        break;
+                    }
+                case "Entity Id":
+                    {
+                        break;
+                    }
+                default:
+                    {
+                        e.Value = string.Empty;
+                        break;
+                    }
+            }
         }
 
         /// <summary>
@@ -106,28 +142,36 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gAuditInformationList_Edit( object sender, RowEventArgs e )
+        protected void gAuditInformationList_Select( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "auditEntryId", e.RowKeyId );
+            BindProperties(e.RowKeyId);
+            mdProperties.Show();
         }
 
         #endregion
 
-        #region Internal Methods
+        #region Methods
 
         /// <summary>
         /// Binds the filter.
         /// </summary>
         private void BindFilter()
         {
-            var entities = new EntityTypeService().Queryable().OrderBy( e => e.Name ).ToList();
-            ddlEntityTypeFilter.DataSource = entities;
-            ddlEntityTypeFilter.DataBind();
-            ddlEntityTypeFilter.Items.Insert( 0, Rock.Constants.All.ListItem );
-            ddlEntityTypeFilter.Visible = entities.Any();
-            ddlEntityTypeFilter.SetValue( gAuditInformationListFilter.GetUserPreference( "EntityType" ) );
-
-            txtEntityIdFilter.Text = gAuditInformationListFilter.GetUserPreference( "EntityId" );
+            etpEntityTypeFilter.SelectedValue = gfSettings.GetUserPreference( "Entity Type" );
+            tbEntityIdFilter.Text = gfSettings.GetUserPreference( "Entity Id" );
+            int personId = int.MinValue;
+            if ( int.TryParse(  gfSettings.GetUserPreference( "Who" ), out personId ) )
+            {
+                var person = new PersonService().Get( personId );
+                if ( person != null )
+                {
+                    ppWhoFilter.SetValue( person );
+                }
+                else
+                {
+                    gfSettings.SaveUserPreference( "Who", string.Empty );
+                }
+            }
         }
 
         /// <summary>
@@ -135,30 +179,40 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
-            var auditService = new AuditService();
-            var audit = auditService.Queryable();
-            var queryable = new AuditService().Queryable().Select( a =>
+            var qry = new AuditService().Queryable();
+
+            int entityTypeId = int.MinValue;
+            if (int.TryParse( gfSettings.GetUserPreference( "Entity Type" ), out entityTypeId))
+            {
+                qry = qry.Where( a => a.EntityTypeId == entityTypeId );
+            }
+
+            int entityId = int.MinValue;
+            if (int.TryParse( gfSettings.GetUserPreference( "Entity Id" ), out entityId))
+            {
+                qry = qry.Where( a => a.EntityId == entityId );
+            }
+
+            int personId = int.MinValue;
+            if ( int.TryParse( gfSettings.GetUserPreference( "Who" ), out personId ) )
+            {
+                qry = qry.Where( a => a.PersonId == personId );
+            }
+ 
+            var queryable = qry.Select( a =>
                 new
                 {
                     a.Id,
-                    EntityType = a.EntityType.Name,
-                    a.EntityId,
                     a.DateTime,
+                    a.AuditType,
+                    EntityType = a.EntityType.FriendlyName,
+                    a.EntityId,
+                    a.Title,
+                    Properties = a.Details.Count(),
+                    PersonId = a.PersonId,
                     PersonName = a.Person.NickName + " " + a.Person.LastName + ( a.Person.SuffixValueId.HasValue ? " " + a.Person.SuffixValue.Name : "" )
                 } );
 
-            string entityTypeFilter = gAuditInformationListFilter.GetUserPreference( "EntityType" );
-            if ( !string.IsNullOrWhiteSpace( entityTypeFilter ) && entityTypeFilter != Rock.Constants.All.Text )
-            {
-                queryable = queryable.Where( a => a.EntityType == entityTypeFilter );
-            }
-
-            string entityIdFilter = gAuditInformationListFilter.GetUserPreference( "EntityId" );
-            if ( !string.IsNullOrWhiteSpace( entityIdFilter ) )
-            {
-                int entityId = int.Parse( entityIdFilter );
-                queryable = queryable.Where( a => a.EntityId == entityId );
-            }
 
             SortProperty sortProperty = gAuditInformationList.SortProperty;
             if ( sortProperty != null )
@@ -167,13 +221,25 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                queryable = queryable.OrderBy( q => q.Id );
+                queryable = queryable.OrderByDescending( q => q.Id );
             }
 
             gAuditInformationList.DataSource = queryable.ToList();
             gAuditInformationList.DataBind();
         }
 
+        /// <summary>
+        /// Binds the properties.
+        /// </summary>
+        /// <param name="auditId">The audit identifier.</param>
+        private void BindProperties (int auditId)
+        {
+            gProperties.DataSource = new AuditDetailService().Queryable()
+                .Where( d => d.AuditId == auditId )
+                .OrderBy( d => d.Property ).ToList();
+            gProperties.DataBind();
+        }
+
         #endregion
-}
+    }
 }
