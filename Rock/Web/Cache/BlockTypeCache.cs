@@ -155,9 +155,12 @@ namespace Rock.Web.Cache
                     blockType = new BlockTypeCache( blockTypeModel );
 
                     var cachePolicy = new CacheItemPolicy();
-                    cache.Set( cacheKey, blockType, cachePolicy );
-                    cache.Set( blockType.Guid.ToString(), blockType.Id, cachePolicy );
                     AddChangeMonitor( cachePolicy, blockType.Path );
+                    cache.Set( cacheKey, blockType, cachePolicy );
+
+                    var guidCachePolicy = new CacheItemPolicy();
+                    AddChangeMonitor( guidCachePolicy, blockType.Path );
+                    cache.Set( blockType.Guid.ToString(), blockType.Id, guidCachePolicy );
 
                     return blockType;
                 }
@@ -192,9 +195,12 @@ namespace Rock.Web.Cache
                     var blockType = new BlockTypeCache( blockTypeModel );
 
                     var cachePolicy = new CacheItemPolicy();
-                    cache.Set( BlockTypeCache.CacheKey( blockType.Id ), blockType, cachePolicy );
-                    cache.Set( blockType.Guid.ToString(), blockType.Id, cachePolicy );
                     AddChangeMonitor( cachePolicy, blockType.Path );
+                    cache.Set( BlockTypeCache.CacheKey( blockType.Id ), blockType, cachePolicy );
+
+                    var guidCachePolicy = new CacheItemPolicy();
+                    AddChangeMonitor( guidCachePolicy, blockType.Path );
+                    cache.Set( blockType.Guid.ToString(), blockType.Id, guidCachePolicy );
 
                     return blockType;
                 }
@@ -226,9 +232,12 @@ namespace Rock.Web.Cache
                 blockType = new BlockTypeCache( blockTypeModel );
 
                 var cachePolicy = new CacheItemPolicy();
-                cache.Set( cacheKey, blockType, cachePolicy );
-                cache.Set( blockType.Guid.ToString(), blockType.Id, cachePolicy );
                 AddChangeMonitor( cachePolicy, blockType.Path );
+                cache.Set( cacheKey, blockType, cachePolicy );
+
+                var guidCachePolicy = new CacheItemPolicy();
+                AddChangeMonitor( guidCachePolicy, blockType.Path );
+                cache.Set( blockType.Guid.ToString(), blockType.Id, guidCachePolicy );
 
                 return blockType;
             }

@@ -44,7 +44,7 @@
                         <ItemTemplate>
                             <li class="member">
                                 <a href='<%# basePersonUrl + Eval("Id") %>'>
-                                    <asp:Image ID="imgPerson" runat="server" ImageUrl="~/Assets/Images/person-no-photo-mail.svg" />
+                                    <asp:Image ID="imgPerson" runat="server" ImageUrl="~/Assets/Images/person-no-photo-male.svg" />
                                     <h4><%# Eval("FirstName") %> <%# Eval("LastName") %></h4>
                                 </a>
                                 <asp:RadioButtonList ID="rblRole" runat="server" DataValueField="Id" DataTextField="Name" />
@@ -172,7 +172,7 @@
 
                     <div id="divExistingPerson" runat="server" class="tab-pane active">
                         <fieldset>
-                            <Rock:PersonPicker2 ID="ppExistingPerson" runat="server" ValidationGroup="AddPerson"/>
+                            <Rock:AutoCompleteDropDown ID="acPerson" runat="server" Label="Person" Required="true" ValidationGroup="AddPerson" />
                             <Rock:RockCheckBox ID="cbRemoveOtherFamilies" runat="server" Checked="true" Text="Remove person from other families" ValidationGroup="AddPerson"/>
                         </fieldset>
                     </div>

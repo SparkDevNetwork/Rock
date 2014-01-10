@@ -82,6 +82,20 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Raises the <see cref="E:PreRender"/> event.
+        /// </summary>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected override void OnPreRender( System.EventArgs e )
+        {
+            if ( !string.IsNullOrWhiteSpace( this.ToolTip ) )
+            {
+                string script = "$('[data-toggle=\"tooltip\"]').tooltip({html: true});";
+                ScriptManager.RegisterStartupScript( this, this.GetType(), "highlightlabel-tooltip", script, true );
+            }
+            base.OnPreRender( e );
+        }
+
+        /// <summary>
         /// Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>

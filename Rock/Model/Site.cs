@@ -21,6 +21,9 @@ namespace Rock.Model
     [DataContract]
     public partial class Site : Model<Site>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets a flag indicating if this Site was created by and is part of the Rock core system/framework. This property is required.
         /// </summary>
@@ -133,6 +136,26 @@ namespace Rock.Model
         public int? RegistrationPageRouteId { get; set; }
         
         /// <summary>
+        /// Gets or sets the path to the error page.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> containing the path to the error page.
+        /// </value>
+        [MaxLength( 260 )]
+        [DataMember]
+        public string ErrorPage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the google analytics code.
+        /// </summary>
+        /// <value>
+        /// The google analytics code.
+        /// </value>
+        [MaxLength(100)]
+        [DataMember]
+        public string GoogleAnalyticsCode { get; set; }
+
+        /// <summary>
         /// Gets or sets the Site's Facebook AppId for utilizing the Facebook SDK.
         /// </summary>
         /// <remarks>
@@ -155,16 +178,10 @@ namespace Rock.Model
         [DataMember]
         public string FacebookAppSecret { get; set; }
         
-        /// <summary>
-        /// Gets or sets the path to the error page.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> containing the path to the error page.
-        /// </value>
-        [MaxLength( 260 )]
-        [DataMember]
-        public string ErrorPage { get; set; }
-        
+        #endregion
+
+        #region Virtual Properties
+
         /// <summary>
         /// Gets or sets a collection of <see cref="Rock.Model.Layout"/> entities that are a part of the Site.
         /// </summary>
@@ -231,6 +248,10 @@ namespace Rock.Model
         /// </value>
         public virtual PageRoute RegistrationPageRoute { get; set; }
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Returns a <see cref="System.String" /> containing the Name of the site that that represents this instance.
         /// </summary>
@@ -241,7 +262,12 @@ namespace Rock.Model
         {
             return this.Name;
         }
+
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Site Configuration class.
@@ -261,4 +287,6 @@ namespace Rock.Model
             this.HasOptional( p => p.RegistrationPageRoute ).WithMany().HasForeignKey( p => p.RegistrationPageRouteId ).WillCascadeOnDelete( false );
         }
     }
+
+    #endregion
 }

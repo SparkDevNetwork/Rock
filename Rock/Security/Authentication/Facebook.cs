@@ -10,10 +10,11 @@ using System.Dynamic;
 using System.Linq;
 using System.Web;
 using System.Web.Security;
+
 using Facebook;
+
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Web.UI;
 
 namespace Rock.Security.ExternalAuthentication
 {
@@ -27,6 +28,17 @@ namespace Rock.Security.ExternalAuthentication
     [TextField( "App Secret", "The Facebook App Secret" )]
     public class Facebook : AuthenticationComponent
     {
+        /// <summary>
+        /// Gets the type of the service.
+        /// </summary>
+        /// <value>
+        /// The type of the service.
+        /// </value>
+        public override AuthenticationServiceType ServiceType
+        {
+            get { return AuthenticationServiceType.External; }
+        }
+        
         /// <summary>
         /// Determines if user is directed to another site (i.e. Facebook, Gmail, Twitter, etc) to confirm approval of using
         /// that site's credentials for authentication.
@@ -146,7 +158,7 @@ namespace Rock.Security.ExternalAuthentication
                                 person.RecordTypeValueId = dvService.GetIdByGuid( new Guid( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON ) );
                                 person.RecordStatusValueId = dvService.GetIdByGuid( new Guid( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ) );
 
-                                person.GivenName = me.first_name.ToString();
+                                person.FirstName = me.first_name.ToString();
                                 person.LastName = me.last_name.ToString();
                                 person.Email = me.email.ToString();
 
@@ -164,7 +176,7 @@ namespace Rock.Security.ExternalAuthentication
                                 personService.Save( person, null );
                             }
 
-                            user = userLoginService.Create( person, AuthenticationServiceType.External, this.GetType().FullName, facebookId, "fb", true, person.Id );
+                            user = userLoginService.Create( person, AuthenticationServiceType.External, this.TypeId, facebookId, "fb", true, person.Id );
                         }
                         catch ( Exception ex )
                         {

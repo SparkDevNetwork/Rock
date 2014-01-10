@@ -73,6 +73,10 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialAccount.FriendlyTypeName );
                 return false;
             }  
+            
+            // ignoring FinancialPersonSavedAccount,CreditCardTypeValueId 
+            
+            // ignoring FinancialPersonSavedAccount,CurrencyTypeValueId 
  
             if ( new Service<FinancialPledge>().Queryable().Any( a => a.PledgeFrequencyValueId == item.Id ) )
             {

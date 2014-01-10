@@ -35,12 +35,6 @@
                         <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Site" Help="The Site that the page should belong to." AutoPostBack="true" OnSelectedIndexChanged="ddlSite_SelectedIndexChanged" />
                         <Rock:DataDropDownList ID="ddlLayout" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Layout"/>
                         <Rock:RockCheckBox ID="cbMenuIcon" runat="server" Text="Show Icon"/>
-                        <div class="control-group">
-                            <label class="control-label">Icon Image</label>
-                            <div class="controls">
-                                <Rock:ImageUploader ID="imgIcon" runat="server" />
-                            </div>
-                        </div>
                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="IconCssClass" Label="Icon CSS Class"/>
                     </div>
                     <div class="col-md-6">

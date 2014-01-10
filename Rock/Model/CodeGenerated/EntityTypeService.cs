@@ -110,6 +110,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<FinancialPersonSavedAccount>().Queryable().Any( a => a.GatewayEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialPersonSavedAccount.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<FinancialScheduledTransaction>().Queryable().Any( a => a.GatewayEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
@@ -155,6 +161,12 @@ namespace Rock.Model
             if ( new Service<Tag>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Tag.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<UserLogin>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, UserLogin.FriendlyTypeName );
                 return false;
             }  
  

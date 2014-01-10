@@ -1,5 +1,11 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Bio.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.Bio" %>
 
+<script>
+    $(function () {
+        $(".photo a").fluidbox();
+    });
+</script>
+
 <div class="rollover-container">
     <div class="actions rollover-item">
         <asp:LinkButton ID="lbEditPerson" runat="server" CssClass="edit btn btn-link btn-xs" OnClick="lbEditPerson_Click"><i class="fa fa-pencil"></i> Edit Individual</asp:LinkButton>
@@ -34,10 +40,11 @@
 
         </div>
     </div> <!-- end row -->
+
     <div class="row">
 	    <div class="col-md-2">
             <div class="photo">
-                <asp:PlaceHolder ID="phImage" runat="server"></asp:PlaceHolder>
+                <asp:PlaceHolder ID="phImage" runat="server" />
             </div>
         </div>
 
@@ -73,3 +80,5 @@
         </div>
     </div>
 </div>
+
+

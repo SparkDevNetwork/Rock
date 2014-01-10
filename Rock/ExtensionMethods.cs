@@ -457,13 +457,16 @@ namespace Rock
         /// <returns></returns>
         public static string FormatAsHtmlTitle( this string str )
         {
+            // Remove any HTML
+            string encodedStr = System.Web.HttpUtility.HtmlEncode( str );
+
             // split first word from rest of string
-            int endOfFirstWord = str.IndexOf( " " );
+            int endOfFirstWord = encodedStr.IndexOf( " " );
 
             if ( endOfFirstWord != -1 )
-                return "<span class='first-word'>" + str.Substring( 0, endOfFirstWord ) + " </span> " + str.Substring( endOfFirstWord, str.Length - endOfFirstWord );
+                return "<span class='first-word'>" + encodedStr.Substring( 0, endOfFirstWord ) + " </span> " + encodedStr.Substring( endOfFirstWord, encodedStr.Length - endOfFirstWord );
             else
-                return "<span class='first-word'>" + str + " </span>";
+                return "<span class='first-word'>" + encodedStr + " </span>";
         }
 
         /// <summary>
@@ -494,6 +497,26 @@ namespace Rock
             }
 
             return System.Web.HttpUtility.HtmlEncode( str ).ConvertCrLfToHtmlBr();
+        }
+
+        /// <summary>
+        /// Sanitizes the HTML by removing tags.  If Scrict is true, all html tags will be removed, if false, only a blacklist of specific XSS dangerous tags and attribute values are removed.
+        /// </summary>
+        /// <param name="html">The HTML.</param>
+        /// <param name="strict">if set to <c>true</c> [strict].</param>
+        /// <returns></returns>
+        public static string SanitizeHtml(this string html, bool strict = true)
+        {
+            if ( strict )
+            {
+                var allowedElements = new Dictionary<string, string[]>();
+                var allowedAttributes = new Dictionary<string, string[]>();
+                return new AjaxControlToolkit.Sanitizer.HtmlAgilityPackSanitizerProvider().GetSafeHtmlFragment( html, allowedElements, allowedAttributes );
+            } 
+            else
+            {
+                return Rock.Web.Utilities.HtmlSanitizer.SanitizeHtml( html );
+            }
         }
 
         /// <summary>

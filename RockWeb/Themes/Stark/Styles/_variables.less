@@ -23,6 +23,12 @@
 @text-selection-color: #5279a0;
 @text-selection-text-color: #fff;
 
+// spacing multipliers / used to multiply by the grid-gutter-width to get spacing sizes
+@spacing-sm: 0.25;
+@spacing-md: 0.5;
+@spacing-lg: 1;
+@spacing-xl: 2;
+
 // Page Styling
 // -------------------------
 
@@ -247,9 +253,9 @@
 
 @btn-font-weight:                normal;
 
-@btn-default-color:              #333;
-@btn-default-bg:                 #fff;
-@btn-default-border:             #ccc;
+@btn-default-color:              @accent-semibold-text-color;//#333;
+@btn-default-bg:                 @accent-semibold-color;
+@btn-default-border:             darken(@accent-semibold-color, 10%);
 
 @btn-primary-color:              #fff;
 @btn-primary-bg:                 @brand-primary;

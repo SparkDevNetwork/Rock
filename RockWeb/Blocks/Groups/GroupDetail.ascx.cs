@@ -602,6 +602,7 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 group = new Group { Id = 0, IsActive = true, ParentGroupId = parentGroupId };
+                wpGeneral.Expanded = true;
             }
 
             if ( group == null )
@@ -828,24 +829,8 @@ namespace RockWeb.Blocks.Groups
         {
             SetEditMode( false );
 
-            string groupIconHtml = string.Empty;
-            if ( !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) )
-            {
-                groupIconHtml = string.Format( "<i class='{0}' ></i>", group.GroupType.IconCssClass );
-            }
-            else
-            {
-                var getImageUrl = ResolveRockUrl( "~/GetImage.ashx" );
-                string imageUrlFormat = "<img src='" + getImageUrl + "GetImage.ashx?id={0}&width=50&height=50' />";
-                if ( group.GroupType.IconLargeFileId != null )
-                {
-                    groupIconHtml = string.Format( imageUrlFormat, group.GroupType.IconLargeFileId );
-                }
-                else if ( group.GroupType.IconSmallFileId != null )
-                {
-                    groupIconHtml = string.Format( imageUrlFormat, group.GroupType.IconSmallFileId );
-                }
-            }
+            string groupIconHtml = !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) ?
+                groupIconHtml = string.Format( "<i class='{0}' ></i>", group.GroupType.IconCssClass ) : "";
 
             hfGroupId.SetValue( group.Id );
             lGroupIconHtml.Text = groupIconHtml;
@@ -1163,7 +1148,7 @@ namespace RockWeb.Blocks.Groups
                                                 .Where( l => l.IsMappedLocation && !l.LocationTypeValue.Guid.Equals( previousLocationType ) ) )
                                             {
                                                 ddlMember.Items.Add( new ListItem(
-                                                    string.Format( "{0} {1} ({2})", member.Person.FirstLastName, familyGroupLocation.LocationTypeValue.Name, familyGroupLocation.Location.ToString() ),
+                                                    string.Format( "{0} {1} ({2})", member.Person.FullName, familyGroupLocation.LocationTypeValue.Name, familyGroupLocation.Location.ToString() ),
                                                     string.Format( "{0}|{1}", familyGroupLocation.Location.Id, member.PersonId ) ) );
                                             }
                                         }

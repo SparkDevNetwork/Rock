@@ -7,10 +7,11 @@
             <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
                 <Rock:EntityTypePicker ID="entityTypeFilter" runat="server" Required="false" Label="Entity Type" IncludeGlobalOption="true" />
             </Rock:GridFilter>
-            <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" OnRowSelected="rGrid_Edit">
+            <Rock:Grid ID="rGrid" runat="server" RowItemText="Category" OnRowSelected="rGrid_Edit" TooltipField="Description">
                 <Columns>
-                    <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
-                    <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                    <Rock:ReorderField />
+                    <asp:BoundField DataField="Name" HeaderText="Category" />
+                    <asp:BoundField DataField="IconCssClass" HeaderText="Icon Class" />
                     <asp:TemplateField>
                         <HeaderTemplate>Entity Type</HeaderTemplate>
                         <ItemTemplate>
@@ -25,19 +26,33 @@
 
         <Rock:ModalDialog ID="modalDetails" runat="server" Title="Category" ValidationGroup="EntityTypeName">
             <Content>
+
                 <asp:HiddenField ID="hfIdValue" runat="server" />
+
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbName" runat="server" Label="Name" Required="true" ValidationGroup="EntityTypeName" />
+                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="Name" Required="true" />
+                    </div>
+                    <div class="col-md-6">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
                         <Rock:EntityTypePicker ID="entityTypePicker" runat="server" Required="true" Label="Entity Type" IncludeGlobalOption="true" />
                     </div>
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" />
-                        <Rock:ImageUploader ID="imgIconSmall" runat="server" Label="Small Icon Image" />
-                        <Rock:ImageUploader ID="imgIconLarge" runat="server" Label="Large Icon Image" />
                     </div>
+
                 </div>
-                </fieldset>
+
             </Content>
         </Rock:ModalDialog>
 

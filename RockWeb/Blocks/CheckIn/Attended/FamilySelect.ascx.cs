@@ -297,7 +297,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             // rebind List View
             lvPerson.DataSource = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
-                .People.Where( f => f.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
+                .People.Where( f => f.FamilyMember ).OrderBy( p => p.Person.FullNameReversed ).ToList();
             lvPerson.DataBind();
             pnlPerson.Update();
         }
@@ -313,7 +313,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             // rebind List View
             lvVisitor.DataSource = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
-                .People.Where( f => !f.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
+                .People.Where( f => !f.FamilyMember ).OrderBy( p => p.Person.FullNameReversed ).ToList();
             lvVisitor.DataBind();
             pnlVisitor.Update();
         }
@@ -693,14 +693,14 @@ namespace RockWeb.Blocks.CheckIn.Attended
                             var familyMembers = family.People.Where( f => f.FamilyMember ).ToList();
                             familyMembers.ForEach( p => p.Selected = true );
                             hfSelectedPerson.Value = string.Join( ",", familyMembers.Select( f => f.Person.Id ) ) + ",";
-                            memberDataSource = familyMembers.OrderBy( p => p.Person.FullNameLastFirst ).ToList();
+                            memberDataSource = familyMembers.OrderBy( p => p.Person.FullNameReversed ).ToList();
                         }
 
                         if ( family.People.Where( f => !f.FamilyMember ).Any() )
                         {
                             var familyVisitors = family.People.Where( f => !f.FamilyMember ).ToList();
                             hfSelectedVisitor.Value = string.Join( ",", familyVisitors.Select( f => f.Person.Id ) ) + ",";
-                            visitorDataSource = familyVisitors.OrderBy( p => p.Person.FullNameLastFirst ).ToList();
+                            visitorDataSource = familyVisitors.OrderBy( p => p.Person.FullNameReversed ).ToList();
                         }
                     }
 
@@ -802,7 +802,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected Person CreatePerson( string firstName, string lastName, DateTime? dob, int? gender, string ability, string abilityGroup )
         {
             Person person = new Person().Clone( false );
-            person.GivenName = firstName;
+            person.FirstName = firstName;
             person.LastName = lastName;
             person.BirthDate = dob;
 

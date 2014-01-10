@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
@@ -15,12 +16,10 @@ using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Rock.Model;
 using Rock.Transactions;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-
 using Page = System.Web.UI.Page;
 
 namespace Rock.Web.UI
@@ -68,6 +67,47 @@ namespace Rock.Web.UI
         public int PageId
         {
             get { return _pageCache.Id; }
+        }
+
+        /// <summary>
+        /// Gets or sets the browser title.
+        /// </summary>
+        /// <value>
+        /// The browser title.
+        /// </value>
+        public string BrowserTitle
+        {
+            get { return base.Title; }
+            set { base.Title = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the template title.
+        /// </summary>
+        /// <value>
+        /// The template title.
+        /// </value>
+        public string TemplateTitle
+        {
+            get { return _pageCache.Title; }
+            set { _pageCache.Title = value; }
+        }
+
+        /// <summary>
+        /// Gets the title for the page and sets both the browser and template title
+        /// </summary>
+        /// <returns>The title of the page.</returns>
+        public new string Title
+        {
+            get
+            {
+                return BrowserTitle;
+            }
+            set
+            {
+                BrowserTitle = value;
+                TemplateTitle = value;
+            }
         }
 
         /// <summary>
@@ -560,9 +600,9 @@ namespace Rock.Web.UI
                     }
                     catch { }
 
-                    // set page title
+                    // intialize browser title to template title
                     Page.Trace.Warn( "Setting page title" );
-                    this.Title = _pageCache.Title;
+                    BrowserTitle = TemplateTitle;
 
                     // set viewstate on/off
                     this.EnableViewState = _pageCache.EnableViewState;
@@ -610,6 +650,12 @@ namespace Rock.Web.UI
                     if (bcName != string.Empty)
                     {
                         PageReference.BreadCrumbs.Add( new BreadCrumb( bcName, PageReference.BuildUrl() ) );
+                    }
+
+                    // Add the Google Analytics Code script if a code was specified for the site
+                    if (!string.IsNullOrWhiteSpace(_pageCache.Layout.Site.GoogleAnalyticsCode))
+                    {
+                        AddGoogleAnalytics( _pageCache.Layout.Site.GoogleAnalyticsCode );
                     }
 
                     // Load the blocks and insert them into page zones
@@ -700,7 +746,6 @@ namespace Rock.Web.UI
                                 {
                                     Page.Trace.Warn( "\tSetting block properties" );
 
-                                    blockControl.CurrentPageReference = PageReference;
                                     blockControl.SetBlock( block );
 
                                     // Add any breadcrumbs to current page reference that the block creates
@@ -932,9 +977,9 @@ namespace Rock.Web.UI
         {
             _pageCache = pageCache;
 
-            HttpContext.Current.Items.Add( "Rock:PageId", _pageCache.Id );
-            HttpContext.Current.Items.Add( "Rock:LayoutId", _pageCache.LayoutId );
-            HttpContext.Current.Items.Add( "Rock:SiteId", _pageCache.Layout.SiteId );
+            SaveContextItem( "Rock:PageId", _pageCache.Id );
+            SaveContextItem( "Rock:LayoutId", _pageCache.LayoutId );
+            SaveContextItem( "Rock:SiteId", _pageCache.Layout.SiteId );
 
             if ( this.Master is RockMasterPage )
             {
@@ -1032,6 +1077,30 @@ namespace Rock.Web.UI
         public void AddScriptLink(string path)
         {
             RockPage.AddScriptLink( this, path );
+        }
+
+        /// <summary>
+        /// Adds the google analytics script
+        /// </summary>
+        /// <param name="code">The GoogleAnalyticsCode.</param>
+        private void AddGoogleAnalytics( string code )
+        {
+            string scriptTemplate = Application["GoogleAnalyticsScript"] as string;
+            if (scriptTemplate == null)
+            {
+                string scriptFile = MapPath("~/App_Data/GoogleAnalytics.txt");
+                if ( File.Exists( scriptFile ) )
+                {
+                    scriptTemplate = File.ReadAllText( scriptFile );
+                    Application["GoogleAnalyticsScript"] = scriptTemplate;
+                }
+            }
+
+            if ( scriptTemplate != null )
+            {
+                string script = string.Format( scriptTemplate, code );
+                AddScriptToHead( this.Page, script, true );
+            }
         }
 
         #endregion
@@ -1403,12 +1472,16 @@ namespace Rock.Web.UI
         public void SaveSharedItem( string key, object item )
         {
             string itemKey = string.Format( "{0}:Item:{1}", PageCache.CacheKey( PageId ), key );
+            SaveContextItem( itemKey, item );
+        }
 
+        private void SaveContextItem(string key, object item)
+        {
             System.Collections.IDictionary items = HttpContext.Current.Items;
-            if ( items.Contains( itemKey ) )
-                items[itemKey] = item;
+            if ( items.Contains( key ) )
+                items[key] = item;
             else
-                items.Add( itemKey, item );
+                items.Add( key, item );
         }
 
         /// <summary>
@@ -1441,16 +1514,25 @@ namespace Rock.Web.UI
         /// <returns>A <see cref="System.String"/> containing the parameter value; otherwise an empty string.</returns>
         public string PageParameter( string name )
         {
-            if ( String.IsNullOrEmpty( name ) )
-                return string.Empty;
+            if ( !string.IsNullOrWhiteSpace( name ) )
+            {
+                if ( Page.RouteData.Values.ContainsKey( name ) )
+                {
+                    return (string)Page.RouteData.Values[name];
+                }
 
-            if ( Page.RouteData.Values.ContainsKey( name ) )
-                return (string)Page.RouteData.Values[name];
+                if ( !String.IsNullOrEmpty( Request.QueryString[name] ) )
+                {
+                    return Request.QueryString[name];
+                }
 
-            if ( String.IsNullOrEmpty( Request.QueryString[name] ) )
-                return string.Empty;
-            else
-                return Request.QueryString[name];
+                if ( PageReference.Parameters.ContainsKey( name ) )
+                {
+                    return PageReference.Parameters[name];
+                }
+            }
+
+            return string.Empty;
         }
 
         /// <summary>
@@ -1697,6 +1779,38 @@ namespace Rock.Web.UI
                 scriptManager.Scripts.Add( new ScriptReference( path ) );
             }
         }
+
+        /// <summary>
+        /// Adds the script to head.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="script">The script.</param>
+        /// <param name="AddScriptTags">if set to <c>true</c> [add script tags].</param>
+        public static void AddScriptToHead(Page page, string script, bool AddScriptTags)
+        {
+            if ( page != null && page.Header != null )
+            {
+                var header = page.Header;
+                
+                Literal l = new Literal();
+                
+                if ( AddScriptTags )
+                {
+                    l.Text = string.Format( @"
+    <script type=""text/javascript"">       
+{0}
+    </script>
+
+", script );
+                }
+                else
+                {
+                    l.Text = script;
+                }
+
+                header.Controls.Add( l );
+            }
+        } 
 
         #region User Preferences
 

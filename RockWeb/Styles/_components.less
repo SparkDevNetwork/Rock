@@ -50,6 +50,10 @@
         span {
             float: left;
             margin-right: 6px;
+            width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .caret {
@@ -383,43 +387,47 @@ div.tagsinput
     margin-left: 12px;
 }
 
-div.tagsinput span.tag 
+.tag 
 {
 	float: left;
-	height: 18px;
+	height: 22px;
 	line-height: 18px;
 	position: relative;
-	font-size: 11px;
+	font-size: 13px;
 	margin-bottom: 6px;
     margin-left: 20px;
-	padding: 0 10px 0 12px;
+	padding: 1px 10px 0 12px;
 	background: @tag-bg;
 	color: @tag-text-color;
 	text-decoration: none;	
 	border-bottom-right-radius: @tag-border-radius;
 	border-top-right-radius: @tag-border-radius;
 
+    small{
+        font-size: 11px;
+    }
+
     &:before {       /* tag point */
 	    content: "";
 	    float: left;
 	    position: absolute;
 	    top: 0;
-	    left: -9px;
+	    left: -11px;
 	    width: 0;
 	    height: 0;
 	    border-color: transparent @tag-bg transparent transparent;
 	    border-style: solid;
-	    border-width: 9px 9px 9px 0;		
+	    border-width: 11px 11px 11px 0;		
     }
 
     &:after {         /* tag dot */
 	    content: "";
 	    position: absolute;
-	    top: 7px;
+	    top: 8px;
 	    left: 0;
 	    float: left;
-	    width: 4px;
-	    height: 4px;
+	    width: 5px;
+	    height: 5px;
 	    border-radius: 2px;
 	    background: @tag-dot-color;
 	    box-shadow: -1px -1px 2px @tag-bg;
@@ -526,6 +534,19 @@ div.tagsinput div
 {
     background: #bbb; /* todo */
     border-radius: 4px;
+}
+
+.tag-letterlist {
+
+    color: lighten(@text-color, 50%);
+    
+    li {
+        margin-right: 12px;
+    }
+
+    a {
+        font-weight: @font-weight-semibold;
+    }
 }
  
 // 8. Switch
@@ -734,7 +755,8 @@ div.tagsinput div
             outline: 0; // get rid of orange box in chrome
         }
     }
-    .dropdown-menu {
+    
+    .dropdown-menu { // smart search type menu
         font-size: 11px;
         right: 0;
         left: auto;
@@ -772,11 +794,12 @@ div.tagsinput div
 // ------------------------
 .title {
     font-weight: @title-default-weight;
+
+    .first-word {
+        font-weight: @title-firstword-weight;
+    }
 }
 
-.title .first-word {
-    font-weight: @title-firstword-weight;
-}
 
 // 11. Notifications
 // -------------------------
@@ -1179,6 +1202,59 @@ fieldset .actions {
     //-moz-box-shadow:    @modal-dropshadow-color 9px 9px 40px 0px;
     //-webkit-box-shadow: @modal-dropshadow-color 9px 9px 40px 0px;
     //box-shadow: @modal-dropshadow-color 9px 9px 40px 0px;
+
+    .spinner {
+      width: 50px;
+      height: 30px;
+      text-align: center;
+      font-size: 10px;
+    }
+
+    .spinner > div {
+      background-color: @accent-bold-text-color;
+      height: 100%;
+      width: 6px;
+      display: inline-block;
+  
+      -webkit-animation: stretchdelay 1.2s infinite ease-in-out;
+      animation: stretchdelay 1.2s infinite ease-in-out;
+    }
+
+    .spinner .rect2 {
+      -webkit-animation-delay: -1.1s;
+      animation-delay: -1.1s;
+    }
+
+    .spinner .rect3 {
+      -webkit-animation-delay: -1.0s;
+      animation-delay: -1.0s;
+    }
+
+    .spinner .rect4 {
+      -webkit-animation-delay: -0.9s;
+      animation-delay: -0.9s;
+    }
+
+    .spinner .rect5 {
+      -webkit-animation-delay: -0.8s;
+      animation-delay: -0.8s;
+    }
+
+    @-webkit-keyframes stretchdelay {
+      0%, 40%, 100% { -webkit-transform: scaleY(0.4) }  
+      20% { -webkit-transform: scaleY(1.0) }
+    }
+
+    @keyframes stretchdelay {
+      0%, 40%, 100% { 
+        transform: scaleY(0.4);
+        -webkit-transform: scaleY(0.4);
+      }  20% { 
+        transform: scaleY(1.0);
+        -webkit-transform: scaleY(1.0);
+      }
+    }
+
 }
 
 // 19. Group List
@@ -1213,6 +1289,20 @@ ul.groupmembers {
             margin: 0;
         }
 
+    }
+}
+
+// 20. Security Controls
+// -------------------------
+
+.loginstatus {
+    & > li {
+        min-width: 160px;
+        text-align: right;
+
+        & li {
+            text-align: left;
+        }
     }
 }
     

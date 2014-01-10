@@ -65,7 +65,11 @@ namespace Rock.Web.UI
         /// <value>
         /// The current page reference.
         /// </value>
-        public PageReference CurrentPageReference { get; set; }
+        public PageReference CurrentPageReference
+        {
+            get { return RockPage.PageReference; }
+            set { RockPage.PageReference = value; }
+        }
 
         /// <summary>
         /// The personID of the currently logged in user.  If user is not logged in, returns null

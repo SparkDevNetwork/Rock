@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ForgotUserName.ascx.cs" Inherits="RockWeb.Blocks.Security.ForgotUserName" %>
 
-<asp:UpdatePanel runat="server">
+<asp:UpdatePanel id="upnlContent" runat="server">
 <ContentTemplate>
 
     <asp:Panel ID="pnlEntry" runat="server">

@@ -256,16 +256,6 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id the <see cref="Rock.Model.BinaryFile"/> that is being used as an icon for the Page
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.BinaryFile"/> that is being used for the Page Icon, if a file
-        /// based icon is not used this value will be null.
-        /// </value>
-        [DataMember]
-        public int? IconFileId { get; set; }
-
-        /// <summary>
         /// Gets or sets the icon CSS class name for a font vector based icon.
         /// </summary>
         /// <value>
@@ -309,15 +299,6 @@ namespace Rock.Model
         /// </value>
         public virtual Layout Layout { get; set; }
         
-        /// <summary>
-        /// Gets or sets the page icon's <see cref="Rock.Model.BinaryFile"/> for file based icons.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.BinaryFile" /> for file based icons, if a file based icon is not used this value will be null.
-        /// </value>
-        [DataMember]
-        public virtual BinaryFile IconFile { get; set; }
-
         /// <summary>
         /// Gets or sets the collection of <see cref="Rock.Model.Block">Blocks</see> that are used on the page.
         /// </summary>
@@ -429,7 +410,6 @@ namespace Rock.Model
         {
             this.HasOptional( p => p.ParentPage ).WithMany( p => p.Pages ).HasForeignKey( p => p.ParentPageId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.Layout ).WithMany( p => p.Pages ).HasForeignKey( p => p.LayoutId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.IconFile ).WithMany().HasForeignKey( p => p.IconFileId ).WillCascadeOnDelete( false );
         }
     }
 

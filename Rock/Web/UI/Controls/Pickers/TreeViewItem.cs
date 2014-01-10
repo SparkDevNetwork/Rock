@@ -44,10 +44,10 @@ namespace Rock.Web.UI.Controls
         public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the group type icon small id.
+        /// Gets or sets an image url.
         /// </summary>
         /// <value>
-        /// The group type icon small id.
+        /// The image url.
         /// </value>
         public string IconSmallUrl { get; set; }
     }

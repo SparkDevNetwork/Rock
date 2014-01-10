@@ -29,99 +29,21 @@ namespace RockWeb
         /// <param name="context">An <see cref="T:System.Web.HttpContext" /> object that provides references to the intrinsic server objects (for example, Request, Response, Session, and Server) used to service HTTP requests.</param>
         public void ProcessRequest( HttpContext context )
         {
-            context.Response.Clear();
-            var queryString = context.Request.QueryString;
-
-            int fileId = queryString["id"].AsInteger() ?? 0;
-            Guid fileGuid = queryString["guid"].AsGuid();
-
-            if ( fileId == 0 && fileGuid.Equals( Guid.Empty ) )
-            {
-                SendNotFound( context );
-            }
-
             try
             {
-                var binaryFileQuery = new BinaryFileService().Queryable();
-                if ( fileGuid != Guid.Empty )
+                context.Response.Clear();
+
+                // Check to see if this is a BinaryFileType/BinaryFile or just a plain content file (if isBinaryFile not specified, assume it is a BinaryFile)
+                bool isBinaryFile = ( context.Request.QueryString["isBinaryFile"] ?? "T" ).AsBoolean();
+
+                if ( isBinaryFile )
                 {
-                    binaryFileQuery = binaryFileQuery.Where( a => a.Guid == fileGuid );
+                    ProcessBinaryFileRequest( context );
                 }
                 else
                 {
-                    binaryFileQuery = binaryFileQuery.Where( a => a.Id == fileId );
+                    ProcessContentFileRequest( context );
                 }
-
-                //// get just the binaryFileMetaData (not the file content) just in case we can get the filecontent faster from the cache
-                //// a null LastModifiedDateTime shouldn't happen, but just in case, set it to DateTime.MaxValue so we error on the side of not getting it from the cache
-                var binaryFileMetaData = binaryFileQuery.Select( a => new
-                    {
-                        BinaryFileType_AllowCaching = a.BinaryFileType.AllowCaching,
-                        LastModifiedDateTime = a.LastModifiedDateTime ?? DateTime.MaxValue,
-                        a.MimeType,
-                        a.FileName
-                    } ).FirstOrDefault();
-
-                if ( binaryFileMetaData == null )
-                {
-                    SendNotFound( context );
-                    return;
-                }
-
-                byte[] fileContent = null;
-
-                // Is it cached
-                string cacheName = Uri.EscapeDataString( context.Request.Url.Query );
-                string physCachedFilePath = context.Request.MapPath( string.Format( "~/App_Data/Cache/{0}", cacheName ) );
-                if ( binaryFileMetaData.BinaryFileType_AllowCaching && File.Exists( physCachedFilePath ) )
-                {
-                    // Has the file been modified since the last cached datetime?
-                    DateTime cachedFileDateTime = File.GetCreationTime( physCachedFilePath );
-                    if ( binaryFileMetaData.LastModifiedDateTime < cachedFileDateTime )
-                    {
-                        // NOTE: the cached file has already been resized (the size is part of the cached file's filename), so we don't need to resize it again
-                        fileContent = FetchFromCache( physCachedFilePath );
-                    }
-                }
-
-                if ( fileContent == null )
-                {
-                    // If we didn't get it from the cache, get it from the binaryFileService
-                    BinaryFile binaryFile = GetFromBinaryFileService( context, fileId, fileGuid );
-
-                    if ( binaryFile != null && binaryFile.Data != null )
-                    {
-                        fileContent = binaryFile.Data.Content;
-                    }
-
-                    if ( fileContent != null )
-                    {
-                        // If we got the image from the binaryFileService, it might need to be resized and cached
-                        if ( queryString.Count > 1 )
-                        {
-                            // If more than 1 query string param is passed in, assume resize is needed
-                            fileContent = GetResized( queryString, fileContent );
-                        }
-
-                        if ( binaryFileMetaData.BinaryFileType_AllowCaching )
-                        {
-                            Cache( fileContent, physCachedFilePath );
-                        }
-                    }
-                }
-
-                if ( fileContent == null )
-                {
-                    // if we couldn't get the file from the binaryFileServie or the cache, respond with NotFound
-                    SendNotFound( context );
-                    return;
-                }
-
-                // respond with File
-                context.Response.ContentType = binaryFileMetaData.MimeType;
-                context.Response.AddHeader( "content-disposition", "inline;filename=" + binaryFileMetaData.FileName );
-                context.Response.BinaryWrite( fileContent );
-                context.Response.Flush();
             }
             catch ( Exception ex )
             {
@@ -131,6 +53,147 @@ namespace RockWeb
                 context.Response.Flush();
                 context.ApplicationInstance.CompleteRequest();
             }
+        }
+
+        /// <summary>
+        /// Processes the content file request.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <exception cref="System.Exception">fileName must be specified</exception>
+        private void ProcessContentFileRequest( HttpContext context )
+        {
+            string relativeFilePath = context.Request.QueryString["fileName"];
+
+            if ( string.IsNullOrWhiteSpace( relativeFilePath ) )
+            {
+                throw new Exception( "fileName must be specified" );
+            }
+
+            const string RootContentFolder = "~/Content";
+            string physicalRootFolder = context.Request.MapPath( RootContentFolder );
+            string physicalContentFileName = Path.Combine( physicalRootFolder, relativeFilePath.TrimStart( new char[] { '/', '\\' } ) );
+            byte[] fileContents = File.ReadAllBytes( physicalContentFileName );
+
+            if ( fileContents != null )
+            {
+                string mimeType = System.Web.MimeMapping.GetMimeMapping( physicalContentFileName );
+
+                // If more than 1 query string param is passed in, assume resize is needed
+                if ( context.Request.QueryString.Count > 1 )
+                {
+                    // if it isn't an SVG file, do a Resize
+                    if ( mimeType != "image/svg+xml" )
+                    {
+                        fileContents = GetResized( context.Request.QueryString, fileContents );
+                    }
+                }
+
+                context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", Path.GetFileName( physicalContentFileName ) ) );
+                context.Response.ContentType = mimeType;
+                context.Response.BinaryWrite( fileContents );
+                context.Response.Flush();
+                context.ApplicationInstance.CompleteRequest();
+            }
+        }
+
+        /// <summary>
+        /// Processes the binary file request.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        private void ProcessBinaryFileRequest( HttpContext context )
+        {
+            int fileId = context.Request.QueryString["id"].AsInteger() ?? 0;
+            Guid fileGuid = context.Request.QueryString["guid"].AsGuid();
+
+            if ( fileId == 0 && fileGuid.Equals( Guid.Empty ) )
+            {
+                SendNotFound( context );
+            }
+
+            var binaryFileQuery = new BinaryFileService().Queryable();
+            if ( fileGuid != Guid.Empty )
+            {
+                binaryFileQuery = binaryFileQuery.Where( a => a.Guid == fileGuid );
+            }
+            else
+            {
+                binaryFileQuery = binaryFileQuery.Where( a => a.Id == fileId );
+            }
+
+            //// get just the binaryFileMetaData (not the file content) just in case we can get the filecontent faster from the cache
+            //// a null LastModifiedDateTime shouldn't happen, but just in case, set it to DateTime.MaxValue so we error on the side of not getting it from the cache
+            var binaryFileMetaData = binaryFileQuery.Select( a => new
+            {
+                BinaryFileType_AllowCaching = a.BinaryFileType.AllowCaching,
+                LastModifiedDateTime = a.LastModifiedDateTime ?? DateTime.MaxValue,
+                a.MimeType,
+                a.FileName
+            } ).FirstOrDefault();
+
+            if ( binaryFileMetaData == null )
+            {
+                SendNotFound( context );
+                return;
+            }
+
+            byte[] fileContent = null;
+
+            // Is it cached
+            string cacheName = Uri.EscapeDataString( context.Request.Url.Query );
+            string physCachedFilePath = context.Request.MapPath( string.Format( "~/App_Data/Cache/{0}", cacheName ) );
+            if ( binaryFileMetaData.BinaryFileType_AllowCaching && File.Exists( physCachedFilePath ) )
+            {
+                // Has the file been modified since the last cached datetime?
+                DateTime cachedFileDateTime = File.GetCreationTime( physCachedFilePath );
+                if ( binaryFileMetaData.LastModifiedDateTime < cachedFileDateTime )
+                {
+                    // NOTE: the cached file has already been resized (the size is part of the cached file's filename), so we don't need to resize it again
+                    fileContent = FetchFromCache( physCachedFilePath );
+                }
+            }
+
+            if ( fileContent == null )
+            {
+                // If we didn't get it from the cache, get it from the binaryFileService
+                BinaryFile binaryFile = GetFromBinaryFileService( context, fileId, fileGuid );
+
+                if ( binaryFile != null && binaryFile.Data != null )
+                {
+                    fileContent = binaryFile.Data.Content;
+                }
+
+                // If we got the image from the binaryFileService, it might need to be resized and cached
+                if ( fileContent != null )
+                {
+                    // If more than 1 query string param is passed in, assume resize is needed
+                    if ( context.Request.QueryString.Count > 1 )
+                    {
+                        // if it isn't an SVG file, do a Resize
+                        if ( binaryFile.MimeType != "image/svg+xml" )
+                        {
+                            fileContent = GetResized( context.Request.QueryString, fileContent );
+                        }
+                    }
+
+                    if ( binaryFileMetaData.BinaryFileType_AllowCaching )
+                    {
+                        Cache( fileContent, physCachedFilePath );
+                    }
+                }
+            }
+
+            if ( fileContent == null )
+            {
+                // if we couldn't get the file from the binaryFileServie or the cache, respond with NotFound
+                SendNotFound( context );
+                return;
+            }
+
+            // respond with File
+            context.Response.ContentType = binaryFileMetaData.MimeType;
+            context.Response.AddHeader( "content-disposition", "inline;filename=" + binaryFileMetaData.FileName );
+            context.Response.BinaryWrite( fileContent );
+            context.Response.Flush();
         }
 
         /// <summary>

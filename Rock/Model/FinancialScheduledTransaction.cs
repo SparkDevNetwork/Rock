@@ -9,6 +9,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -224,6 +225,17 @@ namespace Rock.Model
             set { _transactions = value; }
         }
         private ICollection<FinancialTransaction> _transactions;
+
+        /// <summary>
+        /// Gets the total amount.
+        /// </summary>
+        /// <value>
+        /// The total amount.
+        /// </value>
+        public decimal TotalAmount 
+        {
+            get { return ScheduledTransactionDetails.Sum( d => d.Amount ); }
+        }
 
         #endregion
 

@@ -110,6 +110,13 @@ namespace Rock.Financial
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         public abstract string GetReferenceNumber( FinancialTransaction transaction, out string errorMessage );
-        
+
+        /// <summary>
+        /// Gets an optional reference number needed to process future transaction from saved account.
+        /// </summary>
+        /// <param name="scheduledTransaction">The scheduled transaction.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public abstract string GetReferenceNumber( FinancialScheduledTransaction scheduledTransaction, out string errorMessage );
     }
 }

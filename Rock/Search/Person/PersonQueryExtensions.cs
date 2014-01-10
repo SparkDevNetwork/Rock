@@ -20,9 +20,9 @@ namespace Rock.Search.Person
         /// </summary>
         /// <param name="qry">The qry.</param>
         /// <param name="searchTerm">The search term.</param>
-        /// <param name="lastFirst">if set to <c>true</c> [last first].</param>
+        /// <param name="reversed">if set to <c>true</c> [last first].</param>
         /// <returns></returns>
-        public static IOrderedQueryable<Rock.Model.Person> QueryByName( this IQueryable<Rock.Model.Person> qry, string searchTerm, out bool lastFirst )
+        public static IOrderedQueryable<Rock.Model.Person> QueryByName( this IQueryable<Rock.Model.Person> qry, string searchTerm, out bool reversed )
         {
             var names = searchTerm.SplitDelimitedValues();
 
@@ -31,19 +31,19 @@ namespace Rock.Search.Person
 
             if ( searchTerm.Contains( ',' ) )
             {
-                lastFirst = true;
+                reversed = true;
                 lastName = names.Length >= 1 ? names[0].Trim() : string.Empty;
                 firstName = names.Length >= 2 ? names[1].Trim() : string.Empty;
             }
             else if ( searchTerm.Contains( ' ' ) )
             {
-                lastFirst = false;
+                reversed = false;
                 firstName = names.Length >= 1 ? names[0].Trim() : string.Empty;
                 lastName = names.Length >= 2 ? names[1].Trim() : string.Empty;
             }
             else
             {
-                lastFirst = true;
+                reversed = true;
                 lastName = searchTerm.Trim();
             }
 
@@ -58,7 +58,7 @@ namespace Rock.Search.Person
       
             IOrderedQueryable<Rock.Model.Person> result;
 
-            if ( lastFirst )
+            if ( reversed )
             {
                 result = qry.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName );
             }
@@ -79,10 +79,12 @@ namespace Rock.Search.Person
         /// <returns></returns>
         public static IQueryable<string> SelectFullNames( this IQueryable<Rock.Model.Person> qry, string searchTerm, bool distinct = true )
         {
-            bool lastFirst;
-            var peopleQry = qry.QueryByName( searchTerm, out lastFirst );
+            bool reversed;
+            var peopleQry = qry.QueryByName( searchTerm, out reversed );
 
-            var selectQry = peopleQry.Select( p => ( lastFirst ? p.FullNameLastFirst : p.FullName ) );
+            var selectQry = peopleQry.Select( p => ( reversed ?
+                p.LastName + ", " + p.NickName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Name : "" ) :
+                p.NickName + " " + p.LastName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Name : "" ) ) );
 
             if (distinct)
             {

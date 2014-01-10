@@ -26,6 +26,7 @@ namespace RockWeb.Blocks.Core
     [BooleanField( "Show Security Button", "", true )]
     public partial class Notes : RockBlock
     {
+        private bool showSecurityButton = false;
         private IEntity contextEntity = null;
         private NoteType noteType;
 
@@ -41,7 +42,7 @@ namespace RockWeb.Blocks.Core
 
             cbAlert.Visible = GetAttributeValue( "ShowAlertCheckbox" ).AsBoolean();
             cbPrivate.Visible = GetAttributeValue( "ShowPrivateCheckbox" ).AsBoolean();
-            btnSecurity.Visible = GetAttributeValue( "ShowSecurityButton" ).AsBoolean();
+            showSecurityButton = GetAttributeValue( "ShowSecurityButton" ).AsBoolean();
         }
 
         /// <summary>
@@ -146,7 +147,7 @@ namespace RockWeb.Blocks.Core
                     noteEditor.CanEdit = note.IsAuthorized( "Edit", CurrentPerson );
                     noteEditor.ShowAlertCheckBox = cbAlert.Visible;
                     noteEditor.ShowPrivateCheckBox = cbPrivate.Visible;
-                    noteEditor.ShowSecurityButton = btnSecurity.Visible && note.IsAuthorized( "Administrate", CurrentPerson );
+                    noteEditor.ShowSecurityButton = showSecurityButton && note.IsAuthorized( "Administrate", CurrentPerson );
                 }
             }
         }

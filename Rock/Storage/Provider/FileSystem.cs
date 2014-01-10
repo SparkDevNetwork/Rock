@@ -110,8 +110,15 @@ namespace Rock.Storage.Provider
                 urlBuilder.Append( "/" );
             }
 
-            // Prefix the FileName on disk with the Guid so that we can have multiple files with the same name (for example, setup.exe and setup.exe)
-            urlBuilder.Append( file.Guid + "_" + file.FileName );
+            // if the file doesn't have a folderPath, prefix the FileName on disk with the Guid so that we can have multiple files with the same name (for example, setup.exe and setup.exe)
+            if ( Path.GetDirectoryName( file.FileName ) == string.Empty )
+            {
+                urlBuilder.Append( file.Guid + "_" );
+            }
+
+            string urlFileName = file.FileName.Replace( "\\", "/" ).TrimStart( new char[] { '/' } );
+
+            urlBuilder.Append( urlFileName );
             return urlBuilder.ToString();
         }
 

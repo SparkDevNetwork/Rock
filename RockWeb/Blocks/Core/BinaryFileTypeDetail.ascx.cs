@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Core
             {
                 if ( pnlDetails.Visible )
                 {
-                    var storageEntityType = new EntityTypeService().Get( cpStorageType.SelectedValue.AsGuid() );
+                    var storageEntityType = EntityTypeCache.Read( cpStorageType.SelectedValue.AsGuid() );
                     if ( storageEntityType != null )
                     {
                         var binaryFileType = new BinaryFileType { StorageEntityTypeId = storageEntityType.Id };
@@ -132,8 +132,6 @@ namespace RockWeb.Blocks.Core
             tbName.Text = binaryFileType.Name;
             tbDescription.Text = binaryFileType.Description;
             tbIconCssClass.Text = binaryFileType.IconCssClass;
-            imgIconSmall.BinaryFileId = binaryFileType.IconSmallFileId;
-            imgIconLarge.BinaryFileId = binaryFileType.IconLargeFileId;
             cbAllowCaching.Checked = binaryFileType.AllowCaching;
 
             if ( binaryFileType.StorageEntityType != null )
@@ -184,8 +182,6 @@ namespace RockWeb.Blocks.Core
             tbName.ReadOnly = readOnly;
             tbDescription.ReadOnly = readOnly;
             tbIconCssClass.ReadOnly = readOnly;
-            imgIconLarge.Enabled = !readOnly;
-            imgIconSmall.Enabled = !readOnly;
             gBinaryFileAttributes.Enabled = !readOnly;
             cbAllowCaching.Enabled = !readOnly;
             cpStorageType.Enabled = !readOnly;
@@ -238,8 +234,6 @@ namespace RockWeb.Blocks.Core
                 binaryFileType.Name = tbName.Text;
                 binaryFileType.Description = tbDescription.Text;
                 binaryFileType.IconCssClass = tbIconCssClass.Text;
-                binaryFileType.IconSmallFileId = imgIconSmall.BinaryFileId;
-                binaryFileType.IconLargeFileId = imgIconLarge.BinaryFileId;
                 binaryFileType.AllowCaching = cbAllowCaching.Checked;
 
                 if ( !string.IsNullOrWhiteSpace( cpStorageType.SelectedValue ) )

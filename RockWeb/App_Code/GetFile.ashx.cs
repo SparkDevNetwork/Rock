@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.IO;
 using System.Web;
 using Rock;
 using Rock.Model;
@@ -27,24 +28,17 @@ namespace RockWeb
         {
             try
             {
-                var queryString = context.Request.QueryString;
+                // Check to see if this is a BinaryFileType/BinaryFile or just a plain content file
+                bool isBinaryFile = context.Request.QueryString["isBinaryFile"].AsBoolean();
+                context.Items.Add( "isBinaryFile", isBinaryFile );
 
-                int fileId = queryString["id"].AsInteger() ?? 0;
-                Guid fileGuid = queryString["guid"].AsGuid();
-
-                if ( fileId == 0 && fileGuid.Equals( Guid.Empty ) )
+                if ( isBinaryFile )
                 {
-                    throw new Exception( "file id key must be a guid or an int" );
-                }
-
-                BinaryFileService binaryFileService = new BinaryFileService();
-                if ( fileGuid != Guid.Empty )
-                {
-                    return binaryFileService.BeginGet( cb, context, fileGuid );
+                    return BeginProcessBinaryFileRequest( context, cb );
                 }
                 else
                 {
-                    return binaryFileService.BeginGet( cb, context, fileId );
+                    return BeginProcessContentFileRequest( context );
                 }
             }
             catch ( Exception ex )
@@ -55,6 +49,63 @@ namespace RockWeb
                 context.ApplicationInstance.CompleteRequest();
 
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Begins the process content file request.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">fileName must be specified</exception>
+        private static IAsyncResult BeginProcessContentFileRequest( HttpContext context )
+        {
+            string relativeFilePath = context.Request.QueryString["fileName"];
+
+            if ( string.IsNullOrWhiteSpace( relativeFilePath ) )
+            {
+                throw new Exception( "fileName must be specified" );
+            }
+
+            const string RootContentFolder = "~/Content";
+            string physicalRootFolder = context.Request.MapPath( RootContentFolder );
+            string physicalContentFileName = Path.Combine( physicalRootFolder, relativeFilePath.TrimStart( new char[] { '/', '\\' } ) );
+            byte[] fileContents;
+
+            using ( FileStream sourceStream = File.Open( physicalContentFileName, FileMode.Open, FileAccess.Read ) )
+            {
+                fileContents = new byte[sourceStream.Length];
+                context.Items.Add( "fileContents", fileContents );
+                context.Items.Add( "physicalContentFileName", physicalContentFileName );
+                return sourceStream.ReadAsync( fileContents, 0, (int)sourceStream.Length );
+            }
+        }
+
+        /// <summary>
+        /// Begins the process binary file request.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="cb">The cb.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">file id key must be a guid or an int</exception>
+        private static IAsyncResult BeginProcessBinaryFileRequest( HttpContext context, AsyncCallback cb )
+        {
+            int fileId = context.Request.QueryString["id"].AsInteger() ?? 0;
+            Guid fileGuid = context.Request.QueryString["guid"].AsGuid();
+
+            if ( fileId == 0 && fileGuid.Equals( Guid.Empty ) )
+            {
+                throw new Exception( "file id key must be a guid or an int" );
+            }
+
+            BinaryFileService binaryFileService = new BinaryFileService();
+            if ( fileGuid != Guid.Empty )
+            {
+                return binaryFileService.BeginGet( cb, context, fileGuid );
+            }
+            else
+            {
+                return binaryFileService.BeginGet( cb, context, fileId );
             }
         }
 
@@ -71,21 +122,44 @@ namespace RockWeb
             {
                 context.Response.Clear();
 
-                BinaryFile binaryFile = new BinaryFileService().EndGet( result, context );
-                if ( binaryFile != null )
-                {
-                    context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", binaryFile.FileName ) );
-                    context.Response.ContentType = binaryFile.MimeType;
+                bool isBinaryFile = (bool)context.Items["isBinaryFile"];
 
-                    if ( binaryFile.Data != null )
+                if ( isBinaryFile )
+                {
+                    BinaryFile binaryFile = new BinaryFileService().EndGet( result, context );
+                    if ( binaryFile != null )
                     {
-                        if ( binaryFile.Data.Content != null )
+                        context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", binaryFile.FileName ) );
+                        context.Response.ContentType = binaryFile.MimeType;
+
+                        if ( binaryFile.Data != null )
                         {
-                            context.Response.BinaryWrite( binaryFile.Data.Content );
-                            context.Response.Flush();
-                            context.ApplicationInstance.CompleteRequest();
-                            return;
+                            if ( binaryFile.Data.Content != null )
+                            {
+                                context.Response.BinaryWrite( binaryFile.Data.Content );
+                                context.Response.Flush();
+                                context.ApplicationInstance.CompleteRequest();
+                                return;
+                            }
                         }
+                    }
+                }
+                else
+                {
+                    byte[] fileContents = (byte[])context.Items["fileContents"];
+                    string physicalContentFileName = context.Items["physicalContentFileName"] as string;
+
+                    if ( fileContents != null )
+                    {
+                        context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", Path.GetFileName( physicalContentFileName ) ) );
+
+                        string mimeType = System.Web.MimeMapping.GetMimeMapping( physicalContentFileName );
+                        context.Response.ContentType = mimeType;
+
+                        context.Response.BinaryWrite( fileContents );
+                        context.Response.Flush();
+                        context.ApplicationInstance.CompleteRequest();
+                        return;
                     }
                 }
 

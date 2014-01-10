@@ -455,7 +455,8 @@
                     var $li = $(li);
                     selectedNodes.push({
                         id: $li.attr('data-id'),
-                        name: $li.find('span').text()
+                        // get the li text excluding child text
+                        name: $li.contents(':not(ul)').text()
                     });
                 });
 
@@ -495,8 +496,9 @@
             }
             else
             {
-                // use the existing rocktree but update the settings
+                // use the existing rocktree but update the settings and clean up selectedNodes
                 rockTree.options = settings;
+                rockTree.selectedNodes = [];
             }
 
             $el.data('rockTree', rockTree);
