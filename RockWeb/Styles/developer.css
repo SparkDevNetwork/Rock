@@ -28,37 +28,6 @@
 }
 
 
-/* General and standard Note/comment styling for the icon that sits to the left of the comment */
-.note-container article i
-{
-    font-size: 28px;
-    float: left;
-    width: 28px;
-    margin: 0 12px 0 4px;
-}
-
-/* MP - Workflow Activities Readonly List Toggler */
-
-.workflow-activities-readonly-header
-{
-	color: #515151;
-	left: auto;
-	top: auto;
-	padding-top: 8px;
-    padding-right: 8px;
-    padding-bottom: 8px;
-}
-
-.workflow-activities-readonly-header:hover
-{
-	color: inherit;
-	text-decoration: none;
-}
-
-.workflow-activities-readonly-header .caret {
-    border-top: 4px solid #515151;
-    margin-top: 8px;
-}
 
 /* 
     JO - Border radius correction for Rock Bootstrap theme. This is needed
@@ -73,8 +42,6 @@
   -moz-border-radius: 0 4px 4px 0;
   border-radius: 0 4px 4px 0;
 }
-
-/* DS - CSS for credit card stripe */
 
 
 /* DS - CSS for finance styling */
