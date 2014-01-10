@@ -68,7 +68,6 @@ namespace RockWeb.Blocks.Core
                 .Add( "EntityId", audit.EntityId)
                 .Add( "Title", audit.Title )
                 .Add( "AuditType", audit.AuditType )
-                .Add( "Properties", audit.Properties )
                 .Add( "DateTime", audit.DateTime )
                 .Add( "Person", audit.Person )
                 .Html;

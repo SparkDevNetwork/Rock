@@ -12,7 +12,6 @@
                 <Columns>
                     <asp:BoundField DataField="EntityType" HeaderText="Entity Type" SortExpression="EntityType" />
                     <asp:BoundField DataField="EntityId" HeaderText="Entity Id" SortExpression="EntityId" />
-                    <asp:BoundField DataField="Properties" HeaderText="Properties" SortExpression="Properties" />
                     <Rock:DateTimeField DataField="DateTime" HeaderText="Date" SortExpression="DateTime" />
                     <asp:BoundField DataField="PersonName" HeaderText="Name" SortExpression="PersonName" />
                 </Columns>

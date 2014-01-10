@@ -61,7 +61,8 @@ namespace RockWeb.Blocks.Core
 
         protected override void OnLoad( EventArgs e )
         {
-            if (Session["TagCloudTab"] == "public")
+            string tagCloudTab = Session["TagCloudTab"] as string;
+            if (!string.IsNullOrWhiteSpace(tagCloudTab) && tagCloudTab == "public")
             {
                 DisplayTags(null, 15);
                 publicTagsCss = "active";

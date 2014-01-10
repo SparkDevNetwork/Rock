@@ -4,11 +4,12 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -22,6 +23,9 @@ namespace Rock.Model
     [DataContract]
     public partial class Audit : Entity<Audit>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the EntityTypeId for the <see cref="Rock.Model.EntityType"/> of entity that was modified. This property is required.
         /// </summary>
@@ -53,15 +57,6 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public string Title { get; set; }
         
-        ///// <summary>
-        ///// Type of change: 0:Add, 1:Modify, 2:Delete
-        ///// Gets or sets the
-        ///// </summary>
-        ///// <value>
-        ///// Original Value.
-        ///// </value>
-
-
         /// <summary>
         /// Gets or sets the type of change that was made to the entity. This property is required.
         /// </summary>
@@ -76,16 +71,6 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public AuditType AuditType { get; set; }
         
-        /// <summary>
-        /// Gets or sets a comma delimited list of the properties that were modified. 
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> representing the properties that were modified.
-        /// </value>
-        [DataMember]
-        public string Properties { get; set; }
-
-
         /// <summary>
         /// Gets or sets the date and time that the entity was modified and the audit entry was created.
         /// </summary>
@@ -103,6 +88,10 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? PersonId { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the entity that was modified.
@@ -123,6 +112,36 @@ namespace Rock.Model
         public virtual Rock.Model.Person Person { get; set; }
 
         /// <summary>
+        /// Gets or sets the details.
+        /// </summary>
+        /// <value>
+        /// The details.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<AuditDetail> Details
+        {
+            get { return _details; }
+            set { _details = value; }
+        }
+        private ICollection<AuditDetail> _details;
+
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Audit"/> class.
+        /// </summary>
+        public Audit() : base()
+        {
+            Details = new Collection<AuditDetail>();
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -133,8 +152,11 @@ namespace Rock.Model
             return this.Title;
         }
 
+        #endregion
     }
-    
+
+    #region Entity Configuration
+
     /// <summary>
     /// Entity Change Configuration class.
     /// </summary>
@@ -149,6 +171,8 @@ namespace Rock.Model
             this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
+
+    #endregion
 
     #region Enumerations
 

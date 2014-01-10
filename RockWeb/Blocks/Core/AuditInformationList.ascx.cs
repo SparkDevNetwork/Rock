@@ -143,7 +143,6 @@ namespace RockWeb.Blocks.Core
                     a.Id,
                     EntityType = a.EntityType.Name,
                     a.EntityId,
-                    a.Properties,
                     a.DateTime,
                     PersonName = a.Person.NickName + " " + a.Person.LastName + ( a.Person.SuffixValueId.HasValue ? " " + a.Person.SuffixValue.Name : "" )
                 } );
