@@ -1,16 +1,45 @@
+/*
+   Rock's Core CSS
+    
+    1. Imports - Used to import the various core less files
+    2. HTML Overrides - Style overrides for basic HTML tags
+    3. Bootstrap Overrides - When Bootstrp gets it wrong, we make it right (we know it's called delusion)
+    4. ASP.Net Overrides - Yep they get it wrong too sometimes
+    5. Utility Classes - Classes that we use often to keep from writing from repeating ourselves
+
+*/
+
+
+// 1. Imports
+//--------------------------------
+
 @import "_components.less";
-@import "_block-specific.less";
 @import "_page-admin.less";
 @import "_grid.less";
 @import "_modal.less";
 @import "_forms.less";
-@import "_persondetails.less";
+
+@import "_blocks-cms.less";
+@import "_blocks-security.less";
+@import "_blocks-reporting.less";
+@import "_blocks-core.less";
+@import "_blocks-groups.less";
+@import "_blocks-finance.less";
+@import "_blocks-persondetails.less";
+@import "_blocks-communication.less";
+
+@import "_page-specific.less";
+
 @import "_scroll.less";
 @import "_global-variables.less";
+@import "_plugin-extensions.less";
 
 @import "./Bootstrap/mixins.less";
 
-// HTML Overrides
+
+
+
+// 2. HTML Overrides
 //--------------------------------
 
 // text selection color
@@ -23,18 +52,26 @@
     color: @text-selection-text-color;
 }
 
-/* global classes */
-.clickable {
-    cursor: pointer;
+small
+{
+    font-family: 'OpenSansLight', 'Helvetica Neue',Helvetica,Arial,sans-serif;
+    font-size: 13px;
+    margin-top: 2px;
 }
 
-/* bootstrap overrides */
+
+// 3. Bootstrap Overrides
+//--------------------------------
+
+.nav-pills {
+    margin: 10px 0;
+}
 
 .control-label {
     font-weight: @font-weight-semibold;
 }
 
-/* add badge colors back to BS3 */
+// add badge colors back to BS3 
 .badge-danger {
     background-color: @label-danger-bg;
 }
@@ -51,7 +88,7 @@
     background-color: @label-info-bg;
 }
 
-/* add alternate popover title style that exists inside of the popover-content to use ajax updates */
+// add alternate popover title style that exists inside of the popover-content to use ajax updates
 .popover-content {
     header {
         .clearfix();
@@ -82,29 +119,9 @@
     }
 }
 
-// make links in alerts the same color as the text with a nice dotted underline
-.alert-success a {
-    color: @alert-success-text;
-    border-bottom: 1px dotted @alert-success-text;
-}
-
-.alert-info a {
-    color: @alert-info-text;
-    border-bottom: 1px dotted @alert-info-text;
-}
-
-.alert-warning a {
-    color: @alert-warning-text;
-    border-bottom: 1px dotted @alert-warning-text;
-}
-
-.alert-danger a {
-    color: @alert-danger-text;
-    border-bottom: 1px dotted @alert-danger-text;
-}
 
 
-/* extension of Bootstrap 3 panel */
+// panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
 .panel {
     legend {
         border-color: @accent-color;
@@ -118,7 +135,6 @@
     }
 }
 
-//.panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
 .panel-widget {
     .panel-variant(@accent-color ; @accent-text-color; @accent-color; @accent-color;);
 
@@ -152,8 +168,8 @@
 
 // .panel-note {}  see _block-specific.less
 
-// extensions for buttons
-// .button-variant(@color; @background; @border) {}
+// extensions for buttons    ->   .button-variant(@color; @background; @border) {}
+
 .btn.aspNetDisabled {
     cursor: not-allowed;
     pointer-events: none; // Future-proof disabling of clicks
@@ -177,12 +193,36 @@
     .button-variant(#222; white; darken(white, 10%));
 }
 
-/* extension of alerts */
-.alert-action {
+// alert extentions
+
+// new alert types
+.alert-action { 
     .alert-variant(@accent-color; @accent-color; @accent-text-color);
 }
 
-/* modify BS3 to use fontawesome for carousel icons */
+// make links in alerts the same color as the text with a nice dotted underline
+.alert-success a {
+    color: @alert-success-text;
+    border-bottom: 1px dotted @alert-success-text;
+}
+
+.alert-info a {
+    color: @alert-info-text;
+    border-bottom: 1px dotted @alert-info-text;
+}
+
+.alert-warning a {
+    color: @alert-warning-text;
+    border-bottom: 1px dotted @alert-warning-text;
+}
+
+.alert-danger a {
+    color: @alert-danger-text;
+    border-bottom: 1px dotted @alert-danger-text;
+}
+
+
+// modify BS3 to use fontawesome for carousel icons 
 .carousel-control .fa-chevron-left,
 .carousel-control .fa-chevron-right {
     position: absolute;
@@ -193,25 +233,21 @@
 }
 
 
-/* context help  */
-a.help {
-    margin-left: 6px;
-    outline: 0;
-    color: @header-text-color;
+// 4. ASP.Net Overrides
+//--------------------------------
+
+// to make asp.net panels look disabled when enabled is false
+div.aspNetDisabled {
+    opacity: 0.5;
 }
 
-/* user registration styles */
-.not-me 
-{
-    margin-left: 21px;
+// 5. Utility Classes
+//--------------------------------
+
+.clickable {
+    cursor: pointer;
 }
 
-/* security window */
-.security-inherited {
-	margin-top: 12px;
-}
-
-/* additional typography components */
 
 .navigation-tip { // used to show the user directions to a page (e.g. 'Administration > General Settings')
     font-family: @font-family-monospace;
@@ -223,3 +259,9 @@ a.help {
     border-radius: @border-radius-base;
 } 
 
+// context help  
+a.help {
+    margin-left: 6px;
+    outline: 0;
+    color: @header-text-color;
+}

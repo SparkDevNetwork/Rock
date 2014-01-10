@@ -350,7 +350,7 @@ var toolbar_RockCustomConfigLight =
         ['Source'],
         ['Bold', 'Italic', 'Underline', 'Strike', 'NumberedList', 'BulletedList', 'Link', 'Image', 'PasteFromWord', '-', 'RemoveFormat'],
         ['Format'], 
-        ['rockmergefield', '-', 'rockimagebrowser', '-', 'rockdocumentbrowser']
+        ['rockmergefield', '-', 'rockfilebrowser']
 	];
 
 var toolbar_RockCustomConfigFull =
@@ -365,7 +365,7 @@ var toolbar_RockCustomConfigFull =
         ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-'], 
         ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
         ['-', 'Image', 'Table'],
-        ['rockmergefield', '-', 'rockimagebrowser', '-','rockdocumentbrowser']
+        ['rockmergefield', '-', 'rockfilebrowser']
 	];	
 
 CKEDITOR.replace('{0}', {{ 
@@ -373,6 +373,7 @@ CKEDITOR.replace('{0}', {{
   toolbar: toolbar_RockCustomConfig{1},
   removeButtons: '',
   height: '{2}',
+  baseFloatZIndex: 200000,  // set zindex to be 200000 so it will be on top of our modals (100000)
   extraPlugins: '{5}',
   resize_maxWidth: '{3}',
   on : {{
@@ -398,8 +399,7 @@ CKEDITOR.replace('{0}', {{
                 enabledPlugins.Add( "rockmergefield" );
             }
 
-            enabledPlugins.Add( "rockimagebrowser" );
-            enabledPlugins.Add( "rockdocumentbrowser" );
+            enabledPlugins.Add( "rockfilebrowser" );
 
             string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(), this.Height, this.ResizeMaxWidth ?? 0, customOnChangeScript, enabledPlugins.AsDelimited( "," ) );
 

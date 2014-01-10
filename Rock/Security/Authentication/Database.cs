@@ -10,7 +10,6 @@ using System.Configuration;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
-using System.Web.Configuration;
 
 using Rock.Model;
 
@@ -26,6 +25,17 @@ namespace Rock.Security.Authentication
     {
         private static byte[] encryptionKey;
 
+        /// <summary>
+        /// Gets the type of the service.
+        /// </summary>
+        /// <value>
+        /// The type of the service.
+        /// </value>
+        public override AuthenticationServiceType ServiceType
+        {
+            get { return AuthenticationServiceType.Internal; }
+        }        
+        
         /// <summary>
         /// Determines if user is directed to another site (i.e. Facebook, Gmail, Twitter, etc) to confirm approval of using
         /// that site's credentials for authentication.
