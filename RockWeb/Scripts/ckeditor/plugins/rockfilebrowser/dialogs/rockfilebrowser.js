@@ -1,8 +1,8 @@
 ﻿CKEDITOR.dialog.add('rockfilebrowserDialog', function (editor) {
 
-    var imageUploaderHtml = "<div class='imageupload-group' style='visibility:hidden'> \n" +
+    var imageUploaderHtml = "<div class='imageupload-group'> \n" +
                             "	<div class='imageupload-thumbnail'> \n" +
-                            "		<img id='" + editor.id + "_imageUploader_img' src='/Assets/Images/no-picture.svg'> \n" +
+                            "		<img id='" + editor.id + "_imageUploader_img' src='" + Rock.settings.get('baseUrl') + "Assets/Images/no-picture.svg'> \n" +
                             "		<input id='" + editor.id + "_imageUploader_hfBinaryFileId' type='hidden'> \n" +
                             "		<input id='" + editor.id + "_imageUploader_hfBinaryFileTypeGuid' type='hidden'> \n" +
                             "	</div><div class='imageupload-remove'> \n" +
@@ -31,10 +31,13 @@
                         type: 'html',
                         html: "" +
                         "<div class='js-file-browser'> \n" +
-                        imageUploaderHtml +
+                        "  <div class=''> \n" +
+                             imageUploaderHtml +
+                        "  </div> \n" +
                         "  <div class='row'> \n" +
                         "     <div class='col-md-6'> \n" +
                         "         <div id='file-browser-folder-tree_" + editor.id + "' class='picker picker-select js-rock-tree-folders'> \n" +
+                        "            <input id='hfItemId_file-browser-folder-tree_" + editor.id + "' type='hidden' ></input> \n" +
                         "            <div id='treeview-scroll-container_" + editor.id + "' class='scroll-container scroll-container-vertical scroll-container-picker'> \n" +
                         "               <div class='scrollbar'> \n" +
                         "                   <div class='track'> \n" +
@@ -85,6 +88,9 @@
             if (foldersRockTree) {
                 $('#' + foldersControlId).closest('.js-rock-tree-folders').find('.treeview').data('rockTree', null);
             }
+            
+            // make the \\External Site folder be selected on show
+            $('#hfItemId_' + foldersControlId).val('\\External Site');
 
             // make an itemPicker for the Folders Tree
             Rock.controls.itemPicker.initialize({
@@ -96,11 +102,6 @@
 
             // 
             $('#' + foldersControlId).find('.treeview').on('rockTree:selected', function (sender, itemId) {
-
-                // make the imageuploader visible when a folder is selected
-                var fileBrowser = $(this).closest('.js-file-browser');
-                $(fileBrowser).find('.imageupload-group').css('visibility', 'visible');
-
                 var folderParam = encodeURIComponent(itemId);
 
                 // initialize another itemPicker for the Files when a folder is selected. (It'll end up being just a list since there are no children)
