@@ -378,6 +378,9 @@
         
         // Sets selected nodes given an array of ids
         setSelected: function (array) {
+            this.selectedNodes = [];
+            _clearSelectedNodes(this.nodes);
+
             var currentNode,
                 i;
 
@@ -386,6 +389,7 @@
 
                 if (currentNode) {
                     currentNode.isSelected = true;
+                    this.selectedNodes.push(currentNode);
 
                     // trigger the node as selected
                     this.$el.trigger('rockTree:selected', currentNode.id);
