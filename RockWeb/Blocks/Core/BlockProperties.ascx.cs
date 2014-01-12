@@ -221,13 +221,11 @@ namespace RockWeb.Blocks.Core
             {
                 pnlBasicProperty.Visible = true;
                 pnlAdvancedSettings.Visible = false;
-                pnlBasicProperty.DataBind();
             }
             else if ( CurrentTab.Equals( "Advanced Settings" ) )
             {
                 pnlBasicProperty.Visible = false;
                 pnlAdvancedSettings.Visible = true;
-                pnlAdvancedSettings.DataBind();
             }
         }
 
