@@ -369,7 +369,7 @@ var toolbar_RockCustomConfigFull =
 	];	
 
 CKEDITOR.replace('{0}', {{ 
-  allowedContent: true,  
+  allowedContent: true,
   toolbar: toolbar_RockCustomConfig{1},
   removeButtons: '',
   height: '{2}',
@@ -377,9 +377,16 @@ CKEDITOR.replace('{0}', {{
   extraPlugins: '{5}',
   resize_maxWidth: '{3}',
   on : {{
-       change: function () {{
+       change: function (e) {{
+         // update the underlying TextElement on every little change to ensure that Posting and Validation works consistently (doing it OnSubmit or OnBlur misses some cases)
+         e.editor.updateElement();  
          {4}
-       }}
+       }},
+       configLoaded: function (e) {{
+         // ALLOW <i></i> (won't be visible in WYSIWIG, but at least it won't get stripped when toggling between source and WYSIWIG)
+         e.editor.config.protectedSource.push( /<i[\s\S]*?\>/g ); //allows beginning <i> tag
+         e.editor.config.protectedSource.push( /<\/i[\s\S]*?\>/g ); //allows ending </i> tag
+       }}  
   }}
 }} );
             ";
@@ -404,10 +411,6 @@ CKEDITOR.replace('{0}', {{
             string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(), this.Height, this.ResizeMaxWidth ?? 0, customOnChangeScript, enabledPlugins.AsDelimited( "," ) );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckeditorInitScript, true );
-
-            // CKEditor requires that updateElement() gets called when a Form is submitted. By default, it does this automatically, but not in the case of UpdatePanels. So this script makes sure it happens when used in an UpdatePanel
-            string onSubmitScript = string.Format( "CKEDITOR.instances.{0}.updateElement();", this.ClientID );
-            ScriptManager.RegisterOnSubmitStatement( this, this.GetType(), "htmleditor_onsubmit_" + this.ClientID, onSubmitScript );
 
             if ( MergeFields.Any() )
             {
