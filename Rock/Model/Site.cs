@@ -134,6 +134,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? RegistrationPageRouteId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the 404 page route unique identifier.
+        /// </summary>
+        /// <value>
+        /// The 404 page route unique identifier.
+        /// </value>
+        [DataMember]
+        public int? PageNotFoundPageRouteId { get; set; }
         
         /// <summary>
         /// Gets or sets the path to the error page.
@@ -248,6 +257,14 @@ namespace Rock.Model
         /// </value>
         public virtual PageRoute RegistrationPageRoute { get; set; }
 
+        /// <summary>
+        /// Gets or sets the 404 <see cref="Rock.Model.PageRoute"/> page route for this site. 
+        /// </summary>
+        /// <value>
+        /// The registration page route.
+        /// </value>
+        public virtual PageRoute PageNotFoundPageRoute { get; set; }
+
         #endregion
 
         #region Methods
@@ -285,6 +302,7 @@ namespace Rock.Model
             this.HasOptional( p => p.LoginPageRoute ).WithMany().HasForeignKey( p => p.LoginPageRouteId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RegistrationPage ).WithMany().HasForeignKey( p => p.RegistrationPageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RegistrationPageRoute ).WithMany().HasForeignKey( p => p.RegistrationPageRouteId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.PageNotFoundPageRoute).WithMany().HasForeignKey(p => p.PageNotFoundPageRouteId).WillCascadeOnDelete(false);
         }
     }
 

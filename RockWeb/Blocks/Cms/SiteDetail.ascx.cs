@@ -151,6 +151,7 @@ namespace RockWeb.Blocks.Cms
                     site.LoginPageRouteId = ppLoginPage.PageRouteId;
                     site.RegistrationPageId = ppRegistrationPage.PageId;
                     site.RegistrationPageRouteId = ppRegistrationPage.PageRouteId;
+                    site.PageNotFoundPageRouteId = ppPageNotFoundPage.PageRouteId;
                     site.ErrorPage = tbErrorPage.Text;
                     site.GoogleAnalyticsCode = tbGoogleAnalytics.Text;
                     site.FacebookAppId = tbFacebookAppId.Text;
