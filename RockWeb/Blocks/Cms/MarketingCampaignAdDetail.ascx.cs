@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using Rock;
@@ -14,16 +15,15 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
-using System.ComponentModel;
 
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName("Marketing Campaign - Ad Detail")]
-    [Category("CMS")]
-    [Description("Displays tha details for an Ad.")]
+    [DisplayName( "Marketing Campaign - Ad Detail" )]
+    [Category( "CMS" )]
+    [Description( "Displays the details for an Ad." )]
     [AdditionalActions( new string[] { "Approve" } )]
     public partial class MarketingCampaignAdDetail : RockBlock, IDetailBlock
     {
@@ -70,6 +70,34 @@ namespace RockWeb.Blocks.Cms
             {
                 LoadAdAttributes( new MarketingCampaignAd(), true, false );
             }
+
+            // if the current user can't approve their own edits, set the approval to Not-Approved when they change something
+            if ( !IsUserAuthorized( "Approve" ) )
+            {
+                // change approval status to pending if any values are changed
+                string onchangeScriptFormat = @"
+                    $('#{0}').removeClass('alert-success alert-danger').addClass('alert-info');
+                    $('#{0}').text('Pending Approval');
+                    $('#{1}').val('1');
+                    $('#{2}').val('');
+                    $('#{3}').hide();";
+
+                string onchangeScript = string.Format( onchangeScriptFormat, lblApprovalStatus.ClientID, hfApprovalStatus.ClientID, hfApprovalStatusPersonId.ClientID, lblApprovalStatusPerson.ClientID );
+
+                // catch changes from any HtmlEditors (special case)
+                var htmlEditors = phAttributes.ControlsOfTypeRecursive<Rock.Web.UI.Controls.HtmlEditor>();
+                foreach ( var htmlEditor in htmlEditors )
+                {
+                    htmlEditor.OnChangeScript = onchangeScript;
+                }
+
+                // catch changes from any other inputs in the detail panel
+                string otherInputsChangeScript = string.Format( @"$('#{0} :input').on('change', function () {{", upDetail.ClientID ) + Environment.NewLine;
+                otherInputsChangeScript += onchangeScript + Environment.NewLine;
+                otherInputsChangeScript += "});";
+
+                ScriptManager.RegisterStartupScript( this, this.GetType(), "approval-status-script_" + this.ClientID, "Sys.Application.add_load(function () {" + otherInputsChangeScript + " });", true );
+            }
         }
 
         #endregion
@@ -113,8 +141,8 @@ namespace RockWeb.Blocks.Cms
 
             MarketingCampaignAd marketingCampaignAd = null;
 
-            btnApproveAd.Visible = IsUserAuthorized( "Approve" );
-            btnDenyAd.Visible = IsUserAuthorized( "Approve" );
+            lbApprove.Visible = IsUserAuthorized( "Approve" );
+            lbDeny.Visible = IsUserAuthorized( "Approve" );
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
@@ -274,10 +302,10 @@ namespace RockWeb.Blocks.Cms
             marketingCampaignAd.MarketingCampaignId = int.Parse( hfMarketingCampaignId.Value );
             marketingCampaignAd.MarketingCampaignAdTypeId = int.Parse( ddlMarketingCampaignAdType.SelectedValue );
             marketingCampaignAd.Priority = tbPriority.Text.AsInteger() ?? 0;
-            marketingCampaignAd.MarketingCampaignAdStatus = (MarketingCampaignAdStatus)int.Parse( hfMarketingCampaignAdStatus.Value );
-            if ( !string.IsNullOrWhiteSpace( hfMarketingCampaignAdStatusPersonId.Value ) )
+            marketingCampaignAd.MarketingCampaignAdStatus = (MarketingCampaignAdStatus)int.Parse( hfApprovalStatus.Value );
+            if ( !string.IsNullOrWhiteSpace( hfApprovalStatusPersonId.Value ) )
             {
-                marketingCampaignAd.MarketingCampaignStatusPersonId = int.Parse( hfMarketingCampaignAdStatusPersonId.Value );
+                marketingCampaignAd.MarketingCampaignStatusPersonId = int.Parse( hfApprovalStatusPersonId.Value );
             }
             else
             {
@@ -356,21 +384,21 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Handles the Click event of the btnApproveAd control.
+        /// Handles the Click event of the lbApprove control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnApproveAd_Click( object sender, EventArgs e )
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbApprove_Click( object sender, EventArgs e )
         {
             SetApprovalValues( MarketingCampaignAdStatus.Approved, CurrentPerson );
         }
 
         /// <summary>
-        /// Handles the Click event of the btnDenyAd control.
+        /// Handles the Click event of the lbDeny control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnDenyAd_Click( object sender, EventArgs e )
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbDeny_Click( object sender, EventArgs e )
         {
             SetApprovalValues( MarketingCampaignAdStatus.Denied, CurrentPerson );
         }
@@ -382,28 +410,26 @@ namespace RockWeb.Blocks.Cms
         /// <param name="person">The person.</param>
         private void SetApprovalValues( MarketingCampaignAdStatus status, Person person )
         {
-           
-
             string cssClass = string.Empty;
 
             switch ( status )
             {
-                case MarketingCampaignAdStatus.Approved: cssClass = "label MarketingCampaignAdStatus label-success";
+                case MarketingCampaignAdStatus.Approved: cssClass = "label label-success";
                     break;
-                case MarketingCampaignAdStatus.Denied: cssClass = "label MarketingCampaignAdStatus label-danger";
+                case MarketingCampaignAdStatus.Denied: cssClass = "label label-danger";
                     break;
-                default: cssClass = "label MarketingCampaignAdStatus label-info";
+                default: cssClass = "label label-info";
                     break;
             }
 
-            ltMarketingCampaignAdStatus.Text = String.Format("<span class='{0}'>{1}</span>", cssClass, status.ConvertToString());
+            lblApprovalStatus.Text = string.Format( "<span class='{0}'>{1}</span>", cssClass, status.ConvertToString() );
 
-            hfMarketingCampaignAdStatus.Value = status.ConvertToInt().ToString();
-            lblMarketingCampaignAdStatusPerson.Visible = person != null;
+            hfApprovalStatus.Value = status.ConvertToInt().ToString();
+            lblApprovalStatusPerson.Visible = person != null;
             if ( person != null )
             {
-                lblMarketingCampaignAdStatusPerson.Text = "by " + person.FullName;
-                hfMarketingCampaignAdStatusPersonId.Value = person.Id.ToString();
+                lblApprovalStatusPerson.Text = "by " + person.FullName;
+                hfApprovalStatusPersonId.Value = person.Id.ToString();
             }
         }
 
