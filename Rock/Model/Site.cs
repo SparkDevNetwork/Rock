@@ -136,6 +136,18 @@ namespace Rock.Model
         public int? RegistrationPageRouteId { get; set; }
 
         /// <summary>
+        /// Gets or sets the Id of the 404 <see cref="Rock.Model.Page"/>
+        /// </summary>
+        /// <remarks>
+        /// This is the <see cref="Rock.Model.Page"/> that is loaded when a page is not found.
+        /// </remarks>
+        /// <value>
+        /// An <see cref="System.Int32"/> containing the Id of the Site's 404 <see cref="Rock.Model.Page"/>. 
+        /// </value>
+        [DataMember]
+        public int? PageNotFoundPageId { get; set; }
+
+        /// <summary>
         /// Gets or sets the 404 page route unique identifier.
         /// </summary>
         /// <value>
@@ -258,6 +270,14 @@ namespace Rock.Model
         public virtual PageRoute RegistrationPageRoute { get; set; }
 
         /// <summary>
+        /// Gets or sets the 404 <see cref="Rock.Model.Page"/> page for the site.
+        /// </summary>
+        /// <value>
+        /// The 404 <see cref="Rock.Model.Page"/> for the site. 
+        /// </value>
+        public virtual Page PageNotFoundPage { get; set; }
+
+        /// <summary>
         /// Gets or sets the 404 <see cref="Rock.Model.PageRoute"/> page route for this site. 
         /// </summary>
         /// <value>
@@ -302,6 +322,7 @@ namespace Rock.Model
             this.HasOptional( p => p.LoginPageRoute ).WithMany().HasForeignKey( p => p.LoginPageRouteId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RegistrationPage ).WithMany().HasForeignKey( p => p.RegistrationPageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RegistrationPageRoute ).WithMany().HasForeignKey( p => p.RegistrationPageRouteId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.PageNotFoundPage).WithMany().HasForeignKey(p => p.PageNotFoundPageId).WillCascadeOnDelete(false);
             this.HasOptional( p => p.PageNotFoundPageRoute).WithMany().HasForeignKey(p => p.PageNotFoundPageRouteId).WillCascadeOnDelete(false);
         }
     }
