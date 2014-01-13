@@ -26,8 +26,6 @@ namespace RockWeb.Blocks.Utility
     [BooleanField("Hide Block When Empty", "Hides entire block if no checklist items are available.", false)]
     [TextField("Checklist Title", "Title for your checklist.",false,"","Description",1)]
     [MemoField("Checklist Description", "Description for your checklist. Leave this blank and nothing will be displayed.",false,"","Description", 2)]
-    [CodeEditorField("Pre-Text", "Html to wrap the control in to provide advanced UI's like panels.", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 400, false, "", "Advanced", 0, "PreText")]
-    [CodeEditorField("Post-Text", "Html to wrap the control in to provide advanced UI's like panels.", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 400, false, "", "Advanced", 1, "PostText")]
     public partial class DefinedTypeCheckList : RockBlock
     {
         private string attributeKey = string.Empty;
@@ -100,7 +98,7 @@ $('.checklist-item .checklist-desc-toggle').on('click', function (e) {
 
         private void ShowList()
         {
-            pnlContent.Visible = true;
+            this.Visible = true;
 
             // Should selected items be displayed
             bool hideCheckedItems = false;
@@ -154,13 +152,10 @@ $('.checklist-item .checklist-desc-toggle').on('click', function (e) {
                     {
                         lTitle.Text = "<h4>" + GetAttributeValue( "ChecklistTitle" ) + "</h4>";
                         lDescription.Text = GetAttributeValue( "ChecklistDescription" );
-
-                        lPreText.Text = GetAttributeValue( "PreText" );
-                        lPostText.Text = GetAttributeValue( "PostText" );
                     }
                     else
                     {
-                        pnlContent.Visible = false;
+                        this.Visible = false;
                     }
                 }
             }

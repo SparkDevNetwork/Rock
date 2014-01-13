@@ -280,9 +280,14 @@
     <Compile Include="Migrations\201401100511284_RemoveAuditDetail.Designer.cs">
       <DependentUpon>201401100511284_RemoveAuditDetail.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401131442369_BlockPrePostHtml.cs" />
+    <Compile Include="Migrations\201401131442369_BlockPrePostHtml.Designer.cs">
+      <DependentUpon>201401131442369_BlockPrePostHtml.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
+    <Compile Include="Migrations\RockMigration1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -467,6 +472,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401100511284_RemoveAuditDetail.resx">
       <DependentUpon>201401100511284_RemoveAuditDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401131442369_BlockPrePostHtml.resx">
+      <DependentUpon>201401131442369_BlockPrePostHtml.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
