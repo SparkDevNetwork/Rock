@@ -50,7 +50,7 @@
 
         <div class="col-md-4">
             <div class="summary">
-                <div class="tags clearfix">
+                <div class="taglist clearfix">
                     <Rock:TagList ID="taglPersonTags" runat="server"/>
                 </div>
                 <div class="demographics">

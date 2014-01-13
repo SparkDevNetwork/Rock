@@ -387,50 +387,51 @@ div.tagsinput
     margin-left: 12px;
 }
 
-.tag 
-{
-	float: left;
-	height: 22px;
-	line-height: 18px;
-	position: relative;
-	font-size: 13px;
-	margin-bottom: 6px;
-    margin-left: 20px;
-	padding: 1px 10px 0 12px;
-	background: @tag-bg;
-	color: @tag-text-color;
-	text-decoration: none;	
-	border-bottom-right-radius: @tag-border-radius;
-	border-top-right-radius: @tag-border-radius;
+.taglist {
+    .tag {
+        float: left;
+        height: 22px;
+        line-height: 18px;
+        position: relative;
+        font-size: 13px;
+        margin-bottom: 6px;
+        margin-left: 20px;
+        padding: 1px 10px 0 12px;
+        background: @tag-bg;
+        color: @tag-text-color;
+        text-decoration: none;
+        border-bottom-right-radius: @tag-border-radius;
+        border-top-right-radius: @tag-border-radius;
 
-    small{
-        font-size: 11px;
-    }
+        small {
+            font-size: 11px;
+        }
 
-    &:before {       /* tag point */
-	    content: "";
-	    float: left;
-	    position: absolute;
-	    top: 0;
-	    left: -11px;
-	    width: 0;
-	    height: 0;
-	    border-color: transparent @tag-bg transparent transparent;
-	    border-style: solid;
-	    border-width: 11px 11px 11px 0;		
-    }
+        &:before { /* tag point */
+            content: "";
+            float: left;
+            position: absolute;
+            top: 0;
+            left: -11px;
+            width: 0;
+            height: 0;
+            border-color: transparent @tag-bg transparent transparent;
+            border-style: solid;
+            border-width: 11px 11px 11px 0;
+        }
 
-    &:after {         /* tag dot */
-	    content: "";
-	    position: absolute;
-	    top: 8px;
-	    left: 0;
-	    float: left;
-	    width: 5px;
-	    height: 5px;
-	    border-radius: 2px;
-	    background: @tag-dot-color;
-	    box-shadow: -1px -1px 2px @tag-bg;
+        &:after { /* tag dot */
+            content: "";
+            position: absolute;
+            top: 8px;
+            left: 0;
+            float: left;
+            width: 5px;
+            height: 5px;
+            border-radius: 2px;
+            background: @tag-dot-color;
+            box-shadow: -1px -1px 2px @tag-bg;
+        }
     }
 }
 

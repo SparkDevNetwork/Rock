@@ -149,7 +149,7 @@ namespace RockWeb.Blocks.Core
             StringBuilder letterOutput = new StringBuilder();
 
             letterOutput.Append("<ul class='list-inline tag-letterlist'>");
-            tagOutput.Append("<ul class='list-unstyled tag-list'>");
+            tagOutput.Append("<ul class='list-unstyled taglist'>");
             foreach (var letterItem in tagAlphabit)
             {
                 if (letterItem.Value.Count > 0)
