@@ -52,48 +52,15 @@ namespace Rock.Web
             // If page has not been specified get the site by the domain and use the site's default page
             else
             {
-                string host = requestContext.HttpContext.Request.Url.Host;
-                string cacheKey = "Rock:DomainSites";
-
-                ObjectCache cache = MemoryCache.Default;
-                Dictionary<string, int> sites = cache[cacheKey] as Dictionary<string, int>;
-                if ( sites == null )
-                    sites = new Dictionary<string, int>();
-
-                Rock.Web.Cache.SiteCache site = null;
-                if ( sites.ContainsKey( host ) )
-                    site = Rock.Web.Cache.SiteCache.Read( sites[host] );
-                else
+                Rock.Web.Cache.SiteCache site = Rock.Web.Cache.SiteCache.GetSiteByDomain(requestContext.HttpContext.Request.Url.Host);
+                
+                // if not found use the default site
+                if (site == null)
                 {
-                    int siteId = 1;
-
-                    // Attempt to find site first by an exact match to domain, then by a contained domain name
-                    Rock.Model.SiteDomainService siteDomainService = new Rock.Model.SiteDomainService();
-                    Rock.Model.SiteDomain siteDomain = siteDomainService.GetByDomain( requestContext.HttpContext.Request.Url.Host );
-                    if ( siteDomain == null )
-                    {
-                        siteDomain = siteDomainService.GetByDomainContained( requestContext.HttpContext.Request.Url.Host );
-                    }
-                    if ( siteDomain != null )
-                    {
-                        siteId = siteDomain.SiteId;
-                    }
-                    else
-                    {
-                        var siteService = new Rock.Model.SiteService();
-                        var rockSite = siteService.Get( new Guid( SystemGuid.Site.SITE_ROCK_INTERNAL ) );
-                        if ( rockSite != null )
-                        {
-                            siteId = rockSite.Id;
-                        }
-                    }
-
-                    sites.Add( host, siteId );
-                    site = Rock.Web.Cache.SiteCache.Read( siteId );
-
+                    var siteService = new Rock.Model.SiteService();
+                    var rockSite = siteService.Get(new Guid(SystemGuid.Site.SITE_ROCK_INTERNAL));
+                    site = Rock.Web.Cache.SiteCache.Read(rockSite.Id);
                 }
-
-                cache[cacheKey] = sites;
 
                 if ( site != null) 
                 {
@@ -125,7 +92,18 @@ namespace Rock.Web
 
             if ( page == null )
             {
-                return new HttpHandlerError( 404 );
+                // try to get site's 404 page
+                Rock.Web.Cache.SiteCache site = Rock.Web.Cache.SiteCache.GetSiteByDomain(requestContext.HttpContext.Request.Url.Host);
+                if (site != null && site.PageNotFoundPageId != null)
+                {
+                    page = Rock.Web.Cache.PageCache.Read(site.PageNotFoundPageId ?? 0);
+                }
+                else
+                {
+                    // no 404 page found for the site
+                    return new HttpHandlerError(404);
+                }
+
             }
 
             string theme = page.Layout.Site.Theme;
