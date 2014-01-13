@@ -10,6 +10,8 @@ using System.Runtime.Caching;
 using System.Web.Compilation;
 using System.Web.Routing;
 
+using Rock.Web.Cache;
+
 namespace Rock.Web
 {
     /// <summary>
@@ -52,12 +54,12 @@ namespace Rock.Web
             // If page has not been specified get the site by the domain and use the site's default page
             else
             {
-                Rock.Web.Cache.SiteCache site = Rock.Web.Cache.SiteCache.GetSiteByDomain(requestContext.HttpContext.Request.Url.Host);
+                SiteCache site = SiteCache.GetSiteByDomain(requestContext.HttpContext.Request.Url.Host);
                 
                 // if not found use the default site
                 if (site == null)
                 {
-                    site = Rock.Web.Cache.SiteCache.Read( SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid() );
+                    site = SiteCache.Read( SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid() );
                 }
 
                 if ( site != null) 
@@ -77,24 +79,24 @@ namespace Rock.Web
                     throw new SystemException( "Invalid Site Configuration" );
             }
 
-            Rock.Web.Cache.PageCache page = null;
+            PageCache page = null;
 
             if ( !string.IsNullOrEmpty( pageId ) )
             {
                 int pageIdNumber = 0;
                 if ( Int32.TryParse( pageId, out pageIdNumber ) )
                 {
-                    page = Rock.Web.Cache.PageCache.Read( pageIdNumber );
+                    page = PageCache.Read( pageIdNumber );
                 }
             }
 
             if ( page == null )
             {
                 // try to get site's 404 page
-                Rock.Web.Cache.SiteCache site = Rock.Web.Cache.SiteCache.GetSiteByDomain(requestContext.HttpContext.Request.Url.Host);
+                SiteCache site = SiteCache.GetSiteByDomain(requestContext.HttpContext.Request.Url.Host);
                 if (site != null && site.PageNotFoundPageId != null)
                 {
-                    page = Rock.Web.Cache.PageCache.Read(site.PageNotFoundPageId ?? 0);
+                    page = PageCache.Read(site.PageNotFoundPageId ?? 0);
                 }
                 else
                 {
@@ -106,7 +108,7 @@ namespace Rock.Web
 
             string theme = page.Layout.Site.Theme;
             string layout = page.Layout.FileName;
-            string layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
+            string layoutPath = PageCache.FormatPath( theme, layout );
 
             try
             {
@@ -130,7 +132,7 @@ namespace Rock.Web
                 }
 
                 // Build the path to the aspx file to
-                layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
+                layoutPath = PageCache.FormatPath( theme, layout );
 
                 // Return the default layout and/or theme
                 Rock.Web.UI.RockPage cmsPage = (Rock.Web.UI.RockPage)BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
