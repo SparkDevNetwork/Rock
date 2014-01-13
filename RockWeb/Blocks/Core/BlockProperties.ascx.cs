@@ -119,6 +119,8 @@ namespace RockWeb.Blocks.Core
 
                 tbBlockName.Text = _block.Name;
                 tbCssClass.Text = _block.CssClass;
+                cePreHtml.Text = _block.PreHtml;
+                cePostHtml.Text = _block.PostHtml;
                 tbCacheDuration.Text = _block.OutputCacheDuration.ToString();
             }
 
@@ -164,6 +166,8 @@ namespace RockWeb.Blocks.Core
 
                     block.Name = tbBlockName.Text;
                     block.CssClass = tbCssClass.Text;
+                    block.PreHtml = cePreHtml.Text;
+                    block.PostHtml = cePostHtml.Text;
                     block.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );
                     blockService.Save( block, CurrentPersonId );
 
