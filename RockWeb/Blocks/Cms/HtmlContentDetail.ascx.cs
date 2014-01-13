@@ -25,8 +25,6 @@ namespace RockWeb.Blocks.Cms
     [Description( "Adds an editable HTML fragment to the page." )]
     [AdditionalActions( new string[] { "Approve" } )]
     [BooleanField( "Use Code Editor", "Use the code editor instead of the WYSIWYG editor", false, "", 0 )]
-    [CodeEditorField( "Pre-Text", "HTML text to render before the blocks main content.", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 1, "PreText" )]
-    [CodeEditorField( "Post-Text", "HTML text to render after the blocks main content.", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 2, "PostText" )]
     [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 0, "", 3 )]
     [TextField( "Context Parameter", "Query string parameter to use for 'personalizing' content based on unique values.", false, "", "", 4 )]
     [TextField( "Context Name", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "", "", 5 )]
@@ -158,8 +156,6 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void HtmlContentDetail_BlockUpdated( object sender, EventArgs e )
         {
-            lPreText.Text = GetAttributeValue( "PreText" );
-            lPostText.Text = GetAttributeValue( "PostText" );
         }
 
         /// <summary>
@@ -474,9 +470,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             // add content to the content window
-            lPreText.Text = GetAttributeValue( "PreText" );
             lHtmlContent.Text = html;
-            lPostText.Text = GetAttributeValue( "PostText" );
         }
 
         /// <summary>

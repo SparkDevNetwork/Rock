@@ -372,6 +372,11 @@ namespace Rock.Web.UI
         /// <param name="writer"></param>
         protected override void Render( HtmlTextWriter writer )
         {
+            if ( Visible && !string.IsNullOrWhiteSpace(_blockCache.PreHtml))
+            {
+                writer.Write( _blockCache.PreHtml );
+            }
+
             if ( _blockCache.OutputCacheDuration > 0 )
             {
                 string blockCacheKey = string.Format( "Rock:BlockOutput:{0}", _blockCache.Id );
@@ -389,6 +394,12 @@ namespace Rock.Web.UI
             }
 
             base.Render( writer );
+
+            if ( Visible && !string.IsNullOrWhiteSpace( _blockCache.PostHtml ) )
+            {
+                writer.Write( _blockCache.PostHtml );
+            }
+
         }
 
         #endregion
