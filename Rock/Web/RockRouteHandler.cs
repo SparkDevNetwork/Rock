@@ -57,9 +57,7 @@ namespace Rock.Web
                 // if not found use the default site
                 if (site == null)
                 {
-                    var siteService = new Rock.Model.SiteService();
-                    var rockSite = siteService.Get(new Guid(SystemGuid.Site.SITE_ROCK_INTERNAL));
-                    site = Rock.Web.Cache.SiteCache.Read(rockSite.Id);
+                    site = Rock.Web.Cache.SiteCache.Read( SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid() );
                 }
 
                 if ( site != null) 
