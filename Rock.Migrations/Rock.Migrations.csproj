@@ -288,6 +288,10 @@
     <Compile Include="Migrations\201401131724184_Add404FieldsToSite.Designer.cs">
       <DependentUpon>201401131724184_Add404FieldsToSite.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401131810554_ConnectionStatusCleanup.cs" />
+    <Compile Include="Migrations\201401131810554_ConnectionStatusCleanup.Designer.cs">
+      <DependentUpon>201401131810554_ConnectionStatusCleanup.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -482,6 +486,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401131724184_Add404FieldsToSite.resx">
       <DependentUpon>201401131724184_Add404FieldsToSite.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401131810554_ConnectionStatusCleanup.resx">
+      <DependentUpon>201401131810554_ConnectionStatusCleanup.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
