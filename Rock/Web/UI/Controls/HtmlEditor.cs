@@ -381,12 +381,7 @@ CKEDITOR.replace('{0}', {{
          // update the underlying TextElement on every little change to ensure that Posting and Validation works consistently (doing it OnSubmit or OnBlur misses some cases)
          e.editor.updateElement();  
          {4}
-       }},
-       configLoaded: function (e) {{
-         // ALLOW <i></i> (won't be visible in WYSIWIG, but at least it won't get stripped when toggling between source and WYSIWIG)
-         e.editor.config.protectedSource.push( /<i[\s\S]*?\>/g ); //allows beginning <i> tag
-         e.editor.config.protectedSource.push( /<\/i[\s\S]*?\>/g ); //allows ending </i> tag
-       }}  
+       }}
   }}
 }} );
             ";
