@@ -5,6 +5,36 @@
             editor.addCommand('rockfilebrowserDialog', new CKEDITOR.dialogCommand('rockfilebrowserDialog'));
             editor.addCommand('createfolderDialog', new CKEDITOR.dialogCommand('createfolderDialog'));
 
+            editor.addCommand('refreshFolderTree', {
+                exec: function (editor, options) {
+                    var expandedParentIds = [];
+
+                    if (options.selectedFolder) {
+                        var previousFolder = '';
+                        var folderParts = options.selectedFolder.split('\\');
+                        $.each(folderParts, function (index, value) {
+                            if (value) {
+                                expandedParentIds.push(previousFolder + '\\' + value);
+                                previousFolder = previousFolder + '\\' + value;
+                            }
+                        });
+
+                        $('#hfItemId_' + options.controlId).val(options.selectedFolder);
+                    }
+                    else {
+                        $('#hfItemId_' + options.controlId).val('\\External Site');
+                    }
+
+                    Rock.controls.itemPicker.initialize({
+                        controlId: options.controlId,
+                        startingId: '/',
+                        restUrl: Rock.settings.get('baseUrl') + 'api/FileBrowser/GetSubFolders?folderName=',
+                        allowMultiSelect: false,
+                        expandedIds: expandedParentIds
+                    });
+                }
+            });
+
             editor.ui.addButton && editor.ui.addButton('rockfilebrowser', {
                 label: 'File Browser',
                 command: 'rockfilebrowserDialog',

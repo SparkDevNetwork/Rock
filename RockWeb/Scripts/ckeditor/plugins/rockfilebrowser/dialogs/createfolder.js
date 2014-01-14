@@ -17,7 +17,7 @@
                         label: 'Folder Name',
                         validate: function () {
                             if (!this.getValue()) {
-                                debugger
+                                // folder name cannot be blank
                                 return false;
                             }
                         }
@@ -36,16 +36,13 @@
                 type: 'POST',
                 url: restUrl,
                 context: {
-                    RockTree: foldersRockTree,
+                    Editor: editor,
+                    FoldersControlId: foldersControlId,
                     FolderPath: newFolderPath
                 }
             }).done(function (data, textStatus, jqXHR) {
-                
-                // TODO figure out how to best refresh the tree
-                //var rockTree = this.RockTree;
-                //var folderId = this.FolderPath;
-                //var rockTreeOptions = rockTree.settings;
-                //rockTree.rebuild();
+                // refresh the folder itempicker
+                this.Editor.execCommand("refreshFolderTree", { controlId: this.FoldersControlId, selectedFolder: this.FolderPath });
             });
         }
     }
