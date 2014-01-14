@@ -73,7 +73,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
 
             // add carat
-            writer.AddAttribute( "class", "caret" );
+            writer.AddAttribute( "class", "fa fa-caret-down" );
             writer.RenderBeginTag( HtmlTextWriterTag.B );
             writer.RenderEndTag();
 
