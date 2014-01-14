@@ -35,4 +35,7 @@ CKEDITOR.editorConfig = function( config ) {
 
 	// Make dialogs simpler.
 	config.removeDialogTabs = 'image:advanced;link:advanced';
+
+    // allow i tags to be empty (for font awesome)
+	CKEDITOR.dtd.$removeEmpty['i'] = false
 };
