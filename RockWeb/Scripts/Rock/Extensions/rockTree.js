@@ -401,6 +401,9 @@
         initTreeEvents: function () {
             var self = this;
 
+            // remove event to make sure it doesn't get attached multiple times
+            this.$el.off('click');
+
             // Expanding or collapsing a node...
             this.$el.on('click', '.rocktree-folder > .rocktree-icon', function (e) {
                 e.preventDefault();
