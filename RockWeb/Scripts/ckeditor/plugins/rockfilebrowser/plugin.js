@@ -4,6 +4,8 @@
 
             editor.addCommand('rockfilebrowserDialog', new CKEDITOR.dialogCommand('rockfilebrowserDialog'));
             editor.addCommand('createfolderDialog', new CKEDITOR.dialogCommand('createfolderDialog'));
+            editor.addCommand('deletefolderDialog', new CKEDITOR.dialogCommand('deletefolderDialog'));
+            editor.addCommand('renamefolderDialog', new CKEDITOR.dialogCommand('renamefolderDialog'));
 
             editor.addCommand('refreshFolderTree', {
                 exec: function (editor, options) {
@@ -42,8 +44,9 @@
             });
 
             CKEDITOR.dialog.add('rockfilebrowserDialog', this.path + 'dialogs/rockfilebrowser.js');
-
             CKEDITOR.dialog.add('createfolderDialog', this.path + 'dialogs/createfolder.js');
+            CKEDITOR.dialog.add('deletefolderDialog', this.path + 'dialogs/deletefolder.js');
+            CKEDITOR.dialog.add('renamefolderDialog', this.path + 'dialogs/renamefolder.js');
         }
     });
 })()
