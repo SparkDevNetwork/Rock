@@ -392,7 +392,7 @@ namespace Rock.Web.UI.Controls
             <a class='picker-label' href='#'>
                 <i class='fa fa-user'></i>
                 <span id='selectedPersonLabel_{0}'>{1}</span>
-                <b class='caret pull-right'></b>
+                <b class='fa fa-caret-down pull-right'></b>
             </a>
 ";
                 writer.Write( string.Format( controlHtmlFormatStart, this.ID, this.PersonName, this.CssClass ) );
