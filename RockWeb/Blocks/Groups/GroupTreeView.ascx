@@ -14,7 +14,7 @@
                 
                 <div class="btn-group">
                     <button type="button" class="btn btn-action btn-mini dropdown-toggle" data-toggle="dropdown">
-                        <i class="fa fa-plus-circle"></i> Add Group <span class="caret"></span>
+                        <i class="fa fa-plus-circle"></i> Add Group <span class="fa fa-caret-down"></span>
                     </button>
                     <ul class="dropdown-menu" role="menu">
                         <li><asp:LinkButton ID="lbAddGroupRoot" OnClick="lbAddGroupRoot_Click" Text="Add Top-Level" runat="server"></asp:LinkButton></li>

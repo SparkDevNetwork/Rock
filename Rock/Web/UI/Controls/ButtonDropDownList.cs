@@ -287,7 +287,7 @@ namespace Rock.Web.UI.Controls
                 e.preventDefault();
                 var $el = $(this);
                 var text =  $el.html();
-                var textHtml = $el.html() + "" <span class='caret'></span>"";
+                var textHtml = $el.html() + "" <span class='fa fa-caret-down'></span>"";
                 var idvalue = $el.attr('data-id');
                 $('#ButtonDropDown_btn_{0}').html(textHtml);
                 $('#hfSelectedItemId_{0}').val(idvalue);
@@ -368,7 +368,7 @@ namespace Rock.Web.UI.Controls
 
             string selectedText = SelectedItem != null ? SelectedItem.Text : Title;
             _btnSelect.Controls.Clear();
-            _btnSelect.Controls.Add( new LiteralControl { Text = string.Format( "{0} <span class='caret'></span>", selectedText ) } );
+            _btnSelect.Controls.Add( new LiteralControl { Text = string.Format( "{0} <span class='fa fa-caret-down'></span>", selectedText ) } );
 
             foreach ( var item in this.Items.OfType<ListItem>() )
             {
