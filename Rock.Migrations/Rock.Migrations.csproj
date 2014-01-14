@@ -296,6 +296,10 @@
     <Compile Include="Migrations\201401132311057_Add404PagesForSites.Designer.cs">
       <DependentUpon>201401132311057_Add404PagesForSites.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401140409207_PersonDetailPages.cs" />
+    <Compile Include="Migrations\201401140409207_PersonDetailPages.Designer.cs">
+      <DependentUpon>201401140409207_PersonDetailPages.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -496,6 +500,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401132311057_Add404PagesForSites.resx">
       <DependentUpon>201401132311057_Add404PagesForSites.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401140409207_PersonDetailPages.resx">
+      <DependentUpon>201401140409207_PersonDetailPages.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
