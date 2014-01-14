@@ -113,13 +113,8 @@
             });
 
             $('#' + refreshFoldersButtonId).on('click', function (e, data) {
-                // reinit the folders tree
-                Rock.controls.itemPicker.initialize({
-                    controlId: foldersControlId,
-                    startingId: '/',
-                    restUrl: Rock.settings.get('baseUrl') + 'api/FileBrowser/GetSubFolders?folderName=',
-                    allowMultiSelect: false
-                });
+                // refresh the folder itempicker
+                editor.execCommand("refreshFolderTree", { controlId: foldersControlId, selectedFolder: null });
             });
 
             // make the \\External Site folder be selected on show
