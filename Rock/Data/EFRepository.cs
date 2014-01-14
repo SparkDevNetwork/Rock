@@ -455,7 +455,7 @@ namespace Rock.Data
                                 string title = rockEntity.ToString();
                                 if (string.IsNullOrWhiteSpace(title))
                                 {
-                                    title = entityType.FriendlyName;
+                                    title = entityType.FriendlyName ?? string.Empty;
                                 }
                                 audit.DateTime = DateTime.Now;
                                 audit.PersonId = PersonId;
