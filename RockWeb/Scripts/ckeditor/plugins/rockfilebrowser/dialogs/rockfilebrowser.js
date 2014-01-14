@@ -35,6 +35,7 @@
                         imageUploaderHtml +
                         "    <a class='add btn btn-mini btn-action' href='#' title='Create Folder' id='file-browser-add-folder-button_" + editor.id + "' ><i class='fa fa-plus-circle'></i> Add Folder</a>\n" +
                         "    <a class='delete btn btn-mini btn-danger' href='#' title='Delete Folder' id='file-browser-delete-folder-button_" + editor.id + "' ><i class='fa fa-times'></i> Delete Folder</a>\n" +
+                        "    <a class='delete btn btn-mini btn-action' href='#' title='Rename Folder' id='file-browser-rename-folder-button_" + editor.id + "' ><i class='fa fa-exchange'></i> Rename Folder</a>\n" +
                         "    <a class='delete btn btn-mini btn-action' href='#' title='Refresh Folders' id='file-browser-refresh-folders-button_" + editor.id + "' ><i class='fa fa-refresh'></i> Refresh Folders</a>\n" +
                         "  </div> \n" +
                         "  <div class='row'> \n" +
@@ -86,6 +87,7 @@
             var foldersControlId = 'file-browser-folder-tree_' + eventParam.sender.definition.editorId;
             var addFolderButtonId = 'file-browser-add-folder-button_' + eventParam.sender.definition.editorId;
             var deleteFolderButtonId = 'file-browser-delete-folder-button_' + eventParam.sender.definition.editorId;
+            var renameFolderButtonId = 'file-browser-rename-folder-button_' + eventParam.sender.definition.editorId;
             var refreshFoldersButtonId = 'file-browser-refresh-folders-button_' + eventParam.sender.definition.editorId;
             var filesControlId = 'file-browser-file-tree_' + eventParam.sender.definition.editorId;
             var imageUploaderIdPrefix = eventParam.sender.definition.editorId + "_imageUploader_";
@@ -108,8 +110,11 @@
             });
 
             $('#' + deleteFolderButtonId).on('click', function (e, data) {
-                // TODO, figure out a confirm that works within the editor dialogs
-                // TODO, delete the folder
+                editor.execCommand("deletefolderDialog");
+            });
+
+            $('#' + renameFolderButtonId).on('click', function (e, data) {
+                editor.execCommand("renamefolderDialog");
             });
 
             $('#' + refreshFoldersButtonId).on('click', function (e, data) {
