@@ -13,6 +13,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Utility
@@ -78,6 +79,7 @@ $('.checklist-item .checklist-desc-toggle').on('click', function (e) {
                             Helper.LoadAttributes( value );
                             value.SetAttributeValue( attributeKey, cbValue.Checked.ToString() );
                             Helper.SaveAttributeValues( value, CurrentPersonId );
+                            DefinedValueCache.Flush( value.Id );
                         }
                     }
                 }
@@ -142,7 +144,7 @@ $('.checklist-item .checklist-desc-toggle').on('click', function (e) {
             Guid guid = Guid.Empty;
             if ( Guid.TryParse( GetAttributeValue( "DefinedType" ), out guid ) )
             {
-                var definedType = new DefinedTypeService().Get( guid );
+                var definedType = DefinedTypeCache.Read( guid );
                 if (definedType != null)
                 { 
                     // Get the values
@@ -152,7 +154,6 @@ $('.checklist-item .checklist-desc-toggle').on('click', function (e) {
                     var selectedValues = new List<int>();
                     foreach( var value in values)
                     {
-                        value.LoadAttributes();
                         bool selected = false;
                         if ( bool.TryParse( value.GetAttributeValue( attributeKey ), out selected ) && selected )
                         {
