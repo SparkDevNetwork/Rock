@@ -255,6 +255,44 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the document folder root.
+        /// </summary>
+        /// <value>
+        /// The document folder root.
+        /// </value>
+        public string DocumentFolderRoot
+        {
+            get
+            {
+                return ViewState["DocumentFolderRoot"] as string;
+            }
+
+            set
+            {
+                ViewState["DocumentFolderRoot"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the image folder root.
+        /// </summary>
+        /// <value>
+        /// The image folder root.
+        /// </value>
+        public string ImageFolderRoot
+        {
+            get
+            {
+                return ViewState["ImageFolderRoot"] as string;
+            }
+
+            set
+            {
+                ViewState["ImageFolderRoot"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the merge fields to make available.  This should include either a list of
         /// entity type names (full name), or other non-object string values
         /// </summary>
@@ -376,6 +414,7 @@ CKEDITOR.replace('{0}', {{
   baseFloatZIndex: 200000,  // set zindex to be 200000 so it will be on top of our modals (100000)
   extraPlugins: '{5}',
   resize_maxWidth: '{3}',
+  rockFileBrowserOptions: {{ documentFolderRoot: '{6}', imageFolderRoot: '{7}'}},
   on : {{
        change: function (e) {{
          // update the underlying TextElement on every little change to ensure that Posting and Validation works consistently (doing it OnSubmit or OnBlur misses some cases)
@@ -403,7 +442,8 @@ CKEDITOR.replace('{0}', {{
 
             enabledPlugins.Add( "rockfilebrowser" );
 
-            string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(), this.Height, this.ResizeMaxWidth ?? 0, customOnChangeScript, enabledPlugins.AsDelimited( "," ) );
+            string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(), this.Height, 
+                this.ResizeMaxWidth ?? 0, customOnChangeScript, enabledPlugins.AsDelimited( "," ), this.DocumentFolderRoot, this.ImageFolderRoot );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckeditorInitScript, true );
 

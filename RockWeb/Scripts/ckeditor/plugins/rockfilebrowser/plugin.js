@@ -29,7 +29,7 @@
 
                     Rock.controls.itemPicker.initialize({
                         controlId: options.controlId,
-                        startingId: '/',
+                        startingId: '/' + editor.config.rockFileBrowserOptions.documentFolderRoot,
                         restUrl: Rock.settings.get('baseUrl') + 'api/FileBrowser/GetSubFolders?folderName=',
                         allowMultiSelect: false,
                         expandedIds: expandedParentIds

@@ -59,7 +59,6 @@
                         "         </div> \n" +
                         "     </div> \n" +
                         "     <div class='col-md-6'>" +
-
                         "         <div id='file-browser-file-tree_" + editor.id + "' class='picker picker-select js-rock-tree-files'> \n" +
                         "            <div id='treeview-scroll-container-files_" + editor.id + "' class='scroll-container scroll-container-vertical scroll-container-picker'> \n" +
                         "               <div class='scrollbar'> \n" +
@@ -128,7 +127,7 @@
             // make an itemPicker for the Folders Tree
             Rock.controls.itemPicker.initialize({
                 controlId: foldersControlId,
-                startingId: '/',
+                startingId: '/' + editor.config.rockFileBrowserOptions.documentFolderRoot,
                 restUrl: Rock.settings.get('baseUrl') + 'api/FileBrowser/GetSubFolders?folderName=',
                 allowMultiSelect: false
             });
