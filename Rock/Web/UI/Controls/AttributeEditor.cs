@@ -464,14 +464,12 @@ namespace Rock.Web.UI.Controls
 
                 if ( !Page.IsPostBack )
                 {
-                    // Load Values
-                    FieldTypeService fieldTypeService = new FieldTypeService();
-                    fieldTypeService.RegisterFieldTypes( System.Web.HttpContext.Current.Server.MapPath( "~" ) );
-                    List<Rock.Model.FieldType> fieldTypes = fieldTypeService.Queryable().OrderBy( a => a.Name ).ToList();
-
                     _ddlFieldType.DataValueField = "Id";
                     _ddlFieldType.DataTextField = "Name";
-                    _ddlFieldType.DataSource = fieldTypes;
+                    _ddlFieldType.DataSource = new FieldTypeService()
+                        .Queryable()
+                        .OrderBy( a => a.Name )
+                        .Select( a => new { a.Id, a.Name } ).ToList(); ;
                     _ddlFieldType.DataBind();
                 }
 

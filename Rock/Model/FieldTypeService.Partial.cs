@@ -47,12 +47,14 @@ namespace Rock.Model
         {
             var fieldTypes = new Dictionary<string, EntityType>();
 
+            var existingFieldTypes = this.Queryable().ToList();
+
             foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Field.IFieldType ) ) )
             {
                 string assemblyName = type.Value.Assembly.GetName().Name;
                 string className = type.Value.FullName;
 
-                if ( !this.Queryable().Where( f =>
+                if ( !existingFieldTypes.Where( f =>
                     f.Assembly == assemblyName &&
                     f.Class == className ).Any() )
                 {
