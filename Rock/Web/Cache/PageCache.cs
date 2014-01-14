@@ -663,7 +663,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public Dictionary<string, object> GetMenuProperties( int levelsDeep, Person person, List<int> currentPageHeirarchy = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
         {
-            if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
+            if ( levelsDeep >= 0 )
             {
                 string iconUrl = string.Empty;
                 if ( this.IconFileId.HasValue )
@@ -700,7 +700,7 @@ namespace Rock.Web.Cache
 
                     foreach ( PageCache page in Pages )
                     {
-                        if ( page != null )
+                        if ( page != null && page.DisplayInNav( person ) )
                         {
                             var childPageElement = page.GetMenuProperties( levelsDeep - 1, person, currentPageHeirarchy, parameters, queryString );
                             if ( childPageElement != null )
