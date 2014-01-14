@@ -430,8 +430,8 @@ namespace Rock.Migrations
                     zone,
                     order,
                     name,
-                    preHtml,
-                    postHtml,
+                    preHtml.Replace( "'", "''" ),
+                    postHtml.Replace( "'", "''" ),
                     guid );
 
             // If adding a layout block, give edit/configuration authorization to admin role
@@ -521,7 +521,7 @@ namespace Rock.Migrations
                     name,
                     description.Replace( "'", "''" ),
                     order,
-                    defaultValue,
+                    defaultValue.Replace( "'", "''" ),
                     guid )
             );
         }
@@ -746,7 +746,8 @@ namespace Rock.Migrations
 ",
                     blockGuid,
                     attributeGuid,
-                    value )
+                    value.Replace( "'", "''" )
+                )
             );
         }
 
