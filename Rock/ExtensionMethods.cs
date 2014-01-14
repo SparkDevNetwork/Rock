@@ -726,11 +726,11 @@ namespace Rock
 
                 else if ( timeSpan.TotalSeconds < 60 )
                     duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalSeconds ), condensed ? "sec" : " Seconds" );
-                else if ( timeSpan.TotalMinutes <= 2 )
+                else if ( timeSpan.TotalMinutes < 2 )
                     duration = string.Format( "1{0}", condensed ? "min" : " Minute" );
                 else if ( timeSpan.TotalMinutes < 60 )
                     duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalMinutes ), condensed ? "min" : " Minutes" );
-                else if ( timeSpan.TotalHours <= 2 )
+                else if ( timeSpan.TotalHours < 2 )
                     duration = string.Format( "1{0}", condensed ? "hr" : " Hour" );
                 else if ( timeSpan.TotalHours < 24 )
                     duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalHours ), condensed ? "hr" : " Hours" );
