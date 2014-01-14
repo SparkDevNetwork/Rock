@@ -60,11 +60,11 @@ values ( 'Gilbert Buildings', 'Gilbert Building Campaign Fund', 'This is the Gil
 set @BuildingFundId = scope_identity()
 
 -- Create a couple of people to attach pledges to
-insert into Person ( IsSystem, GivenName, NickName, LastName, PhotoId, BirthDay, BirthMonth, BirthYear, Gender, AnniversaryDate, GraduationDate, Email, IsEmailActive, EmailNote, DoNotEmail, SystemNote, ViewedCount, [Guid], RecordTypeValueId, RecordStatusValueId, RecordStatusReasonValueId, PersonStatusValueId, SuffixValueId, TitleValueId, MaritalStatusValueId, IsDeceased )
+insert into Person ( IsSystem, FirstName, NickName, LastName, PhotoId, BirthDay, BirthMonth, BirthYear, Gender, AnniversaryDate, GraduationDate, Email, IsEmailActive, EmailNote, DoNotEmail, SystemNote, ViewedCount, [Guid], RecordTypeValueId, RecordStatusValueId, RecordStatusReasonValueId, ConnectionStatusValueId, SuffixValueId, TitleValueId, MaritalStatusValueId, IsDeceased )
 values (  0, 'Pledgy', 'The Pledgester', 'McPledgerson', null, 1, 1, 1980, 0, null, null, 'pledgy@thepledgester.com', 1, 'Personal Email', 0, null, null, newid(), 1, 3, null, null, null, null, null, 0 )
 set @PledgyPersonId = scope_identity()
 
-insert into Person ( IsSystem, GivenName, NickName, LastName, PhotoId, BirthDay, BirthMonth, BirthYear, Gender, AnniversaryDate, GraduationDate, Email, IsEmailActive, EmailNote, DoNotEmail, SystemNote, ViewedCount, [Guid], RecordTypeValueId, RecordStatusValueId, RecordStatusReasonValueId, PersonStatusValueId, SuffixValueId, TitleValueId, MaritalStatusValueId, IsDeceased )
+insert into Person ( IsSystem, FirstName, NickName, LastName, PhotoId, BirthDay, BirthMonth, BirthYear, Gender, AnniversaryDate, GraduationDate, Email, IsEmailActive, EmailNote, DoNotEmail, SystemNote, ViewedCount, [Guid], RecordTypeValueId, RecordStatusValueId, RecordStatusReasonValueId, ConnectionStatusValueId, SuffixValueId, TitleValueId, MaritalStatusValueId, IsDeceased )
 values (  0, 'Dora', null, 'Donatesalot', null, 1, 1, 1980, 0, null, null, 'dora@thepledgester.com', 1, 'Personal Email', 0, null, null, newid(), 1, 3, null, null, null, null, null, 0 )
 set @DoraPersonId = scope_identity()
 
