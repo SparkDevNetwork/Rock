@@ -10,6 +10,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Model;
+using Rock;
 
 namespace Rock.Web.UI.Controls
 {
@@ -28,6 +29,16 @@ namespace Rock.Web.UI.Controls
              base.DefaultText = "Add Merge Field";
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+            ItemRestUrlExtraParams = "/" + MergeFields.AsDelimited( "," );
+        }
+        
         /// <summary>
         /// Gets or sets the merge fields.
         /// </summary>
@@ -50,7 +61,6 @@ namespace Rock.Web.UI.Controls
             set 
             {
                 ViewState["MergeFields"] = value;
-                ItemRestUrlExtraParams = "/" + value.AsDelimited(",");
             }
         }
 
@@ -71,7 +81,7 @@ namespace Rock.Web.UI.Controls
                     
                     if ( nodes.Count > 1 )
                     {
-                        InitialItemParentIds = nodes.Take( nodes.Count - 1 ).ToList().AsDelimited( "," );
+                        InitialItemParentIds = nodes.Take( nodes.Count - 1 ).Select(a => a.Quoted()).ToList().AsDelimited( "," );
                     }
                 }
             }
@@ -107,7 +117,7 @@ namespace Rock.Web.UI.Controls
 
                         if ( InitialItemParentIds == string.Empty && nodes.Count > 1 )
                         {
-                            InitialItemParentIds = nodes.Take( nodes.Count - 1 ).ToList().AsDelimited( "," );
+                            InitialItemParentIds = nodes.Take( nodes.Count - 1 ).Select(a => a.Quoted()).ToList().AsDelimited( "," );
                         }
                     }
                 }
