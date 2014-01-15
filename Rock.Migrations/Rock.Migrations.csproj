@@ -316,6 +316,10 @@
     <Compile Include="Migrations\201401151959527_AddPastoralStaffRole.Designer.cs">
       <DependentUpon>201401151959527_AddPastoralStaffRole.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401152023157_ChangeLayoutOfSecurityRoleDetailsPage.cs" />
+    <Compile Include="Migrations\201401152023157_ChangeLayoutOfSecurityRoleDetailsPage.Designer.cs">
+      <DependentUpon>201401152023157_ChangeLayoutOfSecurityRoleDetailsPage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -531,6 +535,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401151959527_AddPastoralStaffRole.resx">
       <DependentUpon>201401151959527_AddPastoralStaffRole.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401152023157_ChangeLayoutOfSecurityRoleDetailsPage.resx">
+      <DependentUpon>201401152023157_ChangeLayoutOfSecurityRoleDetailsPage.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
