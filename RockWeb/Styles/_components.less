@@ -7,19 +7,20 @@
     4. Person List - used to show a list of people
     5. Rollover - Used to hide/show items in the UI has the mouse rolls-over a container.
     6. Pagelist - used to list child pages; currently used in admin screens
-    7. Tags - component that allows you to tag entities
-    8. Switch - uses the Bootstrap Switch component
-    9. Smart Searh - search at th top of the page for searching people, groups, etc.
-    10. Title - markup for styling header titles
-    11. Notifications - additional styles to the Bootstrap notifications
-    12. Labels - additional label defintions that extend Boostrap labels (eg label-campus)
-    13. Datepicker - styles for the date picker
-    14. Timepicker - styles for the time picker
-    15. File Upload / Image Upload - styles for the file / image uploader
-    16. Actions - used to hold buttons at the bottom of forms.
-    17. Code Editor - Styles for the code editor control
-    18. Update Panel Status - Styles for the wait screen on an update panel
-    19. Group List - styles a group of people in a ul -> li format
+    7. Pagelist Nav - Pill nav of pages
+    8. Tags - component that allows you to tag entities
+    9. Switch - uses the Bootstrap Switch component
+    10. Smart Searh - search at th top of the page for searching people, groups, etc.
+    11. Title - markup for styling header titles
+    12. Notifications - additional styles to the Bootstrap notifications
+    13. Labels - additional label defintions that extend Boostrap labels (eg label-campus)
+    14. Datepicker - styles for the date picker
+    15. Timepicker - styles for the time picker
+    16. File Upload / Image Upload - styles for the file / image uploader
+    17. Actions - used to hold buttons at the bottom of forms.
+    18. Code Editor - Styles for the code editor control
+    19. Update Panel Status - Styles for the wait screen on an update panel
+    20. Group List - styles a group of people in a ul -> li format
 */
 
 // 1. Pickers
@@ -375,7 +376,23 @@ ul.rocktree ul {
     }
 }
 
-// 7. Tags
+// 7. Pagelist Nav
+// -------------------------
+
+.nav-pills.nav-pagelist {
+    margin: @spacing-lg-px 0 @spacing-md-px;
+    padding: @spacing-sm-px @spacing-md-px;
+    background-color: @accent-light-color;
+    border: 1px solid darken(@accent-light-color, 10%);
+    border-radius: @border-radius-base;
+
+    .panel-default & {
+        background-color: @accent-color;
+        border: 1px solid darken(@accent-color, 10%);
+    }
+}
+
+// 8. Tags
 // ------------------------
 
 div.tagsinput  
@@ -549,7 +566,7 @@ div.tagsinput div
     }
 }
  
-// 8. Switch
+// 9. Switch
 // ------------------------
 
 .switch {
@@ -723,7 +740,7 @@ div.tagsinput div
 }
 
 
-// 9. Smart Search
+// 10. Smart Search
 // ------------------------
 
 .smartsearch {
@@ -790,7 +807,7 @@ div.tagsinput div
 	color: @smartsearch-input-selection-text-color;
 }
 
-// 10. Titles
+// 12. Titles
 // ------------------------
 .title {
     font-weight: @title-default-weight;
@@ -801,7 +818,7 @@ div.tagsinput div
 }
 
 
-// 11. Notifications
+// 13. Notifications
 // -------------------------
 
 .alert-info h4:before {
@@ -809,7 +826,7 @@ div.tagsinput div
     font-family: FontAwesome;
 }
 
-// 12. Labels
+// 14. Labels
 // -------------------------
 
 .label-campus {
@@ -841,7 +858,7 @@ div.tagsinput div
 }
 
 
-// 13. Datepicker
+// 15. Datepicker
 // -------------------------
 .datepicker {
     padding: 10px;
@@ -891,7 +908,7 @@ div.tagsinput div
     }
 }
 
-// 14. Time Picker
+// 16. Time Picker
 // -------------------------
 
 .bootstrap-timepicker {
@@ -1032,7 +1049,7 @@ div.tagsinput div
     }
 }
 
-// 15. Time Picker
+// 17. Time Picker
 // -------------------------
 
 .imageupload-group {
