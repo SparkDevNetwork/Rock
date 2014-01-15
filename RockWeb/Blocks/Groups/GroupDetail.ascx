@@ -62,7 +62,8 @@
                     <Rock:Grid ID="gLocations" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Location">
                         <Columns>
                             <asp:BoundField DataField="Location" HeaderText="Location" />
-                            <asp:BoundField DataField="LocationTypeValue.Name" HeaderText="Type" />
+                            <asp:BoundField DataField="GroupLocationTypeValue.Name" HeaderText="Type" />
+                            <Rock:EditField OnClick="gLocations_Edit" />
                             <Rock:DeleteField OnClick="gLocations_Delete"  />
                         </Columns>
                     </Rock:Grid>

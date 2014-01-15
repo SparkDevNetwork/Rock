@@ -1055,10 +1055,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 Id = groupLocation.Id;
 
-                if ( groupLocation.LocationTypeValue != null )
+                if ( groupLocation.GroupLocationTypeValue != null )
                 {
-                    LocationTypeId = groupLocation.LocationTypeValue.Id;
-                    LocationTypeName = groupLocation.LocationTypeValue.Name;
+                    LocationTypeId = groupLocation.GroupLocationTypeValue.Id;
+                    LocationTypeName = groupLocation.GroupLocationTypeValue.Name;
                 }
 
                 if ( groupLocation.Location != null )

@@ -118,7 +118,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.DefinedValue"/> that represents the type of this GroupLocation.
         /// </value>
         [DataMember]
-        public virtual DefinedValue LocationTypeValue { get; set; }
+        public virtual DefinedValue GroupLocationTypeValue { get; set; }
 
         /// <summary>
         /// Gets or sets the group member person. A GroupLocation can optionally be created by selecting one of the group member's locations.  If the GroupLocation is 
@@ -176,7 +176,7 @@ namespace Rock.Model
         {
             this.HasRequired( t => t.Group ).WithMany( t => t.GroupLocations ).HasForeignKey( t => t.GroupId );
             this.HasRequired( t => t.Location ).WithMany( l => l.GroupLocations).HasForeignKey( t => t.LocationId );
-            this.HasOptional( t => t.LocationTypeValue ).WithMany().HasForeignKey( t => t.GroupLocationTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.GroupLocationTypeValue ).WithMany().HasForeignKey( t => t.GroupLocationTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.GroupMemberPerson ).WithMany().HasForeignKey( t => t.GroupMemberPersonId ).WillCascadeOnDelete( true );
             this.HasMany( t => t.Schedules ).WithMany().Map( t => { t.MapLeftKey( "GroupLocationId" ); t.MapRightKey( "ScheduleId" ); t.ToTable( "GroupLocationSchedule" ); } );
         }
