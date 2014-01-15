@@ -304,6 +304,10 @@
     <Compile Include="Migrations\201401141807363_SiteDetailChanges.Designer.cs">
       <DependentUpon>201401141807363_SiteDetailChanges.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401151404211_RenameGroupLocationIndex.cs" />
+    <Compile Include="Migrations\201401151404211_RenameGroupLocationIndex.Designer.cs">
+      <DependentUpon>201401151404211_RenameGroupLocationIndex.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -510,6 +514,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401141807363_SiteDetailChanges.resx">
       <DependentUpon>201401141807363_SiteDetailChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401151404211_RenameGroupLocationIndex.resx">
+      <DependentUpon>201401151404211_RenameGroupLocationIndex.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
