@@ -377,7 +377,15 @@ namespace Rock.Web.UI
 
             if ( Visible && !string.IsNullOrWhiteSpace( _blockCache.PreHtml ) )
             {
-                writer.Write( _blockCache.PreHtml.Replace( "~~/", themeRoot ).Replace( "~/", appRoot ) );
+                var preHtmlControl = (Literal)this.FindControl("lPreHtml");
+                if (preHtmlControl != null)
+                {
+                    preHtmlControl.Text = _blockCache.PreHtml.Replace("~~/", themeRoot).Replace("~/", appRoot);
+                }
+                else
+                {
+                    writer.Write(_blockCache.PreHtml.Replace("~~/", themeRoot).Replace("~/", appRoot));
+                }
             }
 
             if ( _blockCache.OutputCacheDuration > 0 )
@@ -400,7 +408,15 @@ namespace Rock.Web.UI
 
             if ( Visible && !string.IsNullOrWhiteSpace( _blockCache.PostHtml ) )
             {
-                writer.Write( _blockCache.PostHtml.Replace( "~~/", themeRoot ).Replace( "~/", appRoot ) );
+                var postHtmlControl = (Literal)this.FindControl("lPostHtml");
+                if (postHtmlControl != null)
+                {
+                    postHtmlControl.Text = _blockCache.PostHtml.Replace("~~/", themeRoot).Replace("~/", appRoot);
+                }
+                else
+                {
+                    writer.Write(_blockCache.PostHtml.Replace("~~/", themeRoot).Replace("~/", appRoot));
+                }
             }
 
         }
