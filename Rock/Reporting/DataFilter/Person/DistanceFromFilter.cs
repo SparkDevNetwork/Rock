@@ -214,7 +214,7 @@ function() {
                 var groupMemberServiceQry = groupMemberService.Queryable()
                     .Where( xx => xx.Group.GroupType.Guid == new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) )
                     .Where( xx => xx.Group.GroupLocations
-                        .Where( l => l.LocationTypeValue.Guid == new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME ) )
+                        .Where( l => l.GroupLocationTypeValue.Guid == new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME ) )
                         .Where( l => l.IsMappedLocation ).Any() );
 
                 // limit to distance LessThan specified distance (dbGeography uses meters for distance units)
