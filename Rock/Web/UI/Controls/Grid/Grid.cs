@@ -1101,9 +1101,16 @@ namespace Rock.Web.UI.Controls
         public void CreatePreviewColumns( Type modelType )
         {
             this.Columns.Clear();
+            foreach(var column in GetPreviewColumns(modelType))
+            {
+                this.Columns.Add( column );
+            }
+        }
 
-            var displayColumns = new Dictionary<string, BoundField>();
-            var allColumns = new Dictionary<string, BoundField>();
+        public List<BoundField> GetPreviewColumns( Type modelType )
+        {
+            var displayColumns = new List<BoundField>();
+            var allColumns = new List<BoundField>();
 
             foreach ( var property in modelType.GetProperties() )
             {
@@ -1113,33 +1120,34 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( property.Name != "Id" )
                     {
+                        BoundField boundField = GetGridField( property.PropertyType );
+                        boundField.DataField = property.Name;
+                        boundField.SortExpression = property.Name;
+                        boundField.HeaderText = property.Name.SplitCase();
+
                         if ( property.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() > 0 )
                         {
-                            displayColumns.Add( property.Name, GetGridField( property.PropertyType ) );
+                            displayColumns.Add( boundField );
                         }
                         else if ( displayColumns.Count == 0 && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
                         {
-                            allColumns.Add( property.Name, GetGridField( property.PropertyType ) );
+                            allColumns.Add( boundField );
                         }
                     }
                 }
             }
 
+            var columns = new List<BoundField>();
+
             // Always add hidden id column
             var idCol = new BoundField();
             idCol.DataField = "Id";
             idCol.Visible = false;
-            this.Columns.Add( idCol );
+            columns.Add( idCol );
 
-            Dictionary<string, BoundField> columns = displayColumns.Count > 0 ? displayColumns : allColumns;
-            foreach ( var column in columns )
-            {
-                var bf = column.Value;
-                bf.DataField = column.Key;
-                bf.SortExpression = column.Key;
-                bf.HeaderText = column.Key.SplitCase();
-                this.Columns.Add( bf );
-            }
+            columns.AddRange( displayColumns.Count > 0 ? displayColumns : allColumns );
+
+            return columns;
         }
 
         #endregion

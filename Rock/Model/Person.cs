@@ -148,6 +148,7 @@ namespace Rock.Model
         /// </remarks>
         [MaxLength( 50 )]
         [DataMember]
+        [Previewable]
         [MergeField]
         public string NickName { get; set; }
 
