@@ -301,3 +301,41 @@ img.file-browser-image {
     width: 50px;
     height: 50px;
 }
+
+/*css for RSS Item paging*/
+
+
+.rss-item-pager .previous > a, .rss-item-pager .previous > span {
+    float: left;
+}
+
+.rss-item-pager .next > a, .rss-item-pager .next > span {
+    float: right;
+}
+
+.rss-item-pager li > a, .rss-item-pager li > span {
+    display: inline-block;
+
+}
+
+.rss-item-pager:after {
+    clear: both;
+}
+.rss-item-pager:before, .rss-item-pager:after {
+    content: " ";
+    display: table;
+}
+.rss-item-pager:after {
+    clear: both;
+}
+.rss-item-pager:before, .rss-item-pager:after {
+    content: " ";
+    display: table;
+}
+
+.rss-item-pager {
+    list-style: none outside none;
+    margin: 20px 0;
+    padding-left: 0;
+    text-align: center;
+}
