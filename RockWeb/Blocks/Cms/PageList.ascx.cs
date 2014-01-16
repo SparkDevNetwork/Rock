@@ -109,6 +109,11 @@ namespace RockWeb.Blocks.Cms
         private void BindFilter()
         {
             int siteId = PageParameter( "siteId" ).AsInteger() ?? 0;
+            if ( siteId == 0 )
+            {
+                // quit if the siteId can't be determined
+                return;
+            }
             LayoutService layoutService = new LayoutService();
             layoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ), CurrentPersonId );
             var layouts = layoutService.Queryable().Where( a => a.SiteId.Equals( siteId ) ).ToList();
