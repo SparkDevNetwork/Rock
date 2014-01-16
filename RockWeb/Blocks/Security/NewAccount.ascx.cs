@@ -26,7 +26,7 @@ namespace RockWeb.Blocks.Security
     /// </summary>
     [DisplayName( "New Account" )]
     [Category( "Security" )]
-    [Description( "Block for user to create a new login account." )]
+    [Description( "Block allows users to create a new login account." )]
 
     [BooleanField( "Check for Duplicates", "Should people with the same email and last name be presented as a possible pre-existing record for user to choose from.", true, "", 0, "Duplicates" )]
     [TextField( "Found Duplicate Caption", "", false,"There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?", "Captions", 1 )]

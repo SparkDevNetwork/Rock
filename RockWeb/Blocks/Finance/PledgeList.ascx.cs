@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Linq;
 using Rock;
 using Rock.Attribute;
@@ -15,9 +16,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Pledge List" )]
+    [Category( "Finance" )]
+    [Description( "Generic list of all pledges in the system." )]
+
     [LinkedPage("Detail Page")]
     public partial class PledgeList : RockBlock
     {

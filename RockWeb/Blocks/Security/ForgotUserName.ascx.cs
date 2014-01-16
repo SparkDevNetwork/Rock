@@ -21,7 +21,7 @@ namespace RockWeb.Blocks.Security
     /// </summary>
     [DisplayName( "Forgot Username" )]
     [Category( "Security" )]
-    [Description( "Block for user to request a forgotten username." )]
+    [Description( "Allows a user to get their forgotten username information emailed to them." )]
 
     [TextField( "Heading Caption", "", false, "<div class='alert alert-info'>Enter your email address below and we''ll send your account information to you right away.</div>", "Captions", 0 )]
     [TextField( "Invalid Email Caption", "", false, "Sorry, we could not find an account for the email address you entered.", "Captions", 1 )]

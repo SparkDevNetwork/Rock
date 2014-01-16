@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -20,7 +21,11 @@ namespace RockWeb.Blocks.Utility
 {
     /// <summary>
     /// User controls for managing defined values
-    /// </summary>    
+    /// </summary>
+    [DisplayName( "Defined Type Check List" )]
+    [Category( "Utility" )]
+    [Description( "Used for managing the values of a defined type as a checklist." )]
+
     [DefinedTypeField( "Defined Type", "The Defined Type to display values for." )]
     [TextField( "Attribute Key", "The attribute key on the Defined Type that is used to store whether item has been completed (should be a boolean field type)." )]
     [BooleanField( "Hide Checked Items", "Hide items that are already checked.", false )]

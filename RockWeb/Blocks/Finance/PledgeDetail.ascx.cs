@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using Rock;
 using Rock.Constants;
 using Rock.Data;
@@ -14,9 +15,9 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Finance
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Pledge Detail" )]
+    [Category( "Finance" )]
+    [Description( "Allows the details of a given pledge to be edited." )]
     public partial class PledgeDetail : RockBlock, IDetailBlock
     {
         /// <summary>

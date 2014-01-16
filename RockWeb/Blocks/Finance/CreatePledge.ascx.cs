@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI.WebControls;
 using Rock;
@@ -18,9 +19,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Create Pledge" )]
+    [Category( "Finance" )]
+    [Description( "Allows a website visitor to create pledge for the configured account funds, start and end date. This block also creates a new person record if a matching person could not be found." )]
+
     [AccountsField( "Accounts", "The accounts that new pledges will be allocated toward", true, "", "", 0, "DefaultAccounts" )]
     [TextField( "Legend Text", "Custom heading at the top of the form.", key: "LegendText", defaultValue: "Create a new pledge", order: 1 )]
     [LinkedPage( "Giving Page", "The page used to set up a person's giving profile.", key: "GivingPage", order: 2 )]

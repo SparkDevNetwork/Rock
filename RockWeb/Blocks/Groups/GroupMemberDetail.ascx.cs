@@ -5,6 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Linq;
@@ -17,9 +18,9 @@ using Rock.Web;
 
 namespace RockWeb.Blocks.Groups
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Group Member Detail" )]
+    [Category( "Groups" )]
+    [Description( "Displays the details of the given group member for editing role, status, etc." )]
     public partial class GroupMemberDetail : RockBlock, IDetailBlock
     {
         #region Control Methods

@@ -18,7 +18,7 @@ namespace RockWeb.Blocks.Security
     /// </summary>
     [DisplayName( "Change Password" )]
     [Category( "Security" )]
-    [Description( "Block for user to change their password." )]
+    [Description( "Block for a user to change their password." )]
 
     [TextField( "Invalid UserName Caption", "", false, "The User Name/Password combination is not valid.", "Captions", 0 )]
     [TextField( "Invalid Password Caption","", false, "The User Name/Password combination is not valid.", "Captions", 1 )]
