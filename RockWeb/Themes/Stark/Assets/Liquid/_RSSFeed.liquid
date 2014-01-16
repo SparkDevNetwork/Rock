@@ -1,0 +1,23 @@
+<h1>{{Title}}</h1>
+{{Description}}
+<div class="rssArticles">
+	{% for article in Items -%}
+		<div class="rssArticle">
+			<h2>{{article.Title}}</h2>
+
+			<div class="articleByLine">
+				{% if article.Authors != empty -%}
+					{{article.Authors[0].Name}} |
+				{% endif -%}
+					{{article.PublishDate}}
+			</div> 
+			<br />
+			<div class="articleSummary">
+				{{article.Summary}}
+			</div>
+			<p>
+				<a href="{{article.DetailPageUrl}}" class="btn btn-default">View Article <i class="fa fa-angle-double-right"></i></a>
+			</p>
+		</div>
+	{% endfor -%}
+</div>
