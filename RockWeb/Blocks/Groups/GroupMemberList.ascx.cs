@@ -5,6 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 using Rock;
@@ -16,9 +17,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Groups
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Group Member List" )]
+    [Category( "Groups" )]
+    [Description( "Lists all the members of the given group." )]
+
     [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter" )]
     [LinkedPage("Detail Page")]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock

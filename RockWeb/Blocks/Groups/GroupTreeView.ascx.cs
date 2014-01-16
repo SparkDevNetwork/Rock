@@ -20,7 +20,7 @@ namespace RockWeb.Blocks.Groups
     /// </summary>
     [DisplayName( "Group Tree View" )]
     [Category( "Groups" )]
-    [Description( "Navigation Tree for groups" )]
+    [Description( "Creates a navigation tree for groups of the configured group type(s)." )]
 
     [TextField( "Treeview Title", "Group Tree View", false )]
     [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false )]

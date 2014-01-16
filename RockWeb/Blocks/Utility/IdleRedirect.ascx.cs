@@ -12,7 +12,10 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Utility
 {
-    [Description( "Redirects user to a new url after a specific number of idle seconds" )]
+    [DisplayName( "Idle Redirect" )]
+    [Category( "Utility" )]
+    [Description( "Redirects user to a new url after a specific number of idle seconds." )]
+
     [TextField( "New Location", "The new location URL to send user to after idle time" )]
     [IntegerField( "Idle Seconds", "How many seconds of idle time to wait before redirecting user", false, 20 )]
     public partial class IdleRedirect : RockBlock

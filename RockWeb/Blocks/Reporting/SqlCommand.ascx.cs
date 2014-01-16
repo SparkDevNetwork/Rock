@@ -28,6 +28,8 @@ namespace RockWeb.Blocks.Reporting
     /// <summary>
     /// Block to execute a sql command and display the result (if any).
     /// </summary>
+    [DisplayName( "Sql Command" )]
+    [Category( "Reporting" )]
     [Description( "Block to execute a sql command and display the result (if any)." )]
     public partial class SqlCommand : RockBlock
     { 

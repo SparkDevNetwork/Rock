@@ -19,7 +19,7 @@ namespace RockWeb.Blocks.Security
     /// </summary>
     [DisplayName( "Confirm Account" )]
     [Category( "Security" )]
-    [Description( "Block for user to confirm a newly created login account." )]
+    [Description( "Block for user to confirm a newly created login account, usually from an email that was sent to them." )]
 
     [TextField( "Confirmed Caption", "", false, "{0}, Your account has been confirmed.  Thank you for creating the account", "Captions", 0 )]
     [TextField( "Reset Password Caption", "", false, "{0}, Enter a new password for your '{1}' account", "Captions", 1 )]

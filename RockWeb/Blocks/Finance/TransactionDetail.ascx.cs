@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -19,9 +20,9 @@ using System.Collections.Generic;
 
 namespace RockWeb.Blocks.Finance
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Transaction Detail" )]
+    [Category( "Finance" )]
+    [Description( "Displays the details of the given transaction for editing." )]
     public partial class TransactionDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         # region Fields

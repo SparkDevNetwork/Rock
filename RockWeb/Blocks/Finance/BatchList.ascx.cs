@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -19,6 +20,10 @@ using System.Collections.Generic;
 
 namespace RockWeb.Blocks.Finance
 {
+    [DisplayName( "Batch List" )]
+    [Category( "Finance" )]
+    [Description( "Lists all financial batches and provides filtering by campus, status, etc." )]
+
     [LinkedPage("Detail Page")]
     public partial class BatchList : Rock.Web.UI.RockBlock
     {

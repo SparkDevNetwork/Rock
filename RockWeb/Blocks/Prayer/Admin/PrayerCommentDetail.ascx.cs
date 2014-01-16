@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
@@ -20,6 +21,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Prayer
 {
+    [DisplayName( "Prayer Comment Detail" )]
+    [Category( "Prayer > Admin" )]
+    [Description( "Shows a list of prayer comments and allows the noteId that is passed in (via querystring) to be editable." )]
+
     [ContextAware(typeof(PrayerRequest))]
     [TextField( "Note Type", "The note type name associated with the context entity to use (If it doesn't exist it will be created. Default is 'Prayer Comment').", false, "Prayer Comment", "Behavior", 0, "NoteType" )]
     [TextField( "Title", "The title of the notes/comments section.", false, "Comments", "Behavior", 1 )]
