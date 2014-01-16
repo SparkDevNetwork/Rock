@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using Rock;
@@ -16,9 +17,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Workflow Trigger List" )]
+    [Category( "Core" )]
+    [Description( "Lists all the workflow triggers." )]
+
     [LinkedPage("Detail Page")]
     public partial class WorkflowTriggerList : RockBlock
     {

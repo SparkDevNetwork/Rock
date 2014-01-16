@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using Rock.Attribute;
@@ -16,9 +17,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Binary File List" )]
+    [Category( "Core" )]
+    [Description( "Shows a list of all binary files." )]
+
     [LinkedPage("Detail Page")]
     [BinaryFileTypeField]
     public partial class BinaryFileList : RockBlock

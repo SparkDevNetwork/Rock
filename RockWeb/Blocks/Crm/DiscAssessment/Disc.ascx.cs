@@ -3,14 +3,19 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using Rock.Model;
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Model;
+
 namespace Rockweb.Blocks.Crm
 {
+    [DisplayName( "Disc" )]
+    [Category( "CRM > DiscAssessment" )]
+    [Description( "Allows you to take a DISC test and saves your DISC score." )]
     public partial class Disc : Rock.Web.UI.RockBlock
     {
         /// <summary>

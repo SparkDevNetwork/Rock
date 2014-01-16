@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
@@ -19,6 +20,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
 {
+    [DisplayName( "Notes" )]
+    [Category( "Core" )]
+    [Description( "Context aware block for adding notes to an entity." )]
+
     [ContextAware]
     [TextField( "Note Type", "The note type name associated with the context entity to use (If it doesn't exist it will be created).", false, "Notes" )]
     [BooleanField( "Show Alert Checkbox", "", true)]

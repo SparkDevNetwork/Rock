@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
@@ -23,6 +24,10 @@ namespace RockWeb.Blocks.Core
     /// <summary>
     /// User control for managing the attributes that are available for a specific entity
     /// </summary>
+    [DisplayName( "Attributes" )]
+    [Category( "Core" )]
+    [Description( "Allows for the managing of attribues." )]
+
     [BooleanField("Configure Type", "Only show attributes for type specified below", true)]
     [EntityTypeField( "Entity", "Entity Name", false, "Applies To", 0 )]
     [TextField( "Entity Qualifier Column", "The entity column to evaluate when determining if this attribute applies to the entity", false, "", "Applies To", 1 )]

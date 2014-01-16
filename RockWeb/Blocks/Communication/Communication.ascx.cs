@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
@@ -29,6 +30,10 @@ namespace RockWeb.Blocks.Communication
     /// <summary>
     /// User control for creating a new communication
     /// </summary>
+    [DisplayName( "Communication" )]
+    [Category( "Communication" )]
+    [Description( "Used for creating and sending communications such as email, SMS, etc. to people." )]
+
     [AdditionalActions( new string[] { "Approve" } )]
     [BooleanField( "Send When Approved", "Should communication be sent once it's approved (vs. just being queued for scheduled job to send)?")]
     [IntegerField( "Maximum Recipients", "The maximum number of recipients allowed before communication will need to be approved" )]

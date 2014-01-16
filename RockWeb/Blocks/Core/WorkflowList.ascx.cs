@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -19,9 +20,10 @@ using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Core
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Workflow List" )]
+    [Category( "Core" )]
+    [Description( "Lists all the workflows." )]
+
     [LinkedPage("Detail Page")]
     [ContextAware( typeof( WorkflowType ) )]
     public partial class WorkflowList : RockBlock

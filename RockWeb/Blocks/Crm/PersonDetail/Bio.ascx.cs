@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
@@ -19,8 +20,12 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
     /// <summary>
-    /// The main Person Profile blockthe main information about a peron 
+    /// The main Person Profile block the main information about a peron 
     /// </summary>
+    [DisplayName( "Person Bio" )]
+    [Category( "CRM > Person Detail" )]
+    [Description( "Person biographic/demographic information and picture (Person detail page)." )]
+
     [ComponentsField( "Rock.PersonProfile.BadgeContainer, Rock", "Badges" )]
     public partial class Bio : PersonBlock
     {

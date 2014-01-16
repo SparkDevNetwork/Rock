@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
@@ -18,6 +19,9 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
+    [DisplayName( "Family Members" )]
+    [Category( "CRM > Person Detail" )]
+    [Description( "Allows you to view the members of a family." )]
     public partial class FamilyMembers : Rock.Web.UI.PersonBlock
     {
 

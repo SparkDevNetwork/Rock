@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Web.UI;
 
@@ -16,6 +17,10 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
 {
+    [DisplayName( "Binary File Detail" )]
+    [Category( "Core" )]
+    [Description( "Shows the details of a particular binary file item." )]
+
     [BooleanField( "Show Binary File Type" )]
     [WorkflowTypeField( "Workflow", "An optional workflow to activate for any new file uploaded", false, "", "Advanced" )]
     public partial class BinaryFileDetail : RockBlock, IDetailBlock

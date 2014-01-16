@@ -5,7 +5,9 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Linq;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -15,9 +17,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Binary File Type List" )]
+    [Category( "Core" )]
+    [Description( "Displays a list of all binary file types." )]
+
     [LinkedPage("Detail Page")]
     public partial class BinaryFileTypeList : RockBlock
     {
