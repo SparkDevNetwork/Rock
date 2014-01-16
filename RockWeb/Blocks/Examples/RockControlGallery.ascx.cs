@@ -42,7 +42,8 @@ namespace RockWeb.Blocks.Examples
 
             htmlEditorLight.MergeFields.Add( "GlobalAttribute" );
             htmlEditorLight.MergeFields.Add( "Rock.Model.Person" );
-            
+
+            mergeFieldPicker.MergeFields.Add( "GlobalAttribute,Rock.Model.Person" );
 
             List<string> list = ReadExamples();
             int i = -1;
