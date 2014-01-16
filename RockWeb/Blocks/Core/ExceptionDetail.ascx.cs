@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,6 +22,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
 {
+    [DisplayName( "Exception Detail" )]
+    [Category( "Core" )]
+    [Description( "Displays the details of the given exception." )]
+
     [LinkedPage("Detail Page")] 
     [BooleanField( "Show Cookies", "Show cookie information when block loads.", false )]
     [BooleanField( "Show Server Variables", "Show server variables when block loads.", false )]

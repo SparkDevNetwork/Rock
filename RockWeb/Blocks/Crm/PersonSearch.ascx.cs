@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,6 +19,10 @@ using System.Text.RegularExpressions;
 
 namespace RockWeb.Blocks.Crm
 {
+    [DisplayName( "Person Search" )]
+    [Category( "CRM" )]
+    [Description( "Displays list of people that match a given search type and term." )]
+
     [LinkedPage("Person Detail Page")]
     public partial class PersonSearch : Rock.Web.UI.RockBlock
     {

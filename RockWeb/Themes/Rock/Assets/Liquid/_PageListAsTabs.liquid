@@ -1,4 +1,4 @@
-﻿<ul class="nav nav-pills">
+﻿<ul class="nav nav-pills nav-pagelist">
     {% for childPage in page.pages %}
         <li {% if childPage.current == 'true' %}class='active'{% endif %}>
             <a href="{{ childPage.url }}">{{ childPage.title }}</a>

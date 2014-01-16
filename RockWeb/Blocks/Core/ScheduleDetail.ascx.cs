@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,9 +20,9 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Schedule Detail" )]
+    [Category( "Core" )]
+    [Description( "Displays the details of the given schedule." )]
     public partial class ScheduleDetail : RockBlock, IDetailBlock
     {
         #region Control Methods

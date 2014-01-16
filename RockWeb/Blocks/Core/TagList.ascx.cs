@@ -21,7 +21,10 @@ namespace RockWeb.Blocks.Core
     /// <summary>
     /// Block for viewing list of tags
     /// </summary>
-    [Description( "Block for viewing list of tags" )]
+    [DisplayName( "Tag List" )]
+    [Category( "Core" )]
+    [Description( "Block for viewing a list of tags." )]
+
     [LinkedPage( "Detail Page" )]
     public partial class TagList : Rock.Web.UI.RockBlock
     {

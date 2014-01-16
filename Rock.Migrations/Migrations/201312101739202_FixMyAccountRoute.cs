@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class FixMyAccountRoute : Rock.Migrations.RockMigration
+    public partial class FixMyAccountRoute : Rock.Migrations.RockMigration1
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

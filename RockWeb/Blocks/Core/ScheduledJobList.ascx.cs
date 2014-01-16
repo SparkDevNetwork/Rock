@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using Rock;
@@ -15,9 +16,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Scheduled Job List" )]
+    [Category( "Core" )]
+    [Description( "Lists all scheduled jobs." )]
+
     [LinkedPage("Detail Page")]
     public partial class ScheduledJobList : RockBlock
     {

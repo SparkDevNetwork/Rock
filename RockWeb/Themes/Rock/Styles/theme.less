@@ -155,6 +155,9 @@ a:hover i.fs
     }
 }
 
+/*.panel .list-group { // override the default > to allow quick lists to not have margin at bottom
+    margin-bottom: 0;
+}*/
 
 
 // 3. Page Header
@@ -177,18 +180,6 @@ a:hover i.fs
         }
     }
 
-    // color all carets in header
-    .nav .caret {
-        border-top-color: @navbar-default-link-color;
-        border-bottom-color: @navbar-default-link-color;
-    }
-
-    .nav a:hover .caret {
-        border-top-color: @navbar-default-link-hover-color;
-        border-bottom-color: @navbar-default-link-hover-color;
-    }
-
-    
     .header-zone {
         margin-top: 8px;
         margin-left: 10px;
@@ -200,8 +191,7 @@ a:hover i.fs
 
 
     .brandbar-logo {
-	    height: 36px;
-	    width: 92.83px
+	    width: 110px
     }
 
     .navbar-toggle {
@@ -255,12 +245,12 @@ a:hover i.fs
                 min-height: 67px;
                 line-height: 1em;
 
-                .caret {
+                .fa.fa-caret-down {
                     display: block;
                     margin-bottom: 6px;
                     position: absolute;
                     bottom: 0;
-                    left: 45%;
+                    left: 48%;
                 }
 
                 i.fa {

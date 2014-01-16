@@ -30,6 +30,13 @@
                     };
                 }
 
+                // clean up the tree (in case it was initialized already, but we are rebuilding it)
+                var rockTree = $tree.data('rockTree');
+                if (rockTree) {
+                    rockTree.nodes = [];
+                }
+                $tree.empty();
+
                 $control.find('.scroll-container').tinyscrollbar({ size: 120, sizethumb: 20 });
                 // Since some hanlers are "live" events, they need to be bound before tree is initialized
                 this.initializeEventHandlers();
@@ -69,7 +76,7 @@
                         $hfItemNames.val(selectedNames.join(','));
                         $spanNames.text(selectedNames.join(', '));
                     })
-                    .on('rockTree:expand rockTree:collapse rockTree:dataBound', function () {
+                    .on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree:rendered', function (evt) {
                         self.updateScrollbar();
                     });
 

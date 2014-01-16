@@ -187,6 +187,9 @@ namespace Rock.Services.NuGet
         /// </summary>
         private void ProcessFilesToDelete( string deleteListFile )
         {
+            // Turn relative path to virtual path
+            deleteListFile = System.Web.HttpContext.Current.Server.MapPath( Path.Combine( "~", deleteListFile ) );
+
             using ( StreamReader file = new StreamReader( deleteListFile ) )
             {
                 string filenameLine;

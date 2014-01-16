@@ -233,6 +233,18 @@ namespace Rock
         }
 
         /// <summary>
+        /// Adds Quotes around the specified string and escapes any quotes that are already in the string
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="QuoteChar">The quote character.</param>
+        /// <returns></returns>
+        public static string Quoted( this string str, string QuoteChar = "'")
+        {
+            var result = QuoteChar + str.EscapeQuotes() + QuoteChar;
+            return result;
+        }
+
+        /// <summary>
         /// Returns the specified number of characters, starting at the left side of the string.
         /// </summary>
         /// <param name="str">The string.</param>
@@ -726,11 +738,11 @@ namespace Rock
 
                 else if ( timeSpan.TotalSeconds < 60 )
                     duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalSeconds ), condensed ? "sec" : " Seconds" );
-                else if ( timeSpan.TotalMinutes <= 1 )
+                else if ( timeSpan.TotalMinutes < 2 )
                     duration = string.Format( "1{0}", condensed ? "min" : " Minute" );
                 else if ( timeSpan.TotalMinutes < 60 )
                     duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalMinutes ), condensed ? "min" : " Minutes" );
-                else if ( timeSpan.TotalHours <= 1 )
+                else if ( timeSpan.TotalHours < 2 )
                     duration = string.Format( "1{0}", condensed ? "hr" : " Hour" );
                 else if ( timeSpan.TotalHours < 24 )
                     duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalHours ), condensed ? "hr" : " Hours" );

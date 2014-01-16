@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using Rock;
@@ -16,9 +17,9 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Block Type Detail" )]
+    [Category( "Core" )]
+    [Description( "Shows the details of a selected block type." )]
     public partial class BlockTypeDetail : RockBlock, IDetailBlock
     {
         #region Control Methods

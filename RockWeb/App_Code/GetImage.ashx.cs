@@ -254,6 +254,13 @@ namespace RockWeb
         /// <param name="physFilePath">The physical file path.</param>
         private void Cache( byte[] fileContent, string physFilePath )
         {
+            // ensure that the Cache folder exists
+            string cacheFolderPath = Path.GetDirectoryName( physFilePath );
+            if ( !Directory.Exists( cacheFolderPath ) )
+            {
+                Directory.CreateDirectory( cacheFolderPath );
+            }
+
             using ( BinaryWriter binWriter = new BinaryWriter( File.Open( physFilePath, FileMode.Create ) ) )
             {
                 binWriter.Write( fileContent );

@@ -1,4 +1,10 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
@@ -8,9 +14,10 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Administration
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Rest Controller List" )]
+    [Category( "Core" )]
+    [Description( "Lists all the rest controllers." )]
+
     [LinkedPage( "Detail Page" )]
     public partial class RestControllerList : RockBlock
     {

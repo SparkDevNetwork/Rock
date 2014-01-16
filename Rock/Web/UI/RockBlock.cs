@@ -372,6 +372,22 @@ namespace Rock.Web.UI
         /// <param name="writer"></param>
         protected override void Render( HtmlTextWriter writer )
         {
+            string appRoot = ResolveRockUrl( "~/" );
+            string themeRoot = ResolveRockUrl( "~~/" );
+
+            if ( Visible && !string.IsNullOrWhiteSpace( _blockCache.PreHtml ) )
+            {
+                var preHtmlControl = (Literal)this.FindControl("lPreHtml");
+                if (preHtmlControl != null)
+                {
+                    preHtmlControl.Text = _blockCache.PreHtml.Replace("~~/", themeRoot).Replace("~/", appRoot);
+                }
+                else
+                {
+                    writer.Write(_blockCache.PreHtml.Replace("~~/", themeRoot).Replace("~/", appRoot));
+                }
+            }
+
             if ( _blockCache.OutputCacheDuration > 0 )
             {
                 string blockCacheKey = string.Format( "Rock:BlockOutput:{0}", _blockCache.Id );
@@ -389,6 +405,20 @@ namespace Rock.Web.UI
             }
 
             base.Render( writer );
+
+            if ( Visible && !string.IsNullOrWhiteSpace( _blockCache.PostHtml ) )
+            {
+                var postHtmlControl = (Literal)this.FindControl("lPostHtml");
+                if (postHtmlControl != null)
+                {
+                    postHtmlControl.Text = _blockCache.PostHtml.Replace("~~/", themeRoot).Replace("~/", appRoot);
+                }
+                else
+                {
+                    writer.Write(_blockCache.PostHtml.Replace("~~/", themeRoot).Replace("~/", appRoot));
+                }
+            }
+
         }
 
         #endregion

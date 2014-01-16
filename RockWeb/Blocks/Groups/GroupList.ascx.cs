@@ -242,11 +242,18 @@ namespace RockWeb.Blocks.Groups
                 if ( personContext != null )
                 {
                     boundFields["GroupRole"].Visible = true;
+                    boundFields["DateAdded"].Visible = true;
                     boundFields["MemberCount"].Visible = false;
 
                     gGroups.Actions.ShowAdd = false;
                     gGroups.IsDeleteEnabled = false;
                     gGroups.Columns.OfType<DeleteField>().ToList().ForEach( f => f.Visible = false);
+
+                    int groupMemberEntityTypeId = EntityTypeCache.Read(typeof(GroupMember)).Id;
+                    var audits = new AuditService().Queryable()
+                        .Where( a => 
+                            a.EntityTypeId == groupMemberEntityTypeId &&
+                            a.AuditType == AuditType.Add);
 
                     gGroups.DataSource = new GroupMemberService().Queryable()
                         .Where( m => 
@@ -263,6 +270,7 @@ namespace RockWeb.Blocks.Groups
                                 Description = m.Group.Description,
                                 IsSystem = m.Group.IsSystem,
                                 GroupRole = m.GroupRole.Name,
+                                DateAdded = audits.Where( a => a.EntityId == m.Id).Select(a => a.DateTime).FirstOrDefault(),
                                 MemberCount = 0
                             })
                         .Sort(sortProperty)
@@ -275,6 +283,7 @@ namespace RockWeb.Blocks.Groups
                     gGroups.IsDeleteEnabled = canEdit;
 
                     boundFields["GroupRole"].Visible = false;
+                    boundFields["DateAdded"].Visible = false;
                     boundFields["MemberCount"].Visible = true;
 
                     gGroups.DataSource = new GroupService().Queryable()
@@ -291,6 +300,7 @@ namespace RockWeb.Blocks.Groups
                                 Description = g.Description,
                                 IsSystem = g.IsSystem,
                                 GroupRole = "",
+                                DateAdded = DateTime.MinValue,
                                 MemberCount = g.Members.Count()
                             })
                         .Sort(sortProperty)
@@ -317,7 +327,7 @@ namespace RockWeb.Blocks.Groups
                     qry = qry.Where( t => includeGroupTypeGuids.Contains( t.Guid ) );
                 }
                 List<Guid> excludeGroupTypeGuids = GetAttributeValue( "ExcludeGroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
-                if ( includeGroupTypeGuids.Count > 0 )
+                if ( excludeGroupTypeGuids.Count > 0 )
                 {
                     qry = qry.Where( t => !excludeGroupTypeGuids.Contains( t.Guid ) );
                 }

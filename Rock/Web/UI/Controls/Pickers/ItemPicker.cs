@@ -583,7 +583,7 @@ namespace Rock.Web.UI.Controls
                     <a class='picker-label' href='#'>
                         <i class='{2}'></i>
                         <span id='selectedItemLabel_{0}' class='selected-names'>{1}</span>
-                        <b class='caret pull-right'></b>
+                        <b class='fa fa-caret-down pull-right'></b>
                     </a>", this.ID, this.ItemName, this.IconCssClass );
                     writer.WriteLine();
 

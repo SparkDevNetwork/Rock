@@ -156,9 +156,9 @@ namespace Rock.Model
 
             if (SpecialRole != Model.SpecialRole.None)
                 sb.AppendFormat("{0} ", SpecialRole.ToString().SplitCase());
-            else if(PersonId.HasValue)
+            else if(Person != null)
                 sb.AppendFormat("{0} ", Person.ToString());
-            else if(GroupId.HasValue)
+            else if(Group != null)
                 sb.AppendFormat("{0} ", Group.ToString());
 
             sb.AppendFormat("{0} Access", Action);

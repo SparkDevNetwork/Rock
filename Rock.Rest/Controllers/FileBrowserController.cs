@@ -68,6 +68,24 @@ namespace Rock.Rest.Controllers
                 } );
 
             routes.MapHttpRoute(
+                name: "DeleteFolder",
+                routeTemplate: "api/FileBrowser/DeleteFolder",
+                defaults: new
+                {
+                    controller = "FileBrowser",
+                    action = "DeleteFolder"
+                } );
+
+            routes.MapHttpRoute(
+                name: "RenameFolder",
+                routeTemplate: "api/FileBrowser/RenameFolder",
+                defaults: new
+                {
+                    controller = "FileBrowser",
+                    action = "RenameFolder"
+                } );
+
+            routes.MapHttpRoute(
                 name: "GetFileThumbnail",
                 routeTemplate: "api/FileBrowser/GetFileThumbnail",
                 defaults: new
@@ -206,10 +224,37 @@ namespace Rock.Rest.Controllers
         [HttpPost]
         public void CreateFolder( string relativeFolderPath )
         {
-            // TODO: get CreateFolder to work, test, etc
             string physicalRootFolder = HttpContext.Current.Request.MapPath( RootContentFolder );
             string fullFolderPath = Path.Combine( physicalRootFolder, relativeFolderPath.Replace( "/", "\\" ).TrimStart( new char[] { '/', '\\' } ) );
             Directory.CreateDirectory( fullFolderPath );
+        }
+
+        /// <summary>
+        /// Deletes the folder.
+        /// </summary>
+        /// <param name="relativeFolderPath">The relative folder path.</param>
+        [Authenticate]
+        [HttpPost]
+        public void DeleteFolder( string relativeFolderPath )
+        {
+            string physicalRootFolder = HttpContext.Current.Request.MapPath( RootContentFolder );
+            string fullFolderPath = Path.Combine( physicalRootFolder, relativeFolderPath.Replace( "/", "\\" ).TrimStart( new char[] { '/', '\\' } ) );
+            Directory.Delete( fullFolderPath, true );
+        }
+
+        /// <summary>
+        /// Renames the folder.
+        /// </summary>
+        /// <param name="origRelativeFolderPath">The original relative folder path.</param>
+        /// <param name="newRelativeFolderPath">The new relative folder path.</param>
+        [Authenticate]
+        [HttpPost]
+        public void RenameFolder( string origRelativeFolderPath, string newRelativeFolderPath )
+        {
+            string physicalRootFolder = HttpContext.Current.Request.MapPath( RootContentFolder );
+            string origFullFolderPath = Path.Combine( physicalRootFolder, origRelativeFolderPath.Replace( "/", "\\" ).TrimStart( new char[] { '/', '\\' } ) );
+            string newFullFolderPath = Path.Combine( physicalRootFolder, newRelativeFolderPath.Replace( "/", "\\" ).TrimStart( new char[] { '/', '\\' } ) );
+            Directory.Move( origFullFolderPath, newFullFolderPath );
         }
 
         /// <summary>

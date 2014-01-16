@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
@@ -23,6 +24,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     /// <summary>
     /// User control for editing the value(s) of a set of attributes for person
     /// </summary>
+    [DisplayName( "Attribute Values" )]
+    [Category( "CRM > Person Detail" )]
+    [Description( "Allows for editing the value(s) of a set of attributes for person." )]
+
     [AttributeCategoryField( "Category", "The Attribute Category to display attributes from", false, "Rock.Model.Person" )]
     public partial class AttributeValues : PersonBlock
     {

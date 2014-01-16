@@ -19,7 +19,9 @@ namespace RockWeb.Blocks.Core
     /// <summary>
     /// Block for administrating a tag
     /// </summary>
-    [Description( "Block for administrating a tag" )]
+    [DisplayName( "Tag Detail" )]
+    [Category( "Core" )]
+    [Description( "Block for administrating a tag." )]
     public partial class TagDetail : Rock.Web.UI.RockBlock
     {
         #region Fields

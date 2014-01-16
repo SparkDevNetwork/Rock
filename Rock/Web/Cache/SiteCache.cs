@@ -140,6 +140,22 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets or sets the 404 page id.
+        /// </summary>
+        /// <value>
+        /// The 404 page id.
+        /// </value>
+        public int? PageNotFoundPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the 404 page route unique identifier.
+        /// </summary>
+        /// <value>
+        /// The 404 page route unique identifier.
+        /// </value>
+        public int? PageNotFoundPageRouteId { get; set; }
+
+        /// <summary>
         /// Gets or sets the login page id.
         /// </summary>
         /// <value>
@@ -274,6 +290,8 @@ namespace Rock.Web.Cache
                 this.GoogleAnalyticsCode = site.GoogleAnalyticsCode;
                 this.FacebookAppId = site.FacebookAppId;
                 this.FacebookAppSecret = site.FacebookAppSecret;
+                this.PageNotFoundPageId = site.PageNotFoundPageId;
+                this.PageNotFoundPageRouteId = site.PageNotFoundPageRouteId;
             }
         }
 
@@ -448,6 +466,44 @@ namespace Rock.Web.Cache
         {
             ObjectCache cache = MemoryCache.Default;
             cache.Remove( SiteCache.CacheKey( id ) );
+        }
+
+        /// <summary>
+        /// Returns site based on domain
+        /// </summary>
+        /// <param name="id"></param>
+        public static SiteCache GetSiteByDomain(string host)
+        {
+            SiteCache site = null;
+
+            string cacheKey = "Rock:DomainSites";
+
+            ObjectCache cache = MemoryCache.Default;
+            Dictionary<string, int> sites = cache[cacheKey] as Dictionary<string, int>;
+            if ( sites == null )
+                sites = new Dictionary<string, int>();
+
+            // look in cache
+            if (sites.ContainsKey(host))
+                site = Rock.Web.Cache.SiteCache.Read(sites[host]);
+            else
+            {
+                // get from database
+                Rock.Model.SiteDomainService siteDomainService = new Rock.Model.SiteDomainService();
+                Rock.Model.SiteDomain siteDomain = siteDomainService.GetByDomain(host);
+
+                if (siteDomain == null)
+                {
+                    siteDomain = siteDomainService.GetByDomainContained(host);
+                }
+
+                if (siteDomain != null)
+                {
+                    return SiteCache.Read(siteDomain.SiteId);
+                }
+            }
+
+            return site;
         }
 
         #endregion

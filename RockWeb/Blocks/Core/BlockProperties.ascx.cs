@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
@@ -20,6 +21,9 @@ namespace RockWeb.Blocks.Core
     /// <summary>
     /// Handles displaying and editing a block's properties.
     /// </summary>
+    [DisplayName( "Block Properties" )]
+    [Category( "Core" )]
+    [Description( "Allows you to administrate a block's properties." )]
     public partial class BlockProperties : RockBlock
     {
         #region Fields
@@ -119,6 +123,8 @@ namespace RockWeb.Blocks.Core
 
                 tbBlockName.Text = _block.Name;
                 tbCssClass.Text = _block.CssClass;
+                cePreHtml.Text = _block.PreHtml;
+                cePostHtml.Text = _block.PostHtml;
                 tbCacheDuration.Text = _block.OutputCacheDuration.ToString();
             }
 
@@ -164,6 +170,8 @@ namespace RockWeb.Blocks.Core
 
                     block.Name = tbBlockName.Text;
                     block.CssClass = tbCssClass.Text;
+                    block.PreHtml = cePreHtml.Text;
+                    block.PostHtml = cePostHtml.Text;
                     block.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );
                     blockService.Save( block, CurrentPersonId );
 
@@ -221,13 +229,11 @@ namespace RockWeb.Blocks.Core
             {
                 pnlBasicProperty.Visible = true;
                 pnlAdvancedSettings.Visible = false;
-                pnlBasicProperty.DataBind();
             }
             else if ( CurrentTab.Equals( "Advanced Settings" ) )
             {
                 pnlBasicProperty.Visible = false;
                 pnlAdvancedSettings.Visible = true;
-                pnlAdvancedSettings.DataBind();
             }
         }
 

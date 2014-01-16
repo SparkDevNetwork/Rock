@@ -381,9 +381,9 @@ namespace Rock.Migrations
         /// <param name="blockTypeGuid">The block type GUID.</param>
         /// <param name="name">The name.</param>
         /// <param name="zone">The zone.</param>
-        /// <param name="order">The order.</param>
-        /// <param name="guid">The GUID.</param>
-        public void AddBlock( string pageGuid, string layoutGuid, string blockTypeGuid, string name, string zone, int order, string guid )
+        /// <param name="preHtml">The pre HTML.</param>
+        /// <param name="postHtml">The post HTML.</param>
+        public void AddBlock( string pageGuid, string layoutGuid, string blockTypeGuid, string name, string zone, string preHtml, string postHtml, int order, string guid )
         {
             var sb = new StringBuilder();
             sb.Append( @"
@@ -418,18 +418,20 @@ namespace Rock.Migrations
                 DECLARE @BlockId int
                 INSERT INTO [Block] (
                     [IsSystem],[PageId],[LayoutId],[BlockTypeId],[Zone],
-                    [Order],[Name],[OutputCacheDuration],
+                    [Order],[Name],[PreHtml],[PostHtml],[OutputCacheDuration],
                     [Guid])
                 VALUES(
                     1,@PageId,@LayoutId,@BlockTypeId,'{1}',
-                    {2},'{3}',0,
-                    '{4}')
+                    {2},'{3}','{4}','{5}',0,
+                    '{6}')
                 SET @BlockId = SCOPE_IDENTITY()
 ",
                     blockTypeGuid,
                     zone,
                     order,
                     name,
+                    preHtml.Replace( "'", "''" ),
+                    postHtml.Replace( "'", "''" ),
                     guid );
 
             // If adding a layout block, give edit/configuration authorization to admin role
@@ -519,7 +521,7 @@ namespace Rock.Migrations
                     name,
                     description.Replace( "'", "''" ),
                     order,
-                    defaultValue,
+                    defaultValue.Replace( "'", "''" ),
                     guid )
             );
         }
@@ -744,7 +746,8 @@ namespace Rock.Migrations
 ",
                     blockGuid,
                     attributeGuid,
-                    value )
+                    value.Replace( "'", "''" )
+                )
             );
         }
 
