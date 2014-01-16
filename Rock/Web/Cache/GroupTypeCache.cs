@@ -233,6 +233,14 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets or sets the roles.
+        /// </summary>
+        /// <value>
+        /// The roles.
+        /// </value>
+        public Dictionary<int, string> Roles { get; set; } 
+
+        /// <summary>
         /// Gets the child group types.
         /// </summary>
         /// <value>
@@ -366,6 +374,9 @@ namespace Rock.Web.Cache
                 this.LocationSelectionMode = groupType.LocationSelectionMode;
                 this.GroupTypePurposeValueId = groupType.GroupTypePurposeValueId;
                 this.locationTypeValueIDs = groupType.LocationTypes.Select( l => l.LocationTypeValueId).ToList();
+
+                this.Roles = new Dictionary<int, string>();
+                groupType.Roles.OrderBy( r => r.Order).ToList().ForEach( r => Roles.Add( r.Id, r.Name ) );
             }
         }
 

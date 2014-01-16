@@ -349,6 +349,14 @@ namespace Rock.Data
         public DbSet<GroupType> GroupTypes { get; set; }
 
         /// <summary>
+        /// Gets or sets the histories.
+        /// </summary>
+        /// <value>
+        /// The histories.
+        /// </value>
+        public DbSet<History> Histories { get; set; }
+        
+        /// <summary>
         /// Gets or sets the Html Contents.
         /// </summary>
         /// <value>
@@ -733,6 +741,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new GroupMemberConfiguration() );
             modelBuilder.Configurations.Add( new GroupRoleConfiguration() );
             modelBuilder.Configurations.Add( new GroupTypeConfiguration() );
+            modelBuilder.Configurations.Add( new HistoryConfiguration() );
             modelBuilder.Configurations.Add( new HtmlContentConfiguration() );
             modelBuilder.Configurations.Add( new LocationConfiguration() );
             modelBuilder.Configurations.Add( new MarketingCampaignConfiguration() );

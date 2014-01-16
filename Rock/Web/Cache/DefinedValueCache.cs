@@ -273,6 +273,25 @@ namespace Rock.Web.Cache
             cache.Remove( DefinedValueCache.CacheKey( id ) );
         }
 
+        /// <summary>
+        /// Gets the name of the defined value given an id
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public static string GetName(int? id)
+        {
+            if (id.HasValue)
+            {
+                var definedValue = Read( id.Value );
+                if (definedValue != null)
+                {
+                    return definedValue.Name;
+                }
+            }
+
+            return null;
+        }
+
         #endregion
 
     }

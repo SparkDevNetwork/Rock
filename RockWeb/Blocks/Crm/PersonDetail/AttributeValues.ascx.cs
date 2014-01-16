@@ -152,19 +152,55 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             if ( Page.IsValid )
             {
-                foreach ( int attributeId in AttributeList )
-                {
-                    var attribute = AttributeCache.Read( attributeId );
+                int personEntityTypeId = EntityTypeCache.Read(typeof(Person)).Id;
 
-                    if ( Person != null && EditMode && attribute.IsAuthorized( "Edit", CurrentPerson ) )
+                using (new Rock.Data.UnitOfWorkScope())
+                {
+                    Rock.Data.RockTransactionScope.WrapTransaction( () =>
                     {
-                        Control attributeControl = fsAttributes.FindControl( string.Format( "attribute_field_{0}", attribute.Id ) );
-                        if ( attributeControl != null )
+                        var changes = new List<string>();
+                        var historyService = new HistoryService();
+
+                        foreach ( int attributeId in AttributeList )
                         {
-                            string value = attribute.FieldType.Field.GetEditValue( attributeControl, attribute.QualifierValues );
-                            Rock.Attribute.Helper.SaveAttributeValue( Person, attribute, value, CurrentPersonId );
+                            var attribute = AttributeCache.Read( attributeId );
+
+                            if ( Person != null && EditMode && attribute.IsAuthorized( "Edit", CurrentPerson ) )
+                            {
+                                Control attributeControl = fsAttributes.FindControl( string.Format( "attribute_field_{0}", attribute.Id ) );
+                                if ( attributeControl != null )
+                                {
+                                    string originalValue = Person.GetAttributeValue( attribute.Key );
+                                    string newValue = attribute.FieldType.Field.GetEditValue( attributeControl, attribute.QualifierValues );
+                                    Rock.Attribute.Helper.SaveAttributeValue( Person, attribute, newValue, CurrentPersonId );
+
+                                    // Check for changes to write to history
+                                    if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
+                                    {
+                                        string formattedOriginalValue = string.Empty;
+                                        if ( !string.IsNullOrWhiteSpace( originalValue ) )
+                                        {
+                                            formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
+                                        }
+
+                                        string formattedNewValue = string.Empty;
+                                        if ( !string.IsNullOrWhiteSpace( originalValue ) )
+                                        {
+                                            formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
+                                        }
+
+                                        History.EvaluateChange( changes, attribute.Name, formattedOriginalValue, formattedNewValue );
+                                    }
+                                }
+                            }
                         }
-                    }
+
+                        if ( changes.Any() )
+                        {
+                            new HistoryService().SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                                Person.Id, changes, CurrentPersonId );
+                        }
+                    } );
                 }
 
                 EditMode = false;
