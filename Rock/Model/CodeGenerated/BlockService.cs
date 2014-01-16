@@ -101,6 +101,8 @@ namespace Rock.Model
             target.Order = source.Order;
             target.Name = source.Name;
             target.CssClass = source.CssClass;
+            target.PreHtml = source.PreHtml;
+            target.PostHtml = source.PostHtml;
             target.OutputCacheDuration = source.OutputCacheDuration;
             target.Id = source.Id;
             target.Guid = source.Guid;

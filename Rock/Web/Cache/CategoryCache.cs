@@ -88,6 +88,22 @@ namespace Rock.Web.Cache
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the description.
+        /// </summary>
+        /// <value>
+        /// The description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public int Order { get; set; }
+
+        /// <summary>
         /// Gets or sets the icon CSS class.
         /// </summary>
         /// <value>
@@ -173,6 +189,8 @@ namespace Rock.Web.Cache
                 this.EntityTypeQualifierColumn = category.EntityTypeQualifierColumn;
                 this.EntityTypeQualifierValue = category.EntityTypeQualifierValue;
                 this.Name = category.Name;
+                this.Description = category.Description;
+                this.Order = category.Order;
                 this.IconCssClass = category.IconCssClass;
             }
         }

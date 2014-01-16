@@ -70,6 +70,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<History>().Queryable().Any( a => a.CategoryId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, History.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<PrayerRequest>().Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, PrayerRequest.FriendlyTypeName );

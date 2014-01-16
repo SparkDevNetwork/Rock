@@ -18,31 +18,31 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// PageRoute Service class
+    /// History Service class
     /// </summary>
-    public partial class PageRouteService : Service<PageRoute>
+    public partial class HistoryService : Service<History>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PageRouteService"/> class
+        /// Initializes a new instance of the <see cref="HistoryService"/> class
         /// </summary>
-        public PageRouteService()
+        public HistoryService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PageRouteService"/> class
+        /// Initializes a new instance of the <see cref="HistoryService"/> class
         /// </summary>
         /// <param name="repository">The repository.</param>
-        public PageRouteService(IRepository<PageRoute> repository) : base(repository)
+        public HistoryService(IRepository<History> repository) : base(repository)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PageRouteService"/> class
+        /// Initializes a new instance of the <see cref="HistoryService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public PageRouteService(RockContext context) : base(context)
+        public HistoryService(RockContext context) : base(context)
         {
         }
 
@@ -54,17 +54,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( PageRoute item, out string errorMessage )
+        public bool CanDelete( History item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            
-            // ignoring Site,DefaultPageRouteId 
-            
-            // ignoring Site,LoginPageRouteId 
-            
-            // ignoring Site,PageNotFoundPageRouteId 
-            
-            // ignoring Site,RegistrationPageRouteId 
             return true;
         }
     }
@@ -72,38 +64,45 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class PageRouteExtensionMethods
+    public static partial class HistoryExtensionMethods
     {
         /// <summary>
-        /// Clones this PageRoute object to a new PageRoute object
+        /// Clones this History object to a new History object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static PageRoute Clone( this PageRoute source, bool deepCopy )
+        public static History Clone( this History source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as PageRoute;
+                return source.Clone() as History;
             }
             else
             {
-                var target = new PageRoute();
+                var target = new History();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another PageRoute object to this PageRoute object
+        /// Copies the properties from another History object to this History object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this PageRoute target, PageRoute source )
+        public static void CopyPropertiesFrom( this History target, History source )
         {
             target.IsSystem = source.IsSystem;
-            target.PageId = source.PageId;
-            target.Route = source.Route;
+            target.EntityTypeId = source.EntityTypeId;
+            target.CategoryId = source.CategoryId;
+            target.EntityId = source.EntityId;
+            target.Caption = source.Caption;
+            target.Summary = source.Summary;
+            target.RelatedEntityTypeId = source.RelatedEntityTypeId;
+            target.RelatedEntityId = source.RelatedEntityId;
+            target.CreatedByPersonId = source.CreatedByPersonId;
+            target.CreationDateTime = source.CreationDateTime;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

@@ -139,6 +139,10 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialTransactionDetail.FriendlyTypeName );
                 return false;
             }  
+            
+            // ignoring History,EntityTypeId 
+            
+            // ignoring History,RelatedEntityTypeId 
  
             if ( new Service<NoteType>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {

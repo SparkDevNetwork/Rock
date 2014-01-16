@@ -68,6 +68,8 @@ namespace Rock.Model
             
             // ignoring Site,LoginPageId 
             
+            // ignoring Site,PageNotFoundPageId 
+            
             // ignoring Site,RegistrationPageId 
             return true;
         }
