@@ -19,7 +19,10 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// Block for viewing list of financial accounts
     /// </summary>
-    [Description( "Block for viewing list of financial accounts" )]
+    [DisplayName( "Account List" )]
+    [Category( "Finance" )]
+    [Description( "Block for viewing list of financial accounts." )]
+
     [LinkedPage( "Detail Page" )]
     public partial class AccountList : RockBlock
     {

@@ -16,6 +16,8 @@ namespace RockWeb.Blocks.Reporting
     /// <summary>
     /// Block to execute a sql command and display the result (if any).
     /// </summary>
+    [DisplayName( "Linq Grid" )]
+    [Category( "Reporting" )]
     [Description( "Block to execute a linq command and display the result (if any)." )]
     public partial class TestLinqGrid : RockBlock
     {

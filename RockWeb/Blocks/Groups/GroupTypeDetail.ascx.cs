@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -23,6 +24,9 @@ using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Groups
 {
+    [DisplayName( "Group Type Detail" )]
+    [Category( "Groups" )]
+    [Description( "Displays the details of the given group type for editing." )]
     public partial class GroupTypes : RockBlock, IDetailBlock
     {
         #region Child Grid Dictionarys

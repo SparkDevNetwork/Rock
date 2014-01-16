@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -20,6 +21,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Groups
 {
+    [DisplayName( "Group List" )]
+    [Category( "Groups" )]
+    [Description( "Lists all groups for the configured group types." )]
+
     [LinkedPage( "Detail Page", "", true, "", "", 0 )]
     [GroupTypesField( "Include Group Types", "The group types to display in the list.  If none are selected, all group types will be included.", false, "", "", 1 )]
     [BooleanField( "Limit to Security Role Groups", "Any groups can be flagged as a security group (even if they're not a security role).  Should the list of groups be limited to these groups?", false, "", 2)]

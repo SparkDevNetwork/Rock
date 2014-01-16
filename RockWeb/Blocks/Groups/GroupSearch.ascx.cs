@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Web.UI.WebControls;
@@ -16,6 +17,9 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Groups
 {
+    [DisplayName( "Group Search" )]
+    [Category( "Groups" )]
+    [Description( "Handles displaying group search results and redirects to the group detail page (via route ~/Group/) when only one match was found." )]
     public partial class GroupSearch : Rock.Web.UI.RockBlock
     {
         #region Control Methods

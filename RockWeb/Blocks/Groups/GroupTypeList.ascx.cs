@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 
@@ -18,9 +19,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Groups
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Group Type List" )]
+    [Category( "Groups" )]
+    [Description( "Lists all group types with filtering by purpose and system group types." )]
+
     [LinkedPage("Detail Page")]
     public partial class GroupTypeList : RockBlock
     { 

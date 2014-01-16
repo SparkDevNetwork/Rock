@@ -5,6 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
@@ -22,6 +23,10 @@ using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Groups
 {
+    [DisplayName( "Group Detail" )]
+    [Category( "Groups" )]
+    [Description( "Displays the details of the given group." )]
+
     [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false, "", "", 0 )]
     [BooleanField( "Show Edit", "", true, "", 1 )]
     [BooleanField( "Limit to Security Role Groups", "", false, "", 2 )]
