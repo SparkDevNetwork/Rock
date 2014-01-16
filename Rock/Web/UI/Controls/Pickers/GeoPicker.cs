@@ -510,7 +510,7 @@ namespace Rock.Web.UI.Controls
                     <a class='picker-label' href='#'>
                         <i class='fa fa-map-marker'></i>
                         <span id='selectedGeographyLabel_{0}'>{1}</span>
-                        <b class='caret pull-right'></b>
+                        <b class='fa fa-caret-down pull-right'></b>
                     </a>", this.ClientID, this.GeoDisplayName ) );
                 writer.WriteLine();
                 

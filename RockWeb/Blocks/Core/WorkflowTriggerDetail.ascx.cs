@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -22,6 +23,9 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
 {
+    [DisplayName( "Workflow Trigger Detail" )]
+    [Category( "Core" )]
+    [Description( "Displays the details of the given workflow trigger." )]
     public partial class WorkflowTriggerDetail : RockBlock, IDetailBlock
     {
 

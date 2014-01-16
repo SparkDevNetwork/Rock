@@ -15,20 +15,39 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock;
+using System.Web.UI.WebControls;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
 {
     /// <summary>
     /// Block for viewing entities with a selected tag
     /// </summary>
+    [DisplayName( "Tag Report" )]
+    [Category( "Core" )]
     [Description( "Block for viewing entities with a selected tag" )]
     public partial class TagReport : Rock.Web.UI.RockBlock, ISecondaryBlock
     {
-        public string EntityTypeName
-        {
-            get { return ViewState["EntityTypeName"] as string ?? string.Empty; }
-            set { ViewState["EntityTypeName"] = value; }
-        }
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the tag identifier.
+        /// </summary>
+        /// <value>
+        /// The tag identifier.
+        /// </value>
+        public int? TagId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the tag entity.
+        /// </summary>
+        /// <value>
+        /// The type of the tag entity.
+        /// </value>
+        public EntityTypeCache TagEntityType { get; set; }
+
+        #endregion 
 
         #region Control Methods
 
@@ -40,23 +59,43 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
-            gReport.DataKeyNames = new string[] { "id" };
+            gReport.DataKeyNames = new string[] { "Guid" };
             gReport.GridRebind += gReport_GridRebind;
-        }
 
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
-        /// </summary>
-        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnLoad( EventArgs e )
-        {
-            base.OnLoad( e );
-
-            if ( !Page.IsPostBack )
+            int tagId = int.MinValue;
+            if ( int.TryParse( PageParameter( "tagId" ), out tagId ) && tagId > 0 )
             {
-                lTaggedTitle.Text = "Tagged Entity";
-                
-                BindGrid();
+                Tag _tag = new TagService().Get( tagId );
+
+                if ( _tag != null )
+                {
+                    TagId = tagId;
+                    TagEntityType = EntityTypeCache.Read( _tag.EntityTypeId );
+
+                    if ( TagEntityType != null )
+                    {
+                        Type modelType = TagEntityType.GetEntityType();
+
+                        lTaggedTitle.Text = "Tagged " + modelType.Name.Pluralize();
+
+                        if ( modelType != null )
+                        {
+                            Dictionary<string, BoundField> boundFields = gReport.Columns.OfType<BoundField>().ToDictionary( a => a.DataField );
+                            foreach ( var column in gReport.GetPreviewColumns( modelType ) )
+                            {
+                                int insertPos = gReport.Columns.IndexOf( gReport.Columns.OfType<DeleteField>().First() );
+                                gReport.Columns.Insert( insertPos, column );
+                            }
+
+                            if ( TagEntityType.Name == "Rock.Model.Person" )
+                            {
+                                gReport.PersonIdField = "Id";
+                            }
+
+                            BindGrid();
+                        }
+                    }
+                }
             }
         }
 
@@ -77,8 +116,49 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gReport_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            string routePath = string.Format("~/{0}/{1}", EntityTypeName, e.RowKeyValue.ToString() );
-            Response.Redirect( routePath, false );
+            Guid guid = Guid.Empty;
+            if ( TagEntityType != null && Guid.TryParse( e.RowKeyValue.ToString(), out guid ) )
+            {
+                object entity = InvokeServiceMethod( "Get", new Type[] { typeof( Guid ) }, new object[] { guid } );
+                if ( entity != null )
+                {
+                    Rock.Data.IEntity model = entity as Rock.Data.IEntity;
+                    if ( model != null )
+                    {
+                        string routePath = string.Format( "~/{0}/{1}", TagEntityType.FriendlyName.Replace( " ", "" ), model.Id );
+                        Response.Redirect( routePath, false );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gReport control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gReport_Delete( object sender, RowEventArgs e )
+        {
+            Guid guid = Guid.Empty;
+            if ( TagId.HasValue && Guid.TryParse( e.RowKeyValue.ToString(), out guid ) )
+            {
+                var service = new TaggedItemService();
+                var taggedItem = service.Get( TagId.Value, guid );
+                if ( taggedItem != null )
+                {
+                    string errorMessage;
+                    if ( !service.CanDelete( taggedItem, out errorMessage ) )
+                    {
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
+
+                    service.Delete( taggedItem, CurrentPersonId );
+                    service.Save( taggedItem, CurrentPersonId );
+                }
+            }
+
+            BindGrid();
         }
 
         #endregion
@@ -90,75 +170,10 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
-            string tagId = PageParameter( "tagId" );
-            if ( !string.IsNullOrWhiteSpace( tagId ) )
-            {
-                int id = int.MinValue;
-                if ( int.TryParse( tagId, out id ) && id > 0 )
-                {
-                    Tag _tag = new TagService().Get( id );
-                    if ( _tag != null )
-                    {
-                        var entityTypeCache = EntityTypeCache.Read( _tag.EntityTypeId );
-                        if ( entityTypeCache != null )
-                        {
-                            EntityTypeName = entityTypeCache.FriendlyName.Replace( " ", "" );
+            var guids = new TaggedItemService().Queryable().Where( t => t.TagId == TagId.Value ).Select( t => t.EntityGuid ).ToList();
 
-                            Type entityType = entityTypeCache.GetEntityType();
-
-                            lTaggedTitle.Text = "Tagged " + entityType.Name.Pluralize();
-
-                            if ( entityType != null )
-                            {
-                                gReport.CreatePreviewColumns( entityType );
-
-                                if ( entityTypeCache.Name == "Rock.Model.Person" )
-                                {
-                                    gReport.PersonIdField = "Id";
-                                }
-
-                                // Get the context type since this may be for a non-rock core object
-                                Type contextType = null;
-                                var contexts = Rock.Reflection.SearchAssembly( entityType.Assembly, typeof( System.Data.Entity.DbContext ) );
-                                if ( contexts.Any() )
-                                {
-                                    contextType = contexts.First().Value;
-                                }
-
-                                Type[] modelType = { entityType };
-                                Type genericServiceType = typeof( Rock.Data.Service<> );
-                                Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-
-                                if ( modelServiceType != null )
-                                {
-                                    Object serviceInstance = null;
-
-                                    if ( contextType != null )
-                                    {
-                                        var context = Activator.CreateInstance( contextType );
-                                        serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { context } );
-                                    }
-                                    else
-                                    {
-                                        serviceInstance = Activator.CreateInstance( modelServiceType );
-                                    }
-
-                                    if ( serviceInstance != null )
-                                    {
-                                        MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetByGuids", new Type[] { typeof( List<Guid> ) } );
-                                        if ( getMethod != null )
-                                        {
-                                            var guids = _tag.TaggedItems.Select( t => t.EntityGuid ).ToList();
-                                            gReport.DataSource = getMethod.Invoke( serviceInstance, new object[] { guids } );
-                                            gReport.DataBind();
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            gReport.DataSource = InvokeServiceMethod( "GetByGuids", new Type[] { typeof( List<Guid> ) }, new object[] { guids } );
+            gReport.DataBind();
         }
 
         /// <summary>
@@ -170,6 +185,48 @@ namespace RockWeb.Blocks.Core
             pnlContent.Visible = visible;
         }
         
+        private object InvokeServiceMethod(string methodName, Type[] types, object[] parameters)
+        {
+            Type modelType = TagEntityType.GetEntityType();
+
+            // Get the context type since this may be for a non-rock core object
+            Type contextType = null;
+            var contexts = Rock.Reflection.SearchAssembly( modelType.Assembly, typeof( System.Data.Entity.DbContext ) );
+            if ( contexts.Any() )
+            {
+                contextType = contexts.First().Value;
+            }
+
+            Type genericServiceType = typeof( Rock.Data.Service<> );
+            Type modelServiceType = genericServiceType.MakeGenericType( new Type[] { modelType } );
+
+            if ( modelServiceType != null )
+            {
+                Object serviceInstance = null;
+
+                if ( contextType != null )
+                {
+                    var context = Activator.CreateInstance( contextType );
+                    serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { context } );
+                }
+                else
+                {
+                    serviceInstance = Activator.CreateInstance( modelServiceType );
+                }
+
+                if ( serviceInstance != null )
+                {
+                    MethodInfo method = serviceInstance.GetType().GetMethod( methodName, types );
+                    if (method != null)
+                    {
+                        return method.Invoke( serviceInstance, parameters );
+                    }
+                }
+            }
+
+            return null;
+        }
+
         #endregion
 
 }

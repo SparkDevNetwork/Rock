@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
@@ -19,6 +20,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     /// <summary>
     /// User control for viewing key attributes
     /// </summary>
+    [DisplayName( "Person Key Attributes" )]
+    [Category( "CRM > Person Detail" )]
+    [Description( "Person key attributes (Person Detail Page)." )]
     public partial class KeyAttributes : Rock.Web.UI.PersonBlock
     {
         #region Properties

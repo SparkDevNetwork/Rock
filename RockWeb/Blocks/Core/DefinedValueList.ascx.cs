@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using Rock;
@@ -20,7 +21,10 @@ namespace RockWeb.Blocks.Core
 {
     /// <summary>
     /// User controls for managing defined values
-    /// </summary>    
+    /// </summary>
+    [DisplayName( "Defined Value List" )]
+    [Category( "Core" )]
+    [Description( "Block for viewing values for a defined type." )]
     public partial class DefinedValueList : RockBlock, ISecondaryBlock
     {        
         #region Control Methods

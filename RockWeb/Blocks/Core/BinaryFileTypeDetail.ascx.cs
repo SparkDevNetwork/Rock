@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Linq;
 
 using Rock;
@@ -18,6 +19,9 @@ using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Core
 {
+    [DisplayName( "Binary File Type Detail" )]
+    [Category( "Core" )]
+    [Description( "Displays all details of a binary file type." )]
     public partial class BinaryFileTypeDetail : RockBlock, IDetailBlock
     {
         #region Child Grid Dictionarys

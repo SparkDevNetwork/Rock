@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
@@ -21,6 +22,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     /// <summary>
     /// Block for adding new families
     /// </summary>
+    [DisplayName( "Add Family" )]
+    [Category( "CRM > Person Detail" )]
+    [Description( "Allows for adding new families." )]
+
     [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Location Type",
         "The type of location that address should use", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 0 )]
     [BooleanField( "Nick Name", "Show Nick Name column", "Hide Nick Name column", "Should the Nick Name field be displayed?", false, "", 1 )]

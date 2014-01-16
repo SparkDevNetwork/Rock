@@ -22,8 +22,12 @@ namespace RockWeb.Blocks.Core
 {
     /// <summary>
     /// Used to manage the <see cref="Rock.Extension.Component"/> classes found through MEF.  Provides a way to edit the value
-    /// of the attributes specified in each class
+    /// of the attributes specified in each class.
     /// </summary>
+    [System.ComponentModel.DisplayName( "Components" )]
+    [System.ComponentModel.Category( "Core" )]
+    [System.ComponentModel.Description( "Block to administrate MEF plugins." )]
+
     [TextField( "Component Container", "The Rock Extension Managed Component Container to manage")]
     public partial class Components : RockBlock
     {

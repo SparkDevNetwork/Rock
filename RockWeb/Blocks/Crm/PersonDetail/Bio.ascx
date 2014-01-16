@@ -24,7 +24,7 @@
                     <a class="persondetails-actions dropdown-toggle" data-toggle="dropdown" href="#" tabindex="0">
                         <i class="fa fa-cog"></i>
                         <span>Actions</span>
-                        <b class="caret"></b>
+                        <b class="fa fa-caret-down"></b>
                     </a>
                     <ul class="dropdown-menu">
                         <li>
@@ -50,7 +50,7 @@
 
         <div class="col-md-4">
             <div class="summary">
-                <div class="tags clearfix">
+                <div class="taglist clearfix">
                     <Rock:TagList ID="taglPersonTags" runat="server"/>
                 </div>
                 <div class="demographics">

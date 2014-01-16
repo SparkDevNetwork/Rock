@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -16,9 +17,11 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
 {
+    [DisplayName( "Device Detail" )]
+    [Category( "Core" )]
+    [Description( "Displays the details of the given device." )]
     public partial class DeviceDetail : RockBlock, IDetailBlock
     {
-
         #region Control Methods
 
         /// <summary>

@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,6 +16,10 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
 {
+    [DisplayName( "Tags" )]
+    [Category( "Core" )]
+    [Description( "Add tags to current context object." )]
+
     [ContextAware]
     [TextField( "Entity Qualifier Column", "The entity column to evaluate when determining if this attribute applies to the entity", false, "", "Filter", 0 )]
     [TextField( "Entity Qualifier Value", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "", "Filter", 1 )]

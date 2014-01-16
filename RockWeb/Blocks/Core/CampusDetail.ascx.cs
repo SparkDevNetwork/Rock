@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using Rock.Constants;
@@ -14,9 +15,9 @@ using Rock;
 
 namespace RockWeb.Blocks.Core
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Campus Detail" )]
+    [Category( "Core" )]
+    [Description( "Displays the details of a particular campus." )]
     public partial class CampusDetail : RockBlock, IDetailBlock
     {
         #region Control Methods

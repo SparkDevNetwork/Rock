@@ -4,9 +4,9 @@
     <ContentTemplate>
         <%-- View Panel --%>
         <asp:Panel ID="pnlView" runat="server">
-            <asp:Literal ID="lPreText" runat="server" />
+            <asp:Literal ID="lPreHtml" runat="server"></asp:Literal>
             <asp:Literal ID="lHtmlContent" runat="server" />
-            <asp:Literal ID="lPostText" runat="server" />
+            <asp:Literal ID="lPostHtml" runat="server"></asp:Literal>
         </asp:Panel>
 
         <%-- Edit Panel --%>

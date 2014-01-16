@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
@@ -19,9 +20,9 @@ using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Core
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Workflow Type Detail" )]
+    [Category( "Core" )]
+    [Description( "Displays the details of the given workflow type." )]
     public partial class WorkflowTypeDetail : RockBlock, IDetailBlock
     {
         #region WorkflowActivityType ViewStateList

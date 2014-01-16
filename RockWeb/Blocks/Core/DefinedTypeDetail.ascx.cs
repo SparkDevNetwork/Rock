@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using Rock;
@@ -22,6 +23,9 @@ namespace RockWeb.Blocks.Core
     /// <summary>
     /// User controls for managing defined types
     /// </summary>
+    [DisplayName( "Defined Type Detail" )]
+    [Category( "Core" )]
+    [Description( "Displays the details of the given defined type." )]
     public partial class DefinedTypeDetail : RockBlock, IDetailBlock
     {
         #region Control Methods

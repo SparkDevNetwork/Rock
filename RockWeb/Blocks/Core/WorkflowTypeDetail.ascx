@@ -80,7 +80,7 @@
                     <div class="col-md-6">
                         <a class="workflow-activities-readonly-header" href="#" onclick="javascxript: toggleReadOnlyActivitiesList();">
                             <asp:Label ID="lblActivitiesReadonlyHeaderLabel" runat="server" Text="Activities" />
-                            <b class="caret"></b>
+                            <b class="fa fa-caret-down"></b>
                         </a>
                         
                         <div class="workflow-activities-readonly-list" style="display: none">

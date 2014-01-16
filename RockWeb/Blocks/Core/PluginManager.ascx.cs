@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,6 +29,9 @@ namespace RockWeb.Blocks.Core
         Search
     }
 
+    [DisplayName( "Plugin Manager" )]
+    [Category( "Core" )]
+    [Description( "Allows installed plugins to be viewed or removed and new ones to be added from the Rock Quarry server." )]
     public partial class PluginManager : Rock.Web.UI.RockBlock
     {
         #region Fields

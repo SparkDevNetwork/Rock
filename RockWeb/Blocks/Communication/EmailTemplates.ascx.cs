@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -21,6 +22,9 @@ namespace RockWeb.Blocks.Communication
     /// <summary>
     /// User control for managing the emailTemplates that are available for a specific entity
     /// </summary>
+    [DisplayName( "Email Templates" )]
+    [Category( "Communication" )]
+    [Description( "Allows the administration of email templates." )]
     public partial class EmailTemplates : RockBlock
     {
         #region Control Methods

@@ -188,18 +188,19 @@ namespace Rock.Services.NuGet
         /// <returns>a package; otherwise null if no package was found</returns>
         public IPackage GetUpdate( IPackage package )
         {
-            return SourceRepository.GetUpdates( LocalRepository.GetPackages(), includePrerelease: false, includeAllVersions: true, targetFrameworks: null ).FirstOrDefault( p => package.Id == p.Id );
+            return SourceRepository.GetUpdates( LocalRepository.GetPackages(), includePrerelease: false, includeAllVersions: true, targetFrameworks: null ).FirstOrDefault( p => package.Id == p.Id && p.IsListed() );
         }
 
         /// <summary>
-        /// Gets all versions of the given package.
+        /// Gets all listed versions of the given package.
         /// </summary>
+        /// <param name="packageId">the Id of a package</param>
         /// <returns>
         /// a list of packages
         /// </returns>
-        public IEnumerable<IPackage> GetUpdates()
+        public IEnumerable<IPackage> GetUpdates( string packageId )
         {
-            return SourceRepository.GetUpdates( LocalRepository.GetPackages(), includePrerelease: false, includeAllVersions: true, targetFrameworks: null );
+            return SourceRepository.GetUpdates( LocalRepository.GetPackages(), includePrerelease: false, includeAllVersions: true, targetFrameworks: null ).Where( p => p.Id == packageId && p.IsListed() );
         }
 
         /// <summary>

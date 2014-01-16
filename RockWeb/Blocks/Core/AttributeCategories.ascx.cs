@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
@@ -23,6 +24,9 @@ namespace RockWeb.Blocks.Core
     /// <summary>
     /// User control for managing attribute categories 
     /// </summary>
+    [DisplayName( "Attribute Categories" )]
+    [Category( "Core" )]
+    [Description( "Allows attribute categories to be managed." )]
     public partial class AttributeCategories : RockBlock
     {
         #region Fields

@@ -135,6 +135,24 @@ namespace Rock.Model
         public string CssClass { get; set; }
 
         /// <summary>
+        /// Gets or sets any HTML to be rendered before the block
+        /// </summary>
+        /// <value>
+        /// The pre HTML.
+        /// </value>
+        [DataMember]
+        public string PreHtml { get; set; }
+
+        /// <summary>
+        /// Gets or sets any HTML to be rendered after the block
+        /// </summary>
+        /// <value>
+        /// The post HTML.
+        /// </value>
+        [DataMember]
+        public string PostHtml { get; set; }
+
+        /// <summary>
         /// Gets or sets the length of time (in minutes) that the Block's data is cached. This property is required.
         /// </summary>
         /// <value>

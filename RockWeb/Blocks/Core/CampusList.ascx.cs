@@ -5,6 +5,8 @@
 //
 
 using System;
+using System.ComponentModel;
+
 using System.Linq;
 using Rock;
 using Rock.Attribute;
@@ -15,9 +17,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Campus List" )]
+    [Category( "Core" )]
+    [Description( "Displays a list of all campuses." )]
+
     [LinkedPage("Detail Page")] 
     public partial class Campuses : RockBlock
     {

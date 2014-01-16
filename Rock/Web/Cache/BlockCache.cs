@@ -101,6 +101,22 @@ namespace Rock.Web.Cache
         public string CssClass { get; set; }
 
         /// <summary>
+        /// Gets or sets the pre HTML.
+        /// </summary>
+        /// <value>
+        /// The pre HTML.
+        /// </value>
+        public string PreHtml { get; set; }
+
+        /// <summary>
+        /// Gets or sets the post HTML.
+        /// </summary>
+        /// <value>
+        /// The post HTML.
+        /// </value>
+        public string PostHtml { get; set; }
+
+        /// <summary>
         /// Gets or sets the duration of the output cache.
         /// </summary>
         /// <value>
@@ -220,6 +236,8 @@ namespace Rock.Web.Cache
                 this.Order = block.Order;
                 this.Name = block.Name;
                 this.CssClass = block.CssClass;
+                this.PreHtml = block.PreHtml;
+                this.PostHtml = block.PostHtml;
                 this.OutputCacheDuration = block.OutputCacheDuration;
             }
         }

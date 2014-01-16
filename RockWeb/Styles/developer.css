@@ -9,7 +9,11 @@
     */
 
 
-/* NA: Used to style a checkboxlist grouping -- based somewhat off the textarea of the rock-boot.less */
+/*
+    NA - This is used to style a checkboxlist grouping as seen (in the DefaultValues
+        of the DefinedValue editor) when editing something like the AbilityLevel person
+        attribute and changing it to 'allow multiple values'.  Added around 2/1/2013
+*/
 .checkboxlist-group {
     width: 196px;
     padding: 6px 11px 0px 11px;
@@ -302,6 +306,7 @@ img.file-browser-image {
     height: 50px;
 }
 
+
 /*css for RSS Item paging*/
 
 
@@ -338,4 +343,18 @@ img.file-browser-image {
     margin: 20px 0;
     padding-left: 0;
     text-align: center;
+}
+
+/*
+    NA - This is used to style the secondary text <small> http://getbootstrap.com/css/#type
+        inside a panel-title.  See example in the RockUpdate block.
+        I think this may be a bug with our panel colors, or perhaps
+        it's just something that needs to be added in a theme's style.
+        I don't care about which color to use just one that shows up
+        with our choice of panel-primary and panel-default headers.
+        Added on 1/14/2014
+*/
+.panel-title small {
+    color: #ccc;
+
 }

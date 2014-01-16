@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,9 +16,10 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Category Tree View" )]
+    [Category( "Core" )]
+    [Description( "Displays a tree of categories for the configured entity type." )]
+
     [LinkedPage( "Detail Page" )]
     [EntityTypeField( "Entity Type", "Display categories associated with this type of entity" )]
     [TextField( "Entity Type Qualifier Property", "", false )]

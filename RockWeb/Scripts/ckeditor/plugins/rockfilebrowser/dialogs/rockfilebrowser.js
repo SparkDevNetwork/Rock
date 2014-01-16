@@ -1,8 +1,8 @@
 ﻿CKEDITOR.dialog.add('rockfilebrowserDialog', function (editor) {
 
-    var imageUploaderHtml = "<div class='imageupload-group' style='visibility:hidden'> \n" +
+    var imageUploaderHtml = "<div class='imageupload-group'> \n" +
                             "	<div class='imageupload-thumbnail'> \n" +
-                            "		<img id='" + editor.id + "_imageUploader_img' src='/Assets/Images/no-picture.svg'> \n" +
+                            "		<img id='" + editor.id + "_imageUploader_img' src='" + Rock.settings.get('baseUrl') + "Assets/Images/no-picture.svg'> \n" +
                             "		<input id='" + editor.id + "_imageUploader_hfBinaryFileId' type='hidden'> \n" +
                             "		<input id='" + editor.id + "_imageUploader_hfBinaryFileTypeGuid' type='hidden'> \n" +
                             "	</div><div class='imageupload-remove'> \n" +
@@ -31,10 +31,17 @@
                         type: 'html',
                         html: "" +
                         "<div class='js-file-browser'> \n" +
+                        "  <div> \n" +
                         imageUploaderHtml +
+                        "    <a class='add btn btn-mini btn-action' href='#' title='Create Folder' id='file-browser-add-folder-button_" + editor.id + "' ><i class='fa fa-plus-circle'></i> Add Folder</a>\n" +
+                        "    <a class='delete btn btn-mini btn-danger' href='#' title='Delete Folder' id='file-browser-delete-folder-button_" + editor.id + "' ><i class='fa fa-times'></i> Delete Folder</a>\n" +
+                        "    <a class='delete btn btn-mini btn-action' href='#' title='Rename Folder' id='file-browser-rename-folder-button_" + editor.id + "' ><i class='fa fa-exchange'></i> Rename Folder</a>\n" +
+                        "    <a class='delete btn btn-mini btn-action' href='#' title='Refresh Folders' id='file-browser-refresh-folders-button_" + editor.id + "' ><i class='fa fa-refresh'></i> Refresh Folders</a>\n" +
+                        "  </div> \n" +
                         "  <div class='row'> \n" +
                         "     <div class='col-md-6'> \n" +
                         "         <div id='file-browser-folder-tree_" + editor.id + "' class='picker picker-select js-rock-tree-folders'> \n" +
+                        "            <input id='hfItemId_file-browser-folder-tree_" + editor.id + "' type='hidden' ></input> \n" +
                         "            <div id='treeview-scroll-container_" + editor.id + "' class='scroll-container scroll-container-vertical scroll-container-picker'> \n" +
                         "               <div class='scrollbar'> \n" +
                         "                   <div class='track'> \n" +
@@ -75,32 +82,17 @@
                 ]
             }
         ],
-        onShow: function (eventParam) {
+        onLoad: function (eventParam) {
             var foldersControlId = 'file-browser-folder-tree_' + eventParam.sender.definition.editorId;
+            var addFolderButtonId = 'file-browser-add-folder-button_' + eventParam.sender.definition.editorId;
+            var deleteFolderButtonId = 'file-browser-delete-folder-button_' + eventParam.sender.definition.editorId;
+            var renameFolderButtonId = 'file-browser-rename-folder-button_' + eventParam.sender.definition.editorId;
+            var refreshFoldersButtonId = 'file-browser-refresh-folders-button_' + eventParam.sender.definition.editorId;
             var filesControlId = 'file-browser-file-tree_' + eventParam.sender.definition.editorId;
             var imageUploaderIdPrefix = eventParam.sender.definition.editorId + "_imageUploader_";
 
-            // if the control already has the rockTree, set it to null to force it to create a new foldersRockTree
-            var foldersRockTree = $('#' + foldersControlId).closest('.js-rock-tree-folders').find('.treeview').data('rockTree');
-            if (foldersRockTree) {
-                $('#' + foldersControlId).closest('.js-rock-tree-folders').find('.treeview').data('rockTree', null);
-            }
-
-            // make an itemPicker for the Folders Tree
-            Rock.controls.itemPicker.initialize({
-                controlId: foldersControlId,
-                startingId: '/',
-                restUrl: Rock.settings.get('baseUrl') + 'api/FileBrowser/GetSubFolders?folderName=',
-                allowMultiSelect: false
-            });
-
-            // 
+            // setup events
             $('#' + foldersControlId).find('.treeview').on('rockTree:selected', function (sender, itemId) {
-
-                // make the imageuploader visible when a folder is selected
-                var fileBrowser = $(this).closest('.js-file-browser');
-                $(fileBrowser).find('.imageupload-group').css('visibility', 'visible');
-
                 var folderParam = encodeURIComponent(itemId);
 
                 // initialize another itemPicker for the Files when a folder is selected. (It'll end up being just a list since there are no children)
@@ -112,6 +104,34 @@
                 });
             });
 
+            $('#' + addFolderButtonId).on('click', function (e, data) {
+                editor.execCommand("createfolderDialog");
+            });
+
+            $('#' + deleteFolderButtonId).on('click', function (e, data) {
+                editor.execCommand("deletefolderDialog");
+            });
+
+            $('#' + renameFolderButtonId).on('click', function (e, data) {
+                editor.execCommand("renamefolderDialog");
+            });
+
+            $('#' + refreshFoldersButtonId).on('click', function (e, data) {
+                // refresh the folder itempicker
+                editor.execCommand("refreshFolderTree", { controlId: foldersControlId, selectedFolder: null });
+            });
+
+            // make the \\External Site folder be selected on show
+            $('#hfItemId_' + foldersControlId).val('\\External Site');
+
+            // make an itemPicker for the Folders Tree
+            Rock.controls.itemPicker.initialize({
+                controlId: foldersControlId,
+                startingId: '/' + editor.config.rockFileBrowserOptions.documentFolderRoot,
+                restUrl: Rock.settings.get('baseUrl') + 'api/FileBrowser/GetSubFolders?folderName=',
+                allowMultiSelect: false
+            });
+
             // initialize the imageUploader
             Rock.controls.imageUploader.initialize({
                 controlId: imageUploaderIdPrefix + 'fu',
@@ -119,30 +139,27 @@
                 hfFileId: imageUploaderIdPrefix + 'hfBinaryFileId',
                 imgThumbnail: imageUploaderIdPrefix + 'img',
                 aRemove: imageUploaderIdPrefix + 'rmv',
-                submitFunction: function(e, data) {
+                submitFunction: function (e, data) {
                     var fileBrowser = $(this).closest('.js-file-browser');
                     var foldersRockTree = $(fileBrowser).find('.js-rock-tree-folders .treeview').data('rockTree');
-                    if (foldersRockTree && foldersRockTree.selectedNodes.length) {
-                        // get the current folder path from the first selected node
-                        var selectedNode = foldersRockTree.selectedNodes[0];
+                    var selectedFolderPath = foldersRockTree.$el.find('.selected').closest('.rocktree-item').attr('data-id');
+
+                    if (selectedFolderPath) {
                         // include the selected folder in the post to ~/ImageUploader.ashx
-                        data.formData = { folderPath: selectedNode.id };
+                        data.formData = { folderPath: selectedFolderPath };
                     }
-                    else
-                    {
+                    else {
                         // no directory selected
                         return false;
                     }
                 },
-                doneFunction: function(e, data) {
+                doneFunction: function (e, data) {
                     var fileBrowser = $('#' + this.controlId).closest('.js-file-browser');
                     var foldersRockTree = $(fileBrowser).find('.js-rock-tree-folders .treeview').data('rockTree');
-                    if (foldersRockTree && foldersRockTree.selectedNodes.length) {
-                        // get the current folder path from the first selected node
-                        var selectedNode = foldersRockTree.selectedNodes[0];
-
+                    var selectedFolderPath = foldersRockTree.$el.find('.selected').closest('.rocktree-item').attr('data-id');
+                    if (selectedFolderPath) {
                         // reselect the node to refresh the list of files
-                        foldersRockTree.$el.trigger('rockTree:selected', selectedNode.id);
+                        foldersRockTree.$el.trigger('rockTree:selected', selectedFolderPath);
                     }
                     else {
                         // no directory selected
@@ -151,9 +168,6 @@
                 },
                 fileType: 'image'
             });
-
-            $('#' + foldersControlId).show();
-
         },
         onOk: function (sender) {
             var dialog = this;
