@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -20,6 +21,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Communication
 {
+    [DisplayName( "Communication List" )]
+    [Category( "Communication" )]
+    [Description( "Lists the status of all previously created communications." )]
+
     [AdditionalActions( new string[] { "Approve" } )]
     [LinkedPage("Detail Page")]
     public partial class CommunicationList : Rock.Web.UI.RockBlock

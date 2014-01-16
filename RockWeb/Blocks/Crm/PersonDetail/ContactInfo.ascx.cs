@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -14,6 +15,10 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
+    [DisplayName( "Person Contact Info" )]
+    [Category( "CRM > Person Detail" )]
+    [Description( "Person contact information(Person Detail Page)." )]
+
     public partial class ContactInfo : Rock.Web.UI.PersonBlock
     {
         protected override void OnInit( EventArgs e )

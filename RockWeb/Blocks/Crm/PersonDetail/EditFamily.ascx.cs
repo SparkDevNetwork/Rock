@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,8 +24,12 @@ using Rock.Web.Cache;
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
     /// <summary>
-    /// The main Person Profile blockthe main information about a peron 
+    /// The main Person Profile block the main information about a peron 
     /// </summary>
+    [DisplayName( "Edit Family" )]
+    [Category( "CRM > Person Detail" )]
+    [Description( "Allows you to edit a family." )]
+
     public partial class EditFamily : PersonBlock
     {
         private Group _family = null;

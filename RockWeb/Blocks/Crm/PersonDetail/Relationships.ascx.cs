@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
@@ -18,6 +19,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     /// <summary>
     /// Renders the related members of a group (typically used for the Relationships group and the Peer Network group)
     /// </summary>
+    [DisplayName( "Relationships" )]
+    [Category( "CRM > Person Detail" )]
+    [Description( "Allows you to view relationships of a particular person." )]
+
     [GroupRoleField( "", "Group Type/Role Filter", "The Group Type and role to display other members from.", false, "" )]
     [BooleanField("Show Role", "Should the member's role be displayed with their name")]
     [BooleanField("Create Group", "Should group be created if a group/role cannot be found for the current person.", true)]

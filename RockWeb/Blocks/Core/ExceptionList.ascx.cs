@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -23,6 +24,10 @@ namespace RockWeb.Blocks.Administraton
     /// <summary>
     /// Exception List Block
     /// </summary>
+    [DisplayName( "Exception List" )]
+    [Category( "Core" )]
+    [Description( "Lists all exceptions." )]
+
     [IntegerField( "Summary Count Days", "Summary field for exceptions that have occurred within the last x days. Default value is 7.", false, 7 )]
     [LinkedPage("Detail Page")]
     public partial class ExceptionList : RockBlock

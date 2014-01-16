@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
@@ -20,6 +21,9 @@ namespace RockWeb.Blocks.Core
     /// <summary>
     /// Handles displaying and editing a block's properties.
     /// </summary>
+    [DisplayName( "Block Properties" )]
+    [Category( "Core" )]
+    [Description( "Allows you to administrate a block's properties." )]
     public partial class BlockProperties : RockBlock
     {
         #region Fields

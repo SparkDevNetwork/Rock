@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,9 +20,10 @@ using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Badges" )]
+    [Category( "CRM > Person Detail" )]
+    [Description( "Handles displaying badges for a person." )]
+
     [ComponentsField( "Rock.PersonProfile.BadgeContainer, Rock", "Badges" )]
     public partial class Badges : Rock.Web.UI.PersonBlock
     {

@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -18,9 +19,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Device List" )]
+    [Category( "Core" )]
+    [Description( "Lists all the devices." )]
+
     [LinkedPage("Detail Page")]
     public partial class DeviceList : RockBlock
     { 

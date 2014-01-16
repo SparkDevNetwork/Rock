@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
@@ -20,9 +21,9 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 
-/// <summary>
-/// 
-/// </summary>
+[DisplayName( "Entity Types" )]
+[Category( "Core" )]
+[Description( "Administer the IEntity entity types." )]
 public partial class EntityTypes : RockBlock
 {
     #region Control Methods

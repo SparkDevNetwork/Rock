@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -21,6 +22,10 @@ namespace RockWeb.Blocks.Core
     /// <summary>
     /// User controls for managing defined types and their values
     /// </summary>
+    [DisplayName( "Defined Type List" )]
+    [Category( "Core" )]
+    [Description( "Lists all the defined types and allows for managing them and their values." )]
+
     [LinkedPage("Detail Page")]
     public partial class DefinedTypeList : RockBlock
     {

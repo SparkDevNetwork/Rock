@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Web.UI;
 using Rock;
@@ -18,6 +19,9 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// User controls for managing scheduled jobs.
     /// </summary>
+    [DisplayName( "Scheduled Job Detail" )]
+    [Category( "Core" )]
+    [Description( "Displays the details of the given scheduled job." )]
     public partial class ScheduledJobDetail : RockBlock
     {
         #region Control Methods
