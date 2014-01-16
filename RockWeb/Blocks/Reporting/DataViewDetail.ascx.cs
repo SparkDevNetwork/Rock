@@ -5,6 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -22,9 +23,9 @@ using Rock.Web;
 
 namespace RockWeb.Blocks.Reporting
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Data View Detail" )]
+    [Category( "Reporting" )]
+    [Description( "Shows the details of the given data view." )]
     public partial class DataViewDetail : RockBlock, IDetailBlock
     {
         #region Control Methods

@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -26,6 +27,10 @@ namespace RockWeb.Blocks.Groups
     /// <summary>
     /// Block that will prompt for name and email, create a person if they don't exist, and add them to a group.
     /// </summary>
+    [DisplayName( "Group Simple Register" )]
+    [Category( "Groups" )]
+    [Description( "Prompts for name and email, creates a person record if none exists, and adds the person to a group." )]
+
     #region Block Attributes
 
     [GroupField( "Group", "The group to add people to", true )]

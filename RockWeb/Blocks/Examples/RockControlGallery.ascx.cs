@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
@@ -21,6 +22,9 @@ namespace RockWeb.Blocks.Examples
     /// <summary>
     /// A sample block that uses many of the Rock UI controls.
     /// </summary>
+    [DisplayName( "Rock Control Gallery" )]
+    [Category( "Examples" )]
+    [Description( "Allows you to see and try various Rock UI controls." )]
     public partial class RockControlGallery : RockBlock
     {
         Regex specialCharsRegex = new Regex( "[^a-zA-Z0-9-]" );

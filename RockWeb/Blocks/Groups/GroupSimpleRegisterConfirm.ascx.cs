@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -26,6 +27,10 @@ namespace RockWeb.Blocks.Groups
     /// <summary>
     /// Block that will update a group member's status to active
     /// </summary>
+    [DisplayName( "Group Simple Register Confirm" )]
+    [Category( "Groups" )]
+    [Description( "Confirmation block that will update a group member's status to active. (Use with Group Simple Register block)." )]
+
     #region Block Attributes
 
     [TextField("Success Message", "The text to display when a valid group member key is provided", false, "You have been registered.")]

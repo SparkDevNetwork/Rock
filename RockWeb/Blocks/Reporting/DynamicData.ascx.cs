@@ -28,7 +28,10 @@ namespace RockWeb.Blocks.Reporting
     /// <summary>
     /// Block to display dynamic report, html, xml, or transformed xml based on a SQL query or stored procedure.
     /// </summary>
+    [DisplayName( "Dynamic Data" )]
+    [Category( "Reporting" )]
     [Description( "Block to display dynamic report, html, xml, or transformed xml based on a SQL query or stored procedure." )]
+
     [BooleanField( "Update Page", "If True, provides fields for updating the parent page's Name and Description", true, "", 0 )] 
     [CodeEditorField( "Query", "The query to execute", CodeEditorMode.Sql, CodeEditorTheme.Rock, 400, false, "", "", 1 )]
     [TextField( "Query Params", "Parameters to pass to query", false, "", "", 2 )]

@@ -5,6 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using Rock;
@@ -17,9 +18,9 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Finance
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Batch Detail" )]
+    [Category( "Finance" )]
+    [Description( "Displays the details of the given financial batch." )]
     public partial class BatchDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Control Methods

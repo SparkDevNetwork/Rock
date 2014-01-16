@@ -5,6 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
@@ -21,9 +22,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Report Detail" )]
+    [Category( "Reporting" )]
+    [Description( "Displays the details of the given report." )]
+
     public partial class ReportDetail : RockBlock, IDetailBlock
     {
         #region Properties

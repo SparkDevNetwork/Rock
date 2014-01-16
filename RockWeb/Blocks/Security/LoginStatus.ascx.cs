@@ -16,7 +16,7 @@ namespace RockWeb.Blocks.Security
     /// </summary>
     [DisplayName( "Login Status" )]
     [Category( "Security" )]
-    [Description( "Displays currently logged in user's name along with options to Login, Logout, or manage account." )]
+    [Description( "Displays the currently logged in user's name along with options to Login, Logout, or manage account." )]
 
     [LinkedPage( "My Account Page", "Page for user to manage their account (if blank will use 'MyAccount' page route)" )]
     public partial class LoginStatus : Rock.Web.UI.RockBlock

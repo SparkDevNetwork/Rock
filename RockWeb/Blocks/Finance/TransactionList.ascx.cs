@@ -5,6 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Data.Entity;
 using System.Web.UI;
@@ -21,9 +22,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Transaction List" )]
+    [Category( "Finance" )]
+    [Description( "Builds a list of all financial transactions which can be filtered by date, account/fund, transaction type, etc." )]
+
     [ContextAware]
     [LinkedPage("Detail Page")]
     [TextField("Title", "Title to display above the grid. Leave blank to hide.", false)]

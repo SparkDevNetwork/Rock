@@ -5,6 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI.WebControls;
 using Rock;
@@ -19,9 +20,9 @@ using Rock.Web;
 
 namespace RockWeb.Blocks.Finance
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Account Detail" )]
+    [Category( "Finance" )]
+    [Description( "Displays the details of the given financial account." )]
     public partial class AccountDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
