@@ -922,6 +922,33 @@ namespace Rock.Web.UI
                         Response.Cache.SetValidUntilExpires( true );
                     }
                 }
+
+                string pageTitle = BrowserTitle;
+                string siteTitle = _pageCache.Layout.Site.Name;
+                string seperator = pageTitle.Trim() != string.Empty && siteTitle.Trim() != string.Empty ? " | " : "";
+
+                base.Title = pageTitle + seperator + siteTitle;
+
+                if ( !string.IsNullOrWhiteSpace( _pageCache.Description ) )
+                {
+                    HtmlMeta metaTag = new HtmlMeta();
+                    metaTag.Attributes.Add( "name", "description" );
+                    metaTag.Attributes.Add( "content", _pageCache.Description.Trim() );
+                    AddMetaTag( this.Page, metaTag );
+                }
+
+                if ( !string.IsNullOrWhiteSpace( _pageCache.KeyWords ) )
+                {
+                    HtmlMeta metaTag = new HtmlMeta();
+                    metaTag.Attributes.Add( "name", "keywords" );
+                    metaTag.Attributes.Add( "content", _pageCache.KeyWords.Trim() );
+                    AddMetaTag( this.Page, metaTag );
+                }
+
+                if ( !string.IsNullOrWhiteSpace( _pageCache.HeaderContent ) )
+                {
+                    Page.Header.Controls.Add( new LiteralControl( _pageCache.HeaderContent ) );
+                }
             }
         }
 
@@ -966,17 +993,6 @@ namespace Rock.Web.UI
             }
         }
 
-        protected override void OnPreRender( EventArgs e )
-        {
-            string pageTitle = BrowserTitle;
-            string siteTitle =  _pageCache.Layout.Site.Name;
-            string seperator = pageTitle.Trim() != string.Empty && siteTitle.Trim() != string.Empty ? " | " : "";
-
-            base.Title = pageTitle + seperator + siteTitle;
-
-            base.OnPreRender( e );
-        }
-        
         #endregion
 
         #region Public Methods
@@ -1661,7 +1677,9 @@ namespace Rock.Web.UI
             bool existsAlready = false;
 
             if ( page != null && page.Header != null )
+            {
                 foreach ( Control control in page.Header.Controls )
+                {
                     if ( control is HtmlMeta )
                     {
                         HtmlMeta existingMeta = (HtmlMeta)control;
@@ -1669,12 +1687,14 @@ namespace Rock.Web.UI
                         bool sameAttributes = true;
 
                         foreach ( string attributeKey in newMeta.Attributes.Keys )
-                            if ( existingMeta.Attributes[attributeKey] != null &&
+                        {
+                            if ( existingMeta.Attributes[attributeKey] == null ||
                                 existingMeta.Attributes[attributeKey].ToLower() != newMeta.Attributes[attributeKey].ToLower() )
                             {
                                 sameAttributes = false;
                                 break;
                             }
+                        }
 
                         if ( sameAttributes )
                         {
@@ -1682,6 +1702,9 @@ namespace Rock.Web.UI
                             break;
                         }
                     }
+                }
+            }
+
             return existsAlready;
         }
 
