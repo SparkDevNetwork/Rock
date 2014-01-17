@@ -344,6 +344,10 @@
     <Compile Include="Migrations\201401172226353_PageTitleFields.Designer.cs">
       <DependentUpon>201401172226353_PageTitleFields.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401172244135_DeleteEventGroupType.cs" />
+    <Compile Include="Migrations\201401172244135_DeleteEventGroupType.Designer.cs">
+      <DependentUpon>201401172244135_DeleteEventGroupType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -580,6 +584,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401172226353_PageTitleFields.resx">
       <DependentUpon>201401172226353_PageTitleFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401172244135_DeleteEventGroupType.resx">
+      <DependentUpon>201401172244135_DeleteEventGroupType.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
