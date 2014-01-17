@@ -159,12 +159,12 @@ namespace RockWeb.Blocks.Prayer
 
             PrayerRequestService prayerRequestService = new PrayerRequestService();
             prayerRequestService.Add( prayerRequest, CurrentPersonId );
-            prayerRequest.EnteredDate = DateTime.Now;
+            prayerRequest.EnteredDateTime = DateTime.Now;
 
             if ( isAutoApproved )
             {
                 prayerRequest.ApprovedByPersonId = CurrentPersonId;
-                prayerRequest.ApprovedOnDate = DateTime.Now;
+                prayerRequest.ApprovedOnDateTime = DateTime.Now;
                 var expireDays = Convert.ToDouble( GetAttributeValue( "ExpireDays" ) );
                 prayerRequest.ExpirationDate = DateTime.Now.AddDays( expireDays );
             }

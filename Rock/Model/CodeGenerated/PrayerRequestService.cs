@@ -100,7 +100,7 @@ namespace Rock.Model
             target.CategoryId = source.CategoryId;
             target.Text = source.Text;
             target.Answer = source.Answer;
-            target.EnteredDate = source.EnteredDate;
+            target.EnteredDateTime = source.EnteredDateTime;
             target.ExpirationDate = source.ExpirationDate;
             target.GroupId = source.GroupId;
             target.AllowComments = source.AllowComments;
@@ -111,7 +111,7 @@ namespace Rock.Model
             target.FlagCount = source.FlagCount;
             target.PrayerCount = source.PrayerCount;
             target.ApprovedByPersonId = source.ApprovedByPersonId;
-            target.ApprovedOnDate = source.ApprovedOnDate;
+            target.ApprovedOnDateTime = source.ApprovedOnDateTime;
             target.Id = source.Id;
             target.Guid = source.Guid;
 
