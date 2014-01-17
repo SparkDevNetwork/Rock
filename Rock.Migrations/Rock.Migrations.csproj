@@ -328,6 +328,10 @@
     <Compile Include="Migrations\201401162252159_HtmlEditorMergeFieldPlugin.Designer.cs">
       <DependentUpon>201401162252159_HtmlEditorMergeFieldPlugin.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401162357214_AddHistory.cs" />
+    <Compile Include="Migrations\201401162357214_AddHistory.Designer.cs">
+      <DependentUpon>201401162357214_AddHistory.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -552,6 +556,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401162252159_HtmlEditorMergeFieldPlugin.resx">
       <DependentUpon>201401162252159_HtmlEditorMergeFieldPlugin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401162357214_AddHistory.resx">
+      <DependentUpon>201401162357214_AddHistory.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
