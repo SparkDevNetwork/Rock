@@ -133,7 +133,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     History.EvaluateChange( changes, "First Name", person.FirstName, tbFirstName.Text );
                     person.FirstName = tbFirstName.Text;
 
-                    History.EvaluateChange( changes, "Nick Name", person.NickName, tbNickName.Text );
+                    string nickName = string.IsNullOrWhiteSpace( tbNickName.Text ) ? tbFirstName.Text : tbNickName.Text;
+                    History.EvaluateChange( changes, "Nick Name", person.NickName, nickName );
                     person.NickName = tbNickName.Text;
 
                     History.EvaluateChange( changes, "Middle Name", person.MiddleName, tbMiddleName.Text );
