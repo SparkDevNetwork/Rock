@@ -66,7 +66,7 @@ namespace Rock.Services.NuGet
         {
             // Create a temp directory to hold package contents in staging area
             string packageId = Guid.NewGuid().ToString();
-            var packageDirectory = CreatePackageDirectory( page.Name, packageId );
+            var packageDirectory = CreatePackageDirectory( page.InternalName, packageId );
             var webRootPath = HttpContext.Current.Server.MapPath( "~" );
 
             // Create a manifest for this page export...

@@ -33,9 +33,9 @@ namespace Rock.Web.UI.Controls
             if (rockPage != null)
             {
                 var pageCache = Rock.Web.Cache.PageCache.Read( rockPage.PageId );
-                if (pageCache != null && pageCache.PageDisplayTitle && !string.IsNullOrWhiteSpace(pageCache.Title))
+                if (pageCache != null && pageCache.PageDisplayTitle && !string.IsNullOrWhiteSpace(pageCache.PageTitle))
                 {
-                    writer.Write( pageCache.Title );
+                    writer.Write( pageCache.PageTitle );
                 }
             }
         }

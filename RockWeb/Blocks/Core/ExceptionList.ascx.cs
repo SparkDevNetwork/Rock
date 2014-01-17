@@ -202,7 +202,7 @@ namespace RockWeb.Blocks.Administraton
                         var page = pageService.Get( pageId );
                         if ( page != null )
                         {
-                            e.Value = page.Name;
+                            e.Value = page.InternalName;
                         }
                     }
                     break;
@@ -369,7 +369,7 @@ namespace RockWeb.Blocks.Administraton
                                     .GroupBy( e => new
                                         {
                                             SiteName = e.Site.Name,
-                                            PageName = e.Page.Name,
+                                            PageName = e.Page.InternalName,
                                             Description = e.Description
                                         } )
                                     .Select( eg => new
@@ -539,7 +539,7 @@ namespace RockWeb.Blocks.Administraton
                 }
                 if ( exception.Page != null )
                 {
-                    descriptionList.Add( "Page", exception.Page.Name );
+                    descriptionList.Add( "Page", exception.Page.InternalName );
                 }
                 if ( !string.IsNullOrEmpty( exception.ExceptionType ) )
                 {

@@ -117,9 +117,10 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this Page target, Page source )
         {
-            target.Name = source.Name;
+            target.InternalName = source.InternalName;
+            target.PageTitle = source.PageTitle;
+            target.BrowserTitle = source.BrowserTitle;
             target.ParentPageId = source.ParentPageId;
-            target.Title = source.Title;
             target.IsSystem = source.IsSystem;
             target.LayoutId = source.LayoutId;
             target.RequiresEncryption = source.RequiresEncryption;
@@ -137,6 +138,8 @@ namespace Rock.Model
             target.Order = source.Order;
             target.OutputCacheDuration = source.OutputCacheDuration;
             target.Description = source.Description;
+            target.KeyWords = source.KeyWords;
+            target.HeaderContent = source.HeaderContent;
             target.IconCssClass = source.IconCssClass;
             target.IncludeAdminFooter = source.IncludeAdminFooter;
             target.Id = source.Id;

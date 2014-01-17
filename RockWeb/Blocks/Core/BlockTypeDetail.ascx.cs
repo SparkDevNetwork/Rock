@@ -118,11 +118,11 @@ namespace RockWeb.Blocks.Core
         /// <returns></returns>
         private string GetFullyQualifiedPageName( Rock.Model.Page page )
         {
-            string result = page.Name;
+            string result = page.InternalName;
             Rock.Model.Page parent = page.ParentPage;
             while ( parent != null )
             {
-                result = parent.Name + " / " + result;
+                result = parent.InternalName + " / " + result;
                 parent = parent.ParentPage;
             }
 

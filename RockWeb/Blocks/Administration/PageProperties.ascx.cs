@@ -182,8 +182,9 @@ namespace RockWeb.Blocks.Administration
                 rptProperties.DataSource = _tabs;
                 rptProperties.DataBind();
 
-                tbPageName.Text = _page.Name;
-                tbPageTitle.Text = _page.Title;
+                tbPageName.Text = _page.InternalName;
+                tbPageTitle.Text = _page.PageTitle;
+                tbBrowserTitle.Text = _page.BrowserTitle;
                 ppParentPage.SetValue( pageService.Get( page.ParentPageId ?? 0 ) );
                 tbIconCssClass.Text = _page.IconCssClass;
 
@@ -205,6 +206,8 @@ namespace RockWeb.Blocks.Administration
                 cbIncludeAdminFooter.Checked = _page.IncludeAdminFooter;
                 tbCacheDuration.Text = _page.OutputCacheDuration.ToString();
                 tbDescription.Text = _page.Description;
+                tbKeyWords.Text = _page.KeyWords;
+                ceHeaderContent.Text = _page.HeaderContent;
                 tbPageRoute.Text = string.Join( ",", page.PageRoutes.Select( route => route.Route ).ToArray() );
 
                 // Add enctype attribute to page's <form> tag to allow file upload control to function
@@ -275,8 +278,9 @@ namespace RockWeb.Blocks.Administration
                         }
                     }
 
-                    page.Name = tbPageName.Text;
-                    page.Title = tbPageTitle.Text;
+                    page.InternalName = tbPageName.Text;
+                    page.PageTitle = tbPageTitle.Text;
+                    page.BrowserTitle = tbBrowserTitle.Text;
                     if ( parentPageId != 0 )
                     {
                         page.ParentPageId = parentPageId;
@@ -310,6 +314,8 @@ namespace RockWeb.Blocks.Administration
                     page.IncludeAdminFooter = cbIncludeAdminFooter.Checked;
                     page.OutputCacheDuration = int.Parse( tbCacheDuration.Text );
                     page.Description = tbDescription.Text;
+                    page.KeyWords = tbKeyWords.Text;
+                    page.HeaderContent = ceHeaderContent.Text;
 
                     // new or updated route
                     foreach ( var pageRoute in page.PageRoutes.ToList() )
@@ -392,7 +398,7 @@ namespace RockWeb.Blocks.Administration
             var pageService = new PageService();
             var page = pageService.Get( _page.Guid );
             var packageService = new PackageService();
-            var pageName = page.Name.Replace( " ", "_" ) + ( ( cbExportChildren.Checked ) ? "_wChildPages" : "" );
+            var pageName = page.InternalName.Replace( " ", "_" ) + ( ( cbExportChildren.Checked ) ? "_wChildPages" : "" );
             using ( var stream = packageService.ExportPage( page, cbExportChildren.Checked ) )
             {
                 EnableViewState = false;

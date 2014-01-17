@@ -196,7 +196,7 @@ namespace Rock.Web.UI.Controls
                 if ( pageRoute.Id != 0 )
                 {
                     // PageRoute is selected, so show the Page and it's PageRoute and don't show the PageRoute picker
-                    ItemName = page.Name + " (" + pageRoute.Route + ")";
+                    ItemName = page.InternalName + " (" + pageRoute.Route + ")";
                     
                     _rblSelectPageRoute.Visible = false;
                     _btnShowPageRoutePicker.Style[HtmlTextWriterStyle.Display] = "none";
@@ -204,7 +204,7 @@ namespace Rock.Web.UI.Controls
                 else
                 {
                     // Only a Page is selected, so show PageRoutePicker button if it has page routes
-                    ItemName = page.Name;
+                    ItemName = page.InternalName;
                     PageRouteId = null;
 
                     // Update PageRoutePicker control values
@@ -283,7 +283,7 @@ namespace Rock.Web.UI.Controls
                     if ( page != null )
                     {
                         ids.Add( page.Id.ToString() );
-                        names.Add( page.Name );
+                        names.Add( page.InternalName );
                         var parentPage = page.ParentPage;
 
                         while ( parentPage != null )

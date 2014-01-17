@@ -54,7 +54,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( Person != null )
             {
                 // Set the browser page title to include person's name
-                RockPage.BrowserTitle = RockPage.TemplateTitle + ": " + Person.FullName;
+                RockPage.BrowserTitle = Person.FullName;
 
                 lName.Text = Person.FullName.FormatAsHtmlTitle();
 

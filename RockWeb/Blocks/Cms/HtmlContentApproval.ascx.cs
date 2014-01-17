@@ -242,7 +242,7 @@ namespace RockWeb.Blocks.Cms
                         var page = pageService.Get( (int)content.Block.PageId );
                         if ( page != null )
                         {
-                            pageName = page.Name;
+                            pageName = page.InternalName;
                             while ( page.ParentPageId != null )
                             {
                                 page = pageService.Get( (int)page.ParentPageId );
