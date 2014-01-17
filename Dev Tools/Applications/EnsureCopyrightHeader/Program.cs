@@ -43,12 +43,14 @@ namespace EnsureCopyrightHeader
 
             List<string> sourceFilenames = Directory.GetFiles( searchDirectory, "*.cs", SearchOption.AllDirectories ).ToList();
 
-            const string copyrightBadge = @"//
+            // this was was our standard copyright badge up until 1/17/2014. Look for it in case it sneaks back in
+            const string oldCopyrightBadge = @"//
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 ";
+            // standard copyright badge starting 1/17/2014
             const string newCopyrightBadge = @"// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
@@ -67,9 +69,7 @@ namespace EnsureCopyrightHeader
 //
 ";
 
-
-
-            string[] ignoreFolders = new string[] { "\\CodeGenerated", "\\obj", "\\xxxMigrations" };
+            string[] ignoreFolders = new string[] { "\\CodeGenerated", "\\obj" };
             foreach ( string fileName in sourceFilenames )
             {
                 bool skipFile = false;
@@ -106,11 +106,9 @@ namespace EnsureCopyrightHeader
                 string newFileContents = origFileContents.Substring( codeStart );
                 
                 // try to clean up cases where the badge is after some of the using statements
-                newFileContents = newFileContents.Replace( copyrightBadge, string.Empty );
+                newFileContents = newFileContents.Replace( oldCopyrightBadge, string.Empty ).Replace( newCopyrightBadge, string.Empty );
                 
                 newFileContents = newCopyrightBadge + newFileContents;
-
-                
 
                 if ( !origFileContents.Equals( newFileContents ) )
                 {
