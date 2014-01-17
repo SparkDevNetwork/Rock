@@ -6,7 +6,11 @@
 
 using System;
 using System.ComponentModel;
+using System.IO;
+using System.Text;
 using System.Web.UI;
+using System.Linq;
+using System.Collections.Generic;
 using Rock.Model;
 using Rock.Web.UI;
 
@@ -54,9 +58,60 @@ namespace RockWeb.Blocks.Utility
                 string startupScript = @" 
 var iframeHead = $('head');
 $('<style> .modal-header { display: none; } .modal-footer { display: none; } </style>').appendTo(iframeHead);
+
+$('.treeview').rockTree( {  
+} );
+
+$('.js-folder-treeview').tinyscrollbar({ size: 120, sizethumb: 20 });
+
+$('.treeview').on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree:rendered', function (evt) {
+
+    var $container = $('.js-folder-treeview'),
+        $dialog = $('#modal-scroll-container'),
+        dialogTop,
+        pickerTop,
+        amount;
+
+    if ($container.is(':visible')) {
+        $container.tinyscrollbar_update('relative');
+
+        if ($dialog.length > 0 && $dialog.is(':visible')) {
+            dialogTop = $dialog.offset().top;
+            pickerTop = $container.offset().top;
+            amount = pickerTop - dialogTop;
+
+            if (amount > 160) {
+                $dialog.tinyscrollbar_update('bottom');
+            }
+        }
+    }
+});
+
 ";
                 ScriptManager.RegisterStartupScript( this, this.GetType(), "script_" + this.ID, startupScript, true );
             }
+
+            var sb = new StringBuilder();
+
+            sb.AppendLine( "<ul id=\"treeview\">" );
+
+            string rootFolder = PageParameter("rootFolder");
+
+            if (string.IsNullOrWhiteSpace(rootFolder)) {
+                rootFolder = "~/Content";
+            }
+
+            string physicalRootFolder = this.Request.MapPath( rootFolder );
+            List<string> directoryList = Directory.GetDirectories( physicalRootFolder ).OrderBy( a => a ).ToList();
+
+            foreach ( string directoryPath in directoryList )
+            {
+                sb.Append( DirectoryNode( directoryPath ) );
+            }
+
+            sb.AppendLine( "</ul>" );
+
+            lblFolders.Text = sb.ToString();
         }
 
         #endregion
@@ -79,7 +134,32 @@ $('<style> .modal-header { display: none; } .modal-footer { display: none; } </s
 
         #region Methods
 
-       // helper functional methods (like BindGrid(), etc.)
+        protected string DirectoryNode( string directoryPath )
+        {
+            var sb = new StringBuilder();
+
+            DirectoryInfo directoryInfo = new DirectoryInfo( directoryPath );
+
+            sb.AppendFormat( "<li data-expanded='false' data-id='{0}'><span><i class=\"fa fa-folder\"></i> {1}</span> \n", directoryPath, directoryInfo.Name );
+
+            List<string> subDirectoryList = Directory.GetDirectories( directoryPath ).OrderBy( a => a ).ToList();
+
+            if ( subDirectoryList.Any() )
+            {
+                sb.AppendLine( "<ul>" );
+
+                foreach ( var subDirectoryPath in subDirectoryList )
+                {
+                    sb.Append( DirectoryNode( subDirectoryPath ) );
+                }
+
+                sb.AppendLine( "</ul>" );
+            }
+
+            sb.AppendLine( "</li>" );
+
+            return sb.ToString();
+        }
 
         #endregion
     }
