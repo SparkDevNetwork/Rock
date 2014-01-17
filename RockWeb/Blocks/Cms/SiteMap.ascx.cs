@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Cms
 
             sb.AppendLine( "<ul id=\"treeview\">" );
             var allPages = pageService.Queryable( "Pages, Blocks, Blocks.BlockType" ).ToList();
-            foreach ( var page in allPages.Where( a => a.ParentPageId == null ).OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+            foreach ( var page in allPages.Where( a => a.ParentPageId == null ).OrderBy( a => a.Order ).ThenBy( a => a.InternalName ) )
             {
                 sb.Append( PageNode( page ) );
             }
@@ -63,13 +63,13 @@ namespace RockWeb.Blocks.Cms
         {
             var sb = new StringBuilder();
 
-            sb.AppendFormat( "<li data-expanded='false' data-model='Page' data-id='{0}'><span><i class=\"fa fa-file-o\">&nbsp;</i> <a href='{1}'>{2}</a></span>{3}", page.Id, new PageReference( page.Id ).BuildUrl(), page.Name, Environment.NewLine );
+            sb.AppendFormat( "<li data-expanded='false' data-model='Page' data-id='{0}'><span><i class=\"fa fa-file-o\">&nbsp;</i> <a href='{1}'>{2}</a></span>{3}", page.Id, new PageReference( page.Id ).BuildUrl(), page.InternalName, Environment.NewLine );
 
             if ( page.Pages.Any() || page.Blocks.Any() )
             {
                 sb.AppendLine( "<ul>" );
 
-                foreach ( var childPage in page.Pages.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+                foreach ( var childPage in page.Pages.OrderBy( a => a.Order ).ThenBy( a => a.InternalName ) )
                 {
                     sb.Append( PageNode( childPage ) );
                 }

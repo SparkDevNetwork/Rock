@@ -213,7 +213,8 @@ namespace RockWeb.Blocks.Administration
                         page.LayoutId = PageCache.Read( RockPage.PageId ).LayoutId;
                     }
 
-                    page.Title = dtbPageName.Text;
+                    page.PageTitle = dtbPageName.Text;
+                    page.BrowserTitle = page.PageTitle;
                     page.EnableViewState = true;
                     page.IncludeAdminFooter = true;
 
@@ -233,7 +234,7 @@ namespace RockWeb.Blocks.Administration
                     page = pageService.Get( pageId );
 
                 page.LayoutId = ddlLayout.SelectedValueAsInt().Value;
-                page.Name = dtbPageName.Text;
+                page.InternalName = dtbPageName.Text;
 
                 if ( page.IsValid )
                 {
@@ -287,7 +288,7 @@ namespace RockWeb.Blocks.Administration
                 hfPageId.Value = page.Id.ToString();
                 try { ddlLayout.SelectedValue = page.LayoutId.ToString(); }
                 catch { }
-                dtbPageName.Text = page.Name;
+                dtbPageName.Text = page.InternalName;
 
                 lEditAction.Text = "Edit";
                 lbSave.Text = "Save";

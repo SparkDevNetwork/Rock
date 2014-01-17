@@ -48,7 +48,7 @@ namespace Rock.Field.Types
                 var page = service.Get( new Guid( value ) );
                 if ( page != null )
                 {
-                    formattedValue = page.Name;
+                    formattedValue = page.InternalName;
                 }
             }
 

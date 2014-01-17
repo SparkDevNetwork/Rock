@@ -44,9 +44,9 @@ namespace Rock.Tests.Model
             [TestCategory( "Rock.Model.Page" )]
             public void ShouldCopyEntity()
             {
-                var page = new Page { Name = "SomePage" };
+                var page = new Page { InternalName = "SomePage" };
                 var result = page.Clone( false );
-                Assert.AreEqual( result.Name, page.Name );
+                Assert.AreEqual( result.InternalName, page.InternalName );
             }
         }
 
@@ -163,7 +163,7 @@ namespace Rock.Tests.Model
             {
                 var page = new Page
                     {
-                        Title = "FooPage"
+                        PageTitle = "FooPage"
                     };
 
                 var result = page.ToJson();
@@ -181,8 +181,8 @@ namespace Rock.Tests.Model
             {
                 var page = new Page
                     {
-                        Title = "FooPage",
-                        Pages = new List<Page> { new Page { Title = "BarPage" } }
+                        PageTitle = "FooPage",
+                        Pages = new List<Page> { new Page { PageTitle = "BarPage" } }
                     };
 
                 var result = page.ToJson();
@@ -199,9 +199,9 @@ namespace Rock.Tests.Model
             [TestCategory( "Rock.Model.Page" )]
             public void ShouldExportChildPagesRecursively()
             {
-                var parent = new Page { Title = "Parent" };
-                var child = new Page { Title = "Child" };
-                var grandchild = new Page { Title = "Grandchild" };
+                var parent = new Page { PageTitle = "Parent" };
+                var child = new Page { PageTitle = "Child" };
+                var grandchild = new Page { PageTitle = "Grandchild" };
                 parent.Pages = new List<Page> { child };
                 child.Pages = new List<Page> { grandchild };
                 var result = parent.ToJson( );
@@ -230,13 +230,13 @@ namespace Rock.Tests.Model
             {
                 var obj = new Page
                 {
-                    Name = "Foo Page",
+                    InternalName = "Foo Page",
                     IsSystem = true,
                 };
 
                 string json = obj.ToJson();
                 var page = Page.FromJson( json );
-                Assert.AreEqual( obj.Name, page.Name );
+                Assert.AreEqual( obj.InternalName, page.InternalName );
                 Assert.AreEqual( obj.IsSystem, page.IsSystem );
             }
 
@@ -248,14 +248,14 @@ namespace Rock.Tests.Model
             [TestCategory( "Rock.Model.Page" )]
             public void ShouldImportChildPages()
             {
-                var obj = new Page { Name = "Parent" };
-                obj.Pages.Add ( new Page { Name = "Child" } );
+                var obj = new Page { InternalName = "Parent" };
+                obj.Pages.Add ( new Page { InternalName = "Child" } );
                 
                 var json = obj.ToJson();
                 var page = Page.FromJson( json );
                 Assert.IsNotNull( page.Pages );
                 Assert.IsNotEmpty( page.Pages );
-                Assert.AreEqual( page.Pages.First().Name, obj.Pages.First().Name );
+                Assert.AreEqual( page.Pages.First().InternalName, obj.Pages.First().InternalName );
             }
 
             /// <summary>
@@ -268,9 +268,9 @@ namespace Rock.Tests.Model
             {
                 const string PAGE_NAME = "Child Page";
 
-                var childPage = new Page { Name = PAGE_NAME };
-                var parentPage = new Page { Name = "Parent Page" };
-                var grandparentPage = new Page { Name = "Grandparent Page" };
+                var childPage = new Page { InternalName = PAGE_NAME };
+                var parentPage = new Page { InternalName = "Parent Page" };
+                var grandparentPage = new Page { InternalName = "Grandparent Page" };
 
                 parentPage.Pages.Add(childPage);
                 grandparentPage.Pages.Add(parentPage);
@@ -280,7 +280,7 @@ namespace Rock.Tests.Model
                 var childPages = page.Pages.First().Pages;
                 Assert.IsNotNull( childPages );
                 Assert.IsNotEmpty( childPages );
-                Assert.AreEqual( childPages.First().Name, PAGE_NAME );
+                Assert.AreEqual( childPages.First().InternalName, PAGE_NAME );
             }
 
             /// <summary>
@@ -291,7 +291,7 @@ namespace Rock.Tests.Model
             [TestCategory( "Rock.Model.Page" )]
             public void ShouldImportBlocks()
             {
-                var obj = new Page { Name = "Some Page" };
+                var obj = new Page { InternalName = "Some Page" };
                 obj.Blocks.Add(new Block { Name = "Some Block" } );
                 var json = obj.ToJson();
                 var page = Page.FromJson( json );
@@ -308,7 +308,7 @@ namespace Rock.Tests.Model
             [TestCategory( "Rock.Model.Page" )]
             public void ShouldImportPageRoutes()
             {
-                var obj = new Page { Name = "Some Page" };
+                var obj = new Page { InternalName = "Some Page" };
                 obj.PageRoutes.Add( new PageRoute { Route = "/some/route" } );
                 var json = obj.ToJson();
                 var page = Page.FromJson( json );
@@ -327,7 +327,7 @@ namespace Rock.Tests.Model
             {
                 Random random = new Random();
                 var id = random.Next();
-                var obj = new Page { Name = "Some Page" };
+                var obj = new Page { InternalName = "Some Page" };
                 obj.PageContexts.Add( new PageContext { PageId = id } );
                 var json = obj.ToJson();
                 var page = Page.FromJson( json );
@@ -346,7 +346,7 @@ namespace Rock.Tests.Model
             {
                 var obj = new Page
                     {
-                        Name = "Some Page",
+                        InternalName = "Some Page",
                         Attributes = new Dictionary<string, Web.Cache.AttributeCache> { { "foobar", null } }
                     };
 
@@ -367,7 +367,7 @@ namespace Rock.Tests.Model
             {
                 var obj = new Page
                     {
-                        Name = "Some Page",
+                        InternalName = "Some Page",
                         AttributeValues = new Dictionary<string, List<AttributeValue>>
                             {
                                 { "foobar", new List<AttributeValue> { new AttributeValue { Value = "baz" } } }

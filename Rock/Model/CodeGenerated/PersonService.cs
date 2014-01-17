@@ -101,6 +101,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
                 return false;
             }  
+ 
+            if ( new Service<History>().Queryable().Any( a => a.CreatedByPersonId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, History.FriendlyTypeName );
+                return false;
+            }  
             
             // ignoring HtmlContent,ApprovedByPersonId 
             

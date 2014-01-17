@@ -30,15 +30,26 @@
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:PagePicker ID="ppParentPage" runat="server" Label="Parent Page" Required="false" />
-                        <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Name" Required="true" />
-                        <Rock:DataTextBox ID="tbPageTitle" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Title" Help="The text to be displayed in menus, breadcrumbs and page headings."/>
+                        <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="InternalName" Required="true"
+                            Help="The internal page name to use when administering this page" />
+                        <Rock:DataTextBox ID="tbPageTitle" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="PageTitle" 
+                            Help="The page title to display in menus, breadcrumbs and page headings."/>
+                        <Rock:DataTextBox ID="tbBrowserTitle" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="BrowserTitle" 
+                            Help="The page title to display in the browser."/>
+                    </div>
+                    <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Site" Help="The Site that the page should belong to." AutoPostBack="true" OnSelectedIndexChanged="ddlSite_SelectedIndexChanged" />
                         <Rock:DataDropDownList ID="ddlLayout" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Layout"/>
                         <Rock:RockCheckBox ID="cbMenuIcon" runat="server" Text="Show Icon"/>
                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="IconCssClass" Label="Icon CSS Class"/>
                     </div>
-                    <div class="col-md-6">
-                        <Rock:DataTextBox ID="tbDescription" runat="server" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Description" />
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <Rock:DataTextBox ID="tbDescription" runat="server" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Description"
+                            Help="The description of the page to include as a meta tag for the page" />
+                        <Rock:DataTextBox ID="tbKeyWords" runat="server" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.Model.Page, Rock" PropertyName="KeyWords"
+                            Help="The key word meta tags to include for the page" />
                     </div>
                 </div>
             </asp:Panel>
@@ -88,6 +99,13 @@
                         </asp:PlaceHolder>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <Rock:CodeEditor ID="ceHeaderContent" runat="server" Label="Header Content" EditorMode="Html" EditorTheme="Rock" EditorHeight="400"
+                            Help="Additional HTML content to include in the <head> section of the rendered page." />
+                    </div>
+                </div>
+
             </asp:Panel>
             
             <asp:Panel ID="pnlImportExport" runat="server" Visible="False">

@@ -340,6 +340,10 @@
     <Compile Include="Migrations\201401171902377_PrayerRequestDateChanges.Designer.cs">
       <DependentUpon>201401171902377_PrayerRequestDateChanges.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401172226353_PageTitleFields.cs" />
+    <Compile Include="Migrations\201401172226353_PageTitleFields.Designer.cs">
+      <DependentUpon>201401172226353_PageTitleFields.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -573,6 +577,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401171902377_PrayerRequestDateChanges.resx">
       <DependentUpon>201401171902377_PrayerRequestDateChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401172226353_PageTitleFields.resx">
+      <DependentUpon>201401172226353_PageTitleFields.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

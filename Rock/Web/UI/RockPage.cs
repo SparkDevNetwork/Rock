@@ -86,11 +86,7 @@ namespace Rock.Web.UI
         /// <value>
         /// The browser title.
         /// </value>
-        public string BrowserTitle
-        {
-            get { return base.Title; }
-            set { base.Title = value; }
-        }
+        public string BrowserTitle { get; set; }
 
         /// <summary>
         /// Gets or sets the template title.
@@ -98,11 +94,7 @@ namespace Rock.Web.UI
         /// <value>
         /// The template title.
         /// </value>
-        public string TemplateTitle
-        {
-            get { return _pageCache.Title; }
-            set { _pageCache.Title = value; }
-        }
+        public string PageTitle { get; set; }
 
         /// <summary>
         /// Gets the title for the page and sets both the browser and template title
@@ -117,7 +109,7 @@ namespace Rock.Web.UI
             set
             {
                 BrowserTitle = value;
-                TemplateTitle = value;
+                PageTitle = value;
             }
         }
 
@@ -541,6 +533,9 @@ namespace Rock.Web.UI
             // If a PageInstance exists
             if ( _pageCache != null )
             {
+                BrowserTitle = _pageCache.BrowserTitle;
+                PageTitle = _pageCache.PageTitle;
+
                 // If there's a master page, update it's reference to Current Page
                 if ( this.Master is RockMasterPage )
                 {
@@ -610,10 +605,6 @@ namespace Rock.Web.UI
 
                     }
                     catch { }
-
-                    // intialize browser title to template title
-                    Page.Trace.Warn( "Setting page title" );
-                    BrowserTitle = TemplateTitle;
 
                     // set viewstate on/off
                     this.EnableViewState = _pageCache.EnableViewState;
@@ -975,6 +966,16 @@ namespace Rock.Web.UI
             }
         }
 
+        protected override void OnPreRender( EventArgs e )
+        {
+            string pageTitle = BrowserTitle;
+            string siteTitle =  _pageCache.Layout.Site.Name;
+            string seperator = pageTitle.Trim() != string.Empty && siteTitle.Trim() != string.Empty ? " | " : "";
+
+            base.Title = pageTitle + seperator + siteTitle;
+
+            base.OnPreRender( e );
+        }
         
         #endregion
 

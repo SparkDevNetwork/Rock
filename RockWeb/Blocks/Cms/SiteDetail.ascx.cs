@@ -235,8 +235,9 @@ namespace RockWeb.Blocks.Cms
                             var pageService = new PageService();
                             var page = new Page();
                             page.LayoutId = layout.Id;
-                            page.Title = siteCache.Name + " Home Page";
-                            page.Name = page.Title;
+                            page.PageTitle = siteCache.Name + " Home Page";
+                            page.InternalName = page.PageTitle;
+                            page.BrowserTitle = page.PageTitle;
                             page.EnableViewState = true;
                             page.IncludeAdminFooter = true;
                             page.MenuDisplayChildPages = true;

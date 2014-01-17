@@ -42,15 +42,35 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the user defined Name of the Page. This property is required.
+        /// Gets or sets the internal name to use when administering this page
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> that represents the Name of the Page.
+        /// A <see cref="System.String"/> that represents the internal name of the Page.
         /// </value>
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
-        public string Name { get; set; }
+        public string InternalName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the title of the of the Page to use as the page caption, in menu's, breadcrumb display etc.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> that represents the page title of the Page.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string PageTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the browser title to use for the page
+        /// </summary>
+        /// <value>
+        /// The browser title.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string BrowserTitle { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the parent Page.
@@ -60,16 +80,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? ParentPageId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the title of the of the Page.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> that represents the title of the Page.
-        /// </value>
-        [MaxLength( 100 )]
-        [DataMember]
-        public string Title { get; set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if the Page is part of the Rock core system/framework.
@@ -258,13 +268,31 @@ namespace Rock.Model
         public int OutputCacheDuration { get; set; }
 
         /// <summary>
-        /// Gets or sets a user defined description of the page.  
+        /// Gets or sets a user defined description of the page.  This will be added as a meta tag for the page 
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> that represents the Page description.
         /// </value>
         [DataMember]
         public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the key words.
+        /// </summary>
+        /// <value>
+        /// The key words.
+        /// </value>
+        [DataMember]
+        public string KeyWords { get; set; }
+
+        /// <summary>
+        /// Gets or sets html content to add to the page header area of the page when rendered.
+        /// </summary>
+        /// <value>
+        /// The content of the header.
+        /// </value>
+        [DataMember]
+        public string HeaderContent { get; set; }
 
         /// <summary>
         /// Gets or sets the icon CSS class name for a font vector based icon.
@@ -400,7 +428,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return Name;
+            return PageTitle;
         }
 
         #endregion

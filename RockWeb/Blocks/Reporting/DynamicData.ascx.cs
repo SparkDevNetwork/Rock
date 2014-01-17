@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Reporting
                     if ( updatePage )
                     {
                         var pageCache = PageCache.Read( RockPage.PageId );
-                        tbName.Text = pageCache != null ? pageCache.Title : string.Empty;
+                        tbName.Text = pageCache != null ? pageCache.PageTitle : string.Empty;
                         tbDesc.Text = pageCache != null ? pageCache.Description : string.Empty;
                     }
 
@@ -147,11 +147,13 @@ namespace RockWeb.Blocks.Reporting
             {
                 var pageCache = PageCache.Read( RockPage.PageId );
                 if ( pageCache != null &&
-                    ( pageCache.Title != tbName.Text || pageCache.Description != tbDesc.Text ) )
+                    ( pageCache.PageTitle != tbName.Text || pageCache.Description != tbDesc.Text ) )
                 {
                     var service = new PageService();
                     var page = service.Get( pageCache.Id );
-                    page.Title = tbName.Text;
+                    page.InternalName = tbName.Text;
+                    page.PageTitle = tbName.Text;
+                    page.BrowserTitle = tbName.Text;
                     page.Description = tbDesc.Text;
                     service.Save( page, CurrentPersonId );
 

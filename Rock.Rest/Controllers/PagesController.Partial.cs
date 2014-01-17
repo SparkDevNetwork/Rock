@@ -61,13 +61,13 @@ namespace Rock.Rest.Controllers
                 qry = Get().Where( a => a.ParentPageId == id );
             }
 
-            List<Page> pageList = qry.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            List<Page> pageList = qry.OrderBy( a => a.Order ).ThenBy( a => a.InternalName ).ToList();
             List<TreeViewItem> pageItemList = new List<TreeViewItem>();
             foreach ( var page in pageList )
             {
                 var pageItem = new TreeViewItem();
                 pageItem.Id = page.Id.ToString();
-                pageItem.Name = page.Name;
+                pageItem.Name = page.InternalName;
 
                 pageItemList.Add( pageItem );
             }
