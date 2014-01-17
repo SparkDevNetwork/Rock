@@ -322,7 +322,7 @@ namespace RockWeb.Blocks.Prayer
             {
                 prayerRequest = new PrayerRequest();
                 prayerRequestService.Add( prayerRequest, CurrentPersonId );
-                prayerRequest.EnteredDate = DateTime.Now;
+                prayerRequest.EnteredDateTime = DateTime.Now;
             }
             else
             {
@@ -333,7 +333,7 @@ namespace RockWeb.Blocks.Prayer
             if ( !(prayerRequest.IsApproved ?? false) && cbApproved.Checked )
             {
                 prayerRequest.ApprovedByPersonId = CurrentPerson.Id;
-                prayerRequest.ApprovedOnDate = DateTime.Now;
+                prayerRequest.ApprovedOnDateTime = DateTime.Now;
                 // reset the flag count only to zero ONLY if it had a value previously.
                 if ( prayerRequest.FlagCount.HasValue && prayerRequest.FlagCount > 0 )
                 {

@@ -111,8 +111,7 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the date that this prayer request was entered.
         /// </value>
         [DataMember]
-        [Column( TypeName = "Date" )]
-        public DateTime EnteredDate { get; set; }
+        public DateTime EnteredDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the date that the prayer request expires. 
@@ -213,8 +212,7 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the date that this prayer request was approved.
         /// </value>
         [DataMember]
-        [Column( TypeName = "Date" )]
-        public DateTime? ApprovedOnDate { get; set; }
+        public DateTime? ApprovedOnDateTime { get; set; }
 
         #region Virtual Properties
 
@@ -294,7 +292,7 @@ namespace Rock.Model
         {
             get
             {
-                return string.Format( "{0} - {1:MM/dd/yy}", FullName, EnteredDate );
+                return string.Format( "{0} - {1:MM/dd/yy}", FullName, EnteredDateTime );
             }
         }
 
