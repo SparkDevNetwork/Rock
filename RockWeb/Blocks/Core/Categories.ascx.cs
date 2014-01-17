@@ -5,6 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -23,6 +24,10 @@ namespace RockWeb.Blocks.Core
     /// <summary>
     /// Block for managing categories for an specific entity type.
     /// </summary>
+    [DisplayName( "Categories" )]
+    [Category( "Core" )]
+    [Description( "Block for managing categories for a specific, configured entity type." )]
+
     [EntityTypeField("Entity Type", "The entity type to manage categories for.")]
     public partial class Categories : RockBlock
     {
