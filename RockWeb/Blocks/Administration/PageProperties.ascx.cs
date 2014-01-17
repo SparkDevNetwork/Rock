@@ -1,9 +1,19 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -172,8 +182,9 @@ namespace RockWeb.Blocks.Administration
                 rptProperties.DataSource = _tabs;
                 rptProperties.DataBind();
 
-                tbPageName.Text = _page.Name;
-                tbPageTitle.Text = _page.Title;
+                tbPageName.Text = _page.InternalName;
+                tbPageTitle.Text = _page.PageTitle;
+                tbBrowserTitle.Text = _page.BrowserTitle;
                 ppParentPage.SetValue( pageService.Get( page.ParentPageId ?? 0 ) );
                 tbIconCssClass.Text = _page.IconCssClass;
 
@@ -195,6 +206,7 @@ namespace RockWeb.Blocks.Administration
                 cbIncludeAdminFooter.Checked = _page.IncludeAdminFooter;
                 tbCacheDuration.Text = _page.OutputCacheDuration.ToString();
                 tbDescription.Text = _page.Description;
+                ceHeaderContent.Text = _page.HeaderContent;
                 tbPageRoute.Text = string.Join( ",", page.PageRoutes.Select( route => route.Route ).ToArray() );
 
                 // Add enctype attribute to page's <form> tag to allow file upload control to function
@@ -265,8 +277,9 @@ namespace RockWeb.Blocks.Administration
                         }
                     }
 
-                    page.Name = tbPageName.Text;
-                    page.Title = tbPageTitle.Text;
+                    page.InternalName = tbPageName.Text;
+                    page.PageTitle = tbPageTitle.Text;
+                    page.BrowserTitle = tbBrowserTitle.Text;
                     if ( parentPageId != 0 )
                     {
                         page.ParentPageId = parentPageId;
@@ -300,6 +313,7 @@ namespace RockWeb.Blocks.Administration
                     page.IncludeAdminFooter = cbIncludeAdminFooter.Checked;
                     page.OutputCacheDuration = int.Parse( tbCacheDuration.Text );
                     page.Description = tbDescription.Text;
+                    page.HeaderContent = ceHeaderContent.Text;
 
                     // new or updated route
                     foreach ( var pageRoute in page.PageRoutes.ToList() )
@@ -382,7 +396,7 @@ namespace RockWeb.Blocks.Administration
             var pageService = new PageService();
             var page = pageService.Get( _page.Guid );
             var packageService = new PackageService();
-            var pageName = page.Name.Replace( " ", "_" ) + ( ( cbExportChildren.Checked ) ? "_wChildPages" : "" );
+            var pageName = page.InternalName.Replace( " ", "_" ) + ( ( cbExportChildren.Checked ) ? "_wChildPages" : "" );
             using ( var stream = packageService.ExportPage( page, cbExportChildren.Checked ) )
             {
                 EnableViewState = false;
@@ -524,7 +538,6 @@ namespace RockWeb.Blocks.Administration
                 pnlDisplaySettings.Visible = false;
                 pnlAdvancedSettings.Visible = false;
                 pnlImportExport.Visible = false;
-                pnlBasicProperty.DataBind();
             }
             else if ( CurrentTab.Equals( "Display Settings" ) )
             {
@@ -532,7 +545,6 @@ namespace RockWeb.Blocks.Administration
                 pnlDisplaySettings.Visible = true;
                 pnlAdvancedSettings.Visible = false;
                 pnlImportExport.Visible = false;
-                pnlDisplaySettings.DataBind();
             }
             else if ( CurrentTab.Equals( "Advanced Settings" ) )
             {
@@ -540,7 +552,6 @@ namespace RockWeb.Blocks.Administration
                 pnlDisplaySettings.Visible = false;
                 pnlAdvancedSettings.Visible = true;
                 pnlImportExport.Visible = false;
-                pnlAdvancedSettings.DataBind();
             }
             else if ( CurrentTab.Equals( "Import/Export" ) )
             {
@@ -548,10 +559,7 @@ namespace RockWeb.Blocks.Administration
                 pnlDisplaySettings.Visible = false;
                 pnlAdvancedSettings.Visible = false;
                 pnlImportExport.Visible = true;
-                pnlImportExport.DataBind();
             }
-
-            upPanel.DataBind();
         }
 
         #endregion

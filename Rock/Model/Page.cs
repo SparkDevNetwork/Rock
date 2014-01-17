@@ -1,7 +1,18 @@
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
 //
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -31,15 +42,35 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the user defined Name of the Page. This property is required.
+        /// Gets or sets the internal name to use when administering this page
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> that represents the Name of the Page.
+        /// A <see cref="System.String"/> that represents the internal name of the Page.
         /// </value>
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
-        public string Name { get; set; }
+        public string InternalName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the title of the of the Page to use as the page caption, in menu's, breadcrumb display etc.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> that represents the page title of the Page.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string PageTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the browser title to use for the page
+        /// </summary>
+        /// <value>
+        /// The browser title.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string BrowserTitle { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the parent Page.
@@ -49,16 +80,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? ParentPageId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the title of the of the Page.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> that represents the title of the Page.
-        /// </value>
-        [MaxLength( 100 )]
-        [DataMember]
-        public string Title { get; set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if the Page is part of the Rock core system/framework.
@@ -247,13 +268,31 @@ namespace Rock.Model
         public int OutputCacheDuration { get; set; }
 
         /// <summary>
-        /// Gets or sets a user defined description of the page.  
+        /// Gets or sets a user defined description of the page.  This will be added as a meta tag for the page 
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> that represents the Page description.
         /// </value>
         [DataMember]
         public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the key words.
+        /// </summary>
+        /// <value>
+        /// The key words.
+        /// </value>
+        [DataMember]
+        public string KeyWords { get; set; }
+
+        /// <summary>
+        /// Gets or sets html content to add to the page header area of the page when rendered.
+        /// </summary>
+        /// <value>
+        /// The content of the header.
+        /// </value>
+        [DataMember]
+        public string HeaderContent { get; set; }
 
         /// <summary>
         /// Gets or sets the icon CSS class name for a font vector based icon.
@@ -389,7 +428,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return Name;
+            return PageTitle;
         }
 
         #endregion

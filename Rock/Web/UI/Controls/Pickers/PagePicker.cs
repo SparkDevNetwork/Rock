@@ -1,7 +1,18 @@
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
 //
 using System;
 using System.Collections.Generic;
@@ -185,7 +196,7 @@ namespace Rock.Web.UI.Controls
                 if ( pageRoute.Id != 0 )
                 {
                     // PageRoute is selected, so show the Page and it's PageRoute and don't show the PageRoute picker
-                    ItemName = page.Name + " (" + pageRoute.Route + ")";
+                    ItemName = page.InternalName + " (" + pageRoute.Route + ")";
                     
                     _rblSelectPageRoute.Visible = false;
                     _btnShowPageRoutePicker.Style[HtmlTextWriterStyle.Display] = "none";
@@ -193,7 +204,7 @@ namespace Rock.Web.UI.Controls
                 else
                 {
                     // Only a Page is selected, so show PageRoutePicker button if it has page routes
-                    ItemName = page.Name;
+                    ItemName = page.InternalName;
                     PageRouteId = null;
 
                     // Update PageRoutePicker control values
@@ -272,7 +283,7 @@ namespace Rock.Web.UI.Controls
                     if ( page != null )
                     {
                         ids.Add( page.Id.ToString() );
-                        names.Add( page.Name );
+                        names.Add( page.InternalName );
                         var parentPage = page.ParentPage;
 
                         while ( parentPage != null )

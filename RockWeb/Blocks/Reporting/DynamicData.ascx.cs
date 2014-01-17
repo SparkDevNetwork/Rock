@@ -1,7 +1,18 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
 //
 using System;
 using System.Collections.Generic;
@@ -28,7 +39,10 @@ namespace RockWeb.Blocks.Reporting
     /// <summary>
     /// Block to display dynamic report, html, xml, or transformed xml based on a SQL query or stored procedure.
     /// </summary>
+    [DisplayName( "Dynamic Data" )]
+    [Category( "Reporting" )]
     [Description( "Block to display dynamic report, html, xml, or transformed xml based on a SQL query or stored procedure." )]
+
     [BooleanField( "Update Page", "If True, provides fields for updating the parent page's Name and Description", true, "", 0 )] 
     [CodeEditorField( "Query", "The query to execute", CodeEditorMode.Sql, CodeEditorTheme.Rock, 400, false, "", "", 1 )]
     [TextField( "Query Params", "Parameters to pass to query", false, "", "", 2 )]
@@ -88,7 +102,7 @@ namespace RockWeb.Blocks.Reporting
                     if ( updatePage )
                     {
                         var pageCache = PageCache.Read( RockPage.PageId );
-                        tbName.Text = pageCache != null ? pageCache.Title : string.Empty;
+                        tbName.Text = pageCache != null ? pageCache.PageTitle : string.Empty;
                         tbDesc.Text = pageCache != null ? pageCache.Description : string.Empty;
                     }
 
@@ -133,11 +147,13 @@ namespace RockWeb.Blocks.Reporting
             {
                 var pageCache = PageCache.Read( RockPage.PageId );
                 if ( pageCache != null &&
-                    ( pageCache.Title != tbName.Text || pageCache.Description != tbDesc.Text ) )
+                    ( pageCache.PageTitle != tbName.Text || pageCache.Description != tbDesc.Text ) )
                 {
                     var service = new PageService();
                     var page = service.Get( pageCache.Id );
-                    page.Title = tbName.Text;
+                    page.InternalName = tbName.Text;
+                    page.PageTitle = tbName.Text;
+                    page.BrowserTitle = tbName.Text;
                     page.Description = tbDesc.Text;
                     service.Save( page, CurrentPersonId );
 

@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -65,6 +81,24 @@ namespace Rock.Rest.Controllers
                 {
                     controller = "FileBrowser",
                     action = "CreateFolder"
+                } );
+
+            routes.MapHttpRoute(
+                name: "DeleteFolder",
+                routeTemplate: "api/FileBrowser/DeleteFolder",
+                defaults: new
+                {
+                    controller = "FileBrowser",
+                    action = "DeleteFolder"
+                } );
+
+            routes.MapHttpRoute(
+                name: "RenameFolder",
+                routeTemplate: "api/FileBrowser/RenameFolder",
+                defaults: new
+                {
+                    controller = "FileBrowser",
+                    action = "RenameFolder"
                 } );
 
             routes.MapHttpRoute(
@@ -206,10 +240,37 @@ namespace Rock.Rest.Controllers
         [HttpPost]
         public void CreateFolder( string relativeFolderPath )
         {
-            // TODO: get CreateFolder to work, test, etc
             string physicalRootFolder = HttpContext.Current.Request.MapPath( RootContentFolder );
             string fullFolderPath = Path.Combine( physicalRootFolder, relativeFolderPath.Replace( "/", "\\" ).TrimStart( new char[] { '/', '\\' } ) );
             Directory.CreateDirectory( fullFolderPath );
+        }
+
+        /// <summary>
+        /// Deletes the folder.
+        /// </summary>
+        /// <param name="relativeFolderPath">The relative folder path.</param>
+        [Authenticate]
+        [HttpPost]
+        public void DeleteFolder( string relativeFolderPath )
+        {
+            string physicalRootFolder = HttpContext.Current.Request.MapPath( RootContentFolder );
+            string fullFolderPath = Path.Combine( physicalRootFolder, relativeFolderPath.Replace( "/", "\\" ).TrimStart( new char[] { '/', '\\' } ) );
+            Directory.Delete( fullFolderPath, true );
+        }
+
+        /// <summary>
+        /// Renames the folder.
+        /// </summary>
+        /// <param name="origRelativeFolderPath">The original relative folder path.</param>
+        /// <param name="newRelativeFolderPath">The new relative folder path.</param>
+        [Authenticate]
+        [HttpPost]
+        public void RenameFolder( string origRelativeFolderPath, string newRelativeFolderPath )
+        {
+            string physicalRootFolder = HttpContext.Current.Request.MapPath( RootContentFolder );
+            string origFullFolderPath = Path.Combine( physicalRootFolder, origRelativeFolderPath.Replace( "/", "\\" ).TrimStart( new char[] { '/', '\\' } ) );
+            string newFullFolderPath = Path.Combine( physicalRootFolder, newRelativeFolderPath.Replace( "/", "\\" ).TrimStart( new char[] { '/', '\\' } ) );
+            Directory.Move( origFullFolderPath, newFullFolderPath );
         }
 
         /// <summary>

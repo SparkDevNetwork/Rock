@@ -1,9 +1,19 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -362,9 +372,9 @@ namespace Rock.Data
 
             Context.ChangeTracker.DetectChanges();
 
-            List<object> addedEntities = new List<object>();
-            List<object> deletedEntities = new List<object>();
-            List<object> modifiedEntities = new List<object>();
+            var addedEntities = new List<ContextItem>();
+            var deletedEntities = new List<ContextItem>();
+            var modifiedEntities = new List<ContextItem>();
 
             var contextAdapter = ( (IObjectContextAdapter)Context );
 
@@ -372,43 +382,43 @@ namespace Rock.Data
                 EntityState.Added | EntityState.Deleted | EntityState.Modified | EntityState.Unchanged ) )
             {
                 var rockEntity = entry.Entity as Entity<T>;
-                var audit = new Rock.Model.Audit();
-
-                switch ( entry.State )
-                {
-                    case EntityState.Added:
-                        addedEntities.Add( entry.Entity );
-                        audit.AuditType = AuditType.Add;
-                        break;
-
-                    case EntityState.Deleted:
-                        deletedEntities.Add( entry.Entity );
-                        audit.AuditType = AuditType.Delete;
-                        break;
-
-                    case EntityState.Modified:
-
-                        if ( rockEntity != null )
-                        {
-                            bool cancel = false;
-                            rockEntity.RaiseUpdatingEvent( out cancel, PersonId );
-                            if ( cancel )
-                            {
-                                errorMessages.Add( string.Format( "Update cancelled by {0} event handler", rockEntity.TypeName ) );
-                                contextAdapter.ObjectContext.Detach( entry );
-                            }
-                            else
-                            {
-                                modifiedEntities.Add( entry.Entity );
-                                audit.AuditType = AuditType.Modify;
-                            }
-                        }
-
-                        break;
-                }
 
                 if ( rockEntity != null )
                 {
+                    var contextItem = new ContextItem( rockEntity );
+                    switch ( entry.State )
+                    {
+                        case EntityState.Added:
+                            {
+                                contextItem.Audit.AuditType = AuditType.Add;
+                                addedEntities.Add( contextItem );
+                                break;
+                            }
+                        case EntityState.Deleted:
+                            {
+                                contextItem.Audit.AuditType = AuditType.Delete;
+                                deletedEntities.Add( contextItem );
+                                break;
+                            }
+                        case EntityState.Modified:
+                            {
+                                bool cancel = false;
+                                rockEntity.RaiseUpdatingEvent( out cancel, PersonId );
+                                if ( cancel )
+                                {
+                                    errorMessages.Add( string.Format( "Update cancelled by {0} event handler", rockEntity.TypeName ) );
+                                    contextAdapter.ObjectContext.Detach( entry );
+                                }
+                                else
+                                {
+                                    contextItem.Audit.AuditType = AuditType.Modify;
+                                    deletedEntities.Add( contextItem );
+                                }
+
+                                break;
+                            }
+                    }
+
                     Type rockEntityType = rockEntity.GetType();
                     if ( rockEntityType.Namespace == "System.Data.Entity.DynamicProxies" )
                     {
@@ -418,6 +428,7 @@ namespace Rock.Data
                     if ( AuditClass( rockEntityType ) )
                     {
                         var dbEntity = Context.Entry( entry.Entity );
+                        var audit = contextItem.Audit;
 
                         PropertyInfo[] properties = rockEntityType.GetProperties();
 
@@ -426,9 +437,12 @@ namespace Rock.Data
                             if ( AuditProperty( propInfo ) )
                             {
                                 var dbPropertyEntry = dbEntity.Property( propInfo.Name );
-                                if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
+                                if ( dbPropertyEntry != null && (
+                                    dbEntity.State == EntityState.Added ||
+                                    dbEntity.State == EntityState.Deleted ||
+                                    dbPropertyEntry.IsModified ))
                                 {
-                                    var currentValue = dbPropertyEntry.CurrentValue;
+                                    var currentValue = dbEntity.State != EntityState.Deleted ? dbPropertyEntry.CurrentValue : string.Empty;
                                     var originalValue = dbEntity.State != EntityState.Added ? dbPropertyEntry.OriginalValue : string.Empty;
 
                                     var detail = new AuditDetail();
@@ -448,12 +462,16 @@ namespace Rock.Data
                             var entityType = Rock.Web.Cache.EntityTypeCache.Read( rockEntity.TypeName, false );
                             if ( entityType != null )
                             {
+                                string title = rockEntity.ToString();
+                                if (string.IsNullOrWhiteSpace(title))
+                                {
+                                    title = entityType.FriendlyName ?? string.Empty;
+                                }
                                 audit.DateTime = DateTime.Now;
                                 audit.PersonId = PersonId;
                                 audit.EntityTypeId = entityType.Id;
                                 audit.EntityId = rockEntity.Id;
-                                audit.Title = rockEntity.ToString().Truncate( 195 );
-                                audits.Add( audit );
+                                audit.Title = title.Truncate( 195 );
                             }
                         }
                     }
@@ -468,6 +486,20 @@ namespace Rock.Data
             try
             {
                 Context.SaveChanges();
+
+                foreach ( var contextItem in addedEntities.Where( i => i.Audit.DateTime.HasValue ) )
+                {
+                    contextItem.Audit.EntityId = contextItem.Entity.Id;
+                    audits.Add( contextItem.Audit );
+                }
+                foreach ( var contextItem in modifiedEntities.Where( i => i.Audit.DateTime.HasValue ) )
+                {
+                    audits.Add( contextItem.Audit );
+                }
+                foreach ( var contextItem in deletedEntities.Where( i => i.Audit.DateTime.HasValue ) )
+                {
+                    audits.Add( contextItem.Audit );
+                }
             }
             catch ( System.Data.Entity.Validation.DbEntityValidationException e )
             {
@@ -488,7 +520,7 @@ namespace Rock.Data
                 throw new Exception(outputLines.AsDelimited("\n"));
             } 
             
-            foreach ( object modifiedEntity in addedEntities )
+            foreach ( object modifiedEntity in addedEntities.Select( e => e.Entity).ToList() )
             {
                 var model = modifiedEntity as Entity<T>;
                 if ( model != null )
@@ -497,7 +529,7 @@ namespace Rock.Data
                 }
             }
 
-            foreach ( object deletedEntity in deletedEntities )
+            foreach ( object deletedEntity in deletedEntities.Select( e => e.Entity ).ToList() )
             {
                 var model = deletedEntity as Entity<T>;
                 if ( model != null )
@@ -506,7 +538,7 @@ namespace Rock.Data
                 }
             }
 
-            foreach ( object modifiedEntity in modifiedEntities )
+            foreach ( object modifiedEntity in modifiedEntities.Select( e => e.Entity ).ToList() )
             {
                 var model = modifiedEntity as Entity<T>;
                 if ( model != null )
@@ -603,6 +635,17 @@ namespace Rock.Data
 
                 _context = null;
                 IsDisposed = true;
+            }
+        }
+
+        private class ContextItem
+        {
+            public IEntity Entity { get; set; }
+            public Audit Audit { get; set; }
+            public ContextItem(IEntity entity)
+            {
+                Entity = entity;
+                Audit = new Audit();
             }
         }
 

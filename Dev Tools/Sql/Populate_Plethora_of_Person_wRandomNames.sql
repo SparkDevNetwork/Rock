@@ -33,7 +33,7 @@ IF OBJECT_ID('tempdb..#fakenames') IS NOT NULL
 CREATE TABLE #fakenames (
   number int NOT NULL IDENTITY(1,1),
   gender nvarchar(6) NOT NULL,
-  givenname nvarchar(20) NOT NULL,
+  FirstName nvarchar(20) NOT NULL,
   middleinitial nvarchar(1) NOT NULL,
   surname nvarchar(23) NOT NULL,
   constraint pk_fakenames primary key clustered (number) );
@@ -6037,7 +6037,7 @@ while @personCounter < @maxPerson
 	begin
 	    set @i = ROUND(rand() * 6000, 0);
 	    
-	    SELECT @firstName = #fakenames.givenname,
+	    SELECT @firstName = #fakenames.FirstName,
 			@gender = #fakenames.gender
 			FROM #fakenames WITH(NOLOCK) WHERE #fakenames.number = @i
 
@@ -6056,7 +6056,7 @@ while @personCounter < @maxPerson
 		set @month = CONVERT(nvarchar(100), ROUND(rand() * 11, 0) + 1);
 		set @day = CONVERT(nvarchar(100), ROUND(rand() * 26, 0) + 1);
 		set @phoneNumber = ROUND(rand() * 0095551212, 0)+ 6230000000;
-		INSERT INTO [Person] ([IsSystem],[GivenName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId])
+		INSERT INTO [Person] ([IsSystem],[FirstName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId])
 		VALUES (0, @firstName , @lastName, @day, @month, @year, @genderInt, @email, 1, 0, NEWID(), @personRecordType, @activeRecordStatus)
 		SET @personId = SCOPE_IDENTITY()
 

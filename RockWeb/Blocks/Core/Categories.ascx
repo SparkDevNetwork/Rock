@@ -38,7 +38,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:CategoryPicker ID="catpParentCategory" runat="server" />
+                        <Rock:CategoryPicker ID="catpParentCategory" runat="server" Label="Parent Category" />
                     </div>
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" />
