@@ -61,16 +61,18 @@ namespace RockWeb.Blocks.Groups
                 {
                     _group = new GroupService().Get( groupId );
 
-                    rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
-
-                    gGroupMembers.DataKeyNames = new string[] { "Id" };
-                    gGroupMembers.CommunicateMergeFields = new List<string> { "GroupRole.Name" };
-                    gGroupMembers.PersonIdField = "PersonId";
-                    gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
-                    gGroupMembers.Actions.ShowAdd = true;
-                    gGroupMembers.IsDeleteEnabled = true;
-                    gGroupMembers.GridRebind += gGroupMembers_GridRebind;
-                    gGroupMembers.RowItemText = _group.GroupType.GroupTerm + " " + _group.GroupType.GroupMemberTerm;
+                    if ( _group != null )
+                    {
+                        rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
+                        gGroupMembers.DataKeyNames = new string[] { "Id" };
+                        gGroupMembers.CommunicateMergeFields = new List<string> { "GroupRole.Name" };
+                        gGroupMembers.PersonIdField = "PersonId";
+                        gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
+                        gGroupMembers.Actions.ShowAdd = true;
+                        gGroupMembers.IsDeleteEnabled = true;
+                        gGroupMembers.GridRebind += gGroupMembers_GridRebind;
+                        gGroupMembers.RowItemText = _group.GroupType.GroupTerm + " " + _group.GroupType.GroupMemberTerm;
+                    }
                 }
             }
 

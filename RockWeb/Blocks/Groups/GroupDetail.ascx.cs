@@ -613,7 +613,10 @@ namespace RockWeb.Blocks.Groups
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 group = new GroupService().Get( itemKeyValue );
-                editAllowed = group.IsAuthorized( "Edit", CurrentPerson );
+                if ( group != null )
+                {
+                    editAllowed = group.IsAuthorized( "Edit", CurrentPerson );
+                }
             }
             else
             {

@@ -69,8 +69,9 @@ namespace RockWeb.Blocks.Groups
                     {
                         _groupId = group.Id.ToString();
 
-                        // Update pageref for group detail block
-                        CurrentPageReference.Parameters.Add( "groupId", group.Id.ToString() );
+                        // redirect so that the group treeview has the first node selected right away and group detail shows the group
+                        this.Response.Redirect( this.Request.Url + "?groupId=" + _groupId.ToString(), false );
+                        Context.ApplicationInstance.CompleteRequest();
                     }
                 }
             }
