@@ -27,6 +27,7 @@ using System.Web.UI.WebControls;
 using DotLiquid;
 using Newtonsoft.Json;
 using Rock.Model;
+using System.Text;
 
 namespace Rock
 {
@@ -140,6 +141,24 @@ namespace Rock
         #endregion
 
         #region String Extensions
+
+        /// <summary>
+        /// Removed special characters from strings.
+        /// </summary>
+        /// <param name="str">The identifier.</param>
+        /// <returns></returns>
+        public static string SplitCase(this string str)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (char c in str)
+            {
+                if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '.' || c == '_')
+                {
+                    sb.Append(c);
+                }
+            }
+            return sb.ToString();
+        }
 
         /// <summary>
         /// Splits a Camel or Pascal cased identifier into seperate words.
