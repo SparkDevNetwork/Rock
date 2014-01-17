@@ -120,7 +120,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( readOnly )
             {
-                lActionTitle.Text = ActionTitle.View( PageRoute.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.View( PageRoute.FriendlyTypeName ).FormatAsHtmlTitle();
                 btnCancel.Text = "Close";
             }
 
