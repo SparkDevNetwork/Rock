@@ -147,7 +147,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The identifier.</param>
         /// <returns></returns>
-        public static string SplitCase(this string str)
+        public static string RemoveSpecialCharacters(this string str)
         {
             StringBuilder sb = new StringBuilder();
             foreach (char c in str)
