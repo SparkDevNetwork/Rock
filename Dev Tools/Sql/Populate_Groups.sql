@@ -56,7 +56,7 @@ INSERT INTO [dbo].[GroupType]
            ,null
            ,0
            ,1
-           ,0
+           ,1
            ,'icon-globe'
            ,0
            ,0
@@ -93,7 +93,7 @@ INSERT INTO [dbo].[GroupType]
            ,null
            ,0
            ,1
-           ,0
+           ,1
            ,'icon-group'
            ,0
            ,0
@@ -130,7 +130,7 @@ INSERT INTO [dbo].[GroupType]
            ,null
            ,0
            ,1
-           ,0
+           ,1
            ,'icon-home'
            ,0
            ,0

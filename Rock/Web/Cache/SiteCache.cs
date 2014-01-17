@@ -1,9 +1,19 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
@@ -140,6 +150,22 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets or sets the 404 page id.
+        /// </summary>
+        /// <value>
+        /// The 404 page id.
+        /// </value>
+        public int? PageNotFoundPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the 404 page route unique identifier.
+        /// </summary>
+        /// <value>
+        /// The 404 page route unique identifier.
+        /// </value>
+        public int? PageNotFoundPageRouteId { get; set; }
+
+        /// <summary>
         /// Gets or sets the login page id.
         /// </summary>
         /// <value>
@@ -274,6 +300,8 @@ namespace Rock.Web.Cache
                 this.GoogleAnalyticsCode = site.GoogleAnalyticsCode;
                 this.FacebookAppId = site.FacebookAppId;
                 this.FacebookAppSecret = site.FacebookAppSecret;
+                this.PageNotFoundPageId = site.PageNotFoundPageId;
+                this.PageNotFoundPageRouteId = site.PageNotFoundPageRouteId;
             }
         }
 
@@ -448,6 +476,44 @@ namespace Rock.Web.Cache
         {
             ObjectCache cache = MemoryCache.Default;
             cache.Remove( SiteCache.CacheKey( id ) );
+        }
+
+        /// <summary>
+        /// Returns site based on domain
+        /// </summary>
+        /// <param name="id"></param>
+        public static SiteCache GetSiteByDomain(string host)
+        {
+            SiteCache site = null;
+
+            string cacheKey = "Rock:DomainSites";
+
+            ObjectCache cache = MemoryCache.Default;
+            Dictionary<string, int> sites = cache[cacheKey] as Dictionary<string, int>;
+            if ( sites == null )
+                sites = new Dictionary<string, int>();
+
+            // look in cache
+            if (sites.ContainsKey(host))
+                site = Rock.Web.Cache.SiteCache.Read(sites[host]);
+            else
+            {
+                // get from database
+                Rock.Model.SiteDomainService siteDomainService = new Rock.Model.SiteDomainService();
+                Rock.Model.SiteDomain siteDomain = siteDomainService.GetByDomain(host);
+
+                if (siteDomain == null)
+                {
+                    siteDomain = siteDomainService.GetByDomainContained(host);
+                }
+
+                if (siteDomain != null)
+                {
+                    return SiteCache.Read(siteDomain.SiteId);
+                }
+            }
+
+            return site;
         }
 
         #endregion

@@ -4,7 +4,7 @@
         <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
             <i class="fa fa-user"></i>
             <asp:PlaceHolder ID="phHello" runat="server"><asp:Literal ID="lHello" runat="server" /></asp:PlaceHolder>
-            <b class="caret"></b>
+            <b class="fa fa-caret-down"></b>
         </a>
         <ul class="dropdown-menu">
             <li>

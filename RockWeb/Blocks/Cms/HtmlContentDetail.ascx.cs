@@ -1,9 +1,19 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,8 +35,6 @@ namespace RockWeb.Blocks.Cms
     [Description( "Adds an editable HTML fragment to the page." )]
     [AdditionalActions( new string[] { "Approve" } )]
     [BooleanField( "Use Code Editor", "Use the code editor instead of the WYSIWYG editor", false, "", 0 )]
-    [CodeEditorField( "Pre-Text", "HTML text to render before the blocks main content.", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 1, "PreText" )]
-    [CodeEditorField( "Post-Text", "HTML text to render after the blocks main content.", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 2, "PostText" )]
     [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 0, "", 3 )]
     [TextField( "Context Parameter", "Query string parameter to use for 'personalizing' content based on unique values.", false, "", "", 4 )]
     [TextField( "Context Name", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "", "", 5 )]
@@ -158,8 +166,6 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void HtmlContentDetail_BlockUpdated( object sender, EventArgs e )
         {
-            lPreText.Text = GetAttributeValue( "PreText" );
-            lPostText.Text = GetAttributeValue( "PostText" );
         }
 
         /// <summary>
@@ -474,9 +480,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             // add content to the content window
-            lPreText.Text = GetAttributeValue( "PreText" );
             lHtmlContent.Text = html;
-            lPostText.Text = GetAttributeValue( "PostText" );
         }
 
         /// <summary>

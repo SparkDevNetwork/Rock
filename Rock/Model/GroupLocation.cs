@@ -1,7 +1,18 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
 //
 using System;
 using System.Collections.Generic;
@@ -118,7 +129,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.DefinedValue"/> that represents the type of this GroupLocation.
         /// </value>
         [DataMember]
-        public virtual DefinedValue LocationTypeValue { get; set; }
+        public virtual DefinedValue GroupLocationTypeValue { get; set; }
 
         /// <summary>
         /// Gets or sets the group member person. A GroupLocation can optionally be created by selecting one of the group member's locations.  If the GroupLocation is 
@@ -176,7 +187,7 @@ namespace Rock.Model
         {
             this.HasRequired( t => t.Group ).WithMany( t => t.GroupLocations ).HasForeignKey( t => t.GroupId );
             this.HasRequired( t => t.Location ).WithMany( l => l.GroupLocations).HasForeignKey( t => t.LocationId );
-            this.HasOptional( t => t.LocationTypeValue ).WithMany().HasForeignKey( t => t.GroupLocationTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.GroupLocationTypeValue ).WithMany().HasForeignKey( t => t.GroupLocationTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.GroupMemberPerson ).WithMany().HasForeignKey( t => t.GroupMemberPersonId ).WillCascadeOnDelete( true );
             this.HasMany( t => t.Schedules ).WithMany().Map( t => { t.MapLeftKey( "GroupLocationId" ); t.MapRightKey( "ScheduleId" ); t.ToTable( "GroupLocationSchedule" ); } );
         }

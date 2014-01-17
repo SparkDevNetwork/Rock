@@ -1,9 +1,19 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -39,17 +49,51 @@ namespace Rock.Web.Cache
 
         #endregion
 
-        private string _title;
+        private string _pageTitle;
 
         #region Properties
 
         /// <summary>
-        /// Gets or sets the name.
+        /// Gets or sets the internal name to use when administering this page
         /// </summary>
         /// <value>
-        /// The name.
+        /// A <see cref="System.String"/> that represents the internal name of the Page.
         /// </value>
-        public string Name { get; set; }
+        public string InternalName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the title of the of the Page to use as the page caption, in menu's, breadcrumb display etc.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> that represents the page title of the Page.
+        /// </value>
+        public string PageTitle
+        {
+            get
+            {
+                if ( _pageTitle != null && _pageTitle != string.Empty )
+                {
+                    return _pageTitle;
+                }
+                else
+                {
+                    return InternalName;
+                }
+            }
+
+            set
+            {
+                _pageTitle = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the browser title to use for the page
+        /// </summary>
+        /// <value>
+        /// The browser title.
+        /// </value>
+        public string BrowserTitle { get; set; }
 
         /// <summary>
         /// Gets or sets the parent page id.
@@ -58,31 +102,6 @@ namespace Rock.Web.Cache
         /// The parent page id.
         /// </value>
         public int? ParentPageId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the title.
-        /// </summary>
-        /// <value>
-        /// The title.
-        /// </value>
-        public string Title {
-            get
-            {
-                if (_title != null && _title != string.Empty)
-                {
-                    return _title;
-                }
-                else
-                {
-                    return Name;
-                }
-            }
-
-            set
-            {
-                _title = value;
-            }
-        }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is system.
@@ -228,6 +247,22 @@ namespace Rock.Web.Cache
         /// </value>
         public string Description { get; set; }
 
+        /// <summary>
+        /// Gets or sets the key words.
+        /// </summary>
+        /// <value>
+        /// The key words.
+        /// </value>
+        public string KeyWords { get; set; }
+
+        /// <summary>
+        /// Gets or sets html content to add to the page header area of the page when rendered.
+        /// </summary>
+        /// <value>
+        /// The content of the header.
+        /// </value>
+        public string HeaderContent { get; set; }
+        
         /// <summary>
         /// Gets or sets the icon file id.
         /// </summary>
@@ -433,7 +468,7 @@ namespace Rock.Web.Cache
                 }
                 if ( BreadCrumbDisplayName )
                 {
-                    bcName += Title;
+                    bcName += PageTitle;
                 }
 
                 return bcName;
@@ -455,10 +490,11 @@ namespace Rock.Web.Cache
             if ( model is Page )
             {
                 var page = (Page)model;
-                this.Name = page.Name;
+                this.InternalName = page.InternalName;
+                this.PageTitle = page.PageTitle;
+                this.BrowserTitle = page.BrowserTitle;
                 this.ParentPageId = page.ParentPageId;
                 this.LayoutId = page.LayoutId;
-                this.Title = page.Title;
                 this.IsSystem = page.IsSystem;
                 this.RequiresEncryption = page.RequiresEncryption;
                 this.EnableViewState = page.EnableViewState;
@@ -476,6 +512,8 @@ namespace Rock.Web.Cache
                 this.Order = page.Order;
                 this.OutputCacheDuration = page.OutputCacheDuration;
                 this.Description = page.Description;
+                this.KeyWords = page.KeyWords;
+                this.HeaderContent = page.HeaderContent;
                 this.IncludeAdminFooter = page.IncludeAdminFooter;
 
                 this.PageContexts = new Dictionary<string, string>();
@@ -552,7 +590,7 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return this.InternalName;
         }
 
         #region Menu XML Methods
@@ -607,7 +645,7 @@ namespace Rock.Web.Cache
 
                 XElement pageElement = new XElement( "page",
                     new XAttribute( "id", this.Id ),
-                    new XAttribute( "title", this.Title ?? this.Name ),
+                    new XAttribute( "title", this.PageTitle ?? this.InternalName ),
                     new XAttribute( "current", isCurrentPage.ToString() ),
                     new XAttribute( "url", new PageReference( this.Id, 0, parameters, queryString ).BuildUrl() ),
                     new XAttribute( "display-description", this.MenuDisplayDescription.ToString().ToLower() ),
@@ -663,7 +701,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public Dictionary<string, object> GetMenuProperties( int levelsDeep, Person person, List<int> currentPageHeirarchy = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
         {
-            if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
+            if ( levelsDeep >= 0 )
             {
                 string iconUrl = string.Empty;
                 if ( this.IconFileId.HasValue )
@@ -683,7 +721,7 @@ namespace Rock.Web.Cache
 
                 var properties = new Dictionary<string, object>();
                 properties.Add( "id", this.Id );
-                properties.Add( "title", this.Title ?? this.Name );
+                properties.Add( "title", this.PageTitle ?? this.InternalName );
                 properties.Add( "current", isCurrentPage.ToString().ToLower() );
                 properties.Add( "isParentOfCurrent", isParentOfCurrent.ToString().ToLower() );
                 properties.Add( "url", new PageReference( this.Id, 0, parameters, queryString ).BuildUrl() );
@@ -700,7 +738,7 @@ namespace Rock.Web.Cache
 
                     foreach ( PageCache page in Pages )
                     {
-                        if ( page != null )
+                        if ( page != null && page.DisplayInNav( person ) )
                         {
                             var childPageElement = page.GetMenuProperties( levelsDeep - 1, person, currentPageHeirarchy, parameters, queryString );
                             if ( childPageElement != null )

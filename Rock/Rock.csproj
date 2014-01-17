@@ -204,14 +204,17 @@
     <Compile Include="Jobs\RunSQL.cs" />
     <Compile Include="Model\AuditDetail.cs" />
     <Compile Include="Model\CodeGenerated\AuditDetailService.cs" />
+    <Compile Include="Model\CodeGenerated\HistoryService.cs" />
     <Compile Include="Model\CodeGenerated\LayoutService.cs" />
     <Compile Include="Model\CodeGenerated\ReportFieldService.cs" />
     <Compile Include="Model\DbGeographyConverter.cs" />
     <Compile Include="Model\FinancialTransactionImageService.partial.cs" />
     <Compile Include="Model\FinancialScheduledTransactionService.Partial.cs" />
+    <Compile Include="Model\HistoryService.Partial.cs" />
     <Compile Include="Model\LayoutService.Partial.cs" />
     <Compile Include="Model\Layout.cs" />
     <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
+    <Compile Include="Model\History.cs" />
     <Compile Include="Model\ReportField.cs" />
     <Compile Include="Net\RestParameters\ContributionStatementOptions.cs" />
     <Compile Include="PersonProfile\Badge\Baptized.cs" />

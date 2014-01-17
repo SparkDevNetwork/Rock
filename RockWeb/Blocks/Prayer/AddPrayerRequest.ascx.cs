@@ -1,11 +1,22 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Web;
@@ -22,6 +33,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Prayer
 {
+    [DisplayName( "Add Prayer Request" )]
+    [Category( "Prayer" )]
+    [Description( "Allows prayer requests to be added via visitors on the website." )]
+
     // Category Selection
     [CategoryField( "Category Selection", "A top level category. This controls which categories the person can choose from when entering their prayer request.", false, "Rock.Model.PrayerRequest", "", "", false, "", "Category Selection", 1, "GroupCategoryId" )]
     [CategoryField( "Default Category", "If categories are not being shown, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "Category Selection", 2, "DefaultCategory" )]
@@ -144,12 +159,12 @@ namespace RockWeb.Blocks.Prayer
 
             PrayerRequestService prayerRequestService = new PrayerRequestService();
             prayerRequestService.Add( prayerRequest, CurrentPersonId );
-            prayerRequest.EnteredDate = DateTime.Now;
+            prayerRequest.EnteredDateTime = DateTime.Now;
 
             if ( isAutoApproved )
             {
                 prayerRequest.ApprovedByPersonId = CurrentPersonId;
-                prayerRequest.ApprovedOnDate = DateTime.Now;
+                prayerRequest.ApprovedOnDateTime = DateTime.Now;
                 var expireDays = Convert.ToDouble( GetAttributeValue( "ExpireDays" ) );
                 prayerRequest.ExpirationDate = DateTime.Now.AddDays( expireDays );
             }

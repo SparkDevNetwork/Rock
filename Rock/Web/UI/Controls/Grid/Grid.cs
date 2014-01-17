@@ -1,9 +1,19 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -1101,9 +1111,16 @@ namespace Rock.Web.UI.Controls
         public void CreatePreviewColumns( Type modelType )
         {
             this.Columns.Clear();
+            foreach(var column in GetPreviewColumns(modelType))
+            {
+                this.Columns.Add( column );
+            }
+        }
 
-            var displayColumns = new Dictionary<string, BoundField>();
-            var allColumns = new Dictionary<string, BoundField>();
+        public List<BoundField> GetPreviewColumns( Type modelType )
+        {
+            var displayColumns = new List<BoundField>();
+            var allColumns = new List<BoundField>();
 
             foreach ( var property in modelType.GetProperties() )
             {
@@ -1113,33 +1130,34 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( property.Name != "Id" )
                     {
+                        BoundField boundField = GetGridField( property.PropertyType );
+                        boundField.DataField = property.Name;
+                        boundField.SortExpression = property.Name;
+                        boundField.HeaderText = property.Name.SplitCase();
+
                         if ( property.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() > 0 )
                         {
-                            displayColumns.Add( property.Name, GetGridField( property.PropertyType ) );
+                            displayColumns.Add( boundField );
                         }
                         else if ( displayColumns.Count == 0 && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
                         {
-                            allColumns.Add( property.Name, GetGridField( property.PropertyType ) );
+                            allColumns.Add( boundField );
                         }
                     }
                 }
             }
 
+            var columns = new List<BoundField>();
+
             // Always add hidden id column
             var idCol = new BoundField();
             idCol.DataField = "Id";
             idCol.Visible = false;
-            this.Columns.Add( idCol );
+            columns.Add( idCol );
 
-            Dictionary<string, BoundField> columns = displayColumns.Count > 0 ? displayColumns : allColumns;
-            foreach ( var column in columns )
-            {
-                var bf = column.Value;
-                bf.DataField = column.Key;
-                bf.SortExpression = column.Key;
-                bf.HeaderText = column.Key.SplitCase();
-                this.Columns.Add( bf );
-            }
+            columns.AddRange( displayColumns.Count > 0 ? displayColumns : allColumns );
+
+            return columns;
         }
 
         #endregion

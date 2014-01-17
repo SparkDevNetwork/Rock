@@ -4,12 +4,22 @@
 //     Changes to this file will be lost when the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
+// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.Linq;
 
@@ -100,7 +110,7 @@ namespace Rock.Model
             target.CategoryId = source.CategoryId;
             target.Text = source.Text;
             target.Answer = source.Answer;
-            target.EnteredDate = source.EnteredDate;
+            target.EnteredDateTime = source.EnteredDateTime;
             target.ExpirationDate = source.ExpirationDate;
             target.GroupId = source.GroupId;
             target.AllowComments = source.AllowComments;
@@ -111,7 +121,7 @@ namespace Rock.Model
             target.FlagCount = source.FlagCount;
             target.PrayerCount = source.PrayerCount;
             target.ApprovedByPersonId = source.ApprovedByPersonId;
-            target.ApprovedOnDate = source.ApprovedOnDate;
+            target.ApprovedOnDateTime = source.ApprovedOnDateTime;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

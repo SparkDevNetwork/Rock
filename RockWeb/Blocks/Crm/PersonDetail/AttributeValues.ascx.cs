@@ -1,10 +1,21 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
@@ -23,6 +34,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     /// <summary>
     /// User control for editing the value(s) of a set of attributes for person
     /// </summary>
+    [DisplayName( "Attribute Values" )]
+    [Category( "CRM > Person Detail" )]
+    [Description( "Allows for editing the value(s) of a set of attributes for person." )]
+
     [AttributeCategoryField( "Category", "The Attribute Category to display attributes from", false, "Rock.Model.Person" )]
     public partial class AttributeValues : PersonBlock
     {
@@ -147,19 +162,55 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             if ( Page.IsValid )
             {
-                foreach ( int attributeId in AttributeList )
-                {
-                    var attribute = AttributeCache.Read( attributeId );
+                int personEntityTypeId = EntityTypeCache.Read(typeof(Person)).Id;
 
-                    if ( Person != null && EditMode && attribute.IsAuthorized( "Edit", CurrentPerson ) )
+                using (new Rock.Data.UnitOfWorkScope())
+                {
+                    Rock.Data.RockTransactionScope.WrapTransaction( () =>
                     {
-                        Control attributeControl = fsAttributes.FindControl( string.Format( "attribute_field_{0}", attribute.Id ) );
-                        if ( attributeControl != null )
+                        var changes = new List<string>();
+                        var historyService = new HistoryService();
+
+                        foreach ( int attributeId in AttributeList )
                         {
-                            string value = attribute.FieldType.Field.GetEditValue( attributeControl, attribute.QualifierValues );
-                            Rock.Attribute.Helper.SaveAttributeValue( Person, attribute, value, CurrentPersonId );
+                            var attribute = AttributeCache.Read( attributeId );
+
+                            if ( Person != null && EditMode && attribute.IsAuthorized( "Edit", CurrentPerson ) )
+                            {
+                                Control attributeControl = fsAttributes.FindControl( string.Format( "attribute_field_{0}", attribute.Id ) );
+                                if ( attributeControl != null )
+                                {
+                                    string originalValue = Person.GetAttributeValue( attribute.Key );
+                                    string newValue = attribute.FieldType.Field.GetEditValue( attributeControl, attribute.QualifierValues );
+                                    Rock.Attribute.Helper.SaveAttributeValue( Person, attribute, newValue, CurrentPersonId );
+
+                                    // Check for changes to write to history
+                                    if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
+                                    {
+                                        string formattedOriginalValue = string.Empty;
+                                        if ( !string.IsNullOrWhiteSpace( originalValue ) )
+                                        {
+                                            formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
+                                        }
+
+                                        string formattedNewValue = string.Empty;
+                                        if ( !string.IsNullOrWhiteSpace( originalValue ) )
+                                        {
+                                            formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
+                                        }
+
+                                        History.EvaluateChange( changes, attribute.Name, formattedOriginalValue, formattedNewValue );
+                                    }
+                                }
+                            }
                         }
-                    }
+
+                        if ( changes.Any() )
+                        {
+                            new HistoryService().SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                                Person.Id, changes, CurrentPersonId );
+                        }
+                    } );
                 }
 
                 EditMode = false;

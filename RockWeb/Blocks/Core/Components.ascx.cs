@@ -1,9 +1,19 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,8 +32,12 @@ namespace RockWeb.Blocks.Core
 {
     /// <summary>
     /// Used to manage the <see cref="Rock.Extension.Component"/> classes found through MEF.  Provides a way to edit the value
-    /// of the attributes specified in each class
+    /// of the attributes specified in each class.
     /// </summary>
+    [System.ComponentModel.DisplayName( "Components" )]
+    [System.ComponentModel.Category( "Core" )]
+    [System.ComponentModel.Description( "Block to administrate MEF plugins." )]
+
     [TextField( "Component Container", "The Rock Extension Managed Component Container to manage")]
     public partial class Components : RockBlock
     {
