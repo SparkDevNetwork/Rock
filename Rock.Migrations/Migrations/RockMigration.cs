@@ -38,7 +38,7 @@ namespace Rock.Migrations
                 ELSE
                 BEGIN
                     INSERT INTO [EntityType] ([Name], [IsEntity], [IsSecured], [IsCommon], [Guid])
-                    VALUES ('{0}', {1}, {2}, '{3}')
+                    VALUES ('{0}', {1}, {2}, 0, '{3}')
                 END
 ",
                 name,
