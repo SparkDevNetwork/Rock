@@ -494,6 +494,11 @@ $(document).ready(function() {
                     gReport.PersonIdField = null;
                 }
 
+                if ( dataView.EntityTypeId.HasValue )
+                {
+                    gReport.RowItemText = EntityTypeCache.Read( dataView.EntityTypeId.Value ).FriendlyName;
+                }
+
                 gReport.Visible = true;
                 BindGrid( gReport, dataView );
             }
@@ -535,6 +540,11 @@ $(document).ready(function() {
                 if ( errors.Any() )
                 {
                     nbEditModeMessage.Text = "INFO: There was a problem with one or more of the filters for this data view...<br/><br/> " + errors.AsDelimited( "<br/>" );
+                }
+
+                if ( dataView.EntityTypeId.HasValue )
+                {
+                    grid.RowItemText = EntityTypeCache.Read( dataView.EntityTypeId.Value ).FriendlyName;
                 }
 
                 grid.DataBind();
