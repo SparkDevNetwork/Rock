@@ -23,6 +23,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Rock.Model;
 using Rock.Web.UI;
+using Rock.Attribute;
 
 namespace RockWeb.Blocks.Utility
 {
@@ -32,23 +33,10 @@ namespace RockWeb.Blocks.Utility
     [DisplayName( "CkEditor FileBrowser" )]
     [Category( "Utility" )]
     [Description( "Block to be used as part of the RockFileBrowser CKEditor Plugin" )]
+    [TextField( "Root Folder", "The root folder of the Folder Browser")]
     public partial class CkEditorFileBrowser : RockBlock
     {
-        #region Fields
-
-        // used for private variables
-
-        #endregion
-
-        #region Properties
-
-        // used for public / protected properties
-
-        #endregion
-
         #region Base Control Methods
-        
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -64,37 +52,18 @@ namespace RockWeb.Blocks.Utility
 
             if ( !this.Page.IsPostBack )
             {
-                // we are using the Dialog layout, but don't want the Header and Footer to show
+                
                 string startupScript = @" 
-var iframeHead = $('head');
-$('<style> .modal-header { display: none; } .modal-footer { display: none; } </style>').appendTo(iframeHead);
+// init rockTree on folder (no options since we are generating static html)
+$('.treeview').rockTree( {} );
 
-$('.treeview').rockTree( {  
-} );
-
+// init scroll bars for folder and file list divs
 $('.js-folder-treeview').tinyscrollbar({ size: 120, sizethumb: 20 });
+$('.js-file-list').tinyscrollbar({ size: 120, sizethumb: 20 });
 
 $('.treeview').on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree:rendered', function (evt) {
-
-    var $container = $('.js-folder-treeview'),
-        $dialog = $('#modal-scroll-container'),
-        dialogTop,
-        pickerTop,
-        amount;
-
-    if ($container.is(':visible')) {
-        $container.tinyscrollbar_update('relative');
-
-        if ($dialog.length > 0 && $dialog.is(':visible')) {
-            dialogTop = $dialog.offset().top;
-            pickerTop = $container.offset().top;
-            amount = pickerTop - dialogTop;
-
-            if (amount > 160) {
-                $dialog.tinyscrollbar_update('bottom');
-            }
-        }
-    }
+  // update the folder treeview scroll bar
+  $('.js-folder-treeview').tinyscrollbar_update('relative');
 });
 
 ";
@@ -105,23 +74,46 @@ $('.treeview').on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree
 
             sb.AppendLine( "<ul id=\"treeview\">" );
 
-            string rootFolder = PageParameter("rootFolder");
+            
 
-            if (string.IsNullOrWhiteSpace(rootFolder)) {
+            // the rootFolder param is encrypted to help prevent the web user from specifying a folder
+            string rootFolder = PageParameter( "rootFolder" );
+            if (!string.IsNullOrWhiteSpace(rootFolder) ) {
+                rootFolder = Rock.Security.Encryption.DecryptString( rootFolder );
+            }
+
+            // default to the "~/Content" if the rootFolder is not specified
+            if ( string.IsNullOrWhiteSpace( rootFolder ) )
+            {
                 rootFolder = "~/Content";
             }
 
-            string physicalRootFolder = this.Request.MapPath( rootFolder );
-            List<string> directoryList = Directory.GetDirectories( physicalRootFolder ).OrderBy( a => a ).ToList();
-
-            foreach ( string directoryPath in directoryList )
+            // ensure that the folder is formatted to be relative to web root
+            if (!rootFolder.StartsWith("~/"))
             {
-                sb.Append( DirectoryNode( directoryPath ) );
+                rootFolder = "~/" + rootFolder;
             }
 
-            sb.AppendLine( "</ul>" );
+            string physicalRootFolder = this.Request.MapPath( rootFolder );
+            if ( Directory.Exists( physicalRootFolder ) )
+            {
+                List<string> directoryList = Directory.GetDirectories( physicalRootFolder ).OrderBy( a => a ).ToList();
 
-            lblFolders.Text = sb.ToString();
+                foreach ( string directoryPath in directoryList )
+                {
+                    sb.Append( DirectoryNode( directoryPath ) );
+                }
+
+                sb.AppendLine( "</ul>" );
+
+                lblFolders.Text = sb.ToString();
+            }
+            else
+            {
+                nbWarning.Title = "Warning";
+                nbWarning.Text = "Folder does not exist: " + physicalRootFolder;
+                nbWarning.Visible = true;
+            }
         }
 
         #endregion

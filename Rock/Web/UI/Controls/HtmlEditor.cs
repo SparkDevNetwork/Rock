@@ -440,7 +440,9 @@ CKEDITOR.replace('{0}', {{
 
             string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(),
                 this.Height, this.ResizeMaxWidth ?? 0, customOnChangeScript, enabledPlugins.AsDelimited( "," ), 
-                this.DocumentFolderRoot, this.ImageFolderRoot, this.MergeFields.AsDelimited(",") );
+                Rock.Security.Encryption.EncryptString(this.DocumentFolderRoot), // encrypt the folders so the folder can only be configured on the server
+                Rock.Security.Encryption.EncryptString(this.ImageFolderRoot),
+                this.MergeFields.AsDelimited(",") );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckeditorInitScript, true );
 
