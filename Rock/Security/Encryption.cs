@@ -41,7 +41,7 @@ namespace Rock.Security
         {
             if ( string.IsNullOrEmpty( plainText ) )
             {
-                throw new ArgumentNullException( "plainText" );
+                //throw new ArgumentNullException( "plainText" );
             }
 
             string dataEncryptionKey = ConfigurationManager.AppSettings["DataEncryptionKey"];
