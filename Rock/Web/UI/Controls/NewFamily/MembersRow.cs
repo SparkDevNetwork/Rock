@@ -415,7 +415,7 @@ namespace Rock.Web.UI.Controls
             _lbDelete.Controls.Add( iDelete );
             iDelete.AddCssClass( "fa fa-times" );
 
-            _lbDelete.CssClass = "btn btn-xs btn-danger";
+            _lbDelete.CssClass = "btn btn-sm btn-danger";
             _lbDelete.Click += lbDelete_Click;
             _lbDelete.CausesValidation = false;
         }
