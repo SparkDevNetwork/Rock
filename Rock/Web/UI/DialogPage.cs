@@ -22,7 +22,7 @@ namespace Rock.Web.UI
     /// <summary>
     /// 
     /// </summary>
-    public class DialogMasterPage : RockMasterPage
+    public class DialogPage : RockPage
     {
         /// <summary>
         /// An optional subtitle
