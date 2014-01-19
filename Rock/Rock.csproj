@@ -823,7 +823,7 @@
     <Compile Include="Web\UI\Controls\RockCheckBox.cs" />
     <Compile Include="Web\UI\Controls\SearchField.cs" />
     <Compile Include="Web\UI\Controls\Zone.cs" />
-    <Compile Include="Web\UI\DialogMasterPage.cs">
+    <Compile Include="Web\UI\DialogPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Web\UI\RockPage.cs">
