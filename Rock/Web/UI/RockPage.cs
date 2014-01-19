@@ -963,7 +963,7 @@ namespace Rock.Web.UI
             Page.Header.DataBind();
 
             // create a page view transaction if enabled
-            if (_pageCache != null && Convert.ToBoolean( ConfigurationManager.AppSettings["EnablePageViewTracking"] ) )
+            if (!Page.IsPostBack && _pageCache != null && Convert.ToBoolean( ConfigurationManager.AppSettings["EnablePageViewTracking"] ) )
             {
                 PageViewTransaction transaction = new PageViewTransaction();
                 transaction.DateViewed = DateTime.Now;
