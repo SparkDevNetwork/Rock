@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Model;
+using Rock.Transactions;
 
 namespace Rock.Web.UI
 {
@@ -28,10 +29,16 @@ namespace Rock.Web.UI
     [ContextAware( typeof(Person) )]
     public class PersonBlock : RockBlock
     {
+        #region Properties
+
         /// <summary>
         /// The current person being viewed
         /// </summary>
         public Person Person { get; set; }
+
+        #endregion
+
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -48,6 +55,32 @@ namespace Rock.Web.UI
                 Person = new Person();
             }
         }
+
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            if ( !Page.IsPostBack && 
+                Context.Items["PersonViewed"] == null &&
+                Person != null && 
+                CurrentPersonId.HasValue && 
+                Person.Id != CurrentPersonId.Value )
+            {
+                var transaction = new PersonViewTransaction();
+                transaction.DateTimeViewed = DateTime.Now;
+                transaction.TargetPersonId = Person.Id;
+                transaction.ViewerPersonId = CurrentPersonId.Value;
+                transaction.Source = RockPage.PageTitle;
+                transaction.IPAddress = Request.UserHostAddress;
+                RockQueue.TransactionQueue.Enqueue( transaction );
+
+                Context.Items.Add( "PersonViewed", "Handled" );
+            }
+        }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// The groups of a particular type that current person belongs to
@@ -110,6 +143,8 @@ namespace Rock.Web.UI
 
             return groups;
         }
+
+        #endregion
     }
 
 }
