@@ -31,6 +31,9 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:NoteControl runat=server></{0}:NoteControl>" )]
     public class NoteControl : CompositeControl
     {
+
+        #region Fields
+
         private RockTextBox _tbNote;
         private CheckBox _cbAlert;
         private CheckBox _cbPrivate;
@@ -38,6 +41,10 @@ namespace Rock.Web.UI.Controls
         private LinkButton _lbEditNote;
         private LinkButton _lbDeleteNote;
         private SecurityButton _sbSecurity;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Sets the note.
@@ -120,6 +127,18 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["Caption"] as string ?? string.Empty; }
             set { ViewState["Caption"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether an add view is always visible.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [add always visible]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AddAlwaysVisible
+        {
+            get { return ViewState["AddAlwaysVisible"] as bool? ?? false; }
+            set { ViewState["AddAlwaysVisible"] = value; }
         }
 
         /// <summary>
@@ -351,6 +370,10 @@ namespace Rock.Web.UI.Controls
 
         }
 
+        #endregion
+
+        #region Constructor
+
         /// <summary>
         /// Initializes a new instance of the <see cref="NoteControl"/> class.
         /// </summary>
@@ -365,6 +388,10 @@ namespace Rock.Web.UI.Controls
             _lbDeleteNote = new LinkButton();
             _sbSecurity = new SecurityButton();
         }
+
+        #endregion
+
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -434,117 +461,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Occurs when [save button click].
-        /// </summary>
-        public event EventHandler SaveButtonClick;
-
-        /// <summary>
-        /// Handles the Click event of the lbSaveNote control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbSaveNote_Click( object sender, EventArgs e )
-        {
-            var rockPage = this.Page as RockPage;
-            if (rockPage != null && NoteTypeId.HasValue)
-            {
-                int? currentPersonId = null;
-                var currentPerson = rockPage.CurrentPerson;
-                if (currentPerson != null)
-                {
-                    currentPersonId = currentPerson.Id;
-                }
-
-                var service = new NoteService();
-                Note note = null;
-
-                if ( NoteId.HasValue )
-                {
-                    note = service.Get( NoteId.Value );
-                }
-
-                bool newNote = false;
-
-                if ( note == null )
-                {
-                    newNote = true;
-
-                    note = new Note();
-                    note.IsSystem = false;
-                    note.NoteTypeId = NoteTypeId.Value;
-                    note.EntityId = EntityId;
-                    note.CreatedByPersonId = currentPersonId;
-                    note.CreationDateTime = DateTime.Now;
-                    note.SourceTypeValueId = SourceTypeValueId;
-                    service.Add( note, currentPersonId );
-                }
-
-                note.Caption = IsPrivate ? "You - Personal Note" : string.Empty;
-                note.Text = Text;
-                note.IsAlert = IsAlert;
-
-                service.Save( note, currentPersonId );
-
-                if ( newNote )
-                {
-                    note.AllowPerson( "Edit", currentPerson, currentPersonId );
-                }
-
-                if ( IsPrivate && !note.IsPrivate( "View", currentPerson ) )
-                {
-                    note.MakePrivate( "View", currentPerson, currentPersonId );
-                }
-
-                if ( SaveButtonClick != null )
-                {
-                    SaveButtonClick( this, e );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Occurs when [delete button click].
-        /// </summary>
-        public event EventHandler DeleteButtonClick;
-
-        /// <summary>
-        /// Handles the Click event of the lbDeleteNote control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbDeleteNote_Click( object sender, EventArgs e )
-        {
-            var rockPage = this.Page as RockPage;
-            if ( rockPage != null )
-            {
-                int? currentPersonId = null;
-                var currentPerson = rockPage.CurrentPerson;
-                if ( currentPerson != null )
-                {
-                    currentPersonId = currentPerson.Id;
-                }
-
-                var service = new NoteService();
-                Note note = null;
-
-                if ( NoteId.HasValue )
-                {
-                    note = service.Get( NoteId.Value );
-                    if ( note != null && note.IsAuthorized( "Edit", currentPerson ) )
-                    {
-                        service.Delete( note, currentPersonId );
-                        service.Save( note, currentPersonId );
-                    }
-                }
-
-                if ( DeleteButtonClick != null )
-                {
-                    DeleteButtonClick( this, e );
-                }
-            }
-        }
-
-        /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
@@ -559,11 +475,19 @@ namespace Rock.Web.UI.Controls
 
             // Edit Mode HTML...
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-noteentry" );
-            writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            if ( NoteId.HasValue || !AddAlwaysVisible )
+            {
+                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            }
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            if ( DisplayType == NoteDisplayType.Full && UsePersonIcon )
+            {
+                writer.Write( Person.GetPhotoImageTag( CreatedByPhotoId, CreatedByGender, 50, 50 ) );
+            }
 
             _tbNote.RenderControl( writer );
 
@@ -602,13 +526,19 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-footer" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            
             _lbSaveNote.Text = "Save " + Label;
             _lbSaveNote.RenderControl( writer );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note-cancel btn btn-xs" );
-            writer.RenderBeginTag( HtmlTextWriterTag.A );
-            writer.Write( "Cancel" );
-            writer.RenderEndTag();
-            writer.RenderEndTag();
+
+            if ( NoteId.HasValue || !AddAlwaysVisible )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note-cancel btn btn-xs" );
+                writer.RenderBeginTag( HtmlTextWriterTag.A );
+                writer.Write( "Cancel" );
+                writer.RenderEndTag();
+            }
+
+            writer.RenderEndTag();  // panel-footer div
 
             writer.RenderEndTag();  // note-entry div
 
@@ -704,30 +634,130 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
         }
 
-    }
+        #endregion
 
-    /// <summary>
-    /// Event argument to track which note fired an event
-    /// </summary>
-    public class IdEventArgs : EventArgs
-    {
-        /// <summary>
-        /// Gets the index of the row that fired the event
-        /// </summary>
-        /// <value>
-        /// The index of the row.
-        /// </value>
-        public int Id { get; private set; }
+        #region Events
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RowEventArgs" /> class.
+        /// Handles the Click event of the lbSaveNote control.
         /// </summary>
-        /// <param name="id">The id.</param>
-        public IdEventArgs( int id )
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbSaveNote_Click( object sender, EventArgs e )
         {
-            Id = id;
+            var rockPage = this.Page as RockPage;
+            if (rockPage != null && NoteTypeId.HasValue)
+            {
+                int? currentPersonId = null;
+                var currentPerson = rockPage.CurrentPerson;
+                if (currentPerson != null)
+                {
+                    currentPersonId = currentPerson.Id;
+                }
+
+                var service = new NoteService();
+                Note note = null;
+
+                if ( NoteId.HasValue )
+                {
+                    note = service.Get( NoteId.Value );
+                }
+
+                bool newNote = false;
+
+                if ( note == null )
+                {
+                    newNote = true;
+
+                    note = new Note();
+                    note.IsSystem = false;
+                    note.NoteTypeId = NoteTypeId.Value;
+                    note.EntityId = EntityId;
+                    note.CreatedByPersonId = currentPersonId;
+                    note.CreationDateTime = DateTime.Now;
+                    note.SourceTypeValueId = SourceTypeValueId;
+                    service.Add( note, currentPersonId );
+                }
+
+                note.Caption = IsPrivate ? "You - Personal Note" : string.Empty;
+                note.Text = Text;
+                note.IsAlert = IsAlert;
+
+                service.Save( note, currentPersonId );
+
+                if ( newNote )
+                {
+                    note.AllowPerson( "Edit", currentPerson, currentPersonId );
+                }
+
+                if ( IsPrivate && !note.IsPrivate( "View", currentPerson ) )
+                {
+                    note.MakePrivate( "View", currentPerson, currentPersonId );
+                }
+
+                if ( SaveButtonClick != null )
+                {
+                    SaveButtonClick( this, e );
+                }
+            }
         }
+
+        /// <summary>
+        /// Handles the Click event of the lbDeleteNote control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbDeleteNote_Click( object sender, EventArgs e )
+        {
+            var rockPage = this.Page as RockPage;
+            if ( rockPage != null )
+            {
+                int? currentPersonId = null;
+                var currentPerson = rockPage.CurrentPerson;
+                if ( currentPerson != null )
+                {
+                    currentPersonId = currentPerson.Id;
+                }
+
+                var service = new NoteService();
+                Note note = null;
+
+                if ( NoteId.HasValue )
+                {
+                    note = service.Get( NoteId.Value );
+                    if ( note != null && note.IsAuthorized( "Edit", currentPerson ) )
+                    {
+                        service.Delete( note, currentPersonId );
+                        service.Save( note, currentPersonId );
+                    }
+                }
+
+                if ( DeleteButtonClick != null )
+                {
+                    DeleteButtonClick( this, e );
+                }
+            }
+        }
+
+        #endregion
+
+        #region Event Handlers
+
+        /// <summary>
+        /// Occurs when [save button click].
+        /// </summary>
+        public event EventHandler SaveButtonClick;
+
+        /// <summary>
+        /// Occurs when [delete button click].
+        /// </summary>
+        public event EventHandler DeleteButtonClick;
+
+        #endregion
+
     }
+
+    #region Enums
 
     /// <summary>
     /// 
@@ -744,5 +774,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         Light
     }
+
+    #endregion
 
 }
