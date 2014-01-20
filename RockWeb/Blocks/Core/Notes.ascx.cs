@@ -45,6 +45,8 @@ namespace RockWeb.Blocks.Core
     [BooleanField( "Show Alert Checkbox", "", true, "", 5 )]
     [BooleanField( "Show Private Checkbox", "", true, "", 6 )]
     [BooleanField( "Show Security Button", "", true, "", 7 )]
+    [BooleanField( "Add Always Visible", "Should the add entry screen always be visible (vs. having to click Add button to display the entry screen).", false, "", 8 )]
+    [CustomDropdownListField( "Display Order", "Descending will render with entry field at top and most recent note at top.  Ascending will render with entry field at bottom and most recent note at the end.  Ascending will also disable the more option", "Ascending,Descending", true, "Descending", "", 9 )]
     public partial class Notes : RockBlock
     {
         #region Base Control Methods
@@ -88,6 +90,8 @@ namespace RockWeb.Blocks.Core
                 notesTimeline.ShowAlertCheckBox = GetAttributeValue( "ShowAlertCheckbox" ).AsBoolean();
                 notesTimeline.ShowPrivateCheckBox = GetAttributeValue( "ShowPrivateCheckbox" ).AsBoolean();
                 notesTimeline.ShowSecurityButton = GetAttributeValue( "ShowSecurityButton" ).AsBoolean();
+                notesTimeline.AddAlwaysVisible = GetAttributeValue( "AddAlwaysVisible" ).AsBoolean();
+                notesTimeline.SortDirection = GetAttributeValue( "DisplayOrder" ) == "Ascending" ? ListSortDirection.Ascending : ListSortDirection.Descending;
             }
         }
 

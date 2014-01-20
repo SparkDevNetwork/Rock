@@ -16,6 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -40,12 +42,18 @@ namespace Rock.Web.UI.Controls
 
         #region Properties
 
+        /// <summary>
+        /// Gets or sets the note type identifier.
+        /// </summary>
         public int? NoteTypeId
         {
             get { return ViewState["NoteTypeId"] as int?; }
             set { ViewState["NoteTypeId"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the entity identifier.
+        /// </summary>
         public int? EntityId
         {
             get { return ViewState["EntityId"] as int?; }
@@ -68,6 +76,24 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["Title"] as string; }
             set { ViewState["Title"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [add always visible].
+        /// </summary>
+        public bool AddAlwaysVisible
+        {
+            get
+            {
+                EnsureChildControls();
+                return _noteNew.AddAlwaysVisible;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _noteNew.AddAlwaysVisible = value;
+            }
         }
 
         /// <summary>
@@ -104,6 +130,29 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _noteNew.DisplayType = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the sort direction.  Descending will render with entry field at top and most
+        /// recent note at top.  Ascending will render with entry field at bottom and most recent note
+        /// at the end.  Ascending will also disable the more option
+        /// </summary>
+        public ListSortDirection SortDirection
+        {
+            get
+            {
+                object sortDirection = this.ViewState["SortDirection"];
+                return sortDirection != null ? (ListSortDirection)sortDirection : ListSortDirection.Descending;
+            }
+            set
+            {
+                this.ViewState["SortDirection"] = value;
+
+                if (SortDirection == ListSortDirection.Ascending)
+                {
+                    ShowMoreOption = false;
+                }
             }
         }
 
@@ -207,7 +256,10 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                _lbShowMore.Visible = value;
+                if ( SortDirection != ListSortDirection.Ascending )
+                {
+                    _lbShowMore.Visible = value;
+                }
             }
         }
 
@@ -326,19 +378,25 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();      // H3
                 }
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-sm btn-action add-note" );
-                writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-plus" );
-                writer.RenderBeginTag( HtmlTextWriterTag.I );
-                writer.RenderEndTag();      // I
-                writer.RenderEndTag();      // A
+                if ( !AddAlwaysVisible )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-sm btn-action add-note" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.A );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-plus" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.I );
+                    writer.RenderEndTag();      // I
+                    writer.RenderEndTag();      // A
+                }
 
                 writer.RenderEndTag();      // Div.panel-heading
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                _noteNew.RenderControl( writer );
+                if ( SortDirection == ListSortDirection.Descending )
+                {
+                    _noteNew.RenderControl( writer );
+                }
 
                 foreach ( Control control in Controls )
                 {
@@ -354,9 +412,16 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
-                if ( ShowMoreOption )
+                if ( SortDirection == ListSortDirection.Ascending )
                 {
-                    _lbShowMore.RenderControl( writer );
+                    _noteNew.RenderControl( writer );
+                }
+                else
+                {
+                    if ( ShowMoreOption )
+                    {
+                        _lbShowMore.RenderControl( writer );
+                    }
                 }
 
                 writer.RenderEndTag();      // Div.panel-body
@@ -432,6 +497,15 @@ namespace Rock.Web.UI.Controls
                 if (currentPerson != null)
                 {
                     currentPersonId = currentPerson.Id;
+                    _noteNew.CreatedByPhotoId = currentPerson.PhotoId;
+                    _noteNew.CreatedByGender = currentPerson.Gender;
+                    _noteNew.CreatedByName = currentPerson.FullName;
+                }
+                else
+                {
+                    _noteNew.CreatedByPhotoId = null;
+                    _noteNew.CreatedByGender = Gender.Male;
+                    _noteNew.CreatedByName = string.Empty;
                 }
 
                 if ( NoteTypeId.HasValue && EntityId.HasValue )
@@ -439,7 +513,24 @@ namespace Rock.Web.UI.Controls
                     ShowMoreOption = false;
 
                     int noteCount = 0;
-                    foreach ( var note in new NoteService().Get( NoteTypeId.Value, EntityId.Value ) )
+
+                    var qry = new NoteService().Queryable()
+                        .Where( n =>
+                            n.NoteTypeId == NoteTypeId.Value &&
+                            n.EntityId == EntityId.Value );
+
+                    if ( SortDirection == ListSortDirection.Descending )
+                    {
+                        qry = qry.OrderByDescending( n => n.IsAlert )
+                            .ThenByDescending( n => n.CreationDateTime );
+                    }
+                    else
+                    {
+                        qry = qry.OrderByDescending( n => n.IsAlert )
+                            .ThenBy( n => n.CreationDateTime );
+                    }
+
+                    foreach ( var note in qry )
                     {
                         if ( noteCount >= DisplayCount )
                         {
