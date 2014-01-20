@@ -908,6 +908,30 @@ namespace Rock.Model
         /// <summary>
         /// Gets the photo image tag.
         /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="maxWidth">The maximum width.</param>
+        /// <param name="maxHeight">The maximum height.</param>
+        /// <param name="className">Name of the class.</param>
+        /// <returns></returns>
+        public static string GetPhotoImageTag( Person person, int? maxWidth = null, int? maxHeight = null, string className = "" )
+        {
+            int? photoId = null;
+            Gender gender = Gender.Male;
+            string altText = string.Empty;
+
+            if ( person != null )
+            {
+                photoId = person.PhotoId;
+                gender = person.Gender;
+                altText = person.FullName;
+            }
+
+            return Person.GetPhotoImageTag( photoId, gender, maxWidth, maxHeight, altText, className );
+        }
+        
+        /// <summary>
+        /// Gets the photo image tag.
+        /// </summary>
         /// <param name="photoId">The photo identifier.</param>
         /// <param name="gender">The gender to use if the photoId is null.</param>
         /// <param name="maxWidth">The maximum width (in px).</param>

@@ -358,3 +358,16 @@ img.file-browser-image {
     color: #ccc;
 
 }
+
+/*
+    DT - The note editor was updated to support optionally displaying a person image instead
+    of a font-awesome icon with a comment.  When configured this way, it renders an <img> tag 
+    instead of an <i> tag for the thumbnail image
+    Added on 1/19/2014
+*/
+
+.panel-note article > img
+{
+    float: left;
+    margin: 0 12px 0 4px;
+}

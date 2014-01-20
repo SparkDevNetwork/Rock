@@ -229,7 +229,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             nfmMembers.ClearRows();
 
-            int count = 0;
             foreach ( var familyMember in familyMembers )
             {
                 var familyMemberRow = new NewFamilyMembersRow();
@@ -270,8 +269,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         attributeRow.SetEditValues( familyMember.Person );
                     }
                 }
-
-                count++;
             }
 
             ShowAttributeCategory( CurrentCategoryIndex );
