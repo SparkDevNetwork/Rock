@@ -526,18 +526,13 @@ namespace Rock
         }
 
         /// <summary>
-        /// Encodes any html and then converts CR (carriage return) LF (line feed) to unencoded html breaks (br).
+        /// HTML Encodes the string
         /// </summary>
-        /// <param name="str">a string that contains unencoded HTML and CR LF</param>
-        /// <returns>an html encoded string with CRLF replaced with HTML <code>br</code></returns>
-        public static string EncodeHtmlThenConvertCrLfToHtmlBr( this string str )
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string EncodeHtml(this string str)
         {
-            if ( str == null )
-            {
-                return string.Empty;
-            }
-
-            return System.Web.HttpUtility.HtmlEncode( str ).ConvertCrLfToHtmlBr();
+            return System.Web.HttpUtility.HtmlEncode( str );
         }
 
         /// <summary>

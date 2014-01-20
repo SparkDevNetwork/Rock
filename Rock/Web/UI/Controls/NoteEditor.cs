@@ -15,276 +15,246 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
+using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Displays a Rock Note
+    /// Note Editor control
     /// </summary>
     [ToolboxData( "<{0}:NoteEditor runat=server></{0}:NoteEditor>" )]
-    public class NoteEditor : CompositeControl
+    public class NoteEditor : CompositeControl, INamingContainer
     {
-        private RockTextBox _tbNote;
-        private CheckBox _cbAlert;
-        private CheckBox _cbPrivate;
-        private LinkButton _lbSaveNote;
-        private LinkButton _lbEditNote;
-        private LinkButton _lbDeleteNote;
-        private SecurityButton _sbSecurity;
 
-        /// <summary>
-        /// Sets the note.
-        /// </summary>
-        /// <value>
-        /// The note.
-        /// </value>
-        public Rock.Model.Note Note
+        #region Fields
+
+        private NoteControl _noteNew;
+        private LinkButton _lbShowMore;
+
+        #endregion
+
+        #region Properties
+
+        public int? NoteTypeId
         {
-            set
-            {
-                this.NoteId = value.Id;
-                this.SourceTypeValueId = value.SourceTypeValueId;
-
-                if (string.IsNullOrWhiteSpace(value.Caption) && value.CreatedByPerson != null)
-                {
-                    this.Caption = value.CreatedByPerson.FullName;
-                }
-                else
-                {
-                    this.Caption = value.Caption;
-                }
-
-                this.CreatedDateTime = value.CreationDateTime;
-                this.Text = value.Text;
-                this.IsAlert = value.IsAlert.HasValue && value.IsAlert.Value;
-            }
+            get { return ViewState["NoteTypeId"] as int?; }
+            set { ViewState["NoteTypeId"] = value; }
         }
 
-        /// <summary>
-        /// Gets or sets the note id.
-        /// </summary>
-        /// <value>
-        /// The note id.
-        /// </value>
-        public int NoteId
+        public int? EntityId
         {
-            get { return ViewState["NoteId"] as int? ?? 0; }
-            set { ViewState["NoteId"] = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the source type value id.
-        /// </summary>
-        /// <value>
-        /// The source type value id.
-        /// </value>
-        public int? SourceTypeValueId
-        {
-            get { return ViewState["SourceTypeValueId"] as int?; }
-            set { ViewState["SourceTypeValueId"] = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the caption.
-        /// </summary>
-        /// <value>
-        /// The caption.
-        /// </value>
-        public string Caption
-        {
-            get { return ViewState["Caption"] as string ?? string.Empty; }
-            set { ViewState["Caption"] = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the created date time.
-        /// </summary>
-        /// <value>
-        /// The created date time.
-        /// </value>
-        public DateTime? CreatedDateTime
-        {
-            get { return ViewState["CreatedDateTime"] as DateTime?; }
-            set { ViewState["CreatedDateTime"] = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the label for the note entry box
-        /// </summary>
-        /// <value>
-        /// The label.
-        /// </value>
-        public string Label
-        {
-            get { return _tbNote.Label; }
-            set { _tbNote.Label = value; }
+            get { return ViewState["EntityId"] as int?; }
+            set { ViewState["EntityId"] = value; }
         }
         
         /// <summary>
-        /// Gets or sets the text.
+        /// Gets or sets the CSS Class to use for the title icon.
         /// </summary>
-        /// <value>
-        /// The text.
-        /// </value>
-        public string Text
+        public string TitleIconCssClass
         {
-            get { return _tbNote.Text; }
-            set { _tbNote.Text = value; }
+            get { return ViewState["TitleIconCssClass"] as string; }
+            set { ViewState["TitleIconCssClass"] = value; }
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is alert.
+        /// Gets or sets the title to display.
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is alert; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsAlert
+        public string Title
         {
-            get { return _cbAlert.Checked; }
-            set { _cbAlert.Checked = value; }
+            get { return ViewState["Title"] as string; }
+            set { ViewState["Title"] = value; }
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is private.
+        /// Gets or sets the title to display.
         /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance is private; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsPrivate
+        public string Term
         {
-            get { return _cbPrivate.Checked; }
-            set { _cbPrivate.Checked = value; }
+            get
+            {
+                EnsureChildControls();
+                return _noteNew.Label;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _noteNew.Label = value;
+            }
+        }
+
+        
+        /// <summary>
+        /// Gets or sets the display type.  Full or Light
+        /// </summary>
+        public NoteDisplayType DisplayType
+        {
+            get
+            {
+                EnsureChildControls();
+                return _noteNew.DisplayType;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _noteNew.DisplayType = value;
+            }
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance can edit.
+        /// Gets or sets a value indicating whether to show the Alert checkbox
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance can edit; otherwise, <c>false</c>.
-        /// </value>
-        public bool CanEdit
-        {
-            get { return ViewState["CanEdit"] as bool? ?? false; }
-            set { ViewState["CanEdit"] = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [show alert check box].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [show alert check box]; otherwise, <c>false</c>.
-        /// </value>
         public bool ShowAlertCheckBox
         {
-            get { return ViewState["ShowAlertCheckBox"] as bool? ?? false; }
-            set { ViewState["ShowAlertCheckBox"] = value; }
+            get
+            {
+                EnsureChildControls();
+                return _noteNew.ShowAlertCheckBox;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _noteNew.ShowAlertCheckBox = value;
+            }
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [show private check box].
+        /// Gets or sets a value indicating whether to show the Is Private checkbox
         /// </summary>
-        /// <value>
-        /// <c>true</c> if [show private check box]; otherwise, <c>false</c>.
-        /// </value>
         public bool ShowPrivateCheckBox
         {
-            get { return ViewState["ShowPrivateCheckBox"] as bool? ?? false; }
-            set { ViewState["ShowPrivateCheckBox"] = value; }
+            get
+            {
+                EnsureChildControls();
+                return _noteNew.ShowPrivateCheckBox;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _noteNew.ShowPrivateCheckBox = value;
+            }
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [show security button].
+        /// Gets or sets a value indicating whether to show the security button
+        /// for existing notes
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if [show security button]; otherwise, <c>false</c>.
-        /// </value>
         public bool ShowSecurityButton
         {
-            get { return ViewState["ShowSecurityButton"] as bool? ?? false; }
-            set { ViewState["ShowSecurityButton"] = value; }
-        }
-
-        private string ArticleClass
-        {
             get
             {
-                if ( IsAlert )
-                {
-                    return "clearfix highlight rollover-container";
-                }
+                EnsureChildControls();
+                return _noteNew.ShowSecurityButton;
+            }
 
-                if ( IsPrivate )
-                {
-                    return "clearfix personal rollover-container";
-                }
-
-                return "clearfix rollover-container";
+            set
+            {
+                EnsureChildControls();
+                _noteNew.ShowSecurityButton = value;
             }
         }
 
-        private string IconClass
+        public int? DefaultSourceTypeValueId
         {
             get
             {
-                if ( SourceTypeValueId.HasValue )
-                {
-                    var SourceType = DefinedValueCache.Read( SourceTypeValueId.Value );
-                    if ( SourceType != null &&
-                    SourceType.AttributeValues != null &&
-                    SourceType.AttributeValues.ContainsKey( "IconClass" ) &&
-                    SourceType.AttributeValues["IconClass"].Count == 1 )
-                    {
-                        return SourceType.AttributeValues["IconClass"][0].Value;
-                    }
-                }
-
-                return "fa fa-comment";
+                EnsureChildControls();
+                return _noteNew.SourceTypeValueId;
             }
 
+            set
+            {
+                EnsureChildControls();
+                _noteNew.SourceTypeValueId = value;
+            }
         }
-
+        
         /// <summary>
-        /// Initializes a new instance of the <see cref="NoteEditor"/> class.
+        /// Gets or sets a value indicating whether the author's photo should 
+        /// be displayed wiht the note instead of an icon based on the source
+        /// of the note.
         /// </summary>
-        public NoteEditor()
+        public bool UsePersonIcon
         {
-            _tbNote = new RockTextBox();
-            _tbNote.Label = "Note";
+            get
+            {
+                EnsureChildControls();
+                return _noteNew.UsePersonIcon;
+            }
 
-            _cbAlert = new CheckBox();
-            _cbPrivate = new CheckBox();
-            _lbSaveNote = new LinkButton();
-            _lbEditNote = new LinkButton();
-            _lbDeleteNote = new LinkButton();
-            _sbSecurity = new SecurityButton();
+            set
+            {
+                EnsureChildControls();
+                _noteNew.UsePersonIcon = value;
+            }
+        }
+
+        public bool ShowMoreOption
+        {
+            get
+            {
+                EnsureChildControls();
+                return _lbShowMore.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _lbShowMore.Visible = value;
+            }
         }
 
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// Gets or sets the current display count.  
         /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        public int DisplayCount
+        {
+            get { return ViewState["DisplayCount"] as int? ?? 10; }
+            set { ViewState["DisplayCount"] = value; }
+        }
+        
+        #endregion
+
+        #region Base Control Methods
+
         protected override void OnInit( EventArgs e )
         {
+            base.OnInit( e );
             string script = @"
-    $('a.edit-note').click(function (e) {
-        e.preventDefault();
-        $(this).parent().parent().parent().children().slideToggle('slow');
-    });
-    $('a.edit-note-cancel').click(function () {
-        $(this).parent().parent().parent().children().slideToggle('slow');
-    });
-    $('a.remove-note').click(function() {
-        return confirm('Are you sure you want to delete this note?');
+    $('a.add-note').click(function () {
+        $(this).closest('.panel-note').find('.note-editor:first-child').children().slideToggle(""slow"");
     });
 ";
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "edit-note", script, true );
+
+//            string noteId = PageParameter( "noteId" );
+//            if ( !string.IsNullOrWhiteSpace( noteId ) )
+//            {
+//                script += string.Format( @"
+//                    $('html, body').animate( {{scrollTop: $("".note-editor[rel='{0}']"").offset().top }},
+//                        'slow',
+//                        'swing',
+//                        function() {{ 
+//                            $("".note-editor[rel='{0}'] > article"").css( ""boxShadow"", ""1px 1px 8px 1px #888888"" );
+//                        }}
+//                    );",
+//                noteId );
+//            }
+
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "add-note", script, true );
+
+        }
+
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+            BuildNotes( !this.Page.IsPostBack );
         }
 
         /// <summary>
@@ -292,216 +262,210 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void CreateChildControls()
         {
-            base.CreateChildControls();
+            Controls.Clear();
 
-            _tbNote.ID = this.ID + "_tbNewNote";
-            _tbNote.TextMode = TextBoxMode.MultiLine;
-            Controls.Add(_tbNote);
+            _noteNew = new NoteControl();
+            _noteNew.ID = "noteNew";
+            _noteNew.NoteTypeId = NoteTypeId;
+            _noteNew.EntityId = EntityId;
+            _noteNew.SaveButtonClick += note_SaveButtonClick;
+            Controls.Add( _noteNew );
 
-            _cbAlert.ID = this.ID + "_cbAlert";
-            _cbAlert.Text = "Alert";
-            Controls.Add(_cbAlert);
+            _lbShowMore = new LinkButton();
+            _lbShowMore.ID = "lbShowMore";
+            _lbShowMore.Click += _lbShowMore_Click;
+            Controls.Add( _lbShowMore );
 
-            _cbPrivate.ID = this.ID + "_cbPrivate";
-            _cbPrivate.Text = "Private";
-            Controls.Add(_cbPrivate);
+            var iDownPre = new HtmlGenericControl( "i" );
+            iDownPre.Attributes.Add( "class", "fa fa-angle-down" );
+            _lbShowMore.Controls.Add( iDownPre );
 
-            _lbSaveNote.ID = this.ID + "_lbSaveNote";
-            _lbSaveNote.Attributes["class"] = "btn btn-primary btn-xs";
-            _lbSaveNote.Text = "Save Note";
-            _lbSaveNote.Click += lbSaveNote_Click;
+            var spanDown = new HtmlGenericControl( "span" );
+            spanDown.InnerHtml = "Load More";
+            _lbShowMore.Controls.Add( spanDown );
 
-            Controls.Add(_lbSaveNote);
-
-            var iEdit = new HtmlGenericControl( "i" );
-            iEdit.Attributes["class"] = "fa fa-pencil";
-            _lbEditNote.Controls.Add( iEdit );
-
-            _lbDeleteNote.ID = this.ID + "_lbDeleteNote";
-            _lbDeleteNote.Attributes["class"] = "remove-note";
-            _lbDeleteNote.Click += lbDeleteNote_Click;
-            Controls.Add( _lbDeleteNote );
-            var iDelete = new HtmlGenericControl( "i" );
-            iDelete.Attributes["class"] = "fa fa-times";
-            _lbDeleteNote.Controls.Add( iDelete );
-
-            _sbSecurity.ID = "_sbSecurity";
-            _sbSecurity.Attributes["class"] = "btn btn-security btn-xs security pull-right";
-            _sbSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Note ) ).Id;
-
-            Controls.Add( _sbSecurity );
+            var iDownPost = new HtmlGenericControl( "i" );
+            iDownPost.Attributes.Add( "class", "fa fa-angle-down" );
+            _lbShowMore.Controls.Add( iDownPost );
         }
 
         /// <summary>
-        /// Occurs when [save button click].
+        /// Writes the <see cref="T:System.Web.UI.WebControls.CompositeControl" /> content to the specified <see cref="T:System.Web.UI.HtmlTextWriter" /> object, for display on the client.
         /// </summary>
-        public event EventHandler SaveButtonClick;
-
-        /// <summary>
-        /// Handles the Click event of the lbSaveNote control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbSaveNote_Click( object sender, EventArgs e )
-        {
-            if ( SaveButtonClick != null )
-            {
-                SaveButtonClick( this, e );
-            }
-        }
-
-        /// <summary>
-        /// Occurs when [delete button click].
-        /// </summary>
-        public event EventHandler DeleteButtonClick;
-
-        /// <summary>
-        /// Handles the Click event of the lbDeleteNote control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbDeleteNote_Click( object sender, EventArgs e )
-        {
-            if ( DeleteButtonClick != null )
-            {
-                DeleteButtonClick( this, e );
-            }
-        }
-
-        /// <summary>
-        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
-        /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "note-editor" );
-            writer.AddAttribute( "rel", this.NoteId.ToStringSafe() );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            // Edit Mode HTML...
-            writer.AddAttribute(HtmlTextWriterAttribute.Class, "panel panel-noteentry");
-            writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            _tbNote.RenderControl( writer );
-            
-            // Options
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "settings clearfix" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "options pull-left" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            if ( ShowAlertCheckBox )
+            if ( this.Visible )
             {
-                _cbAlert.RenderControl( writer );
-            }
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-note" );
+                writer.RenderBeginTag( "section" );
 
-            if ( ShowPrivateCheckBox )
-            {
-                _cbPrivate.RenderControl( writer );
-            }
-
-            writer.RenderEndTag();
-
-            if ( ShowSecurityButton )
-            {
-                _sbSecurity.EntityId = this.NoteId;
-                _sbSecurity.Title = this.Label;
-                _sbSecurity.RenderControl( writer );
-            }
-
-            writer.RenderEndTag();  // settings div
-            writer.RenderEndTag();  // panel body
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-footer" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            _lbSaveNote.RenderControl( writer );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note-cancel btn btn-xs" );
-            writer.RenderBeginTag( HtmlTextWriterTag.A );
-            writer.Write( "Cancel" );
-            writer.RenderEndTag();
-            writer.RenderEndTag();
-
-            writer.RenderEndTag();  // note-entry div
-
-            // View Mode HTML...
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, ArticleClass );
-            writer.RenderBeginTag( "article" );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, IconClass );
-            writer.RenderBeginTag( HtmlTextWriterTag.I );
-            writer.RenderEndTag();
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "details" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            // Heading
-            writer.RenderBeginTag( HtmlTextWriterTag.H5 );
-            writer.Write( Caption.EncodeHtmlThenConvertCrLfToHtmlBr() );
-            if ( CreatedDateTime.HasValue )
-            {
-                writer.Write( " " );
-                writer.AddAttribute("class", "date");
-                writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                writer.Write( CreatedDateTime.Value.ToRelativeDateString( 6 ) );
-                writer.RenderEndTag();
-            }
-            writer.RenderEndTag();
-
-            writer.Write( Text.EncodeHtmlThenConvertCrLfToHtmlBr() );
-
-            writer.RenderEndTag();  // Details Div
-
-            if ( CanEdit )
-            {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions rollover-item" );
+                // Heading
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                _lbDeleteNote.RenderControl(writer);
+                if ( !string.IsNullOrWhiteSpace( TitleIconCssClass ) ||
+                    !string.IsNullOrWhiteSpace( Title ) )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-title" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.H3 );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note" );
-                writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
+                    if ( !string.IsNullOrWhiteSpace( TitleIconCssClass ) )
+                    {
+                        writer.AddAttribute( HtmlTextWriterAttribute.Class, TitleIconCssClass );
+                        writer.RenderBeginTag( HtmlTextWriterTag.I );
+                        writer.RenderEndTag();      // I
+                    }
+
+                    if ( !string.IsNullOrWhiteSpace( Title ) )
+                    {
+                        writer.Write( " " );
+                        writer.Write( Title );
+                    }
+
+                    writer.RenderEndTag();      // H3
+                }
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-sm btn-action add-note" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-pencil" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-plus" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
-                writer.RenderEndTag();
-                writer.RenderEndTag();  // A
+                writer.RenderEndTag();      // I
+                writer.RenderEndTag();      // A
 
-                
-                writer.RenderEndTag();  // actions
+                writer.RenderEndTag();      // Div.panel-heading
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                _noteNew.RenderControl( writer );
+
+                foreach ( Control control in Controls )
+                {
+                    if ( control is NoteControl && control.ID != "noteNew" )
+                    {
+                        var noteEditor = (NoteControl)control;
+                        noteEditor.DisplayType = this.DisplayType;
+                        noteEditor.ShowAlertCheckBox = this.ShowAlertCheckBox;
+                        noteEditor.ShowPrivateCheckBox = this.ShowPrivateCheckBox;
+                        noteEditor.ShowSecurityButton = this.ShowSecurityButton;
+                        noteEditor.UsePersonIcon = this.UsePersonIcon;
+                        control.RenderControl( writer );
+                    }
+                }
+
+                if ( ShowMoreOption )
+                {
+                    _lbShowMore.RenderControl( writer );
+                }
+
+                writer.RenderEndTag();      // Div.panel-body
+
+                writer.RenderEndTag();      // Section
+
             }
-
-            writer.RenderEndTag();  // article
-
-            writer.RenderEndTag();
         }
 
-    }
+        #endregion
 
-    /// <summary>
-    /// Event argument to track which note fired an event
-    /// </summary>
-    public class IdEventArgs : EventArgs
-    {
-        /// <summary>
-        /// Gets the index of the row that fired the event
-        /// </summary>
-        /// <value>
-        /// The index of the row.
-        /// </value>
-        public int Id { get; private set; }
+        #region Events
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RowEventArgs" /> class.
+        /// Handles the Click event of the lbAddFamilyMember control.
         /// </summary>
-        /// <param name="id">The id.</param>
-        public IdEventArgs( int id )
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void note_SaveButtonClick( object sender, EventArgs e )
         {
-            Id = id;
+            EnsureChildControls();
+            _noteNew.Text = string.Empty;
+            _noteNew.IsAlert = false;
+            _noteNew.IsPrivate = false;
+            _noteNew.NoteId = null;
+
+            BuildNotes( true );
         }
+
+        protected void note_Updated( object sender, EventArgs e )
+        {
+            BuildNotes( true );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the _lbShowMore control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void _lbShowMore_Click( object sender, EventArgs e )
+        {
+            DisplayCount += 10;
+            BuildNotes( true );
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Clears the rows.
+        /// </summary>
+        public void ClearNotes()
+        {
+            for ( int i = Controls.Count - 1; i >= 0; i-- )
+            {
+                if ( Controls[i] is NoteControl && Controls[i].ID != "noteNew" )
+                {
+                    Controls.RemoveAt( i );
+                }
+            }
+        }
+
+        private void BuildNotes( bool setSelection )
+        {
+            ClearNotes();
+
+            var rockPage = this.Page as RockPage;
+            if (rockPage != null && NoteTypeId.HasValue)
+            {
+                int? currentPersonId = null;
+                var currentPerson = rockPage.CurrentPerson;
+                if (currentPerson != null)
+                {
+                    currentPersonId = currentPerson.Id;
+                }
+
+                if ( NoteTypeId.HasValue && EntityId.HasValue )
+                {
+                    ShowMoreOption = false;
+
+                    int noteCount = 0;
+                    foreach ( var note in new NoteService().Get( NoteTypeId.Value, EntityId.Value ) )
+                    {
+                        if ( noteCount >= DisplayCount )
+                        {
+                            ShowMoreOption = true;
+                            break;
+                        }
+
+                        if ( note.IsAuthorized( "View", currentPerson ) )
+                        {
+                            var noteEditor = new NoteControl();
+                            noteEditor.ID = string.Format( "note_{0}", note.Guid.ToString().Replace( "-", "_" ) );
+                            noteEditor.Note = note;
+                            noteEditor.IsPrivate = note.IsPrivate( "View", currentPerson );
+                            noteEditor.CanEdit = note.IsAuthorized( "Edit", currentPerson );
+                            noteEditor.SaveButtonClick += note_Updated;
+                            noteEditor.DeleteButtonClick += note_Updated;
+                            Controls.Add( noteEditor );
+
+                            noteCount++;
+                        }
+                    }
+                }
+            }
+        }
+
+        #endregion
+
     }
 }
