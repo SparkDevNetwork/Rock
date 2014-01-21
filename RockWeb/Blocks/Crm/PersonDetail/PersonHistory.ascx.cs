@@ -257,8 +257,30 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     qry = qry.OrderByDescending( t => t.CreationDateTime );
                 }
 
-
-                gHistory.DataSource = qry.Select( h => new
+                // Combine history records that were saved at the same time
+                var histories = new List<History>();
+                foreach(var history in qry)
+                {
+                    var existingHistory = histories
+                        .Where( h => 
+                            h.CreatedByPersonId == history.CreatedByPersonId && 
+                            h.CreationDateTime == history.CreationDateTime &&
+                            h.EntityTypeId == history.EntityTypeId &&
+                            h.EntityId == history.EntityId &&
+                            h.CategoryId == history.CategoryId &&
+                            h.RelatedEntityTypeId == history.RelatedEntityTypeId &&
+                            h.RelatedEntityId == history.RelatedEntityId ).FirstOrDefault();
+                    if (existingHistory != null)
+                    {
+                        existingHistory.Summary += "<br/>" + history.Summary;
+                    }
+                    else
+                    {
+                        histories.Add(history);
+                    }
+                }
+                
+                gHistory.DataSource = histories.Select( h => new
                 {
                     Id = h.Id,
                     CategoryId = h.CategoryId,
