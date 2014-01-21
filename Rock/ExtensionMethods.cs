@@ -27,6 +27,7 @@ using System.Web.UI.WebControls;
 using DotLiquid;
 using Newtonsoft.Json;
 using Rock.Model;
+using System.Text;
 
 namespace Rock
 {
@@ -140,6 +141,24 @@ namespace Rock
         #endregion
 
         #region String Extensions
+
+        /// <summary>
+        /// Removed special characters from strings.
+        /// </summary>
+        /// <param name="str">The identifier.</param>
+        /// <returns></returns>
+        public static string RemoveSpecialCharacters(this string str)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (char c in str)
+            {
+                if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '.' || c == '_')
+                {
+                    sb.Append(c);
+                }
+            }
+            return sb.ToString();
+        }
 
         /// <summary>
         /// Splits a Camel or Pascal cased identifier into seperate words.
@@ -507,18 +526,13 @@ namespace Rock
         }
 
         /// <summary>
-        /// Encodes any html and then converts CR (carriage return) LF (line feed) to unencoded html breaks (br).
+        /// HTML Encodes the string
         /// </summary>
-        /// <param name="str">a string that contains unencoded HTML and CR LF</param>
-        /// <returns>an html encoded string with CRLF replaced with HTML <code>br</code></returns>
-        public static string EncodeHtmlThenConvertCrLfToHtmlBr( this string str )
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string EncodeHtml(this string str)
         {
-            if ( str == null )
-            {
-                return string.Empty;
-            }
-
-            return System.Web.HttpUtility.HtmlEncode( str ).ConvertCrLfToHtmlBr();
+            return System.Web.HttpUtility.HtmlEncode( str );
         }
 
         /// <summary>

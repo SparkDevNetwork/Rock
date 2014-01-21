@@ -64,15 +64,15 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new <see cref="Rock.Model.UserLogin"/>
+        /// Creates a new <see cref="Rock.Model.UserLogin" />
         /// </summary>
-        /// <param name="person">The <see cref="Rock.Model.Person"/> that this <see cref="UserLogin"/> will be associated with.</param>
-        /// <param name="serviceType">The <see cref="Rock.Model.AuthenticationServiceType"/> type of Login</param>
-        /// <param name="serviceName">A <see cref="System.String"/> representing the service class/type name of the authentication service</param>
-        /// <param name="username">A <see cref="System.String"/> containing the UserName.</param>
-        /// <param name="password">A <see cref="System.String"/> containing the unhashed/unencrypted password.</param>
-        /// <param name="isConfirmed">A <see cref="System.Boolean"/> flag indicating if the user has been confirmed.</param>
-        /// <param name="currentPersonId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> creating the <see cref="Rock.Model.UserLogin"/></param>
+        /// <param name="person">The <see cref="Rock.Model.Person" /> that this <see cref="UserLogin" /> will be associated with.</param>
+        /// <param name="serviceType">The <see cref="Rock.Model.AuthenticationServiceType" /> type of Login</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="username">A <see cref="System.String" /> containing the UserName.</param>
+        /// <param name="password">A <see cref="System.String" /> containing the unhashed/unencrypted password.</param>
+        /// <param name="isConfirmed">A <see cref="System.Boolean" /> flag indicating if the user has been confirmed.</param>
+        /// <param name="currentPersonId">A <see cref="System.Int32" /> representing the Id of the <see cref="Rock.Model.Person" /> creating the <see cref="Rock.Model.UserLogin" /></param>
         /// <returns></returns>
         /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the Username already exists.</exception>
         /// <exception cref="System.ArgumentException">Thrown when the service does not exist or is not active.</exception>
@@ -125,7 +125,7 @@ namespace Rock.Model
         /// <summary>
         /// Updates the last login.
         /// </summary>
-        /// <param name="user">The user.</param>
+        /// <param name="userName">Name of the user.</param>
         public void UpdateLastLogin(string userName)
         {
             if ( !string.IsNullOrWhiteSpace( userName ) && !userName.StartsWith( "rckipid=" ) )

@@ -22,7 +22,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class Add404PagesForSites : Rock.Migrations.RockMigration
+    public partial class Add404PagesForSites : Rock.Migrations.RockMigration2
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -75,7 +75,9 @@ namespace Rock.Migrations
             // Attrib Value for Block:Content, Attribute:Support Versions Page: Page Not Found, Site: External Website
             AddBlockAttributeValue("C21F0478-0211-4C43-8EFC-190F4335EA9D", "7C1CE199-86CF-4EAE-8AB3-848416A72C58", @"False");
 
-            Sql(@"
+            Sql( @"
+                DECLARE @BlockId INT
+                SET @BlockId = (SELECT [Id] FROM [Block] WHERE [Guid] = 'D4FD3F5A-63DA-422B-900D-CD95CDC786D8')
                 INSERT INTO [HtmlContent]
                    ([BlockId]
                    ,[EntityValue]
@@ -84,8 +86,8 @@ namespace Rock.Migrations
                    ,[IsApproved]
                    ,[Guid]
                    ,[LastModifiedDateTime])
-             VALUES
-                   (395
+             VALUES (
+                    @BlockId
                    ,''
                    ,1
                    ,'<div class=''alert alert-warning''>
@@ -96,9 +98,8 @@ and see your adminstrator if you still need assistance.<p>
                    ,1
                    ,newid()
                    ,getdate())
-            ");
-
-            Sql(@"
+            
+                SET @BlockId = (SELECT [Id] FROM [Block] WHERE [Guid] = 'C21F0478-0211-4C43-8EFC-190F4335EA9D')
                 INSERT INTO [HtmlContent]
                    ([BlockId]
                    ,[EntityValue]
@@ -107,8 +108,8 @@ and see your adminstrator if you still need assistance.<p>
                    ,[IsApproved]
                    ,[Guid]
                    ,[LastModifiedDateTime])
-             VALUES
-                   (396
+             VALUES (
+                    @BlockId
                    ,''
                    ,1
                    ,'<h2 class=''text-center''>Whoops... Page Not Found !!!</h2>
@@ -122,7 +123,7 @@ Please <a href=''/''>click here</a> to go back to our home page</a>'
                    ,1
                    ,newid()
                    ,getdate())
-            ");
+            " );
 
         }
         

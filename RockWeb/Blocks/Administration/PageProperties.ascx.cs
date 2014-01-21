@@ -88,11 +88,11 @@ namespace RockWeb.Blocks.Administration
                 {
                     _page = Rock.Web.Cache.PageCache.Read( pageId );
 
-                    DialogMasterPage masterPage = this.Page.Master as DialogMasterPage;
-                    if ( masterPage != null )
+                    DialogPage dialogPage = this.Page as DialogPage;
+                    if ( dialogPage != null )
                     {
-                        masterPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
-                        masterPage.SubTitle = string.Format( "Id: {0}", _page.Id );
+                        dialogPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
+                        dialogPage.SubTitle = string.Format( "Id: {0}", _page.Id );
                     }
 
                     if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
@@ -206,7 +206,6 @@ namespace RockWeb.Blocks.Administration
                 cbIncludeAdminFooter.Checked = _page.IncludeAdminFooter;
                 tbCacheDuration.Text = _page.OutputCacheDuration.ToString();
                 tbDescription.Text = _page.Description;
-                tbKeyWords.Text = _page.KeyWords;
                 ceHeaderContent.Text = _page.HeaderContent;
                 tbPageRoute.Text = string.Join( ",", page.PageRoutes.Select( route => route.Route ).ToArray() );
 
@@ -314,7 +313,6 @@ namespace RockWeb.Blocks.Administration
                     page.IncludeAdminFooter = cbIncludeAdminFooter.Checked;
                     page.OutputCacheDuration = int.Parse( tbCacheDuration.Text );
                     page.Description = tbDescription.Text;
-                    page.KeyWords = tbKeyWords.Text;
                     page.HeaderContent = ceHeaderContent.Text;
 
                     // new or updated route

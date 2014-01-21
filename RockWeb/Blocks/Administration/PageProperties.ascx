@@ -48,8 +48,6 @@
                     <div class="col-md-12">
                         <Rock:DataTextBox ID="tbDescription" runat="server" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Description"
                             Help="The description of the page to include as a meta tag for the page" />
-                        <Rock:DataTextBox ID="tbKeyWords" runat="server" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.Model.Page, Rock" PropertyName="KeyWords"
-                            Help="The key word meta tags to include for the page" />
                     </div>
                 </div>
             </asp:Panel>

@@ -22,7 +22,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class Add404FieldsToSite : Rock.Migrations.RockMigration
+    public partial class Add404FieldsToSite : Rock.Migrations.RockMigration2
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
