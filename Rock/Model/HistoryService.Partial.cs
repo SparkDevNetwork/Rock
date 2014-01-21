@@ -49,8 +49,9 @@ namespace Rock.Model
         /// <param name="categoryGuid">The category unique identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="changes">The changes.</param>
+        /// <param name="caption">The caption.</param>
         /// <param name="relatedModelType">Type of the related model.</param>
-        /// <param name="relatedModelId">The related model identifier.</param>
+        /// <param name="relatedEntityId">The related entity identifier.</param>
         /// <param name="CurrentPersonId">The current person identifier.</param>
         public void SaveChanges( Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId, int? CurrentPersonId )
         {

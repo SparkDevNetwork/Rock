@@ -15,12 +15,10 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
@@ -31,20 +29,29 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
 {
+    /// <summary>
+    /// Context aware block for adding notes to an entity.
+    /// </summary>
     [DisplayName( "Notes" )]
     [Category( "Core" )]
     [Description( "Context aware block for adding notes to an entity." )]
 
     [ContextAware]
-    [TextField( "Note Type", "The note type name associated with the context entity to use (If it doesn't exist it will be created).", false, "Notes" )]
-    [BooleanField( "Show Alert Checkbox", "", true)]
-    [BooleanField( "Show Private Checkbox", "", true )]
-    [BooleanField( "Show Security Button", "", true )]
+    [TextField( "Note Type", "The note type name associated with the context entity to use (If it doesn't exist it will be created).", false, "Notes", "", 0 )]
+    [TextField( "Heading", "The text to display as the heading.  If left blank, the Note Type name will be used.", false, "", "", 1 )]
+    [TextField( "Heading Icon CSS Class", "The css class name to use for the heading icon. ", false, "fa fa-calendar", "", 2, "HeadingIcon" )]
+    [TextField( "Note Term", "The term to use for note (i.e. 'Note', 'Comment').", false, "Note", "", 3 )]
+    [CustomDropdownListField( "Display Type", "The format to use for displaying notes.", "Full,Light", true, "Full", "", 4 )]
+    [BooleanField( "Use Person Icon", "", false, "", 5 )]
+    [BooleanField( "Show Alert Checkbox", "", true, "", 6 )]
+    [BooleanField( "Show Private Checkbox", "", true, "", 7 )]
+    [BooleanField( "Show Security Button", "", true, "", 8 )]
+    [BooleanField( "Allow Anonymous", "", false, "", 9 )]
+    [BooleanField( "Add Always Visible", "Should the add entry screen always be visible (vs. having to click Add button to display the entry screen).", false, "", 10 )]
+    [CustomDropdownListField( "Display Order", "Descending will render with entry field at top and most recent note at top.  Ascending will render with entry field at bottom and most recent note at the end.  Ascending will also disable the more option", "Ascending,Descending", true, "Descending", "", 11 )]
     public partial class Notes : RockBlock
     {
-        private bool showSecurityButton = false;
-        private IEntity contextEntity = null;
-        private NoteType noteType;
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -53,305 +60,50 @@ namespace RockWeb.Blocks.Core
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            btnAddNote.Click += btnAddNote_Click;
-            rptNotes.ItemDataBound += rptNotes_ItemDataBound;
 
-            cbAlert.Visible = GetAttributeValue( "ShowAlertCheckbox" ).AsBoolean();
-            cbPrivate.Visible = GetAttributeValue( "ShowPrivateCheckbox" ).AsBoolean();
-            showSecurityButton = GetAttributeValue( "ShowSecurityButton" ).AsBoolean();
-        }
-
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
-        /// </summary>
-        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnLoad( EventArgs e )
-        {
-            base.OnLoad( e );
-
-            contextEntity = this.ContextEntity();
-
+            var contextEntity = this.ContextEntity();
             if ( contextEntity != null )
             {
-                GetNoteType();
-                if ( !Page.IsPostBack )
-                    ShowNotes();
-            }
+                string noteTypeName = GetAttributeValue( "NoteType" );
 
-            string script = @"
-    $('a.add-note').click(function () {
-        $(this).closest('.panel-note').find('.note-entry').slideToggle(""slow"");
-    });
-    
-    $('a.add-note-cancel').click(function () {
-        $(this).closest('.panel-body').children('textarea').val('');
-        $(this).closest('.note-entry').slideToggle(""slow"");
-    });
-";
-            // if a note was given, scroll down to that note...
-            string noteId = PageParameter( "noteId" );
-            if ( !string.IsNullOrWhiteSpace( noteId ) )
-            {
-                script += string.Format( @"
-                    $('html, body').animate( {{scrollTop: $("".note-editor[rel='{0}']"").offset().top }},
-                        'slow',
-                        'swing',
-                        function() {{ 
-                            $("".note-editor[rel='{0}'] > article"").css( ""boxShadow"", ""1px 1px 8px 1px #888888"" );
-                        }}
-                    );",
-                noteId );
-            }
+                var service = new NoteTypeService();
+                var noteType = service.Get( contextEntity.TypeId, noteTypeName );
 
-            ScriptManager.RegisterStartupScript( Page, Page.GetType(), "add-note", script, true );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnAddNote control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void btnAddNote_Click( object sender, EventArgs e )
-        {
-            if ( !string.IsNullOrWhiteSpace( tbNewNote.Text ) )
-            {
-                var service = new NoteService();
-
-                var note = new Note();
-                note.IsSystem = false;
-                note.NoteTypeId = noteType.Id;
-                note.EntityId = contextEntity.Id;
-                note.CreatedByPersonId = CurrentPersonId;
-                note.CreationDateTime = DateTime.Now;
-                note.Caption = cbPrivate.Checked ? "You - Personal Note" : string.Empty;
-                note.IsAlert = cbAlert.Checked;
-                note.Text = tbNewNote.Text;
-
-                if ( noteType.Sources != null )
+                // If a note type with the specified name does not exist for the context entity type, create one
+                if ( noteType == null )
                 {
-                    var source = noteType.Sources.DefinedValues.FirstOrDefault();
-                    if ( source != null )
-                    {
-                        note.SourceTypeValueId = source.Id;
-                    }
+                    noteType = new NoteType();
+                    noteType.IsSystem = false;
+                    noteType.EntityTypeId = contextEntity.TypeId;
+                    noteType.EntityTypeQualifierColumn = string.Empty;
+                    noteType.EntityTypeQualifierValue = string.Empty;
+                    noteType.Name = noteTypeName;
+                    service.Add( noteType, CurrentPersonId );
+                    service.Save( noteType, CurrentPersonId );
                 }
 
-                service.Add( note, CurrentPersonId );
-                service.Save( note, CurrentPersonId );
-
-                note.AllowPerson("Edit", CurrentPerson, CurrentPersonId);
-
-                if ( cbPrivate.Checked )
+                notesTimeline.NoteTypeId = noteType.Id;
+                notesTimeline.EntityId = contextEntity.Id;
+                notesTimeline.Title = GetAttributeValue( "Heading" );
+                if ( string.IsNullOrWhiteSpace( notesTimeline.Title ) )
                 {
-                    note.MakePrivate( "View", CurrentPerson, CurrentPersonId );
+                    notesTimeline.Title = noteType.Name;
                 }
-            }
-
-            ShowNotes();
-        }
-
-        void rptNotes_ItemDataBound( object sender, RepeaterItemEventArgs e )
-        {
-            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
-            {
-                var note = e.Item.DataItem as Rock.Model.Note;
-                var control = e.Item.FindControl( "noteEditor" );
-                if ( note != null && control != null )
-                {
-                    var noteEditor = control as NoteEditor;
-                    noteEditor.IsPrivate = note.IsPrivate( "View", CurrentPerson );
-                    noteEditor.CanEdit = note.IsAuthorized( "Edit", CurrentPerson );
-                    noteEditor.ShowAlertCheckBox = cbAlert.Visible;
-                    noteEditor.ShowPrivateCheckBox = cbPrivate.Visible;
-                    noteEditor.ShowSecurityButton = showSecurityButton && note.IsAuthorized( "Administrate", CurrentPerson );
-                }
+                notesTimeline.TitleIconCssClass = GetAttributeValue( "HeadingIcon" );
+                notesTimeline.Term = GetAttributeValue( "NoteTerm" );
+                notesTimeline.DisplayType = GetAttributeValue( "DisplayType" ) == "Light" ? NoteDisplayType.Light : NoteDisplayType.Full;
+                notesTimeline.UsePersonIcon = GetAttributeValue( "UsePersonIcon" ).AsBoolean();
+                notesTimeline.ShowAlertCheckBox = GetAttributeValue( "ShowAlertCheckbox" ).AsBoolean();
+                notesTimeline.ShowPrivateCheckBox = GetAttributeValue( "ShowPrivateCheckbox" ).AsBoolean();
+                notesTimeline.ShowSecurityButton = GetAttributeValue( "ShowSecurityButton" ).AsBoolean();
+                notesTimeline.AllowAnonymousEntry = GetAttributeValue( "Allow Anonymous" ).AsBoolean();
+                notesTimeline.AddAlwaysVisible = GetAttributeValue( "AddAlwaysVisible" ).AsBoolean();
+                notesTimeline.SortDirection = GetAttributeValue( "DisplayOrder" ) == "Ascending" ? ListSortDirection.Ascending : ListSortDirection.Descending;
             }
         }
 
-        /// <summary>
-        /// Handles the SaveButtonClick event of the Note control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void noteEditor_SaveButtonClick( object sender, EventArgs e )
-        {
-            var noteEditor = sender as NoteEditor;
-            if ( noteEditor != null )
-            {
-                var service = new NoteService();
+        #endregion
 
-                var note = service.Get( noteEditor.NoteId );
-                if ( note != null && note.IsAuthorized( "Edit", CurrentPerson ) )
-                {
-                    note.Caption = noteEditor.IsPrivate ? "You - Personal Note" : string.Empty;
-                    note.IsAlert = noteEditor.IsAlert;
-                    note.Text = noteEditor.Text;
 
-                    service.Save( note, CurrentPersonId );
-
-                    if ( noteEditor.IsPrivate && !note.IsPrivate("View", CurrentPerson) )
-                    {
-                        note.MakePrivate( "View", CurrentPerson, CurrentPersonId );
-                    }
-                }
-
-                ShowNotes();
-            }
-        }
-
-        /// <summary>
-        /// Handles the DeleteButtonClick event of the Note control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void noteEditor_DeleteButtonClick( object sender, EventArgs e )
-        {
-            var noteEditor = sender as NoteEditor;
-            if ( noteEditor != null )
-            {
-                var service = new NoteService();
-
-                var note = service.Get( noteEditor.NoteId );
-                if ( note != null && note.IsAuthorized( "Edit", CurrentPerson ) )
-                {
-                    service.Delete( note, CurrentPersonId );
-                    service.Save( note, CurrentPersonId );
-                }
-
-                ShowNotes();
-
-            }
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbShowMore control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void lbShowMore_Click( object sender, EventArgs e )
-        {
-            int displayCount = 10;
-            if ( !int.TryParse( hfDisplayCount.Value, out displayCount ) )
-            {
-                displayCount = 10;
-            }
-
-            ShowNotes();
-        }
-
-        /// <summary>
-        /// Gets the type of the note.
-        /// </summary>
-        private void GetNoteType()
-        {
-            string noteTypeName = GetAttributeValue( "NoteType" );
-
-            var service = new NoteTypeService();
-            noteType = service.Get( contextEntity.TypeId, noteTypeName );
-
-            // If a note type with the specified name does not exist for the context entity type, create one
-            if ( noteType == null )
-            {
-                noteType = new NoteType();
-                noteType.IsSystem = false;
-                noteType.EntityTypeId = contextEntity.TypeId;
-                noteType.EntityTypeQualifierColumn = string.Empty;
-                noteType.EntityTypeQualifierValue = string.Empty;
-                noteType.Name = noteTypeName;
-                service.Add( noteType, CurrentPersonId );
-                service.Save( noteType, CurrentPersonId );
-            }
-
-            lTitle.Text = noteType.Name;
-        }
-
-        /// <summary>
-        /// Shows the notes.
-        /// </summary>
-        private void ShowNotes()
-        {
-            tbNewNote.Text = string.Empty;
-            cbAlert.Checked = false;
-            cbPrivate.Checked = false;
-
-            int displayCount = 10;
-            if (!int.TryParse(hfDisplayCount.Value, out displayCount))
-            {
-                displayCount = 10;
-            }
-            lbShowMore.Visible = false;
-
-            var notes = new List<Note>();
-            foreach ( var note in new NoteService().Get( noteType.Id, contextEntity.Id ) )
-            {
-                if ( note.IsAuthorized( "View", CurrentPerson ) )
-                {
-                    if ( notes.Count < displayCount )
-                    {
-                        notes.Add( note );
-                    }
-                    else
-                    {
-                        lbShowMore.Visible = true;
-                        break;
-                    }
-                }
-            }
-
-            rptNotes.DataSource = notes;
-            rptNotes.DataBind();
-        }
-
-        /// <summary>
-        /// Gets the note class.
-        /// </summary>
-        /// <param name="dataItem">The data item.</param>
-        /// <returns></returns>
-        protected string GetNoteClass( object dataItem )
-        {
-            var note = dataItem as Note;
-            if ( note != null )
-            {
-                if ( note.IsAlert.HasValue && note.IsAlert.Value )
-                {
-                    return " highlight";
-                }
-
-                if ( note.IsPrivate( "View", CurrentPerson ) )
-                {
-                    return " personal";
-                }
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Gets the icon class.
-        /// </summary>
-        /// <param name="dataItem">The data item.</param>
-        /// <returns></returns>
-        protected string GetIconClass( object dataItem )
-        {
-            var note = dataItem as Note;
-            if ( note != null )
-            {
-                if ( note.SourceType != null )
-                {
-                    try
-                    {
-                        if ( note.SourceType.AttributeValues.ContainsKey( "IconClass" ) && 
-                            note.SourceType.AttributeValues["IconClass"].Count == 1 )
-                        {
-                            return note.SourceType.AttributeValues["IconClass"][0].Value;
-                        }
-                    }
-                    catch
-                    {
-                    }
-                }
-            }
-            return "fa fa-comment";
-        }
     }
 }
