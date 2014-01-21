@@ -93,12 +93,24 @@ namespace Rock.Web.UI.Controls
             set { ViewState["NoteId"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the note type identifier.
+        /// </summary>
+        /// <value>
+        /// The note type identifier.
+        /// </value>
         public int? NoteTypeId
         {
             get { return ViewState["NoteTypeId"] as int?; }
             set { ViewState["NoteTypeId"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the entity identifier.
+        /// </summary>
+        /// <value>
+        /// The entity identifier.
+        /// </value>
         public int? EntityId
         {
             get { return ViewState["EntityId"] as int?; }

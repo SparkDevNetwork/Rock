@@ -146,9 +146,21 @@ namespace Rock.Model
         [DataMember]
         public virtual EntityType EntityType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the category.
+        /// </summary>
+        /// <value>
+        /// The category.
+        /// </value>
         [DataMember]
         public virtual Category Category { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the related entity.
+        /// </summary>
+        /// <value>
+        /// The type of the related entity.
+        /// </value>
         [DataMember]
         public virtual EntityType RelatedEntityType { get; set; }
 

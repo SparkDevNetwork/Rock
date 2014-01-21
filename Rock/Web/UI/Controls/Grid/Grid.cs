@@ -1117,6 +1117,11 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the preview columns.
+        /// </summary>
+        /// <param name="modelType">Type of the model.</param>
+        /// <returns></returns>
         public List<BoundField> GetPreviewColumns( Type modelType )
         {
             var displayColumns = new List<BoundField>();

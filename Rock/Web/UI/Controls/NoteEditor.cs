@@ -59,6 +59,15 @@ namespace Rock.Web.UI.Controls
             get { return ViewState["EntityId"] as int?; }
             set { ViewState["EntityId"] = value; }
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to display heading
+        /// </summary>
+        public bool ShowHeading
+        {
+            get { return ViewState["ShowHeading"] as bool? ?? true; }
+            set { ViewState["ShowHeading"] = value; }
+        }
         
         /// <summary>
         /// Gets or sets the CSS Class to use for the title icon.
@@ -85,8 +94,15 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                EnsureChildControls();
-                return _noteNew.AddAlwaysVisible;
+                if ( !ShowHeading )
+                {
+                    return true;
+                }
+                else
+                {
+                    EnsureChildControls();
+                    return _noteNew.AddAlwaysVisible;
+                }
             }
 
             set
@@ -148,11 +164,6 @@ namespace Rock.Web.UI.Controls
             set
             {
                 this.ViewState["SortDirection"] = value;
-
-                if (SortDirection == ListSortDirection.Ascending)
-                {
-                    ShowMoreOption = false;
-                }
             }
         }
 
@@ -266,16 +277,20 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                EnsureChildControls();
-                return _lbShowMore.Visible;
+                if ( SortDirection == ListSortDirection.Ascending )
+                {
+                    return false;
+                }
+                else
+                {
+                    EnsureChildControls();
+                    return _lbShowMore.Visible;
+                }
             }
             set
             {
                 EnsureChildControls();
-                if ( SortDirection != ListSortDirection.Ascending )
-                {
-                    _lbShowMore.Visible = value;
-                }
+                _lbShowMore.Visible = value;
             }
         }
 
@@ -292,6 +307,10 @@ namespace Rock.Web.UI.Controls
 
         #region Base Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
@@ -319,6 +338,10 @@ namespace Rock.Web.UI.Controls
 
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -369,44 +392,48 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( "section" );
 
                 // Heading
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                if ( !string.IsNullOrWhiteSpace( TitleIconCssClass ) ||
-                    !string.IsNullOrWhiteSpace( Title ) )
+                if ( ShowHeading )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-title" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.H3 );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                    if ( !string.IsNullOrWhiteSpace( TitleIconCssClass ) )
+                    if ( !string.IsNullOrWhiteSpace( TitleIconCssClass ) ||
+                        !string.IsNullOrWhiteSpace( Title ) )
                     {
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, TitleIconCssClass );
+                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-title" );
+                        writer.RenderBeginTag( HtmlTextWriterTag.H3 );
+
+                        if ( !string.IsNullOrWhiteSpace( TitleIconCssClass ) )
+                        {
+                            writer.AddAttribute( HtmlTextWriterAttribute.Class, TitleIconCssClass );
+                            writer.RenderBeginTag( HtmlTextWriterTag.I );
+                            writer.RenderEndTag();      // I
+                        }
+
+                        if ( !string.IsNullOrWhiteSpace( Title ) )
+                        {
+                            writer.Write( " " );
+                            writer.Write( Title );
+                        }
+
+                        writer.RenderEndTag();      // H3
+                    }
+
+                    if ( !AddAlwaysVisible && canAdd )
+                    {
+                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-sm btn-action add-note" );
+                        writer.RenderBeginTag( HtmlTextWriterTag.A );
+                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-plus" );
                         writer.RenderBeginTag( HtmlTextWriterTag.I );
                         writer.RenderEndTag();      // I
+                        writer.RenderEndTag();      // A
                     }
 
-                    if ( !string.IsNullOrWhiteSpace( Title ) )
-                    {
-                        writer.Write( " " );
-                        writer.Write( Title );
-                    }
+                    writer.RenderEndTag();      // Div.panel-heading
 
-                    writer.RenderEndTag();      // H3
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
                 }
 
-                if ( !AddAlwaysVisible && canAdd )
-                {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-sm btn-action add-note" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.A );
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-plus" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.I );
-                    writer.RenderEndTag();      // I
-                    writer.RenderEndTag();      // A
-                }
-
-                writer.RenderEndTag();      // Div.panel-heading
-
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 if ( canAdd && SortDirection == ListSortDirection.Descending )
@@ -440,7 +467,10 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
-                writer.RenderEndTag();      // Div.panel-body
+                if ( ShowHeading )
+                {
+                    writer.RenderEndTag();      // Div.panel-body
+                }
 
                 writer.RenderEndTag();      // Section
 
@@ -467,6 +497,11 @@ namespace Rock.Web.UI.Controls
             RebuildNotes( true );
         }
 
+        /// <summary>
+        /// Handles the Updated event of the note control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void note_Updated( object sender, EventArgs e )
         {
             RebuildNotes( true );
@@ -501,6 +536,10 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Rebuilds the notes.
+        /// </summary>
+        /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
         public void RebuildNotes( bool setSelection )
         {
             ClearNotes();
