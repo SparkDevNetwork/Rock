@@ -1,7 +1,18 @@
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
 //
 using System;
 using System.Collections.Generic;
@@ -20,7 +31,7 @@ namespace RockWeb.Blocks.Groups
     /// </summary>
     [DisplayName( "Group Tree View" )]
     [Category( "Groups" )]
-    [Description( "Navigation Tree for groups" )]
+    [Description( "Creates a navigation tree for groups of the configured group type(s)." )]
 
     [TextField( "Treeview Title", "Group Tree View", false )]
     [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false )]
@@ -58,8 +69,9 @@ namespace RockWeb.Blocks.Groups
                     {
                         _groupId = group.Id.ToString();
 
-                        // Update pageref for group detail block
-                        CurrentPageReference.Parameters.Add( "groupId", group.Id.ToString() );
+                        // redirect so that the group treeview has the first node selected right away and group detail shows the group
+                        this.Response.Redirect( this.Request.Url + "?groupId=" + _groupId.ToString(), false );
+                        Context.ApplicationInstance.CompleteRequest();
                     }
                 }
             }

@@ -12,7 +12,7 @@
                 </Rock:GridFilter>
                 <Rock:Grid ID="gPages" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gPages_Edit">
                     <Columns>
-                        <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                        <asp:BoundField DataField="InternalName" HeaderText="Name" SortExpression="InternalName" />
                         <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
                         <asp:BoundField DataField="Layout" HeaderText="Layout" SortExpression="Layout" />
                     </Columns>

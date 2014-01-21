@@ -11,9 +11,6 @@
                 <h1><asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
             </div>
             
-
-            
-
             <div class="row">
                 <div class="col-md-12">
                     <h4>Family Members</h4>

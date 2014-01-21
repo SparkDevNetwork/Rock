@@ -34,7 +34,7 @@
                             <div class="panel-body">
                                 <div class="row">
                                     <div class="col-md-3">
-                                        <asp:LinkButton ID="lbInstall" runat="server" Text='<%# Eval( "Version", "<i class=\"fa fa-download\"></i> Install v{0}" ) %>'
+                                        <asp:LinkButton ID="lbInstall" runat="server" Text='<%# Eval( "Title", "<i class=\"fa fa-download\"></i> Install {0}" ) %>'
                                             CssClass="btn" CommandName="Install" CommandArgument='<%# Eval( "Version" ) %>' />
                                     </div>
                                     <div class="col-md-9">

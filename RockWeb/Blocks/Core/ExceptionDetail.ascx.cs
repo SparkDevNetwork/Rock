@@ -1,7 +1,18 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
 //
 using System;
 using System.ComponentModel;
@@ -166,7 +177,7 @@ namespace RockWeb.Blocks.Core
             DescriptionList dl = new DescriptionList();
 
             dl.Add( "Site", baseException.Site != null ? baseException.Site.Name : String.Empty, true );
-            dl.Add( "Page", baseException.Page != null ? string.Format( "{0} <a href=\"{1}\" class=\"btn btn-mini\" target=\"_blank\"><i class=\"fa fa-arrow-right\"></i></a>", baseException.Page.Name, baseException.PageUrl ) : String.Empty, true );
+            dl.Add( "Page", baseException.Page != null ? string.Format( "{0} <a href=\"{1}\" class=\"btn btn-mini\" target=\"_blank\"><i class=\"fa fa-arrow-right\"></i></a>", baseException.Page.InternalName, baseException.PageUrl ) : String.Empty, true );
 
             //If query string is not empty build query string list
             if ( !String.IsNullOrWhiteSpace( baseException.QueryString ) )

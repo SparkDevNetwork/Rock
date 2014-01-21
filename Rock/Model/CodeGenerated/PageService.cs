@@ -4,12 +4,22 @@
 //     Changes to this file will be lost when the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
+// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.Linq;
 
@@ -68,6 +78,8 @@ namespace Rock.Model
             
             // ignoring Site,LoginPageId 
             
+            // ignoring Site,PageNotFoundPageId 
+            
             // ignoring Site,RegistrationPageId 
             return true;
         }
@@ -105,9 +117,10 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this Page target, Page source )
         {
-            target.Name = source.Name;
+            target.InternalName = source.InternalName;
+            target.PageTitle = source.PageTitle;
+            target.BrowserTitle = source.BrowserTitle;
             target.ParentPageId = source.ParentPageId;
-            target.Title = source.Title;
             target.IsSystem = source.IsSystem;
             target.LayoutId = source.LayoutId;
             target.RequiresEncryption = source.RequiresEncryption;
@@ -125,6 +138,8 @@ namespace Rock.Model
             target.Order = source.Order;
             target.OutputCacheDuration = source.OutputCacheDuration;
             target.Description = source.Description;
+            target.KeyWords = source.KeyWords;
+            target.HeaderContent = source.HeaderContent;
             target.IconCssClass = source.IconCssClass;
             target.IncludeAdminFooter = source.IncludeAdminFooter;
             target.Id = source.Id;

@@ -1,9 +1,19 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,6 +27,7 @@ using System.Web.UI.WebControls;
 using DotLiquid;
 using Newtonsoft.Json;
 using Rock.Model;
+using System.Text;
 
 namespace Rock
 {
@@ -130,6 +141,24 @@ namespace Rock
         #endregion
 
         #region String Extensions
+
+        /// <summary>
+        /// Removed special characters from strings.
+        /// </summary>
+        /// <param name="str">The identifier.</param>
+        /// <returns></returns>
+        public static string RemoveSpecialCharacters(this string str)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (char c in str)
+            {
+                if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '.' || c == '_')
+                {
+                    sb.Append(c);
+                }
+            }
+            return sb.ToString();
+        }
 
         /// <summary>
         /// Splits a Camel or Pascal cased identifier into seperate words.
@@ -497,18 +526,13 @@ namespace Rock
         }
 
         /// <summary>
-        /// Encodes any html and then converts CR (carriage return) LF (line feed) to unencoded html breaks (br).
+        /// HTML Encodes the string
         /// </summary>
-        /// <param name="str">a string that contains unencoded HTML and CR LF</param>
-        /// <returns>an html encoded string with CRLF replaced with HTML <code>br</code></returns>
-        public static string EncodeHtmlThenConvertCrLfToHtmlBr( this string str )
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string EncodeHtml(this string str)
         {
-            if ( str == null )
-            {
-                return string.Empty;
-            }
-
-            return System.Web.HttpUtility.HtmlEncode( str ).ConvertCrLfToHtmlBr();
+            return System.Web.HttpUtility.HtmlEncode( str );
         }
 
         /// <summary>

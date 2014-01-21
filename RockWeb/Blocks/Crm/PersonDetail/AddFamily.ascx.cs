@@ -1,9 +1,19 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.ComponentModel;
 using System.Collections.Generic;
@@ -219,7 +229,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             nfmMembers.ClearRows();
 
-            int count = 0;
             foreach ( var familyMember in familyMembers )
             {
                 var familyMemberRow = new NewFamilyMembersRow();
@@ -260,8 +269,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         attributeRow.SetEditValues( familyMember.Person );
                     }
                 }
-
-                count++;
             }
 
             ShowAttributeCategory( CurrentCategoryIndex );
@@ -276,6 +283,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 var groupMember = new GroupMember();
                 groupMember.Person = new Person();
                 groupMember.Person.Guid = row.PersonGuid.Value;
+                groupMember.Person.RecordStatusReasonValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
 
                 if ( row.RoleId.HasValue )
                 {
@@ -298,7 +306,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMember.Person.Gender = row.Gender;
                 groupMember.Person.BirthDate = row.BirthDate;
                 groupMember.Person.ConnectionStatusValueId = row.ConnectionStatusValueId;
-                //groupMember.Person.GraduationDate == 
+                //groupMember.Person.GraduationDate = 
 
                 groupMember.Person.Attributes = new Dictionary<string, AttributeCache>();
                 groupMember.Person.AttributeValues = new Dictionary<string, List<AttributeValue>>();
@@ -397,20 +405,69 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             {
                                 var familyGroupType = GroupTypeCache.GetFamilyGroupType();
 
+                                var familyChanges = new List<string>();
+                                var familyMemberChanges = new Dictionary<Guid, List<string>>();
+                                var familyDemographicChanges = new Dictionary<Guid, List<string>>();
+
                                 if ( familyGroupType != null )
                                 {
                                     var groupService = new GroupService();
+
+                                    var groupTypeRoleService = new GroupTypeRoleService();
+
                                     var familyGroup = new Group();
-                                    familyGroup.Name = familyMembers.FirstOrDefault().Person.LastName + " Family";
                                     familyGroup.GroupTypeId = familyGroupType.Id;
-                                    familyGroup.CampusId = cpCampus.SelectedValueAsInt();
-                                    familyMembers.ForEach( m => familyGroup.Members.Add( m ) );
+                                    
+                                    familyChanges.Add("Created");
+                                    
+                                    familyGroup.Name = familyMembers.FirstOrDefault().Person.LastName + " Family";
+                                    History.EvaluateChange( familyChanges, "Name", string.Empty, familyGroup.Name );
+
+                                    int? campusId = cpCampus.SelectedValueAsInt();
+                                    if (campusId.HasValue)
+                                    {
+                                        History.EvaluateChange( familyChanges, "Campus", string.Empty, CampusCache.Read( campusId.Value ).Name );
+                                    }
+                                    familyGroup.CampusId = campusId;
+
+                                    foreach(var familyMember in familyMembers)
+                                    {
+                                        var person = familyMember.Person;
+                                        if ( person != null )
+                                        {
+                                            familyGroup.Members.Add( familyMember );
+
+                                            var demographicChanges = new List<string>();
+                                            demographicChanges.Add( "Created" );
+                                            History.EvaluateChange( demographicChanges, "Record Status", string.Empty,
+                                                person.RecordStatusReasonValueId.HasValue ? DefinedValueCache.GetName( person.RecordStatusReasonValueId.Value ) : string.Empty );
+                                            History.EvaluateChange( demographicChanges, "Title", string.Empty,
+                                                person.TitleValueId.HasValue ? DefinedValueCache.GetName( person.TitleValueId ) : string.Empty );
+                                            History.EvaluateChange( demographicChanges, "First Name", string.Empty, person.FirstName);
+                                            History.EvaluateChange( demographicChanges, "Nick Name", string.Empty, person.NickName );
+                                            History.EvaluateChange( demographicChanges, "Middle Name", string.Empty, person.MiddleName );
+                                            History.EvaluateChange( demographicChanges, "Last Name", string.Empty, person.LastName );
+                                            History.EvaluateChange( demographicChanges, "Gender", null, person.Gender );
+                                            History.EvaluateChange( demographicChanges, "Birth Date", null, person.BirthDate );
+                                            History.EvaluateChange( demographicChanges, "Connection Status", string.Empty,
+                                                person.ConnectionStatusValueId.HasValue ? DefinedValueCache.GetName( person.ConnectionStatusValueId ) : string.Empty );
+                                            History.EvaluateChange( demographicChanges, "Graduation Date", null, person.GraduationDate );
+                                            familyDemographicChanges.Add( person.Guid, demographicChanges );
+
+                                            var memberChanges = new List<string>();
+                                            string roleName = familyGroupType.Roles[familyMember.GroupRoleId] ?? string.Empty;
+                                            History.EvaluateChange( memberChanges, "Role", string.Empty, roleName );
+                                            familyMemberChanges.Add( person.Guid, memberChanges );
+                                        }
+                                    }
 
                                     if ( !String.IsNullOrWhiteSpace( tbStreet1.Text ) ||
                                          !String.IsNullOrWhiteSpace( tbStreet2.Text ) ||
                                          !String.IsNullOrWhiteSpace( tbCity.Text ) ||
                                          !String.IsNullOrWhiteSpace( tbZip.Text ) )
                                     {
+                                        string addressChangeField = "Address";
+
                                         var groupLocation = new GroupLocation();
                                         var location = new LocationService().Get(
                                             tbStreet1.Text, tbStreet2.Text, tbCity.Text, ddlState.SelectedValue, tbZip.Text );
@@ -422,16 +479,24 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                             var locationType = Rock.Web.Cache.DefinedValueCache.Read( locationTypeGuid );
                                             if ( locationType != null )
                                             {
+                                                addressChangeField = string.Format("{0} Address", locationType.Name);
                                                 groupLocation.GroupLocationTypeValueId = locationType.Id;
                                             }
                                         }
 
                                         familyGroup.GroupLocations.Add( groupLocation );
+
+                                        History.EvaluateChange( familyChanges, addressChangeField, string.Empty, groupLocation.Location.ToString() );
                                     }
+
 
                                     groupService.Add( familyGroup, CurrentPersonId );
                                     groupService.Save( familyGroup, CurrentPersonId );
-                                    
+
+                                    var historyService = new HistoryService();
+                                    historyService.SaveChanges( typeof( Group ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                                        familyGroup.Id, familyChanges, CurrentPersonId );
+
                                     var personService = new PersonService();
 
                                     foreach ( var groupMember in familyMembers )
@@ -439,19 +504,33 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         var person = personService.Get( groupMember.PersonId );
                                         if ( person != null )
                                         {
+                                            var changes = familyDemographicChanges[person.Guid];
                                             if ( groupMember.GroupRoleId != _childRoleId )
                                             {
                                                 person.GivingGroupId = familyGroup.Id;
                                                 personService.Save( person, CurrentPersonId );
+                                                History.EvaluateChange( changes, "Giving Group", string.Empty, familyGroup.Name );
                                             }
-                                        }
 
-                                        foreach ( var attributeControl in attributeControls )
-                                        {
-                                            foreach ( var attribute in attributeControl.AttributeList )
+                                            foreach ( var attributeControl in attributeControls )
                                             {
-                                                Rock.Attribute.Helper.SaveAttributeValue( person, attribute, person.GetAttributeValue( attribute.Key ), CurrentPersonId );
+                                                foreach ( var attribute in attributeControl.AttributeList )
+                                                {
+                                                    string attributeValue = person.GetAttributeValue( attribute.Key );
+                                                    if ( !string.IsNullOrWhiteSpace( attributeValue ) )
+                                                    {
+                                                        Rock.Attribute.Helper.SaveAttributeValue( person, attribute, attributeValue, CurrentPersonId );
+                                                        attributeValue = attribute.FieldType.Field.FormatValue( null, attributeValue, attribute.QualifierValues, false );
+                                                        History.EvaluateChange( changes, attribute.Name, string.Empty, attributeValue );
+                                                    }
+                                                }
                                             }
+
+                                            historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                                                person.Id, changes, CurrentPersonId );
+
+                                            historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                                                person.Id, familyMemberChanges[person.Guid], familyGroup.Name, typeof( Group), familyGroup.Id, CurrentPersonId );
                                         }
                                     }
                                 }
