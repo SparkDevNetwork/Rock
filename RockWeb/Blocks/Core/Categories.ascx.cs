@@ -66,24 +66,39 @@ namespace RockWeb.Blocks.Core
                 Guid entityTypeGuid = Guid.Empty;
                 if ( Guid.TryParse( GetAttributeValue( "EntityType" ), out entityTypeGuid ) )
                 {
-                    _entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityTypeGuid ).Id;
-                    catpParentCategory.EntityTypeId = _entityTypeId;
-
-                    int parentCategoryId = int.MinValue;
-                    if (int.TryParse(PageParameter("CategoryId"), out parentCategoryId))
+                    var entityType = Rock.Web.Cache.EntityTypeCache.Read( entityTypeGuid );
+                    if (entityType != null)
                     {
-                        _parentCategoryId = parentCategoryId;
+                        _entityTypeId = entityType.Id;
+
+                        SecurityField securityField = gCategories.Columns[5] as SecurityField;
+                        securityField.Visible = entityType.IsSecured;
+                        securityField.EntityTypeId = EntityTypeCache.Read(typeof(Category)).Id;
+
+                        catpParentCategory.EntityTypeId = _entityTypeId;
+
+                        int parentCategoryId = int.MinValue;
+                        if (int.TryParse(PageParameter("CategoryId"), out parentCategoryId))
+                        {
+                            _parentCategoryId = parentCategoryId;
+                        }
+
+                        gCategories.DataKeyNames = new string[] { "id" };
+                        gCategories.Actions.ShowAdd = true;
+
+                        gCategories.Actions.AddClick += gCategories_Add;
+                        gCategories.GridReorder += gCategories_GridReorder;
+                        gCategories.GridRebind += gCategories_GridRebind;
+
+                        mdDetails.SaveClick += mdDetails_SaveClick;
+                        mdDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
                     }
-
-                    gCategories.DataKeyNames = new string[] { "id" };
-                    gCategories.Actions.ShowAdd = true;
-
-                    gCategories.Actions.AddClick += gCategories_Add;
-                    gCategories.GridReorder += gCategories_GridReorder;
-                    gCategories.GridRebind += gCategories_GridRebind;
-
-                    mdDetails.SaveClick += mdDetails_SaveClick;
-                    mdDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
+                    else
+                    {
+                        pnlList.Visible = false;
+                        nbMessage.Text = "Block has not been configured for a valid Enity Type.";
+                        nbMessage.Visible = true;
+                    }
                 }
                 else
                 {
