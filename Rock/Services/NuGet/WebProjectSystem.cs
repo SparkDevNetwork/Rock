@@ -230,8 +230,10 @@ namespace Rock.Services.NuGet
         /// <summary>
         /// Transforms the file for the corresponding XDT file.
         /// </summary>
-        /// <param name="transformListFile">A .rock.xdt transform file.</param>
-        /// <returns>true if the transformation was successful; false otherwise.</returns>
+        /// <param name="transformFile">The transform file.</param>
+        /// <returns>
+        /// true if the transformation was successful; false otherwise.
+        /// </returns>
         private bool ProcessXmlDocumentTransformation( string transformFile )
         {
             bool isSuccess = true;
