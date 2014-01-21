@@ -322,7 +322,7 @@ namespace Rock.Web.UI.Controls
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-            BuildNotes( !this.Page.IsPostBack );
+            RebuildNotes( !this.Page.IsPostBack );
         }
 
         /// <summary>
@@ -334,8 +334,6 @@ namespace Rock.Web.UI.Controls
 
             _noteNew = new NoteControl();
             _noteNew.ID = "noteNew";
-            _noteNew.NoteTypeId = NoteTypeId;
-            _noteNew.EntityId = EntityId;
             _noteNew.SaveButtonClick += note_SaveButtonClick;
             Controls.Add( _noteNew );
 
@@ -466,12 +464,12 @@ namespace Rock.Web.UI.Controls
             _noteNew.IsPrivate = false;
             _noteNew.NoteId = null;
 
-            BuildNotes( true );
+            RebuildNotes( true );
         }
 
         protected void note_Updated( object sender, EventArgs e )
         {
-            BuildNotes( true );
+            RebuildNotes( true );
         }
 
         /// <summary>
@@ -482,7 +480,7 @@ namespace Rock.Web.UI.Controls
         protected void _lbShowMore_Click( object sender, EventArgs e )
         {
             DisplayCount += 10;
-            BuildNotes( true );
+            RebuildNotes( true );
         }
 
         #endregion
@@ -503,7 +501,7 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        private void BuildNotes( bool setSelection )
+        public void RebuildNotes( bool setSelection )
         {
             ClearNotes();
 
@@ -522,6 +520,9 @@ namespace Rock.Web.UI.Controls
                 _noteNew.CreatedByGender = Gender.Male;
                 _noteNew.CreatedByName = string.Empty;
             }
+
+            _noteNew.NoteTypeId = NoteTypeId;
+            _noteNew.EntityId = EntityId;
 
             if ( NoteTypeId.HasValue && EntityId.HasValue )
             {
