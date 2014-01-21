@@ -38,15 +38,17 @@ namespace RockWeb.Blocks.Core
 
     [ContextAware]
     [TextField( "Note Type", "The note type name associated with the context entity to use (If it doesn't exist it will be created).", false, "Notes", "", 0 )]
-    [TextField( "Heading Icon CSS Class", "The css class name to use for the heading icon. ", false, "fa fa-calendar", "", 1, "HeadingIcon")]
-    [TextField( "Note Term", "The term to use for note (i.e. 'Note', 'Comment').", false, "Note", "", 2)]
-    [CustomDropdownListField( "Display Type", "The format to use for displaying notes.", "Full,Light", true, "Full", "", 3 )]
-    [BooleanField( "Use Person Icon", "", false, "", 4 )]
-    [BooleanField( "Show Alert Checkbox", "", true, "", 5 )]
-    [BooleanField( "Show Private Checkbox", "", true, "", 6 )]
-    [BooleanField( "Show Security Button", "", true, "", 7 )]
-    [BooleanField( "Add Always Visible", "Should the add entry screen always be visible (vs. having to click Add button to display the entry screen).", false, "", 8 )]
-    [CustomDropdownListField( "Display Order", "Descending will render with entry field at top and most recent note at top.  Ascending will render with entry field at bottom and most recent note at the end.  Ascending will also disable the more option", "Ascending,Descending", true, "Descending", "", 9 )]
+    [TextField( "Heading", "The text to display as the heading.  If left blank, the Note Type name will be used.", false, "", "", 1 )]
+    [TextField( "Heading Icon CSS Class", "The css class name to use for the heading icon. ", false, "fa fa-calendar", "", 2, "HeadingIcon" )]
+    [TextField( "Note Term", "The term to use for note (i.e. 'Note', 'Comment').", false, "Note", "", 3 )]
+    [CustomDropdownListField( "Display Type", "The format to use for displaying notes.", "Full,Light", true, "Full", "", 4 )]
+    [BooleanField( "Use Person Icon", "", false, "", 5 )]
+    [BooleanField( "Show Alert Checkbox", "", true, "", 6 )]
+    [BooleanField( "Show Private Checkbox", "", true, "", 7 )]
+    [BooleanField( "Show Security Button", "", true, "", 8 )]
+    [BooleanField( "Allow Anonymous", "", false, "", 9 )]
+    [BooleanField( "Add Always Visible", "Should the add entry screen always be visible (vs. having to click Add button to display the entry screen).", false, "", 10 )]
+    [CustomDropdownListField( "Display Order", "Descending will render with entry field at top and most recent note at top.  Ascending will render with entry field at bottom and most recent note at the end.  Ascending will also disable the more option", "Ascending,Descending", true, "Descending", "", 11 )]
     public partial class Notes : RockBlock
     {
         #region Base Control Methods
@@ -82,7 +84,11 @@ namespace RockWeb.Blocks.Core
 
                 notesTimeline.NoteTypeId = noteType.Id;
                 notesTimeline.EntityId = contextEntity.Id;
-                notesTimeline.Title = noteType.Name;
+                notesTimeline.Title = GetAttributeValue( "Heading" );
+                if ( string.IsNullOrWhiteSpace( notesTimeline.Title ) )
+                {
+                    notesTimeline.Title = noteType.Name;
+                }
                 notesTimeline.TitleIconCssClass = GetAttributeValue( "HeadingIcon" );
                 notesTimeline.Term = GetAttributeValue( "NoteTerm" );
                 notesTimeline.DisplayType = GetAttributeValue( "DisplayType" ) == "Light" ? NoteDisplayType.Light : NoteDisplayType.Full;
@@ -90,6 +96,7 @@ namespace RockWeb.Blocks.Core
                 notesTimeline.ShowAlertCheckBox = GetAttributeValue( "ShowAlertCheckbox" ).AsBoolean();
                 notesTimeline.ShowPrivateCheckBox = GetAttributeValue( "ShowPrivateCheckbox" ).AsBoolean();
                 notesTimeline.ShowSecurityButton = GetAttributeValue( "ShowSecurityButton" ).AsBoolean();
+                notesTimeline.AllowAnonymousEntry = GetAttributeValue( "Allow Anonymous" ).AsBoolean();
                 notesTimeline.AddAlwaysVisible = GetAttributeValue( "AddAlwaysVisible" ).AsBoolean();
                 notesTimeline.SortDirection = GetAttributeValue( "DisplayOrder" ) == "Ascending" ? ListSortDirection.Ascending : ListSortDirection.Descending;
             }
