@@ -211,6 +211,18 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the allow anonymous.
+        /// </summary>
+        public bool AllowAnonymousEntry
+        {
+            get { return ViewState["AllowAnonymous"] as bool? ?? false; }
+            set { ViewState["AllowAnonymous"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the default source type value identifier.
+        /// </summary>
         public int? DefaultSourceTypeValueId
         {
             get
@@ -245,6 +257,10 @@ namespace Rock.Web.UI.Controls
                 _noteNew.UsePersonIcon = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show more option].
+        /// </summary>
 
         public bool ShowMoreOption
         {
@@ -349,6 +365,8 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
+                bool canAdd = AllowAnonymousEntry || GetCurrentPerson() != null;
+
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-note" );
                 writer.RenderBeginTag( "section" );
 
@@ -378,7 +396,7 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();      // H3
                 }
 
-                if ( !AddAlwaysVisible )
+                if ( !AddAlwaysVisible && canAdd )
                 {
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-sm btn-action add-note" );
                     writer.RenderBeginTag( HtmlTextWriterTag.A );
@@ -393,7 +411,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                if ( SortDirection == ListSortDirection.Descending )
+                if ( canAdd && SortDirection == ListSortDirection.Descending )
                 {
                     _noteNew.RenderControl( writer );
                 }
@@ -412,7 +430,7 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
-                if ( SortDirection == ListSortDirection.Ascending )
+                if ( canAdd && SortDirection == ListSortDirection.Ascending )
                 {
                     _noteNew.RenderControl( writer );
                 }
@@ -489,71 +507,78 @@ namespace Rock.Web.UI.Controls
         {
             ClearNotes();
 
-            var rockPage = this.Page as RockPage;
-            if (rockPage != null && NoteTypeId.HasValue)
+            int? currentPersonId = null;
+            var currentPerson = GetCurrentPerson();
+            if ( currentPerson != null )
             {
-                int? currentPersonId = null;
-                var currentPerson = rockPage.CurrentPerson;
-                if (currentPerson != null)
+                currentPersonId = currentPerson.Id;
+                _noteNew.CreatedByPhotoId = currentPerson.PhotoId;
+                _noteNew.CreatedByGender = currentPerson.Gender;
+                _noteNew.CreatedByName = currentPerson.FullName;
+            }
+            else
+            {
+                _noteNew.CreatedByPhotoId = null;
+                _noteNew.CreatedByGender = Gender.Male;
+                _noteNew.CreatedByName = string.Empty;
+            }
+
+            if ( NoteTypeId.HasValue && EntityId.HasValue )
+            {
+                ShowMoreOption = false;
+
+                int noteCount = 0;
+
+                var qry = new NoteService().Queryable()
+                    .Where( n =>
+                        n.NoteTypeId == NoteTypeId.Value &&
+                        n.EntityId == EntityId.Value );
+
+                if ( SortDirection == ListSortDirection.Descending )
                 {
-                    currentPersonId = currentPerson.Id;
-                    _noteNew.CreatedByPhotoId = currentPerson.PhotoId;
-                    _noteNew.CreatedByGender = currentPerson.Gender;
-                    _noteNew.CreatedByName = currentPerson.FullName;
+                    qry = qry.OrderByDescending( n => n.IsAlert )
+                        .ThenByDescending( n => n.CreationDateTime );
                 }
                 else
                 {
-                    _noteNew.CreatedByPhotoId = null;
-                    _noteNew.CreatedByGender = Gender.Male;
-                    _noteNew.CreatedByName = string.Empty;
+                    qry = qry.OrderByDescending( n => n.IsAlert )
+                        .ThenBy( n => n.CreationDateTime );
                 }
 
-                if ( NoteTypeId.HasValue && EntityId.HasValue )
+                foreach ( var note in qry )
                 {
-                    ShowMoreOption = false;
-
-                    int noteCount = 0;
-
-                    var qry = new NoteService().Queryable()
-                        .Where( n =>
-                            n.NoteTypeId == NoteTypeId.Value &&
-                            n.EntityId == EntityId.Value );
-
-                    if ( SortDirection == ListSortDirection.Descending )
+                    if ( noteCount >= DisplayCount )
                     {
-                        qry = qry.OrderByDescending( n => n.IsAlert )
-                            .ThenByDescending( n => n.CreationDateTime );
-                    }
-                    else
-                    {
-                        qry = qry.OrderByDescending( n => n.IsAlert )
-                            .ThenBy( n => n.CreationDateTime );
+                        ShowMoreOption = true;
+                        break;
                     }
 
-                    foreach ( var note in qry )
+                    if ( note.IsAuthorized( "View", currentPerson ) )
                     {
-                        if ( noteCount >= DisplayCount )
-                        {
-                            ShowMoreOption = true;
-                            break;
-                        }
+                        var noteEditor = new NoteControl();
+                        noteEditor.ID = string.Format( "note_{0}", note.Guid.ToString().Replace( "-", "_" ) );
+                        noteEditor.Note = note;
+                        noteEditor.IsPrivate = note.IsPrivate( "View", currentPerson );
+                        noteEditor.CanEdit = note.IsAuthorized( "Edit", currentPerson );
+                        noteEditor.SaveButtonClick += note_Updated;
+                        noteEditor.DeleteButtonClick += note_Updated;
+                        Controls.Add( noteEditor );
 
-                        if ( note.IsAuthorized( "View", currentPerson ) )
-                        {
-                            var noteEditor = new NoteControl();
-                            noteEditor.ID = string.Format( "note_{0}", note.Guid.ToString().Replace( "-", "_" ) );
-                            noteEditor.Note = note;
-                            noteEditor.IsPrivate = note.IsPrivate( "View", currentPerson );
-                            noteEditor.CanEdit = note.IsAuthorized( "Edit", currentPerson );
-                            noteEditor.SaveButtonClick += note_Updated;
-                            noteEditor.DeleteButtonClick += note_Updated;
-                            Controls.Add( noteEditor );
-
-                            noteCount++;
-                        }
+                        noteCount++;
                     }
                 }
             }
+        }
+
+        private Person GetCurrentPerson()
+        {
+            var rockPage = this.Page as RockPage;
+            if ( rockPage != null )
+            {
+                return rockPage.CurrentPerson;
+            }
+
+            return null;
         }
 
         #endregion
