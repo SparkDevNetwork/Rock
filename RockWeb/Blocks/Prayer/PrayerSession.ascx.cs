@@ -54,11 +54,19 @@ namespace RockWeb.Blocks.Prayer
         #endregion
 
         #region Properties
-        protected int PrayerCommentNoteTypeId
+
+        public int? NoteTypeId
         {
-            get { return ViewState["PrayerCommentNoteTypeId"] as int? ?? 0; }
-            set { ViewState["PrayerCommentNoteTypeId"] = value; }
+            get { return ViewState["NoteTypeId"] as int?; }
+            set { ViewState["NoteTypeId"] = value; }
         }
+
+        public int? CurrentPrayerRequestId
+        {
+            get { return ViewState["CurrentPrayerRequestId"] as int?; }
+            set { ViewState["CurrentPrayerRequestId"] = value; }
+        }
+
         #endregion
 
         #region Base Control Methods
@@ -72,8 +80,6 @@ namespace RockWeb.Blocks.Prayer
             base.OnInit( e );
 
             mdFlag.SaveClick += mdFlag_SaveClick;
-            rptComments.ItemDataBound += rptComments_ItemDataBound;
-            rptComments.ItemCommand += rptComments_ItemCommand;
 
             _flagLimit = GetAttributeValue( "FlagLimit" ).AsInteger();
             _categoryGuidString = GetAttributeValue( "CategoryGuid" );
@@ -92,10 +98,13 @@ namespace RockWeb.Blocks.Prayer
             if ( !Page.IsPostBack )
             {
                 DisplayCategories();
+                SetNoteType();
                 lbStart.Focus();
-                GetNoteType();
                 lbFlag.Visible = _enableCommunityFlagging;
             }
+
+            notesComments.NoteTypeId = NoteTypeId;
+            notesComments.EntityId = CurrentPrayerRequestId;
 
             if ( lbNext.Visible )
             {
@@ -231,97 +240,33 @@ namespace RockWeb.Blocks.Prayer
             lbNext_Click( sender, e );
         }
 
-        /// <summary>
-        /// Called when an item is clicked in the repeater.
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="e"></param>
-        protected void rptComments_ItemCommand( object source, RepeaterCommandEventArgs e )
-        {
-            if (e.CommandName == "Delete")
-            {
-                int noteId = Convert.ToInt32(e.CommandArgument);
-                NoteService noteService = new NoteService();
-                Note note = noteService.Get( noteId );
-                noteService.Delete( note, CurrentPersonId );
-                noteService.Save( note, CurrentPersonId );
-
-                int prayerRequestId = hfIdValue.ValueAsInt();
-                ShowComments( prayerRequestId );
-            }
-        }
-
-        /// <summary>
-        /// Called for each comment (Note) that is bound to the repeater.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected void rptComments_ItemDataBound( object sender, RepeaterItemEventArgs e )
-        {
-            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
-            {
-                var note = e.Item.DataItem as Rock.Model.Note;
-
-                if ( note != null )
-                {
-                    var lCommentBy = e.Item.FindControl( "lCommentBy" ) as Literal;
-                    var lCommentDate = e.Item.FindControl( "lCommentDate" ) as Literal;
-                    var lCommentText = e.Item.FindControl( "lCommentText" ) as Literal;
-                    var bbtnDeleteComment = e.Item.FindControl( "bbtnDeleteComment" ) as BootstrapButton;
-                    var lCommenterIcon = e.Item.FindControl( "lCommenterIcon" ) as Literal;
-
-                    lCommenterIcon.Text = Person.GetPhotoImageTag( note.CreatedByPerson, 50, 50, "media-object" );
-
-                    lCommentBy.Text = (note.CreatedByPerson != null) ? 
-                        Sanitizer.GetSafeHtmlFragment( note.CreatedByPerson.FullName ) : note.Caption;
-
-                    lCommentDate.Text = note.CreationDateTime.ToRelativeDateString( 6 ) ;
-                    lCommentText.Text = Sanitizer.GetSafeHtmlFragment( note.Text );
-
-                    // TODO figure out how to determine who the note "owner" is.
-                    bbtnDeleteComment.Visible = note.IsAuthorized( "Administrate", CurrentPerson );
-                    bbtnDeleteComment.CommandArgument = note.Id.ToStringSafe();
-                    bbtnDeleteComment.CommandName = "Delete";
-                }
-            }
-        }
-
-        /// <summary>
-        /// Saves the comment for the prayer request being viewed.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected void bbtnSaveComment_Click( object sender, EventArgs e )
-        {
-            if ( string.IsNullOrWhiteSpace( tbComment.Text ) )
-            {
-                return;
-            }
-
-            int prayerRequestId = hfIdValue.ValueAsInt();
-
-            NoteService service = new NoteService();
-
-            var note = new Note();
-            note.IsSystem = false;
-            note.IsAlert = false;
-            note.NoteTypeId = PrayerCommentNoteTypeId;
-            note.EntityId = prayerRequestId;
-            note.CreatedByPersonId = CurrentPersonId;
-            note.CreationDateTime = DateTime.Now;
-            note.Text = Sanitizer.GetSafeHtmlFragment( tbComment.Text.Trim() );
-
-            service.Add( note, CurrentPersonId );
-            service.Save( note, CurrentPersonId );
-
-            tbComment.Text = "";
-
-            ShowComments( prayerRequestId );
-        }
-
         #endregion
 
         #region Methods
+
+        private void SetNoteType()
+        {
+            var entityTypeId = EntityTypeCache.Read( typeof( PrayerRequest ) ).Id;
+            string noteTypeName = GetAttributeValue( "NoteType" );
+
+            var service = new NoteTypeService();
+            var noteType = service.Get( entityTypeId, noteTypeName );
+
+            // If a note type with the specified name does not exist, create one
+            if ( noteType == null )
+            {
+                noteType = new NoteType();
+                noteType.IsSystem = false;
+                noteType.EntityTypeId = entityTypeId;
+                noteType.EntityTypeQualifierColumn = string.Empty;
+                noteType.EntityTypeQualifierValue = string.Empty;
+                noteType.Name = noteTypeName;
+                service.Add( noteType, CurrentPersonId );
+                service.Save( noteType, CurrentPersonId );
+            }
+
+            NoteTypeId = noteType.Id;
+        }
 
         /// <summary>
         /// Updates the Hightlight label that shows how many prayers have been made out of the total for this session.
@@ -477,53 +422,16 @@ namespace RockWeb.Blocks.Prayer
 
             lPersonIconHtml.Text = Person.GetPhotoImageTag( prayerRequest.RequestedByPerson, 50, 50 );
 
-            pnlComments.Visible = prayerRequest.AllowComments ?? false;
-            if ( rptComments.Visible )
+            notesComments.Visible = prayerRequest.AllowComments ?? false;
+            if (notesComments.Visible)
             {
-                ShowComments( prayerRequest );
+                notesComments.EntityId = prayerRequest.Id;
+                notesComments.RebuildNotes( true );
             }
+            CurrentPrayerRequestId = prayerRequest.Id;
 
             // save because the prayer count was just modified.
             service.Save( prayerRequest, this.CurrentPersonId );
-        }
-
-        /// <summary>
-        /// Gets the configured NoteType for the PrayerRequest entity.
-        /// </summary>
-        private void GetNoteType()
-        {
-            string noteTypeName = GetAttributeValue( "NoteType" );
-
-            var _prayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( new PrayerRequest().GetType().FullName );
-            var noteTypeService = new NoteTypeService();
-            var noteType = noteTypeService.Get( (int)_prayerRequestEntityTypeId, noteTypeName );
-            
-            // all that work to get this... for use later.
-            PrayerCommentNoteTypeId = noteType.Id;
-        }
-
-        /// <summary>
-        /// Binds all comments for the given prayer request Id.
-        /// </summary>
-        /// <param name="prayerRequestId">the id of a prayer request</param>
-        private void ShowComments( int prayerRequestId )
-        {
-            PrayerRequestService prayerRequestService = new PrayerRequestService();
-            var prayerRequest = prayerRequestService.Get( prayerRequestId );
-            ShowComments( prayerRequest );
-        }
-
-        /// <summary>
-        /// Binds all comments for the given prayer request.
-        /// </summary>
-        /// <param name="prayerRequest">a prayer request</param>
-        private void ShowComments( PrayerRequest prayerRequest )
-        {
-            var notes = new List<Note>();
-            notes = new NoteService().Get( (int)PrayerCommentNoteTypeId, prayerRequest.Id ).OrderBy( n => n.CreationDateTime ).ToList();
-            lMeIconHtml.Text = Person.GetPhotoImageTag( CurrentPerson, 50, 50, "media-object" );
-            rptComments.DataSource = notes;
-            rptComments.DataBind();
         }
 
         #endregion
