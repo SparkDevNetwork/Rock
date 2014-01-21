@@ -51,6 +51,17 @@ namespace Rock.Web.UI.Controls
             this.DataFormatString = "{0:g}";
         }
 
+        public override bool Initialize( bool enableSorting, Control control )
+        {
+            string script = @"
+    $('.grid-table tr td span.date-time-field').tooltip({html: true, container: 'body', delay: { show: 100, hide: 100 }});
+    $('.grid-table tr td span.date-time-field').click( function(){ $(this).tooltip('hide'); });;
+";
+            ScriptManager.RegisterStartupScript( control, control.GetType(), "date-time-field-popover", script, true );
+
+            return base.Initialize( enableSorting, control );
+        }
+
         /// <summary>
         /// Formats the specified field value for a cell in the <see cref="T:System.Web.UI.WebControls.BoundField" /> object.
         /// </summary>
@@ -63,14 +74,20 @@ namespace Rock.Web.UI.Controls
         {
             if ( FormatAsElapsedTime )
             {
+                DateTime dateValue = DateTime.MinValue;
                 if ( dataValue is DateTime )
                 {
-                    return ( (DateTime)dataValue ).ToElapsedString();
+                    dateValue = ( (DateTime)dataValue );
                 }
 
                 if ( dataValue is DateTime? )
                 {
-                    return ( (DateTime)dataValue ).ToElapsedString();
+                    dateValue = ( (DateTime?)dataValue ) ?? DateTime.MinValue;;
+                }
+
+                if (dateValue != DateTime.MinValue)
+                {
+                    return string.Format("<span class='date-time-field' title='{0}'>{1}</span>", dateValue.ToString(), dateValue.ToElapsedString());
                 }
             }
 
