@@ -157,9 +157,9 @@ namespace Rock.Web.UI
         {
             get
             {
-                if ( _PageReference == null && Context.Items.Contains( "PageReference" ) )
+                if ( _PageReference == null && Context.Items.Contains( "Rock:PageReference" ) )
                 {
-                    _PageReference = Context.Items["PageReference"] as PageReference;
+                    _PageReference = Context.Items["Rock:PageReference"] as PageReference;
                 }
 
                 return _PageReference;
@@ -167,13 +167,8 @@ namespace Rock.Web.UI
 
             set
             {
-                Context.Items.Remove( "PageReference" );
                 _PageReference = value;
-
-                if ( _PageReference != null )
-                {
-                    Context.Items.Add( "PageReference", _CurrentUser );
-                }
+                SaveContextItem( "Rock:PageReference", _PageReference );
             }
         }
         private PageReference _PageReference = null;
