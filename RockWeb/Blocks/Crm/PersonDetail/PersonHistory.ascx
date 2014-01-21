@@ -12,15 +12,15 @@
             </Rock:GridFilter>
             <Rock:Grid ID="gHistory" runat="server" AllowSorting="true" RowItemText="Change">
                 <Columns>
-                    <asp:HyperLinkField DataTextField="PersonName" DataNavigateUrlFields="CreatedByPersonId" SortExpression="PersonName" DataNavigateUrlFormatString="~/Person/{0}" HeaderText="User" />
-                    <asp:TemplateField HeaderText="Summary" SortExpression="Summary">
+                    <asp:HyperLinkField DataTextField="PersonName" DataNavigateUrlFields="CreatedByPersonId" SortExpression="PersonName" DataNavigateUrlFormatString="~/Person/{0}" HeaderText="Who" />
+                    <asp:TemplateField HeaderText="Changed" SortExpression="Summary">
                         <ItemTemplate><%# FormatSummary( (int)Eval("EntityTypeId"), (int)Eval( "EntityId" ), Eval( "Summary" ).ToString() ) %></ItemTemplate>
                     </asp:TemplateField>
                     <asp:TemplateField HeaderText="What">
                         <ItemTemplate><%# FormatCaption( (int)Eval("CategoryId"), Eval( "Caption" ).ToString(), (int)Eval( "RelatedEntityTypeId" ), (int)Eval( "RelatedEntityId" ) ) %></ItemTemplate>
                     </asp:TemplateField>
-                    <asp:BoundField DataField="Category" SortExpression="Category" HeaderText="Category" />
                     <Rock:DateTimeField DataField="CreationDateTime" SortExpression="CreationDateTime" HeaderText="When" FormatAsElapsedTime="true" />
+                    <asp:BoundField DataField="Category" SortExpression="Category" HeaderText="Category" />
                 </Columns>
 
             </Rock:Grid>

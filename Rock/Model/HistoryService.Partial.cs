@@ -58,6 +58,7 @@ namespace Rock.Model
 
             var entityType = EntityTypeCache.Read(modelType);
             var category = CategoryCache.Read(categoryGuid);
+            var creationDate = DateTime.Now;
 
             int? relatedEntityTypeId = null;
             if (relatedModelType != null)
@@ -82,7 +83,7 @@ namespace Rock.Model
                     history.RelatedEntityTypeId = relatedEntityTypeId;
                     history.RelatedEntityId = relatedEntityId;
                     history.CreatedByPersonId = CurrentPersonId;
-                    history.CreationDateTime = DateTime.Now;
+                    history.CreationDateTime = creationDate;
                     Add( history, CurrentPersonId );
                     Save( history, CurrentPersonId );
                 }
