@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Core
 
         #endregion
 
-        #region Control Methods
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -110,9 +110,10 @@ namespace RockWeb.Blocks.Core
                 rGrid.RowDataBound += rGrid_RowDataBound;
 
                 rGrid.Columns[1].Visible = !_configuredType;   // qualifier
+
                 rGrid.Columns[4].Visible = !_displayValueEdit; // default value / value
-                rGrid.Columns[5].Visible = _displayValueEdit;  // edit
-                rGrid.Columns[6].Visible = _displayValueEdit;  // secure
+                rGrid.Columns[5].Visible = _displayValueEdit; // default value / value
+                rGrid.Columns[6].Visible = _displayValueEdit;  // edit
 
                 SecurityField securityField = rGrid.Columns[7] as SecurityField;
                 securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
@@ -281,11 +282,15 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void rGrid_EditValue( object sender, RowEventArgs e )
+        protected void rGrid_RowSelected( object sender, RowEventArgs e )
         {
             if ( _displayValueEdit )
             {
                 ShowEditValue( (int)rGrid.DataKeys[e.RowIndex]["id"], true );
+            }
+            else
+            {
+                ShowEdit( (int)rGrid.DataKeys[e.RowIndex]["id"] );
             }
         }
 
@@ -442,8 +447,6 @@ namespace RockWeb.Blocks.Core
             pnlList.Visible = true;
         }
 
-        #endregion
-
         /// <summary>
         /// Handles the SaveClick event of the modalDetails control.
         /// </summary>
@@ -491,6 +494,8 @@ namespace RockWeb.Blocks.Core
 
             BindGrid();
         }
+
+        #endregion
 
         #region Methods
 
