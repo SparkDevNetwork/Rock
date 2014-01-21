@@ -204,14 +204,17 @@
     <Compile Include="Jobs\RunSQL.cs" />
     <Compile Include="Model\AuditDetail.cs" />
     <Compile Include="Model\CodeGenerated\AuditDetailService.cs" />
+    <Compile Include="Model\CodeGenerated\HistoryService.cs" />
     <Compile Include="Model\CodeGenerated\LayoutService.cs" />
     <Compile Include="Model\CodeGenerated\ReportFieldService.cs" />
     <Compile Include="Model\DbGeographyConverter.cs" />
     <Compile Include="Model\FinancialTransactionImageService.partial.cs" />
     <Compile Include="Model\FinancialScheduledTransactionService.Partial.cs" />
+    <Compile Include="Model\HistoryService.Partial.cs" />
     <Compile Include="Model\LayoutService.Partial.cs" />
     <Compile Include="Model\Layout.cs" />
     <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
+    <Compile Include="Model\History.cs" />
     <Compile Include="Model\ReportField.cs" />
     <Compile Include="Net\RestParameters\ContributionStatementOptions.cs" />
     <Compile Include="PersonProfile\Badge\Baptized.cs" />
@@ -474,6 +477,7 @@
     <Compile Include="Web\UI\Controls\Grid\RockBoundField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LinkButtonField.cs" />
     <Compile Include="Web\UI\Controls\IHasValidationGroup.cs" />
+    <Compile Include="Web\UI\Controls\NoteEditor.cs" />
     <Compile Include="Web\UI\Controls\Pickers\EntityTypePicker.cs" />
     <Compile Include="Web\UI\Controls\PanelWidget.cs" />
     <Compile Include="Web\UI\Controls\RockControlWrapper.cs" />
@@ -535,7 +539,7 @@
     <Compile Include="Web\UI\Controls\Pickers\PagePicker.cs" />
     <Compile Include="Web\UI\Controls\KeyValueList.cs" />
     <Compile Include="Web\UI\Controls\Grid\ToggleField.cs" />
-    <Compile Include="Web\UI\Controls\NoteEditor.cs" />
+    <Compile Include="Web\UI\Controls\NoteControl.cs" />
     <Compile Include="Web\UI\Controls\ButtonDropDownList.cs" />
     <Compile Include="Web\UI\Controls\AttributeEditor.cs" />
     <Compile Include="Web\UI\Controls\ScheduleBuilder.cs" />
@@ -820,7 +824,7 @@
     <Compile Include="Web\UI\Controls\RockCheckBox.cs" />
     <Compile Include="Web\UI\Controls\SearchField.cs" />
     <Compile Include="Web\UI\Controls\Zone.cs" />
-    <Compile Include="Web\UI\DialogMasterPage.cs">
+    <Compile Include="Web\UI\DialogPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Web\UI\RockPage.cs">

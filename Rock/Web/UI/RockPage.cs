@@ -1,7 +1,18 @@
+// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
 //
 using System;
 using System.Collections.Generic;
@@ -75,11 +86,7 @@ namespace Rock.Web.UI
         /// <value>
         /// The browser title.
         /// </value>
-        public string BrowserTitle
-        {
-            get { return base.Title; }
-            set { base.Title = value; }
-        }
+        public string BrowserTitle { get; set; }
 
         /// <summary>
         /// Gets or sets the template title.
@@ -87,11 +94,7 @@ namespace Rock.Web.UI
         /// <value>
         /// The template title.
         /// </value>
-        public string TemplateTitle
-        {
-            get { return _pageCache.Title; }
-            set { _pageCache.Title = value; }
-        }
+        public string PageTitle { get; set; }
 
         /// <summary>
         /// Gets the title for the page and sets both the browser and template title
@@ -106,7 +109,7 @@ namespace Rock.Web.UI
             set
             {
                 BrowserTitle = value;
-                TemplateTitle = value;
+                PageTitle = value;
             }
         }
 
@@ -530,6 +533,9 @@ namespace Rock.Web.UI
             // If a PageInstance exists
             if ( _pageCache != null )
             {
+                BrowserTitle = _pageCache.BrowserTitle;
+                PageTitle = _pageCache.PageTitle;
+
                 // If there's a master page, update it's reference to Current Page
                 if ( this.Master is RockMasterPage )
                 {
@@ -599,10 +605,6 @@ namespace Rock.Web.UI
 
                     }
                     catch { }
-
-                    // intialize browser title to template title
-                    Page.Trace.Warn( "Setting page title" );
-                    BrowserTitle = TemplateTitle;
 
                     // set viewstate on/off
                     this.EnableViewState = _pageCache.EnableViewState;
@@ -920,6 +922,33 @@ namespace Rock.Web.UI
                         Response.Cache.SetValidUntilExpires( true );
                     }
                 }
+
+                string pageTitle = BrowserTitle;
+                string siteTitle = _pageCache.Layout.Site.Name;
+                string seperator = pageTitle.Trim() != string.Empty && siteTitle.Trim() != string.Empty ? " | " : "";
+
+                base.Title = pageTitle + seperator + siteTitle;
+
+                if ( !string.IsNullOrWhiteSpace( _pageCache.Description ) )
+                {
+                    HtmlMeta metaTag = new HtmlMeta();
+                    metaTag.Attributes.Add( "name", "description" );
+                    metaTag.Attributes.Add( "content", _pageCache.Description.Trim() );
+                    AddMetaTag( this.Page, metaTag );
+                }
+
+                if ( !string.IsNullOrWhiteSpace( _pageCache.KeyWords ) )
+                {
+                    HtmlMeta metaTag = new HtmlMeta();
+                    metaTag.Attributes.Add( "name", "keywords" );
+                    metaTag.Attributes.Add( "content", _pageCache.KeyWords.Trim() );
+                    AddMetaTag( this.Page, metaTag );
+                }
+
+                if ( !string.IsNullOrWhiteSpace( _pageCache.HeaderContent ) )
+                {
+                    Page.Header.Controls.Add( new LiteralControl( _pageCache.HeaderContent ) );
+                }
             }
         }
 
@@ -934,7 +963,7 @@ namespace Rock.Web.UI
             Page.Header.DataBind();
 
             // create a page view transaction if enabled
-            if (_pageCache != null && Convert.ToBoolean( ConfigurationManager.AppSettings["EnablePageViewTracking"] ) )
+            if (!Page.IsPostBack && _pageCache != null && Convert.ToBoolean( ConfigurationManager.AppSettings["EnablePageViewTracking"] ) )
             {
                 PageViewTransaction transaction = new PageViewTransaction();
                 transaction.DateViewed = DateTime.Now;
@@ -964,7 +993,6 @@ namespace Rock.Web.UI
             }
         }
 
-        
         #endregion
 
         #region Public Methods
@@ -1649,7 +1677,9 @@ namespace Rock.Web.UI
             bool existsAlready = false;
 
             if ( page != null && page.Header != null )
+            {
                 foreach ( Control control in page.Header.Controls )
+                {
                     if ( control is HtmlMeta )
                     {
                         HtmlMeta existingMeta = (HtmlMeta)control;
@@ -1657,12 +1687,14 @@ namespace Rock.Web.UI
                         bool sameAttributes = true;
 
                         foreach ( string attributeKey in newMeta.Attributes.Keys )
-                            if ( existingMeta.Attributes[attributeKey] != null &&
+                        {
+                            if ( existingMeta.Attributes[attributeKey] == null ||
                                 existingMeta.Attributes[attributeKey].ToLower() != newMeta.Attributes[attributeKey].ToLower() )
                             {
                                 sameAttributes = false;
                                 break;
                             }
+                        }
 
                         if ( sameAttributes )
                         {
@@ -1670,6 +1702,9 @@ namespace Rock.Web.UI
                             break;
                         }
                     }
+                }
+            }
+
             return existsAlready;
         }
 

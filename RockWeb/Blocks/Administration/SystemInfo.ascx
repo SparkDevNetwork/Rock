@@ -36,7 +36,8 @@
 <div class="tabContent" >
 
     <div id="version-info">
-        Rock Version:  <asp:Literal ID="lRockVersion" runat="server"></asp:Literal>
+        <p>Rock Version:  <asp:Literal ID="lRockVersion" runat="server"></asp:Literal></p>
+        <p>Database: <asp:Literal ID="lDatabase" runat="server"></asp:Literal></p>
         <p>Executing Location: <asp:Literal ID="lExecLocation" runat="server"></asp:Literal></p>
 
          <asp:Button runat="server" ID="btnRestart" CssClass="btn btn-action restart" Text="Restart Rock" OnClick="btnRestart_Click" ToolTip="Restarts the Application." />

@@ -339,11 +339,11 @@
                     DataLoadingText="&lt;i class='fa fa-spinner fa-spin fa-2x'&gt;&lt;/i&gt; Saving" />
             </div>
 
-            <a id="NoteEditor"></a>
-            <h2 runat="server">Rock:NoteEditor</h2>
+            <a id="NoteControl"></a>
+            <h2 runat="server">Rock:NoteControl</h2>
             <div id="Div3" runat="server" class="r-example">
                 <section class="panel-note">
-                    <Rock:NoteEditor ID="noteExample" runat="server" IsAlert="false" IsPrivate="false" Text="Here is some example note text." CanEdit="true" />
+                    <Rock:NoteControl ID="noteExample" runat="server" IsAlert="false" IsPrivate="false" Text="Here is some example note text." CanEdit="true" />
                 </section>
             </div>
 

@@ -1,7 +1,18 @@
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
 //
 using System;
 using System.Linq;
@@ -34,7 +45,7 @@ namespace RockWeb.Blocks.Cms
 
             sb.AppendLine( "<ul id=\"treeview\">" );
             var allPages = pageService.Queryable( "Pages, Blocks, Blocks.BlockType" ).ToList();
-            foreach ( var page in allPages.Where( a => a.ParentPageId == null ).OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+            foreach ( var page in allPages.Where( a => a.ParentPageId == null ).OrderBy( a => a.Order ).ThenBy( a => a.InternalName ) )
             {
                 sb.Append( PageNode( page ) );
             }
@@ -52,13 +63,13 @@ namespace RockWeb.Blocks.Cms
         {
             var sb = new StringBuilder();
 
-            sb.AppendFormat( "<li data-expanded='false' data-model='Page' data-id='{0}'><span><i class=\"fa fa-file-o\">&nbsp;</i> <a href='{1}'>{2}</a></span>{3}", page.Id, new PageReference( page.Id ).BuildUrl(), page.Name, Environment.NewLine );
+            sb.AppendFormat( "<li data-expanded='false' data-model='Page' data-id='{0}'><span><i class=\"fa fa-file-o\">&nbsp;</i> <a href='{1}'>{2}</a></span>{3}", page.Id, new PageReference( page.Id ).BuildUrl(), page.InternalName, Environment.NewLine );
 
             if ( page.Pages.Any() || page.Blocks.Any() )
             {
                 sb.AppendLine( "<ul>" );
 
-                foreach ( var childPage in page.Pages.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+                foreach ( var childPage in page.Pages.OrderBy( a => a.Order ).ThenBy( a => a.InternalName ) )
                 {
                     sb.Append( PageNode( childPage ) );
                 }

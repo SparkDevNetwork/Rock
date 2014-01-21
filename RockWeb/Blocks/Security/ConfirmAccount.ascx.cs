@@ -1,9 +1,19 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.ComponentModel;
 using System.Web.Security;
@@ -19,7 +29,7 @@ namespace RockWeb.Blocks.Security
     /// </summary>
     [DisplayName( "Confirm Account" )]
     [Category( "Security" )]
-    [Description( "Block for user to confirm a newly created login account." )]
+    [Description( "Block for user to confirm a newly created login account, usually from an email that was sent to them." )]
 
     [TextField( "Confirmed Caption", "", false, "{0}, Your account has been confirmed.  Thank you for creating the account", "Captions", 0 )]
     [TextField( "Reset Password Caption", "", false, "{0}, Enter a new password for your '{1}' account", "Captions", 1 )]

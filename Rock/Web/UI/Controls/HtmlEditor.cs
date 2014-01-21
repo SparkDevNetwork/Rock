@@ -1,7 +1,18 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
 //
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -159,15 +170,6 @@ namespace Rock.Web.UI.Controls
                 RequiredFieldValidator.ValidationGroup = value;
             }
         }
-
-        #endregion
-
-        #region Controls
-
-        /// <summary>
-        /// The merge fields picker
-        /// </summary>
-        private MergeFieldPicker _mergeFieldPicker;
 
         #endregion
 
@@ -353,13 +355,6 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
             Controls.Clear();
             RockControlHelper.CreateChildControls( this, Controls );
-
-            _mergeFieldPicker = new MergeFieldPicker();
-            _mergeFieldPicker.ID = string.Format( "{0}_mfPicker", this.ClientID );
-            _mergeFieldPicker.CssClass = string.Empty;
-            _mergeFieldPicker.HidePickerLabel = true;
-            _mergeFieldPicker.SetValue( string.Empty );
-            Controls.Add( _mergeFieldPicker );
         }
 
         /// <summary>
@@ -388,7 +383,7 @@ var toolbar_RockCustomConfigLight =
         ['Source'],
         ['Bold', 'Italic', 'Underline', 'Strike', 'NumberedList', 'BulletedList', 'Link', 'Image', 'PasteFromWord', '-', 'RemoveFormat'],
         ['Format'], 
-        ['rockmergefield', '-', 'rockfilebrowser']
+        ['rockmergefield', '-', 'rockimagebrowser', 'rockdocumentbrowser']
 	];
 
 var toolbar_RockCustomConfigFull =
@@ -403,7 +398,7 @@ var toolbar_RockCustomConfigFull =
         ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-'], 
         ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
         ['-', 'Image', 'Table'],
-        ['rockmergefield', '-', 'rockfilebrowser']
+        ['rockmergefield', '-', 'rockimagebrowser', 'rockdocumentbrowser']
 	];	
 
 CKEDITOR.replace('{0}', {{ 
@@ -415,6 +410,7 @@ CKEDITOR.replace('{0}', {{
   extraPlugins: '{5}',
   resize_maxWidth: '{3}',
   rockFileBrowserOptions: {{ documentFolderRoot: '{6}', imageFolderRoot: '{7}'}},
+  rockMergeFieldOptions: {{ mergeFields: '{8}' }},
   on : {{
        change: function (e) {{
          // update the underlying TextElement on every little change to ensure that Posting and Validation works consistently (doing it OnSubmit or OnBlur misses some cases)
@@ -442,62 +438,13 @@ CKEDITOR.replace('{0}', {{
 
             enabledPlugins.Add( "rockfilebrowser" );
 
-            string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(), this.Height, 
-                this.ResizeMaxWidth ?? 0, customOnChangeScript, enabledPlugins.AsDelimited( "," ), this.DocumentFolderRoot, this.ImageFolderRoot );
+            string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(),
+                this.Height, this.ResizeMaxWidth ?? 0, customOnChangeScript, enabledPlugins.AsDelimited( "," ), 
+                this.DocumentFolderRoot, this.ImageFolderRoot, this.MergeFields.AsDelimited(",") );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckeditorInitScript, true );
 
-            if ( MergeFields.Any() )
-            {
-                _mergeFieldPicker.MergeFields = this.MergeFields;
-                _mergeFieldPicker.RenderControl( writer );
-
-                AddMergeFieldScript();
-            }
-
             base.RenderControl( writer );
-        }
-
-        /// <summary>
-        /// Adds the merge field script.
-        /// </summary>
-        private void AddMergeFieldScript()
-        {
-            string scriptFormat = @"
-        $('#btnSelectNone_{0}').click(function (e) {{
-            clearSelection_{0}();
-            return false;
-        }});
-
-        $('#btnSelect_{0}').click(function (e) {{
-            var url = Rock.settings.get('baseUrl') + 'api/MergeFields/' +  $('#hfItemId_{0}').val();
-            $.get(url, function(data) {{ 
-                CKEDITOR.instances.{1}.insertHtml(data);
-                clearSelection_{0}();
-            }});
-        }});
-
-        $('#btnCancel_{0}').click(function (e) {{
-            clearSelection_{0}();
-        }});
-
-        function clearSelection_{0}() {{
-            
-            var selectedValue = '0';
-            var selectedText = 'Add Merge Field';
-
-            var selectedItemLabel = $('#selectedItemLabel_{0}');
-            selectedItemLabel.val(selectedValue);
-            selectedItemLabel.text(selectedText);
-
-            $('#hfItemId_{0}').val(selectedValue);
-            $('#hfItemName_{0}').val(selectedText);
-            
-            $('#btnSelectNone_{0}').hide();
-        }}
-";
-            string script = string.Format( scriptFormat, _mergeFieldPicker.ID, this.ClientID );
-            ScriptManager.RegisterStartupScript( _mergeFieldPicker, _mergeFieldPicker.GetType(), "merge_field_extension-" + _mergeFieldPicker.ID.ToString(), script, true );
         }
     }
 }

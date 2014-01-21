@@ -324,6 +324,34 @@
     <Compile Include="Migrations\201401152246390_FixHeaderMarkupOnHomepage.Designer.cs">
       <DependentUpon>201401152246390_FixHeaderMarkupOnHomepage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401162252159_HtmlEditorMergeFieldPlugin.cs" />
+    <Compile Include="Migrations\201401162252159_HtmlEditorMergeFieldPlugin.Designer.cs">
+      <DependentUpon>201401162252159_HtmlEditorMergeFieldPlugin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401162357214_AddHistory.cs" />
+    <Compile Include="Migrations\201401162357214_AddHistory.Designer.cs">
+      <DependentUpon>201401162357214_AddHistory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401171522163_UpdateBlockTypeDescriptions.cs" />
+    <Compile Include="Migrations\201401171522163_UpdateBlockTypeDescriptions.Designer.cs">
+      <DependentUpon>201401171522163_UpdateBlockTypeDescriptions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401171902377_PrayerRequestDateChanges.cs" />
+    <Compile Include="Migrations\201401171902377_PrayerRequestDateChanges.Designer.cs">
+      <DependentUpon>201401171902377_PrayerRequestDateChanges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401172226353_PageTitleFields.cs" />
+    <Compile Include="Migrations\201401172226353_PageTitleFields.Designer.cs">
+      <DependentUpon>201401172226353_PageTitleFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401172244135_DeleteEventGroupType.cs" />
+    <Compile Include="Migrations\201401172244135_DeleteEventGroupType.Designer.cs">
+      <DependentUpon>201401172244135_DeleteEventGroupType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401202137085_AddPageLiquidAttribute.cs" />
+    <Compile Include="Migrations\201401202137085_AddPageLiquidAttribute.Designer.cs">
+      <DependentUpon>201401202137085_AddPageLiquidAttribute.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -545,6 +573,27 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401152246390_FixHeaderMarkupOnHomepage.resx">
       <DependentUpon>201401152246390_FixHeaderMarkupOnHomepage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401162252159_HtmlEditorMergeFieldPlugin.resx">
+      <DependentUpon>201401162252159_HtmlEditorMergeFieldPlugin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401162357214_AddHistory.resx">
+      <DependentUpon>201401162357214_AddHistory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401171522163_UpdateBlockTypeDescriptions.resx">
+      <DependentUpon>201401171522163_UpdateBlockTypeDescriptions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401171902377_PrayerRequestDateChanges.resx">
+      <DependentUpon>201401171902377_PrayerRequestDateChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401172226353_PageTitleFields.resx">
+      <DependentUpon>201401172226353_PageTitleFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401172244135_DeleteEventGroupType.resx">
+      <DependentUpon>201401172244135_DeleteEventGroupType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401202137085_AddPageLiquidAttribute.resx">
+      <DependentUpon>201401202137085_AddPageLiquidAttribute.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

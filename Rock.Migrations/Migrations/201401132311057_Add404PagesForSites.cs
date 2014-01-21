@@ -1,7 +1,18 @@
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
 //
 namespace Rock.Migrations
 {
@@ -64,7 +75,9 @@ namespace Rock.Migrations
             // Attrib Value for Block:Content, Attribute:Support Versions Page: Page Not Found, Site: External Website
             AddBlockAttributeValue("C21F0478-0211-4C43-8EFC-190F4335EA9D", "7C1CE199-86CF-4EAE-8AB3-848416A72C58", @"False");
 
-            Sql(@"
+            Sql( @"
+                DECLARE @BlockId INT
+                SET @BlockId = (SELECT [Id] FROM [Block] WHERE [Guid] = 'D4FD3F5A-63DA-422B-900D-CD95CDC786D8')
                 INSERT INTO [HtmlContent]
                    ([BlockId]
                    ,[EntityValue]
@@ -73,8 +86,8 @@ namespace Rock.Migrations
                    ,[IsApproved]
                    ,[Guid]
                    ,[LastModifiedDateTime])
-             VALUES
-                   (395
+             VALUES (
+                    @BlockId
                    ,''
                    ,1
                    ,'<div class=''alert alert-warning''>
@@ -85,9 +98,8 @@ and see your adminstrator if you still need assistance.<p>
                    ,1
                    ,newid()
                    ,getdate())
-            ");
-
-            Sql(@"
+            
+                SET @BlockId = (SELECT [Id] FROM [Block] WHERE [Guid] = 'C21F0478-0211-4C43-8EFC-190F4335EA9D')
                 INSERT INTO [HtmlContent]
                    ([BlockId]
                    ,[EntityValue]
@@ -96,8 +108,8 @@ and see your adminstrator if you still need assistance.<p>
                    ,[IsApproved]
                    ,[Guid]
                    ,[LastModifiedDateTime])
-             VALUES
-                   (396
+             VALUES (
+                    @BlockId
                    ,''
                    ,1
                    ,'<h2 class=''text-center''>Whoops... Page Not Found !!!</h2>
@@ -111,7 +123,7 @@ Please <a href=''/''>click here</a> to go back to our home page</a>'
                    ,1
                    ,newid()
                    ,getdate())
-            ");
+            " );
 
         }
         

@@ -1,10 +1,21 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
@@ -21,6 +32,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Prayer
 {
+    [DisplayName( "Prayer Request Detail" )]
+    [Category( "Prayer > Admin" )]
+    [Description( "Displays the details of a given Prayer Request for viewing or editing." )]
+
     [IntegerField( "Expires After (Days)", "Number of days until the request will expire (only applies when auto-approved is enabled).", false, 14, "", 0, "ExpireDays" )]
     [CategoryField( "Default Category", "If a category is not selected, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "", 1, "DefaultCategory" )]
 
@@ -307,7 +322,7 @@ namespace RockWeb.Blocks.Prayer
             {
                 prayerRequest = new PrayerRequest();
                 prayerRequestService.Add( prayerRequest, CurrentPersonId );
-                prayerRequest.EnteredDate = DateTime.Now;
+                prayerRequest.EnteredDateTime = DateTime.Now;
             }
             else
             {
@@ -318,7 +333,7 @@ namespace RockWeb.Blocks.Prayer
             if ( !(prayerRequest.IsApproved ?? false) && cbApproved.Checked )
             {
                 prayerRequest.ApprovedByPersonId = CurrentPerson.Id;
-                prayerRequest.ApprovedOnDate = DateTime.Now;
+                prayerRequest.ApprovedOnDateTime = DateTime.Now;
                 // reset the flag count only to zero ONLY if it had a value previously.
                 if ( prayerRequest.FlagCount.HasValue && prayerRequest.FlagCount > 0 )
                 {

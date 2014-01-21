@@ -14,7 +14,7 @@
         <asp:HiddenField ID="hfCommunicationId" runat="server" />
         <asp:HiddenField ID="hfChannelId" runat="server" />
 
-        <ul class="nav nav-pills">
+        <ul class="nav nav-pills nav-pagelist">
             <asp:Repeater ID="rptChannels" runat="server">
                 <ItemTemplate>
                     <li class='<%# (int)Eval("Key") == ChannelEntityTypeId ? "active" : "" %>'>
