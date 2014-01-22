@@ -79,7 +79,6 @@
                         <asp:BoundField DataField="DefinedValueTypeName" HeaderText="Name" SortExpression="DefinedValueTypeName" />
                         <Rock:DateTimeField DataField="SomeDateTime" HeaderText="DateTime" SortExpression="SomeDateTime" />
                         <Rock:BoolField DataField="SomeBoolean" HeaderText="Some Boolean" SortExpression="SomeBoolean" />
-                        <Rock:EditValueField />
                         <Rock:EditField />
                         <Rock:SecurityField />
                         <Rock:DeleteField />

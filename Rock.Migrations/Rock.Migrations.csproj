@@ -356,6 +356,10 @@
     <Compile Include="Migrations\201401211151533_NoteAttributes.Designer.cs">
       <DependentUpon>201401211151533_NoteAttributes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401212018517_HistoryPageBreadcrumb.cs" />
+    <Compile Include="Migrations\201401212018517_HistoryPageBreadcrumb.Designer.cs">
+      <DependentUpon>201401212018517_HistoryPageBreadcrumb.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -602,6 +606,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401211151533_NoteAttributes.resx">
       <DependentUpon>201401211151533_NoteAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401212018517_HistoryPageBreadcrumb.resx">
+      <DependentUpon>201401212018517_HistoryPageBreadcrumb.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
