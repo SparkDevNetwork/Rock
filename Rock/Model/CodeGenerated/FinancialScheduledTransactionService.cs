@@ -122,6 +122,10 @@ namespace Rock.Model
             target.GatewayScheduleId = source.GatewayScheduleId;
             target.CardReminderDate = source.CardReminderDate;
             target.LastRemindedDate = source.LastRemindedDate;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

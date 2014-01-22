@@ -112,15 +112,6 @@ namespace Rock.Model
         public DateTime? LastPasswordChangedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the date and time that the UserLogin was created.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.DateTime"/> representing when the UserLogin was created.
-        /// </value>
-        [DataMember]
-        public DateTime? CreationDateTime { get; set; }
-        
-        /// <summary>
         /// Gets or sets a flag indicating if the user is currently online and logged in to the system.
         /// </summary>
         /// <value>

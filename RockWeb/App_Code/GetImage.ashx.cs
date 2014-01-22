@@ -133,7 +133,7 @@ namespace RockWeb
             var binaryFileMetaData = binaryFileQuery.Select( a => new
             {
                 BinaryFileType_AllowCaching = a.BinaryFileType.AllowCaching,
-                LastModifiedDateTime = a.LastModifiedDateTime ?? DateTime.MaxValue,
+                LastModifiedDateTime = a.ModifiedDateTime ?? DateTime.MaxValue,
                 a.MimeType,
                 a.FileName
             } ).FirstOrDefault();

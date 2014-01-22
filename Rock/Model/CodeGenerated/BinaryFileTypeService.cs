@@ -115,6 +115,10 @@ namespace Rock.Model
             target.IconCssClass = source.IconCssClass;
             target.StorageEntityTypeId = source.StorageEntityTypeId;
             target.AllowCaching = source.AllowCaching;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

@@ -110,7 +110,6 @@ namespace Rock.Model
             target.LastActivityDateTime = source.LastActivityDateTime;
             target.LastLoginDateTime = source.LastLoginDateTime;
             target.LastPasswordChangedDateTime = source.LastPasswordChangedDateTime;
-            target.CreationDateTime = source.CreationDateTime;
             target.IsOnLine = source.IsOnLine;
             target.IsLockedOut = source.IsLockedOut;
             target.LastLockedOutDateTime = source.LastLockedOutDateTime;
@@ -119,6 +118,10 @@ namespace Rock.Model
             target.LastPasswordExpirationWarningDateTime = source.LastPasswordExpirationWarningDateTime;
             target.ApiKey = source.ApiKey;
             target.PersonId = source.PersonId;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

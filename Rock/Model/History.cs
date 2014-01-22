@@ -114,25 +114,6 @@ namespace Rock.Model
         [DataMember]
         public int? RelatedEntityId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> who created the history.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who created the history.
-        /// </value>
-        [DataMember]
-        public int? CreatedByPersonId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the date and time that the history was created.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.DateTime"/> representing the date and time when the history was created.
-        /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public DateTime CreationDateTime { get; set; }
-
         #endregion
 
         #region Virtual Properties
@@ -163,15 +144,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual EntityType RelatedEntityType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> who created the history.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.Person"/> who created the history.
-        /// </value>
-        [DataMember]
-        public virtual Person CreatedByPerson { get; set; }
 
         /// <summary>
         /// Gets the parent security authority of this History. Where security is inherited from.
@@ -307,7 +279,6 @@ namespace Rock.Model
             this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.Category ).WithMany().HasForeignKey( p => p.CategoryId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RelatedEntityType ).WithMany().HasForeignKey( p => p.RelatedEntityTypeId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete( false );
         }
     }
 
