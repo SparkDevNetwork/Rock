@@ -9,7 +9,11 @@
     */
 
 
-/* NA: Used to style a checkboxlist grouping -- based somewhat off the textarea of the rock-boot.less */
+/*
+    NA - This is used to style a checkboxlist grouping as seen (in the DefaultValues
+        of the DefinedValue editor) when editing something like the AbilityLevel person
+        attribute and changing it to 'allow multiple values'.  Added around 2/1/2013
+*/
 .checkboxlist-group {
     width: 196px;
     padding: 6px 11px 0px 11px;
@@ -27,106 +31,7 @@
     transition: border linear .2s, box-shadow linear .2s;
 }
 
-/* Ad Display */
-.ad-content {
-	padding: 10px;
-	border-top: 1px solid #515151;
-	border-bottom: 1px solid #515151;
-}
 
-
-/* DRT - Added to make asp.net panels look disabled when enabled is false */
-div.aspNetDisabled {
-    opacity: 0.5;
-}
-
-
-
-
-
-/* MP - Workflow Inactive Activity section */
-.workflow-activity-inactive
-{
-}
-
-
-/* DT - Try to fix smartsearch dropdown ui */
-.smart-search .ui-autocomplete 
-{
-    position: absolute; 
-    left: 0px; 
-    top: 4px; 
-    width: 250px;
-    z-index: 90;
-    
-    list-style: none;
-    padding: 12px;
-    background-color: #7c7c7c;
-    color: #fff;
-    border: 1px solid #515151;
-    border-radius: 4px;
-    opacity: .9;
-    z-index: 9999 !important;
-
-}
-
-.ui-autocomplete li 
-{
-    margin-bottom: 4px;   
-}
-
-.ui-autocomplete li:last-child 
-{
-    margin-bottom: 0;   
-}
-
-.ui-autocomplete a
-{
-    color: #fff;
-    text-decoration: none;
-    cursor: pointer;
-    padding: 4px;
-}
-
-.ui-autocomplete a:hover
-{
-    background: #bbb;
-    border-radius: 4px;
-}
- 
-
-
-/* General and standard Note/comment styling for the icon that sits to the left of the comment */
-.note-container article i
-{
-    font-size: 28px;
-    float: left;
-    width: 28px;
-    margin: 0 12px 0 4px;
-}
-
-/* MP - Workflow Activities Readonly List Toggler */
-
-.workflow-activities-readonly-header
-{
-	color: #515151;
-	left: auto;
-	top: auto;
-	padding-top: 8px;
-    padding-right: 8px;
-    padding-bottom: 8px;
-}
-
-.workflow-activities-readonly-header:hover
-{
-	color: inherit;
-	text-decoration: none;
-}
-
-.workflow-activities-readonly-header .caret {
-    border-top: 4px solid #515151;
-    margin-top: 8px;
-}
 
 /* 
     JO - Border radius correction for Rock Bootstrap theme. This is needed
@@ -142,52 +47,6 @@ div.aspNetDisabled {
   border-radius: 0 4px 4px 0;
 }
 
-/* DS - CSS for credit card stripe */
-.card-visa, .card-mastercard, .card-amex, .card-discover, .card-diners, .card-jcb 
-{
-	display: inline-block;
-	width: 50px;
-	height: 30px;
-	overflow: hidden;
-	text-align: left;
-	text-indent: -999px;
-	background: url(../../Assets/Images/sprite-cards.png) 0 0 no-repeat;
-}
-
-.card-mastercard 
-{
-	background-position: -55px 0;
-}
-
-.card-amex 
-{
-	background-position: -110px 0;
-}
-
-.card-discover 
-{
-	background-position: -165px 0;
-}
-
-.card-diners 
-{
-	background-position: -220px 0;
-}
-
-.card-jcb 
-{
-	background-position: -660px 0;
-}
-
-.is-visa li, .is-mastercard li, .is-amex li, .is-discover li, .is-diners li, .is-jcb li, .is-nothing li 
-{
-	opacity: .2;
-}
-
-.is-visa li.card-visa, .is-mastercard li.card-mastercard, .is-amex li.card-amex, .is-discover li.card-discover, .is-diners li.card-diners, .is-jcb li.card-jcb 
-{
-	opacity: 1;
-}
 
 /* DS - CSS for finance styling */
 .address-line
@@ -213,6 +72,7 @@ div.aspNetDisabled {
     }
 }
 
+/* used on AddTransaction and GivingProfileDetail blocks */
 .remove-margin
 {
     margin: 0;
@@ -291,15 +151,8 @@ table.server-variables
     display:table-row;
 }
 
-/*  DT - Person Detail */
 
-/* generic */
-small
-{
-    font-family: 'OpenSansLight', 'Helvetica Neue',Helvetica,Arial,sans-serif;
-    font-size: 13px;
-    margin-top: 2px;
-}
+
 
 .persondetails-header .photo a {
     cursor: -webkit-zoom-in;
@@ -449,6 +302,80 @@ span.cke_button__rockmergefield_label {
 
 /* css for ckeditor rockfilebrowser images (see Rock.Rest\Controllers\FileBrowserController.cs ) */
 img.file-browser-image {
-    width: 70px;
-    height: 70px;
+    width: 50px;
+    height: 50px;
+}
+
+
+/*css for RSS Item paging*/
+
+
+.rss-item-pager .previous > a, .rss-item-pager .previous > span {
+    float: left;
+}
+
+.rss-item-pager .next > a, .rss-item-pager .next > span {
+    float: right;
+}
+
+.rss-item-pager li > a, .rss-item-pager li > span {
+    display: inline-block;
+
+}
+
+.rss-item-pager:after {
+    clear: both;
+}
+.rss-item-pager:before, .rss-item-pager:after {
+    content: " ";
+    display: table;
+}
+.rss-item-pager:after {
+    clear: both;
+}
+.rss-item-pager:before, .rss-item-pager:after {
+    content: " ";
+    display: table;
+}
+
+.rss-item-pager {
+    list-style: none outside none;
+    margin: 20px 0;
+    padding-left: 0;
+    text-align: center;
+}
+
+/*
+    NA - This is used to style the secondary text <small> http://getbootstrap.com/css/#type
+        inside a panel-title.  See example in the RockUpdate block.
+        I think this may be a bug with our panel colors, or perhaps
+        it's just something that needs to be added in a theme's style.
+        I don't care about which color to use just one that shows up
+        with our choice of panel-primary and panel-default headers.
+        Added on 1/14/2014
+*/
+.panel-title small {
+    color: #ccc;
+
+}
+
+/*
+    DT - The note editor was updated to support optionally displaying a person image instead
+    of a font-awesome icon with a comment.  When configured this way, it renders an <img> tag 
+    instead of an <i> tag for the thumbnail image. 
+    Added on 1/19/2014
+*/
+
+/* View Mode */
+.panel-note article > img
+{
+    float: left;
+    margin: 0 12px 0 4px;
+}
+
+/* Edit mode (this isn't really working since the text area to the right of it takes the full width) */
+.panel-noteentry > .panel-body > img
+{
+    float: left;
+    margin: 0 12px 0 4px;
 }

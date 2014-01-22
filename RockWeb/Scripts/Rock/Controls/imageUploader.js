@@ -5,10 +5,16 @@
 
     Rock.controls.imageUploader = (function () {
         var _configure = function (options) {
+            options.isBinaryFile = options.isBinaryFile || 'T';
+
             var wsUrl = Rock.settings.get('baseUrl')
                         + 'ImageUploader.ashx?'
-                        + 'fileId=' + options.fileId
-                        + '&fileTypeGuid=' + options.fileTypeGuid;
+                        + 'isBinaryFile=' + options.isBinaryFile;
+
+            if (options.isBinaryFile == 'T') {
+                wsUrl += '&fileId=' + options.fileId
+                    + '&fileTypeGuid=' + options.fileTypeGuid;
+            }
 
             // uses https://github.com/blueimp/jQuery-File-Upload
             $('#' + options.controlId).fileupload({
@@ -16,13 +22,25 @@
                 dataType: 'json',
                 dropZone: $('#' + options.controlId).closest('.imageupload-dropzone'),
                 autoUpload: true,
+                submit: options.submitFunction,
                 done: function (e, data) {
                     var $el = $('#' + options.imgThumbnail);
                     $('#' + options.hfFileId).val(data.response().result.Id);
-                    $el.attr('src', Rock.settings.get('baseUrl') + 'GetImage.ashx?id=' + data.response().result.Id + '&width=50');
+                    var getImageUrl = Rock.settings.get('baseUrl')
+                        + 'GetImage.ashx?'
+                        + 'isBinaryFile=' + (options.isBinaryFile || 'T')
+                        + '&id=' + data.response().result.Id
+                        + '&fileName=' + data.response().result.FileName
+                        + '&width=50';
+
+                    $el.attr('src', getImageUrl);
                     $('#' + options.aRemove).show();
                     if (options.postbackScript) {
                         eval(options.postbackScript);
+                    }
+
+                    if (options.doneFunction) {
+                        options.doneFunction(e, data);
                     }
                 }
             });

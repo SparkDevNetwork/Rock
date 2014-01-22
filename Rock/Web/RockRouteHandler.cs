@@ -1,7 +1,18 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
 //
 using System;
 using System.Collections.Generic;
@@ -9,6 +20,8 @@ using System.IO;
 using System.Runtime.Caching;
 using System.Web.Compilation;
 using System.Web.Routing;
+
+using Rock.Web.Cache;
 
 namespace Rock.Web
 {
@@ -52,48 +65,13 @@ namespace Rock.Web
             // If page has not been specified get the site by the domain and use the site's default page
             else
             {
-                string host = requestContext.HttpContext.Request.Url.Host;
-                string cacheKey = "Rock:DomainSites";
-
-                ObjectCache cache = MemoryCache.Default;
-                Dictionary<string, int> sites = cache[cacheKey] as Dictionary<string, int>;
-                if ( sites == null )
-                    sites = new Dictionary<string, int>();
-
-                Rock.Web.Cache.SiteCache site = null;
-                if ( sites.ContainsKey( host ) )
-                    site = Rock.Web.Cache.SiteCache.Read( sites[host] );
-                else
+                SiteCache site = SiteCache.GetSiteByDomain(requestContext.HttpContext.Request.Url.Host);
+                
+                // if not found use the default site
+                if (site == null)
                 {
-                    int siteId = 1;
-
-                    // Attempt to find site first by an exact match to domain, then by a contained domain name
-                    Rock.Model.SiteDomainService siteDomainService = new Rock.Model.SiteDomainService();
-                    Rock.Model.SiteDomain siteDomain = siteDomainService.GetByDomain( requestContext.HttpContext.Request.Url.Host );
-                    if ( siteDomain == null )
-                    {
-                        siteDomain = siteDomainService.GetByDomainContained( requestContext.HttpContext.Request.Url.Host );
-                    }
-                    if ( siteDomain != null )
-                    {
-                        siteId = siteDomain.SiteId;
-                    }
-                    else
-                    {
-                        var siteService = new Rock.Model.SiteService();
-                        var rockSite = siteService.Get( new Guid( SystemGuid.Site.SITE_ROCK_INTERNAL ) );
-                        if ( rockSite != null )
-                        {
-                            siteId = rockSite.Id;
-                        }
-                    }
-
-                    sites.Add( host, siteId );
-                    site = Rock.Web.Cache.SiteCache.Read( siteId );
-
+                    site = SiteCache.Read( SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid() );
                 }
-
-                cache[cacheKey] = sites;
 
                 if ( site != null) 
                 {
@@ -112,25 +90,36 @@ namespace Rock.Web
                     throw new SystemException( "Invalid Site Configuration" );
             }
 
-            Rock.Web.Cache.PageCache page = null;
+            PageCache page = null;
 
             if ( !string.IsNullOrEmpty( pageId ) )
             {
                 int pageIdNumber = 0;
                 if ( Int32.TryParse( pageId, out pageIdNumber ) )
                 {
-                    page = Rock.Web.Cache.PageCache.Read( pageIdNumber );
+                    page = PageCache.Read( pageIdNumber );
                 }
             }
 
             if ( page == null )
             {
-                return new HttpHandlerError( 404 );
+                // try to get site's 404 page
+                SiteCache site = SiteCache.GetSiteByDomain(requestContext.HttpContext.Request.Url.Host);
+                if (site != null && site.PageNotFoundPageId != null)
+                {
+                    page = PageCache.Read(site.PageNotFoundPageId ?? 0);
+                }
+                else
+                {
+                    // no 404 page found for the site
+                    return new HttpHandlerError(404);
+                }
+
             }
 
             string theme = page.Layout.Site.Theme;
             string layout = page.Layout.FileName;
-            string layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
+            string layoutPath = PageCache.FormatPath( theme, layout );
 
             try
             {
@@ -154,7 +143,7 @@ namespace Rock.Web
                 }
 
                 // Build the path to the aspx file to
-                layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
+                layoutPath = PageCache.FormatPath( theme, layout );
 
                 // Return the default layout and/or theme
                 Rock.Web.UI.RockPage cmsPage = (Rock.Web.UI.RockPage)BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );

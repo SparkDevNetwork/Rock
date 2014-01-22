@@ -79,7 +79,6 @@
                         <asp:BoundField DataField="DefinedValueTypeName" HeaderText="Name" SortExpression="DefinedValueTypeName" />
                         <Rock:DateTimeField DataField="SomeDateTime" HeaderText="DateTime" SortExpression="SomeDateTime" />
                         <Rock:BoolField DataField="SomeBoolean" HeaderText="Some Boolean" SortExpression="SomeBoolean" />
-                        <Rock:EditValueField />
                         <Rock:EditField />
                         <Rock:SecurityField />
                         <Rock:DeleteField />
@@ -219,10 +218,12 @@
             <a id="Other"></a>
             <h1 runat="server">Other</h1>
 
+            <a id="ScheduleBuilder"></a>
             <div runat="server" class="r-example">
                 <Rock:ScheduleBuilder ID="scheduleBuilder" runat="server" Label="Rock:ScheduleBuilder" OnSaveSchedule="scheduleBuilder_SaveSchedule" />
             </div>
 
+            <a id="GeoPicker"></a>
             <div runat="server" class="r-example">
                 <Rock:GeoPicker ID="geoPicker" runat="server" Label="Rock:GeoPicker (Point mode)" DrawingMode="Point" />
             </div>
@@ -231,10 +232,10 @@
                 <Rock:GeoPicker ID="geoPicker1" runat="server" Label="Rock:GeoPicker (Polygon mode)" DrawingMode="Polygon" />
             </div>
 
-
-            <%-- 
-                <Rock:MergeFieldPicker ID="LabeledCheckBox4" runat="server" Label="Rock:MergeFieldPicker" />
-            --%>
+            <a id="MergeFieldPicker"></a>
+            <div runat="server" class="r-example">
+                <Rock:MergeFieldPicker ID="mergeFieldPicker" runat="server" Label="Rock:MergeFieldPicker" />
+            </div>
 
             <a id="BinaryFilePicker"></a>
             <h2 runat="server">BinaryFilePicker, BinaryFileTypePicker</h2>
@@ -297,7 +298,7 @@
                 <Rock:HighlightLabel ID="hlPrimary" runat="server" LabelType="Primary" Text="Primary" />
                 <Rock:HighlightLabel ID="hlSuccess" runat="server" LabelType="Success" Text="Success" />
                 <Rock:HighlightLabel ID="hlInfo" runat="server" LabelType="Info" Text="Info" />
-                <Rock:HighlightLabel ID="hlWarning" runat="server" LabelType="Warning" Text="Warning"/>
+                <Rock:HighlightLabel ID="hlWarning" runat="server" LabelType="Warning" Text="Warning" />
                 <Rock:HighlightLabel ID="hlDanger" runat="server" LabelType="Danger" Text="Danger" />
                 <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" Text="Campus" />
                 <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" Text="Type" />
@@ -337,11 +338,11 @@
                     DataLoadingText="&lt;i class='fa fa-spinner fa-spin fa-2x'&gt;&lt;/i&gt; Saving" />
             </div>
 
-            <a id="NoteEditor"></a>
-            <h2 runat="server">Rock:NoteEditor</h2>
+            <a id="NoteControl"></a>
+            <h2 runat="server">Rock:NoteControl</h2>
             <div id="Div3" runat="server" class="r-example">
                 <section class="panel-note">
-                    <Rock:NoteEditor ID="noteExample" runat="server" IsAlert="false" IsPrivate="false" Text="Here is some example note text." CanEdit="true" />
+                    <Rock:NoteControl ID="noteExample" runat="server" IsAlert="false" IsPrivate="false" Text="Here is some example note text." CanEdit="true" />
                 </section>
             </div>
 
@@ -357,7 +358,7 @@
             <a id="HtmlEditor"></a>
             <h2 runat="server">Rock:HtmlEditor</h2>
             <div runat="server" class="r-example">
-                <Rock:HtmlEditor ID="htmlEditorFull" runat="server" Label="HtmlEditor" Toolbar="Full"/>
+                <Rock:HtmlEditor ID="htmlEditorFull" runat="server" Label="HtmlEditor" Toolbar="Full" />
             </div>
 
             <h2 runat="server">Rock:HtmlEditor</h2>
@@ -403,11 +404,12 @@
                 </div>
             </div>
 
-             <h2 runat="server">Rock jQuery UI Library</h2>
+            <h2 runat="server">Rock jQuery UI Library</h2>
             To help promote consistance we have created a standard Rock jQuery UI Library.  Below are the current functions with their usage patters.
             
             <h3 runat="server">rockFadeIn()</h3>
-            <p>Use this to fade in a selected DOM object in. The function hides the selector and then fades it in. Using this object will help provide
+            <p>
+                Use this to fade in a selected DOM object in. The function hides the selector and then fades it in. Using this object will help provide
                 consistant fade behavior.
             </p>
             <strong>Usage Examples</strong>

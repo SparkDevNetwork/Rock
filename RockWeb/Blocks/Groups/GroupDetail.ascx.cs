@@ -1,10 +1,22 @@
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
@@ -22,6 +34,10 @@ using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Groups
 {
+    [DisplayName( "Group Detail" )]
+    [Category( "Groups" )]
+    [Description( "Displays the details of the given group." )]
+
     [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false, "", "", 0 )]
     [BooleanField( "Show Edit", "", true, "", 1 )]
     [BooleanField( "Limit to Security Role Groups", "", false, "", 2 )]
@@ -597,7 +613,10 @@ namespace RockWeb.Blocks.Groups
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 group = new GroupService().Get( itemKeyValue );
-                editAllowed = group.IsAuthorized( "Edit", CurrentPerson );
+                if ( group != null )
+                {
+                    editAllowed = group.IsAuthorized( "Edit", CurrentPerson );
+                }
             }
             else
             {
@@ -754,10 +773,10 @@ namespace RockWeb.Blocks.Groups
                         groupLocationState.Location = new Location();
                         groupLocationState.Location.CopyPropertiesFrom( groupLocation.Location );
                     }
-                    if ( groupLocation.LocationTypeValue != null)
+                    if ( groupLocation.GroupLocationTypeValue != null)
                     {
-                        groupLocationState.LocationTypeValue = new DefinedValue();
-                        groupLocationState.LocationTypeValue.CopyPropertiesFrom( groupLocation.LocationTypeValue );
+                        groupLocationState.GroupLocationTypeValue = new DefinedValue();
+                        groupLocationState.GroupLocationTypeValue.CopyPropertiesFrom( groupLocation.GroupLocationTypeValue );
                     }
 
                     GroupLocationsState.Add( groupLocationState );
@@ -901,7 +920,10 @@ namespace RockWeb.Blocks.Groups
                 foreach ( var groupLocation in points)
                 {
                     var pointsDict = new Dictionary<string, object>();
-                    pointsDict.Add( "type", groupLocation.LocationTypeValue.Name );
+                    if ( groupLocation.GroupLocationTypeValue != null )
+                    {
+                        pointsDict.Add( "type", groupLocation.GroupLocationTypeValue.Name );
+                    }
                     pointsDict.Add( "latitude", groupLocation.Location.GeoPoint.Latitude );
                     pointsDict.Add( "longitude", groupLocation.Location.GeoPoint.Longitude );
                     pointsList.Add( pointsDict );
@@ -915,7 +937,10 @@ namespace RockWeb.Blocks.Groups
                 foreach ( var groupLocation in polygons )
                 {
                     var polygonDict = new Dictionary<string, object>();
-                    polygonDict.Add( "type", groupLocation.LocationTypeValue.Name);
+                    if ( groupLocation.GroupLocationTypeValue != null )
+                    {
+                        polygonDict.Add( "type", groupLocation.GroupLocationTypeValue.Name );
+                    }
                     polygonDict.Add( "polygon_wkt", groupLocation.Location.GeoFence.AsText());
                     polygonDict.Add( "google_encoded_polygon", groupLocation.Location.EncodeGooglePolygon() );
                     polygonsList.Add( polygonDict );
@@ -1091,48 +1116,73 @@ namespace RockWeb.Blocks.Groups
 
         #region Location Grid and Picker
 
-        void gLocations_Add( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the Add event of the gLocations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gLocations_Add( object sender, EventArgs e )
         {
-            ddlMember.Items.Clear();
+            gLocations_ShowEdit( Guid.Empty );
+        }
 
-            int? groupTypeId = ddlGroupType.SelectedValueAsId();
-            if ( groupTypeId.HasValue )
+        /// <summary>
+        /// Handles the Edit event of the gLocations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gLocations_Edit( object sender, RowEventArgs e )
+        {
+            Guid locationGuid = (Guid)e.RowKeyValue;
+            gLocations_ShowEdit( locationGuid );
+        }
+
+        /// <summary>
+        /// Gs the locations_ show edit.
+        /// </summary>
+        /// <param name="locationGuid">The location unique identifier.</param>
+        protected void gLocations_ShowEdit( Guid locationGuid )
+        {
+            using ( new UnitOfWorkScope() )
             {
-                var groupType = GroupTypeCache.Read( groupTypeId.Value );
-                if ( groupType != null )
+                ddlMember.Items.Clear();
+
+                int? groupTypeId = ddlGroupType.SelectedValueAsId();
+                if ( groupTypeId.HasValue )
                 {
-                    GroupLocationPickerMode groupTypeModes = groupType.LocationSelectionMode;
-                    if ( groupTypeModes != GroupLocationPickerMode.None )
+                    var groupType = GroupTypeCache.Read( groupTypeId.Value );
+                    if ( groupType != null )
                     {
-                        // Set the location picker modes allowed based on the group type's allowed modes
-                        LocationPickerMode modes = LocationPickerMode.None;
-                        if ( ( groupTypeModes & GroupLocationPickerMode.Named ) == GroupLocationPickerMode.Named )
+                        GroupLocationPickerMode groupTypeModes = groupType.LocationSelectionMode;
+                        if ( groupTypeModes != GroupLocationPickerMode.None )
                         {
-                            modes = modes | LocationPickerMode.Named;
-                        }
-                        if ( ( groupTypeModes & GroupLocationPickerMode.Address ) == GroupLocationPickerMode.Address )
-                        {
-                            modes = modes | LocationPickerMode.Address;
-                        }
-                        if ( ( groupTypeModes & GroupLocationPickerMode.Point ) == GroupLocationPickerMode.Point )
-                        {
-                            modes = modes | LocationPickerMode.Point;
-                        }
-                        if ( ( groupTypeModes & GroupLocationPickerMode.Polygon ) == GroupLocationPickerMode.Polygon )
-                        {
-                            modes = modes | LocationPickerMode.Polygon;
-                        }
+                            // Set the location picker modes allowed based on the group type's allowed modes
+                            LocationPickerMode modes = LocationPickerMode.None;
+                            if ( ( groupTypeModes & GroupLocationPickerMode.Named ) == GroupLocationPickerMode.Named )
+                            {
+                                modes = modes | LocationPickerMode.Named;
+                            }
+                            if ( ( groupTypeModes & GroupLocationPickerMode.Address ) == GroupLocationPickerMode.Address )
+                            {
+                                modes = modes | LocationPickerMode.Address;
+                            }
+                            if ( ( groupTypeModes & GroupLocationPickerMode.Point ) == GroupLocationPickerMode.Point )
+                            {
+                                modes = modes | LocationPickerMode.Point;
+                            }
+                            if ( ( groupTypeModes & GroupLocationPickerMode.Polygon ) == GroupLocationPickerMode.Polygon )
+                            {
+                                modes = modes | LocationPickerMode.Polygon;
+                            }
 
-                        bool displayMemberTab = ( groupTypeModes & GroupLocationPickerMode.GroupMember ) == GroupLocationPickerMode.GroupMember;
-                        bool displayOtherTab = modes != LocationPickerMode.None;
+                            bool displayMemberTab = ( groupTypeModes & GroupLocationPickerMode.GroupMember ) == GroupLocationPickerMode.GroupMember;
+                            bool displayOtherTab = modes != LocationPickerMode.None;
 
-                        ulNav.Visible = displayOtherTab && displayMemberTab;
-                        pnlMemberSelect.Visible = displayMemberTab;
-                        pnlLocationSelect.Visible = displayOtherTab && !displayMemberTab;
+                            ulNav.Visible = displayOtherTab && displayMemberTab;
+                            pnlMemberSelect.Visible = displayMemberTab;
+                            pnlLocationSelect.Visible = displayOtherTab && !displayMemberTab;
 
-                        if (displayMemberTab)
-                        {
-                            using ( new UnitOfWorkScope() )
+                            if ( displayMemberTab )
                             {
                                 int groupId = hfGroupId.ValueAsInt();
                                 if ( groupId != 0 )
@@ -1145,38 +1195,77 @@ namespace RockWeb.Blocks.Groups
                                         foreach ( Group family in personService.GetFamilies( member.Person ) )
                                         {
                                             foreach ( GroupLocation familyGroupLocation in family.GroupLocations
-                                                .Where( l => l.IsMappedLocation && !l.LocationTypeValue.Guid.Equals( previousLocationType ) ) )
+                                                .Where( l => l.IsMappedLocation && !l.GroupLocationTypeValue.Guid.Equals( previousLocationType ) ) )
                                             {
-                                                ddlMember.Items.Add( new ListItem(
-                                                    string.Format( "{0} {1} ({2})", member.Person.FullName, familyGroupLocation.LocationTypeValue.Name, familyGroupLocation.Location.ToString() ),
-                                                    string.Format( "{0}|{1}", familyGroupLocation.Location.Id, member.PersonId ) ) );
+                                                ListItem li = new ListItem(
+                                                    string.Format( "{0} {1} ({2})", member.Person.FullName, familyGroupLocation.GroupLocationTypeValue.Name, familyGroupLocation.Location.ToString() ),
+                                                    string.Format( "{0}|{1}", familyGroupLocation.Location.Id, member.PersonId ) );
+
+                                                ddlMember.Items.Add( li );
                                             }
                                         }
                                     }
 
                                 }
                             }
+
+                            if ( displayOtherTab )
+                            {
+                                locpGroupLocation.AllowedPickerModes = modes;
+                            }
+
+                            ddlLocationType.DataSource = groupType.LocationTypeValues.ToList();
+                            ddlLocationType.DataBind();
+
+                            var groupLocation = GroupLocationsState.FirstOrDefault( l => l.Guid.Equals( locationGuid ) );
+                            if ( groupLocation != null && groupLocation.Location != null )
+                            {
+                                if ( displayOtherTab )
+                                {
+                                    locpGroupLocation.CurrentPickerMode = locpGroupLocation.GetBestPickerModeForLocation( groupLocation.Location );
+                                    if ( groupLocation.Location != null )
+                                    {
+                                        locpGroupLocation.Location = new LocationService().Get( groupLocation.Location.Id );
+                                    }
+                                }
+
+                                if ( displayMemberTab && ddlMember.Items.Count > 0 && groupLocation.GroupMemberPersonId.HasValue )
+                                {
+                                    ddlMember.SetValue( string.Format( "{0}|{1}", groupLocation.LocationId, groupLocation.GroupMemberPersonId ) );
+                                    LocationTypeTab = MEMBER_LOCATION_TAB_TITLE;
+                                }
+                                else if ( displayOtherTab )
+                                {
+                                    LocationTypeTab = OTHER_LOCATION_TAB_TITLE;
+                                }
+
+                                ddlLocationType.SetValue( groupLocation.GroupLocationTypeValueId );
+
+                                hfAddLocationGroupGuid.Value = locationGuid.ToString();
+                            }
+                            else
+                            {
+                                hfAddLocationGroupGuid.Value = string.Empty;
+                                LocationTypeTab = ( displayMemberTab && ddlMember.Items.Count > 0 ) ? MEMBER_LOCATION_TAB_TITLE : OTHER_LOCATION_TAB_TITLE;
+                            }
+
+
+                            rptLocationTypes.DataSource = _tabs;
+                            rptLocationTypes.DataBind();
+                            ShowSelectedPane();
+
+                            ShowDialog( "Locations", true );
                         }
-
-                        if (displayOtherTab)
-                        {
-                            locpGroupLocation.AllowedPickerModes = modes;
-                        }
-
-                        ddlLocationType.DataSource = groupType.LocationTypeValues.ToList();
-                        ddlLocationType.DataBind();
-
-                        LocationTypeTab = (displayMemberTab && ddlMember.Items.Count > 0) ? MEMBER_LOCATION_TAB_TITLE : OTHER_LOCATION_TAB_TITLE;
-                        rptLocationTypes.DataSource = _tabs;
-                        rptLocationTypes.DataBind();
-                        ShowSelectedPane();
-
-                        ShowDialog( "Locations", true );
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Handles the Delete event of the gLocations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gLocations_Delete( object sender, RowEventArgs e )
         {
             Guid rowGuid = (Guid)e.RowKeyValue;
@@ -1184,15 +1273,26 @@ namespace RockWeb.Blocks.Groups
 
             BindLocationsGrid();
         }
-        
-        void gLocations_GridRebind( object sender, EventArgs e )
+
+        /// <summary>
+        /// Handles the GridRebind event of the gLocations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gLocations_GridRebind( object sender, EventArgs e )
         {
             BindLocationsGrid();
         }
 
+        /// <summary>
+        /// Handles the SaveClick event of the dlgLocations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgLocations_SaveClick( object sender, EventArgs e )
         {
-            var groupLocation = new GroupLocation();
+            Location location = null;
+            int? memberPersonId = null;
 
             if ( LocationTypeTab.Equals( MEMBER_LOCATION_TAB_TITLE ) )
             {
@@ -1201,17 +1301,13 @@ namespace RockWeb.Blocks.Groups
                     var ids = ddlMember.SelectedValue.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
                     if ( ids.Length == 2 )
                     {
-                        int locationId = int.Parse( ids[0] );
-                        int personId = int.Parse( ids[1] );
-
-                        var location = new LocationService().Get( locationId );
-                        if ( location != null )
+                        var dbLocation = new LocationService().Get( int.Parse( ids[0] ) );
+                        if (dbLocation != null)
                         {
-                            groupLocation.Location = new Location();
-                            groupLocation.Location.CopyPropertiesFrom( location );
+                            location = new Location();
+                            location.CopyPropertiesFrom(dbLocation);
                         }
-
-                        groupLocation.GroupMemberPersonId = personId;
+                        memberPersonId = int.Parse( ids[1] );
                     }
                 }
             }
@@ -1219,32 +1315,40 @@ namespace RockWeb.Blocks.Groups
             {
                 if (locpGroupLocation.Location != null)
                 {
-                    groupLocation.Location = new Location();
-                    groupLocation.Location.CopyPropertiesFrom( locpGroupLocation.Location );
+                    location = new Location();
+                    location.CopyPropertiesFrom( locpGroupLocation.Location );
                 }
             }
 
-            if (groupLocation.Location != null)
+            if (location != null)
             { 
-                groupLocation.LocationId = groupLocation.Location.Id;
-
-                // Add the location (ignore if they didn't pick one, or they picked one that already is selected)
-                if ( !GroupLocationsState.Any( a => a.LocationId == groupLocation.LocationId ) )
+                GroupLocation groupLocation = null;
+                
+                Guid guid = Guid.Empty;
+                if (Guid.TryParse(hfAddLocationGroupGuid.Value, out guid))
                 {
-                    // Set Location Type
-                    groupLocation.GroupLocationTypeValueId = ddlLocationType.SelectedValueAsId();
-                    if ( groupLocation.GroupLocationTypeValueId.HasValue )
-                    {
-                        groupLocation.LocationTypeValue = new DefinedValue();
-                        var definedValue = new DefinedValueService().Get( groupLocation.GroupLocationTypeValueId.Value );
-                        if ( definedValue != null )
-                        {
-                            groupLocation.LocationTypeValue.CopyPropertiesFrom( definedValue );
-                        }
-                    }
+                    groupLocation = GroupLocationsState.FirstOrDefault( l => l.Guid.Equals(guid));
+                }
 
-                    // Add to state
-                    GroupLocationsState.Add( groupLocation );
+                if (groupLocation == null)
+                {
+                    groupLocation = new GroupLocation();
+                    GroupLocationsState.Add(groupLocation);
+                }
+
+                groupLocation.GroupMemberPersonId = memberPersonId;
+                groupLocation.Location = location;
+                groupLocation.LocationId = groupLocation.Location.Id;
+                groupLocation.GroupLocationTypeValueId = ddlLocationType.SelectedValueAsId();
+
+                if ( groupLocation.GroupLocationTypeValueId.HasValue )
+                {
+                    groupLocation.GroupLocationTypeValue = new DefinedValue();
+                    var definedValue = new DefinedValueService().Get( groupLocation.GroupLocationTypeValueId.Value );
+                    if ( definedValue != null )
+                    {
+                        groupLocation.GroupLocationTypeValue.CopyPropertiesFrom( definedValue );
+                    }
                 }
             }
 
@@ -1253,6 +1357,9 @@ namespace RockWeb.Blocks.Groups
             HideDialog();
         }
 
+        /// <summary>
+        /// Binds the locations grid.
+        /// </summary>
         private void BindLocationsGrid()
         {
             gLocations.Actions.ShowAdd = AllowMultipleLocations || !GroupLocationsState.Any();

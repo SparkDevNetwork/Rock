@@ -1,0 +1,61 @@
+﻿/*
+    Used to manage styles for specific blocks.
+
+    1. SQL Command - block to query database directly
+    2. Data Views - block for creating data views
+
+*/
+
+
+
+// 1. SQL Command
+// -------------------------
+
+.sql-comand
+{
+    .panel
+    {
+        margin-bottom: 24px;
+    }
+}
+
+// 2. Data Views
+// -------------------------
+
+/* data views */
+.filter-toogle {
+
+    padding-top: 6px;
+
+    & > span {
+        float: left;
+    }
+
+    .controls {
+        float: left;
+
+        .switch {
+	        margin: 0 6px;
+        }
+    }
+} 
+
+.filter-item-select {
+
+    span {
+        float: left;
+        padding: 8px 6px 0 0;
+    }
+
+    select {
+        float: left;
+        width: 250px;
+    }
+}
+
+// add top margin to checkbox lists in filters
+.field-criteria {
+    .checkbox-inline {
+        margin-top: 8px;
+    }
+}

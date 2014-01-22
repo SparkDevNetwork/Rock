@@ -1,7 +1,18 @@
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
 //
 using System;
 using System.Collections.Generic;
@@ -10,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Model;
+using Rock;
 
 namespace Rock.Web.UI.Controls
 {
@@ -28,6 +40,16 @@ namespace Rock.Web.UI.Controls
              base.DefaultText = "Add Merge Field";
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+            ItemRestUrlExtraParams = "/" + MergeFields.AsDelimited( "," );
+        }
+        
         /// <summary>
         /// Gets or sets the merge fields.
         /// </summary>
@@ -50,7 +72,6 @@ namespace Rock.Web.UI.Controls
             set 
             {
                 ViewState["MergeFields"] = value;
-                ItemRestUrlExtraParams = "/" + value.AsDelimited(",");
             }
         }
 
@@ -71,7 +92,7 @@ namespace Rock.Web.UI.Controls
                     
                     if ( nodes.Count > 1 )
                     {
-                        InitialItemParentIds = nodes.Take( nodes.Count - 1 ).ToList().AsDelimited( "," );
+                        InitialItemParentIds = nodes.Take( nodes.Count - 1 ).Select(a => a.Quoted()).ToList().AsDelimited( "," );
                     }
                 }
             }
@@ -107,7 +128,7 @@ namespace Rock.Web.UI.Controls
 
                         if ( InitialItemParentIds == string.Empty && nodes.Count > 1 )
                         {
-                            InitialItemParentIds = nodes.Take( nodes.Count - 1 ).ToList().AsDelimited( "," );
+                            InitialItemParentIds = nodes.Take( nodes.Count - 1 ).Select(a => a.Quoted()).ToList().AsDelimited( "," );
                         }
                     }
                 }

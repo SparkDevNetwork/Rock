@@ -23,6 +23,12 @@
 @text-selection-color: @adminbar-bg;
 @text-selection-text-color: @adminbar-text-color;
 
+// spacing multipliers / used to multiply by the grid-gutter-width to get spacing sizes
+@spacing-sm: 0.25;
+@spacing-md: 0.5;
+@spacing-lg: 1;
+@spacing-xl: 2;
+
 // Page Styling
 // -------------------------
 
@@ -60,10 +66,7 @@
 @grid-footer-button-bg: @accent-semibold-color;
 @grid-footer-button-text-color: @accent-semibold-text-color;
 
-@pagination-bg: @accent-light-color;
-@pagination-hover-bg: lighten(@accent-light-color, 5%);
-@pagination-border: darken(@accent-light-color, 10%);
-@pagination-active-bg: @accent-semibold-color;
+// pagination variables below in bootstrap section
 
 // Admin Bar
 @adminbar-bg: #445c72;
@@ -106,11 +109,11 @@
 @pagelist-text-color: @accent-text-color;
 
 // Tags
-@tag-bg: #c4ced6;
-@tag-text-color: @accent-bold-text-color;
+@tag-bg: @accent-semibold-color;
+@tag-text-color: @accent-semibold-text-color;
 @tag-border-radius: @border-radius-base;
-@tag-dot-color: #d6d6d6;
-@tag-bg-alt: #aec2d4;
+@tag-dot-color: @accent-light-color;
+@tag-bg-alt: @accent-bold-color;
 
 // Smart Search
 @smartsearch-bg: rgba(255, 255, 255, .1);
@@ -474,16 +477,15 @@
 // Pagination
 // -------------------------
 
-@pagination-bg:                        #fff;
-@pagination-border:                    #ddd;
+@pagination-bg:                        @accent-light-color;
+@pagination-border:                    darken(@accent-light-color, 10%);
 
-@pagination-hover-bg:                  @gray-lighter;
+@pagination-hover-bg:                  lighten(@accent-light-color, 5%);
 
-@pagination-active-bg:                 @brand-primary;
-@pagination-active-color:              #fff;
+@pagination-active-bg:                 @accent-semibold-color;
+@pagination-active-color:              @accent-semibold-text-color;
 
 @pagination-disabled-color:            @gray-light;
-
 
 // Pager
 // -------------------------

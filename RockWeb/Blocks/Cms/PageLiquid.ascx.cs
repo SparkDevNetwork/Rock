@@ -1,9 +1,19 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -37,8 +47,8 @@ namespace RockWeb.Blocks.Cms
     [BooleanField( "Include Current Parameters", "Flag indicating if current page's parameters should be used when building url for child pages", false )]
     [BooleanField( "Include Current QueryString", "Flag indicating if current page's QueryString should be used when building url for child pages", false )]
     [BooleanField( "Enable Debug", "Flag indicating that the control should output the page data that will be passed to Liquid for parsing.", false )]
-
-    public partial class PageLiquid : Rock.Web.UI.RockBlock
+    [BooleanField( "Is Secondary Block", "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.", false )]
+    public partial class PageLiquid : RockBlock, ISecondaryBlock
     {
         private static readonly string ROOT_PAGE = "RootPage";
         private static readonly string NUM_LEVELS = "NumberofLevels";
@@ -194,6 +204,18 @@ namespace RockWeb.Blocks.Cms
                 cache.Set( cacheKey, template, cachePolicy );
 
                 return template;
+            }
+        }
+
+        /// <summary>
+        /// Will not display the block information if it is considered a secondary block and secondary blocks are being hidden.
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            if ( GetAttributeValue( "IsSecondaryBlock" ).AsBoolean() )
+            {
+                phContent.Visible = visible;
             }
         }
     }

@@ -1,29 +1,51 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Reflection;
-
-using Rock.Services.NuGet;
-using Rock.VersionInfo;
-using Rock.Web.Cache;
+using System.IO;
+using System.Web.UI.WebControls;
+using System.Web.UI.HtmlControls;
 
 using NuGet;
-using System.IO;
+
+using Rock;
+using Rock.Attribute;
+using Rock.Services.NuGet;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
+using Rock.VersionInfo;
+using System.Text.RegularExpressions;
 
 namespace RockWeb.Blocks.Core
 {
+    [DisplayName( "RockUpdate" )]
+    [Category( "Core" )]
+    [Description( "Handles checking for and performing upgrades to the Rock system." )]
     public partial class RockUpdate : Rock.Web.UI.RockBlock
     {
         WebProjectManager nuGetService = null;
-        private string rockPackageId = "Rock";
+        private string _rockPackageId = "Rock";
+        IEnumerable<IPackage> _availablePackages = null;
+        SemanticVersion _installedVersion = new SemanticVersion("0.0.0");
 
         /// <summary>
         /// Obtains a WebProjectManager from the Global "UpdateServerUrl" Attribute.
@@ -55,128 +77,115 @@ namespace RockWeb.Blocks.Core
             DisplayRockVersion();
             if ( !IsPostBack )
             {
-                CheckForUpdate();
+                _availablePackages = NuGetService.SourceRepository.FindPackagesById( _rockPackageId ).OrderByDescending( p => p.Version );
+                if ( IsUpdateAvailable() )
+                {
+                    divPackage.Visible = true;
+                    BindGrid();
+                }
             }
         }
 
         /// <summary>
-        /// Handles the clicking of the Install button.
+        /// Bind the available packages to the repeater.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected void btnInstall_Click( object sender, EventArgs e )
+        private void BindGrid()
         {
-            UpdateOrInstall( isUpdate: false );
-        }
-
-        /// <summary>
-        /// Handles the clicking of the Update button.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected void btnUpdate_Click( object sender, EventArgs e )
-        {
-            UpdateOrInstall( isUpdate: true);
+            rptPackageVersions.DataSource = _availablePackages;
+            rptPackageVersions.DataBind();
         }
 
         /// <summary>
         /// Wraps the install or update process in some guarded code while putting the app in "offline"
         /// mode and then back "online" when it's complete.
         /// </summary>
-        /// <param name="isUpdate"></param>
-        private void UpdateOrInstall( bool isUpdate)
+        private void Update( string version )
         {
             WriteAppOffline();
             try
             {
-                if ( ! isUpdate )
+                if ( ! UpdateRockPackage( version ) )
                 {
-                    if ( InstallFirstRockPackage() )
-                    {
-                        btnInstall.CssClass = "btn btn-primary disabled";
-                        btnInstall.Text = "Installed";
-                    }
-                }
-                else
-                {
-                    if ( UpdateRockPackage() )
-                    {
-                        btnUpdate.CssClass = "btn btn-primary disabled";
-                        btnUpdate.Text = "Installed";
-                    }
+                    nbErrors.Visible = true;
+                    nbSuccess.Visible = false;
                 }
 
                 hlUpdates.Visible = false;
+                divPackage.Visible = false;
                 litRockVersion.Text = "";
             }
             catch ( Exception ex )
             {
                 nbErrors.Visible = true;
                 nbSuccess.Visible = false;
-                btnInstall.Visible = false;
                 nbErrors.Text = string.Format( "Something went wrong.  Although the errors were written to the error log, they are listed for your review:<br/>{0}", ex.Message );
                 LogException( ex );
             }
             RemoveAppOffline();
         }
 
-        #endregion
-
-        /// <summary>
-        /// Installs the first RockPackage.
-        /// </summary>
-        /// <returns>true if install was successful; false otherwise</returns>
-        protected bool InstallFirstRockPackage()
+        protected void rptPackageVersions_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            IEnumerable<string> errors = Enumerable.Empty<string>();
-            var package = NuGetService.SourceRepository.FindPackage( rockPackageId );
-
-            try
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
+                IPackage package = e.Item.DataItem as IPackage;
                 if ( package != null )
                 {
-                    errors = NuGetService.InstallPackage( package );
-                    nbSuccess.Text = ConvertCRLFtoBR( System.Web.HttpUtility.HtmlEncode( package.ReleaseNotes ) );
-                    nbSuccess.Text += "<p><b>NOTE:</b> Any database changes will take effect at the next page load.</p>";
+                    Boolean isExactPackageInstalled = NuGetService.IsPackageInstalled( package );
+                    LinkButton lbInstall = e.Item.FindControl( "lbInstall" ) as LinkButton;
+                    var divPanel = e.Item.FindControl( "divPanel" ) as HtmlGenericControl;
+                    // Only the first item in the list is "installable"
+                    if ( e.Item.ItemIndex == 0 )
+                    {
+                        lbInstall.Enabled = true;
+                        lbInstall.AddCssClass( "btn-primary" );
+                        divPanel.AddCssClass( "panel-primary" );
+                    }
+                    else
+                    {
+                        lbInstall.Enabled = false;
+                        lbInstall.AddCssClass( "btn-default" );
+                        divPanel.AddCssClass( "panel-default" );
+                    }
                 }
-            }
-            catch ( InvalidOperationException ex )
-            {
-                errors = errors.Concat( new[] { string.Format( "There is a problem with {0}: {1}", System.Web.HttpUtility.HtmlEncode( package.Title ), ex.Message ) } );
-            }
-
-            if ( errors != null && errors.Count() > 0 )
-            {
-                nbErrors.Visible = true;
-                nbErrors.Text = errors.Aggregate( new StringBuilder( "<ul>" ), ( sb, s ) => sb.AppendFormat( "<li>{0}</li>", s ) ).Append( "</ul>" ).ToString();
-                return false;
-            }
-            else
-            {
-                nbSuccess.Visible = true;
-                return true;
             }
         }
 
+        protected void rptPackageVersions_ItemCommand( object source, RepeaterCommandEventArgs e )
+        {
+            string version = e.CommandArgument.ToString();
+            Update( version );
+        }
+
+        #endregion
+
         /// <summary>
-        /// Updates an existing RockPackage.
+        /// Updates an existing Rock package to the given version and returns true if successful.
         /// </summary>
         /// <returns>true if the update was successful; false if errors were encountered</returns>
-        protected bool UpdateRockPackage()
+        protected bool UpdateRockPackage( string version )
         {
             IEnumerable<string> errors = Enumerable.Empty<string>();
-            var installed = NuGetService.GetInstalledPackage( rockPackageId );
 
             try
             {
-                var update = NuGetService.GetUpdate( installed );
-                errors = NuGetService.UpdatePackage( update );
-                nbSuccess.Text = ConvertCRLFtoBR( System.Web.HttpUtility.HtmlEncode( update.ReleaseNotes ) );
+                var update = NuGetService.SourceRepository.FindPackage( _rockPackageId, ( version != null ) ? SemanticVersion.Parse( version ) : null, false, false );
+                var installed = NuGetService.GetInstalledPackage( _rockPackageId );
+
+                if ( installed == null )
+                {
+                    errors = NuGetService.InstallPackage( update );
+                }
+                else
+                {
+                    errors = NuGetService.UpdatePackage( update );
+                }
+                nbSuccess.Text = System.Web.HttpUtility.HtmlEncode( update.ReleaseNotes ).ConvertCrLfToHtmlBr();
                 nbSuccess.Text += "<p><b>NOTE:</b> Any database changes will take effect at the next page load.</p>";
             }
             catch ( InvalidOperationException ex )
             {
-                errors = errors.Concat( new[] { string.Format( "There is a problem with {0}: {1}", System.Web.HttpUtility.HtmlEncode( installed.Title ), ex.Message ) } );
+                errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}: {1}", version, ex.Message ) } );
             }
 
             if ( errors != null && errors.Count() > 0 )
@@ -188,6 +197,7 @@ namespace RockWeb.Blocks.Core
             else
             {
                 nbSuccess.Visible = true;
+                rptPackageVersions.Visible = false;
                 return true;
             }
         }
@@ -199,72 +209,84 @@ namespace RockWeb.Blocks.Core
         {
             litRockVersion.Text = string.Format( "<b>Current Version: </b> {0}", VersionInfo.GetRockProductVersionFullName() );
         }
-
+        
         /// <summary>
-        /// Checks to see if any updates are availble for the installed or not-yet-installed package.
+        /// Determines if there is an update available to install and
+        /// puts the valid ones (that is those that meet the requirements)
+        /// into the _availablePackages list.
         /// </summary>
-        protected void CheckForUpdate()
+        /// <returns>true if updates are available; false otherwise</returns>
+        private bool IsUpdateAvailable()
         {
+            List<IPackage> verifiedPackages = new List<IPackage>();
+
             try
             {
-                var package = NuGetService.GetInstalledPackage( rockPackageId );
-
-                // The package is not yet installed at all...
-                if ( package == null )
+                // Get the installed package so we can check its version...
+                var installedPackage = NuGetService.GetInstalledPackage( _rockPackageId );
+                if ( installedPackage != null )
                 {
-                    package = NuGetService.GetRemotePackage( rockPackageId );
-                    if ( package != null )
+                    _installedVersion = installedPackage.Version;
+                }
+
+                // Now go though all versions to find the newest, installable package
+                // taking into consideration that a package may require that an earlier package
+                // must already be installed -- in which case *that* package would be the
+                // newest, most installable one.
+                foreach ( IPackage package in _availablePackages )
+                {
+                    if ( package.Version <= _installedVersion )
+                        break;
+
+                    verifiedPackages.Add( package );
+
+                    if ( package.Tags != null && package.Tags.Contains( "requires-" ) )
                     {
-                        btnInstall.Visible = true;
-                        divPackage.Visible = true;
-                        hlUpdates.Visible = true;
-                        litPackageTitle.Text = System.Web.HttpUtility.HtmlEncode( package.Title );
-                        litPackageDescription.Text = System.Web.HttpUtility.HtmlEncode( ( package.Description != null ) ? package.Description : package.Summary ) ; 
-                        btnInstall.Text += string.Format( " to version {0}", package.Version );
-                        litReleaseNotes.Text = ConvertCRLFtoBR( System.Web.HttpUtility.HtmlEncode( package.ReleaseNotes ) );
+                        var requiredVersion = ExtractRequiredVersionFromTags( package );
+                        // if that required version is greater than our currently installed version
+                        // then we can't have any of the prior packages in the verifiedPackages list
+                        // so we clear it out and keep processing.
+                        if ( requiredVersion > _installedVersion )
+                        {
+                            verifiedPackages.Clear();
+                        }
                     }
                 }
-                else
-                {
-                    Boolean isPackageInstalled = NuGetService.IsPackageInstalled( package, anyVersion: true );
-
-                    // Checking "IsLatestVersion" does not work because of what's discussed here:
-                    // http://nuget.codeplex.com/discussions/279837
-                    // if ( !installedPackage.IsLatestVersion )...
-                    var latestPackage = NuGetService.GetUpdate( package );
-                    if ( latestPackage != null )
-                    {
-                        btnUpdate.Visible = true;
-                        divPackage.Visible = true;
-                        hlUpdates.Visible = true;
-                        litPackageTitle.Text = System.Web.HttpUtility.HtmlEncode( latestPackage.Title );
-                        litPackageDescription.Text = System.Web.HttpUtility.HtmlEncode( ( latestPackage.Description != null ) ? latestPackage.Description : latestPackage.Summary ); 
-                        btnUpdate.Text += string.Format( " to version {0}", latestPackage.Version );
-                        litReleaseNotes.Text = ConvertCRLFtoBR( System.Web.HttpUtility.HtmlEncode( latestPackage.ReleaseNotes ) );
-                    }
-                }
+                _availablePackages = verifiedPackages;
             }
             catch ( InvalidOperationException ex )
             {
                 litMessage.Text = string.Format( "<div class='alert alert-danger'>There is a problem with the packaging system. {0}</p>", ex.Message );
             }
+
+            if (verifiedPackages.Count > 0 )
+            {
+                hlUpdates.Visible = true;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
-        /// Converts CR (Carriage Return) LF (Line Feed) to HTML breaks (br).
+        /// Extracts the required SemanticVersion from the package's tags.
         /// </summary>
-        /// <param name="somestring">a string that contains CR LF</param>
-        /// <returns>the string with CRLF replaced with BR</returns>
-        private string ConvertCRLFtoBR( string somestring )
+        /// <param name="package">a Rock nuget package</param>
+        /// <returns>the SemanticVersion of the package that this particular package requires</returns>
+        protected SemanticVersion ExtractRequiredVersionFromTags( IPackage package )
         {
-            if ( somestring == null )
+            Regex regex = new Regex( @"requires-([\.\d]+)" );
+            Match match = regex.Match( package.Tags );
+            if ( match.Success )
             {
-                return "";
+                return new SemanticVersion( match.Groups[1].Value );
             }
-
-            string x = somestring.Replace( Environment.NewLine, "<br/>" );
-            x = x.Replace( "\x0A", "<br/>" );
-            return x;
+            else
+            {
+                throw new ArgumentException( string.Format( "There is a malformed 'requires-' tag in a Rock package ({0})", package.Version ) );
+            }
         }
 
         /// <summary>
@@ -325,5 +347,5 @@ namespace RockWeb.Blocks.Core
 </html>
 " );
         }
-    }
+}
 }

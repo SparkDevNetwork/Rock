@@ -1,7 +1,18 @@
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
 //
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -26,21 +37,6 @@ namespace Rock.Model
     {
 
         #region Entity Properties
-
-        /// <summary>
-        /// Gets or sets the type of authentication service used by this UserLogin. This property is required.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Model.AuthenticationServiceType"/> enum value representing the type of authentication service used by this UserLogin. 
-        /// </value>
-        /// <remarks>
-        /// Options include: 
-        /// <c>AuthenticationServiceType.Internal</c> which includes database and Active Directory
-        /// <c>AuthenticationServiceType.External</c> which includes Facebook, Google, oAuth, etc.
-        /// </remarks>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public AuthenticationServiceType ServiceType { get; set; }
 
         /// <summary>
         /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the authentication service that this UserLogin user.
@@ -99,6 +95,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.DateTime"/> representing the most recent date and time that a user successfully logged in with this UserLogin.
         /// </value>
+        [NotAudited]
         [DataMember]
         [MergeField]
         public DateTime? LastLoginDateTime { get; set; }
@@ -109,6 +106,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.DateTime"/> representing when the password was last changed.
         /// </value>
+        [NotAudited]
         [DataMember]
         [MergeField]
         public DateTime? LastPasswordChangedDateTime { get; set; }
@@ -128,6 +126,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if the user is currently online and logged in with this UserLogin; otherwise <c>false</c>.
         /// </value>
+        [NotAudited]
         [DataMember]
         public bool? IsOnLine { get; set; }
         
@@ -146,6 +145,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.DateTime"/> representing the date and time that the user login was last locked out.
         /// </value>
+        [NotAudited]
         [DataMember]
         public DateTime? LastLockedOutDateTime { get; set; }
         

@@ -1,7 +1,18 @@
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
 //
 using System;
 using System.Collections.Generic;
@@ -47,12 +58,14 @@ namespace Rock.Model
         {
             var fieldTypes = new Dictionary<string, EntityType>();
 
+            var existingFieldTypes = this.Queryable().ToList();
+
             foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Field.IFieldType ) ) )
             {
                 string assemblyName = type.Value.Assembly.GetName().Name;
                 string className = type.Value.FullName;
 
-                if ( !this.Queryable().Where( f =>
+                if ( !existingFieldTypes.Where( f =>
                     f.Assembly == assemblyName &&
                     f.Class == className ).Any() )
                 {
