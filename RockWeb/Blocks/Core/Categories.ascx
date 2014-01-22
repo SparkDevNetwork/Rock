@@ -11,6 +11,7 @@
                     <asp:BoundField DataField="IconCssClass" HeaderText="Icon Class" />
                     <asp:BoundField DataField="ChildCount" HeaderText="Child Categories" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
                     <Rock:EditField OnClick="gCategories_Edit"/>
+                    <Rock:SecurityField />
                     <Rock:DeleteField OnClick="gCategories_Delete" />
                 </Columns>
             </Rock:Grid>

@@ -326,6 +326,7 @@ Rock.controls.imageUploader.initialize({{
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            writer.AddAttribute( "id", this.ClientID );
             writer.AddAttribute("class", "imageupload-group");
             writer.RenderBeginTag(HtmlTextWriterTag.Div);
             
