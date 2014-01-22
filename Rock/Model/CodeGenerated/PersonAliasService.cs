@@ -28,31 +28,31 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// PersonMerged Service class
+    /// PersonAlias Service class
     /// </summary>
-    public partial class PersonMergedService : Service<PersonMerged>
+    public partial class PersonAliasService : Service<PersonAlias>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PersonMergedService"/> class
+        /// Initializes a new instance of the <see cref="PersonAliasService"/> class
         /// </summary>
-        public PersonMergedService()
+        public PersonAliasService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PersonMergedService"/> class
+        /// Initializes a new instance of the <see cref="PersonAliasService"/> class
         /// </summary>
         /// <param name="repository">The repository.</param>
-        public PersonMergedService(IRepository<PersonMerged> repository) : base(repository)
+        public PersonAliasService(IRepository<PersonAlias> repository) : base(repository)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PersonMergedService"/> class
+        /// Initializes a new instance of the <see cref="PersonAliasService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public PersonMergedService(RockContext context) : base(context)
+        public PersonAliasService(RockContext context) : base(context)
         {
         }
 
@@ -64,7 +64,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( PersonMerged item, out string errorMessage )
+        public bool CanDelete( PersonAlias item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -74,39 +74,40 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class PersonMergedExtensionMethods
+    public static partial class PersonAliasExtensionMethods
     {
         /// <summary>
-        /// Clones this PersonMerged object to a new PersonMerged object
+        /// Clones this PersonAlias object to a new PersonAlias object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static PersonMerged Clone( this PersonMerged source, bool deepCopy )
+        public static PersonAlias Clone( this PersonAlias source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as PersonMerged;
+                return source.Clone() as PersonAlias;
             }
             else
             {
-                var target = new PersonMerged();
+                var target = new PersonAlias();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another PersonMerged object to this PersonMerged object
+        /// Copies the properties from another PersonAlias object to this PersonAlias object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this PersonMerged target, PersonMerged source )
+        public static void CopyPropertiesFrom( this PersonAlias target, PersonAlias source )
         {
-            target.PreviousPersonId = source.PreviousPersonId;
-            target.PreviousPersonGuid = source.PreviousPersonGuid;
-            target.NewPersonId = source.NewPersonId;
-            target.NewPersonGuid = source.NewPersonGuid;
+            target.Name = source.Name;
+            target.PersonId = source.PersonId;
+            target.AliasPersonId = source.AliasPersonId;
+            target.AliasPersonGuid = source.AliasPersonGuid;
+            target.Person = source.Person;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

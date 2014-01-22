@@ -29,44 +29,47 @@ namespace Rock.Model
     /// the duplicate entities need to be merged together into one record to avoid confusion and to ensure that we have accurate contact, involvement, and 
     /// contribution data. It also helps to avoid situations where an individual is counted or contacted multiple times.
     /// 
-    /// The PersonMerged entity is a log containing the merge history (previous Person identifiers) and a pointer to the Person's current Id.
+    /// The PersonAlias entity is a log containing the merge history (previous Person identifiers) and a pointer to the Person's current Id.
     /// </summary>
-    [Table( "PersonMerged" )]
+    [Table( "PersonAlias" )]
+    [NotAudited]
     [DataContract]
-    public partial class PersonMerged : Entity<PersonMerged>
+    public partial class PersonAlias : Entity<PersonAlias>
     {
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the previous (merged) Id of the <see cref="Rock.Model.Person"/>. This property is required.
+        /// Gets or sets the name of the alias
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the previous (merged) Id of the <see cref="Rock.Model.Person"/>.
+        /// The name.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
+        [DataMember]
         [AlternateKey]
-        public int PreviousPersonId { get; set; }
+        [MaxLength(200)]
+        public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the previous (merged) <see cref="System.Guid"/> for the <see cref="Rock.Model.Person"/>. This property is required.
+        /// Gets or sets the person Id of the <see cref="Rock.Model.Person"/>. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Guid"/> representing the previous <see cref="System.Guid"/> identifier for the <see cref="Rock.Model.Person"/>.
+        /// An <see cref="System.Int32"/> representing a person Id of the <see cref="Rock.Model.Person"/>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        public Guid PreviousPersonGuid { get; set; }
+        public int PersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets the new/current Id of the <see cref="Rock.Model.Person"/>. This property is required.
+        /// Gets or sets an alias person Id.  In the case of a merged person record, the AliasPersonId is the previous person id that was merged into
+        /// a new person. This property is required.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the new/current Id of the <see cref="Rock.Model.Person"/>.
         /// </value>
         [Required]
+        [AlternateKey]
         [DataMember( IsRequired = true )]
-        public int NewPersonId { get; set; }
+        public int AliasPersonId { get; set; }
 
         /// <summary>
         /// Gets or sets the new <see cref="System.Guid"/> identifier of the <see cref="Rock.Model.Person"/>. This property is required.
@@ -76,11 +79,20 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        public Guid NewPersonGuid { get; set; }
+        public Guid AliasPersonGuid { get; set; }
 
         #endregion
 
         #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the person.
+        /// </summary>
+        /// <value>
+        /// The person.
+        /// </value>
+        [DataMember]
+        public Person Person { get; set; }
 
         /// <summary>
         /// Gets the previous encrypted key for the <see cref="Rock.Model.Person"/>.
@@ -89,26 +101,11 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the previous encrypted key for the <see cref="Rock.Model.Person"/>.
         /// </value>
         [NotMapped]
-        public virtual string PreviousEncryptedKey
+        public virtual string AliasEncryptedKey
         {
             get
             {
-                string identifier = this.PreviousPersonId.ToString() + ">" + this.PreviousPersonGuid.ToString();
-                return Rock.Security.Encryption.EncryptString( identifier );
-            }
-        }
-        /// <summary>
-        /// Gets the new encrypted key for the <see cref="Rock.Model.Person"/>
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> containing the new encrypted key for the <see cref="Rock.Model.Person"/>
-        /// </value>
-        [NotMapped]
-        public virtual string NewEncryptedKey
-        {
-            get
-            {
-                string identifier = this.NewPersonId.ToString() + ">" + this.NewPersonGuid.ToString();
+                string identifier = this.AliasPersonId.ToString() + ">" + this.AliasPersonGuid.ToString();
                 return Rock.Security.Encryption.EncryptString( identifier );
             }
         }
@@ -125,7 +122,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return string.Format( "{0}->{1}", this.PreviousPersonId, this.NewPersonId);
+            return string.Format( "{0}->{1}", this.AliasPersonId, this.PersonId);
         }
 
         #endregion
@@ -134,15 +131,16 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    /// Person Merged Configuration class.
+    /// Person Alias Configuration class.
     /// </summary>
-    public partial class PersonMergedConfiguration : EntityTypeConfiguration<PersonMerged>
+    public partial class PersonAliasConfiguration : EntityTypeConfiguration<PersonAlias>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PersonMergedConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="PersonAliasConfiguration"/> class.
         /// </summary>
-        public PersonMergedConfiguration()
+        public PersonAliasConfiguration()
         {
+            HasRequired( a => a.Person ).WithMany( p => p.Aliases ).HasForeignKey( a => a.PersonId ).WillCascadeOnDelete( true );
         }
     }
 

@@ -26,10 +26,10 @@ using Rock.Model;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// PersonMergeds REST API
+    /// PersonAlias REST API
     /// </summary>
-    public partial class PersonMergedsController : Rock.Rest.ApiController<Rock.Model.PersonMerged>
+    public partial class PersonAliasController : Rock.Rest.ApiController<Rock.Model.PersonAlias>
     {
-        public PersonMergedsController() : base( new Rock.Model.PersonMergedService() ) { } 
+        public PersonAliasController() : base( new Rock.Model.PersonAliasService() ) { } 
     }
 }
