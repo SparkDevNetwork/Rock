@@ -97,11 +97,6 @@ h2, h3, h4
     font-weight: @font-weight-semibold;
 }
 
-// get rid of the icon bootstrap adds to the h4's on alerts
-.alert h4:before {
-    content: '';
-}
-
 // get rid of dotted box around anchors with focus
 a {
    outline: 0;
@@ -116,8 +111,17 @@ a:hover i.fs
     text-decoration: none;
 }
 
+small { // lighten up small elements a bit
+    color: lighten(@text-color, 30%);
+}
+
 // 2. Bootstrap Overrides 
 // ------------------------- 
+
+// get rid of the icon bootstrap adds to the h4's on alerts
+.alert h4:before {
+    content: '';
+}
 
 .navbar {
     position: static; // default is relative which causes the dropdowns to go under the other navbars dispite having a higher z-index - JME 9/9/2013 BS3
@@ -169,7 +173,8 @@ a:hover i.fs
     background: none;
     background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=");
     color: @header-text-color;
-    margin-bottom: 12px;
+    padding-bottom: @spacing-md-px;
+    margin-bottom: @spacing-md-px;
 
     a {
         color: @header-text-color;
@@ -187,7 +192,7 @@ a:hover i.fs
     }
 
     .smartsearch {
-        margin: 20px 0;
+        margin: 0 auto;
     }
 
 
@@ -198,12 +203,13 @@ a:hover i.fs
     .navbar-toggle {
         color: @header-text-color;
         border-color: @header-text-color;
-    }    
+    }
+    
+    .loginstatus {
+        display: none;
+    }   
 }
 
-.persondetails { // needed to offset pageheader margin
-    margin-top: -12px;
-}
 
 // page nav
 .pagenav {
@@ -258,6 +264,18 @@ a:hover i.fs
                     display: block;
                     margin: 6px auto 0;
                     font-size: 18px;
+                }
+
+                // next two elements vertically center the nav text between the icon and caret with support for two line wrapping
+                div {
+                    height: 26px;
+                    line-height: 20px;
+                }
+
+                span {
+                    display: inline-block;
+                    vertical-align: middle;
+                    line-height: 11px;
                 }
             }
         }
@@ -315,7 +333,36 @@ a:hover i.fs
 // 5. Responsive Tweaks
 // -------------------------
 
-@media (min-width: @screen-lg) { // if screen larger than lg
+// 4. Responsive Overrides 
+// -------------------------
+
+// default styling should be for phones 767px or less
+
+// Small devices (tablets, 768px and up)
+@media (min-width: @screen-sm-min) {
+
+    .pagerheader {
+        padding-bottom: 0;
+
+        .smartsearch {
+            margin: 20px auto;
+            float: right;
+        }
+
+        .loginstatus {
+            display: block;
+        }
+    }
+
+}
+
+// Medium devices (desktops, 992px and up) 
+@media (min-width: @screen-md-min) {
+
+}
+
+// Large devices (large desktops, 1200px and up) 
+@media (min-width: @screen-lg-min) {
     
     .container { // allow the rock screen to grow wide
         width: 90%;
@@ -324,12 +371,8 @@ a:hover i.fs
 }
 
 
-@media (max-width: @screen-sm-min) { // if screen smaller than sm
 
-    header .smartsearch {
-        float: left !important;
-        margin: 0;
-    }
+@media (max-width: @screen-sm-min) { // if screen smaller than sm
 
     header .header-zone {
         margin: -10px 0 0 0;
@@ -377,15 +420,6 @@ a:hover i.fs
 }
 
 @media (max-width: @screen-xs-min) { // if screen smaller than sm
-
-    header .loginstatus {
-        display: none;
-    }
-
-    header .smartsearch {
-        float: none !important;
-        margin: 0 auto 12px auto;
-    }
 
     .pagenav .nav > li { // 2 columns of icons
         width: 50%;
