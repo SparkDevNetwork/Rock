@@ -77,7 +77,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
         /// </summary>
@@ -271,6 +271,106 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [is binary file].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [is binary file]; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "true" ),
+        Description( "Does this use the BinaryFile framework?" )
+        ]
+        public bool IsBinaryFile
+        {
+            get
+            {
+                return ViewState["IsBinaryFile"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["IsBinaryFile"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the root folder.
+        /// </summary>
+        /// <value>
+        /// The root folder.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "true" ),
+        Description( "The RootFolder where NonBinaryFile files will be uploaded to" )
+        ]
+        public string RootFolder
+        {
+            get
+            {
+                return ViewState["RootFolder"] as string;
+            }
+
+            set
+            {
+                ViewState["RootFolder"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the submit function client script.
+        /// </summary>
+        /// <value>
+        /// The submit function client script.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "" ),
+        Description( "The optional javascript to run in the file uploader's submitFunction" )
+        ]
+        public string SubmitFunctionClientScript
+        {
+            get
+            {
+                return ViewState["SubmitFunctionClientScript"] as string;
+            }
+
+            set
+            {
+                ViewState["SubmitFunctionClientScript"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the done function client script.
+        /// </summary>
+        /// <value>
+        /// The done function client script.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "" ),
+        Description( "The optional javascript to run in the file uploader's doneFunction" )
+        ]
+        public string DoneFunctionClientScript
+        {
+            get
+            {
+                return ViewState["DoneFunctionClientScript"] as string;
+            }
+
+            set
+            {
+                ViewState["DoneFunctionClientScript"] = value;
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -292,7 +392,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _aFileName );
             _aFileName.ID = "fn";
             _aFileName.Target = "_blank";
-            _aFileName.AddCssClass("file-link");
+            _aFileName.AddCssClass( "file-link" );
 
             _aRemove = new HtmlAnchor();
             Controls.Add( _aRemove );
@@ -315,9 +415,6 @@ namespace Rock.Web.UI.Controls
             if ( this.Visible )
             {
                 RockControlHelper.RenderControl( this, writer );
-
-                
-                
             }
         }
 
@@ -328,48 +425,46 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute("class", "fileupload-group");
-            writer.RenderBeginTag(HtmlTextWriterTag.Div);
-
+            writer.AddAttribute( "class", "fileupload-group" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             if ( BinaryFileId != null )
             {
                 _aFileName.HRef = string.Format( "{0}GetFile.ashx?id={1}", ResolveUrl( "~" ), BinaryFileId );
                 _aFileName.InnerText = new BinaryFileService().Queryable().Where( f => f.Id == BinaryFileId ).Select( f => f.FileName ).FirstOrDefault();
-                _aFileName.AddCssClass("file-exists");
+                _aFileName.AddCssClass( "file-exists" );
                 _aRemove.Style[HtmlTextWriterStyle.Display] = "inline";
             }
             else
             {
                 _aFileName.HRef = string.Empty;
                 _aFileName.InnerText = string.Empty;
-                _aFileName.RemoveCssClass("file-exists");
+                _aFileName.RemoveCssClass( "file-exists" );
                 _aRemove.Style[HtmlTextWriterStyle.Display] = "none";
             }
 
-            writer.AddAttribute("class", "fileupload-thumbnail");
+            writer.AddAttribute( "class", "fileupload-thumbnail" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _hfBinaryFileId.RenderControl( writer );
             _hfBinaryFileTypeGuid.RenderControl( writer );
             _aFileName.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.AddAttribute("class", "fileupload-remove");
-            writer.RenderBeginTag(HtmlTextWriterTag.Div);
-            _aRemove.RenderControl(writer);
+            writer.AddAttribute( "class", "fileupload-remove" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _aRemove.RenderControl( writer );
             writer.RenderEndTag();
-
 
             // render drop zone
-            writer.AddAttribute(HtmlTextWriterAttribute.Class, "fileupload-dropzone");
-            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "fileupload-dropzone" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.RenderBeginTag(HtmlTextWriterTag.Span);
-            writer.Write("drop / click to upload");
+            writer.RenderBeginTag( HtmlTextWriterTag.Span );
+            writer.Write( "drop / click to upload" );
             writer.RenderEndTag();
 
-            _fileUpload.Attributes["name"] = string.Format("{0}[]", this.ID);
-            _fileUpload.RenderControl(writer);
+            _fileUpload.Attributes["name"] = string.Format( "{0}[]", this.ID );
+            _fileUpload.RenderControl( writer );
             writer.RenderEndTag();
 
             RegisterStartupScript();
@@ -384,7 +479,7 @@ namespace Rock.Web.UI.Controls
         {
             var postBackScript = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this._fileUpload, "FileUploaded" ), true );
             postBackScript = postBackScript.Replace( '\'', '"' );
-            var script = string.Format( 
+            var script = string.Format(
 @"
 Rock.controls.fileUploader.initialize({{
     controlId: '{0}',
@@ -394,15 +489,27 @@ Rock.controls.fileUploader.initialize({{
     aFileName: '{4}',
     aRemove: '{5}',
     postbackScript: '{6}',
-    fileType: 'file'
+    fileType: 'file',
+    isBinaryFile: '{7}',
+    rootFolder: '{8}',
+    submitFunction: function (e, data) {{
+        {9}
+    }},
+    doneFunction: function (e, data) {{
+        {10}
+    }}
 }});",
                 _fileUpload.ClientID,
-                BinaryFileId,
-                BinaryFileTypeGuid,
+                this.BinaryFileId,
+                this.BinaryFileTypeGuid,
                 _hfBinaryFileId.ClientID,
                 _aFileName.ClientID,
                 _aRemove.ClientID,
-                postBackScript );
+                postBackScript,
+                this.IsBinaryFile.ToTrueFalse().ToLower(),
+                Rock.Security.Encryption.EncryptString( this.RootFolder ),
+                this.SubmitFunctionClientScript,
+                this.DoneFunctionClientScript);
             ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "FileUploaderScript_" + this.ClientID, script, true );
         }
 

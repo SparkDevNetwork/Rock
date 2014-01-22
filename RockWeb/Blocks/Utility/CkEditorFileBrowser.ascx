@@ -32,10 +32,27 @@
                     </div>
                     <script type="text/javascript">
 
+                        // init scroll bars for folder and file list divs
+                        $('.js-folder-treeview').tinyscrollbar({ size: 120, sizethumb: 20 });
+
+                        $('.js-folder-treeview .treeview').on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree:rendered', function (evt) {
+                            // update the folder treeview scroll bar
+                            $('.js-folder-treeview').tinyscrollbar_update('relative');
+                        });
+
+                        $('.js-folder-treeview .treeview').on('rockTree:selected ', function (e, data) {
+                            var relativeFolderPath = data;
+                            $('#<%=hfSelectedFolder.ClientID%>').val(data);
+                            __doPostBack('<%=upnlFiles.ClientID %>', 'folder-selected:' + relativeFolderPath + '');
+                        });
+
+
+
                         Sys.Application.add_load(function () {
+
                             var folderTreeData = $('.js-folder-treeview .treeview').data('rockTree');
 
-                            // init the folder list treeview only if it hasn't been created already
+                            // init the folder list treeview if it hasn't been created already
                             if (!folderTreeData) {
                                 var selectedFolders = $('#<%=hfSelectedFolder.ClientID%>').val().split(',');
                                 // init rockTree on folder (no url option since we are generating off static html)
@@ -44,23 +61,42 @@
                                 });
                             }
 
-                            // init scroll bars for folder and file list divs
-                            $('.js-folder-treeview').tinyscrollbar({ size: 120, sizethumb: 20 });
-
-                            $('.js-folder-treeview .treeview').on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree:rendered', function (evt) {
-                                // update the folder treeview scroll bar
-                                $('.js-folder-treeview').tinyscrollbar_update('relative');
-                            });
-
-                            $('.js-folder-treeview .treeview').on('rockTree:selected ', function (e, data) {
-                                var relativeFolderPath = data;
-                                $('#<%=hfSelectedFolder.ClientID%>').val(data);
-                                __doPostBack('<%=upnlFiles.ClientID %>', 'folder-selected:' + relativeFolderPath + '');
-                            });
-
                             // init the file list treeview on every load
                             $('.js-file-list .treeview').rockTree({});
                             $('.js-file-list').tinyscrollbar({ size: 120, sizethumb: 20 });
+
+                            // js for when a file delete is clicked
+                            $('.js-file-list .js-delete-file').off('click');
+                            $('.js-file-list .js-delete-file').on('click', function (e, data) {
+                                var selectedFileId = $(this).closest('li').attr('data-id');
+                                Rock.dialogs.confirm("Are you sure you want to delete this file?", function (confirmResult, data) {
+                                    if (confirmResult) {
+                                        __doPostBack('<%=upnlFiles.ClientID %>', 'file-delete:' + selectedFileId + '');
+                                    }
+                                });
+                            });
+
+                            // js for when a file is selected
+                            $('.js-file-list .treeview').on('rockTree:selected ', function (e, data) {
+
+                                debugger
+
+                                $.ajax( {
+                                    url: window.location + '&getSelectedFileResult=true',
+                                    type: 'POST',
+                                    data: {
+                                        selectedFileId: data
+                                    },
+                                    context: this
+                                }).done(function (returnData) {
+                                    debugger
+                                    $('#<%=hfResultValue.ClientID%>').val(returnData);
+                                });
+
+                                var selectedFileId = data;
+                                
+                                //__doPostBack('<%=upnlFiles.ClientID %>', 'file-selected:' + selectedFileId + '');
+                            });
 
                             // disable/hide actions depending on if a folder is selected
                             var selectedFolderPath = $('#<%=hfSelectedFolder.ClientID%>').val();
@@ -99,7 +135,7 @@
                     </Rock:ModalDialog>
 
                     <asp:HiddenField ID="hfSelectedFolder" runat="server" />
-                    <Rock:ImageUploader ID="iupFileBrowser" runat="server" />
+                    <Rock:ImageUploader ID="iupFileBrowser" runat="server" IsBinaryFile="false" />
 
                     <div>
                         <div class="scroll-container scroll-container-vertical scroll-container-picker js-file-list">

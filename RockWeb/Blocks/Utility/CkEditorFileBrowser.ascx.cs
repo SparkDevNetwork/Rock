@@ -34,11 +34,47 @@ namespace RockWeb.Blocks.Utility
     [DisplayName( "CkEditor FileBrowser" )]
     [Category( "Utility" )]
     [Description( "Block to be used as part of the RockFileBrowser CKEditor Plugin" )]
-    [TextField( "Root Folder", "The root folder of the Folder Browser" )]
     public partial class CkEditorFileBrowser : RockBlock
     {
         #region Base Control Methods
-        
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+            iupFileBrowser.RootFolder = GetRootFolderPath();
+
+            // setup javascript for when a file is submitted
+            iupFileBrowser.SubmitFunctionClientScript = string.Format( @"
+    var selectedFolderPath = $('#{0}').val();
+    if (selectedFolderPath) {{
+        // include the selected folder in the post to ~/ImageUploader.ashx
+        data.formData = {{ folderPath: selectedFolderPath }};
+    }}
+    else {{
+        // no directory selected
+        return false;
+    }}
+", hfSelectedFolder.ClientID);
+
+            // setup javascript for when a file is done uploading
+            iupFileBrowser.DoneFunctionClientScript = string.Format( @"
+    var selectedFolderPath = $('#{0}').val();
+    var foldersTree = $('.js-folder-treeview .treeview').data('rockTree');
+    if (selectedFolderPath) {{
+        // reselect the node to refresh the list of files
+        foldersTree.$el.trigger('rockTree:selected', selectedFolderPath);
+    }}
+    else {{
+        // no directory selected
+        return false;
+    }}
+", hfSelectedFolder.ClientID );
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -52,7 +88,7 @@ namespace RockWeb.Blocks.Utility
                 BuildFolderTreeView();
             }
 
-            // handle folder select event
+            // handle custom postback events
             string postbackArgs = Request.Params["__EVENTARGUMENT"];
             if ( !string.IsNullOrWhiteSpace( postbackArgs ) )
             {
@@ -66,7 +102,21 @@ namespace RockWeb.Blocks.Utility
                         hfSelectedFolder.Value = folderPath;
                         ListFolderContents( folderPath );
                     }
+                    else if (eventParam.Equals("file-delete"))
+                    {
+                        string fileRelativePath = nameValue[1];
+                        DeleteFile( fileRelativePath );
+                    }
                 }
+            }
+
+            // handle custom ajax post
+            if (Request.Params["getSelectedFileResult"].AsBoolean())
+            {
+                string fileSelectedResult = getSelectedFileResult( this.Request.Form["selectedFileId"] );
+                
+                Response.Write(fileSelectedResult);
+                Response.End();
             }
         }
 
@@ -187,11 +237,11 @@ namespace RockWeb.Blocks.Utility
             {
 
                 string nameHtmlFormat = @"
-<li data-id='{3}' data-expanded='true'>
+<li data-id='{2}' data-expanded='true'>
     <span class='rocktree-name'>
         <div class='rollover-container'>
           <div class='rollover-item pull-right'>
-            <a title='delete' class='btn btn-xs btn-danger' onclick='{2}'>
+            <a title='delete' class='btn btn-xs btn-danger js-delete-file'>
               <i class='fa fa-times'></i>
             </a>
           </div>
@@ -208,12 +258,36 @@ namespace RockWeb.Blocks.Utility
                 string imagePath = rootFolder.TrimEnd( '/', '\\' ) + "/" + relativeFilePath.TrimStart( '/', '\\' ).Replace( "\\", "/" );
                 string imageUrl = this.ResolveUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + HttpUtility.UrlEncode( imagePath ) + "&width=100&height=100" );
 
-                sb.AppendLine( string.Format( nameHtmlFormat, imageUrl, fileName, "", relativeFilePath ) );
+                sb.AppendLine( string.Format( nameHtmlFormat, imageUrl, fileName, relativeFilePath ) );
             }
 
             sb.AppendLine( "</ul>" );
 
             lblFiles.Text = sb.ToString();
+        }
+
+        /// <summary>
+        /// Deletes the file.
+        /// </summary>
+        /// <param name="relativeFilePath">The relative file path.</param>
+        protected void DeleteFile(string relativeFilePath)
+        {
+            string rootFolder = GetRootFolderPath();
+            string physicalRootFolder = this.MapPath( rootFolder );
+            string physicalFilePath = Path.Combine( physicalRootFolder, relativeFilePath.TrimStart('\\', '/') );
+            File.Delete( physicalFilePath );
+            ListFolderContents( Path.GetDirectoryName( relativeFilePath ) );
+        }
+
+        /// <summary>
+        /// Files the selected.
+        /// </summary>
+        /// <param name="relativeFilePath">The relative file path.</param>
+        protected string getSelectedFileResult( string relativeFilePath )
+        {
+            string rootFolder = GetRootFolderPath();
+            string imageUrl = rootFolder.TrimEnd('\\', '/') + '/' + relativeFilePath.TrimStart('\\', '/').Replace('\\', '/');
+            return string.Format( "{0},{1}", imageUrl, relativeFilePath );
         }
 
         #endregion
@@ -225,7 +299,7 @@ namespace RockWeb.Blocks.Utility
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbCreateFolder_Click( object sender, EventArgs e )
         {
-            tbNewFolderName.PrependText = hfSelectedFolder.Value.TrimEnd('\\')  + "\\";
+            tbNewFolderName.PrependText = hfSelectedFolder.Value.TrimEnd( '\\' ) + "\\";
             tbNewFolderName.Text = "";
             mdCreateFolder.Show();
         }
@@ -258,7 +332,7 @@ namespace RockWeb.Blocks.Utility
         protected void lbRenameFolder_Click( object sender, EventArgs e )
         {
             tbOrigFolderName.Text = hfSelectedFolder.Value;
-            tbRenameFolderName.PrependText = Path.GetDirectoryName(hfSelectedFolder.Value) + "\\";
+            tbRenameFolderName.PrependText = Path.GetDirectoryName( hfSelectedFolder.Value ) + "\\";
             tbRenameFolderName.Text = "";
             mdRenameFolder.Show();
         }
@@ -350,5 +424,5 @@ namespace RockWeb.Blocks.Utility
 
             return selectedPhysicalFolder;
         }
-}
+    }
 }

@@ -93,9 +93,23 @@ namespace RockWeb
             // get folderPath and construct filePath
             string relativeFolderPath = context.Request.Form["folderPath"] ?? string.Empty;
             string relativeFilePath = Path.Combine( relativeFolderPath, Path.GetFileName( uploadedFile.FileName ) );
+            string rootFolderParam = context.Request.QueryString["rootFolder"];
+            
+            string rootFolder = string.Empty;
 
-            const string RootContentFolder = "~/Content";
-            string physicalRootFolder = context.Request.MapPath( RootContentFolder );
+            if ( !string.IsNullOrWhiteSpace( rootFolderParam ) )
+            {
+                // if a rootFolder was specified in the URL, decrypt it (it is encrypted to help prevent direct access to filesystem)
+                rootFolder = Rock.Security.Encryption.DecryptString( rootFolderParam );
+            }
+
+            if ( string.IsNullOrWhiteSpace( rootFolder ) )
+            {
+                // set to default rootFolder if not specified in the params
+                rootFolder = "~/Content";
+            }
+            
+            string physicalRootFolder = context.Request.MapPath( rootFolder );
             string physicalContentFolderName = Path.Combine( physicalRootFolder, relativeFolderPath.TrimStart( new char[] { '/', '\\' } ) );
             string physicalFilePath = Path.Combine( physicalContentFolderName, uploadedFile.FileName );
             byte[] fileContent = GetFileBytes( context, uploadedFile );
