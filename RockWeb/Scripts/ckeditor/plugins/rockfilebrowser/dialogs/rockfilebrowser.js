@@ -23,8 +23,12 @@
         onShow: function (eventParam) {
         },
         onOk: function (sender) {
+            debugger
             var fileResult = $('#iframe-rockfilebrowser_' + editor.id).contents().find('.js-filebrowser-result input[type=hidden]').val();
-            editor.insertHtml = fileResult;
+            var resultParts = fileResult.split(',');
+            
+            var imageHtml = '<img src="' + Rock.settings.get('baseUrl') + resultParts[0] + ' alt="' + resultParts[1] + '" />';
+            editor.insertHtml(imageHtml);
         }
     };
 });

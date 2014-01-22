@@ -32,6 +32,24 @@
 <body>
     <form id="form1" runat="server">
         <ajaxToolkit:ToolkitScriptManager ID="sManager" runat="server" />
+
+        <asp:UpdateProgress id="updateProgress" runat="server">
+		        <ProgressTemplate>
+		            <div class="updateprogress-status">
+                        <div class="spinner">
+                          <div class="rect1"></div>
+                          <div class="rect2"></div>
+                          <div class="rect3"></div>
+                          <div class="rect4"></div>
+                          <div class="rect5"></div>
+                        </div>
+                    </div>
+                    <div class="updateprogress-bg modal-backdrop"> 
+                         
+		            </div>
+		        </ProgressTemplate>
+        </asp:UpdateProgress>
+
         <Rock:Zone Name="Main" runat="server" />
     </form>
 </body>
