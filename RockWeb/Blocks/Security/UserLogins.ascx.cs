@@ -250,6 +250,19 @@ namespace RockWeb.Blocks.Security
                 {
                     userLogin = new UserLogin();
                     service.Add( userLogin, CurrentPersonId );
+                    userLogin.CreationDateTime = DateTime.Now;
+                }
+
+                if ( _personId.HasValue )
+                {
+                    userLogin.PersonId = _personId;
+                }
+                else
+                {
+                    nbErrorMessage.Title = "Invalid Situation";
+                    nbErrorMessage.Text = "The person you are editing has no person Id.";
+                    nbErrorMessage.Visible = true;
+                    return;
                 }
 
                 userLogin.UserName = tbUserName.Text;
