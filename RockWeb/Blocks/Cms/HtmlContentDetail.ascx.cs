@@ -232,8 +232,6 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            htmlContent.LastModifiedPersonId = this.CurrentPersonId;
-            htmlContent.LastModifiedDateTime = DateTime.Now;
             htmlContent.Content = newContent;
 
             if ( htmlContentService.Save( htmlContent, CurrentPersonId ) )
@@ -345,8 +343,8 @@ namespace RockWeb.Blocks.Cms
                     v.Id,
                     v.Version,
                     VersionText = "Version " + v.Version.ToString(),
-                    ModifiedDateTime = "(" + v.LastModifiedDateTime.ToElapsedString() + ")",
-                    ModifiedByPerson = v.LastModifiedPerson,
+                    ModifiedDateTime = "(" + v.ModifiedDateTime.ToElapsedString() + ")",
+                    ModifiedByPerson = v.ModifiedByPersonAlias != null ? v.ModifiedByPersonAlias.Person : null,
                     Approved = v.IsApproved,
                     ApprovedByPerson = v.ApprovedByPerson,
                     v.StartDateTime,

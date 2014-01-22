@@ -19,7 +19,7 @@
                     <asp:TemplateField HeaderText="What">
                         <ItemTemplate><%# FormatCaption( (int)Eval("CategoryId"), Eval( "Caption" ).ToString(), (int)Eval( "RelatedEntityTypeId" ), (int)Eval( "RelatedEntityId" ) ) %></ItemTemplate>
                     </asp:TemplateField>
-                    <Rock:DateTimeField DataField="CreationDateTime" SortExpression="CreationDateTime" HeaderText="When" FormatAsElapsedTime="true" />
+                    <Rock:DateTimeField DataField="CreatedDateTime" SortExpression="CreatedDateTime" HeaderText="When" FormatAsElapsedTime="true" />
                     <asp:BoundField DataField="Category" SortExpression="Category" HeaderText="Category" />
                 </Columns>
 

@@ -250,7 +250,6 @@ namespace RockWeb.Blocks.Security
                 {
                     userLogin = new UserLogin();
                     service.Add( userLogin, CurrentPersonId );
-                    userLogin.CreationDateTime = DateTime.Now;
                 }
 
                 if ( _personId.HasValue )
@@ -369,12 +368,12 @@ namespace RockWeb.Blocks.Security
             drp.DelimitedValues = gfSettings.GetUserPreference( "Created" );
             if ( drp.LowerValue.HasValue )
             {
-                qry = qry.Where( l => l.CreationDateTime >= drp.LowerValue.Value );
+                qry = qry.Where( l => l.CreatedDateTime.HasValue && l.CreatedDateTime.Value >= drp.LowerValue.Value );
             }
             if ( drp.UpperValue.HasValue )
             {
                 DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
-                qry = qry.Where( l => l.CreationDateTime < upperDate );
+                qry = qry.Where( l => l.CreatedDateTime.HasValue && l.CreatedDateTime < upperDate );
             }
 
             // last login filter
@@ -419,7 +418,7 @@ namespace RockWeb.Blocks.Security
                         PersonId = l.PersonId,
                         PersonName = l.Person.LastName + ", " + l.Person.NickName,
                         ProviderName = l.EntityType.FriendlyName,
-                        CreationDateTime = l.CreationDateTime,
+                        CreatedDateTime = l.CreatedDateTime,
                         LastLoginDateTime = l.LastLoginDateTime,
                         IsConfirmed = l.IsConfirmed,
                         IsLockedOut = l.IsLockedOut

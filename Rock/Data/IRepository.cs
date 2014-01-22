@@ -81,66 +81,6 @@ namespace Rock.Data
         T FirstOrDefault( Expression<Func<T, bool>> where );
 
         /// <summary>
-        /// Date the entity was created.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <returns></returns>
-        DateTime? DateCreated( T entity );
-
-        /// <summary>
-        /// Date the entity was created.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="entityId">The entity id.</param>
-        /// <returns></returns>
-        DateTime? DateCreated( int entityTypeId, int entityId );
-
-        /// <summary>
-        /// Date the entity was last modified.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <returns></returns>
-        DateTime? DateLastModified( T entity );
-
-        /// <summary>
-        /// Date the entity was last modified.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="entityId">The entity id.</param>
-        /// <returns></returns>
-        DateTime? DateLastModified( int entityTypeId, int entityId );
-
-        /// <summary>
-        /// The person id who created entity.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <returns></returns>
-        int? CreatedByPersonId( T entity );
-
-        /// <summary>
-        /// The person id who created entity.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="entityId">The entity id.</param>
-        /// <returns></returns>
-        int? CreatedByPersonId( int entityTypeId, int entityId );
-        
-        /// <summary>
-        /// The person id who last modified entity.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <returns></returns>
-        int? LastModifiedByPersonId( T entity );
-
-        /// <summary>
-        /// The person id who last modified the entity.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="entityId">The entity id.</param>
-        /// <returns></returns>
-        int? LastModifiedByPersonId( int entityTypeId, int entityId );
-        
-        /// <summary>
         /// All the audits made to the entity.
         /// </summary>
         /// <param name="entity">The entity.</param>

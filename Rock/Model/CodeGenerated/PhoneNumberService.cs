@@ -111,6 +111,10 @@ namespace Rock.Model
             target.IsMessagingEnabled = source.IsMessagingEnabled;
             target.IsUnlisted = source.IsUnlisted;
             target.Description = source.Description;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

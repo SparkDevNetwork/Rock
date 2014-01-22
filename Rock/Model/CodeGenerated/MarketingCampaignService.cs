@@ -109,6 +109,10 @@ namespace Rock.Model
             target.ContactPhoneNumber = source.ContactPhoneNumber;
             target.ContactFullName = source.ContactFullName;
             target.EventGroupId = source.EventGroupId;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

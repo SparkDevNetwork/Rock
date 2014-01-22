@@ -113,6 +113,10 @@ namespace Rock.Model
             target.Bcc = source.Bcc;
             target.Subject = source.Subject;
             target.Body = source.Body;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 
