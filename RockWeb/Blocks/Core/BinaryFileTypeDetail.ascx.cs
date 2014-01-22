@@ -184,7 +184,7 @@ namespace RockWeb.Blocks.Core
 
             if ( readOnly )
             {
-                lActionTitle.Text = ActionTitle.View( BinaryFileType.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.View( BinaryFileType.FriendlyTypeName ).FormatAsHtmlTitle();
                 btnCancel.Text = "Close";
                 Rock.Attribute.Helper.AddDisplayControls( binaryFileType, phAttributes );
             }
