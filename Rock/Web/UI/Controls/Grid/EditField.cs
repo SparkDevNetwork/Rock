@@ -109,11 +109,11 @@ namespace Rock.Web.UI.Controls
                 ParentGrid = editField.ParentGrid;
                 LinkButton lbEdit = new LinkButton();
                 lbEdit.CausesValidation = false;
-                lbEdit.CssClass = "btn btn-edit btn-sm";
+                lbEdit.CssClass = "btn btn-default btn-sm";
                 lbEdit.ToolTip = "Edit";
                 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
-                buttonIcon.Attributes.Add("class", "fa fa-pencil-square-o");
+                buttonIcon.Attributes.Add("class", "fa fa-pencil");
                 lbEdit.Controls.Add( buttonIcon );
 
                 lbEdit.Click += lbEdit_Click;
