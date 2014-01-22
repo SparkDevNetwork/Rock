@@ -193,7 +193,7 @@ namespace Rock.Model
                 {
                     if ( oldValue.Trim() != newValue.Trim() )
                     {
-                        historyMessages.Add( string.Format( "Modified <span class='field-name'>{0}</span> value from <span class='field-value'>{1}<span> to <span class='field-value'>{2}</span>.", propertyName, oldValue, newValue ) );
+                        historyMessages.Add( string.Format( "Modified <span class='field-name'>{0}</span> value from <span class='field-value'>{1}</span> to <span class='field-value'>{2}</span>.", propertyName, oldValue, newValue ) );
                     }
                 }
                 else
