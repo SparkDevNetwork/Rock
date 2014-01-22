@@ -36,10 +36,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public class FileBrowserController : ApiController, IHasCustomRoutes
     {
-        /// <summary>
-        /// The root content folder
-        /// </summary>
-        private const string RootContentFolder = "~/Content";
 
         /// <summary>
         /// Adds the routes.
@@ -48,60 +44,6 @@ namespace Rock.Rest.Controllers
         public void AddRoutes( RouteCollection routes )
         {
             routes.MapHttpRoute(
-                name: "GetSubFolders",
-                routeTemplate: "api/FileBrowser/GetSubFolders",
-                defaults: new
-                {
-                    controller = "FileBrowser",
-                    action = "GetSubFolders"
-                } );
-
-            routes.MapHttpRoute(
-                name: "GetFiles",
-                routeTemplate: "api/FileBrowser/GetFiles",
-                defaults: new
-                {
-                    controller = "FileBrowser",
-                    action = "GetFiles"
-                } );
-
-            routes.MapHttpRoute(
-                name: "DeleteFile",
-                routeTemplate: "api/FileBrowser/DeleteFile",
-                defaults: new
-                {
-                    controller = "FileBrowser",
-                    action = "DeleteFile"
-                } );
-
-            routes.MapHttpRoute(
-                name: "CreateFolder",
-                routeTemplate: "api/FileBrowser/CreateFolder",
-                defaults: new
-                {
-                    controller = "FileBrowser",
-                    action = "CreateFolder"
-                } );
-
-            routes.MapHttpRoute(
-                name: "DeleteFolder",
-                routeTemplate: "api/FileBrowser/DeleteFolder",
-                defaults: new
-                {
-                    controller = "FileBrowser",
-                    action = "DeleteFolder"
-                } );
-
-            routes.MapHttpRoute(
-                name: "RenameFolder",
-                routeTemplate: "api/FileBrowser/RenameFolder",
-                defaults: new
-                {
-                    controller = "FileBrowser",
-                    action = "RenameFolder"
-                } );
-
-            routes.MapHttpRoute(
                 name: "GetFileThumbnail",
                 routeTemplate: "api/FileBrowser/GetFileThumbnail",
                 defaults: new
@@ -109,168 +51,6 @@ namespace Rock.Rest.Controllers
                     controller = "FileBrowser",
                     action = "GetFileThumbnail"
                 } );
-        }
-
-        /// <summary>
-        /// Gets the sub folders.
-        /// </summary>
-        /// <param name="folderName">Name of the folder.</param>
-        /// <param name="fileFilter">The file filter.</param>
-        /// <returns></returns>
-        [Authenticate]
-        [HttpGet]
-        public IQueryable<TreeViewItem> GetSubFolders( string folderName = "", string fileFilter = "*.*" )
-        {
-            fileFilter = string.IsNullOrWhiteSpace( fileFilter ) ? "*.*" : fileFilter;
-
-            string physicalRootFolder = HttpContext.Current.Request.MapPath( RootContentFolder );
-            string contentFolderName = Path.Combine( physicalRootFolder, folderName.TrimStart( new char[] { '/', '\\' } ) );
-            List<TreeViewItem> directoryFileList = new List<TreeViewItem>();
-
-            if ( !Directory.Exists( contentFolderName ) )
-            {
-                // if a non-existent folder was specified, return an empty list
-                return directoryFileList.AsQueryable();
-            }
-
-            // list the folders that are in the selected directory
-            List<string> directoryList = Directory.GetDirectories( contentFolderName ).OrderBy( a => a ).ToList();
-            foreach ( string directoryPath in directoryList )
-            {
-                DirectoryInfo directoryInfo = new DirectoryInfo( directoryPath );
-                TreeViewItem directoryNode = new TreeViewItem
-                {
-                    HasChildren = directoryInfo.EnumerateFiles( fileFilter ).Any() || directoryInfo.EnumerateDirectories().Any(),
-                    IconCssClass = "fa fa-folder",
-                    Id = directoryInfo.FullName.Remove( 0, physicalRootFolder.Length ),
-                    Name = directoryInfo.Name
-                };
-
-                directoryFileList.Add( directoryNode );
-            }
-
-            return directoryFileList.AsQueryable();
-        }
-
-        /// <summary>
-        /// Gets the files.
-        /// </summary>
-        /// <param name="folderName">Name of the folder.</param>
-        /// <param name="fileFilter">The file filter.</param>
-        /// <returns></returns>
-        [Authenticate]
-        [HttpGet]
-        public IQueryable<FileItem> GetFiles( string folderName = "", string fileFilter = "*.*" )
-        {
-            fileFilter = string.IsNullOrWhiteSpace( fileFilter ) ? "*.*" : fileFilter;
-
-            string physicalRootFolder = HttpContext.Current.Request.MapPath( RootContentFolder );
-            string contentFolderName = Path.Combine( physicalRootFolder, folderName.TrimStart( new char[] { '/', '\\' } ) );
-
-            List<FileItem> fileList = new List<FileItem>();
-
-            if ( !Directory.Exists( contentFolderName ) )
-            {
-                // if a non-existent folder was specified, return an empty list
-                return fileList.AsQueryable();
-            }
-
-            List<string> files = Directory.GetFiles( contentFolderName, fileFilter ).OrderBy( a => a ).ToList();
-            string apiUrl = VirtualPathUtility.ToAbsolute( "~/api/FileBrowser/GetFileThumbnail" );
-            foreach ( var file in files )
-            {
-                FileInfo fileInfo = new FileInfo( file );
-
-                string relativeFilePath = fileInfo.FullName.Substring( physicalRootFolder.Length );
-
-                // construct the thumbNailUrl so that browser will get the thumbnail image from our GetFileThumbnail()
-                string thumbNailUrl = apiUrl + string.Format( "?relativeFilePath={0}&width=100&height=100", HttpUtility.UrlEncode( relativeFilePath ) );
-
-                string deleteScriptFormat = @"$.ajax({{ type: ""DELETE"", url: Rock.settings.get(""baseUrl"") + ""api/FileBrowser/DeleteFile?relativeFilePath={0}""}}); $(this).closest("".rocktree-item"").fadeOut();";
-
-                string deleteScript = string.Format( deleteScriptFormat, HttpUtility.UrlEncode( relativeFilePath ) );
-
-                string nameHtmlFormat = @"
-<div class='rollover-container'>
-  <div class='rollover-item pull-right'>
-    <a title='delete' class='btn btn-xs btn-danger' onclick='{2}'>
-      <i class='fa fa-times'></i>
-    </a>
-  </div>
-  <img src='{0}' class='file-browser-image' />
-  <br />
-  <span class='file-name'>{1}</span>
-</div>
-";
-
-                FileItem fileItem = new FileItem
-                {
-                    Id = relativeFilePath,
-                    Name = string.Format( nameHtmlFormat, thumbNailUrl, fileInfo.Name, deleteScript ),
-                    IconSmallUrl = thumbNailUrl,
-                    RelativeFilePath = relativeFilePath,
-                    Size = fileInfo.Length,
-                    LastModifiedDateTime = fileInfo.LastWriteTime
-                };
-
-                fileList.Add( fileItem );
-            }
-
-            return fileList.AsQueryable();
-        }
-
-        /// <summary>
-        /// Deletes the file.
-        /// </summary>
-        /// <param name="relativeFilePath">The relative file path.</param>
-        [Authenticate]
-        [HttpDelete]
-        public void DeleteFile( string relativeFilePath )
-        {
-            string physicalRootFolder = HttpContext.Current.Request.MapPath( RootContentFolder );
-            string fullPath = Path.Combine( physicalRootFolder, relativeFilePath.Replace( "/", "\\" ).TrimStart( new char[] { '/', '\\' } ) );
-            File.Delete( fullPath );
-        }
-
-        /// <summary>
-        /// Creates the folder.
-        /// </summary>
-        /// <param name="relativeFolderPath">The relative folder path.</param>
-        [Authenticate]
-        [HttpPost]
-        public void CreateFolder( string relativeFolderPath )
-        {
-            string physicalRootFolder = HttpContext.Current.Request.MapPath( RootContentFolder );
-            string fullFolderPath = Path.Combine( physicalRootFolder, relativeFolderPath.Replace( "/", "\\" ).TrimStart( new char[] { '/', '\\' } ) );
-            Directory.CreateDirectory( fullFolderPath );
-        }
-
-        /// <summary>
-        /// Deletes the folder.
-        /// </summary>
-        /// <param name="relativeFolderPath">The relative folder path.</param>
-        [Authenticate]
-        [HttpPost]
-        public void DeleteFolder( string relativeFolderPath )
-        {
-            string physicalRootFolder = HttpContext.Current.Request.MapPath( RootContentFolder );
-            string fullFolderPath = Path.Combine( physicalRootFolder, relativeFolderPath.Replace( "/", "\\" ).TrimStart( new char[] { '/', '\\' } ) );
-            Directory.Delete( fullFolderPath, true );
-        }
-
-        /// <summary>
-        /// Renames the folder.
-        /// </summary>
-        /// <param name="origRelativeFolderPath">The original relative folder path.</param>
-        /// <param name="newRelativeFolderPath">The new relative folder path.</param>
-        [Authenticate]
-        [HttpPost]
-        public void RenameFolder( string origRelativeFolderPath, string newRelativeFolderPath )
-        {
-            string physicalRootFolder = HttpContext.Current.Request.MapPath( RootContentFolder );
-            string origFullFolderPath = Path.Combine( physicalRootFolder, origRelativeFolderPath.Replace( "/", "\\" ).TrimStart( new char[] { '/', '\\' } ) );
-            string newFullFolderPath = Path.Combine( physicalRootFolder, newRelativeFolderPath.Replace( "/", "\\" ).TrimStart( new char[] { '/', '\\' } ) );
-            Directory.Move( origFullFolderPath, newFullFolderPath );
         }
 
         /// <summary>
@@ -287,8 +67,8 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         public HttpResponseMessage GetFileThumbnail( string relativeFilePath, int? width = 100, int? height = 100 )
         {
-            string physicalRootFolder = HttpContext.Current.Request.MapPath( RootContentFolder );
-            string fullPath = Path.Combine( physicalRootFolder, relativeFilePath.Replace( "/", "\\" ).TrimStart( new char[] { '/', '\\' } ) );
+            string physicalFilePath = HttpContext.Current.Request.MapPath( relativeFilePath );
+            string fullPath = physicalFilePath;// Path.Combine( relativeFilePath.Replace( "/", "\\" ).TrimStart( new char[] { '/', '\\' } ) );
 
             // default width/height to 100 if they specified a zero or negative param
             width = width <= 0 ? 100 : width;
@@ -360,36 +140,6 @@ namespace Rock.Rest.Controllers
                     return result;
                 }
             }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public class FileItem : TreeViewItem
-        {
-            /// <summary>
-            /// Gets or sets the relative file path.
-            /// </summary>
-            /// <value>
-            /// The relative file path.
-            /// </value>
-            public string RelativeFilePath { get; set; }
-
-            /// <summary>
-            /// Gets or sets the size of the file in bytes
-            /// </summary>
-            /// <value>
-            /// The size.
-            /// </value>
-            public long Size { get; set; }
-
-            /// <summary>
-            /// Gets or sets the last modified date time.
-            /// </summary>
-            /// <value>
-            /// The last modified date time.
-            /// </value>
-            public DateTime LastModifiedDateTime { get; set; }
         }
     }
 }
