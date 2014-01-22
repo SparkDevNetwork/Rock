@@ -360,6 +360,10 @@
     <Compile Include="Migrations\201401212018517_HistoryPageBreadcrumb.Designer.cs">
       <DependentUpon>201401212018517_HistoryPageBreadcrumb.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401220441223_MiscUIChanges.cs" />
+    <Compile Include="Migrations\201401220441223_MiscUIChanges.Designer.cs">
+      <DependentUpon>201401220441223_MiscUIChanges.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -609,6 +613,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401212018517_HistoryPageBreadcrumb.resx">
       <DependentUpon>201401212018517_HistoryPageBreadcrumb.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401220441223_MiscUIChanges.resx">
+      <DependentUpon>201401220441223_MiscUIChanges.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
