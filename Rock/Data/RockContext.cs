@@ -487,12 +487,12 @@ namespace Rock.Data
         public DbSet<Person> People { get; set; }
 
         /// <summary>
-        /// Gets or sets the Person Trails.
+        /// Gets or sets the Person Aliases.
         /// </summary>
         /// <value>
-        /// the Person Trails.
+        /// the Person aliases.
         /// </value>
-        public DbSet<PersonMerged> PersonMerges { get; set; }
+        public DbSet<PersonAlias> PersonAliases { get; set; }
 
         /// <summary>
         /// Gets or sets the Person Vieweds.
@@ -767,7 +767,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new PageContextConfiguration() );
             modelBuilder.Configurations.Add( new PageRouteConfiguration() );
             modelBuilder.Configurations.Add( new PersonConfiguration() );
-            modelBuilder.Configurations.Add( new PersonMergedConfiguration() );
+            modelBuilder.Configurations.Add( new PersonAliasConfiguration() );
             modelBuilder.Configurations.Add( new PersonViewedConfiguration() );
             modelBuilder.Configurations.Add( new PhoneNumberConfiguration() );
             modelBuilder.Configurations.Add( new PrayerRequestConfiguration() );
