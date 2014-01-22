@@ -586,7 +586,7 @@ namespace Rock.Web.UI.Controls
                     {
                         heading = CreatedByName;
                     }
-                    writer.Write( heading.SanitizeHtml( true ).EncodeHtml() );
+                    writer.Write( heading.EncodeHtml() );
                     if ( CreatedDateTime.HasValue )
                     {
                         writer.Write( " " );
@@ -597,7 +597,7 @@ namespace Rock.Web.UI.Controls
                     }
                     writer.RenderEndTag();
 
-                    writer.Write( Text.SanitizeHtml( false ).EncodeHtml().ConvertCrLfToHtmlBr() );
+                    writer.Write( Text.EncodeHtml().ConvertCrLfToHtmlBr() );
                 }
                 else
                 {
