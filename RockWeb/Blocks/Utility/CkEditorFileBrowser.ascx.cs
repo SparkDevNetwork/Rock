@@ -15,15 +15,16 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Text;
-using System.Web.UI;
 using System.Linq;
-using System.Collections.Generic;
+using System.Text;
+using System.Web;
+using Rock;
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI;
-using Rock.Attribute;
 
 namespace RockWeb.Blocks.Utility
 {
@@ -33,52 +34,83 @@ namespace RockWeb.Blocks.Utility
     [DisplayName( "CkEditor FileBrowser" )]
     [Category( "Utility" )]
     [Description( "Block to be used as part of the RockFileBrowser CKEditor Plugin" )]
-    [TextField( "Root Folder", "The root folder of the Folder Browser")]
+    [TextField( "Root Folder", "The root folder of the Folder Browser" )]
     public partial class CkEditorFileBrowser : RockBlock
     {
         #region Base Control Methods
-
+        
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
         {
-            base.OnInit( e );
+            base.OnLoad( e );
 
-            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
-            this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upnlContent );
-
-            if ( !this.Page.IsPostBack )
+            if ( !this.IsPostBack )
             {
-                
-                string startupScript = @" 
-// init rockTree on folder (no options since we are generating static html)
-$('.treeview').rockTree( {} );
-
-// init scroll bars for folder and file list divs
-$('.js-folder-treeview').tinyscrollbar({ size: 120, sizethumb: 20 });
-$('.js-file-list').tinyscrollbar({ size: 120, sizethumb: 20 });
-
-$('.treeview').on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree:rendered', function (evt) {
-  // update the folder treeview scroll bar
-  $('.js-folder-treeview').tinyscrollbar_update('relative');
-});
-
-";
-                ScriptManager.RegisterStartupScript( this, this.GetType(), "script_" + this.ID, startupScript, true );
+                BuildFolderTreeView();
             }
 
+            // handle folder select event
+            string postbackArgs = Request.Params["__EVENTARGUMENT"];
+            if ( !string.IsNullOrWhiteSpace( postbackArgs ) )
+            {
+                string[] nameValue = postbackArgs.Split( new char[] { ':' } );
+                if ( nameValue.Count() == 2 )
+                {
+                    string eventParam = nameValue[0];
+                    if ( eventParam.Equals( "folder-selected" ) )
+                    {
+                        string folderPath = nameValue[1];
+                        hfSelectedFolder.Value = folderPath;
+                        ListFolderContents( folderPath );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Initializes the tree views.
+        /// </summary>
+        private void BuildFolderTreeView()
+        {
             var sb = new StringBuilder();
-
             sb.AppendLine( "<ul id=\"treeview\">" );
+            string physicalRootFolder = this.Request.MapPath( GetRootFolderPath() );
 
-            
+            if ( Directory.Exists( physicalRootFolder ) )
+            {
+                List<string> directoryList = Directory.GetDirectories( physicalRootFolder ).OrderBy( a => a ).ToList();
 
+                foreach ( string directoryPath in directoryList )
+                {
+                    sb.Append( DirectoryNode( directoryPath, physicalRootFolder ) );
+                }
+
+                sb.AppendLine( "</ul>" );
+
+                lblFolders.Text = sb.ToString();
+                upnlFolders.Update();
+            }
+            else
+            {
+                nbWarning.Title = "Warning";
+                nbWarning.Text = "Folder does not exist: " + physicalRootFolder;
+                nbWarning.Visible = true;
+            }
+        }
+
+        /// <summary>
+        /// Gets the root folder path.
+        /// </summary>
+        /// <returns></returns>
+        private string GetRootFolderPath()
+        {
             // the rootFolder param is encrypted to help prevent the web user from specifying a folder
             string rootFolder = PageParameter( "rootFolder" );
-            if (!string.IsNullOrWhiteSpace(rootFolder) ) {
+            if ( !string.IsNullOrWhiteSpace( rootFolder ) )
+            {
                 rootFolder = Rock.Security.Encryption.DecryptString( rootFolder );
             }
 
@@ -89,60 +121,34 @@ $('.treeview').on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree
             }
 
             // ensure that the folder is formatted to be relative to web root
-            if (!rootFolder.StartsWith("~/"))
+            if ( !rootFolder.StartsWith( "~/" ) )
             {
                 rootFolder = "~/" + rootFolder;
             }
 
-            string physicalRootFolder = this.Request.MapPath( rootFolder );
-            if ( Directory.Exists( physicalRootFolder ) )
-            {
-                List<string> directoryList = Directory.GetDirectories( physicalRootFolder ).OrderBy( a => a ).ToList();
-
-                foreach ( string directoryPath in directoryList )
-                {
-                    sb.Append( DirectoryNode( directoryPath ) );
-                }
-
-                sb.AppendLine( "</ul>" );
-
-                lblFolders.Text = sb.ToString();
-            }
-            else
-            {
-                nbWarning.Title = "Warning";
-                nbWarning.Text = "Folder does not exist: " + physicalRootFolder;
-                nbWarning.Visible = true;
-            }
-        }
-
-        #endregion
-
-        #region Events
-
-        // handlers called by the controls on your block
-
-        /// <summary>
-        /// Handles the BlockUpdated event of the PageLiquid control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated(object sender, EventArgs e)
-        {
-            
+            return rootFolder;
         }
 
         #endregion
 
         #region Methods
 
-        protected string DirectoryNode( string directoryPath )
+        /// <summary>
+        /// Builds a Directory treenode.
+        /// </summary>
+        /// <param name="directoryPath">The directory path.</param>
+        /// <param name="physicalRootFolder">The physical root folder.</param>
+        /// <returns></returns>
+        protected string DirectoryNode( string directoryPath, string physicalRootFolder )
         {
             var sb = new StringBuilder();
 
             DirectoryInfo directoryInfo = new DirectoryInfo( directoryPath );
+            string relativeFolderPath = directoryPath.Replace( physicalRootFolder, string.Empty );
+            bool dataExpanded = hfSelectedFolder.Value.StartsWith( relativeFolderPath );
+            bool selected = hfSelectedFolder.Value == relativeFolderPath;
 
-            sb.AppendFormat( "<li data-expanded='false' data-id='{0}'><span><i class=\"fa fa-folder\"></i> {1}</span> \n", directoryPath, directoryInfo.Name );
+            sb.AppendFormat( "<li data-expanded='{2}' data-id='{0}'><span class='{3}'><i class=\"fa fa-folder\"></i> {1}</span> \n", relativeFolderPath, directoryInfo.Name, dataExpanded.ToTrueFalse().ToLower(), selected ? "selected" : string.Empty );
 
             List<string> subDirectoryList = Directory.GetDirectories( directoryPath ).OrderBy( a => a ).ToList();
 
@@ -152,7 +158,7 @@ $('.treeview').on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree
 
                 foreach ( var subDirectoryPath in subDirectoryList )
                 {
-                    sb.Append( DirectoryNode( subDirectoryPath ) );
+                    sb.Append( DirectoryNode( subDirectoryPath, physicalRootFolder ) );
                 }
 
                 sb.AppendLine( "</ul>" );
@@ -163,6 +169,186 @@ $('.treeview').on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Lists the folder contents.
+        /// </summary>
+        /// <param name="relativeFolderPath">The folder path.</param>
+        protected void ListFolderContents( string relativeFolderPath )
+        {
+            string rootFolder = GetRootFolderPath();
+            string physicalRootFolder = this.MapPath( rootFolder );
+            string physicalFolder = Path.Combine( physicalRootFolder, relativeFolderPath.TrimStart( '/', '\\' ) );
+
+            var sb = new StringBuilder();
+            sb.AppendLine( "<ul>" );
+
+            var fileList = Directory.GetFiles( physicalFolder, "*.*" ).OrderBy( a => a ).ToList();
+            foreach ( var filePath in fileList )
+            {
+
+                string nameHtmlFormat = @"
+<li data-id='{3}' data-expanded='true'>
+    <span class='rocktree-name'>
+        <div class='rollover-container'>
+          <div class='rollover-item pull-right'>
+            <a title='delete' class='btn btn-xs btn-danger' onclick='{2}'>
+              <i class='fa fa-times'></i>
+            </a>
+          </div>
+          <img src='{0}' class='file-browser-image' />
+          <br />
+          <span class='file-name'>{1}</span>
+        </div>
+    </span>
+</li>
+";
+
+                string fileName = Path.GetFileName( filePath );
+                string relativeFilePath = filePath.Replace( physicalRootFolder, string.Empty );
+                string imagePath = rootFolder.TrimEnd( '/', '\\' ) + "/" + relativeFilePath.TrimStart( '/', '\\' ).Replace( "\\", "/" );
+                string imageUrl = this.ResolveUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + HttpUtility.UrlEncode( imagePath ) + "&width=100&height=100" );
+
+                sb.AppendLine( string.Format( nameHtmlFormat, imageUrl, fileName, "", relativeFilePath ) );
+            }
+
+            sb.AppendLine( "</ul>" );
+
+            lblFiles.Text = sb.ToString();
+        }
+
         #endregion
-    }
+
+        /// <summary>
+        /// Handles the Click event of the lbCreateFolder control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbCreateFolder_Click( object sender, EventArgs e )
+        {
+            tbNewFolderName.PrependText = hfSelectedFolder.Value.TrimEnd('\\')  + "\\";
+            tbNewFolderName.Text = "";
+            mdCreateFolder.Show();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbDeleteFolder control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbDeleteFolder_Click( object sender, EventArgs e )
+        {
+            string selectedPhysicalFolder = GetSelectedPhysicalFolder();
+            Directory.Delete( selectedPhysicalFolder, true );
+
+            string rootFolder = GetRootFolderPath();
+            string physicalRootFolder = this.MapPath( rootFolder );
+            string relativeFolder = selectedPhysicalFolder.Replace( physicalRootFolder, string.Empty );
+
+            // set selected folder to deleted folder's parent
+            hfSelectedFolder.Value = Path.GetDirectoryName( relativeFolder );
+
+            BuildFolderTreeView();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbRenameFolder control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbRenameFolder_Click( object sender, EventArgs e )
+        {
+            tbOrigFolderName.Text = hfSelectedFolder.Value;
+            tbRenameFolderName.PrependText = Path.GetDirectoryName(hfSelectedFolder.Value) + "\\";
+            tbRenameFolderName.Text = "";
+            mdRenameFolder.Show();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbRefresh control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbRefresh_Click( object sender, EventArgs e )
+        {
+            BuildFolderTreeView();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdRenameFolder control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdRenameFolder_SaveClick( object sender, EventArgs e )
+        {
+            var renameFolderName = tbRenameFolderName.Text;
+            if ( IsValidFolderName( renameFolderName ) )
+            {
+
+                string selectedPhysicalFolder = GetSelectedPhysicalFolder();
+                string renamedPhysicalFolder = Path.Combine( Path.GetDirectoryName( selectedPhysicalFolder ), tbRenameFolderName.Text );
+                Directory.Move( selectedPhysicalFolder, renamedPhysicalFolder );
+
+                // set selected folder to renamed folder
+                hfSelectedFolder.Value = Path.Combine( Path.GetDirectoryName( hfSelectedFolder.Value ), tbRenameFolderName.Text );
+
+                BuildFolderTreeView();
+            }
+            else
+            {
+                tbRenameFolderName.ShowErrorMessage( "Invalid Folder Name" );
+                mdRenameFolder.Show();
+            }
+        }
+
+        /// <summary>
+        /// Determines whether [is valid folder name] [the specified rename folder name].
+        /// </summary>
+        /// <param name="renameFolderName">Name of the rename folder.</param>
+        /// <returns></returns>
+        private static bool IsValidFolderName( string renameFolderName )
+        {
+            var invalidChars = Path.GetInvalidPathChars().ToList();
+            invalidChars.Add( '\\' );
+            invalidChars.Add( '/' );
+            invalidChars.Add( '~' );
+
+            // ensure that folder is a simple folder name (no backslashs, invalidchars, etc)
+            var validFolderName = !( renameFolderName.ToList().Any( a => invalidChars.Contains( a ) ) || renameFolderName.StartsWith( ".." ) );
+            return validFolderName;
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdCreateFolder control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdCreateFolder_SaveClick( object sender, EventArgs e )
+        {
+            if ( IsValidFolderName( tbNewFolderName.Text ) )
+            {
+                string selectedPhysicalFolder = GetSelectedPhysicalFolder();
+                Directory.CreateDirectory( Path.Combine( selectedPhysicalFolder, tbNewFolderName.Text ) );
+                BuildFolderTreeView();
+            }
+            else
+            {
+                tbNewFolderName.ShowErrorMessage( "Invalid Folder Name" );
+                mdCreateFolder.Show();
+            }
+        }
+
+        /// <summary>
+        /// Gets the selected physical folder.
+        /// </summary>
+        /// <returns></returns>
+        private string GetSelectedPhysicalFolder()
+        {
+            string relativeFolderPath = hfSelectedFolder.Value;
+            string rootFolder = GetRootFolderPath();
+            string physicalRootFolder = this.MapPath( rootFolder );
+            string selectedPhysicalFolder = Path.Combine( physicalRootFolder, relativeFolderPath.TrimStart( '/', '\\' ) );
+
+            return selectedPhysicalFolder;
+        }
+}
 }
