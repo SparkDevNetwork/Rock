@@ -11,6 +11,7 @@
                     <asp:BoundField DataField="IconCssClass" HeaderText="Icon Class" />
                     <asp:BoundField DataField="ChildCount" HeaderText="Child Categories" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
                     <Rock:EditField OnClick="gCategories_Edit"/>
+                    <Rock:SecurityField />
                     <Rock:DeleteField OnClick="gCategories_Delete" />
                 </Columns>
             </Rock:Grid>
@@ -38,7 +39,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:CategoryPicker ID="catpParentCategory" runat="server" />
+                        <Rock:CategoryPicker ID="catpParentCategory" runat="server" Label="Parent Category" />
                     </div>
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" />

@@ -2,9 +2,18 @@
 
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
+
         <asp:Panel ID="pnlContent" runat="server">
+
             <h4><asp:Literal ID="lTaggedTitle" runat="server"></asp:Literal></h4>
-            <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" OnRowSelected="gReport_RowSelected" />
+            <Rock:ModalAlert ID="mdGridWarning" runat="server" />
+            <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" OnRowSelected="gReport_RowSelected">
+                <Columns>
+                    <Rock:DeleteField OnClick="gReport_Delete" />
+                </Columns>
+            </Rock:Grid>
+
         </asp:Panel>
+
     </ContentTemplate>
 </asp:UpdatePanel>

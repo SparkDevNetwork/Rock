@@ -1,18 +1,37 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
+using System.ComponentModel;
 using System.Web.Security;
 using System.Web.UI;
+
 using Rock.Attribute;
 using Rock.Model;
 
 namespace RockWeb.Blocks.Security
 {
-    [TextField( "Confirmed Caption", "", false,"{0}, Your account has been confirmed.  Thank you for creating the account", "Captions", 0  )]
+    /// <summary>
+    /// Block for user to confirm a newly created login account.
+    /// </summary>
+    [DisplayName( "Confirm Account" )]
+    [Category( "Security" )]
+    [Description( "Block for user to confirm a newly created login account, usually from an email that was sent to them." )]
+
+    [TextField( "Confirmed Caption", "", false, "{0}, Your account has been confirmed.  Thank you for creating the account", "Captions", 0 )]
     [TextField( "Reset Password Caption", "", false, "{0}, Enter a new password for your '{1}' account", "Captions", 1 )]
     [TextField( "Password Reset Caption", "", false, "{0}, The password for your '{1}' account has been changed", "Captions", 2 )]
     [TextField( "Delete Caption", "", false, "Are you sure you want to delete the '{0}' account?", "Captions", 3 )]
@@ -21,8 +40,13 @@ namespace RockWeb.Blocks.Security
     [LinkedPage( "New Account Page", "Page to navigate to when user selects 'Create New Account' option (if blank will use 'NewAccount' page route)" )]
     public partial class ConfirmAccount : Rock.Web.UI.RockBlock
     {
+
+        #region Fields
+
         private UserLoginService userLoginService = null;
         private UserLogin user = null;
+
+        #endregion
 
         #region Properties
 
@@ -47,7 +71,7 @@ namespace RockWeb.Blocks.Security
 
         #endregion
 
-        #region Overridden RockPage Methods
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load"/> event.
@@ -131,6 +155,11 @@ namespace RockWeb.Blocks.Security
             ShowResetPassword();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnResetPassword control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnResetPassword_Click( object sender, EventArgs e )
         {
             user = userLoginService.GetByConfirmationCode( ConfirmationCode );
@@ -162,7 +191,7 @@ namespace RockWeb.Blocks.Security
 
         #endregion
 
-        #region Private Methods
+        #region Methods
 
         private void ShowCode()
         {

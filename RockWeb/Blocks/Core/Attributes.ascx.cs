@@ -1,9 +1,21 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
 //
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
@@ -23,6 +35,10 @@ namespace RockWeb.Blocks.Core
     /// <summary>
     /// User control for managing the attributes that are available for a specific entity
     /// </summary>
+    [DisplayName( "Attributes" )]
+    [Category( "Core" )]
+    [Description( "Allows for the managing of attribues." )]
+
     [BooleanField("Configure Type", "Only show attributes for type specified below", true)]
     [EntityTypeField( "Entity", "Entity Name", false, "Applies To", 0 )]
     [TextField( "Entity Qualifier Column", "The entity column to evaluate when determining if this attribute applies to the entity", false, "", "Applies To", 1 )]
@@ -46,7 +62,7 @@ namespace RockWeb.Blocks.Core
 
         #endregion
 
-        #region Control Methods
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -94,9 +110,10 @@ namespace RockWeb.Blocks.Core
                 rGrid.RowDataBound += rGrid_RowDataBound;
 
                 rGrid.Columns[1].Visible = !_configuredType;   // qualifier
+
                 rGrid.Columns[4].Visible = !_displayValueEdit; // default value / value
-                rGrid.Columns[5].Visible = _displayValueEdit;  // edit
-                rGrid.Columns[6].Visible = _displayValueEdit;  // secure
+                rGrid.Columns[5].Visible = _displayValueEdit; // default value / value
+                rGrid.Columns[6].Visible = _displayValueEdit;  // edit
 
                 SecurityField securityField = rGrid.Columns[7] as SecurityField;
                 securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
@@ -265,11 +282,15 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void rGrid_EditValue( object sender, RowEventArgs e )
+        protected void rGrid_RowSelected( object sender, RowEventArgs e )
         {
             if ( _displayValueEdit )
             {
                 ShowEditValue( (int)rGrid.DataKeys[e.RowIndex]["id"], true );
+            }
+            else
+            {
+                ShowEdit( (int)rGrid.DataKeys[e.RowIndex]["id"] );
             }
         }
 
@@ -426,8 +447,6 @@ namespace RockWeb.Blocks.Core
             pnlList.Visible = true;
         }
 
-        #endregion
-
         /// <summary>
         /// Handles the SaveClick event of the modalDetails control.
         /// </summary>
@@ -475,6 +494,8 @@ namespace RockWeb.Blocks.Core
 
             BindGrid();
         }
+
+        #endregion
 
         #region Methods
 

@@ -45,36 +45,11 @@
             </div>
 
             <!-- Comments -->
+            <Rock:NoteEditor ID="notesComments" runat="server" Term="Comment" ShowHeading="false"
+                 DisplayType="Full" UsePersonIcon="true" ShowAlertCheckBox="false" 
+                ShowPrivateCheckBox="false" ShowSecurityButton="false" 
+                AllowAnonymousEntry="false" AddAlwaysVisible="true" SortDirection="Ascending" />
 
-            <asp:Panel ID="pnlComments" runat="server" DefaultButton="bbtnSaveComment">
-
-
-                <asp:Repeater ID="rptComments" runat="server">
-                    <ItemTemplate>
-                        <%-- <Rock:NoteEditor ID="noteEditor" runat="server" Note='<%# Container.DataItem as Rock.Model.Note %>'></Rock:NoteEditor>--%>
-                        <div class="media">
-                            <p class="pull-left"><asp:Literal ID="lCommenterIcon" runat="server" /></p>
-                            <Rock:BootstrapButton ID="bbtnDeleteComment" CssClass="pull-right" runat="server" Text="<i class='fa fa-trash-o'></i>" ></Rock:BootstrapButton>
-                            <div class="media-body">
-                                <h5 class="media-heading">
-                                    <asp:Literal ID="lCommentBy" runat="server"></asp:Literal>
-                                    <small>
-                                        <asp:Literal ID="lCommentDate" runat="server"></asp:Literal></small></h5>
-                                <asp:Literal ID="lCommentText" runat="server"></asp:Literal>
-                            </div>
-                        </div>
-                    </ItemTemplate>
-                </asp:Repeater>
-
-                <div class="media">
-                    <p class="pull-left"><asp:Literal ID="lMeIconHtml" runat="server" /></p>
-                    <Rock:BootstrapButton ID="bbtnSaveComment" TabIndex="3" runat="server" CssClass="btn btn-default pull-right"  OnClick="bbtnSaveComment_Click" >Post</Rock:BootstrapButton>
-                    <div class="media-body">
-                        <Rock:RockTextBox ID="tbComment" TabIndex="2" runat="server" Placeholder="Write a comment..."></Rock:RockTextBox>
-                    </div>
-                </div>
-
-            </asp:Panel>
         </div>
         </asp:Panel>
 

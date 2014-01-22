@@ -18,10 +18,10 @@ begin
    
 
    -- root wf cats
-   INSERT INTO [Category]([IsSystem],[ParentCategoryId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],[Name],[Guid],[IconSmallFileId],[IconLargeFileId],[IconCssClass])
+   INSERT INTO [Category]([IsSystem],[ParentCategoryId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],[Name],[Guid],[IconCssClass],[Order])
      VALUES
-      (0,@parentCategoryId,@entityTypeIdDVType,null,null,'Person Reports',NEWID(),null,null,'icon-user'),
-      (0,@parentCategoryId,@entityTypeIdDVType,null,null,'Group Reports',NEWID(),null,null,'icon-group'),
-      (0,@parentCategoryId,@entityTypeIdDVType,null,null,'Financial Reports',NEWID(),null,null,'icon-money') 
+      (0,@parentCategoryId,@entityTypeIdDVType,null,null,'Person Reports',NEWID(),'icon-user',0),
+      (0,@parentCategoryId,@entityTypeIdDVType,null,null,'Group Reports',NEWID(),'icon-group',0),
+      (0,@parentCategoryId,@entityTypeIdDVType,null,null,'Financial Reports',NEWID(),'icon-money',0) 
 
 end

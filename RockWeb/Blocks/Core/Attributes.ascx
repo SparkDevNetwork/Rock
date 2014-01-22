@@ -8,7 +8,7 @@
                 <Rock:EntityTypePicker ID="ddlEntityType" runat="server" Label="Entity Type" IncludeGlobalOption="true" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
                 <Rock:CategoryPicker ID="cpCategoriesFilter" runat="server" Label="Categories" AllowMultiSelect="true" />
             </Rock:GridFilter>
-            <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" TooltipField="Description" OnRowSelected="rGrid_Edit">
+            <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" TooltipField="Description" OnRowSelected="rGrid_RowSelected">
                 <Columns>
                     <asp:BoundField 
                         DataField="Id" 
@@ -40,7 +40,7 @@
                             <asp:Literal ID="lValue" runat="server"></asp:Literal>
                         </ItemTemplate>
                     </asp:TemplateField>
-                    <Rock:EditValueField OnClick="rGrid_EditValue" />
+                    <Rock:EditField OnClick="rGrid_Edit" />
                     <Rock:SecurityField TitleField="Name" />
                     <Rock:DeleteField OnClick="rGrid_Delete" />
                 </Columns>

@@ -2,12 +2,12 @@
 
 <asp:UpdatePanel ID="upSettings" runat="server">
     <ContentTemplate>
+
         <asp:Panel ID="pnlContent" runat="server" CssClass="defined-type-checklist">
             
-            <asp:Literal ID="lPreText" runat="server"></asp:Literal>
-
             <asp:Literal ID="lTitle" runat="server"></asp:Literal>
             <asp:Literal ID="lDescription" runat="server"></asp:Literal>
+
             <asp:Repeater ID="rptrValues" runat="server">
                 <ItemTemplate>
                     <asp:Panel ID="pnlValue" runat="server">
@@ -25,8 +25,7 @@
                 </ItemTemplate>
             </asp:Repeater>
 
-            <asp:Literal ID="lPostText" runat="server"></asp:Literal>
-
         </asp:Panel>
+
     </ContentTemplate>
 </asp:UpdatePanel>

@@ -1,9 +1,19 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.IO;
 using System.Linq;
@@ -50,39 +60,21 @@ namespace RockWeb
                 // No file or no data?  No good.
                 if ( uploadedFile == null || uploadedFile.ContentLength == 0 )
                 {
-                    // TODO: Is there a better response we could send than a 200?
                     context.Response.Write( "0" );
                     return;
                 }
-                
-                // Check to see if BinaryFileType info was sent
-                Guid fileTypeGuid = context.Request.QueryString["fileTypeGuid"].AsGuid();
 
-                RockContext rockContext = new RockContext();
-                BinaryFileType binaryFileType = new BinaryFileTypeService( rockContext ).Get( fileTypeGuid );
+                // Check to see if this is a BinaryFileType/BinaryFile or just a plain content file
+                bool isBinaryFile = context.Request.QueryString["isBinaryFile"].AsBoolean();
 
-                // always create a new BinaryFile record of IsTemporary when a file is uploaded
-                BinaryFile binaryFile = new BinaryFile();
-                binaryFile.IsTemporary = true;
-                binaryFile.BinaryFileTypeId = binaryFileType.Id;
-                binaryFile.MimeType = uploadedFile.ContentType;
-                binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
-                binaryFile.Data = new BinaryFileData();
-
-                //NOTE: GetFileBytes can get overridden by a child class (ImageUploader.ashx.cs for example)
-                binaryFile.Data.Content = GetFileBytes( context, uploadedFile );
-
-                var binaryFileService = new BinaryFileService( rockContext );
-                binaryFileService.Add( binaryFile, null );
-                binaryFileService.Save( binaryFile, null );
-
-                var response = new
+                if ( isBinaryFile )
                 {
-                    Id = binaryFile.Id,
-                    FileName = binaryFile.FileName
-                };
-
-                context.Response.Write( response.ToJson() );
+                    ProcessBinaryFile( context, uploadedFile );
+                }
+                else
+                {
+                    ProcessContentFile( context, uploadedFile );
+                }
             }
             catch ( Exception ex )
             {
@@ -92,13 +84,83 @@ namespace RockWeb
         }
 
         /// <summary>
-        /// Gets the file bytes.
+        /// Processes the content file.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="uploadedFile">The uploaded file.</param>
+        private void ProcessContentFile( HttpContext context, HttpPostedFile uploadedFile )
+        {
+            // get folderPath and construct filePath
+            string relativeFolderPath = context.Request.Form["folderPath"] ?? string.Empty;
+            string relativeFilePath = Path.Combine( relativeFolderPath, Path.GetFileName( uploadedFile.FileName ) );
+
+            const string RootContentFolder = "~/Content";
+            string physicalRootFolder = context.Request.MapPath( RootContentFolder );
+            string physicalContentFolderName = Path.Combine( physicalRootFolder, relativeFolderPath.TrimStart( new char[] { '/', '\\' } ) );
+            string physicalFilePath = Path.Combine( physicalContentFolderName, uploadedFile.FileName );
+            byte[] fileContent = GetFileBytes( context, uploadedFile );
+
+            // store the content file in the specified physical content folder
+            if ( !Directory.Exists( physicalContentFolderName ) )
+            {
+                Directory.CreateDirectory( physicalContentFolderName );
+            }
+
+            File.WriteAllBytes( physicalFilePath, fileContent );
+
+            var response = new
+            {
+                Id = string.Empty,
+                FileName = relativeFilePath
+            };
+
+            context.Response.Write( response.ToJson() );
+        }
+
+        /// <summary>
+        /// Processes the binary file.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="uploadedFile">The uploaded file.</param>
+        private void ProcessBinaryFile( HttpContext context, HttpPostedFile uploadedFile )
+        {
+            // get BinaryFileType info
+            Guid fileTypeGuid = context.Request.QueryString["fileTypeGuid"].AsGuid();
+
+            RockContext rockContext = new RockContext();
+            BinaryFileType binaryFileType = new BinaryFileTypeService( rockContext ).Get( fileTypeGuid );
+
+            // always create a new BinaryFile record of IsTemporary when a file is uploaded
+            BinaryFile binaryFile = new BinaryFile();
+            binaryFile.IsTemporary = true;
+            binaryFile.BinaryFileTypeId = binaryFileType.Id;
+            binaryFile.MimeType = uploadedFile.ContentType;
+            binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
+            binaryFile.Data = new BinaryFileData();
+            binaryFile.Data.Content = GetFileBytes( context, uploadedFile );
+
+            var binaryFileService = new BinaryFileService( rockContext );
+            binaryFileService.Add( binaryFile, null );
+            binaryFileService.Save( binaryFile, null );
+
+            var response = new
+            {
+                Id = binaryFile.Id,
+                FileName = binaryFile.FileName
+            };
+
+            context.Response.Write( response.ToJson() );
+        }
+
+        /// <summary>
+        /// Gets the file bytes
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="uploadedFile">The uploaded file.</param>
         /// <returns></returns>
         public virtual byte[] GetFileBytes( HttpContext context, HttpPostedFile uploadedFile )
         {
+            // NOTE: GetFileBytes can get overridden by a child class (ImageUploader.ashx.cs for example)
             var bytes = new byte[uploadedFile.ContentLength];
             uploadedFile.InputStream.Read( bytes, 0, uploadedFile.ContentLength );
             return bytes;

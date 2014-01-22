@@ -1,12 +1,21 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.ComponentModel;
-using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -115,21 +124,18 @@ namespace RockWeb.Blocks.Security
             {
                 var userLoginService = new UserLoginService();
                 var userLogin = userLoginService.GetByUserName( tbUserName.Text );
-                if ( userLogin != null && userLogin.ServiceType == AuthenticationServiceType.Internal )
+                if ( userLogin != null && userLogin.EntityType != null)
                 {
-                    foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
+                    var component = AuthenticationContainer.GetComponent(userLogin.EntityType.Name);
+                    if (component.IsActive && 
+                        component.ServiceType == AuthenticationServiceType.Internal &&
+                        !component.RequiresRemoteAuthentication)
                     {
-                        var component = serviceEntry.Value.Value;
-                        string componentName = component.GetType().FullName;
-
-                        if (component.IsActive && !component.RequiresRemoteAuthentication && userLogin.EntityTypeId == component.TypeId )
+                        if ( component.Authenticate( userLogin, tbPassword.Text ) )
                         {
-                            if ( component.Authenticate( userLogin, tbPassword.Text ) )
-                            {
-                                valid = true;
-                                string returnUrl = Request.QueryString["returnurl"];
-                                LoginUser( tbUserName.Text, returnUrl, cbRememberMe.Checked );
-                            }
+                            valid = true;
+                            string returnUrl = Request.QueryString["returnurl"];
+                            LoginUser( tbUserName.Text, returnUrl, cbRememberMe.Checked );
                         }
                     }
                 }
@@ -201,7 +207,7 @@ namespace RockWeb.Blocks.Security
         }
 
         /// <summary>
-        /// Handles the Click event of the btnCancel control.
+        /// Handles the Click event of the btnHelp control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>

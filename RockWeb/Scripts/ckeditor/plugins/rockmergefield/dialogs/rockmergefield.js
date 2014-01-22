@@ -1,0 +1,35 @@
+﻿CKEDITOR.dialog.add('rockmergefieldDialog', function (editor) {
+    var iframeUrl = Rock.settings.get('baseUrl') + "ckeditorplugins/RockMergeField?mergeFields=" + encodeURIComponent(editor.config.rockMergeFieldOptions.mergeFields);
+    return {
+        title: 'Select Merge Field',
+        minWidth: 750,
+        minHeight: 400,
+        editorId: editor.id,
+        contents: [
+            {
+                id: 'tab0',
+                label: '',
+                title: '',
+                elements: [
+                    {
+                        type: 'html',
+                        html: "<iframe id='iframe-rockmergefield_" + editor.id + "' src='" + iframeUrl + "' style='width: 100%; height:400px;' /> \n"
+                    }
+                ]
+            }
+        ],
+        onLoad: function (eventParam) {
+        },
+        onShow: function (eventParam) {
+        },
+        onOk: function (sender) {
+            var mergeFields = $('#iframe-rockmergefield_' + editor.id).contents().find('.js-mergefieldpicker-result input[type=hidden]').val();
+            var url = Rock.settings.get('baseUrl') + 'api/MergeFields/' + encodeURIComponent(mergeFields);
+            $.get(url, function (data) {
+                {
+                    editor.insertHtml(data);
+                }
+            });
+        }
+    };
+});

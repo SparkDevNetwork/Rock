@@ -1,10 +1,22 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
 //
 using System.Net;
 using System.Web.Http;
+
 using Rock.Model;
 using Rock.Security;
 
@@ -43,20 +55,15 @@ namespace Rock.Rest.Controllers
 
             var userLoginService = new UserLoginService();
             var userLogin = userLoginService.GetByUserName( loginParameters.Username );
-            if ( userLogin != null && userLogin.ServiceType == AuthenticationServiceType.Internal )
+            if ( userLogin != null && userLogin.EntityType != null) 
             {
-                foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
+                var component = AuthenticationContainer.GetComponent(userLogin.EntityType.Name);
+                if ( component != null && component.IsActive)
                 {
-                    var component = serviceEntry.Value.Value;
-                    string componentName = component.GetType().FullName;
-
-                    if ( component.IsActive)
+                    if ( component.Authenticate( userLogin, loginParameters.Password ) )
                     {
-                        if ( component.Authenticate( userLogin, loginParameters.Password ) )
-                        {
-                            valid = true;
-                            Rock.Security.Authorization.SetAuthCookie( loginParameters.Username, false, false );
-                        }
+                        valid = true;
+                        Rock.Security.Authorization.SetAuthCookie( loginParameters.Username, false, false );
                     }
                 }
             }
