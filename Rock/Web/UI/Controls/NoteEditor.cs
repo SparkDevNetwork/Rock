@@ -432,9 +432,9 @@ namespace Rock.Web.UI.Controls
 
                     writer.RenderEndTag();      // Div.panel-heading
 
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
                 }
 
+                writer.AddAttribute(HtmlTextWriterAttribute.Class, "panel-body");
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 if ( canAdd && SortDirection == ListSortDirection.Descending )

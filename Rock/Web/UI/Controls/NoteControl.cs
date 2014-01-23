@@ -501,7 +501,11 @@ namespace Rock.Web.UI.Controls
                 writer.Write( Person.GetPhotoImageTag( CreatedByPhotoId, CreatedByGender, 50, 50 ) );
             }
 
+            writer.AddAttribute(HtmlTextWriterAttribute.Class, "noteentry-control");
+            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+            
             _tbNote.RenderControl( writer );
+            writer.RenderEndTag();
 
             if ( DisplayType == NoteDisplayType.Full )
             {
