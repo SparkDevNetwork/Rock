@@ -80,7 +80,7 @@ namespace CheckVariableNaming
             Console.BufferWidth = 160;
             Console.BufferHeight = 9999;
             Console.WindowWidth = 160;
-            
+
             int violations = 0;
             violations += AnalyzeVariableNames( regex, ucRegex, validPrefixes, options );
 
@@ -101,7 +101,7 @@ namespace CheckVariableNaming
             List<string> sourceFilenames = Directory.GetFiles( options.PathToRockWeb, "*.ascx", SearchOption.AllDirectories ).ToList();
 
             int idx = options.PathToRockWeb.IndexOf( @"\RockWeb" );
-            
+
             foreach ( string fileName in sourceFilenames )
             {
                 numberFiles++;
@@ -123,7 +123,7 @@ namespace CheckVariableNaming
                         ControlInstance ci = new ControlInstance() { Type = controlType, FileName = partialFileName, VariableName = variable, Prefix = prefix };
 
                         // Check if this controlType's prefix is valid
-                        if ( ! ( options.reportEnabled || options.violationsByFile ) &&  validPrefixes.ContainsKey( controlType ) )
+                        if ( !( options.reportEnabled || options.violationsByFile ) && validPrefixes.ContainsKey( controlType ) )
                         {
                             if ( validPrefixes[controlType] != prefix )
                             {
@@ -165,12 +165,16 @@ namespace CheckVariableNaming
         /// <param name="options"></param>
         private static int ViolationsByFileName( SortedDictionary<string, List<ControlInstance>> lookup, Dictionary<string, string> validPrefixes )
         {
+            Console.WriteLine( "Enter File Filter (example: HtmlContentDetail.ascx, or * for all)" );
+            string filter = Console.ReadLine();
+            int filteredCount = 0;
+
             int violations = 0;
             List<string> results = new List<string>();
             foreach ( string controlType in lookup.Keys )
             {
                 Dictionary<string, List<ControlInstance>> fileTable = new Dictionary<string, List<ControlInstance>>();
-                
+
                 foreach ( ControlInstance ci in lookup[controlType] )
                 {
                     // If this control instance does not have a valid prefix then add it to the fileTable.
@@ -188,35 +192,30 @@ namespace CheckVariableNaming
                 }
 
                 // Now rip through all the files in the fileTable and spew out each one's list of invalid control instance.
-                
-                foreach ( string fileName in fileTable.Keys)
+
+                foreach ( string fileName in fileTable.Keys )
                 {
-                    foreach ( ControlInstance ci in fileTable[fileName] )
+                    if ( filter == "*" || fileName.IndexOf( filter, StringComparison.OrdinalIgnoreCase ) >= 0 )
                     {
-                        violations++;
-                        results.Add( string.Format( "Violation: {0}\t({1})\t{2} != {3}", fileName, ci.Type, ci.VariableName, ProperVariable( validPrefixes, ci ) ) );
+                        foreach ( ControlInstance ci in fileTable[fileName] )
+                        {
+                            violations++;
+                            filteredCount++;
+                            results.Add( string.Format( "Violation: {0}\t({1})\t{2} != {3}", fileName, ci.Type, ci.VariableName, ProperVariable( validPrefixes, ci ) ) );
+                        }
                     }
                 }
             }
 
-            Console.WriteLine( "Enter Filter (example: HtmlContentDetail.ascx, or * for all)" );
-            string filter = Console.ReadLine();
-
-            int filteredCount = 0;
             foreach ( var result in results.OrderBy( a => a ) )
             {
-                if ( filter == "*" || result.Contains( filter ) )
-                {
-                    Console.WriteLine( result );
-                    filteredCount++;
-                }
+                Console.WriteLine( result );
             }
 
-            if (filteredCount == 0)
+            if ( filteredCount == 0 )
             {
                 Console.WriteLine( "No items found using filter: " + filter );
             }
-
 
             return violations;
         }
@@ -242,9 +241,9 @@ namespace CheckVariableNaming
         {
             Console.WriteLine( "Report" );
 
-            if ( ! options.outputDictionary )
+            if ( !options.outputDictionary )
             {
-                Console.WriteLine( "    {0,-25} | {1,-12} | {2, -25} | {3, -10}", "Control Type", "Prefix", "Example", "# Times In Use");
+                Console.WriteLine( "    {0,-25} | {1,-12} | {2, -25} | {3, -10}", "Control Type", "Prefix", "Example", "# Times In Use" );
                 Console.WriteLine( "    {0,-25} | {1,-12} | {2, -25} | {3, -10}", new String( '=', 25 ), new String( '=', 12 ), new String( '=', 25 ), new String( '=', 10 ) );
             }
 
