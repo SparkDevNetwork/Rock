@@ -159,8 +159,6 @@ namespace RockWeb.Blocks.Prayer
             note.IsAlert = false;
             note.NoteTypeId = noteType.Id;
             note.EntityId = contextEntity.Id;
-            note.CreatedByPersonId = CurrentPersonId;
-            note.CreationDateTime = DateTime.Now;
             note.Text = tbNewNote.Text;
 
             if ( noteType.Sources != null )
@@ -248,11 +246,11 @@ namespace RockWeb.Blocks.Prayer
 
             // Add the name/caption
             string caption = note.Caption;
-            if (string.IsNullOrWhiteSpace(caption) && note.CreatedByPerson != null)
+            if (string.IsNullOrWhiteSpace(caption) && note.CreatedByPersonAlias != null && note.CreatedByPersonAlias.Person != null )
             {
-                caption = note.CreatedByPerson.FullName;
+                caption = note.CreatedByPersonAlias.Person.FullName;
             }
-            divDetail.Controls.Add( new LiteralControl( string.Format("<strong>{0}</strong> <span class='text-muted'>{1}</span>", caption, note.CreationDateTime.ToRelativeDateString() ) ) );
+            divDetail.Controls.Add( new LiteralControl( string.Format( "<strong>{0}</strong> <span class='text-muted'>{1}</span>", caption, note.CreatedDateTime.ToRelativeDateString() ) ) );
 
             var pText = new HtmlGenericControl( "p" );
             divDetail.Controls.Add( pText );

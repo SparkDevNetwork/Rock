@@ -570,7 +570,7 @@ namespace Rock.Web.UI.Controls
 
                 int noteCount = 0;
 
-                var qry = new NoteService().Queryable()
+                var qry = new NoteService().Queryable("CreatedByPersonAlias.Person")
                     .Where( n =>
                         n.NoteTypeId == NoteTypeId.Value &&
                         n.EntityId == EntityId.Value );
@@ -578,12 +578,12 @@ namespace Rock.Web.UI.Controls
                 if ( SortDirection == ListSortDirection.Descending )
                 {
                     qry = qry.OrderByDescending( n => n.IsAlert )
-                        .ThenByDescending( n => n.CreationDateTime );
+                        .ThenByDescending( n => n.CreatedDateTime );
                 }
                 else
                 {
                     qry = qry.OrderByDescending( n => n.IsAlert )
-                        .ThenBy( n => n.CreationDateTime );
+                        .ThenBy( n => n.CreatedDateTime );
                 }
 
                 foreach ( var note in qry )

@@ -797,6 +797,25 @@ namespace Rock
         /// or if max days has already passed in FB datetime format (February 13 at 11:28am or November 5, 2011 at 1:57pm)
         /// </summary>
         /// <param name="dateTime">the datetime to convert to relative time.</param>
+        /// <param name="maxDays">maximum number of days before formatting in FB date-time format (ex. November 5, 2011 at 1:57pm)</param>
+        /// <returns></returns>
+        public static string ToRelativeDateString( this DateTime? dateTime, int? maxDays = null )
+        {
+            if (dateTime.HasValue)
+            {
+                return dateTime.Value.ToRelativeDateString( maxDays );
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Returns a string in FB style relative format (x seconds ago, x minutes ago, about an hour ago, etc.).
+        /// or if max days has already passed in FB datetime format (February 13 at 11:28am or November 5, 2011 at 1:57pm)
+        /// </summary>
+        /// <param name="dateTime">the datetime to convert to relative time.</param>
         /// <param name="maxDays">maximum number of days before formatting in FB date-time format (ex. November 5, 2011 at 1:57pm) </param>
         /// <returns></returns>
         public static string ToRelativeDateString( this DateTime dateTime, int? maxDays = null )

@@ -84,25 +84,6 @@ namespace Rock.Model
         public string Caption { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> who created the note.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who created the note.
-        /// </value>
-        [DataMember]
-        public int? CreatedByPersonId { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the date and time that the note was created.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.DateTime"/> representing the date and time when the note was created.
-        /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public DateTime CreationDateTime { get; set; }
-
-        /// <summary>
         /// Gets or sets a flag indicating if this note is an alert.
         /// </summary>
         /// <value>
@@ -132,15 +113,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual NoteType NoteType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> who created the note.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.Person"/> who created the note.
-        /// </value>
-        [DataMember]
-        public virtual Person CreatedByPerson { get; set; }
 
         /// <summary>
         /// Gets or sets the source of the note.
@@ -198,7 +170,6 @@ namespace Rock.Model
         {
             this.HasRequired( p => p.NoteType ).WithMany().HasForeignKey( p => p.NoteTypeId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.SourceType ).WithMany().HasForeignKey( p => p.SourceTypeValueId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete( false );
         }
     }
 
