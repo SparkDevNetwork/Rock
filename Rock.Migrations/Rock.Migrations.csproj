@@ -380,6 +380,10 @@
     <Compile Include="Migrations\201401231618180_NoteCreatedInfo.Designer.cs">
       <DependentUpon>201401231618180_NoteCreatedInfo.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401231638103_FinancialBatchCreatedInfo.cs" />
+    <Compile Include="Migrations\201401231638103_FinancialBatchCreatedInfo.Designer.cs">
+      <DependentUpon>201401231638103_FinancialBatchCreatedInfo.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -644,6 +648,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401231618180_NoteCreatedInfo.resx">
       <DependentUpon>201401231618180_NoteCreatedInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401231638103_FinancialBatchCreatedInfo.resx">
+      <DependentUpon>201401231638103_FinancialBatchCreatedInfo.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1419,7 +1419,6 @@ achieve our mission.  We are so grateful for your commitment.
                                     batch.BatchStartDateTime.Value.AddDays( -1 );
                                 }
                                 batch.BatchEndDateTime = batch.BatchStartDateTime.Value.AddDays( 1 ).AddMilliseconds( -1 );
-                                batch.CreatedByPersonId = person.Id;
                                 batchService.Add( batch, CurrentPersonId );
                                 batchService.Save( batch, CurrentPersonId );
 
