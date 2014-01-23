@@ -39,11 +39,6 @@ namespace Rock.Security
         /// <param name="plainText">The text to encrypt.</param>
         public static string EncryptString( string plainText )
         {
-            if ( string.IsNullOrEmpty( plainText ) )
-            {
-                //throw new ArgumentNullException( "plainText" );
-            }
-
             string dataEncryptionKey = ConfigurationManager.AppSettings["DataEncryptionKey"];
 
             if ( string.IsNullOrEmpty( dataEncryptionKey ) )
