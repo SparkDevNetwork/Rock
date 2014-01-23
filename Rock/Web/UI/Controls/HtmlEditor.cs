@@ -423,7 +423,7 @@ var toolbar_RockCustomConfigFull =
         ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat'],
         ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-'], 
         ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
-        ['-', 'Image', 'Table'],
+        ['-', 'Table'],
         ['rockmergefield', '-', 'rockimagebrowser', 'rockdocumentbrowser']
 	];	
 
