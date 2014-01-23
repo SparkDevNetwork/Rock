@@ -71,14 +71,28 @@ namespace RockWeb
         private void ProcessContentFileRequest( HttpContext context )
         {
             string relativeFilePath = context.Request.QueryString["fileName"];
+            string rootFolderParam = context.Request.QueryString["rootFolder"];
 
             if ( string.IsNullOrWhiteSpace( relativeFilePath ) )
             {
                 throw new Exception( "fileName must be specified" );
             }
 
-            const string RootContentFolder = "~/Content";
-            string physicalRootFolder = context.Request.MapPath( RootContentFolder );
+            string rootFolder = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( rootFolderParam ) )
+            {
+                // if a rootFolder was specified in the URL, decrypt it (it is encrypted to help prevent direct access to filesystem)
+                rootFolder = Rock.Security.Encryption.DecryptString( rootFolderParam );
+            }
+
+            if ( string.IsNullOrWhiteSpace( rootFolder ) )
+            {
+                // set to default rootFolder if not specified in the params
+                rootFolder = "~/Content";
+            }
+
+            string physicalRootFolder = context.Request.MapPath( rootFolder );
             string physicalContentFileName = Path.Combine( physicalRootFolder, relativeFilePath.TrimStart( new char[] { '/', '\\' } ) );
             byte[] fileContents = File.ReadAllBytes( physicalContentFileName );
 

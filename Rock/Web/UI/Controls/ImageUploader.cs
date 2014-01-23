@@ -75,7 +75,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
         /// </summary>
@@ -185,35 +185,6 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init"/> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-            EnsureChildControls();
-
-            var script = string.Format( 
-@"
-Rock.controls.imageUploader.initialize({{
-    controlId: '{0}',
-    fileId: '{1}',
-    fileTypeGuid: '{2}',
-    hfFileId: '{3}',
-    imgThumbnail: '{4}',
-    aRemove: '{5}',
-    fileType: 'image'
-}});",
-                _fileUpload.ClientID,
-                BinaryFileId,
-                BinaryFileTypeGuid,
-                _hfBinaryFileId.ClientID,
-                _imgThumbnail.ClientID,
-                _aRemove.ClientID );
-            ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "ImageUploaderScript_" + this.ID, script, true );
-        }
-
         #region Properties
 
         /// <summary>
@@ -280,6 +251,106 @@ Rock.controls.imageUploader.initialize({{
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [is binary file].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [is binary file]; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "true" ),
+        Description( "Does this use the BinaryFile framework?" )
+        ]
+        public bool IsBinaryFile
+        {
+            get
+            {
+                return ViewState["IsBinaryFile"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["IsBinaryFile"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the root folder.
+        /// </summary>
+        /// <value>
+        /// The root folder.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "true" ),
+        Description( "The RootFolder where NonBinaryFile files will be uploaded to" )
+        ]
+        public string RootFolder
+        {
+            get
+            {
+                return ViewState["RootFolder"] as string;
+            }
+
+            set
+            {
+                ViewState["RootFolder"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the submit function client script.
+        /// </summary>
+        /// <value>
+        /// The submit function client script.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "" ),
+        Description( "The optional javascript to run in the image uploader's submitFunction" )
+        ]
+        public string SubmitFunctionClientScript
+        {
+            get
+            {
+                return ViewState["SubmitFunctionClientScript"] as string;
+            }
+
+            set
+            {
+                ViewState["SubmitFunctionClientScript"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the done function client script.
+        /// </summary>
+        /// <value>
+        /// The done function client script.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "" ),
+        Description( "The optional javascript to run in the image uploader's doneFunction" )
+        ]
+        public string DoneFunctionClientScript
+        {
+            get
+            {
+                return ViewState["DoneFunctionClientScript"] as string;
+            }
+
+            set
+            {
+                ViewState["DoneFunctionClientScript"] = value;
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -327,10 +398,10 @@ Rock.controls.imageUploader.initialize({{
         public void RenderBaseControl( HtmlTextWriter writer )
         {
             writer.AddAttribute( "id", this.ClientID );
-            writer.AddAttribute("class", "imageupload-group");
-            writer.RenderBeginTag(HtmlTextWriterTag.Div);
-            
-            writer.AddAttribute("class", "imageupload-thumbnail");
+            writer.AddAttribute( "class", "imageupload-group" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( "class", "imageupload-thumbnail" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             if ( BinaryFileId != null )
@@ -348,29 +419,67 @@ Rock.controls.imageUploader.initialize({{
 
             _hfBinaryFileId.RenderControl( writer );
             _hfBinaryFileTypeGuid.RenderControl( writer );
-            
-            writer.RenderEndTag();
-
-            writer.AddAttribute("class", "imageupload-remove");
-            writer.RenderBeginTag(HtmlTextWriterTag.Div);
-
-            _aRemove.RenderControl(writer);
 
             writer.RenderEndTag();
 
-            writer.AddAttribute("class", "imageupload-dropzone");
+            writer.AddAttribute( "class", "imageupload-remove" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.RenderBeginTag(HtmlTextWriterTag.Span);
-            writer.Write("drop / click to upload");
+            _aRemove.RenderControl( writer );
+
+            writer.RenderEndTag();
+
+            writer.AddAttribute( "class", "imageupload-dropzone" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.RenderBeginTag( HtmlTextWriterTag.Span );
+            writer.Write( "drop / click to upload" );
             writer.RenderEndTag();
 
             _fileUpload.Attributes["name"] = string.Format( "{0}[]", this.ID );
             _fileUpload.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.RenderEndTag();
+            RegisterStartupScript();
 
+            writer.RenderEndTag();
+        }
+
+        /// <summary>
+        /// Registers the startup script.
+        /// </summary>
+        private void RegisterStartupScript()
+        {
+            var script = string.Format(
+@"
+Rock.controls.imageUploader.initialize({{
+    controlId: '{0}',
+    fileId: '{1}',
+    fileTypeGuid: '{2}',
+    hfFileId: '{3}',
+    imgThumbnail: '{4}',
+    aRemove: '{5}',
+    fileType: 'image',
+    isBinaryFile: '{6}',
+    rootFolder: '{7}',
+    submitFunction: function (e, data) {{
+        {8}
+    }},
+    doneFunction: function (e, data) {{
+        {9}
+    }}
+}});",
+                _fileUpload.ClientID,
+                this.BinaryFileId,
+                this.BinaryFileTypeGuid,
+                _hfBinaryFileId.ClientID,
+                _imgThumbnail.ClientID,
+                _aRemove.ClientID,
+                this.IsBinaryFile ? "T" : "F",
+                Rock.Security.Encryption.EncryptString( this.RootFolder ),
+                this.SubmitFunctionClientScript,
+                this.DoneFunctionClientScript);
+            ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "ImageUploaderScript_" + this.ID, script, true );
         }
 
         /// <summary>
