@@ -1,23 +1,23 @@
 ﻿(function () {
     CKEDITOR.plugins.add('rockfilebrowser', {
         init: function (editor) {
-            editor.addCommand('rockfilebrowserDialog', new CKEDITOR.dialogCommand('rockfilebrowserDialog'));
+            editor.addCommand('rockimagebrowserDialog', new CKEDITOR.dialogCommand('rockimagebrowserDialog'));
+            editor.addCommand('rockdocbrowserDialog', new CKEDITOR.dialogCommand('rockdocbrowserDialog'));
 
             editor.ui.addButton && editor.ui.addButton('rockimagebrowser', {
                 label: 'Image Browser',
-                command: 'rockfilebrowserDialog',
-                //rockfilebrowserMode: 'images',
-                icon: this.path + 'rockfilebrowser.png'
+                command: 'rockimagebrowserDialog',
+                icon: this.path + 'rockimagebrowser.png'
             });
 
             editor.ui.addButton && editor.ui.addButton('rockdocumentbrowser', {
                 label: 'Document Browser',
-                command: 'rockfilebrowserDialog',
-                //rockfilebrowserMode: 'documents',
-                icon: this.path + 'rockfilebrowser.png'
+                command: 'rockdocbrowserDialog',
+                icon: this.path + 'rockdocbrowser.png'
             });
 
-            CKEDITOR.dialog.add('rockfilebrowserDialog', this.path + 'dialogs/rockfilebrowser.js');
+            CKEDITOR.dialog.add('rockimagebrowserDialog', this.path + 'dialogs/rockimagebrowser.js');
+            CKEDITOR.dialog.add('rockdocbrowserDialog', this.path + 'dialogs/rockdocbrowser.js');
         }
     });
 })()

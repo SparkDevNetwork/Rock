@@ -2,8 +2,8 @@
     var iframeUrl = Rock.settings.get('baseUrl') + "ckeditorplugins/RockMergeField?mergeFields=" + encodeURIComponent(editor.config.rockMergeFieldOptions.mergeFields);
     return {
         title: 'Select Merge Field',
-        minWidth: 750,
-        minHeight: 400,
+        minWidth: 400,
+        minHeight: 350,
         editorId: editor.id,
         contents: [
             {
@@ -13,7 +13,7 @@
                 elements: [
                     {
                         type: 'html',
-                        html: "<iframe id='iframe-rockmergefield_" + editor.id + "' src='" + iframeUrl + "' style='width: 100%; height:400px;' /> \n"
+                        html: "<iframe id='iframe-rockmergefield_" + editor.id + "' src='" + iframeUrl + "' style='width: 100%; height:350px;' /> \n"
                     }
                 ]
             }

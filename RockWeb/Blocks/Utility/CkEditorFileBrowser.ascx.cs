@@ -45,10 +45,10 @@ namespace RockWeb.Blocks.Utility
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            iupFileBrowser.RootFolder = GetRootFolderPath();
 
-            // setup javascript for when a file is submitted
-            iupFileBrowser.SubmitFunctionClientScript = string.Format( @"
+            fuprFileUpload.RootFolder = GetRootFolderPath();
+
+            string submitScriptFormat = @"
     var selectedFolderPath = $('#{0}').val();
     if (selectedFolderPath) {{
         // include the selected folder in the post to ~/ImageUploader.ashx
@@ -58,10 +58,12 @@ namespace RockWeb.Blocks.Utility
         // no directory selected
         return false;
     }}
-", hfSelectedFolder.ClientID);
+";
 
-            // setup javascript for when a file is done uploading
-            iupFileBrowser.DoneFunctionClientScript = string.Format( @"
+            // setup javascript for when a file is submitted
+            fuprFileUpload.SubmitFunctionClientScript = string.Format( submitScriptFormat, hfSelectedFolder.ClientID );
+
+            string doneScriptFormat = @"
     var selectedFolderPath = $('#{0}').val();
     var foldersTree = $('.js-folder-treeview .treeview').data('rockTree');
     if (selectedFolderPath) {{
@@ -72,7 +74,10 @@ namespace RockWeb.Blocks.Utility
         // no directory selected
         return false;
     }}
-", hfSelectedFolder.ClientID );
+";
+
+            // setup javascript for when a file is done uploading
+            fuprFileUpload.DoneFunctionClientScript = string.Format( doneScriptFormat, hfSelectedFolder.ClientID );
         }
 
         /// <summary>
@@ -82,6 +87,7 @@ namespace RockWeb.Blocks.Utility
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+            mdError.Hide();
 
             if ( !this.IsPostBack )
             {
@@ -102,7 +108,7 @@ namespace RockWeb.Blocks.Utility
                         hfSelectedFolder.Value = folderPath;
                         ListFolderContents( folderPath );
                     }
-                    else if (eventParam.Equals("file-delete"))
+                    else if ( eventParam.Equals( "file-delete" ) )
                     {
                         string fileRelativePath = nameValue[1];
                         DeleteFile( fileRelativePath );
@@ -111,11 +117,11 @@ namespace RockWeb.Blocks.Utility
             }
 
             // handle custom ajax post
-            if (Request.Params["getSelectedFileResult"].AsBoolean())
+            if ( Request.Params["getSelectedFileResult"].AsBoolean() )
             {
                 string fileSelectedResult = getSelectedFileResult( this.Request.Form["selectedFileId"] );
-                
-                Response.Write(fileSelectedResult);
+
+                Response.Write( fileSelectedResult );
                 Response.End();
             }
         }
@@ -231,11 +237,25 @@ namespace RockWeb.Blocks.Utility
 
             var sb = new StringBuilder();
             sb.AppendLine( "<ul>" );
+            
+            string fileFilter = PageParameter( "fileFilter" );
+            if ( string.IsNullOrWhiteSpace( fileFilter ) )
+            {
+                fileFilter = "*.*";
+            }
 
-            var fileList = Directory.GetFiles( physicalFolder, "*.*" ).OrderBy( a => a ).ToList();
+            // Directory.GetFiles doesn't support multiple patterns, so we'll do one at a time
+            List<string> fileFilters = fileFilter.Split( new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            List<string> fileList = new List<string>();
+            foreach ( var filter in fileFilters )
+            {
+                fileList.AddRange( Directory.GetFiles( physicalFolder, filter ).OrderBy( a => a ).ToList() );
+            }
+
+            nbNoFilesInfo.Visible = !fileList.Any();
+
             foreach ( var filePath in fileList )
             {
-
                 string nameHtmlFormat = @"
 <li data-id='{2}' data-expanded='true'>
     <span class='rocktree-name'>
@@ -270,13 +290,20 @@ namespace RockWeb.Blocks.Utility
         /// Deletes the file.
         /// </summary>
         /// <param name="relativeFilePath">The relative file path.</param>
-        protected void DeleteFile(string relativeFilePath)
+        protected void DeleteFile( string relativeFilePath )
         {
-            string rootFolder = GetRootFolderPath();
-            string physicalRootFolder = this.MapPath( rootFolder );
-            string physicalFilePath = Path.Combine( physicalRootFolder, relativeFilePath.TrimStart('\\', '/') );
-            File.Delete( physicalFilePath );
-            ListFolderContents( Path.GetDirectoryName( relativeFilePath ) );
+            try
+            {
+                string rootFolder = GetRootFolderPath();
+                string physicalRootFolder = this.MapPath( rootFolder );
+                string physicalFilePath = Path.Combine( physicalRootFolder, relativeFilePath.TrimStart( '\\', '/' ) );
+                File.Delete( physicalFilePath );
+                ListFolderContents( Path.GetDirectoryName( relativeFilePath ) );
+            }
+            catch ( Exception ex )
+            {
+                this.ShowErrorMessage( ex, "An error occurred when attempting to delete file " + relativeFilePath );
+            }
         }
 
         /// <summary>
@@ -286,8 +313,8 @@ namespace RockWeb.Blocks.Utility
         protected string getSelectedFileResult( string relativeFilePath )
         {
             string rootFolder = GetRootFolderPath();
-            string imageUrl = rootFolder.TrimEnd('\\', '/') + '/' + relativeFilePath.TrimStart('\\', '/').Replace('\\', '/');
-            return string.Format( "{0},{1}", imageUrl.TrimStart('~', '/', '\\'), relativeFilePath );
+            string imageUrl = rootFolder.TrimEnd( '\\', '/' ) + '/' + relativeFilePath.TrimStart( '\\', '/' ).Replace( '\\', '/' );
+            return string.Format( "{0},{1}", imageUrl.TrimStart( '~', '/', '\\' ), Path.GetFileName(relativeFilePath) );
         }
 
         #endregion
@@ -300,7 +327,7 @@ namespace RockWeb.Blocks.Utility
         protected void lbCreateFolder_Click( object sender, EventArgs e )
         {
             tbNewFolderName.PrependText = hfSelectedFolder.Value.TrimEnd( '\\' ) + "\\";
-            tbNewFolderName.Text = "";
+            tbNewFolderName.Text = string.Empty;
             mdCreateFolder.Show();
         }
 
@@ -311,17 +338,25 @@ namespace RockWeb.Blocks.Utility
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDeleteFolder_Click( object sender, EventArgs e )
         {
-            string selectedPhysicalFolder = GetSelectedPhysicalFolder();
-            Directory.Delete( selectedPhysicalFolder, true );
+            try
+            {
+                string selectedPhysicalFolder = GetSelectedPhysicalFolder();
+                Directory.Delete( selectedPhysicalFolder, true );
 
-            string rootFolder = GetRootFolderPath();
-            string physicalRootFolder = this.MapPath( rootFolder );
-            string relativeFolder = selectedPhysicalFolder.Replace( physicalRootFolder, string.Empty );
+                string rootFolder = GetRootFolderPath();
+                string physicalRootFolder = this.MapPath( rootFolder );
+                string relativeFolder = selectedPhysicalFolder.Replace( physicalRootFolder, string.Empty );
 
-            // set selected folder to deleted folder's parent
-            hfSelectedFolder.Value = Path.GetDirectoryName( relativeFolder );
+                // set selected folder to deleted folder's parent
+                hfSelectedFolder.Value = Path.GetDirectoryName( relativeFolder );
 
-            BuildFolderTreeView();
+                BuildFolderTreeView();
+            }
+            catch ( Exception ex )
+            {
+                string relativeFolderPath = hfSelectedFolder.Value;
+                this.ShowErrorMessage( ex, "An error occurred when attempting to delete folder " + relativeFolderPath );
+            }
         }
 
         /// <summary>
@@ -333,7 +368,7 @@ namespace RockWeb.Blocks.Utility
         {
             tbOrigFolderName.Text = hfSelectedFolder.Value;
             tbRenameFolderName.PrependText = Path.GetDirectoryName( hfSelectedFolder.Value ) + "\\";
-            tbRenameFolderName.Text = "";
+            tbRenameFolderName.Text = string.Empty;
             mdRenameFolder.Show();
         }
 
@@ -357,15 +392,22 @@ namespace RockWeb.Blocks.Utility
             var renameFolderName = tbRenameFolderName.Text;
             if ( IsValidFolderName( renameFolderName ) )
             {
+                try
+                {
+                    string selectedPhysicalFolder = GetSelectedPhysicalFolder();
+                    string renamedPhysicalFolder = Path.Combine( Path.GetDirectoryName( selectedPhysicalFolder ), tbRenameFolderName.Text );
+                    Directory.Move( selectedPhysicalFolder, renamedPhysicalFolder );
 
-                string selectedPhysicalFolder = GetSelectedPhysicalFolder();
-                string renamedPhysicalFolder = Path.Combine( Path.GetDirectoryName( selectedPhysicalFolder ), tbRenameFolderName.Text );
-                Directory.Move( selectedPhysicalFolder, renamedPhysicalFolder );
+                    // set selected folder to renamed folder
+                    hfSelectedFolder.Value = Path.Combine( Path.GetDirectoryName( hfSelectedFolder.Value ), tbRenameFolderName.Text );
 
-                // set selected folder to renamed folder
-                hfSelectedFolder.Value = Path.Combine( Path.GetDirectoryName( hfSelectedFolder.Value ), tbRenameFolderName.Text );
-
-                BuildFolderTreeView();
+                    BuildFolderTreeView();
+                }
+                catch ( Exception ex )
+                {
+                    string relativeFolderPath = hfSelectedFolder.Value;
+                    this.ShowErrorMessage( ex, "An error occurred when attempting to rename folder " + relativeFolderPath );
+                }
             }
             else
             {
@@ -400,15 +442,35 @@ namespace RockWeb.Blocks.Utility
         {
             if ( IsValidFolderName( tbNewFolderName.Text ) )
             {
-                string selectedPhysicalFolder = GetSelectedPhysicalFolder();
-                Directory.CreateDirectory( Path.Combine( selectedPhysicalFolder, tbNewFolderName.Text ) );
-                BuildFolderTreeView();
+                try
+                {
+                    string selectedPhysicalFolder = GetSelectedPhysicalFolder();
+                    Directory.CreateDirectory( Path.Combine( selectedPhysicalFolder, tbNewFolderName.Text ) );
+                    BuildFolderTreeView();
+                }
+                catch ( Exception ex )
+                {
+                    string relativeFolderPath = hfSelectedFolder.Value;
+                    ShowErrorMessage( ex, "An error occurred when attempting to create folder " + relativeFolderPath );
+                }
             }
             else
             {
                 tbNewFolderName.ShowErrorMessage( "Invalid Folder Name" );
                 mdCreateFolder.Show();
             }
+        }
+
+        /// <summary>
+        /// Shows the error message.
+        /// </summary>
+        /// <param name="ex">The ex.</param>
+        /// <param name="friendlyMessage">The friendly message.</param>
+        private void ShowErrorMessage( Exception ex, string friendlyMessage )
+        {
+            nbErrorMessage.Text = friendlyMessage;
+            mdError.Show();
+            ExceptionLogService.LogException( ex, this.Context );
         }
 
         /// <summary>
