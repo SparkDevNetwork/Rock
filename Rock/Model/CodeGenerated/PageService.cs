@@ -142,6 +142,10 @@ namespace Rock.Model
             target.HeaderContent = source.HeaderContent;
             target.IconCssClass = source.IconCssClass;
             target.IncludeAdminFooter = source.IncludeAdminFooter;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

@@ -544,7 +544,7 @@ namespace Rock.Web.UI.Controls
 
             if ( NoteId.HasValue || !AddAlwaysVisible )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note-cancel btn btn-xs" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note-cancel btn btn-link btn-xs" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
                 writer.Write( "Cancel" );
                 writer.RenderEndTag();

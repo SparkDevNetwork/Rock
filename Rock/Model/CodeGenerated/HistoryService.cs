@@ -111,8 +111,10 @@ namespace Rock.Model
             target.Summary = source.Summary;
             target.RelatedEntityTypeId = source.RelatedEntityTypeId;
             target.RelatedEntityId = source.RelatedEntityId;
-            target.CreatedByPersonId = source.CreatedByPersonId;
-            target.CreationDateTime = source.CreationDateTime;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

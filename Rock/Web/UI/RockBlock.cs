@@ -72,13 +72,18 @@ namespace Rock.Web.UI
         /// <summary>
         /// Gets the current page reference.
         /// </summary>
-        /// <value>
-        /// The current page reference.
-        /// </value>
         public PageReference CurrentPageReference
         {
             get { return RockPage.PageReference; }
             set { RockPage.PageReference = value; }
+        }
+
+        /// <summary>
+        /// Gets the current person alias.
+        /// </summary>
+        public PersonAlias CurrentPersonAlias
+        {
+            get { return RockPage.CurrentPersonAlias; }
         }
 
         /// <summary>

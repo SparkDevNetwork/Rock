@@ -122,24 +122,6 @@ namespace Rock.Model
         public DateTime? ExpireDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the date and time that the HTMLContent was last modified
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.DateTime"/> representing the date and time that the HTMLContent was last modified
-        /// </value>
-        [DataMember]
-        public DateTime? LastModifiedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> who last modified the HTMLContent.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who last modified the HTMLContent.
-        /// </value>
-        [DataMember]
-        public int? LastModifiedPersonId { get; set; }
-        
-        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Block"/> that this HTMLContent appears on. 
         /// </summary>
         /// <value>
@@ -156,15 +138,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Model.Person ApprovedByPerson { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> who last modified the HTML content.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.Person"/> who last modified the HTMLContent.
-        /// </value>
-        [DataMember]
-        public virtual Model.Person LastModifiedPerson { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
@@ -191,7 +164,6 @@ namespace Rock.Model
         {
             this.HasRequired( p => p.Block ).WithMany().HasForeignKey( p => p.BlockId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.ApprovedByPerson ).WithMany().HasForeignKey( p => p.ApprovedByPersonId ).WillCascadeOnDelete(false);
-            this.HasOptional( p => p.LastModifiedPerson ).WithMany().HasForeignKey( p => p.LastModifiedPersonId ).WillCascadeOnDelete( false );
         }
     }
 }

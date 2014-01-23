@@ -111,6 +111,10 @@ namespace Rock.Model
             target.SpecialRole = source.SpecialRole;
             target.PersonId = source.PersonId;
             target.GroupId = source.GroupId;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

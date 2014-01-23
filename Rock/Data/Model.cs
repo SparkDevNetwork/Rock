@@ -14,8 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Data.Services;
 using System.Runtime.Serialization;
@@ -32,9 +34,71 @@ namespace Rock.Data
     [IgnoreProperties( new[] { "ParentAuthority", "SupportedActions", "AuthEntity", "AttributeValues" } )]
     [IgnoreModelErrors( new[] { "ParentAuthority" } )]
     [DataContract]
-    public abstract class Model<T> : Entity<T>, ISecured, IHasAttributes
+    public abstract class Model<T> : Entity<T>, IModel, ISecured, IHasAttributes
         where T : Model<T>, ISecured, new()
     {
+        #region Entity Properties
+
+        /// <summary>
+        /// Gets or sets the created date time.
+        /// </summary>
+        /// <value>
+        /// The created date time.
+        /// </value>
+        [DataMember]
+        public DateTime? CreatedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the modified date time.
+        /// </summary>
+        /// <value>
+        /// The modified date time.
+        /// </value>
+        [DataMember]
+        public DateTime? ModifiedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the created by person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The created by person alias identifier.
+        /// </value>
+        [DataMember]
+        public int? CreatedByPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the modified by person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The modified by person alias identifier.
+        /// </value>
+        [DataMember]
+        public int? ModifiedByPersonAliasId { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the created by person alias.
+        /// </summary>
+        /// <value>
+        /// The created by person alias.
+        /// </value>
+        [DataMember]
+        public virtual PersonAlias CreatedByPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the modified by person alias.
+        /// </summary>
+        /// <value>
+        /// The modified by person alias.
+        /// </value>
+        [DataMember]
+        public virtual PersonAlias ModifiedByPersonAlias { get; set; }
+
+        #endregion
+
         #region ISecured implementation
 
         /// <summary>
@@ -242,4 +306,17 @@ namespace Rock.Data
 
         #endregion
     }
+
+    //public partial class RockModelConfiguration<T> : EntityTypeConfiguration<T>
+    //    where T : Model<T>, new()
+    //{
+    //    /// <summary>
+    //    /// Initializes a new instance of the <see cref="AuthConfiguration"/> class.
+    //    /// </summary>
+    //    public RockModelConfiguration()
+    //    {
+    //        this.HasOptional( m => m.CreatedByPersonAlias ).WithMany().HasForeignKey( m => m.CreatedByPersonAliasId).WillCascadeOnDelete( false );
+    //        this.HasOptional( m => m.ModifiedByPersonAlias ).WithMany().HasForeignKey( m => m.ModifiedByPersonAliasId ).WillCascadeOnDelete( false );
+    //    }
+    //}
 }

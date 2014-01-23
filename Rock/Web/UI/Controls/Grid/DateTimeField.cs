@@ -51,6 +51,14 @@ namespace Rock.Web.UI.Controls
             this.DataFormatString = "{0:g}";
         }
 
+        /// <summary>
+        /// Initializes the <see cref="T:System.Web.UI.WebControls.BoundField" /> object.
+        /// </summary>
+        /// <param name="enableSorting">true if sorting is supported; otherwise, false.</param>
+        /// <param name="control">The data control that owns the <see cref="T:System.Web.UI.WebControls.BoundField" />.</param>
+        /// <returns>
+        /// false in all cases.
+        /// </returns>
         public override bool Initialize( bool enableSorting, Control control )
         {
             string script = @"

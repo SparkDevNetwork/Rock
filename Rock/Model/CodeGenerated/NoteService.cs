@@ -112,6 +112,10 @@ namespace Rock.Model
             target.CreationDateTime = source.CreationDateTime;
             target.IsAlert = source.IsAlert;
             target.Text = source.Text;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

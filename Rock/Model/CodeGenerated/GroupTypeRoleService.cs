@@ -123,6 +123,10 @@ namespace Rock.Model
             target.MaxCount = source.MaxCount;
             target.MinCount = source.MinCount;
             target.IsLeader = source.IsLeader;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 
