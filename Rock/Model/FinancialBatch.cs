@@ -70,15 +70,6 @@ namespace Rock.Model
         public DateTime? BatchEndDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who created the batch.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who created the batch.
-        /// </value>
-        [DataMember]
-        public int CreatedByPersonId { get; set; }
-
-        /// <summary>
         /// Gets or sets the status of the batch.
         /// </summary>
         /// <value>
@@ -133,14 +124,6 @@ namespace Rock.Model
         public virtual Campus Campus { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> who created the batch.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.Person"/> who created the batch.
-        /// </value>
-        public virtual Person CreateByPerson { get; set; }
-
-        /// <summary>
         /// Gets or sets a collection that contains the <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> that are 
         /// included in the batch.
         /// </summary>
@@ -181,7 +164,6 @@ namespace Rock.Model
         public FinancialBatchConfiguration()
         {
             this.HasOptional( b => b.Campus ).WithMany().HasForeignKey( b => b.CampusId ).WillCascadeOnDelete( false );
-            this.HasRequired( b => b.CreateByPerson ).WithMany().HasForeignKey( b => b.CreatedByPersonId ).WillCascadeOnDelete( false );
         }
     }
 
