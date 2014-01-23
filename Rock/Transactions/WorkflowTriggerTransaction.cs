@@ -52,7 +52,7 @@ namespace Rock.Transactions
         /// <value>
         /// The person id.
         /// </value>
-        public int? PersonId { get; set; }
+        public PersonAlias PersonAlias { get; set; }
 
         /// <summary>
         /// Execute method to write transaction to the database.
@@ -74,8 +74,8 @@ namespace Rock.Transactions
                         if ( workflowType.IsPersisted )
                         {
                             var workflowService = new Rock.Model.WorkflowService();
-                            workflowService.Add( workflow, PersonId );
-                            workflowService.Save( workflow, PersonId );
+                            workflowService.AddUsingAlias( workflow, PersonAlias );
+                            workflowService.SaveUsingAlias( workflow, PersonAlias );
                         }
                     }
                 }

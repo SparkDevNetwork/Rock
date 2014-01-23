@@ -371,8 +371,18 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual bool Add( T item, int? personId )
         {
+            PersonAlias personAlias = null;
+            if ( personId.HasValue )
+            {
+                personAlias = new PersonAliasService().Queryable().FirstOrDefault( a => a.AliasPersonId == personId.Value );
+            }
+            return AddUsingAlias( item, personAlias );
+        }
+
+        public virtual bool AddUsingAlias( T item, PersonAlias personAlias )
+        {
             bool cancel = false;
-            item.RaiseAddingEvent( out cancel, personId );
+            item.RaiseAddingEvent( out cancel, personAlias );
             if ( !cancel )
             {
                 _repository.Add( item );
@@ -410,7 +420,7 @@ namespace Rock.Data
         /// <param name="triggerType">Type of the trigger.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        private bool TriggerWorkflows( IEntity entity, WorkflowTriggerType triggerType, int? personId )
+        private bool TriggerWorkflows( IEntity entity, WorkflowTriggerType triggerType, PersonAlias personAlias )
         {
             Dictionary<string, PropertyInfo> properties = null;
 
@@ -456,8 +466,8 @@ namespace Rock.Data
                                 if ( workflowType.IsPersisted )
                                 {
                                     var workflowService = new Rock.Model.WorkflowService();
-                                    workflowService.Add( workflow, personId );
-                                    workflowService.Save( workflow, personId );
+                                    workflowService.AddUsingAlias( workflow, personAlias );
+                                    workflowService.SaveUsingAlias( workflow, personAlias );
                                 }
                             }
                         }
@@ -467,7 +477,7 @@ namespace Rock.Data
                         var transaction = new Rock.Transactions.WorkflowTriggerTransaction();
                         transaction.Trigger = trigger;
                         transaction.Entity = entity.Clone();
-                        transaction.PersonId = personId;
+                        transaction.PersonAlias = personAlias;
                         Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                     }
                 }
@@ -483,20 +493,30 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual bool Delete( T item, int? personId )
         {
+            PersonAlias personAlias = null;
+            if ( personId.HasValue )
+            {
+                personAlias = new PersonAliasService().Queryable().FirstOrDefault( a => a.AliasPersonId == personId.Value );
+            }
+            return DeleteUsingAlias( item, personAlias );
+        }
+        
+        public virtual bool DeleteUsingAlias(T item, PersonAlias personAlias)
+        {
             ErrorMessages = new List<string>();
 
-            if ( !TriggerWorkflows( item, WorkflowTriggerType.PreDelete, personId ) )
+            if ( !TriggerWorkflows( item, WorkflowTriggerType.PreDelete, personAlias ) )
             {
                 return false;
             }
 
             bool cancel = false;
-            item.RaiseDeletingEvent( out cancel, personId );
+            item.RaiseDeletingEvent( out cancel, personAlias );
             if ( !cancel )
             {
                 _repository.Delete( item );
 
-                TriggerWorkflows( item, WorkflowTriggerType.PostDelete, personId );
+                TriggerWorkflows( item, WorkflowTriggerType.PostDelete, personAlias );
 
                 return true;
             }
@@ -526,16 +546,14 @@ namespace Rock.Data
         {
             // TODO: Make this method the public 'Save' method and remove the previous save
             int? personAliasId = null;
-            int? personId = null;
             if ( personAlias != null )
             {
                 personAliasId = personAlias.Id;
-                personId = personAlias.PersonId;
             } 
 
             ErrorMessages = new List<string>();
 
-            if ( !TriggerWorkflows( item, WorkflowTriggerType.PreSave, personId ) )
+            if ( !TriggerWorkflows( item, WorkflowTriggerType.PreSave, personAlias ) )
             {
                 return false;
             }
@@ -575,7 +593,7 @@ namespace Rock.Data
                     Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                 }
 
-                TriggerWorkflows( item, WorkflowTriggerType.PostSave, personId );
+                TriggerWorkflows( item, WorkflowTriggerType.PostSave, personAlias );
 
                 return true;
             }
