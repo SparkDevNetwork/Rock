@@ -33,12 +33,12 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.Note">Notes</see> for the specified <see cref="Rock.Model.NoteType"/> and entity. </returns>
         public IQueryable<Note> Get( int noteTypeId, int entityId )
         {
-            return Repository.AsQueryable()
+            return Repository.AsQueryable( "CreatedByPersonAlias.Person" )
                 .Where( n =>
                     n.NoteTypeId == noteTypeId &&
                     n.EntityId == entityId )
                 .OrderByDescending( n => n.IsAlert )
-                .ThenByDescending( n => n.CreationDateTime );
+                .ThenByDescending( n => n.CreatedDateTime );
         }
 
         /// <summary>
@@ -48,11 +48,11 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.Note">Notes</see> by <see cref="Rock.Model.NoteType"/>.</returns>
         public IQueryable<Note> GetByNoteTypeId( int noteTypeId )
         {
-            return Repository.AsQueryable()
+            return Repository.AsQueryable( "CreatedByPersonAlias.Person" )
                 .Where( n =>
                     n.NoteTypeId == noteTypeId )
                 .OrderByDescending( n => n.IsAlert )
-                .ThenByDescending( n => n.CreationDateTime );
+                .ThenByDescending( n => n.CreatedDateTime );
         }
     }
 }

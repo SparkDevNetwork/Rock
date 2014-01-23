@@ -114,11 +114,7 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<Note>().Queryable().Any( a => a.CreatedByPersonId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, Note.FriendlyTypeName );
-                return false;
-            }  
+
             
             // ignoring PersonViewed,TargetPersonId 
             

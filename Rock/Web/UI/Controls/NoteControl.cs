@@ -62,11 +62,11 @@ namespace Rock.Web.UI.Controls
                 this.SourceTypeValueId = value.SourceTypeValueId;
                 this.Caption = value.Caption;
 
-                if (value.CreatedByPerson != null)
+                if (value.CreatedByPersonAlias != null && value.CreatedByPersonAlias.Person != null)
                 {
-                    this.CreatedByName = value.CreatedByPerson.FullName;
-                    this.CreatedByPhotoId = value.CreatedByPerson.PhotoId;
-                    this.CreatedByGender = value.CreatedByPerson.Gender;
+                    this.CreatedByName = value.CreatedByPersonAlias.Person.FullName;
+                    this.CreatedByPhotoId = value.CreatedByPersonAlias.Person.PhotoId;
+                    this.CreatedByGender = value.CreatedByPersonAlias.Person.Gender;
                 }
                 else
                 {
@@ -75,7 +75,7 @@ namespace Rock.Web.UI.Controls
                     this.CreatedByGender = Gender.Male;
                 }
 
-                this.CreatedDateTime = value.CreationDateTime;
+                this.CreatedDateTime = value.CreatedDateTime;
                 this.Text = value.Text;
                 this.IsAlert = value.IsAlert.HasValue && value.IsAlert.Value;
             }
@@ -685,8 +685,6 @@ namespace Rock.Web.UI.Controls
                     note.IsSystem = false;
                     note.NoteTypeId = NoteTypeId.Value;
                     note.EntityId = EntityId;
-                    note.CreatedByPersonId = currentPersonId;
-                    note.CreationDateTime = DateTime.Now;
                     note.SourceTypeValueId = SourceTypeValueId;
                     service.Add( note, currentPersonId );
                 }
