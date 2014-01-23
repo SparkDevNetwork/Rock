@@ -363,7 +363,38 @@ namespace Rock.Model
 
         #endregion
 
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Person"/> class.
+        /// </summary>
+        public Person() : base()
+        {
+            _users = new Collection<UserLogin>();
+            _emailTemplates = new Collection<EmailTemplate>();
+            _phoneNumbers = new Collection<PhoneNumber>();
+            _members = new Collection<GroupMember>();
+            _attendances = new Collection<Attendance>();
+            _aliases = new Collection<PersonAlias>();
+        }
+
+        #endregion
+
         #region Virtual Properties
+
+        /// <summary>
+        /// Gets the primary alias.
+        /// </summary>
+        /// <value>
+        /// The primary alias.
+        /// </value>
+        public virtual PersonAlias PrimaryAlias
+        {
+            get
+            {
+                return Aliases.FirstOrDefault( a => a.AliasPersonId == Id );
+            }
+        }
 
         /// <summary>
         /// Gets the Full Name of the Person using the Title FirstName LastName format.
@@ -480,7 +511,7 @@ namespace Rock.Model
         [MergeField]
         public virtual ICollection<UserLogin> Users
         {
-            get { return _users ?? ( _users = new Collection<UserLogin>() ); }
+            get { return _users; }
             set { _users = value; }
         }
         private ICollection<UserLogin> _users;
@@ -494,7 +525,7 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<EmailTemplate> EmailTemplates
         {
-            get { return _emailTemplates ?? ( _emailTemplates = new Collection<EmailTemplate>() ); }
+            get { return _emailTemplates; }
             set { _emailTemplates = value; }
         }
         private ICollection<EmailTemplate> _emailTemplates;
@@ -509,7 +540,7 @@ namespace Rock.Model
         [MergeField]
         public virtual ICollection<PhoneNumber> PhoneNumbers
         {
-            get { return _phoneNumbers ?? ( _phoneNumbers = new Collection<PhoneNumber>() ); }
+            get { return _phoneNumbers; }
             set { _phoneNumbers = value; }
         }
         private ICollection<PhoneNumber> _phoneNumbers;
@@ -525,7 +556,7 @@ namespace Rock.Model
         [MergeField]
         public virtual ICollection<GroupMember> Members
         {
-            get { return _members ?? ( _members = new Collection<GroupMember>() ); }
+            get { return _members; }
             set { _members = value; }
         }
         private ICollection<GroupMember> _members;
@@ -540,10 +571,25 @@ namespace Rock.Model
         [MergeField]
         public virtual ICollection<Attendance> Attendances
         {
-            get { return _attendances ?? ( _attendances = new Collection<Attendance>() ); }
+            get { return _attendances; }
             set { _attendances = value; }
         }
         private ICollection<Attendance> _attendances;
+
+        /// <summary>
+        /// Gets or sets the aliases for this person
+        /// </summary>
+        /// <value>
+        /// The aliases.
+        /// </value>
+        [DataMember]
+        [MergeField]
+        public virtual ICollection<PersonAlias> Aliases
+        {
+            get { return _aliases; }
+            set { _aliases = value; }
+        }
+        private ICollection<PersonAlias> _aliases;
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the Person's marital status.

@@ -118,6 +118,10 @@ namespace Rock.Model
             target.LastRunSchedulerName = source.LastRunSchedulerName;
             target.NotificationEmails = source.NotificationEmails;
             target.NotificationStatus = source.NotificationStatus;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

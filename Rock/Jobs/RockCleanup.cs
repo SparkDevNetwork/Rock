@@ -68,7 +68,7 @@ namespace Rock.Jobs
 
             var userLoginService = new UserLoginService();
 
-            foreach (var user in userLoginService.Queryable().Where(u => u.IsConfirmed == false && u.CreationDateTime < userAccountExpireDate).ToList() )
+            foreach (var user in userLoginService.Queryable().Where(u => u.IsConfirmed == false && (u.CreatedDateTime ?? DateTime.MinValue) < userAccountExpireDate).ToList() )
             {
                 userLoginService.Delete( user, null );
                 userLoginService.Save( user, null );
@@ -121,7 +121,7 @@ namespace Rock.Jobs
             BinaryFileService binaryFileService = new BinaryFileService();
             foreach( var binaryFile in binaryFileService.Queryable().Where( bf => bf.IsTemporary == true ).ToList() )
             {
-                if ( binaryFile.LastModifiedDateTime < DateTime.Now.AddDays(-1) )
+                if ( binaryFile.ModifiedDateTime < DateTime.Now.AddDays(-1) )
                 {
                     binaryFileService.Delete( binaryFile, null );
                     binaryFileService.Save( binaryFile, null );

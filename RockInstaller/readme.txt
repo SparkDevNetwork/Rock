@@ -27,8 +27,9 @@ CREATING INSTALLER ZIP FILE
 5. Turn off debug <compilation debug="false"…
 6. Delete mockup images under 'Assets'
 7. Delete files under Logs
-8. Create new empty NuGet Package called RockUpdate-x-y-z.x.y.z.nupkg (RockUpdate-x-y-z) in the App_Data/Packages folder.
-9. Zip up the RockWeb directory leaving out the following files:
+8. Create new empty NuGet Package called Rock.x.y.z.nupkg (where x.y.z is version being built) in the App_Data/Packages folder.
+9. Create new empty NuGet Package called RockUpdate-x-y-z.x.y.z.nupkg (RockUpdate-x-y-z) in the App_Data/Packages folder.
+10. Zip up the RockWeb directory leaving out the following files:
 	* web.ConnectionStrings.config  !IMPORTANT!
 	* .gitignore
 	* .DS_Store (might just be on my Mac)

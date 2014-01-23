@@ -82,8 +82,10 @@ namespace Rock.Model
                     history.Summary = message;
                     history.RelatedEntityTypeId = relatedEntityTypeId;
                     history.RelatedEntityId = relatedEntityId;
-                    history.CreatedByPersonId = CurrentPersonId;
-                    history.CreationDateTime = creationDate;
+
+                    // Manually set creation date on these history items so that they will be grouped together
+                    history.CreatedDateTime = creationDate;
+                    
                     Add( history, CurrentPersonId );
                     Save( history, CurrentPersonId );
                 }

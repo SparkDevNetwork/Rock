@@ -184,6 +184,7 @@
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
     <Compile Include="Communication\Transport\Twilio.cs" />
+    <Compile Include="Data\IModel.cs" />
     <Compile Include="Data\LinqRuntimeTypeBuilder.cs" />
     <Compile Include="Field\Types\GroupLocationTypeFieldType.cs" />
     <Compile Include="Field\Types\CodeEditorFieldType.cs" />
@@ -206,6 +207,7 @@
     <Compile Include="Model\CodeGenerated\AuditDetailService.cs" />
     <Compile Include="Model\CodeGenerated\HistoryService.cs" />
     <Compile Include="Model\CodeGenerated\LayoutService.cs" />
+    <Compile Include="Model\CodeGenerated\PersonAliasService.cs" />
     <Compile Include="Model\CodeGenerated\ReportFieldService.cs" />
     <Compile Include="Model\DbGeographyConverter.cs" />
     <Compile Include="Model\FinancialTransactionImageService.partial.cs" />
@@ -215,6 +217,7 @@
     <Compile Include="Model\Layout.cs" />
     <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
     <Compile Include="Model\History.cs" />
+    <Compile Include="Model\PersonAlias.cs" />
     <Compile Include="Model\ReportField.cs" />
     <Compile Include="Net\RestParameters\ContributionStatementOptions.cs" />
     <Compile Include="PersonProfile\Badge\Baptized.cs" />
@@ -632,11 +635,9 @@
     <Compile Include="Model\CodeGenerated\CampusService.cs" />
     <Compile Include="Model\CodeGenerated\EmailTemplateService.cs" />
     <Compile Include="Model\EmailTemplateService.Partial.cs" />
-    <Compile Include="Model\CodeGenerated\PersonMergedService.cs" />
     <Compile Include="Model\CodeGenerated\PersonService.cs" />
     <Compile Include="Model\PersonService.Partial.cs" />
-    <Compile Include="Model\PersonMergedService.Partial.cs" />
-    <Compile Include="Model\PersonMerged.cs" />
+    <Compile Include="Model\PersonAliasService.Partial.cs" />
     <Compile Include="Model\PersonViewed.cs" />
     <Compile Include="Model\CodeGenerated\PersonViewedService.cs" />
     <Compile Include="Model\PersonViewedService.Partial.cs" />

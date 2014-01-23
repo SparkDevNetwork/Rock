@@ -106,6 +106,10 @@ namespace Rock.Model
             target.TransactionId = source.TransactionId;
             target.BinaryFileId = source.BinaryFileId;
             target.TransactionImageTypeValueId = source.TransactionImageTypeValueId;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

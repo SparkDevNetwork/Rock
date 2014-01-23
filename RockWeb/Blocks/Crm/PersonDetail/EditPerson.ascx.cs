@@ -271,7 +271,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         return;
                     }
 
-                    if ( personService.Save( person, CurrentPersonId ) )
+                    if ( personService.SaveUsingAlias( person, CurrentPersonAlias ) )
                     {
                         if ( changes.Any() )
                         {

@@ -504,12 +504,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         var person = personService.Get( groupMember.PersonId );
                                         if ( person != null )
                                         {
+                                            bool updateRequired = false;
+                                            if (!person.Aliases.Any( a => a.AliasPersonId == person.Id))
+                                            {
+                                                person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
+                                                updateRequired = true;
+                                            }
                                             var changes = familyDemographicChanges[person.Guid];
                                             if ( groupMember.GroupRoleId != _childRoleId )
                                             {
                                                 person.GivingGroupId = familyGroup.Id;
-                                                personService.Save( person, CurrentPersonId );
+                                                updateRequired = true;
                                                 History.EvaluateChange( changes, "Giving Group", string.Empty, familyGroup.Name );
+                                            }
+
+                                            if ( updateRequired )
+                                            {
+                                                personService.Save( person, CurrentPersonId );
                                             }
 
                                             foreach ( var attributeControl in attributeControls )

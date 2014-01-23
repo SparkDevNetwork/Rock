@@ -97,7 +97,6 @@ namespace Rock.Model
                 user.EntityTypeId = entityTypeId;
                 user.UserName = username;
                 user.IsConfirmed = isConfirmed;
-                user.CreationDateTime = createDate;
                 user.LastPasswordChangedDateTime = createDate;
                 if ( person != null )
                     user.PersonId = person.Id;

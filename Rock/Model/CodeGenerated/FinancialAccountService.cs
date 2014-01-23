@@ -139,6 +139,10 @@ namespace Rock.Model
             target.StartDate = source.StartDate;
             target.EndDate = source.EndDate;
             target.AccountTypeValueId = source.AccountTypeValueId;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

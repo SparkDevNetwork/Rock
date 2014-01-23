@@ -180,122 +180,6 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Date the entity was created.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <returns></returns>
-        public virtual DateTime? DateCreated( T entity )
-        {
-            return DateCreated( entity.TypeId, entity.Id );
-        }
-
-        /// <summary>
-        /// Date the entity was created.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="entityId">The entity id.</param>
-        /// <returns></returns>
-        public virtual DateTime? DateCreated( int entityTypeId, int entityId )
-        {
-            return _auditSet
-                .Where( a =>
-                    a.EntityTypeId == entityTypeId &&
-                    a.EntityId == entityId &&
-                    a.AuditType == AuditType.Add
-                )
-                .OrderByDescending( a => a.DateTime )
-                .Select( a => a.DateTime )
-                .FirstOrDefault();
-        }
-
-        /// <summary>
-        /// Date the entity was last modified.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <returns></returns>
-        public virtual DateTime? DateLastModified( T entity )
-        {
-            return DateLastModified( entity.TypeId, entity.Id );
-        }
-
-        /// <summary>
-        /// Date the entity was last modified.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="entityId">The entity id.</param>
-        /// <returns></returns>
-        public virtual DateTime? DateLastModified( int entityTypeId, int entityId )
-        {
-            return _auditSet
-                .Where( a =>
-                    a.EntityTypeId == entityTypeId &&
-                    a.EntityId == entityId &&
-                    ( a.AuditType == AuditType.Modify && a.AuditType == AuditType.Add )
-                )
-                .OrderByDescending( a => a.DateTime )
-                .Select( a => a.DateTime )
-                .FirstOrDefault();
-        }
-
-        /// <summary>
-        /// The person id who created entity.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <returns></returns>
-        public virtual int? CreatedByPersonId( T entity )
-        {
-            return CreatedByPersonId( entity.TypeId, entity.Id );
-        }
-
-        /// <summary>
-        /// The person id who created entity.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="entityId">The entity id.</param>
-        /// <returns></returns>
-        public virtual int? CreatedByPersonId( int entityTypeId, int entityId )
-        {
-            return _auditSet
-                .Where( a =>
-                    a.EntityTypeId == entityTypeId &&
-                    a.EntityId == entityId &&
-                    a.AuditType == AuditType.Add
-                )
-                .OrderByDescending( a => a.DateTime )
-                .Select( a => a.PersonId )
-                .FirstOrDefault();
-        }
-
-        /// <summary>
-        /// The person id who last modified the entity.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <returns></returns>
-        public virtual int? LastModifiedByPersonId( T entity )
-        {
-            return LastModifiedByPersonId( entity.TypeId, entity.Id );
-        }
-
-        /// <summary>
-        /// The person id who last modified the entity.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="entityId">The entity id.</param>
-        /// <returns></returns>
-        public virtual int? LastModifiedByPersonId( int entityTypeId, int entityId )
-        {
-            return _auditSet
-                .Where( a =>
-                    a.EntityTypeId == entityTypeId &&
-                    a.EntityId == entityId &&
-                    ( a.AuditType == AuditType.Modify || a.AuditType == AuditType.Add )
-                )
-                .OrderByDescending( a => a.DateTime )
-                .Select( a => a.PersonId )
-                .FirstOrDefault();
-        }
-
-        /// <summary>
         /// All the audits made to the entity.
         /// </summary>
         /// <param name="entity">The entity.</param>
@@ -365,8 +249,16 @@ namespace Rock.Data
         /// <param name="audits">The audits.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public bool Save( int? PersonId, out List<Audit> audits, out List<string> errorMessages )
+        public bool Save( PersonAlias personAlias, out List<Audit> audits, out List<string> errorMessages )
         {
+            int? personAliasId = null;
+            int? personId = null;
+            if ( personAlias != null )
+            {
+                personAliasId = personAlias.Id;
+                personId = personAlias.PersonId;
+            } 
+            
             audits = new List<Audit>();
             errorMessages = new List<string>();
 
@@ -403,7 +295,7 @@ namespace Rock.Data
                         case EntityState.Modified:
                             {
                                 bool cancel = false;
-                                rockEntity.RaiseUpdatingEvent( out cancel, PersonId );
+                                rockEntity.RaiseUpdatingEvent( out cancel, personId );
                                 if ( cancel )
                                 {
                                     errorMessages.Add( string.Format( "Update cancelled by {0} event handler", rockEntity.TypeName ) );
@@ -468,7 +360,7 @@ namespace Rock.Data
                                     title = entityType.FriendlyName ?? string.Empty;
                                 }
                                 audit.DateTime = DateTime.Now;
-                                audit.PersonId = PersonId;
+                                audit.PersonId = personId;
                                 audit.EntityTypeId = entityType.Id;
                                 audit.EntityId = rockEntity.Id;
                                 audit.Title = title.Truncate( 195 );
@@ -525,7 +417,7 @@ namespace Rock.Data
                 var model = modifiedEntity as Entity<T>;
                 if ( model != null )
                 {
-                    model.RaiseAddedEvent( PersonId );
+                    model.RaiseAddedEvent( personId );
                 }
             }
 
@@ -534,7 +426,7 @@ namespace Rock.Data
                 var model = deletedEntity as Entity<T>;
                 if ( model != null )
                 {
-                    model.RaiseDeletedEvent( PersonId );
+                    model.RaiseDeletedEvent( personId );
                 }
             }
 
@@ -543,7 +435,7 @@ namespace Rock.Data
                 var model = modifiedEntity as Entity<T>;
                 if ( model != null )
                 {
-                    model.RaiseUpdatedEvent( PersonId );
+                    model.RaiseUpdatedEvent( personId );
                 }
             }
 

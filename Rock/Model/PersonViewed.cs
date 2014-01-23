@@ -29,8 +29,9 @@ namespace Rock.Model
     /// was viewed.
     /// </summary>
     [Table( "PersonViewed" )]
+    [NotAudited]
     [DataContract]
-    public partial class PersonViewed : Model<PersonViewed>
+    public partial class PersonViewed : Entity<PersonViewed>
     {
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> that was the viewer.

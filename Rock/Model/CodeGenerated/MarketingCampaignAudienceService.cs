@@ -106,6 +106,10 @@ namespace Rock.Model
             target.MarketingCampaignId = source.MarketingCampaignId;
             target.AudienceTypeValueId = source.AudienceTypeValueId;
             target.IsPrimary = source.IsPrimary;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 
