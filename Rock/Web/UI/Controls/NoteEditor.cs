@@ -468,10 +468,7 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
-                if ( ShowHeading )
-                {
-                    writer.RenderEndTag();      // Div.panel-body
-                }
+                writer.RenderEndTag();      // Div.panel-body
 
                 writer.RenderEndTag();      // Section
 

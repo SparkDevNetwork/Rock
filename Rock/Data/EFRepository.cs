@@ -360,7 +360,7 @@ namespace Rock.Data
                                     title = entityType.FriendlyName ?? string.Empty;
                                 }
                                 audit.DateTime = DateTime.Now;
-                                audit.PersonId = personId;
+                                audit.PersonAliasId = personAliasId;
                                 audit.EntityTypeId = entityType.Id;
                                 audit.EntityId = rockEntity.Id;
                                 audit.Title = title.Truncate( 195 );
