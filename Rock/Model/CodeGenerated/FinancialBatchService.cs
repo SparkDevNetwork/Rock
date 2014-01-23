@@ -112,7 +112,6 @@ namespace Rock.Model
             target.Name = source.Name;
             target.BatchStartDateTime = source.BatchStartDateTime;
             target.BatchEndDateTime = source.BatchEndDateTime;
-            target.CreatedByPersonId = source.CreatedByPersonId;
             target.Status = source.Status;
             target.CampusId = source.CampusId;
             target.AccountingSystemCode = source.AccountingSystemCode;

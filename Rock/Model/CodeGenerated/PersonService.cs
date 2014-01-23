@@ -77,12 +77,7 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, CommunicationRecipient.FriendlyTypeName );
                 return false;
             }  
- 
-            if ( new Service<FinancialBatch>().Queryable().Any( a => a.CreatedByPersonId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, FinancialBatch.FriendlyTypeName );
-                return false;
-            }  
+
  
             if ( new Service<FinancialPledge>().Queryable().Any( a => a.PersonId == item.Id ) )
             {
