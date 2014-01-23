@@ -287,7 +287,7 @@ namespace RockWeb.Blocks.Utility
         {
             string rootFolder = GetRootFolderPath();
             string imageUrl = rootFolder.TrimEnd('\\', '/') + '/' + relativeFilePath.TrimStart('\\', '/').Replace('\\', '/');
-            return string.Format( "{0},{1}", imageUrl, relativeFilePath );
+            return string.Format( "{0},{1}", imageUrl.TrimStart('~', '/', '\\'), relativeFilePath );
         }
 
         #endregion
