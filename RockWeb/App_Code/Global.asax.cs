@@ -460,13 +460,12 @@ namespace RockWeb
         {
             int? pageId;
             int? siteId;
-            int? personId;
+            PersonAlias personAlias = null;
 
             if ( context == null )
             {
                 pageId = null;
                 siteId = null;
-                personId = null;
             }
             else
             {
@@ -475,10 +474,13 @@ namespace RockWeb
                 var sid = context.Items["Rock:SiteId"];
                 siteId = sid != null ? int.Parse( sid.ToString() ) : (int?)null;
                 var user = UserLoginService.GetCurrentUser();
-                personId = user != null ? user.PersonId : null;
+                if (user.Person != null)
+                {
+                    personAlias = user.Person.PrimaryAlias;
+                }
             }
 
-            ExceptionLogService.LogException( ex, context, pageId, siteId, personId );
+            ExceptionLogService.LogException( ex, context, pageId, siteId, personAlias );
         }
 
         /// <summary>

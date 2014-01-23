@@ -378,9 +378,9 @@ namespace RockWeb.Blocks.Administraton
                                             SiteName = eg.Key.SiteName,
                                             PageName = eg.Key.PageName,
                                             Description = eg.Key.Description,
-                                            LastExceptionDate = eg.Max( e => e.ExceptionDateTime ),
+                                            LastExceptionDate = eg.Max( e => e.CreatedDateTime ),
                                             TotalCount = eg.Count(),
-                                            SubsetCount = eg.Count( e => e.ExceptionDateTime >= minSummaryCountDate )
+                                            SubsetCount = eg.Count( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value >= minSummaryCountDate )
                                         } );
 
             if ( gExceptionList.SortProperty != null )
@@ -412,14 +412,16 @@ namespace RockWeb.Blocks.Administraton
                 .Select( e => new
                     {
                         Id = e.Id,
-                        ExceptionDateTime = e.ExceptionDateTime,
-                        FullName = e.CreatedByPerson.LastName + ", " + e.CreatedByPerson.NickName,
+                        CreatedDateTime = e.CreatedDateTime,
+                        FullName = ( e.CreatedByPersonAlias != null &&
+                            e.CreatedByPersonAlias.Person != null ) ?
+                            e.CreatedByPersonAlias.Person.LastName + ", " + e.CreatedByPersonAlias.Person.NickName : "",
                         Description = e.Description
                     } );
 
             if ( gExceptionOccurrences.SortProperty == null )
             {
-                gExceptionOccurrences.DataSource = query.OrderByDescending( e => e.ExceptionDateTime ).ToList();
+                gExceptionOccurrences.DataSource = query.OrderByDescending( e => e.CreatedDateTime ).ToList();
             }
             else
             {
@@ -467,7 +469,7 @@ namespace RockWeb.Blocks.Administraton
             int userPersonID;
             if ( int.TryParse( fExceptionList.GetUserPreference( "User" ), out userPersonID ) && userPersonID > 0 )
             {
-                query = query.Where( e => e.CreatedByPersonId == userPersonID );
+                query = query.Where( e => e.CreatedByPersonAlias != null && e.CreatedByPersonAlias.PersonId == userPersonID );
             }
 
             string statusCode = fExceptionList.GetUserPreference( "Status Code" );
@@ -480,14 +482,14 @@ namespace RockWeb.Blocks.Administraton
             if ( DateTime.TryParse( fExceptionList.GetUserPreference( "Start Date" ), out startDate ) )
             {
                 startDate = startDate.Date;
-                query = query.Where( e => e.ExceptionDateTime >= startDate );
+                query = query.Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value >= startDate );
             }
 
             DateTime endDate;
             if ( DateTime.TryParse( fExceptionList.GetUserPreference( "End Date" ), out endDate ) )
             {
                 endDate = endDate.Date.AddDays( 1 );
-                query = query.Where( e => e.ExceptionDateTime < endDate );
+                query = query.Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value < endDate );
             }
 
             //Only look for inner exceptions

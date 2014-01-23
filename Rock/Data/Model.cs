@@ -97,6 +97,42 @@ namespace Rock.Data
         [DataMember]
         public virtual PersonAlias ModifiedByPersonAlias { get; set; }
 
+        /// <summary>
+        /// Gets the created by person identifier.
+        /// </summary>
+        /// <value>
+        /// The created by person identifier.
+        /// </value>
+        public virtual int? CreatedByPersonId
+        {
+            get
+            {
+                if (CreatedByPersonAlias != null)
+                {
+                    return CreatedByPersonAlias.PersonId;
+                }
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the modified by person identifier.
+        /// </summary>
+        /// <value>
+        /// The modified by person identifier.
+        /// </value>
+        public virtual int? ModifiedByPersonId
+        {
+            get
+            {
+                if ( ModifiedByPersonAlias != null )
+                {
+                    return ModifiedByPersonAlias.PersonId;
+                }
+                return null;
+            }
+        }
+
         #endregion
 
         #region ISecured implementation
