@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -27,7 +26,6 @@ using System.Web.Http;
 using System.Web.Routing;
 using ImageResizer;
 using Rock.Rest.Filters;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
 {
@@ -36,7 +34,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public class FileBrowserController : ApiController, IHasCustomRoutes
     {
-
         /// <summary>
         /// Adds the routes.
         /// </summary>
@@ -68,7 +65,7 @@ namespace Rock.Rest.Controllers
         public HttpResponseMessage GetFileThumbnail( string relativeFilePath, int? width = 100, int? height = 100 )
         {
             string physicalFilePath = HttpContext.Current.Request.MapPath( relativeFilePath );
-            string fullPath = physicalFilePath;// Path.Combine( relativeFilePath.Replace( "/", "\\" ).TrimStart( new char[] { '/', '\\' } ) );
+            string fullPath = physicalFilePath;
 
             // default width/height to 100 if they specified a zero or negative param
             width = width <= 0 ? 100 : width;
