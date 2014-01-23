@@ -249,8 +249,16 @@ namespace Rock.Data
         /// <param name="audits">The audits.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public bool Save( int? PersonId, out List<Audit> audits, out List<string> errorMessages )
+        public bool Save( PersonAlias personAlias, out List<Audit> audits, out List<string> errorMessages )
         {
+            int? personAliasId = null;
+            int? personId = null;
+            if ( personAlias != null )
+            {
+                personAliasId = personAlias.Id;
+                personId = personAlias.PersonId;
+            } 
+            
             audits = new List<Audit>();
             errorMessages = new List<string>();
 
@@ -287,7 +295,7 @@ namespace Rock.Data
                         case EntityState.Modified:
                             {
                                 bool cancel = false;
-                                rockEntity.RaiseUpdatingEvent( out cancel, PersonId );
+                                rockEntity.RaiseUpdatingEvent( out cancel, personId );
                                 if ( cancel )
                                 {
                                     errorMessages.Add( string.Format( "Update cancelled by {0} event handler", rockEntity.TypeName ) );
@@ -352,7 +360,7 @@ namespace Rock.Data
                                     title = entityType.FriendlyName ?? string.Empty;
                                 }
                                 audit.DateTime = DateTime.Now;
-                                audit.PersonId = PersonId;
+                                audit.PersonId = personId;
                                 audit.EntityTypeId = entityType.Id;
                                 audit.EntityId = rockEntity.Id;
                                 audit.Title = title.Truncate( 195 );
@@ -409,7 +417,7 @@ namespace Rock.Data
                 var model = modifiedEntity as Entity<T>;
                 if ( model != null )
                 {
-                    model.RaiseAddedEvent( PersonId );
+                    model.RaiseAddedEvent( personId );
                 }
             }
 
@@ -418,7 +426,7 @@ namespace Rock.Data
                 var model = deletedEntity as Entity<T>;
                 if ( model != null )
                 {
-                    model.RaiseDeletedEvent( PersonId );
+                    model.RaiseDeletedEvent( personId );
                 }
             }
 
@@ -427,7 +435,7 @@ namespace Rock.Data
                 var model = modifiedEntity as Entity<T>;
                 if ( model != null )
                 {
-                    model.RaiseUpdatedEvent( PersonId );
+                    model.RaiseUpdatedEvent( personId );
                 }
             }
 

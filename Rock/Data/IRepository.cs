@@ -127,7 +127,7 @@ namespace Rock.Data
         /// <param name="audits">The audits.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        bool Save( int? PersonId, out List<Audit> audits, out List<string> errorMessages);
+        bool Save( PersonAlias personAlias, out List<Audit> audits, out List<string> errorMessages);
 
         /// <summary>
         /// Creates a raw query that will return entities

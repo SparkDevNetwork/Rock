@@ -383,6 +383,20 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
+        /// Gets the primary alias.
+        /// </summary>
+        /// <value>
+        /// The primary alias.
+        /// </value>
+        public virtual PersonAlias PrimaryAlias
+        {
+            get
+            {
+                return Aliases.FirstOrDefault( a => a.AliasPersonId == Id );
+            }
+        }
+
+        /// <summary>
         /// Gets the Full Name of the Person using the Title FirstName LastName format.
         /// </summary>
         /// <value>
