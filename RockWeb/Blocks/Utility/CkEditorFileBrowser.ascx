@@ -3,7 +3,7 @@
 <table>
     <tr>
         <td>
-            <%-- Folders - Separate UpdatePanel so that Tree doesn't get rebuilt on postbacks --%>
+            <%-- Folders - Separate UpdatePanel so that Tree doesn't get rebuilt on postbacks (unless the server explicity wants it to get rebuilt) --%>
             <asp:UpdatePanel ID="upnlFolders" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
                 <ContentTemplate>
                     <asp:LinkButton ID="lbCreateFolder" runat="server" CssClass="btn btn-xs btn-action" Text="Create Folder" OnClick="lbCreateFolder_Click" CausesValidation="false" />
@@ -46,8 +46,6 @@
                             __doPostBack('<%=upnlFiles.ClientID %>', 'folder-selected:' + relativeFolderPath + '');
                         });
 
-
-
                         Sys.Application.add_load(function () {
 
                             var folderTreeData = $('.js-folder-treeview .treeview').data('rockTree');
@@ -77,10 +75,10 @@
                             });
 
                             // js for when a file is selected
-                            $('.js-file-list .treeview').on('rockTree:selected ', function (e, data) {
-
-                                debugger
-
+                            $('.js-file-list .treeview').off('rockTree:selected');
+                            $('.js-file-list .treeview').on('rockTree:selected', function (e, data) {
+                                // do an ajax call back to the current url to get the image src and alt
+                                // we want the server to figure this out in order to minimize exposing how the rootfolder is encrypted
                                 $.ajax( {
                                     url: window.location + '&getSelectedFileResult=true',
                                     type: 'POST',
@@ -89,13 +87,10 @@
                                     },
                                     context: this
                                 }).done(function (returnData) {
-                                    debugger
                                     $('#<%=hfResultValue.ClientID%>').val(returnData);
                                 });
 
                                 var selectedFileId = data;
-                                
-                                //__doPostBack('<%=upnlFiles.ClientID %>', 'file-selected:' + selectedFileId + '');
                             });
 
                             // disable/hide actions depending on if a folder is selected
