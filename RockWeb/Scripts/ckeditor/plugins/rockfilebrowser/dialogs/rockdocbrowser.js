@@ -26,7 +26,6 @@
         onShow: function (eventParam) {
         },
         onOk: function (sender) {
-            debugger
             var fileResult = $('#iframe-rockdocbrowser_' + editor.id).contents().find('.js-filebrowser-result input[type=hidden]').val();
             if (fileResult) {
                 // iframe returns the result in the format "href,text"
