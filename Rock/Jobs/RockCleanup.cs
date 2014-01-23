@@ -80,7 +80,7 @@ namespace Rock.Jobs
 
             ExceptionLogService exceptionLogService = new ExceptionLogService();
 
-            foreach ( var exception in exceptionLogService.Queryable().Where( e => e.ExceptionDateTime < exceptionExpireDate ).ToList() )
+            foreach ( var exception in exceptionLogService.Queryable().Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime < exceptionExpireDate ).ToList() )
             {
                 exceptionLogService.Delete( exception, null );
                 exceptionLogService.Save( exception, null );

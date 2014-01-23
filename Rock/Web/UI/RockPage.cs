@@ -1168,7 +1168,7 @@ namespace Rock.Web.UI
         /// <param name="ex">The <see cref="System.Exception"/> to log.</param>
         public void LogException( Exception ex )
         {
-            ExceptionLogService.LogException( ex, Context, _pageCache.Id, _pageCache.Layout.SiteId, CurrentPersonId );
+            ExceptionLogService.LogException( ex, Context, _pageCache.Id, _pageCache.Layout.SiteId, CurrentPersonAlias );
         }
 
         /// <summary>

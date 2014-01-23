@@ -372,6 +372,10 @@
     <Compile Include="Migrations\201401222126036_AddCreatedModifiedFields.Designer.cs">
       <DependentUpon>201401222126036_AddCreatedModifiedFields.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401231551591_ExceptionCreatedInfo.cs" />
+    <Compile Include="Migrations\201401231551591_ExceptionCreatedInfo.Designer.cs">
+      <DependentUpon>201401231551591_ExceptionCreatedInfo.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -630,6 +634,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401222126036_AddCreatedModifiedFields.resx">
       <DependentUpon>201401222126036_AddCreatedModifiedFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401231551591_ExceptionCreatedInfo.resx">
+      <DependentUpon>201401231551591_ExceptionCreatedInfo.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

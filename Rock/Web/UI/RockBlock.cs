@@ -885,7 +885,7 @@ namespace Rock.Web.UI
         /// <param name="ex">The <see cref="System.Exception"/> to log.</param>
         public void LogException( Exception ex )
         {
-            ExceptionLogService.LogException( ex, Context, RockPage.PageId, RockPage.Layout.SiteId, CurrentPersonId );
+            ExceptionLogService.LogException( ex, Context, RockPage.PageId, RockPage.Layout.SiteId, CurrentPersonAlias );
         }
 
         #endregion
