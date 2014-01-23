@@ -40,12 +40,6 @@
                             $('.js-folder-treeview').tinyscrollbar_update('relative');
                         });
 
-                        $('.js-folder-treeview .treeview').on('rockTree:selected ', function (e, data) {
-                            var relativeFolderPath = data;
-                            $('#<%=hfSelectedFolder.ClientID%>').val(data);
-                            __doPostBack('<%=upnlFiles.ClientID %>', 'folder-selected:' + relativeFolderPath + '');
-                        });
-
                         Sys.Application.add_load(function () {
 
                             var folderTreeData = $('.js-folder-treeview .treeview').data('rockTree');
@@ -74,12 +68,20 @@
                                 });
                             });
 
+                            // js for when a folder is selected
+                            $('.js-folder-treeview .treeview').off('rockTree:selected');
+                            $('.js-folder-treeview .treeview').on('rockTree:selected', function (e, data) {
+                                var relativeFolderPath = data;
+                                $('#<%=hfSelectedFolder.ClientID%>').val(data);
+                            __doPostBack('<%=upnlFiles.ClientID %>', 'folder-selected:' + relativeFolderPath + '');
+                            });
+
                             // js for when a file is selected
                             $('.js-file-list .treeview').off('rockTree:selected');
                             $('.js-file-list .treeview').on('rockTree:selected', function (e, data) {
                                 // do an ajax call back to the current url to get the image src and alt
                                 // we want the server to figure this out in order to minimize exposing how the rootfolder is encrypted
-                                $.ajax( {
+                                $.ajax({
                                     url: window.location + '&getSelectedFileResult=true',
                                     type: 'POST',
                                     data: {
@@ -98,12 +100,12 @@
                             if (selectedFolderPath && selectedFolderPath != '') {
                                 $('#<%=lbRenameFolder.ClientID%>').removeAttr('disabled');
                                 $('#<%=lbDeleteFolder.ClientID%>').removeAttr('disabled');
-                                $('#<%=iupFileBrowser.ClientID%>').css('visibility', 'visible');
+                                $('#<%=fuprFileUpload.ClientID%>').css('visibility', 'visible');
                             }
                             else {
                                 $('#<%=lbRenameFolder.ClientID%>').attr('disabled', 'disabled');
                                 $('#<%=lbDeleteFolder.ClientID%>').attr('disabled', 'disabled');
-                                $('#<%=iupFileBrowser.ClientID%>').css('visibility', 'hidden');
+                                $('#<%=fuprFileUpload.ClientID%>').css('visibility', 'hidden');
                             }
                         });
 
@@ -116,6 +118,12 @@
             <%-- Files and Modals --%>
             <asp:UpdatePanel ID="upnlFiles" runat="server">
                 <ContentTemplate>
+                    <Rock:ModalDialog runat="server" ID="mdError">
+                        <Content>
+                            <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" Text="Error..." Visible="true" Title="Error" />
+                        </Content>
+                    </Rock:ModalDialog>
+
                     <Rock:ModalDialog runat="server" Title="Rename Folder" ID="mdRenameFolder" OnSaveClick="mdRenameFolder_SaveClick" ValidationGroup="vgRenameFolder">
                         <Content>
                             <Rock:RockTextBox runat="server" ID="tbOrigFolderName" Label="Folder Name" ReadOnly="true" />
@@ -130,7 +138,7 @@
                     </Rock:ModalDialog>
 
                     <asp:HiddenField ID="hfSelectedFolder" runat="server" />
-                    <Rock:ImageUploader ID="iupFileBrowser" runat="server" IsBinaryFile="false" />
+                    <Rock:FileUploader ID="fuprFileUpload" runat="server" IsBinaryFile="false" />
 
                     <div>
                         <div class="scroll-container scroll-container-vertical scroll-container-picker js-file-list">
@@ -143,6 +151,7 @@
                             </div>
                             <div class="viewport">
                                 <div class="overview">
+                                    <Rock:NotificationBox ID="nbNoFilesInfo" runat="server" Text="No Files Found" Visible="false" NotificationBoxType="Info" />
                                     <asp:Label ID="lblFiles" CssClass="treeview treeview-items" runat="server" />
                                 </div>
                             </div>
