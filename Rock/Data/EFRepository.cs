@@ -252,11 +252,9 @@ namespace Rock.Data
         public bool Save( PersonAlias personAlias, out List<Audit> audits, out List<string> errorMessages )
         {
             int? personAliasId = null;
-            int? personId = null;
             if ( personAlias != null )
             {
                 personAliasId = personAlias.Id;
-                personId = personAlias.PersonId;
             } 
             
             audits = new List<Audit>();
@@ -295,7 +293,7 @@ namespace Rock.Data
                         case EntityState.Modified:
                             {
                                 bool cancel = false;
-                                rockEntity.RaiseUpdatingEvent( out cancel, personId );
+                                rockEntity.RaiseUpdatingEvent( out cancel, personAlias );
                                 if ( cancel )
                                 {
                                     errorMessages.Add( string.Format( "Update cancelled by {0} event handler", rockEntity.TypeName ) );
@@ -417,7 +415,7 @@ namespace Rock.Data
                 var model = modifiedEntity as Entity<T>;
                 if ( model != null )
                 {
-                    model.RaiseAddedEvent( personId );
+                    model.RaiseAddedEvent( personAlias );
                 }
             }
 
@@ -426,7 +424,7 @@ namespace Rock.Data
                 var model = deletedEntity as Entity<T>;
                 if ( model != null )
                 {
-                    model.RaiseDeletedEvent( personId );
+                    model.RaiseDeletedEvent( personAlias );
                 }
             }
 
@@ -435,7 +433,7 @@ namespace Rock.Data
                 var model = modifiedEntity as Entity<T>;
                 if ( model != null )
                 {
-                    model.RaiseUpdatedEvent( personId );
+                    model.RaiseUpdatedEvent( personAlias );
                 }
             }
 
