@@ -293,6 +293,24 @@ namespace Rock.Web.UI
         private Person _CurrentPerson;
 
         /// <summary>
+        /// Gets the current person alias.
+        /// </summary>
+        /// <value>
+        /// The current person alias.
+        /// </value>
+        public PersonAlias CurrentPersonAlias
+        {
+            get
+            {
+                if ( _CurrentPerson != null )
+                {
+                    return _CurrentPerson.PrimaryAlias;
+                }
+                return null;
+            }
+        }
+
+        /// <summary>
         /// The Person ID of the currently logged in user.  Returns null if there is not a user logged in
         /// </summary>
         /// <value>

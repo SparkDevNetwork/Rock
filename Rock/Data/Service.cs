@@ -512,8 +512,27 @@ namespace Rock.Data
         /// <param name="item">The item.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public virtual bool Save( T item, int? personId )
+        public virtual bool Save( T item, int? personId)
         {
+            PersonAlias personAlias = null;
+            if ( personId.HasValue )
+            {
+                personAlias = new PersonAliasService().Queryable().FirstOrDefault( a => a.AliasPersonId == personId.Value );
+            }
+            return SaveUsingAlias( item, personAlias );
+        }
+
+        public virtual bool SaveUsingAlias(T item, PersonAlias personAlias)
+        {
+            // TODO: Make this method the public 'Save' method and remove the previous save
+            int? personAliasId = null;
+            int? personId = null;
+            if ( personAlias != null )
+            {
+                personAliasId = personAlias.Id;
+                personId = personAlias.PersonId;
+            } 
+
             ErrorMessages = new List<string>();
 
             if ( !TriggerWorkflows( item, WorkflowTriggerType.PreSave, personId ) )
@@ -536,17 +555,18 @@ namespace Rock.Data
                     }
                     if ( !model.CreatedByPersonAliasId.HasValue )
                     {
-                        model.CreatedByPersonAliasId = personId;
+                        model.CreatedByPersonAliasId = personAliasId;
                     }
                 }
-                model.ModifiedByPersonAliasId = personId;
+
+                model.ModifiedByPersonAliasId = personAliasId;
                 model.ModifiedDateTime = DateTime.Now;
             }
 
             List<Audit> audits;
             List<string> errorMessages;
 
-            if ( _repository.Save( personId, out audits, out errorMessages ) )
+            if ( _repository.Save( personAlias, out audits, out errorMessages ) )
             {
                 if ( audits != null && audits.Count > 0 )
                 {
