@@ -38,6 +38,8 @@ namespace Rock.Web.UI.Controls
 
         private Grid _parentGrid;
 
+        private LinkButton _lbMerge;
+
         private LinkButton _lbCommunicate;
 
         private HtmlGenericControl _aAdd;
@@ -159,6 +161,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
+            _lbMerge.Visible = !string.IsNullOrWhiteSpace( _parentGrid.PersonIdField );
+
             _lbCommunicate.Visible = ShowCommunicate;
 
             _aAdd.Visible = ShowAdd && !String.IsNullOrWhiteSpace( ClientAddScript );
@@ -219,6 +223,20 @@ namespace Rock.Web.UI.Controls
         protected override void CreateChildControls()
         {
             Controls.Clear();
+
+            // control for merge
+            _lbMerge = new LinkButton();
+            Controls.Add( _lbMerge );
+            _lbMerge.ID = "lbMerge";
+            _lbMerge.CssClass = "btn-merge btn btn-default btn-sm";
+            _lbMerge.ToolTip = "Communicate";
+            _lbMerge.Click += lbMerge_Click;
+            _lbMerge.CausesValidation = false;
+            _lbMerge.PreRender += lb_PreRender;
+            Controls.Add( _lbMerge );
+            HtmlGenericControl iMerge = new HtmlGenericControl( "i" );
+            iMerge.Attributes.Add( "class", "fa fa-users" );
+            _lbMerge.Controls.Add( iMerge );
 
             // control for communicate
             _lbCommunicate = new LinkButton();
@@ -303,10 +321,24 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        void lbMerge_Click( object sender, EventArgs e )
+        {
+            if ( MergeClick != null )
+            {
+                MergeClick( sender, e );
+            }
+        }
+        /// <summary>
+        /// Handles the Click event of the lbAdd control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         void lbCommunicate_Click( object sender, EventArgs e )
         {
             if ( CommunicateClick != null )
+            {
                 CommunicateClick( sender, e );
+            }
         }
 
         /// <summary>
@@ -317,7 +349,9 @@ namespace Rock.Web.UI.Controls
         void lbAdd_Click( object sender, EventArgs e )
         {
             if ( AddClick != null )
+            {
                 AddClick( sender, e );
+            }
         }
 
         /// <summary>
@@ -328,8 +362,15 @@ namespace Rock.Web.UI.Controls
         void lbExcelExport_Click( object sender, EventArgs e )
         {
             if ( ExcelExportClick != null )
+            {
                 ExcelExportClick( sender, e );
+            }
         }
+
+        /// <summary>
+        /// Occurs when merge action is clicked.
+        /// </summary>
+        public event EventHandler MergeClick;
 
         /// <summary>
         /// Occurs when communicate action is clicked.
