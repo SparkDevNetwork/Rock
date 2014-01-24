@@ -45,7 +45,7 @@
             </div>
 
             <!-- Comments -->
-            <Rock:NoteEditor ID="notesComments" runat="server" Term="Comment" ShowHeading="false"
+            <Rock:NoteContainer ID="notesComments" runat="server" Term="Comment" ShowHeading="false"
                  DisplayType="Full" UsePersonIcon="true" ShowAlertCheckBox="false" 
                 ShowPrivateCheckBox="false" ShowSecurityButton="false" 
                 AllowAnonymousEntry="false" AddAlwaysVisible="true" SortDirection="Ascending" />

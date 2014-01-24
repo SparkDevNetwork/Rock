@@ -29,8 +29,8 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Note Editor control
     /// </summary>
-    [ToolboxData( "<{0}:NoteEditor runat=server></{0}:NoteEditor>" )]
-    public class NoteEditor : CompositeControl, INamingContainer
+    [ToolboxData( "<{0}:NoteContainer runat=server></{0}:NoteContainer>" )]
+    public class NoteContainer : CompositeControl, INamingContainer
     {
 
         #region Fields
