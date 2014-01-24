@@ -77,18 +77,24 @@ namespace Rock.Rest.Controllers
                 throw new HttpResponseException( new System.Net.Http.HttpResponseMessage( HttpStatusCode.NotFound ) );
             }
 
-            try
+            string mimeType = System.Web.MimeMapping.GetMimeMapping( physicalFilePath );
+            if (mimeType.StartsWith("image/"))
             {
                 return ResizeAndSendImage( width, height, fullPath );
             }
-            catch
+            else
             {
-                // intentionally ignore exception and assume it isn't an image, then just return a no-picture as the thumbnail
+                // figure out the extension of the file
+                string fileExtension = Path.GetExtension( relativeFilePath ).TrimStart( '.' );
+                string virtualThumbnailFilePath = string.Format( "~/Assets/Images/file-thumbnail-{0}.svg", fileExtension);
+                string thumbnailFilePath = HttpContext.Current.Request.MapPath( virtualThumbnailFilePath );
+                if (!File.Exists(thumbnailFilePath))
+                {
+                    virtualThumbnailFilePath = string.Format( "~/Assets/Images/file-thumbnail-other.svg", fileExtension );
+                    thumbnailFilePath = HttpContext.Current.Request.MapPath( virtualThumbnailFilePath );
+                }
 
-                //TODO ask about picture
-                string noimageFileName = HttpContext.Current.Request.MapPath( "~/Assets/Images/no-picture.svg" );
-
-                return ResizeAndSendImage( width, height, noimageFileName );
+                return ResizeAndSendImage( width, height, thumbnailFilePath );
             }
         }
 
