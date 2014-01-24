@@ -28,5 +28,17 @@ namespace Rock.Install.Utilities
             return address;
         }
 
+        // takes a string address like http://www.rocksolidchurchdemo.com/rock and returns www.rocksolidchurchdemo.com
+        public static string GetDomainFromString(string address)
+        {
+          
+            if (!address.Contains(Uri.SchemeDelimiter))
+            {
+                address = string.Concat(Uri.UriSchemeHttp, Uri.SchemeDelimiter, address);
+            }
+            Uri uri = new Uri(address);
+            return uri.Host; 
+        }
+
     }
 }
