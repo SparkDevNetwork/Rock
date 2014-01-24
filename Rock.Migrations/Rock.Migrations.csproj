@@ -392,6 +392,10 @@
     <Compile Include="Migrations\201401232243283_CkEditorPluginLayout.Designer.cs">
       <DependentUpon>201401232243283_CkEditorPluginLayout.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401240107095_AddPersonViewed.cs" />
+    <Compile Include="Migrations\201401240107095_AddPersonViewed.Designer.cs">
+      <DependentUpon>201401240107095_AddPersonViewed.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -665,6 +669,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401232243283_CkEditorPluginLayout.resx">
       <DependentUpon>201401232243283_CkEditorPluginLayout.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401240107095_AddPersonViewed.resx">
+      <DependentUpon>201401240107095_AddPersonViewed.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
