@@ -6,7 +6,7 @@
     return {
         title: 'Select Image',
         minWidth: 1000,
-        minHeight: 400,
+        minHeight: 420,
         editorId: editor.id,
         resizable: CKEDITOR.DIALOG_RESIZE_NONE,
         contents: [
@@ -17,7 +17,7 @@
                 elements: [
                     {
                         type: 'html',
-                        html: "<iframe id='iframe-rockimagebrowser_" + editor.id + "' src='" + iframeUrl + "' style='width: 100%; height:400px;' scrolling='no' /> \n"
+                        html: "<iframe id='iframe-rockimagebrowser_" + editor.id + "' src='" + iframeUrl + "' style='width: 100%; height:420px;' scrolling='no' /> \n"
                     }
                 ]
             }
