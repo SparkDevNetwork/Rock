@@ -371,6 +371,35 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum UploaderDisplayMode
+        {
+            DropZone,
+            Button
+        }
+
+        /// <summary>
+        /// Gets or sets the display mode.
+        /// </summary>
+        /// <value>
+        /// The display mode.
+        /// </value>
+        public FileUploader.UploaderDisplayMode DisplayMode
+        {
+            get
+            {
+                var mode = ViewState["DisplayMode"];
+                return mode != null ? (FileUploader.UploaderDisplayMode)mode : FileUploader.UploaderDisplayMode.DropZone;
+            }
+
+            set
+            {
+                ViewState["DisplayMode"] = value;
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -426,6 +455,7 @@ namespace Rock.Web.UI.Controls
         public void RenderBaseControl( HtmlTextWriter writer )
         {
             writer.AddAttribute( "class", "fileupload-group" );
+            writer.AddAttribute( "id", this.ClientID );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             if ( BinaryFileId != null )
@@ -443,26 +473,39 @@ namespace Rock.Web.UI.Controls
                 _aRemove.Style[HtmlTextWriterStyle.Display] = "none";
             }
 
-            writer.AddAttribute( "class", "fileupload-thumbnail" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            _hfBinaryFileId.RenderControl( writer );
-            _hfBinaryFileTypeGuid.RenderControl( writer );
-            _aFileName.RenderControl( writer );
-            writer.RenderEndTag();
+            if ( this.DisplayMode == UploaderDisplayMode.DropZone )
+            {
+                writer.AddAttribute( "class", "fileupload-thumbnail" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _hfBinaryFileId.RenderControl( writer );
+                _hfBinaryFileTypeGuid.RenderControl( writer );
+                _aFileName.RenderControl( writer );
+                writer.RenderEndTag();
 
-            writer.AddAttribute( "class", "fileupload-remove" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            _aRemove.RenderControl( writer );
-            writer.RenderEndTag();
+                writer.AddAttribute( "class", "fileupload-remove" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _aRemove.RenderControl( writer );
+                writer.RenderEndTag();
+            }
 
-            // render drop zone
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "fileupload-dropzone" );
+            if ( this.DisplayMode == UploaderDisplayMode.Button )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fileupload-button" );
+            }
+
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
             writer.RenderBeginTag( HtmlTextWriterTag.Span );
-            writer.Write( "drop / click to upload" );
-            writer.RenderEndTag();
+            if ( this.DisplayMode == UploaderDisplayMode.Button )
+            {
+                writer.Write( "upload file" );
+            }
+            else
+            {
+                writer.Write( "drop / click to upload" );
+            }
 
+            writer.RenderEndTag();
             _fileUpload.Attributes["name"] = string.Format( "{0}[]", this.ID );
             _fileUpload.RenderControl( writer );
             writer.RenderEndTag();
@@ -509,7 +552,7 @@ Rock.controls.fileUploader.initialize({{
                 this.IsBinaryFile.ToTrueFalse().ToLower(),
                 Rock.Security.Encryption.EncryptString( this.RootFolder ),
                 this.SubmitFunctionClientScript,
-                this.DoneFunctionClientScript);
+                this.DoneFunctionClientScript );
             ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "FileUploaderScript_" + this.ClientID, script, true );
         }
 
