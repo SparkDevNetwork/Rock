@@ -138,7 +138,7 @@
                     </Rock:ModalDialog>
 
                     <asp:HiddenField ID="hfSelectedFolder" runat="server" />
-                    <Rock:FileUploader ID="fuprFileUpload" runat="server" IsBinaryFile="false" />
+                    <Rock:FileUploader ID="fuprFileUpload" runat="server" IsBinaryFile="false" DisplayMode="Button" />
 
                     <div>
                         <div class="scroll-container scroll-container-vertical scroll-container-picker js-file-list">
