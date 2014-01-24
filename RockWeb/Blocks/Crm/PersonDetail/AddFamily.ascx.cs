@@ -283,7 +283,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 var groupMember = new GroupMember();
                 groupMember.Person = new Person();
                 groupMember.Person.Guid = row.PersonGuid.Value;
-                groupMember.Person.RecordStatusReasonValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                groupMember.Person.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
 
                 if ( row.RoleId.HasValue )
                 {
@@ -440,7 +440,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                             var demographicChanges = new List<string>();
                                             demographicChanges.Add( "Created" );
                                             History.EvaluateChange( demographicChanges, "Record Status", string.Empty,
-                                                person.RecordStatusReasonValueId.HasValue ? DefinedValueCache.GetName( person.RecordStatusReasonValueId.Value ) : string.Empty );
+                                                person.RecordStatusValueId.HasValue ? DefinedValueCache.GetName( person.RecordStatusValueId.Value ) : string.Empty );
                                             History.EvaluateChange( demographicChanges, "Title", string.Empty,
                                                 person.TitleValueId.HasValue ? DefinedValueCache.GetName( person.TitleValueId ) : string.Empty );
                                             History.EvaluateChange( demographicChanges, "First Name", string.Empty, person.FirstName);
