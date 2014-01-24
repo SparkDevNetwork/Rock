@@ -177,7 +177,7 @@ namespace Rock
         /// Returns a string array that contains the substrings in this string that are delimited by any combination of whitespace, comma, semi-colon, or pipe characters
         /// </summary>
         /// <param name="str">The string.</param>
-        /// <param name="whitespace">if set to <c>true</c> [whitespace].</param>
+        /// <param name="whitespace">if set to <c>true</c> whitespace will be treated as a delimiter</param>
         /// <returns></returns>
         public static string[] SplitDelimitedValues( this string str, bool whitespace = true )
         {
