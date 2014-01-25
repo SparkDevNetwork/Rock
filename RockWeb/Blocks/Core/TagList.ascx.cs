@@ -316,6 +316,7 @@ namespace RockWeb.Blocks.Core
                 {
                     Id = t.Id,
                     Name = t.Name,
+                    Description = t.Description,
                     EntityTypeName = t.EntityType.FriendlyName,
                     EntityTypeQualifierColumn = t.EntityTypeQualifierColumn,
                     EntityTypeQualifierValue = t.EntityTypeQualifierValue,
