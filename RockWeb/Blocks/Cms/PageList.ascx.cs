@@ -126,7 +126,7 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
             LayoutService layoutService = new LayoutService();
-            layoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ), CurrentPersonId );
+            layoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ), CurrentPersonAlias );
             var layouts = layoutService.Queryable().Where( a => a.SiteId.Equals( siteId ) ).ToList();
             ddlLayoutFilter.DataSource = layouts;
             ddlLayoutFilter.DataBind();
@@ -152,7 +152,7 @@ namespace RockWeb.Blocks.Cms
             pnlPages.Visible = true;
 
             LayoutService layoutService = new LayoutService();
-            layoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ), CurrentPersonId );
+            layoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ), CurrentPersonAlias );
             var layouts = layoutService.Queryable().Where( a => a.SiteId.Equals( siteId ) ).Select( a => a.Id ).ToList();
 
             var siteService = new SiteService();

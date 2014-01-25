@@ -1040,8 +1040,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the Person.</param>
         /// <param name="relatedPersonId">A <see cref="System.Int32"/> representing the Id of the related Person.</param>
-        /// <param name="currentPersonId">A <see cref="System.Int32"/> representing the Id of the Person who is logged in.</param>
-        public static void CreateCheckinRelationship( int personId, int relatedPersonId, int? currentPersonId )
+        /// <param name="currentPersonAlias">A <see cref="Rock.Model.PersonAlias"/> representing the Person who is logged in.</param>
+        public static void CreateCheckinRelationship( int personId, int relatedPersonId, PersonAlias currentPersonAlias )
         {
             using ( new UnitOfWorkScope() )
             {
@@ -1074,14 +1074,14 @@ namespace Rock.Model
                             canCheckInMember.GroupId = knownRelationshipGroup.Id;
                             canCheckInMember.PersonId = relatedPersonId;
                             canCheckInMember.GroupRoleId = canCheckInRoleId.Value;
-                            groupMemberService.Add( canCheckInMember, currentPersonId );
-                            groupMemberService.Save( canCheckInMember, currentPersonId );
+                            groupMemberService.Add( canCheckInMember, currentPersonAlias );
+                            groupMemberService.Save( canCheckInMember, currentPersonAlias );
                         }
 
-                        var inverseGroupMember = groupMemberService.GetInverseRelationship( canCheckInMember, true, currentPersonId );
+                        var inverseGroupMember = groupMemberService.GetInverseRelationship( canCheckInMember, true, currentPersonAlias );
                         if ( inverseGroupMember != null )
                         {
-                            groupMemberService.Save( inverseGroupMember, currentPersonId );
+                            groupMemberService.Save( inverseGroupMember, currentPersonAlias );
                         }
                     }
                 }

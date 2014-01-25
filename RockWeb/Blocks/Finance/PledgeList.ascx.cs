@@ -118,8 +118,8 @@ namespace RockWeb.Blocks.Finance
                         return;
                     }
 
-                    pledgeService.Delete( pledge, CurrentPersonId );
-                    pledgeService.Save( pledge, CurrentPersonId );
+                    pledgeService.Delete( pledge, CurrentPersonAlias );
+                    pledgeService.Save( pledge, CurrentPersonAlias );
                 });
 
             BindGrid();

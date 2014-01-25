@@ -63,14 +63,14 @@ namespace Rock.Rest
             var user = CurrentUser();
             if ( user != null )
             {
-                _service.Add( value, null );
+                _service.Add( value );
 
                 if ( !value.IsValid )
                     return ControllerContext.Request.CreateErrorResponse(
                         HttpStatusCode.BadRequest,
                         String.Join( ",", value.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
 
-                _service.Save( value, user.PersonId );
+                _service.Save( value, user.Person.PrimaryAlias );
 
                 var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
                 // TODO set response.Headers.Location as per REST POST convention
@@ -99,7 +99,7 @@ namespace Rock.Rest
 
                 if ( targetModel.IsValid )
                 {
-                    _service.Save( targetModel, user.PersonId );
+                    _service.Save( targetModel, user.Person.PrimaryAlias );
                 }
                 else
                 {
@@ -123,8 +123,8 @@ namespace Rock.Rest
                 if ( !_service.TryGet( id, out model ) )
                     throw new HttpResponseException( HttpStatusCode.NotFound );
 
-                _service.Delete( model, user.PersonId );
-                _service.Save( model, user.PersonId );
+                _service.Delete( model, user.Person.PrimaryAlias );
+                _service.Save( model, user.Person.PrimaryAlias );
             }
             else
                 throw new HttpResponseException( HttpStatusCode.Unauthorized );

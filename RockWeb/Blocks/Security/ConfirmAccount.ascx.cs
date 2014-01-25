@@ -204,7 +204,7 @@ namespace RockWeb.Blocks.Security
             if ( user != null )
             {
                 user.IsConfirmed = true;
-                userLoginService.Save( user, user.PersonId );
+                userLoginService.Save( user, CurrentPersonAlias );
 
                 Rock.Security.Authorization.SetAuthCookie( user.UserName, false, false );
 
@@ -249,7 +249,7 @@ namespace RockWeb.Blocks.Security
 
                 userLoginService.ChangePassword( user, tbPassword.Text );
                 user.IsConfirmed = true;
-                userLoginService.Save( user, user.PersonId );
+                userLoginService.Save( user, CurrentPersonAlias );
 
                 pnlResetSuccess.Visible = true;
             }
@@ -281,8 +281,8 @@ namespace RockWeb.Blocks.Security
                     FormsAuthentication.SignOut();
                 }
 
-                userLoginService.Delete( user, user.PersonId );
-                userLoginService.Save( user, user.PersonId );
+                userLoginService.Delete( user, CurrentPersonAlias );
+                userLoginService.Save( user, CurrentPersonAlias );
 
                 pnlDeleted.Visible = true;
             }

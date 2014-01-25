@@ -149,9 +149,9 @@ namespace Rock.Model
         /// Deletes a specified group. Returns a boolean flag indicating if the deletion was successful.
         /// </summary>
         /// <param name="item">The <see cref="Rock.Model.Group"/> to delete.</param>
-        /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> performing the delete.</param>
+        /// <param name="personAlias">The person alias.</param>
         /// <returns>A <see cref="System.Boolean"/> that indicates if the <see cref="Rock.Model.Group"/> was deleted successfully.</returns>
-        public override bool Delete( Group item, int? personId )
+        public override bool Delete( Group item, PersonAlias personAlias )
         {
             string message;
             if ( !CanDelete( item, out message ) )
@@ -159,7 +159,7 @@ namespace Rock.Model
                 return false;
             }
 
-            return base.Delete( item, personId );
+            return base.Delete( item, personAlias );
         }
     }
 }

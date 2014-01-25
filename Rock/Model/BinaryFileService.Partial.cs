@@ -70,9 +70,9 @@ namespace Rock.Model
         /// Saves the specified <see cref="Rock.Model.BinaryFile"/>.
         /// </summary>
         /// <param name="item">A <see cref="Rock.Model.BinaryFile"/> to save.</param>
-        /// <param name="personId">A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who is saving the BinaryFile..</param>
+        /// <param name="personAlias">A <see cref="Rock.Model.PersonAlias"/> representing the <see cref="Rock.Model.Person"/> who is saving the BinaryFile..</param>
         /// <returns></returns>
-        public override bool Save( BinaryFile item, int? personId )
+        public override bool Save( BinaryFile item, PersonAlias personAlias )
         {
             Rock.Storage.ProviderComponent storageProvider = DetermineBinaryFileStorageProvider( item );
 
@@ -107,16 +107,16 @@ namespace Rock.Model
                 storageProvider.SaveFile( item, HttpContext.Current );
             }
 
-            return base.Save( item, personId );
+            return base.Save( item, personAlias );
         }
 
         /// <summary>
         /// Deletes the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="personId">The person identifier.</param>
+        /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
-        public override bool Delete( BinaryFile item, int? personId )
+        public override bool Delete( BinaryFile item, PersonAlias personAlias )
         {
             // if we can determine the StorageProvider, use the provider to remove the file from the provider's external storage medium
             Rock.Storage.ProviderComponent storageProvider = DetermineBinaryFileStorageProvider( item );
@@ -127,7 +127,7 @@ namespace Rock.Model
             }
 
             // delete the record from the database
-            return base.Delete( item, personId );
+            return base.Delete( item, personAlias );
         }
 
         /// <summary>

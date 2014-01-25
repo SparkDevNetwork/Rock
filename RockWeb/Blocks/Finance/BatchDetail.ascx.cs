@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.Finance
                 if ( financialBatchId == 0 )
                 {
                     financialBatch = new Rock.Model.FinancialBatch();
-                    financialBatchService.Add( financialBatch, CurrentPersonId );
+                    financialBatchService.Add( financialBatch, CurrentPersonAlias );
                 }
                 else
                 {
@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Finance
 
                 RockTransactionScope.WrapTransaction( () =>
                 {
-                    financialBatchService.Save( financialBatch, CurrentPersonId );
+                    financialBatchService.Save( financialBatch, CurrentPersonAlias );
                     hfBatchId.SetValue( financialBatch.Id );
                 } );
             }

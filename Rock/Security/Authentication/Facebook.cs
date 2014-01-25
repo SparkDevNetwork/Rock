@@ -145,7 +145,7 @@ namespace Rock.Security.ExternalAuthentication
                             string email = me.email.ToString();
 
                             var personService = new PersonService();
-                            var person = personService.Queryable().FirstOrDefault( u => u.LastName == lastName && u.FirstName == firstName && u.Email == email );
+                            var person = personService.Queryable( "Aliases" ).FirstOrDefault( u => u.LastName == lastName && u.FirstName == firstName && u.Email == email );
 
                             if ( person != null )
                             {
@@ -155,7 +155,7 @@ namespace Rock.Security.ExternalAuthentication
                                 if ( person.BirthDay == null )
                                 {
                                     person.BirthDate = birthdate;
-                                    personService.Save( person, person.Id );
+                                    personService.Save( person, person.PrimaryAlias );
                                 }
 
                             }
@@ -185,9 +185,12 @@ namespace Rock.Security.ExternalAuthentication
 
                                 personService.Add( person, null );
                                 personService.Save( person, null );
+
+                                // TODO Need to save family, history, and alias
                             }
 
-                            user = userLoginService.Create( person, AuthenticationServiceType.External, this.TypeId, facebookId, "fb", true, person.Id );
+                            user = userLoginService.Create( person, AuthenticationServiceType.External, 
+                                this.TypeId, facebookId, "fb", true );
                         }
                         catch ( Exception ex )
                         {

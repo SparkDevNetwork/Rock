@@ -300,8 +300,8 @@ namespace RockWeb.Blocks.Cms
                         return;
                     }
 
-                    marketingCampaignAdService.Delete( marketingCampaignAd, CurrentPersonId );
-                    marketingCampaignAdService.Save( marketingCampaignAd, CurrentPersonId );
+                    marketingCampaignAdService.Delete( marketingCampaignAd, CurrentPersonAlias );
+                    marketingCampaignAdService.Save( marketingCampaignAd, CurrentPersonAlias );
                 }
             } );
 

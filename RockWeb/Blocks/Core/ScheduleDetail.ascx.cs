@@ -99,7 +99,7 @@ namespace RockWeb.Blocks.Core
             if ( scheduleId == 0 )
             {
                 schedule = new Schedule();
-                scheduleService.Add( schedule, CurrentPersonId );
+                scheduleService.Add( schedule, CurrentPersonAlias );
             }
             else
             {
@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.Core
 
             RockTransactionScope.WrapTransaction( () =>
             {
-                scheduleService.Save( schedule, CurrentPersonId );
+                scheduleService.Save( schedule, CurrentPersonAlias );
             } );
 
             var qryParams = new Dictionary<string, string>();
@@ -200,8 +200,8 @@ namespace RockWeb.Blocks.Core
                 {
                     categoryId = item.CategoryId;
 
-                    service.Delete( item, CurrentPersonId );
-                    service.Save( item, CurrentPersonId );
+                    service.Delete( item, CurrentPersonAlias );
+                    service.Save( item, CurrentPersonAlias );
 
                     // reload page, selecting the deleted data view's parent
                     var qryParams = new Dictionary<string, string>();

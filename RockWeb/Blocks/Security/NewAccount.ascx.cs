@@ -509,8 +509,8 @@ namespace RockWeb.Blocks.Security
                 }
             }
 
-            personService.Add(person, CurrentPersonId);
-            personService.Save(person, CurrentPersonId);
+            personService.Add( person, CurrentPersonAlias );
+            personService.Save( person, CurrentPersonAlias );
 
             return person;
         }
@@ -520,7 +520,7 @@ namespace RockWeb.Blocks.Security
             var userLoginService = new Rock.Model.UserLoginService();
             return userLoginService.Create( person, Rock.Model.AuthenticationServiceType.Internal, 
                 EntityTypeCache.Read(Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid()).Id, 
-                tbUserName.Text, Password, confirmed, CurrentPersonId );
+                tbUserName.Text, Password, confirmed );
         }
 
         #endregion

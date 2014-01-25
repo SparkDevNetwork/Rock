@@ -154,7 +154,7 @@ namespace RockWeb.Blocks.CheckIn
                             {
                                 p.LoadAttributes();
                                 p.SetAttributeValue( "AbilityLevel", selectedAbilityLevelGuid.ToUpperInvariant() );
-                                Rock.Attribute.Helper.SaveAttributeValues( p, CurrentPersonId );
+                                Rock.Attribute.Helper.SaveAttributeValues( p, CurrentPersonAlias );
                             }
                         }
 

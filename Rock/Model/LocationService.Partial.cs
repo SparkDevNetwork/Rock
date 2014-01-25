@@ -103,8 +103,8 @@ namespace Rock.Model
             // If still no existing location, geocode the new location and save it.
             Geocode( newLocation, null );
 
-            Add( newLocation, null );
-            Save( newLocation, null );
+            Add( newLocation );
+            Save( newLocation );
 
             // refetch it from the database to make sure we get a valid .Id
             return Get(newLocation.Guid);
@@ -135,8 +135,8 @@ namespace Rock.Model
                     Guid = Guid.NewGuid()
                 };
 
-                Add( newLocation, null );
-                Save( newLocation, null );
+                Add( newLocation );
+                Save( newLocation );
                 return Get( newLocation.Guid );
             }
 
@@ -169,8 +169,8 @@ namespace Rock.Model
                     Guid = Guid.NewGuid()
                 };
 
-                Add( newLocation, null );
-                Save( newLocation, null );
+                Add( newLocation );
+                Save( newLocation );
                 return Get( newLocation.Guid );
             }
 
@@ -182,8 +182,8 @@ namespace Rock.Model
         /// Performs an Address Standardization on the provided <see cref="Rock.Model.Location"/>.
         /// </summary>
         /// <param name="location">A <see cref="Rock.Model.Location"/> to standardize.</param>
-        /// <param name="personId">An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Person"/> requesting the address standardization.</param>
-        public void Standardize( Location location, int? personId )
+        /// <param name="personAlias">An <see cref="Rock.Model.PersonAlias"/> that represents the <see cref="Rock.Model.Person"/> requesting the address standardization.</param>
+        public void Standardize( Location location, PersonAlias personAlias )
         {
             Model.ServiceLogService logService = new Model.ServiceLogService();
             string inputLocation = location.ToString();
@@ -203,8 +203,8 @@ namespace Rock.Model
                     log.Input = inputLocation;
                     log.Result = result;
                     log.Success = success;
-                    logService.Add( log, personId );
-                    logService.Save( log, personId );
+                    logService.Add( log, personAlias );
+                    logService.Save( log, personAlias );
 
                     // If successful, set the results and stop processing
                     if ( success )
@@ -223,8 +223,8 @@ namespace Rock.Model
         /// Performs a geolocation on the provided Location.
         /// </summary>
         /// <param name="location">The <see cref="Rock.Model.Location"/> entity to geocode.</param>
-        /// <param name="personId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> requesting the geolocation.</param>
-        public void Geocode( Location location, int? personId )
+        /// <param name="personAlias">An <see cref="Rock.Model.PersonAlias"/> that represents the <see cref="Rock.Model.Person"/> requesting the geolocation.</param>
+        public void Geocode( Location location, PersonAlias personAlias )
         {
             Model.ServiceLogService logService = new Model.ServiceLogService();
             string inputLocation = location.ToString();
@@ -245,8 +245,8 @@ namespace Rock.Model
                     log.Input = inputLocation;
                     log.Result = result;
                     log.Success = success;
-                    logService.Add( log, personId );
-                    logService.Save( log, personId );
+                    logService.Add( log, personAlias );
+                    logService.Save( log, personAlias );
 
                     // If successful, set the results and stop processing
                     if ( success )

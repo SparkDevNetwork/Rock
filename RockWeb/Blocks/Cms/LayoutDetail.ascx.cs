@@ -147,10 +147,10 @@ namespace RockWeb.Blocks.Crm
                 {
                     if ( layout.Id.Equals( 0 ) )
                     {
-                        layoutService.Add( layout, CurrentPersonId );
+                        layoutService.Add( layout, CurrentPersonAlias );
                     }
 
-                    layoutService.Save( layout, CurrentPersonId );
+                    layoutService.Save( layout, CurrentPersonAlias );
                 } );
 
                 LayoutCache.Flush( layout.Id );

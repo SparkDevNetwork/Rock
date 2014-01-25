@@ -123,8 +123,8 @@ namespace RockWeb.Blocks.Core
                         return;
                     }
 
-                    WorkflowTriggerService.Delete( WorkflowTrigger, CurrentPersonId );
-                    WorkflowTriggerService.Save( WorkflowTrigger, CurrentPersonId );
+                    WorkflowTriggerService.Delete( WorkflowTrigger, CurrentPersonAlias );
+                    WorkflowTriggerService.Save( WorkflowTrigger, CurrentPersonAlias );
                 }
             } );
 

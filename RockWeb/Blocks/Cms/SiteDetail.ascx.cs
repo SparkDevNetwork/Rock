@@ -112,8 +112,8 @@ namespace RockWeb.Blocks.Cms
                         return;
                     }
 
-                    siteService.Delete( site, CurrentPersonId );
-                    siteService.Save( site, CurrentPersonId );
+                    siteService.Delete( site, CurrentPersonAlias );
+                    siteService.Save( site, CurrentPersonAlias );
 
                     SiteCache.Flush( site.Id );
                 }
@@ -146,7 +146,7 @@ namespace RockWeb.Blocks.Cms
                     {
                         newSite = true;
                         site = new Rock.Model.Site();
-                        siteService.Add( site, CurrentPersonId );
+                        siteService.Add( site, CurrentPersonAlias );
                     }
                     else
                     {
@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.Cms
                     foreach ( var domain in site.SiteDomains.Where( w => !currentDomains.Contains( w.Domain ) ).ToList() )
                     {
                         site.SiteDomains.Remove( domain );
-                        siteDomainService.Delete( domain, CurrentPersonId );
+                        siteDomainService.Delete( domain, CurrentPersonAlias );
                     }
 
                     foreach ( string domain in currentDomains )
@@ -205,11 +205,11 @@ namespace RockWeb.Blocks.Cms
 
                     RockTransactionScope.WrapTransaction( () =>
                     {
-                        siteService.Save( site, CurrentPersonId );
+                        siteService.Save( site, CurrentPersonAlias );
 
                         if ( newSite )
                         {
-                            Rock.Security.Authorization.CopyAuthorization( RockPage.Layout.Site, site, CurrentPersonId );
+                            Rock.Security.Authorization.CopyAuthorization( RockPage.Layout.Site, site, CurrentPersonAlias );
                         }
                     } );
 
@@ -222,7 +222,7 @@ namespace RockWeb.Blocks.Cms
 
                         // Create the layouts for the site, and find the first one
                         var layoutService = new LayoutService();
-                        layoutService.RegisterLayouts( Request.MapPath( "~" ), siteCache, CurrentPersonId );
+                        layoutService.RegisterLayouts( Request.MapPath( "~" ), siteCache, CurrentPersonAlias );
 
                         var layouts = layoutService.GetBySiteId( siteCache.Id );
                         Layout layout = layouts.FirstOrDefault( l => l.FileName.Equals("FullWidth", StringComparison.OrdinalIgnoreCase));
@@ -246,12 +246,12 @@ namespace RockWeb.Blocks.Cms
                                 OrderByDescending( b => b.Order ).FirstOrDefault();
 
                             page.Order = lastPage != null ? lastPage.Order + 1 : 0;
-                            pageService.Add( page, CurrentPersonId );
-                            pageService.Save( page, CurrentPersonId );
+                            pageService.Add( page, CurrentPersonAlias );
+                            pageService.Save( page, CurrentPersonAlias );
 
                             site = siteService.Get( siteCache.Id );
                             site.DefaultPageId = page.Id;
-                            siteService.Save( site, CurrentPersonId );
+                            siteService.Save( site, CurrentPersonAlias );
 
                             SiteCache.Flush( site.Id );
                         }

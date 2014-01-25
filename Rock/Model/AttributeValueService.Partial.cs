@@ -79,9 +79,9 @@ namespace Rock.Model
         /// Saves the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="personId">The person identifier.</param>
+        /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
-        public override bool Save( AttributeValue item, int? personId )
+        public override bool Save( AttributeValue item, PersonAlias personAlias )
         {
             if ( item.Attribute != null )
             {
@@ -104,7 +104,7 @@ namespace Rock.Model
                 }
             }
 
-            return base.Save( item, personId );
+            return base.Save( item, personAlias );
         }
     }
 }

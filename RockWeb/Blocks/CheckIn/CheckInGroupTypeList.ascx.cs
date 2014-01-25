@@ -175,8 +175,8 @@ namespace RockWeb.Blocks.CheckIn
             groupType.ShowInNavigation = false;
             groupType.ShowInGroupList = false;
 
-            groupTypeService.Add( groupType, this.CurrentPersonId );
-            groupTypeService.Save( groupType, this.CurrentPersonId );
+            groupTypeService.Add( groupType, CurrentPersonAlias );
+            groupTypeService.Save( groupType, CurrentPersonAlias );
             mdAddCheckinGroupType.Hide();
 
             BindGrid();

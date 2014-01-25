@@ -164,10 +164,10 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personId">The current person id.</param>
-        public virtual void MakePrivate( string action, Person person, int? personId )
+        /// <param name="currentPersonAlias">The current person id.</param>
+        public virtual void MakePrivate( string action, Person person, PersonAlias currentPersonAlias )
         {
-            Security.Authorization.MakePrivate( this, action, person, personId );
+            Security.Authorization.MakePrivate( this, action, person, currentPersonAlias );
         }
 
         #endregion
@@ -235,8 +235,8 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Saves the attribute values.
         /// </summary>
-        /// <param name="personId">The person id.</param>
-        public virtual void SaveAttributeValues( int? personId )
+        /// <param name="personAlias">The person alias.</param>
+        public virtual void SaveAttributeValues( PersonAlias personAlias )
         {
             var service = new Rock.Data.Service<T>();
             var model = service.Get( this.Id );
@@ -248,7 +248,7 @@ namespace Rock.Web.Cache
                 {
                     if ( this.AttributeValues.ContainsKey( attribute.Key ) )
                     {
-                        Rock.Attribute.Helper.SaveAttributeValues( model, attribute.Value, this.AttributeValues[attribute.Key], personId );
+                        Rock.Attribute.Helper.SaveAttributeValues( model, attribute.Value, this.AttributeValues[attribute.Key], personAlias );
                     }
                 }
             }
