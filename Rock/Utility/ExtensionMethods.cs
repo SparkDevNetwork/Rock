@@ -740,7 +740,7 @@ namespace Rock
         public static string ToElapsedString( this DateTime dateTime, bool condensed = false, bool includeTime = true )
         {
             DateTime start = dateTime;
-            DateTime end = DateTime.Now;
+            DateTime end = RockDateTime.Now;
 
             string direction = " Ago";
             TimeSpan timeSpan = end.Subtract( start );
@@ -822,7 +822,7 @@ namespace Rock
         {
             try
             {
-                DateTime now = DateTime.Now;
+                DateTime now = RockDateTime.Now;
                 TimeSpan timeSince = now - dateTime;
 
                 double inSeconds = timeSince.TotalSeconds;

@@ -153,7 +153,7 @@ namespace Rock.Model
                     }
 
                     string filePath = Path.Combine( directory, "RockExceptions.csv" );
-                    File.AppendAllText( filePath, string.Format( "{0},{1},\"{2}\"\r\n", DateTime.Now.ToString(), ex.GetType(), ex.Message ) );
+                    File.AppendAllText( filePath, string.Format( "{0},{1},\"{2}\"\r\n", RockDateTime.Now.ToString(), ex.GetType(), ex.Message ) );
                 }
                 catch
                 {
@@ -193,8 +193,8 @@ namespace Rock.Model
                     Guid = Guid.NewGuid(),
                     CreatedByPersonAliasId = personAliasId,
                     ModifiedByPersonAliasId = personAliasId,
-                    CreatedDateTime = DateTime.Now,
-                    ModifiedDateTime = DateTime.Now
+                    CreatedDateTime = RockDateTime.Now,
+                    ModifiedDateTime = RockDateTime.Now
                 };
 
             // If current HttpContext is null, return early.

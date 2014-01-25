@@ -246,7 +246,7 @@ namespace RockWeb.Blocks.Core
 
             if ( calendarEvent.DTStart != null )
             {
-                List<Occurrence> nextOccurrences = calendar.GetOccurrences( DateTime.Now.Date, DateTime.Now.Date.AddYears( 1 ) ).Take( 26 ).ToList();
+                List<Occurrence> nextOccurrences = calendar.GetOccurrences( RockDateTime.Now.Date, RockDateTime.Now.Date.AddYears( 1 ) ).Take( 26 ).ToList();
 
                 string listHtml = "<hr /><strong>Occurrences Preview</strong><ul>";
                 foreach ( var occurrence in nextOccurrences )
@@ -390,7 +390,7 @@ namespace RockWeb.Blocks.Core
             {
                 if ( calendarEvent.DTStart != null )
                 {
-                    var occurrences = calendarEvent.GetOccurrences( DateTime.Now.Date, DateTime.Now.Date.AddYears( 1 ) );
+                    var occurrences = calendarEvent.GetOccurrences( RockDateTime.Now.Date, RockDateTime.Now.Date.AddYears( 1 ) );
                     if ( occurrences.Any() )
                     {
                         var occurrence = occurrences[0];

@@ -71,7 +71,7 @@ namespace Rock.Web.UI
                 Person.Id != CurrentPersonId.Value )
             {
                 var transaction = new PersonViewTransaction();
-                transaction.DateTimeViewed = DateTime.Now;
+                transaction.DateTimeViewed = RockDateTime.Now;
                 transaction.TargetPersonId = Person.Id;
                 transaction.ViewerPersonId = CurrentPersonId.Value;
                 transaction.Source = RockPage.PageTitle;

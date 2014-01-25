@@ -620,7 +620,7 @@ achieve our mission.  We are so grateful for your commitment.
                         txtBillingZip.Text = address.Zip;
                     }
 
-                    mypExpiration.MinimumYear = DateTime.Now.Year;
+                    mypExpiration.MinimumYear = RockDateTime.Now.Year;
                 }
 
                 if (Gateway.TypeGuid.Equals(GetAttributeValue( "ACHGateway" ).AsGuid()))

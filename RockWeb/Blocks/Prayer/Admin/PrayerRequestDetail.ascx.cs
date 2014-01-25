@@ -235,7 +235,7 @@ namespace RockWeb.Blocks.Prayer
             if ( !prayerRequest.ExpirationDate.HasValue )
             {
                 var expireDays = Convert.ToDouble( GetAttributeValue( "ExpireDays" ) );
-                dpExpirationDate.SelectedDate = DateTime.Now.AddDays( expireDays );
+                dpExpirationDate.SelectedDate = RockDateTime.Now.AddDays( expireDays );
             }
             else
             {
@@ -322,7 +322,7 @@ namespace RockWeb.Blocks.Prayer
             {
                 prayerRequest = new PrayerRequest();
                 prayerRequestService.Add( prayerRequest, CurrentPersonId );
-                prayerRequest.EnteredDateTime = DateTime.Now;
+                prayerRequest.EnteredDateTime = RockDateTime.Now;
             }
             else
             {
@@ -333,7 +333,7 @@ namespace RockWeb.Blocks.Prayer
             if ( !(prayerRequest.IsApproved ?? false) && cbApproved.Checked )
             {
                 prayerRequest.ApprovedByPersonId = CurrentPerson.Id;
-                prayerRequest.ApprovedOnDateTime = DateTime.Now;
+                prayerRequest.ApprovedOnDateTime = RockDateTime.Now;
                 // reset the flag count only to zero ONLY if it had a value previously.
                 if ( prayerRequest.FlagCount.HasValue && prayerRequest.FlagCount > 0 )
                 {
@@ -345,7 +345,7 @@ namespace RockWeb.Blocks.Prayer
             if ( !dpExpirationDate.SelectedDate.HasValue )
             {
                 var expireDays = Convert.ToDouble( GetAttributeValue( "ExpireDays" ) );
-                prayerRequest.ExpirationDate = DateTime.Now.AddDays( expireDays );
+                prayerRequest.ExpirationDate = RockDateTime.Now.AddDays( expireDays );
             }
             else
             {

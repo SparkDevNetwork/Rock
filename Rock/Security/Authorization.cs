@@ -35,8 +35,8 @@ namespace Rock.Security
         /// <param name="IsImpersonated">if set to <c>true</c> [is impersonated].</param>
         public static void SetAuthCookie( string userName, bool isPersisted, bool IsImpersonated )
         {
-            var ticket = new System.Web.Security.FormsAuthenticationTicket( 1, userName, DateTime.Now,
-                DateTime.Now.Add( System.Web.Security.FormsAuthentication.Timeout ), isPersisted,
+            var ticket = new System.Web.Security.FormsAuthenticationTicket( 1, userName, RockDateTime.Now,
+                RockDateTime.Now.Add( System.Web.Security.FormsAuthentication.Timeout ), isPersisted,
                 IsImpersonated.ToString(), System.Web.Security.FormsAuthentication.FormsCookiePath );
 
             var encryptedTicket = System.Web.Security.FormsAuthentication.Encrypt( ticket );

@@ -237,12 +237,12 @@ namespace Rock.Model
         {
             AddSystemLogEntry( "Processing..." );
 
-            DateTime processStartTime = DateTime.Now;
+            DateTime processStartTime = RockDateTime.Now;
 
             while ( ProcessActivity( processStartTime, entity, out errorMessages )
                 && errorMessages.Count == 0 ) { }
 
-            this.LastProcessedDateTime = DateTime.Now;
+            this.LastProcessedDateTime = RockDateTime.Now;
 
             AddSystemLogEntry( "Processing Complete" );
 
@@ -261,7 +261,7 @@ namespace Rock.Model
         public virtual void AddLogEntry( string logEntry )
         {
             var workflowLog = new WorkflowLog();
-            workflowLog.LogDateTime = DateTime.Now;
+            workflowLog.LogDateTime = RockDateTime.Now;
             workflowLog.LogText = logEntry;
 
             this.LogEntries.Add( workflowLog );
@@ -272,7 +272,7 @@ namespace Rock.Model
         /// </summary>
         public virtual void MarkComplete()
         {
-            CompletedDateTime = DateTime.Now;
+            CompletedDateTime = RockDateTime.Now;
             AddSystemLogEntry( "Completed" );
         }
 
@@ -349,7 +349,7 @@ namespace Rock.Model
             workflow.Name = name ?? workflowType.Name;
             workflow.Status = "Activated";
             workflow.IsProcessing = false;
-            workflow.ActivatedDateTime = DateTime.Now;
+            workflow.ActivatedDateTime = RockDateTime.Now;
             workflow.LoadAttributes();
 
             workflow.AddSystemLogEntry( "Activated" );

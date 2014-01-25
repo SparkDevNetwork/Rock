@@ -340,7 +340,7 @@ namespace RockWeb.Blocks.Communication
                         else
                         {
                             communication.Status = CommunicationStatus.Approved;
-                            communication.ReviewedDateTime = DateTime.Now;
+                            communication.ReviewedDateTime = RockDateTime.Now;
                             communication.ReviewerPersonId = CurrentPersonId;
                             message = "Communication has been queued for sending.";
 
@@ -399,7 +399,7 @@ namespace RockWeb.Blocks.Communication
                         if ( IsUserAuthorized( "Approve" ) )
                         {
                             communication.Status = CommunicationStatus.Approved;
-                            communication.ReviewedDateTime = DateTime.Now;
+                            communication.ReviewedDateTime = RockDateTime.Now;
                             communication.ReviewerPersonId = CurrentPersonId;
                         }
 
@@ -431,7 +431,7 @@ namespace RockWeb.Blocks.Communication
                         if ( IsUserAuthorized( "Approve" ) )
                         {
                             communication.Status = CommunicationStatus.Denied;
-                            communication.ReviewedDateTime = DateTime.Now;
+                            communication.ReviewedDateTime = RockDateTime.Now;
                             communication.ReviewerPersonId = CurrentPersonId;
                         }
 

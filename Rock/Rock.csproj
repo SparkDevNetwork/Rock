@@ -236,6 +236,7 @@
     <Compile Include="Reporting\DataSelectContainer.cs" />
     <Compile Include="Reporting\EntityHelper.cs" />
     <Compile Include="Reporting\FilterExpressionExtractor.cs" />
+    <Compile Include="Utility\RockDateTime.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
@@ -856,7 +857,7 @@
     <Compile Include="Web\UI\Controls\HtmlGenericContainer.cs" />
     <Compile Include="Web\UI\Controls\NotificationBox.cs" />
     <Compile Include="Web\UI\Controls\Grid\RowEventArgs.cs" />
-    <Compile Include="ExtensionMethods.cs" />
+    <Compile Include="Utility\ExtensionMethods.cs" />
     <Compile Include="Field\Types\BooleanFieldType.cs" />
     <Compile Include="Field\Types\PageReferenceFieldType.cs" />
     <Compile Include="Field\Types\IntegerFieldType.cs" />
@@ -869,7 +870,7 @@
     <Compile Include="Attribute\Helper.cs" />
     <Compile Include="Web\HttpModule.cs" />
     <Compile Include="Web\PageReference.cs" />
-    <Compile Include="Reflection.cs" />
+    <Compile Include="Utility\Reflection.cs" />
     <Compile Include="Jobs\JobPulse.cs" />
     <Compile Include="Jobs\RockJobListener.cs" />
     <Compile Include="Attribute\IHasAttributes.cs" />
@@ -917,7 +918,6 @@
   <ItemGroup>
     <Content Include="packages.config" />
     <None Include="App.config" />
-    <None Include="CheckInStateClassDiagram.cd" />
     <None Include="Service References\MelissaData.AddressCheck\Rock.MelissaData.AddressCheck.ResponseArray.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>

@@ -227,7 +227,7 @@ namespace RockWeb.Blocks.Cms
                     if ( personId > 0 )
                     {
                         htmlContent.ApprovedByPersonId = personId;
-                        htmlContent.ApprovedDateTime = DateTime.Now;
+                        htmlContent.ApprovedDateTime = RockDateTime.Now;
                     }
                 }
             }

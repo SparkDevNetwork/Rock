@@ -91,7 +91,7 @@ namespace Rock.Model
                 if ( user != null )
                     throw new ArgumentOutOfRangeException( "username", "Username already exists" );
 
-                DateTime createDate = DateTime.Now;
+                DateTime createDate = RockDateTime.Now;
 
                 user = new UserLogin();
                 user.EntityTypeId = entityTypeId;
@@ -132,7 +132,7 @@ namespace Rock.Model
                 var userLogin = GetByUserName( userName );
                 if ( userLogin != null )
                 {
-                    userLogin.LastLoginDateTime = DateTime.Now;
+                    userLogin.LastLoginDateTime = RockDateTime.Now;
                     Save( userLogin, null );
                 }
             }
@@ -158,7 +158,7 @@ namespace Rock.Model
                 return false;
 
             user.Password = authenticationComponent.EncodePassword( user, newPassword );
-            user.LastPasswordChangedDateTime = DateTime.Now;
+            user.LastPasswordChangedDateTime = RockDateTime.Now;
 
             return true;
         }
@@ -178,7 +178,7 @@ namespace Rock.Model
                 throw new Exception( "Cannot change password on external service type" );
 
             user.Password = authenticationComponent.EncodePassword( user, password );
-            user.LastPasswordChangedDateTime = DateTime.Now;
+            user.LastPasswordChangedDateTime = RockDateTime.Now;
         }
 
         /// <summary>
@@ -210,13 +210,13 @@ namespace Rock.Model
             int attempts = user.FailedPasswordAttemptCount ?? 0;
 
             TimeSpan window = new TimeSpan( 0, passwordAttemptWindow, 0 );
-            if ( DateTime.Now.CompareTo( firstAttempt.Add( window ) ) < 0 )
+            if ( RockDateTime.Now.CompareTo( firstAttempt.Add( window ) ) < 0 )
             {
                 attempts++;
                 if ( attempts >= maxInvalidPasswordAttempts )
                 {
                     user.IsLockedOut = true;
-                    user.LastLockedOutDateTime = DateTime.Now;
+                    user.LastLockedOutDateTime = RockDateTime.Now;
                 }
 
                 user.FailedPasswordAttemptCount = attempts;
@@ -224,7 +224,7 @@ namespace Rock.Model
             else
             {
                 user.FailedPasswordAttemptCount = 1;
-                user.FailedPasswordAttemptWindowStartDateTime = DateTime.Now;
+                user.FailedPasswordAttemptWindowStartDateTime = RockDateTime.Now;
             }
         }
 
@@ -254,7 +254,7 @@ namespace Rock.Model
                         DateTime dateTime = new DateTime( ticks );
 
                         // Confirmation Code is only valid for an hour
-                        if ( DateTime.Now.Subtract( dateTime ).Hours > 1 )
+                        if ( RockDateTime.Now.Subtract( dateTime ).Hours > 1 )
                             return null;
 
                         UserLogin user = this.GetByEncryptedKey( publicKey );
@@ -305,7 +305,7 @@ namespace Rock.Model
                         // Save last activity date
                         var transaction = new Rock.Transactions.UserLastActivityTransaction();
                         transaction.UserId = user.Id;
-                        transaction.LastActivityDate = DateTime.Now;
+                        transaction.LastActivityDate = RockDateTime.Now;
                         Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                     }
 

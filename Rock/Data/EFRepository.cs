@@ -357,7 +357,7 @@ namespace Rock.Data
                                 {
                                     title = entityType.FriendlyName ?? string.Empty;
                                 }
-                                audit.DateTime = DateTime.Now;
+                                audit.DateTime = RockDateTime.Now;
                                 audit.PersonAliasId = personAliasId;
                                 audit.EntityTypeId = entityType.Id;
                                 audit.EntityId = rockEntity.Id;
@@ -398,7 +398,7 @@ namespace Rock.Data
                 {
                     outputLines.Add( string.Format(
                         "{0}: Entity of type \"{1}\" in state \"{2}\" has the following validation errors:",
-                        DateTime.Now, eve.Entry.Entity.GetType().Name, eve.Entry.State ) );
+                        RockDateTime.Now, eve.Entry.Entity.GetType().Name, eve.Entry.State ) );
                     foreach ( var ve in eve.ValidationErrors )
                     {
                         outputLines.Add( string.Format(

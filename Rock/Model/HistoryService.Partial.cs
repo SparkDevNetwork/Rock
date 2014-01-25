@@ -58,7 +58,7 @@ namespace Rock.Model
 
             var entityType = EntityTypeCache.Read(modelType);
             var category = CategoryCache.Read(categoryGuid);
-            var creationDate = DateTime.Now;
+            var creationDate = RockDateTime.Now;
 
             int? relatedEntityTypeId = null;
             if (relatedModelType != null)

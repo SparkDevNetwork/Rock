@@ -283,7 +283,7 @@ namespace RockWeb.Blocks.Security
                                 if ( UserLoginService.IsPasswordValid( tbPassword.Text ) )
                                 {
                                     userLogin.Password = component.EncodePassword( userLogin, tbPassword.Text );
-                                    userLogin.LastPasswordChangedDateTime = DateTime.Now;
+                                    userLogin.LastPasswordChangedDateTime = RockDateTime.Now;
                                 }
                                 else
                                 {
