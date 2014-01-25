@@ -205,7 +205,7 @@ namespace RockWeb.Blocks.Core
             {
                 //if so check check box and register script to show cookies div
                 chkShowCookies.Checked = true;
-                ScriptManager.RegisterStartupScript( upExcpetionDetail, upExcpetionDetail.GetType(), "ShowCookiesOnLoad" + DateTime.Now.Ticks, "$(\"#divCookies\").css(\"display\", \"inherit\");", true );
+                ScriptManager.RegisterStartupScript( upExcpetionDetail, upExcpetionDetail.GetType(), "ShowCookiesOnLoad" + RockDateTime.Now.Ticks, "$(\"#divCookies\").css(\"display\", \"inherit\");", true );
             }
             else
             {
@@ -216,7 +216,7 @@ namespace RockWeb.Blocks.Core
             if ( Convert.ToBoolean( GetAttributeValue( "ShowServerVariables" ) ) )
             {
                 chkShowServerVariables.Checked = true;
-                ScriptManager.RegisterStartupScript( upExcpetionDetail, upExcpetionDetail.GetType(), "ShowServerVariablesOnLoad" + DateTime.Now.Ticks, "$(\"#divServerVariables\").css(\"display\", \"inherit\");", true );
+                ScriptManager.RegisterStartupScript( upExcpetionDetail, upExcpetionDetail.GetType(), "ShowServerVariablesOnLoad" + RockDateTime.Now.Ticks, "$(\"#divServerVariables\").css(\"display\", \"inherit\");", true );
             }
             else
             {

@@ -838,8 +838,8 @@ namespace Rock.Model
                         return null;
                     }
 
-                    int gradeMaxFactorReactor = ( DateTime.Now < transitionDate ) ? 12 : 13;
-                    return gradeMaxFactorReactor - ( GraduationDate.Value.Year - DateTime.Now.Year );
+                    int gradeMaxFactorReactor = ( RockDateTime.Now < transitionDate ) ? 12 : 13;
+                    return gradeMaxFactorReactor - ( GraduationDate.Value.Year - RockDateTime.Now.Year );
                 }
             }
 
@@ -851,7 +851,7 @@ namespace Rock.Model
                     var globalAttributes = GlobalAttributesCache.Read();
                     if ( DateTime.TryParse( globalAttributes.GetValue( "GradeTransitionDate" ), out transitionDate ) )
                     {
-                        int gradeFactorReactor = ( DateTime.Now < transitionDate ) ? 12 : 13;
+                        int gradeFactorReactor = ( RockDateTime.Now < transitionDate ) ? 12 : 13;
                         GraduationDate = transitionDate.AddYears( gradeFactorReactor - value.Value );
                     }
                 }

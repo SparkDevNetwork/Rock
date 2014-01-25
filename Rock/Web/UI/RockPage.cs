@@ -931,7 +931,7 @@ namespace Rock.Web.UI
                     if ( _pageCache.OutputCacheDuration > 0 )
                     {
                         Response.Cache.SetCacheability( System.Web.HttpCacheability.Public );
-                        Response.Cache.SetExpires( DateTime.Now.AddSeconds( _pageCache.OutputCacheDuration ) );
+                        Response.Cache.SetExpires( RockDateTime.Now.AddSeconds( _pageCache.OutputCacheDuration ) );
                         Response.Cache.SetValidUntilExpires( true );
                     }
                 }
@@ -979,7 +979,7 @@ namespace Rock.Web.UI
             if (!Page.IsPostBack && _pageCache != null && Convert.ToBoolean( ConfigurationManager.AppSettings["EnablePageViewTracking"] ) )
             {
                 PageViewTransaction transaction = new PageViewTransaction();
-                transaction.DateViewed = DateTime.Now;
+                transaction.DateViewed = RockDateTime.Now;
                 transaction.PageId = _pageCache.Id;
                 transaction.SiteId = _pageCache.Layout.Site.Id;
                 if ( CurrentPersonId != null )
@@ -1001,7 +1001,7 @@ namespace Rock.Web.UI
 
             if ( phLoadTime != null )
             {
-                TimeSpan tsDuration = DateTime.Now.Subtract( (DateTime)Context.Items["Request_Start_Time"] );
+                TimeSpan tsDuration = RockDateTime.Now.Subtract( (DateTime)Context.Items["Request_Start_Time"] );
                 phLoadTime.Controls.Add( new LiteralControl( string.Format( "{0}: {1:N2}s", "Page Load Time", tsDuration.TotalSeconds ) ) );
             }
         }

@@ -348,7 +348,7 @@ namespace Rock.Model
                         Rock.Attribute.Helper.SaveAttributeValue(person, person.Attributes[attrib], NBc, person.Id);
                         break;
                     case "LastSaveDate":
-                        Rock.Attribute.Helper.SaveAttributeValue(person, person.Attributes[attrib], DateTime.Now.ToString(), person.Id);
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], RockDateTime.Now.ToString(), person.Id );
                         break;
                 }
             }

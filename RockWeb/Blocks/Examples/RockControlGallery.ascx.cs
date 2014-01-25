@@ -336,10 +336,10 @@ namespace RockWeb.Blocks.Examples
             Random random = new Random();
 
             List<ExampleDataItem> dataList = new List<ExampleDataItem>();
-            dataList.Add( new ExampleDataItem { Id = 1, DefinedValueColor = "green", DefinedValueTypeName = "Pickles", SomeDateTime = DateTime.Now, SomeBoolean = random.Next( 2 ) == 1 } );
-            dataList.Add( new ExampleDataItem { Id = 2, DefinedValueColor = "#ff0000", DefinedValueTypeName = "Ketchup", SomeDateTime = DateTime.Now, SomeBoolean = random.Next( 2 ) == 1 } );
-            dataList.Add( new ExampleDataItem { Id = 3, DefinedValueColor = "white", DefinedValueTypeName = "Onions", SomeDateTime = DateTime.Now, SomeBoolean = random.Next( 2 ) == 1 } );
-            dataList.Add( new ExampleDataItem { Id = 4, DefinedValueColor = "rgb(255,255,0)", DefinedValueTypeName = "Mustard", SomeDateTime = DateTime.Now, SomeBoolean = random.Next( 2 ) == 1 } );
+            dataList.Add( new ExampleDataItem { Id = 1, DefinedValueColor = "green", DefinedValueTypeName = "Pickles", SomeDateTime = RockDateTime.Now, SomeBoolean = random.Next( 2 ) == 1 } );
+            dataList.Add( new ExampleDataItem { Id = 2, DefinedValueColor = "#ff0000", DefinedValueTypeName = "Ketchup", SomeDateTime = RockDateTime.Now, SomeBoolean = random.Next( 2 ) == 1 } );
+            dataList.Add( new ExampleDataItem { Id = 3, DefinedValueColor = "white", DefinedValueTypeName = "Onions", SomeDateTime = RockDateTime.Now, SomeBoolean = random.Next( 2 ) == 1 } );
+            dataList.Add( new ExampleDataItem { Id = 4, DefinedValueColor = "rgb(255,255,0)", DefinedValueTypeName = "Mustard", SomeDateTime = RockDateTime.Now, SomeBoolean = random.Next( 2 ) == 1 } );
 
             SortProperty sortProperty = gExample.SortProperty ?? new SortProperty( new GridViewSortEventArgs( "DefinedValueTypeName", SortDirection.Ascending ) );
 

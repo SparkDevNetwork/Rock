@@ -363,7 +363,7 @@ namespace RockWeb.Blocks.Administraton
             gExceptionList.Columns[5].HeaderText = string.Format( "Last {0} days", summaryCountDays );
 
             //get the subset/summary date
-            DateTime minSummaryCountDate = DateTime.Now.Date.AddDays( -( summaryCountDays ) );
+            DateTime minSummaryCountDate = RockDateTime.Now.Date.AddDays( -( summaryCountDays ) );
 
             var exceptionQuery = BuildBaseExceptionListQuery()
                                     .GroupBy( e => new
