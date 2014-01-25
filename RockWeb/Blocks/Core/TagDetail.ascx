@@ -21,7 +21,13 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="tbName" runat="server" Label="Name" />
-                        </div>
+                         </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine" Rows="3" />
+                       </div>
                     </div>
                     
                     <div class="row">
