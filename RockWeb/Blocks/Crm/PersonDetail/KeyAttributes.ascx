@@ -25,7 +25,7 @@
                 <fieldset id="fsAttributes" runat="server"></fieldset>
                 <asp:Panel ID="pnlActions" runat="server" CssClass="actions" Visible="false">
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary btn-mini" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-mini" OnClick="btnCancel_Click" CausesValidation="false" />
+                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link btn-mini" OnClick="btnCancel_Click" CausesValidation="false" />
                 </asp:Panel>
             </div>
  
