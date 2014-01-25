@@ -128,8 +128,8 @@ namespace RockWeb.Blocks.Administration
             MetricValue metricValue = metricValueService.Get( (int)e.RowKeyValue );
             if ( metricValue != null )
             {
-                metricValueService.Delete( metricValue, CurrentPersonId );
-                metricValueService.Save( metricValue, CurrentPersonId );
+                metricValueService.Delete( metricValue, CurrentPersonAlias );
+                metricValueService.Save( metricValue, CurrentPersonAlias );
             }
 
             BindGrid();
@@ -153,7 +153,7 @@ namespace RockWeb.Blocks.Administration
                     metricValue = new MetricValue();
                     metricValue.IsSystem = false;
                     metricValue.MetricId = hfMetricId.ValueAsInt();
-                    metricValueService.Add( metricValue, CurrentPersonId );
+                    metricValueService.Add( metricValue, CurrentPersonAlias );
                 }
                 else
                 {
@@ -169,7 +169,7 @@ namespace RockWeb.Blocks.Administration
 
                 if ( metricValue.IsValid )
                 {
-                    metricValueService.Save( metricValue, CurrentPersonId );
+                    metricValueService.Save( metricValue, CurrentPersonAlias );
                     BindGrid();
                     hfMetricValueId.Value = string.Empty;
                     mdValueDialog.Hide();

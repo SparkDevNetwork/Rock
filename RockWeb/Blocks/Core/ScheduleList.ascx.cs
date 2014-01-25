@@ -113,8 +113,8 @@ namespace RockWeb.Blocks.Administration
                         return;
                     }
 
-                    scheduleService.Delete( schedule, CurrentPersonId );
-                    scheduleService.Save( schedule, CurrentPersonId );
+                    scheduleService.Delete( schedule, CurrentPersonAlias );
+                    scheduleService.Save( schedule, CurrentPersonAlias );
                 }
             } );
 

@@ -490,12 +490,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     }
 
 
-                                    groupService.Add( familyGroup, CurrentPersonId );
-                                    groupService.Save( familyGroup, CurrentPersonId );
+                                    groupService.Add( familyGroup, CurrentPersonAlias );
+                                    groupService.Save( familyGroup, CurrentPersonAlias );
 
                                     var historyService = new HistoryService();
                                     historyService.SaveChanges( typeof( Group ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                                        familyGroup.Id, familyChanges, CurrentPersonId );
+                                        familyGroup.Id, familyChanges, CurrentPersonAlias );
 
                                     var personService = new PersonService();
 
@@ -520,7 +520,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                                             if ( updateRequired )
                                             {
-                                                personService.Save( person, CurrentPersonId );
+                                                personService.Save( person, CurrentPersonAlias );
                                             }
 
                                             foreach ( var attributeControl in attributeControls )
@@ -530,7 +530,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                                     string attributeValue = person.GetAttributeValue( attribute.Key );
                                                     if ( !string.IsNullOrWhiteSpace( attributeValue ) )
                                                     {
-                                                        Rock.Attribute.Helper.SaveAttributeValue( person, attribute, attributeValue, CurrentPersonId );
+                                                        Rock.Attribute.Helper.SaveAttributeValue( person, attribute, attributeValue, CurrentPersonAlias );
                                                         attributeValue = attribute.FieldType.Field.FormatValue( null, attributeValue, attribute.QualifierValues, false );
                                                         History.EvaluateChange( changes, attribute.Name, string.Empty, attributeValue );
                                                     }
@@ -538,10 +538,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                             }
 
                                             historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                                person.Id, changes, CurrentPersonId );
+                                                person.Id, changes, CurrentPersonAlias );
 
                                             historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                                                person.Id, familyMemberChanges[person.Guid], familyGroup.Name, typeof( Group), familyGroup.Id, CurrentPersonId );
+                                                person.Id, familyMemberChanges[person.Guid], familyGroup.Name, typeof( Group ), familyGroup.Id, CurrentPersonAlias );
                                         }
                                     }
                                 }

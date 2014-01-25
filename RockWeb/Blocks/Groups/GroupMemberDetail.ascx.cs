@@ -234,11 +234,11 @@ namespace RockWeb.Blocks.Groups
                 {
                     if ( groupMember.Id.Equals( 0 ) )
                     {
-                        groupMemberService.Add( groupMember, CurrentPersonId );
+                        groupMemberService.Add( groupMember, CurrentPersonAlias );
                     }
 
-                    groupMemberService.Save( groupMember, CurrentPersonId );
-                    Rock.Attribute.Helper.SaveAttributeValues( groupMember, CurrentPersonId );
+                    groupMemberService.Save( groupMember, CurrentPersonAlias );
+                    Rock.Attribute.Helper.SaveAttributeValues( groupMember, CurrentPersonAlias );
                 } );
 
                 Group group = new GroupService().Get( groupMember.GroupId );

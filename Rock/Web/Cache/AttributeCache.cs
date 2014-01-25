@@ -488,10 +488,10 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personId">The current person id.</param>
-        public virtual void MakePrivate( string action, Person person, int? personId )
+        /// <param name="currentPersonAlias">The current person alias.</param>
+        public virtual void MakePrivate( string action, Person person, PersonAlias currentPersonAlias )
         {
-            Security.Authorization.MakePrivate( this, action, person, personId );
+            Security.Authorization.MakePrivate( this, action, person, currentPersonAlias );
         }
 
         #endregion

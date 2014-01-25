@@ -93,7 +93,7 @@ $('.checklist-item .checklist-desc-toggle').on('click', function (e) {
                         {
                             Helper.LoadAttributes( value );
                             value.SetAttributeValue( attributeKey, cbValue.Checked.ToString() );
-                            Helper.SaveAttributeValues( value, CurrentPersonId );
+                            Helper.SaveAttributeValues( value, CurrentPersonAlias );
                             DefinedValueCache.Flush( value.Id );
                         }
                     }

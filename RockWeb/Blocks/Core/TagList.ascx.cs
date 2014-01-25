@@ -134,8 +134,8 @@ namespace RockWeb.Blocks.Core
                     return;
                 }
 
-                tagService.Delete( tag, CurrentPersonId );
-                tagService.Save( tag, CurrentPersonId );
+                tagService.Delete( tag, CurrentPersonAlias );
+                tagService.Save( tag, CurrentPersonAlias );
             }
 
             BindGrid();
@@ -153,7 +153,7 @@ namespace RockWeb.Blocks.Core
                 var tags = GetTags();
                 if ( tags != null )
                 {
-                    new TagService().Reorder( tags.ToList(), e.OldIndex, e.NewIndex, CurrentPersonId );
+                    new TagService().Reorder( tags.ToList(), e.OldIndex, e.NewIndex, CurrentPersonAlias );
                 }
 
                 BindGrid();

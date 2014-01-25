@@ -285,8 +285,8 @@ namespace RockWeb.Blocks.Reporting
 
                     RockTransactionScope.WrapTransaction( () =>
                     {
-                        reportService.Delete( report, CurrentPersonId );
-                        reportService.Save( report, CurrentPersonId );
+                        reportService.Delete( report, CurrentPersonAlias );
+                        reportService.Save( report, CurrentPersonAlias );
                     } );
 
                     // reload page, selecting the deleted data view's parent
@@ -350,8 +350,8 @@ namespace RockWeb.Blocks.Reporting
                     foreach ( var reportField in report.ReportFields.ToList() )
                     {
                         var field = reportFieldService.Get( reportField.Guid );
-                        reportFieldService.Delete( field, this.CurrentPersonId );
-                        reportFieldService.Save( field, this.CurrentPersonId );
+                        reportFieldService.Delete( field, this.CurrentPersonAlias );
+                        reportFieldService.Save( field, this.CurrentPersonAlias );
                     }
 
                     report.ReportFields.Clear();
@@ -402,10 +402,10 @@ namespace RockWeb.Blocks.Reporting
 
                     if ( report.Id.Equals( 0 ) )
                     {
-                        service.Add( report, CurrentPersonId );
+                        service.Add( report, CurrentPersonAlias );
                     }
 
-                    service.Save( report, CurrentPersonId );
+                    service.Save( report, CurrentPersonAlias );
                 } );
             }
 

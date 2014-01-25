@@ -664,11 +664,11 @@ namespace Rock.Web.UI.Controls
             var rockPage = this.Page as RockPage;
             if (rockPage != null && NoteTypeId.HasValue)
             {
-                int? currentPersonId = null;
+                PersonAlias personAlias = null;
                 var currentPerson = rockPage.CurrentPerson;
                 if (currentPerson != null)
                 {
-                    currentPersonId = currentPerson.Id;
+                    personAlias = currentPerson.PrimaryAlias;
                 }
 
                 var service = new NoteService();
@@ -690,23 +690,23 @@ namespace Rock.Web.UI.Controls
                     note.NoteTypeId = NoteTypeId.Value;
                     note.EntityId = EntityId;
                     note.SourceTypeValueId = SourceTypeValueId;
-                    service.Add( note, currentPersonId );
+                    service.Add( note, personAlias );
                 }
 
                 note.Caption = IsPrivate ? "You - Personal Note" : string.Empty;
                 note.Text = Text;
                 note.IsAlert = IsAlert;
 
-                service.Save( note, currentPersonId );
+                service.Save( note, personAlias );
 
                 if ( newNote )
                 {
-                    note.AllowPerson( "Edit", currentPerson, currentPersonId );
+                    note.AllowPerson( "Edit", currentPerson, personAlias );
                 }
 
                 if ( IsPrivate && !note.IsPrivate( "View", currentPerson ) )
                 {
-                    note.MakePrivate( "View", currentPerson, currentPersonId );
+                    note.MakePrivate( "View", currentPerson, personAlias );
                 }
 
                 if ( SaveButtonClick != null )
@@ -726,11 +726,11 @@ namespace Rock.Web.UI.Controls
             var rockPage = this.Page as RockPage;
             if ( rockPage != null )
             {
-                int? currentPersonId = null;
+                PersonAlias personAlias = null;
                 var currentPerson = rockPage.CurrentPerson;
                 if ( currentPerson != null )
                 {
-                    currentPersonId = currentPerson.Id;
+                    personAlias = currentPerson.PrimaryAlias;
                 }
 
                 var service = new NoteService();
@@ -741,8 +741,8 @@ namespace Rock.Web.UI.Controls
                     note = service.Get( NoteId.Value );
                     if ( note != null && note.IsAuthorized( "Edit", currentPerson ) )
                     {
-                        service.Delete( note, currentPersonId );
-                        service.Save( note, currentPersonId );
+                        service.Delete( note, personAlias );
+                        service.Save( note, personAlias );
                     }
                 }
 

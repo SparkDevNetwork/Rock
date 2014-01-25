@@ -47,9 +47,9 @@ namespace Rock.Communication.Transport
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        /// <param name="CurrentPersonId">The current person id.</param>
+        /// <param name="currentPersonAlias">The current person alias.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override void Send( Rock.Model.Communication communication, int? CurrentPersonId )
+        public override void Send( Rock.Model.Communication communication, PersonAlias currentPersonAlias )
         {
             if ( communication != null &&
                 communication.Status == Model.CommunicationStatus.Approved &&
@@ -174,7 +174,7 @@ namespace Rock.Communication.Transport
                                     recipient.StatusNote = "SMTP Exception: " + ex.Message;
                                 }
                             }
-                            recipientService.Save( recipient, CurrentPersonId );
+                            recipientService.Save( recipient, currentPersonAlias );
                         }
                         else
                         {

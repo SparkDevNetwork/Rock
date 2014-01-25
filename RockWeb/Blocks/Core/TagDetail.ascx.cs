@@ -121,8 +121,8 @@ namespace RockWeb.Blocks.Core
                     return;
                 }
 
-                tagService.Delete( tag, CurrentPersonId );
-                tagService.Save( tag, CurrentPersonId );
+                tagService.Delete( tag, CurrentPersonAlias );
+                tagService.Save( tag, CurrentPersonAlias );
 
                 NavigateToParentPage();
             }
@@ -147,7 +147,7 @@ namespace RockWeb.Blocks.Core
                 {
                     tag = new Tag();
                     tag.IsSystem = false;
-                    tagService.Add( tag, CurrentPersonId );
+                    tagService.Add( tag, CurrentPersonAlias );
                 }
                 else
                 {
@@ -161,7 +161,7 @@ namespace RockWeb.Blocks.Core
                 tag.EntityTypeQualifierColumn = tbEntityTypeQualifierColumn.Text;
                 tag.EntityTypeQualifierValue = tbEntityTypeQualifierValue.Text;
 
-                tagService.Save( tag, CurrentPersonId );
+                tagService.Save( tag, CurrentPersonAlias );
 
             }
 

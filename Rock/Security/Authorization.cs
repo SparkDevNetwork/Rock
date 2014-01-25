@@ -319,8 +319,8 @@ namespace Rock.Security
         /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personId">The person id.</param>
-        public static void MakePrivate( ISecured entity, string action, Person person, int? personId )
+        /// <param name="personAlias">The person alias.</param>
+        public static void MakePrivate( ISecured entity, string action, Person person, PersonAlias personAlias )
         {
             if ( !IsPrivate( entity, action, person ) )
             {
@@ -356,7 +356,7 @@ namespace Rock.Security
                         foreach ( AuthRule authRule in Authorizations[entity.TypeId][entity.Id][action] )
                         {
                             var oldAuth = authService.Get( authRule.Id );
-                            authService.Delete( oldAuth, personId );
+                            authService.Delete( oldAuth, personAlias );
                         }
                     }
 
@@ -370,8 +370,8 @@ namespace Rock.Security
                     auth.AllowOrDeny = "A";
                     auth.SpecialRole = SpecialRole.None;
                     auth.PersonId = person.Id;
-                    authService.Add( auth, personId );
-                    authService.Save( auth, personId );
+                    authService.Add( auth, personAlias );
+                    authService.Save( auth, personAlias );
                     rules.Add( new AuthRule( auth ) );
 
                     auth = new Auth();
@@ -381,8 +381,8 @@ namespace Rock.Security
                     auth.Action = action;
                     auth.AllowOrDeny = "D";
                     auth.SpecialRole = SpecialRole.AllUsers;
-                    authService.Add( auth, personId );
-                    authService.Save( auth, personId );
+                    authService.Add( auth, personAlias );
+                    authService.Save( auth, personAlias );
                     rules.Add( new AuthRule( auth ) );
 
                     Authorizations[entity.TypeId][entity.Id][action] = rules;
@@ -397,8 +397,8 @@ namespace Rock.Security
         /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personId">The person identifier.</param>
-        public static void AllowPerson( ISecured entity, string action, Person person, int? personId )
+        /// <param name="personAlias">The person alias.</param>
+        public static void AllowPerson( ISecured entity, string action, Person person, PersonAlias personAlias )
         {
             if ( person != null )
             {
@@ -445,14 +445,14 @@ namespace Rock.Security
                     auth.AllowOrDeny = "A";
                     auth.SpecialRole = SpecialRole.None;
                     auth.PersonId = person.Id;
-                    authService.Add( auth, personId );
-                    authService.Save( auth, personId );
+                    authService.Add( auth, personAlias );
+                    authService.Save( auth, personAlias );
 
                     foreach(var rule in rules)
                     {
                         var existingAuth = authService.Get( rule.Id );
                         existingAuth.Order = order++;
-                        authService.Save( existingAuth, personId );
+                        authService.Save( existingAuth, personAlias );
                     }
                 
                     rules.Insert(0, new AuthRule( auth ) );
@@ -529,8 +529,8 @@ namespace Rock.Security
         /// </summary>
         /// <param name="sourceEntity">The source entity.</param>
         /// <param name="targetEntity">The target entity.</param>
-        /// <param name="personId">The person id.</param>
-        public static void CopyAuthorization( ISecured sourceEntity, ISecured targetEntity, int? personId )
+        /// <param name="personAlias">The person alias.</param>
+        public static void CopyAuthorization( ISecured sourceEntity, ISecured targetEntity, PersonAlias personAlias)
         {
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
@@ -546,7 +546,7 @@ namespace Rock.Security
             // Delete the current authorizations for the target entity
             foreach ( Auth auth in authService.Get( targetEntityTypeId, targetEntity.Id ) )
             {
-                authService.Delete( auth, personId );
+                authService.Delete( auth, personAlias );
             }
 
             Dictionary<string, List<AuthRule>> newActions = new Dictionary<string, List<AuthRule>>();
@@ -572,8 +572,8 @@ namespace Rock.Security
                             auth.PersonId = rule.PersonId;
                             auth.GroupId = rule.GroupId;
 
-                            authService.Add( auth, personId );
-                            authService.Save( auth, personId );
+                            authService.Add( auth, personAlias );
+                            authService.Save( auth, personAlias );
 
                             newActions[action.Key].Add( new AuthRule( rule.Id, rule.EntityId, rule.AllowOrDeny, rule.SpecialRole, rule.PersonId, rule.GroupId, rule.Order ) );
 

@@ -45,10 +45,10 @@ namespace Rock.Model
         /// <param name="type">The <see cref="System.Type"/> to search for.</param>
         /// <param name="createIfNotFound">A <see cref="System.Boolean"/> value that indicates if a new <see cref="Rock.Model.EntityType"/> should be created if a match is not found. This value
         /// will be <c>true</c> if a new <see cref="Rock.Model.EntityType"/> should be created if there is not a match; otherwise <c>false</c>/</param>
-        /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who is searching for and possibly creating a new EntityType.  This value can be
+        /// <param name="personAlias">A <see cref="Rock.Model.PersonAlias"/> representing the alias of the <see cref="Rock.Model.Person"/> who is searching for and possibly creating a new EntityType.  This value can be
         /// null if the logged in person is not known (i.e. an anonymous user).</param>
         /// <returns>A <see cref="Rock.Model.EntityType"/> matching the provided type. If a match is not found and createIfNotFound is false this value will be null.</returns>
-        public EntityType Get( Type type, bool createIfNotFound, int? personId )
+        public EntityType Get( Type type, bool createIfNotFound, PersonAlias personAlias )
         {
             var entityType = Get( type.FullName );
             if ( entityType != null )
@@ -61,8 +61,8 @@ namespace Rock.Model
                 entityType.FriendlyName = type.Name.SplitCase();
                 entityType.AssemblyName = type.AssemblyQualifiedName;
 
-                this.Add( entityType, personId );
-                this.Save( entityType, personId );
+                this.Add( entityType, personAlias );
+                this.Save( entityType, personAlias );
 
                 return entityType;
             }
@@ -76,10 +76,10 @@ namespace Rock.Model
         /// <param name="name">A <see cref="System.String" /> representing the name of the object/entity type to search for.</param>
         /// <param name="createIfNotFound">A <see cref="System.Boolean"/> value that indicates if a new <see cref="Rock.Model.EntityType"/> should be created if a match is not found. This value
         /// will be <c>true</c> if a new <see cref="Rock.Model.EntityType"/> should be created if there is not a match; otherwise <c>false</c>/</param>
-        /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who is searching for and possibly creating a new EntityType.  This value can be
+        /// <param name="personAlias">A <see cref="Rock.Model.PersonAlias"/> representing the alias of the <see cref="Rock.Model.Person"/> who is searching for and possibly creating a new EntityType.  This value can be
         /// null if the logged in person is not known (i.e. an anonymous user).</param>
         /// <returns></returns>
-        public EntityType Get( string name, bool createIfNotFound, int? personId )
+        public EntityType Get( string name, bool createIfNotFound, PersonAlias personAlias )
         {
             var entityType = Get( name );
             if ( entityType != null )
@@ -90,8 +90,8 @@ namespace Rock.Model
                 entityType = new EntityType();
                 entityType.Name = name;
 
-                this.Add( entityType, personId );
-                this.Save( entityType, personId );
+                this.Add( entityType, personAlias );
+                this.Save( entityType, personAlias );
 
                 return entityType;
             }
@@ -214,8 +214,8 @@ namespace Rock.Model
                 // added by the audit on a previous save in this method.
                 if ( entityTypeInfo.Value.Name != "Rock.Model.EntityType" )
                 {
-                    this.Add( entityTypeInfo.Value, null );
-                    this.Save( entityTypeInfo.Value, null );
+                    this.Add( entityTypeInfo.Value );
+                    this.Save( entityTypeInfo.Value );
                 }
             }
         }

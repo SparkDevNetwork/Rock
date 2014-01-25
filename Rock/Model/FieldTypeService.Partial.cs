@@ -79,8 +79,8 @@ namespace Rock.Model
                     fieldType.Assembly = assemblyName;
                     fieldType.Class = className;
                     fieldType.IsSystem = false;
-                    this.Add( fieldType, null );
-                    this.Save( fieldType, null );
+                    this.Add( fieldType );
+                    this.Save( fieldType );
                 }
             }
         }

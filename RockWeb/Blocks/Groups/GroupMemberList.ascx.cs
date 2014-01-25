@@ -165,8 +165,8 @@ namespace RockWeb.Blocks.Groups
 
                     int groupId = groupMember.GroupId;
 
-                    groupMemberService.Delete( groupMember, CurrentPersonId );
-                    groupMemberService.Save( groupMember, CurrentPersonId );
+                    groupMemberService.Delete( groupMember, CurrentPersonAlias );
+                    groupMemberService.Save( groupMember, CurrentPersonAlias );
 
                     Group group = new GroupService().Get( groupId );
                     if ( group.IsSecurityRole || group.GroupType.Guid.Equals(Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ))

@@ -587,9 +587,9 @@ namespace Rock.Web.UI.Controls
                     var communication = new Rock.Model.Communication();
                     communication.Status = Model.CommunicationStatus.Transient;
 
-                    if ( rockPage.CurrentPersonId.HasValue )
+                    if ( rockPage.CurrentPerson != null )
                     {
-                        communication.SenderPersonId = rockPage.CurrentPersonId.Value;
+                        communication.SenderPersonId = rockPage.CurrentPerson.Id;
                     }
 
                     if ( this.DataSource is DataTable || this.DataSource is DataView )
@@ -664,8 +664,8 @@ namespace Rock.Web.UI.Controls
                     }
 
                     var service = new Rock.Model.CommunicationService();
-                    service.Add( communication, rockPage.CurrentPersonId );
-                    service.Save( communication, rockPage.CurrentPersonId );
+                    service.Add( communication, rockPage.CurrentPersonAlias );
+                    service.Save( communication, rockPage.CurrentPersonAlias );
 
                     Page.Response.Redirect( string.Format( CommunicationPageRoute, communication.Id ), false );
                     Context.ApplicationInstance.CompleteRequest();
