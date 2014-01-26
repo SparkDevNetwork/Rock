@@ -72,7 +72,8 @@ namespace Rock.Web.Utilities
         {
             var doc = new HtmlDocument();
 
-            doc.LoadHtml( html );
+            doc.LoadHtml( html.Replace( "&nbsp;", "<nbsp />" ) );
+
             SanitizeHtmlNode( doc.DocumentNode );
 
             //return doc.DocumentNode.WriteTo();
@@ -97,11 +98,16 @@ namespace Rock.Web.Utilities
             }
             doc = null;
 
-            return output;
+            return output.Replace( "<nbsp />", "&nbsp;" );
         }
 
         private void SanitizeHtmlNode( HtmlNode node )
         {
+            if (node.NodeType == HtmlNodeType.Text)
+            {
+                
+            }
+
             if ( node.NodeType == HtmlNodeType.Element )
             {
                 // check for blacklist items and remove
