@@ -146,24 +146,35 @@ namespace RockWeb.Blocks.Security
                 // This grid should show the profiles viewed by this person.
                 pnlViewed.Visible = true;
                 pnlViewedBy.Visible = false;
-                var thisList = personViewedService.Queryable().Where( p => p.ViewerPersonId == personId ).GroupBy( p => p.TargetPersonId ).Select( g => g.OrderByDescending( p => p.ViewDateTime ).FirstOrDefault() ).ToList();
-                var thisList2 = personViewedService.Queryable().Where( p => p.ViewerPersonId == personId ).GroupBy( p => p.TargetPersonId ).Select( g => g.OrderBy( p => p.ViewDateTime ).FirstOrDefault() ).ToList();
-                foreach ( var personViewed in thisList )
-                {
-                    var count = personViewedService.GetByTargetPersonId( personViewed.TargetPersonId ).Count();
-                    personViewed.TargetPerson.ViewedCount = count;
-                }
-                var qry = thisList.AsQueryable()
-                    .Select( q => new 
+
+                var profilesViewedList = personViewedService.Queryable()
+                    .Where( p => p.ViewerPersonId == personId )
+                    .GroupBy( p => p.TargetPersonId )
+                    .Select( g => g.OrderByDescending( p => p.ViewDateTime ).FirstOrDefault() )
+                    .ToList();
+
+                var firstViewedList = personViewedService.Queryable()
+                    .Where( p => p.ViewerPersonId == personId )
+                    .GroupBy( p => p.TargetPersonId )
+                    .Select( p => new {
+                        TargetPersonId = p.Key,
+                        FirstViewed = p.Min( g => g.ViewDateTime ),
+                        ViewedCount = p.Count()
+                    } )
+                    .ToList();
+
+                var qry = profilesViewedList.AsQueryable()
+                    .Select( q => new
                     {
                         Id = q.TargetPersonId,
-                        FullName = q.TargetPerson.FirstName + " " + q.TargetPerson.LastName,
+                        FullName = q.TargetPerson.FullName,
                         Age = q.TargetPerson.Age,
                         Gender = q.TargetPerson.Gender,
-                        FirstViewedDate = thisList2.AsQueryable().Where( p => p.TargetPersonId == q.TargetPersonId ).Select( p => p.ViewDateTime ).FirstOrDefault(),
+                        FirstViewedDate = firstViewedList.Where( p => p.TargetPersonId == q.TargetPersonId ).Select( p => p.FirstViewed ).FirstOrDefault(),
                         LastViewedDate = q.ViewDateTime,
-                        ViewedCount = q.TargetPerson.ViewedCount
+                        ViewedCount = firstViewedList.Where( p => p.TargetPersonId == q.TargetPersonId ).Select( p => p.ViewedCount ).FirstOrDefault()
                     } );
+
                 SortProperty sortProperty = gViewed.SortProperty;
                 if ( sortProperty != null )
                 {
@@ -182,25 +193,35 @@ namespace RockWeb.Blocks.Security
                 // This grid should show the profiles that have viewed this person.
                 pnlViewed.Visible = false;
                 pnlViewedBy.Visible = true;
-                var thisList = personViewedService.Queryable().Where( p => p.TargetPersonId == personId ).GroupBy( p => p.ViewerPersonId ).Select( g => g.OrderByDescending( p => p.ViewDateTime ).FirstOrDefault() ).ToList();
-                var thisList2 = personViewedService.Queryable().Where( p => p.TargetPersonId == personId ).GroupBy( p => p.ViewerPersonId ).Select( g => g.OrderBy( p => p.ViewDateTime ).FirstOrDefault() ).ToList();
-                foreach ( var personViewed in thisList )
-                {
-                    var count = personViewedService.GetByViewerPersonId( personViewed.ViewerPersonId ).Where( g => g.TargetPersonId == personId ).Count();
-                    personViewed.ViewerPerson.ViewedCount = count;
-                }
+                var profilesViewedByList = personViewedService.Queryable()
+                    .Where( p => p.TargetPersonId == personId )
+                    .GroupBy( p => p.ViewerPersonId )
+                    .Select( g => g.OrderByDescending( p => p.ViewDateTime ).FirstOrDefault() )
+                    .ToList();
 
-                var qry = thisList.AsQueryable()
+                var firstViewedList = personViewedService.Queryable()
+                    .Where( p => p.TargetPersonId == personId )
+                    .GroupBy( p => p.ViewerPersonId )
+                    .Select( p => new
+                    {
+                        ViewerPersonId = p.Key,
+                        FirstViewed = p.Min( g => g.ViewDateTime ),
+                        ViewedCount = p.Count()
+                    } )
+                    .ToList();
+
+                var qry = profilesViewedByList.AsQueryable()
                     .Select( q => new
                     {
                         Id = q.ViewerPersonId,
-                        FullName = q.ViewerPerson.FirstName + " " + q.ViewerPerson.LastName,
+                        FullName = q.ViewerPerson.FullName,
                         Age = q.ViewerPerson.Age,
                         Gender = q.ViewerPerson.Gender,
-                        FirstViewedDate = thisList2.AsQueryable().Where( p => p.ViewerPersonId == q.ViewerPersonId ).Select( p => p.ViewDateTime ).FirstOrDefault(),
+                        FirstViewedDate = firstViewedList.Where( p => p.ViewerPersonId == q.ViewerPersonId ).Select( p => p.FirstViewed ).FirstOrDefault(),
                         LastViewedDate = q.ViewDateTime,
-                        ViewedCount = q.ViewerPerson.ViewedCount
+                        ViewedCount = firstViewedList.Where( p => p.ViewerPersonId == q.ViewerPersonId ).Select( p => p.ViewedCount ).FirstOrDefault()
                     } );
+
                 SortProperty sortProperty = gViewedBy.SortProperty;
                 if ( sortProperty != null )
                 {
