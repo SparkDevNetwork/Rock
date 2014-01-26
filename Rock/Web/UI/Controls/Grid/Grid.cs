@@ -45,6 +45,7 @@ namespace Rock.Web.UI.Controls
         private Table _table;
         private GridViewRow _actionRow;
         private GridActions _gridActions;
+        private List<int> _selectedKeys = new List<int>();
 
         #region Properties
 
@@ -299,6 +300,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the merge page route.
+        /// </summary>
+        /// <value>
+        /// The merge page route.
+        /// </value>
+        public virtual string MergePageRoute
+        {
+            get { return ViewState["MergePageRoute"] as string ?? "~/PersonMerge/{0}"; }
+            set { ViewState["MergePageRoute"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the new communication page route.
         /// </summary>
         /// <value>
@@ -425,6 +438,7 @@ namespace Rock.Web.UI.Controls
 
             this.Sorting += Grid_Sorting;
 
+            this.Actions.MergeClick += Actions_MergeClick;
             this.Actions.CommunicateClick += Actions_CommunicateClick;
             this.Actions.ExcelExportClick += Actions_ExcelExportClick;
 
@@ -469,7 +483,90 @@ namespace Rock.Web.UI.Controls
             string gridSelectCellScript = string.Format( gridSelectCellScriptFormat, this.ClientID, clickScript );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-select-cell-script-" + this.ClientID, gridSelectCellScript, true );
             
+            if (Page.IsPostBack)
+            {
+                foreach ( GridViewRow row in this.Rows )
+                {
+                    CheckBox cb = row.FindControl( "cbSelect" ) as CheckBox;
+                    if ( cb != null && cb.Checked )
+                    {
+                        int? key = this.DataKeys[row.RowIndex].Value as int?;
+                        if ( key.HasValue )
+                        {
+                            _selectedKeys.Add( key.Value );
+                        }
+                    }
+                }
+            }
+
             base.OnLoad( e );
+        }
+
+        /// <summary>
+        /// Handles the MergeClick event of the Actions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void Actions_MergeClick( object sender, EventArgs e )
+        {
+            if ( !string.IsNullOrWhiteSpace( PersonIdField ) )
+            {
+                var peopleSelected = _selectedKeys.ToList();
+
+                if ( !peopleSelected.Any() )
+                {
+                    OnGridRebind( e );
+
+                    if ( this.DataSource is DataTable || this.DataSource is DataView )
+                    {
+
+                        DataTable data = null;
+                        if ( this.DataSource is DataTable )
+                        {
+                            data = (DataTable)this.DataSource;
+                        }
+                        else if ( this.DataSource is DataView )
+                        {
+                            data = ( (DataView)this.DataSource ).Table;
+                        }
+
+                        if ( data != null )
+                        {
+                            foreach ( DataRow row in data.Rows )
+                            {
+                                object idObj = row[this.PersonIdField];
+                                if ( idObj != null )
+                                {
+                                    int? personId = idObj as int?;
+                                    if ( personId.HasValue )
+                                    {
+                                        peopleSelected.Add( personId.Value );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // get access to the List<> and its properties
+                        IList data = (IList)this.DataSource;
+                        Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
+
+                        PropertyInfo idProp = oType.GetProperty( this.PersonIdField );
+                        if ( idProp != null )
+                        {
+                            foreach ( var item in data )
+                            {
+                                int personId = (int)idProp.GetValue( item, null );
+                                peopleSelected.Add( personId );
+                            }
+                        }
+                    }
+                }
+
+                Page.Response.Redirect( string.Format(MergePageRoute, peopleSelected.AsDelimited(",") ), false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
         }
 
         /// <summary>
@@ -987,6 +1084,16 @@ namespace Rock.Web.UI.Controls
 
             if ( RowSelected != null && e.Row.RowType == DataControlRowType.DataRow )
             {
+                if ( _selectedKeys.Any() )
+                {
+                    CheckBox cbSelect = e.Row.FindControl( "cbSelect" ) as CheckBox;
+                    if ( cbSelect != null )
+                    {
+                        int? key = this.DataKeys[e.Row.RowIndex].Value as int?;
+                        cbSelect.Checked = ( key.HasValue && _selectedKeys.Contains( key.Value ) );
+                    }
+                }
+
                 foreach ( var col in RowSelectedColumns)
                 {
                     var cell = e.Row.Cells[col.Key];
@@ -1117,6 +1224,11 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the preview columns.
+        /// </summary>
+        /// <param name="modelType">Type of the model.</param>
+        /// <returns></returns>
         public List<BoundField> GetPreviewColumns( Type modelType )
         {
             var displayColumns = new List<BoundField>();

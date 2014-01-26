@@ -153,7 +153,7 @@ namespace Rock.Web.UI.Controls
         /// Shows the error message.
         /// </summary>
         /// <param name="errorMessage">The error message.</param>
-        public void ShowErrorMessage( string errorMessage )
+        public override void ShowErrorMessage( string errorMessage )
         {
             dataValidator.ErrorMessage = errorMessage;
             dataValidator.IsValid = false;

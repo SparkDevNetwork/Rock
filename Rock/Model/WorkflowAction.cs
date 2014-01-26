@@ -182,7 +182,7 @@ namespace Rock.Model
         /// </summary>
         public virtual void MarkComplete()
         {
-            CompletedDateTime = DateTime.Now;
+            CompletedDateTime = RockDateTime.Now;
             AddSystemLogEntry( "Completed" );
         }
 

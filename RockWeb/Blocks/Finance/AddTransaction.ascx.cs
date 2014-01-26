@@ -220,7 +220,7 @@ achieve our mission.  We are so grateful for your commitment.
                     txtCardFirstName.Visible = _ccGateway.SplitNameOnCard;
                     txtCardLastName.Visible = _ccGateway.SplitNameOnCard;
                     txtCardName.Visible = !_ccGateway.SplitNameOnCard;
-                    mypExpiration.MinimumYear = DateTime.Now.Year;
+                    mypExpiration.MinimumYear = RockDateTime.Now.Year;
                 }
             }
 
@@ -1365,7 +1365,7 @@ achieve our mission.  We are so grateful for your commitment.
                     var transaction = gateway.Charge( paymentInfo, out errorMessage );
                     if ( transaction != null )
                     {
-                        transaction.TransactionDateTime = DateTime.Now;
+                        transaction.TransactionDateTime = RockDateTime.Now;
                         transaction.AuthorizedPersonId = person.Id;
                         transaction.GatewayEntityTypeId = gateway.TypeId;
                         transaction.Amount = paymentInfo.Amount;
@@ -1419,7 +1419,6 @@ achieve our mission.  We are so grateful for your commitment.
                                     batch.BatchStartDateTime.Value.AddDays( -1 );
                                 }
                                 batch.BatchEndDateTime = batch.BatchStartDateTime.Value.AddDays( 1 ).AddMilliseconds( -1 );
-                                batch.CreatedByPersonId = person.Id;
                                 batchService.Add( batch, CurrentPersonId );
                                 batchService.Save( batch, CurrentPersonId );
 

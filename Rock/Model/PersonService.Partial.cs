@@ -367,49 +367,82 @@ namespace Rock.Model
         /// Returns a <see cref="Rock.Model.Person"/> by their PersonId
         /// </summary>
         /// <param name="id">The <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> to search for.</param>
-        /// <param name="followMerges">A <see cref="System.Boolean"/> flag indicating that the provided PersonId should be checked against the <see cref="Rock.Model.PersonMerged"/> list.
-        /// When <c>true</c> the <see cref="Rock.Model.PersonMerged"/> log will be checked for the PersonId, otherwise <c>false</c>.</param>
+        /// <param name="followMerges">A <see cref="System.Boolean"/> flag indicating that the provided PersonId should be checked against the <see cref="Rock.Model.PersonAlias"/> list.
+        /// When <c>true</c> the <see cref="Rock.Model.PersonAlias"/> log will be checked for the PersonId, otherwise <c>false</c>.</param>
         /// <returns>The <see cref="Rock.Model.Person"/> associated with the provided Id, otherwise null.</returns>
         public Person Get( int id, bool followMerges )
         {
-            if ( followMerges )
+            var person = Get( id );
+            if (person != null)
             {
-                id = new PersonMergedService().Current( id );
+                return person;
             }
-            return Get( id );
+
+            if (followMerges )
+            {
+                var personAlias = new PersonAliasService().GetByAliasId( id );
+                if (personAlias != null)
+                {
+                    return personAlias.Person;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
         /// Returns a <see cref="Rock.Model.Person"/> by their Guid.
         /// </summary>
         /// <param name="guid">A <see cref="System.Guid"/> representing the <see cref="Rock.Model.Person">Person's</see> Guid identifier.</param>
-        /// <param name="followMerges">A <see cref="System.Boolean"/> flag indicating that the provided Guid should be checked against the <see cref="Rock.Model.PersonMerged"/> list.
-        /// When <c>true</c> the <see cref="Rock.Model.PersonMerged"/> log will be checked for the Guid, otherwise <c>false</c>.</param>
+        /// <param name="followMerges">A <see cref="System.Boolean"/> flag indicating that the provided Guid should be checked against the <see cref="Rock.Model.PersonAlias"/> list.
+        /// When <c>true</c> the <see cref="Rock.Model.PersonAlias"/> log will be checked for the Guid, otherwise <c>false</c>.</param>
         /// <returns>The <see cref="Rock.Model.Person"/> associated with the provided Guid, otherwise null.</returns>
         public Person Get( Guid guid, bool followMerges )
         {
-            if ( followMerges )
+            var person = Get( guid );
+            if (person != null)
             {
-                guid = new PersonMergedService().Current( guid );
+                return person;
             }
-            return Get( guid );
+
+            if (followMerges )
+            {
+                var personAlias = new PersonAliasService().GetByAliasGuid( guid );
+                if (personAlias != null)
+                {
+                    return personAlias.Person;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
-        /// Returns a <see cref="Rock.Model.Person"/> by their encrypted key value.
+        /// Returns a <see cref="Rock.Model.Person" /> by their encrypted key value.
         /// </summary>
-        /// <param name="encryptedKey">A <see cref="System.String"/> containing an encrypted key value.</param>
-        /// <param name="followMergeTrail">A <see cref="System.Boolean"/> flag indicating that the provided Guid should be checked against the <see cref="Rock.Model.PersonMerged"/> list.
-        /// When <c>true</c> the <see cref="Rock.Model.PersonMerged"/> log will be checked for the Guid, otherwise <c>false</c>.</param>
+        /// <param name="encryptedKey">A <see cref="System.String" /> containing an encrypted key value.</param>
+        /// <param name="followMerges">if set to <c>true</c> [follow merges].</param>
         /// <returns>
-        /// The <see cref="Rock.Model.Person"/> associated with the provided Key, otherwise null.
+        /// The <see cref="Rock.Model.Person" /> associated with the provided Key, otherwise null.
         /// </returns>
-        public Person GetByEncryptedKey( string encryptedKey, bool followMergeTrail )
+        public Person GetByEncryptedKey( string encryptedKey, bool followMerges )
         {
-            if ( followMergeTrail )
-                encryptedKey = new PersonMergedService().Current( encryptedKey );
+            var person = GetByEncryptedKey( encryptedKey );
+            if (person != null)
+            {
+                return person;
+            }
 
-            return GetByEncryptedKey( encryptedKey );
+            if ( followMerges )
+            {
+                var personAlias = new PersonAliasService().GetByAliasEncryptedKey(encryptedKey);
+                if (personAlias != null)
+                {
+                    return personAlias.Person;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

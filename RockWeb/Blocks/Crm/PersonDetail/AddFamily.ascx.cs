@@ -229,7 +229,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             nfmMembers.ClearRows();
 
-            int count = 0;
             foreach ( var familyMember in familyMembers )
             {
                 var familyMemberRow = new NewFamilyMembersRow();
@@ -270,8 +269,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         attributeRow.SetEditValues( familyMember.Person );
                     }
                 }
-
-                count++;
             }
 
             ShowAttributeCategory( CurrentCategoryIndex );
@@ -286,7 +283,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 var groupMember = new GroupMember();
                 groupMember.Person = new Person();
                 groupMember.Person.Guid = row.PersonGuid.Value;
-                groupMember.Person.RecordStatusReasonValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                groupMember.Person.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
 
                 if ( row.RoleId.HasValue )
                 {
@@ -443,7 +440,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                             var demographicChanges = new List<string>();
                                             demographicChanges.Add( "Created" );
                                             History.EvaluateChange( demographicChanges, "Record Status", string.Empty,
-                                                person.RecordStatusReasonValueId.HasValue ? DefinedValueCache.GetName( person.RecordStatusReasonValueId.Value ) : string.Empty );
+                                                person.RecordStatusValueId.HasValue ? DefinedValueCache.GetName( person.RecordStatusValueId.Value ) : string.Empty );
                                             History.EvaluateChange( demographicChanges, "Title", string.Empty,
                                                 person.TitleValueId.HasValue ? DefinedValueCache.GetName( person.TitleValueId ) : string.Empty );
                                             History.EvaluateChange( demographicChanges, "First Name", string.Empty, person.FirstName);
@@ -507,12 +504,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         var person = personService.Get( groupMember.PersonId );
                                         if ( person != null )
                                         {
+                                            bool updateRequired = false;
+                                            if (!person.Aliases.Any( a => a.AliasPersonId == person.Id))
+                                            {
+                                                person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
+                                                updateRequired = true;
+                                            }
                                             var changes = familyDemographicChanges[person.Guid];
                                             if ( groupMember.GroupRoleId != _childRoleId )
                                             {
                                                 person.GivingGroupId = familyGroup.Id;
-                                                personService.Save( person, CurrentPersonId );
+                                                updateRequired = true;
                                                 History.EvaluateChange( changes, "Giving Group", string.Empty, familyGroup.Name );
+                                            }
+
+                                            if ( updateRequired )
+                                            {
+                                                personService.Save( person, CurrentPersonId );
                                             }
 
                                             foreach ( var attributeControl in attributeControls )

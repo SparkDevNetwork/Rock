@@ -212,7 +212,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if (Person != null)
             {
                 var familyIds = families.Select( f => f.Key ).ToList();
-                var qry = new HistoryService().Queryable()
+                var qry = new HistoryService().Queryable( "CreatedByPersonAlias.Person" )
                     .Where( h =>
                         ( h.EntityTypeId == personEntityTypeId && h.EntityId == Person.Id ) ||
                         ( h.EntityTypeId == groupEntityTypeId && familyIds.Contains( h.EntityId ) ) );
@@ -232,19 +232,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 int personId = int.MinValue;
                 if ( int.TryParse( gfSettings.GetUserPreference( "Who" ), out personId ) )
                 {
-                    qry = qry.Where( h => h.CreatedByPersonId == personId );
+                    qry = qry.Where( h => h.CreatedByPersonAlias.PersonId == personId );
                 }
 
                 var drp = new DateRangePicker();
                 drp.DelimitedValues = gfSettings.GetUserPreference( "Date Range" );
                 if ( drp.LowerValue.HasValue )
                 {
-                    qry = qry.Where( h => h.CreationDateTime >= drp.LowerValue.Value );
+                    qry = qry.Where( h => h.CreatedDateTime >= drp.LowerValue.Value );
                 }
                 if ( drp.UpperValue.HasValue )
                 {
                     DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
-                    qry = qry.Where( h => h.CreationDateTime < upperDate );
+                    qry = qry.Where( h => h.CreatedDateTime < upperDate );
                 }
 
                 SortProperty sortProperty = gHistory.SortProperty;
@@ -254,11 +254,33 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
                 else
                 {
-                    qry = qry.OrderByDescending( t => t.CreationDateTime );
+                    qry = qry.OrderByDescending( t => t.CreatedDateTime );
                 }
 
-
-                gHistory.DataSource = qry.Select( h => new
+                // Combine history records that were saved at the same time
+                var histories = new List<History>();
+                foreach(var history in qry)
+                {
+                    var existingHistory = histories
+                        .Where( h => 
+                            h.CreatedByPersonAliasId == history.CreatedByPersonAliasId && 
+                            h.CreatedDateTime == history.CreatedDateTime &&
+                            h.EntityTypeId == history.EntityTypeId &&
+                            h.EntityId == history.EntityId &&
+                            h.CategoryId == history.CategoryId &&
+                            h.RelatedEntityTypeId == history.RelatedEntityTypeId &&
+                            h.RelatedEntityId == history.RelatedEntityId ).FirstOrDefault();
+                    if (existingHistory != null)
+                    {
+                        existingHistory.Summary += "<br/>" + history.Summary;
+                    }
+                    else
+                    {
+                        histories.Add(history);
+                    }
+                }
+                
+                gHistory.DataSource = histories.Select( h => new
                 {
                     Id = h.Id,
                     CategoryId = h.CategoryId,
@@ -269,9 +291,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     Summary = h.Summary,
                     RelatedEntityTypeId = h.RelatedEntityTypeId ?? 0,
                     RelatedEntityId = h.RelatedEntityId ?? 0,
-                    CreatedByPersonId = h.CreatedByPersonId,
-                    PersonName = h.CreatedByPerson.NickName + " " + h.CreatedByPerson.LastName,
-                    CreationDateTime = h.CreationDateTime
+                    CreatedByPersonId = h.CreatedByPersonAlias.PersonId,
+                    PersonName = h.CreatedByPersonAlias.Person.NickName + " " + h.CreatedByPersonAlias.Person.LastName,
+                    CreatedDateTime = h.CreatedDateTime
                 } ).ToList();
                 gHistory.DataBind();
             }

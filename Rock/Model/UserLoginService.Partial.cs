@@ -64,15 +64,15 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new <see cref="Rock.Model.UserLogin"/>
+        /// Creates a new <see cref="Rock.Model.UserLogin" />
         /// </summary>
-        /// <param name="person">The <see cref="Rock.Model.Person"/> that this <see cref="UserLogin"/> will be associated with.</param>
-        /// <param name="serviceType">The <see cref="Rock.Model.AuthenticationServiceType"/> type of Login</param>
-        /// <param name="serviceName">A <see cref="System.String"/> representing the service class/type name of the authentication service</param>
-        /// <param name="username">A <see cref="System.String"/> containing the UserName.</param>
-        /// <param name="password">A <see cref="System.String"/> containing the unhashed/unencrypted password.</param>
-        /// <param name="isConfirmed">A <see cref="System.Boolean"/> flag indicating if the user has been confirmed.</param>
-        /// <param name="currentPersonId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> creating the <see cref="Rock.Model.UserLogin"/></param>
+        /// <param name="person">The <see cref="Rock.Model.Person" /> that this <see cref="UserLogin" /> will be associated with.</param>
+        /// <param name="serviceType">The <see cref="Rock.Model.AuthenticationServiceType" /> type of Login</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="username">A <see cref="System.String" /> containing the UserName.</param>
+        /// <param name="password">A <see cref="System.String" /> containing the unhashed/unencrypted password.</param>
+        /// <param name="isConfirmed">A <see cref="System.Boolean" /> flag indicating if the user has been confirmed.</param>
+        /// <param name="currentPersonId">A <see cref="System.Int32" /> representing the Id of the <see cref="Rock.Model.Person" /> creating the <see cref="Rock.Model.UserLogin" /></param>
         /// <returns></returns>
         /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the Username already exists.</exception>
         /// <exception cref="System.ArgumentException">Thrown when the service does not exist or is not active.</exception>
@@ -91,13 +91,12 @@ namespace Rock.Model
                 if ( user != null )
                     throw new ArgumentOutOfRangeException( "username", "Username already exists" );
 
-                DateTime createDate = DateTime.Now;
+                DateTime createDate = RockDateTime.Now;
 
                 user = new UserLogin();
                 user.EntityTypeId = entityTypeId;
                 user.UserName = username;
                 user.IsConfirmed = isConfirmed;
-                user.CreationDateTime = createDate;
                 user.LastPasswordChangedDateTime = createDate;
                 if ( person != null )
                     user.PersonId = person.Id;
@@ -125,7 +124,7 @@ namespace Rock.Model
         /// <summary>
         /// Updates the last login.
         /// </summary>
-        /// <param name="user">The user.</param>
+        /// <param name="userName">Name of the user.</param>
         public void UpdateLastLogin(string userName)
         {
             if ( !string.IsNullOrWhiteSpace( userName ) && !userName.StartsWith( "rckipid=" ) )
@@ -133,7 +132,7 @@ namespace Rock.Model
                 var userLogin = GetByUserName( userName );
                 if ( userLogin != null )
                 {
-                    userLogin.LastLoginDateTime = DateTime.Now;
+                    userLogin.LastLoginDateTime = RockDateTime.Now;
                     Save( userLogin, null );
                 }
             }
@@ -159,7 +158,7 @@ namespace Rock.Model
                 return false;
 
             user.Password = authenticationComponent.EncodePassword( user, newPassword );
-            user.LastPasswordChangedDateTime = DateTime.Now;
+            user.LastPasswordChangedDateTime = RockDateTime.Now;
 
             return true;
         }
@@ -179,7 +178,7 @@ namespace Rock.Model
                 throw new Exception( "Cannot change password on external service type" );
 
             user.Password = authenticationComponent.EncodePassword( user, password );
-            user.LastPasswordChangedDateTime = DateTime.Now;
+            user.LastPasswordChangedDateTime = RockDateTime.Now;
         }
 
         /// <summary>
@@ -211,13 +210,13 @@ namespace Rock.Model
             int attempts = user.FailedPasswordAttemptCount ?? 0;
 
             TimeSpan window = new TimeSpan( 0, passwordAttemptWindow, 0 );
-            if ( DateTime.Now.CompareTo( firstAttempt.Add( window ) ) < 0 )
+            if ( RockDateTime.Now.CompareTo( firstAttempt.Add( window ) ) < 0 )
             {
                 attempts++;
                 if ( attempts >= maxInvalidPasswordAttempts )
                 {
                     user.IsLockedOut = true;
-                    user.LastLockedOutDateTime = DateTime.Now;
+                    user.LastLockedOutDateTime = RockDateTime.Now;
                 }
 
                 user.FailedPasswordAttemptCount = attempts;
@@ -225,7 +224,7 @@ namespace Rock.Model
             else
             {
                 user.FailedPasswordAttemptCount = 1;
-                user.FailedPasswordAttemptWindowStartDateTime = DateTime.Now;
+                user.FailedPasswordAttemptWindowStartDateTime = RockDateTime.Now;
             }
         }
 
@@ -255,7 +254,7 @@ namespace Rock.Model
                         DateTime dateTime = new DateTime( ticks );
 
                         // Confirmation Code is only valid for an hour
-                        if ( DateTime.Now.Subtract( dateTime ).Hours > 1 )
+                        if ( RockDateTime.Now.Subtract( dateTime ).Hours > 1 )
                             return null;
 
                         UserLogin user = this.GetByEncryptedKey( publicKey );
@@ -306,7 +305,7 @@ namespace Rock.Model
                         // Save last activity date
                         var transaction = new Rock.Transactions.UserLastActivityTransaction();
                         transaction.UserId = user.Id;
-                        transaction.LastActivityDate = DateTime.Now;
+                        transaction.LastActivityDate = RockDateTime.Now;
                         Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                     }
 

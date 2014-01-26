@@ -108,6 +108,10 @@ namespace Rock.Model
             target.Status = source.Status;
             target.StatusNote = source.StatusNote;
             target.AdditionalMergeValuesJson = source.AdditionalMergeValuesJson;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

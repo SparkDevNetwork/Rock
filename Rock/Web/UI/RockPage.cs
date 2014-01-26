@@ -157,9 +157,9 @@ namespace Rock.Web.UI
         {
             get
             {
-                if ( _PageReference == null && Context.Items.Contains( "PageReference" ) )
+                if ( _PageReference == null && Context.Items.Contains( "Rock:PageReference" ) )
                 {
-                    _PageReference = Context.Items["PageReference"] as PageReference;
+                    _PageReference = Context.Items["Rock:PageReference"] as PageReference;
                 }
 
                 return _PageReference;
@@ -167,13 +167,8 @@ namespace Rock.Web.UI
 
             set
             {
-                Context.Items.Remove( "PageReference" );
                 _PageReference = value;
-
-                if ( _PageReference != null )
-                {
-                    Context.Items.Add( "PageReference", _CurrentUser );
-                }
+                SaveContextItem( "Rock:PageReference", _PageReference );
             }
         }
         private PageReference _PageReference = null;
@@ -296,6 +291,24 @@ namespace Rock.Web.UI
             }
         }
         private Person _CurrentPerson;
+
+        /// <summary>
+        /// Gets the current person alias.
+        /// </summary>
+        /// <value>
+        /// The current person alias.
+        /// </value>
+        public PersonAlias CurrentPersonAlias
+        {
+            get
+            {
+                if ( _CurrentPerson != null )
+                {
+                    return _CurrentPerson.PrimaryAlias;
+                }
+                return null;
+            }
+        }
 
         /// <summary>
         /// The Person ID of the currently logged in user.  Returns null if there is not a user logged in
@@ -918,7 +931,7 @@ namespace Rock.Web.UI
                     if ( _pageCache.OutputCacheDuration > 0 )
                     {
                         Response.Cache.SetCacheability( System.Web.HttpCacheability.Public );
-                        Response.Cache.SetExpires( DateTime.Now.AddSeconds( _pageCache.OutputCacheDuration ) );
+                        Response.Cache.SetExpires( RockDateTime.Now.AddSeconds( _pageCache.OutputCacheDuration ) );
                         Response.Cache.SetValidUntilExpires( true );
                     }
                 }
@@ -963,10 +976,10 @@ namespace Rock.Web.UI
             Page.Header.DataBind();
 
             // create a page view transaction if enabled
-            if (_pageCache != null && Convert.ToBoolean( ConfigurationManager.AppSettings["EnablePageViewTracking"] ) )
+            if (!Page.IsPostBack && _pageCache != null && Convert.ToBoolean( ConfigurationManager.AppSettings["EnablePageViewTracking"] ) )
             {
                 PageViewTransaction transaction = new PageViewTransaction();
-                transaction.DateViewed = DateTime.Now;
+                transaction.DateViewed = RockDateTime.Now;
                 transaction.PageId = _pageCache.Id;
                 transaction.SiteId = _pageCache.Layout.Site.Id;
                 if ( CurrentPersonId != null )
@@ -988,7 +1001,7 @@ namespace Rock.Web.UI
 
             if ( phLoadTime != null )
             {
-                TimeSpan tsDuration = DateTime.Now.Subtract( (DateTime)Context.Items["Request_Start_Time"] );
+                TimeSpan tsDuration = RockDateTime.Now.Subtract( (DateTime)Context.Items["Request_Start_Time"] );
                 phLoadTime.Controls.Add( new LiteralControl( string.Format( "{0}: {1:N2}s", "Page Load Time", tsDuration.TotalSeconds ) ) );
             }
         }
@@ -1155,7 +1168,7 @@ namespace Rock.Web.UI
         /// <param name="ex">The <see cref="System.Exception"/> to log.</param>
         public void LogException( Exception ex )
         {
-            ExceptionLogService.LogException( ex, Context, _pageCache.Id, _pageCache.Layout.SiteId, CurrentPersonId );
+            ExceptionLogService.LogException( ex, Context, _pageCache.Id, _pageCache.Layout.SiteId, CurrentPersonAlias );
         }
 
         /// <summary>

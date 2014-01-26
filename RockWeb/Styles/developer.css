@@ -295,17 +295,11 @@ span.cke_button__rockmergefield_label {
     display: inline;
 }
 
-/* the CKEditor dialog css overrides Fonts. So we need to do something to get the font-awesome fonts to show up in the CKEditor dialog. - MP */
-.cke_dialog_body i.fa {
-    font-family:FontAwesome;
-}
-
-/* css for ckeditor rockfilebrowser images (see Rock.Rest\Controllers\FileBrowserController.cs ) */
+/* css for ckeditor rockfilebrowser images (see RockWeb\Blocks\Utility\CkEditorFileBrowser.ascx.cs ) */
 img.file-browser-image {
     width: 50px;
     height: 50px;
 }
-
 
 /*css for RSS Item paging*/
 
@@ -357,4 +351,25 @@ img.file-browser-image {
 .panel-title small {
     color: #ccc;
 
+}
+
+/*
+    DT - The note editor was updated to support optionally displaying a person image instead
+    of a font-awesome icon with a comment.  When configured this way, it renders an <img> tag 
+    instead of an <i> tag for the thumbnail image. 
+    Added on 1/19/2014
+*/
+
+/* View Mode */
+.panel-note article > img
+{
+    float: left;
+    margin: 0 12px 0 4px;
+}
+
+/* Edit mode (this isn't really working since the text area to the right of it takes the full width) */
+.panel-noteentry > .panel-body > img
+{
+    float: left;
+    margin: 0 12px 0 4px;
 }

@@ -64,7 +64,7 @@ namespace Rock.Transactions
         /// <value>
         /// Date Viewed.
         /// </value>
-        public DateTime DateViewed { get; set; }
+        public DateTime DateTimeViewed { get; set; }
         
         /// <summary>
         /// Execute method to write transaction to the database.
@@ -76,18 +76,15 @@ namespace Rock.Transactions
             {
                 using ( new Rock.Data.UnitOfWorkScope() )
                 {
-
-                    PersonViewedService pvService = new PersonViewedService();
-
-                    PersonViewed pvRecord = new PersonViewed();
-                    pvService.Add( pvRecord, null );
-
-                    pvRecord.IpAddress = IPAddress;
+                    var pvRecord = new PersonViewed();
                     pvRecord.TargetPersonId = TargetPersonId;
                     pvRecord.ViewerPersonId = ViewerPersonId;
-                    pvRecord.ViewDateTime = DateViewed;
+                    pvRecord.ViewDateTime = DateTimeViewed;
+                    pvRecord.IpAddress = IPAddress;
                     pvRecord.Source = Source;
 
+                    var pvService = new PersonViewedService();
+                    pvService.Add( pvRecord, null );
                     pvService.Save( pvRecord, null );
                 }
             }

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Linq;
 using System.IO;
 using System.Text;
@@ -47,7 +48,14 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
+            // Get Version, database info and executing assembly location
             lRockVersion.Text = VersionInfo.GetRockProductVersionFullName();
+            var csBuilder = new System.Data.Odbc.OdbcConnectionStringBuilder( ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString );
+            object dataSource, catalog = string.Empty;
+            if ( csBuilder.TryGetValue( "data source", out dataSource) && csBuilder.TryGetValue( "initial catalog", out catalog) )
+            {
+                lDatabase.Text = string.Format( "{0} @ {1}", catalog, dataSource );
+            }
             lExecLocation.Text = Assembly.GetExecutingAssembly().Location;
 
             var cache = MemoryCache.Default;

@@ -347,7 +347,7 @@ namespace Rock.PayFlowPro
                             transaction.StartDate = GetDate( recurringResponse.Start ) ?? transaction.StartDate;
                             transaction.NextPaymentDate = GetDate( recurringResponse.NextPayment ) ?? transaction.NextPaymentDate;
                             transaction.NumberOfPayments = recurringResponse.Term.AsInteger( false ) ?? transaction.NumberOfPayments;
-                            transaction.LastStatusUpdateDateTime = DateTime.Now;
+                            transaction.LastStatusUpdateDateTime = RockDateTime.Now;
                             return true;
                         }
                         return true;

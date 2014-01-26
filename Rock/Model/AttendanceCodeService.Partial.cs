@@ -72,7 +72,7 @@ namespace Rock.Model
                     code = GenerateRandomCode( codeLength );
                 }
 
-                attendanceCode.IssueDateTime = DateTime.Now;
+                attendanceCode.IssueDateTime = RockDateTime.Now;
                 attendanceCode.Code = code;
                 this.Add( attendanceCode, null );
                 this.Save( attendanceCode, null );

@@ -177,7 +177,7 @@ namespace Rock.Model
         {
             AddSystemLogEntry( "Processing..." );
 
-            this.LastProcessedDateTime = DateTime.Now;
+            this.LastProcessedDateTime = RockDateTime.Now;
 
             errorMessages = new List<string>();
 
@@ -228,7 +228,7 @@ namespace Rock.Model
         /// </summary>
         public virtual void MarkComplete()
         {
-            CompletedDateTime = DateTime.Now;
+            CompletedDateTime = RockDateTime.Now;
             AddSystemLogEntry( "Completed" );
         }
 
@@ -277,7 +277,7 @@ namespace Rock.Model
             var activity = new WorkflowActivity();
             activity.Workflow = workflow;
             activity.ActivityType = activityType;
-            activity.ActivatedDateTime = DateTime.Now;
+            activity.ActivatedDateTime = RockDateTime.Now;
             activity.LoadAttributes();
 
             activity.AddSystemLogEntry( "Activated" );

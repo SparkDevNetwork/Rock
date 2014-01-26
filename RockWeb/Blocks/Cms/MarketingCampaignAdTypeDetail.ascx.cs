@@ -337,12 +337,12 @@ namespace RockWeb.Blocks.Cms
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 marketingCampaignAdType = new MarketingCampaignAdTypeService().Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( MarketingCampaignAdType.FriendlyTypeName ).FormatAsHtmlTitle();
+                lActionTitle.Text = "Ad Type Detail".FormatAsHtmlTitle();
             }
             else
             {
                 marketingCampaignAdType = new MarketingCampaignAdType { Id = 0 };
-                lActionTitle.Text = ActionTitle.Add( MarketingCampaignAdType.FriendlyTypeName ).FormatAsHtmlTitle();
+                lActionTitle.Text = "Ad Type Detail".FormatAsHtmlTitle();
             }
 
             LoadDropDowns();

@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -98,6 +99,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 taglPersonTags.GetTagValues( CurrentPersonId );
 
                 blStatus.ComponentGuids = GetAttributeValue( "Badges" );
+
+                // Every person should have an alias record with same id.  If it's missing, create it
+                if ( !Person.Aliases.Any( a => a.AliasPersonId == Person.Id ) )
+                {
+                    var personService = new PersonService();
+                    var person = personService.Get( Person.Id );
+                    person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
+                    personService.Save( person, CurrentPersonId );
+                    Person = person;
+                }
             }
         }
 

@@ -120,6 +120,10 @@ namespace Rock.Model
             target.Description = source.Description;
             target.Assembly = source.Assembly;
             target.Class = source.Class;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

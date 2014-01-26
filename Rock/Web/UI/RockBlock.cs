@@ -72,13 +72,18 @@ namespace Rock.Web.UI
         /// <summary>
         /// Gets the current page reference.
         /// </summary>
-        /// <value>
-        /// The current page reference.
-        /// </value>
         public PageReference CurrentPageReference
         {
             get { return RockPage.PageReference; }
             set { RockPage.PageReference = value; }
+        }
+
+        /// <summary>
+        /// Gets the current person alias.
+        /// </summary>
+        public PersonAlias CurrentPersonAlias
+        {
+            get { return RockPage.CurrentPersonAlias; }
         }
 
         /// <summary>
@@ -880,7 +885,7 @@ namespace Rock.Web.UI
         /// <param name="ex">The <see cref="System.Exception"/> to log.</param>
         public void LogException( Exception ex )
         {
-            ExceptionLogService.LogException( ex, Context, RockPage.PageId, RockPage.Layout.SiteId, CurrentPersonId );
+            ExceptionLogService.LogException( ex, Context, RockPage.PageId, RockPage.Layout.SiteId, CurrentPersonAlias );
         }
 
         #endregion

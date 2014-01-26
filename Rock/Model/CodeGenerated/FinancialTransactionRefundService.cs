@@ -105,6 +105,10 @@ namespace Rock.Model
         {
             target.RefundReasonValueId = source.RefundReasonValueId;
             target.RefundReasonSummary = source.RefundReasonSummary;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

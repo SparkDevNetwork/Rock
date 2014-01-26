@@ -80,7 +80,7 @@ namespace RockWeb
         {
             if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
             {
-                System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", DateTime.Now.ToString("hh:mm:ss.FFF" ) ));
+                System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", RockDateTime.Now.ToString("hh:mm:ss.FFF" ) ));
             }
 
             // Check if database should be auto-migrated for the core and plugins
@@ -139,14 +139,14 @@ namespace RockWeb
             if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
             {
                 new AttributeService().Get( 0 );
-                System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - Connected: {0}", DateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+                System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - Connected: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
             }
 
             // Preload the commonly used objects
             LoadCacheObjects();
             if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
             {
-                System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - Done: {0}", DateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+                System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - Done: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
             }
 
             // setup and launch the jobs infrastructure if running under IIS
@@ -284,7 +284,7 @@ namespace RockWeb
                 }
             }
 
-            Context.Items.Add( "Request_Start_Time", DateTime.Now );
+            Context.Items.Add( "Request_Start_Time", RockDateTime.Now );
         }
 
         /// <summary>
@@ -460,13 +460,12 @@ namespace RockWeb
         {
             int? pageId;
             int? siteId;
-            int? personId;
+            PersonAlias personAlias = null;
 
             if ( context == null )
             {
                 pageId = null;
                 siteId = null;
-                personId = null;
             }
             else
             {
@@ -475,10 +474,13 @@ namespace RockWeb
                 var sid = context.Items["Rock:SiteId"];
                 siteId = sid != null ? int.Parse( sid.ToString() ) : (int?)null;
                 var user = UserLoginService.GetCurrentUser();
-                personId = user != null ? user.PersonId : null;
+                if (user.Person != null)
+                {
+                    personAlias = user.Person.PrimaryAlias;
+                }
             }
 
-            ExceptionLogService.LogException( ex, context, pageId, siteId, personId );
+            ExceptionLogService.LogException( ex, context, pageId, siteId, personAlias );
         }
 
         /// <summary>
@@ -541,7 +543,7 @@ namespace RockWeb
         {
             OnCacheRemove = new CacheItemRemovedCallback( CacheItemRemoved );
             HttpRuntime.Cache.Insert( "IISCallBack", 60, null,
-                DateTime.Now.AddSeconds( 60 ), Cache.NoSlidingExpiration,
+                RockDateTime.Now.AddSeconds( 60 ), Cache.NoSlidingExpiration,
                 CacheItemPriority.NotRemovable, OnCacheRemove );
         }
 

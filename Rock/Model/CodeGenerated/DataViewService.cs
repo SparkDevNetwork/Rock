@@ -116,6 +116,10 @@ namespace Rock.Model
             target.EntityTypeId = source.EntityTypeId;
             target.DataViewFilterId = source.DataViewFilterId;
             target.TransformEntityTypeId = source.TransformEntityTypeId;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

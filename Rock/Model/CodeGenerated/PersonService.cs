@@ -77,12 +77,7 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, CommunicationRecipient.FriendlyTypeName );
                 return false;
             }  
- 
-            if ( new Service<FinancialBatch>().Queryable().Any( a => a.CreatedByPersonId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, FinancialBatch.FriendlyTypeName );
-                return false;
-            }  
+
  
             if ( new Service<FinancialPledge>().Queryable().Any( a => a.PersonId == item.Id ) )
             {
@@ -102,15 +97,11 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<History>().Queryable().Any( a => a.CreatedByPersonId == item.Id ) )
+            if ( new Service<HtmlContent>().Queryable().Any( a => a.ApprovedByPersonId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, History.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, HtmlContent.FriendlyTypeName );
                 return false;
             }  
-            
-            // ignoring HtmlContent,ApprovedByPersonId 
-            
-            // ignoring HtmlContent,LastModifiedPersonId 
  
             if ( new Service<MarketingCampaign>().Queryable().Any( a => a.ContactPersonId == item.Id ) )
             {
@@ -118,11 +109,7 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<Note>().Queryable().Any( a => a.CreatedByPersonId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, Note.FriendlyTypeName );
-                return false;
-            }  
+
             
             // ignoring PersonViewed,TargetPersonId 
             
@@ -206,6 +193,10 @@ namespace Rock.Model
             target.DoNotEmail = source.DoNotEmail;
             target.SystemNote = source.SystemNote;
             target.ViewedCount = source.ViewedCount;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 
