@@ -605,7 +605,7 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
-                    writer.Write( Text.SanitizeHtml( false ).EncodeHtml().ConvertCrLfToHtmlBr() );
+                    writer.Write( Text.EncodeHtml().ConvertCrLfToHtmlBr() );
                     writer.Write( " - " );
                     if ( !string.IsNullOrWhiteSpace( CreatedByName ) )
                     {
