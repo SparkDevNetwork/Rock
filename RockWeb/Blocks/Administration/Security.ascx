@@ -120,7 +120,7 @@
                 <dl>
                     <dt></dt>
                     <dd>
-                        <asp:LinkButton ID="lbUserSearch" runat="server" Text="Search" onclick="lbUserSearch_Click" CssClass="btn x-small"></asp:LinkButton>
+                        <asp:LinkButton ID="lbUserSearch" runat="server" Text="Search" onclick="lbUserSearch_Click" CssClass="btn btn-default btn-sm"></asp:LinkButton>
                         <asp:CheckBoxList ID="cbUsers" runat="server" CssClass="inputs-list" RepeatDirection="Vertical"></asp:CheckBoxList>
                     </dd>
                 </dl>

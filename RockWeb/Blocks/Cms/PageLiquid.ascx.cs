@@ -47,8 +47,8 @@ namespace RockWeb.Blocks.Cms
     [BooleanField( "Include Current Parameters", "Flag indicating if current page's parameters should be used when building url for child pages", false )]
     [BooleanField( "Include Current QueryString", "Flag indicating if current page's QueryString should be used when building url for child pages", false )]
     [BooleanField( "Enable Debug", "Flag indicating that the control should output the page data that will be passed to Liquid for parsing.", false )]
-
-    public partial class PageLiquid : Rock.Web.UI.RockBlock
+    [BooleanField( "Is Secondary Block", "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.", false )]
+    public partial class PageLiquid : RockBlock, ISecondaryBlock
     {
         private static readonly string ROOT_PAGE = "RootPage";
         private static readonly string NUM_LEVELS = "NumberofLevels";
@@ -204,6 +204,18 @@ namespace RockWeb.Blocks.Cms
                 cache.Set( cacheKey, template, cachePolicy );
 
                 return template;
+            }
+        }
+
+        /// <summary>
+        /// Will not display the block information if it is considered a secondary block and secondary blocks are being hidden.
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            if ( GetAttributeValue( "IsSecondaryBlock" ).AsBoolean() )
+            {
+                phContent.Visible = visible;
             }
         }
     }

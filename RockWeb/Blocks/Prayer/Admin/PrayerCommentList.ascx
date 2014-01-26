@@ -8,8 +8,8 @@
             <Rock:ModalAlert ID="maGridWarning" runat="server" />
             <Rock:Grid ID="gPrayerComments" runat="server" AllowSorting="true" RowItemText="comment" OnRowSelected="gPrayerComments_Edit" ExcelExportEnabled="false">
                 <Columns>
-                    <Rock:DateTimeField DataField="CreationDateTime" HeaderText="Time" SortExpression="CreationDateTime"/>
-                    <asp:BoundField DataField="CreatedByPerson.FullName" HeaderText="From" SortExpression="Text" />
+                    <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="Time" SortExpression="CreatedDateTime"/>
+                    <asp:BoundField DataField="CreatedByPersonAlias.Person.FullName" HeaderText="From" SortExpression="Text" />
                     <asp:BoundField DataField="Text" HeaderText="Comment" SortExpression="Text" />
                     <Rock:DeleteField OnClick="gPrayerComments_Delete" />
                 </Columns>

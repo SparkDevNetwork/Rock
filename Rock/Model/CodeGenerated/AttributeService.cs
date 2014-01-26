@@ -116,6 +116,10 @@ namespace Rock.Model
             target.DefaultValue = source.DefaultValue;
             target.IsMultiValue = source.IsMultiValue;
             target.IsRequired = source.IsRequired;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

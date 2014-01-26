@@ -466,7 +466,7 @@ namespace RockWeb.Blocks.Prayer
                     {
                         prayerRequest.IsApproved = true;
                         prayerRequest.ApprovedByPersonId = CurrentPerson.Id;
-                        prayerRequest.ApprovedOnDateTime = DateTime.Now;
+                        prayerRequest.ApprovedOnDateTime = RockDateTime.Now;
                         // reset the flag count only to zero ONLY if it had a value previously.
                         if ( prayerRequest.FlagCount.HasValue && prayerRequest.FlagCount > 0 )
                         {

@@ -243,7 +243,7 @@ namespace Rock.Web.UI.Controls
 
             yearDropDownList.Items.Clear();
             yearDropDownList.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            for ( int year = DateTime.Now.Year; year >= 1900; year-- )
+            for ( int year = RockDateTime.Now.Year; year >= 1900; year-- )
             {
                 yearDropDownList.Items.Add( new ListItem( year.ToString(), year.ToString() ) );
             }

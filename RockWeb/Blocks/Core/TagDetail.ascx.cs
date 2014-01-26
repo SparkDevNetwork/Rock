@@ -155,6 +155,7 @@ namespace RockWeb.Blocks.Core
                 }
 
                 tag.Name = tbName.Text;
+                tag.Description = tbDescription.Text;
                 tag.OwnerId = ppOwner.PersonId;
                 tag.EntityTypeId = ddlEntityType.SelectedValueAsId().Value;
                 tag.EntityTypeQualifierColumn = tbEntityTypeQualifierColumn.Text;
@@ -323,6 +324,7 @@ namespace RockWeb.Blocks.Core
             SetEditMode( true );
 
             tbName.Text = tag.Name;
+            tbDescription.Text = tag.Description;
             if ( tag.OwnerId.HasValue )
             {
                 rblScope.SelectedValue = "Private";

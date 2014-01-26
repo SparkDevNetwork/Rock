@@ -15,6 +15,11 @@
                 wsUrl += '&fileId=' + options.fileId
                     + '&fileTypeGuid=' + options.fileTypeGuid;
             }
+            else
+            {
+                // note rootFolder is encrypted to prevent direct access to filesystem via the URL
+                wsUrl += '&rootFolder=' + (encodeURIComponent(options.rootFolder) || '');
+            }
 
             // uses https://github.com/blueimp/jQuery-File-Upload
             $('#' + options.controlId).fileupload({
@@ -29,6 +34,8 @@
                     var getFileUrl = Rock.settings.get('baseUrl')
                         + 'GetFile.ashx?'
                         + 'isBinaryFile=' + (options.isBinaryFile || 'T')
+                        // note rootFolder is encrypted to prevent direct access to filesystem via the URL
+                        + '&rootFolder=' + (encodeURIComponent(options.rootFolder) || '')
                         + '&id=' + data.response().result.Id
                         + '&fileName=' + data.response().result.FileName;
 

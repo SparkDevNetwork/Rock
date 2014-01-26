@@ -36,6 +36,7 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string HISTORY_PERSON_DEMOGRAPHIC_CHANGES = "51D3EC5A-D079-45ED-909E-B0AB2FD06835";
 
+        /// <summary>
         /// History of Family changes
         /// </summary>
         public const string HISTORY_PERSON_FAMILY_CHANGES = "5C4CCE5A-D7D0-492F-A241-96E13A3F7DF8";

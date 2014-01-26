@@ -279,7 +279,7 @@ namespace Rock.Reporting.DataTransform.Person
             if ( !int.TryParse( options[3], out weeks ) )
                 weeks = 0;
 
-            DateTime startDate = DateTime.Now.AddDays( 0 - (7 * weeks));
+            DateTime startDate = RockDateTime.Now.AddDays( 0 - (7 * weeks));
 
             // Build expressions for this type of linq statement:
             //var result = new PersonService().Queryable()

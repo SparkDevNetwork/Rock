@@ -27,6 +27,7 @@ using Rock.Constants;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using Rock;
 
 namespace RockWeb.Blocks.CheckIn
 {
@@ -231,7 +232,7 @@ namespace RockWeb.Blocks.CheckIn
                 deviceCookie = new HttpCookie( CheckInCookie.DEVICEID, kiosk.Id.ToString() );
             }
 
-            deviceCookie.Expires = ( timeCacheMinutes == 0 ) ? DateTime.MaxValue : DateTime.Now.AddMinutes( timeCacheMinutes );
+            deviceCookie.Expires = ( timeCacheMinutes == 0 ) ? DateTime.MaxValue : RockDateTime.Now.AddMinutes( timeCacheMinutes );
             Response.Cookies.Set( deviceCookie );
 
             HttpCookie isMobileCookie = new HttpCookie( CheckInCookie.ISMOBILE, "true" );
@@ -244,7 +245,7 @@ namespace RockWeb.Blocks.CheckIn
         private void ClearMobileCookie()
         {
             HttpCookie isMobileCookie = new HttpCookie( CheckInCookie.ISMOBILE );
-            isMobileCookie.Expires = DateTime.Now.AddDays( -1d );
+            isMobileCookie.Expires = RockDateTime.Now.AddDays( -1d );
             Response.Cookies.Set( isMobileCookie );
         }
 

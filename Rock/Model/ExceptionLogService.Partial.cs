@@ -61,21 +61,20 @@ namespace Rock.Model
 
 
         /// <summary>
-        /// Logs new <see cref="Rock.Model.ExceptionLog"/> entities.  This method serves as an interface to asynchronously log exceptions.
+        /// Logs new <see cref="Rock.Model.ExceptionLog" /> entities.  This method serves as an interface to asynchronously log exceptions.
         /// </summary>
-        /// <param name="ex">A <see cref="System.Exception"/> object to log.</param>
-        /// <param name="context">The <see cref="System.Web.HttpContext"/></param>
-        /// <param name="pageId">A <see cref="System.Int32"/> containing the Id of the <see cref="Rock.Model.Page"/> that the exception occurred on.
-        ///     This parameter is nullable..</param>
-        /// <param name="siteId">A <see cref="System.Int32"/> containing the Id of the <see cref="Rock.Model.Site"/> that the exception occurred on.</param>
-        /// <param name="parentId">The Id of the exception's parent <see cref="Rock.Model.ExceptionLog"/> entity.</param>
-        /// <param name="personId">The Id of the <see cref="Rock.Model.Person"/> that caused the exception.</param>
-        public static void LogException( Exception ex, HttpContext context, int? pageId = null, int? siteId = null, int? personId = null, int? parentId = null )
+        /// <param name="ex">A <see cref="System.Exception" /> object to log.</param>
+        /// <param name="context">The <see cref="System.Web.HttpContext" /></param>
+        /// <param name="pageId">A <see cref="System.Int32" /> containing the Id of the <see cref="Rock.Model.Page" /> that the exception occurred on.
+        /// This parameter is nullable..</param>
+        /// <param name="siteId">A <see cref="System.Int32" /> containing the Id of the <see cref="Rock.Model.Site" /> that the exception occurred on.</param>
+        /// <param name="personAlias">The person alias.</param>
+        public static void LogException( Exception ex, HttpContext context, int? pageId = null, int? siteId = null, PersonAlias personAlias = null )
         {
             // Populate the initial ExceptionLog with data from HttpContext. Must capture initial
             // HttpContext details before spinning off new thread, because the current context will
             // not be the same within the context of the new thread.
-            var exceptionLog = PopulateExceptionLog( ex, context, pageId, siteId, personId, parentId );
+            var exceptionLog = PopulateExceptionLog( ex, context, pageId, siteId, personAlias );
 
             // Spin off a new thread to handle the real logging work so the UI is not blocked whilst
             // recursively writing to the database.
@@ -154,7 +153,7 @@ namespace Rock.Model
                     }
 
                     string filePath = Path.Combine( directory, "RockExceptions.csv" );
-                    File.AppendAllText( filePath, string.Format( "{0},{1},\"{2}\"\r\n", DateTime.Now.ToString(), ex.GetType(), ex.Message ) );
+                    File.AppendAllText( filePath, string.Format( "{0},{1},\"{2}\"\r\n", RockDateTime.Now.ToString(), ex.GetType(), ex.Message ) );
                 }
                 catch
                 {
@@ -164,36 +163,38 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Populates the <see cref="Rock.Model.ExceptionLog"/> entity with the exception data.
+        /// Populates the <see cref="Rock.Model.ExceptionLog" /> entity with the exception data.
         /// </summary>
-        /// <param name="ex">The <see cref="System.Exception"/> to log.</param>
-        /// <param name="context">The <see cref="System.Web.HttpContext"/>.</param>
-        /// <param name="pageId">An <see cref="System.Int32"/> containing the Id of the <see cref="Rock.Model.Page"/> where the exception occurred.
-        ///     This value is nullable.
-        /// </param>
-        /// <param name="siteId">An <see cref="System.Int32"/> containing the Id the <see cref="Rock.Model.Site"/> where the exception occurred.
-        ///     This value is nullable.
-        /// </param>
-        /// <param name="personId">The Id of the <see cref="Rock.Model.Person"/> who was logged in when the exception occurred. If the anonymous 
-        /// user was logged in or if the exception was caused by an job/process this will be null..</param>
-        /// <param name="parentId">The Id of the Exception's parent <see cref="Rock.Model.ExceptionLog"/> entity. If this exception does not have an 
-        /// outer/parent exception this value will be null.</param>
+        /// <param name="ex">The <see cref="System.Exception" /> to log.</param>
+        /// <param name="context">The <see cref="System.Web.HttpContext" />.</param>
+        /// <param name="pageId">An <see cref="System.Int32" /> containing the Id of the <see cref="Rock.Model.Page" /> where the exception occurred.
+        /// This value is nullable.</param>
+        /// <param name="siteId">An <see cref="System.Int32" /> containing the Id the <see cref="Rock.Model.Site" /> where the exception occurred.
+        /// This value is nullable.</param>
+        /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
-        private static ExceptionLog PopulateExceptionLog( Exception ex, HttpContext context, int? pageId, int? siteId, int? personId, int? parentId )
+        private static ExceptionLog PopulateExceptionLog( Exception ex, HttpContext context, int? pageId, int? siteId, PersonAlias personAlias )
         {
+            int? personAliasId = null;
+            if (personAlias != null)
+            {
+                personAliasId = personAlias.Id;
+            }
+
             var exceptionLog = new ExceptionLog
                 {
                     SiteId = siteId,
                     PageId = pageId,
-                    ParentId = parentId,
-                    CreatedByPersonId = personId,
                     HasInnerException = ex.InnerException != null,
                     ExceptionType = ex.GetType().ToString(),
                     Description = ex.Message,
                     Source = ex.Source,
                     StackTrace = ex.StackTrace,
                     Guid = Guid.NewGuid(),
-                    ExceptionDateTime = DateTime.Now
+                    CreatedByPersonAliasId = personAliasId,
+                    ModifiedByPersonAliasId = personAliasId,
+                    CreatedDateTime = RockDateTime.Now,
+                    ModifiedDateTime = RockDateTime.Now
                 };
 
             // If current HttpContext is null, return early.

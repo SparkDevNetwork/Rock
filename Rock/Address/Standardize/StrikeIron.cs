@@ -92,7 +92,7 @@ namespace Rock.Address.Standardize
                             {
                                 location.GeocodeAttemptedServiceType = "StrikeIron";
                                 location.GeocodeAttemptedResult = "200";
-                                location.GeocodedDateTime = DateTime.Now;
+                                location.GeocodedDateTime = RockDateTime.Now;
 
                                 location.SetLocationPointFromLatLong( usAddress.GeoCode.Latitude, usAddress.GeoCode.Longitude );
                             }

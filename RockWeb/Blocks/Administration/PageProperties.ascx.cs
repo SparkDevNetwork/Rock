@@ -88,11 +88,11 @@ namespace RockWeb.Blocks.Administration
                 {
                     _page = Rock.Web.Cache.PageCache.Read( pageId );
 
-                    DialogMasterPage masterPage = this.Page.Master as DialogMasterPage;
-                    if ( masterPage != null )
+                    DialogPage dialogPage = this.Page as DialogPage;
+                    if ( dialogPage != null )
                     {
-                        masterPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
-                        masterPage.SubTitle = string.Format( "Id: {0}", _page.Id );
+                        dialogPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
+                        dialogPage.SubTitle = string.Format( "Id: {0}", _page.Id );
                     }
 
                     if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )

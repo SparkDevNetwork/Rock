@@ -108,10 +108,12 @@ namespace Rock.Model
             target.EntityId = source.EntityId;
             target.SourceTypeValueId = source.SourceTypeValueId;
             target.Caption = source.Caption;
-            target.CreatedByPersonId = source.CreatedByPersonId;
-            target.CreationDateTime = source.CreationDateTime;
             target.IsAlert = source.IsAlert;
             target.Text = source.Text;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

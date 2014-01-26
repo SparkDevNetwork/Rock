@@ -68,10 +68,10 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            Rock.Web.UI.DialogMasterPage masterPage = this.Page.Master as Rock.Web.UI.DialogMasterPage;
-            if ( masterPage != null )
+            Rock.Web.UI.DialogPage dialogPage = this.Page as Rock.Web.UI.DialogPage;
+            if ( dialogPage != null )
             {
-                masterPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
+                dialogPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
             }
             
             try

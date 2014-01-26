@@ -48,7 +48,7 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
             {
-                DateTime startDateTime = DateTime.Now;
+                DateTime startDateTime = RockDateTime.Now;
 
                 int securityCodeLength = 3;
                 if ( !int.TryParse( GetAttributeValue( action, "SecurityCodeLength" ), out securityCodeLength ) )

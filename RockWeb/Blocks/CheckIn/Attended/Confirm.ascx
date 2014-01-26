@@ -34,7 +34,7 @@
                             <asp:BoundField DataField="LocationId" Visible="false" />
                             <asp:BoundField DataField="Schedule" HeaderText="Time" />
                             <asp:BoundField DataField="ScheduleId" Visible="false" />
-                            <Rock:EditValueField HeaderText="Edit" ControlStyle-CssClass="btn btn-lg btn-primary" OnClick="gPersonList_Edit" />
+                            <Rock:EditField HeaderText="Edit" ControlStyle-CssClass="btn btn-lg btn-primary" OnClick="gPersonList_Edit" />
                             <Rock:DeleteField HeaderText="Delete" ControlStyle-CssClass="btn btn-lg btn-primary" OnClick="gPersonList_Delete" />
                             <asp:TemplateField HeaderText="Print">
                                 <ItemTemplate>

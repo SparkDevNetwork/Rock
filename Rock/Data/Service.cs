@@ -343,90 +343,6 @@ namespace Rock.Data
          */
 
         /// <summary>
-        /// Date the entity was created.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <returns></returns>
-        public virtual DateTime? DateCreated( T entity )
-        {
-            return _repository.DateCreated( entity );
-        }
-
-        /// <summary>
-        /// Date the entity was created.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="entityId">The entity id.</param>
-        /// <returns></returns>
-        public virtual DateTime? DateCreated( int entityTypeId, int entityId )
-        {
-            return _repository.DateCreated( entityTypeId, entityId );
-        }
-
-        /// <summary>
-        /// Date the entity was last modified.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <returns></returns>
-        public virtual DateTime? DateLastModified( T entity )
-        {
-            return _repository.DateLastModified( entity );
-        }
-
-        /// <summary>
-        /// Date the entity was last modified.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="entityId">The entity id.</param>
-        /// <returns></returns>
-        public virtual DateTime? DateLastModified( int entityTypeId, int entityId )
-        {
-            return _repository.DateLastModified( entityTypeId, entityId );
-        }
-
-        /// <summary>
-        /// The person id who created entity.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <returns></returns>
-        public virtual int? CreatedByPersonId( T entity )
-        {
-            return _repository.CreatedByPersonId( entity );
-        }
-
-        /// <summary>
-        /// The person id who created entity.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="entityId">The entity id.</param>
-        /// <returns></returns>
-        public virtual int? CreatedByPersonId( int entityTypeId, int entityId )
-        {
-            return _repository.CreatedByPersonId( entityTypeId, entityId );
-        }
-
-        /// <summary>
-        /// The person id who last modified the entity.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <returns></returns>
-        public virtual int? LastModifiedByPersonId( T entity )
-        {
-            return _repository.LastModifiedByPersonId( entity );
-        }
-
-        /// <summary>
-        /// The person id who last modified the entity.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="entityId">The entity id.</param>
-        /// <returns></returns>
-        public virtual int? LastModifiedByPersonId( int entityTypeId, int entityId )
-        {
-            return _repository.LastModifiedByPersonId( entityTypeId, entityId );
-        }
-
-        /// <summary>
         /// All the audits made to the entity.
         /// </summary>
         /// <param name="entity">The entity.</param>
@@ -455,8 +371,18 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual bool Add( T item, int? personId )
         {
+            PersonAlias personAlias = null;
+            if ( personId.HasValue )
+            {
+                personAlias = new PersonAliasService().Queryable().FirstOrDefault( a => a.AliasPersonId == personId.Value );
+            }
+            return AddUsingAlias( item, personAlias );
+        }
+
+        public virtual bool AddUsingAlias( T item, PersonAlias personAlias )
+        {
             bool cancel = false;
-            item.RaiseAddingEvent( out cancel, personId );
+            item.RaiseAddingEvent( out cancel, personAlias );
             if ( !cancel )
             {
                 _repository.Add( item );
@@ -494,7 +420,7 @@ namespace Rock.Data
         /// <param name="triggerType">Type of the trigger.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        private bool TriggerWorkflows( IEntity entity, WorkflowTriggerType triggerType, int? personId )
+        private bool TriggerWorkflows( IEntity entity, WorkflowTriggerType triggerType, PersonAlias personAlias )
         {
             Dictionary<string, PropertyInfo> properties = null;
 
@@ -540,8 +466,8 @@ namespace Rock.Data
                                 if ( workflowType.IsPersisted )
                                 {
                                     var workflowService = new Rock.Model.WorkflowService();
-                                    workflowService.Add( workflow, personId );
-                                    workflowService.Save( workflow, personId );
+                                    workflowService.AddUsingAlias( workflow, personAlias );
+                                    workflowService.SaveUsingAlias( workflow, personAlias );
                                 }
                             }
                         }
@@ -551,7 +477,7 @@ namespace Rock.Data
                         var transaction = new Rock.Transactions.WorkflowTriggerTransaction();
                         transaction.Trigger = trigger;
                         transaction.Entity = entity.Clone();
-                        transaction.PersonId = personId;
+                        transaction.PersonAlias = personAlias;
                         Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                     }
                 }
@@ -567,20 +493,30 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual bool Delete( T item, int? personId )
         {
+            PersonAlias personAlias = null;
+            if ( personId.HasValue )
+            {
+                personAlias = new PersonAliasService().Queryable().FirstOrDefault( a => a.AliasPersonId == personId.Value );
+            }
+            return DeleteUsingAlias( item, personAlias );
+        }
+        
+        public virtual bool DeleteUsingAlias(T item, PersonAlias personAlias)
+        {
             ErrorMessages = new List<string>();
 
-            if ( !TriggerWorkflows( item, WorkflowTriggerType.PreDelete, personId ) )
+            if ( !TriggerWorkflows( item, WorkflowTriggerType.PreDelete, personAlias ) )
             {
                 return false;
             }
 
             bool cancel = false;
-            item.RaiseDeletingEvent( out cancel, personId );
+            item.RaiseDeletingEvent( out cancel, personAlias );
             if ( !cancel )
             {
                 _repository.Delete( item );
 
-                TriggerWorkflows( item, WorkflowTriggerType.PostDelete, personId );
+                TriggerWorkflows( item, WorkflowTriggerType.PostDelete, personAlias );
 
                 return true;
             }
@@ -596,11 +532,28 @@ namespace Rock.Data
         /// <param name="item">The item.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public virtual bool Save( T item, int? personId )
+        public virtual bool Save( T item, int? personId)
         {
+            PersonAlias personAlias = null;
+            if ( personId.HasValue )
+            {
+                personAlias = new PersonAliasService().Queryable().FirstOrDefault( a => a.AliasPersonId == personId.Value );
+            }
+            return SaveUsingAlias( item, personAlias );
+        }
+
+        public virtual bool SaveUsingAlias(T item, PersonAlias personAlias)
+        {
+            // TODO: Make this method the public 'Save' method and remove the previous save
+            int? personAliasId = null;
+            if ( personAlias != null )
+            {
+                personAliasId = personAlias.Id;
+            } 
+
             ErrorMessages = new List<string>();
 
-            if ( !TriggerWorkflows( item, WorkflowTriggerType.PreSave, personId ) )
+            if ( !TriggerWorkflows( item, WorkflowTriggerType.PreSave, personAlias ) )
             {
                 return false;
             }
@@ -608,10 +561,30 @@ namespace Rock.Data
             if ( item != null && item.Guid == Guid.Empty )
                 item.Guid = Guid.NewGuid();
 
+            // Update the created by and modified by fields
+            IModel model = item as IModel;
+            if (model != null)
+            {
+                if ( model.Id <= 0 )
+                {
+                    if ( !model.CreatedDateTime.HasValue )
+                    {
+                        model.CreatedDateTime = RockDateTime.Now;
+                    }
+                    if ( !model.CreatedByPersonAliasId.HasValue )
+                    {
+                        model.CreatedByPersonAliasId = personAliasId;
+                    }
+                }
+
+                model.ModifiedByPersonAliasId = personAliasId;
+                model.ModifiedDateTime = RockDateTime.Now;
+            }
+
             List<Audit> audits;
             List<string> errorMessages;
 
-            if ( _repository.Save( personId, out audits, out errorMessages ) )
+            if ( _repository.Save( personAlias, out audits, out errorMessages ) )
             {
                 if ( audits != null && audits.Count > 0 )
                 {
@@ -620,7 +593,7 @@ namespace Rock.Data
                     Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                 }
 
-                TriggerWorkflows( item, WorkflowTriggerType.PostSave, personId );
+                TriggerWorkflows( item, WorkflowTriggerType.PostSave, personAlias );
 
                 return true;
             }

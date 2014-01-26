@@ -14,7 +14,7 @@
             </Rock:RockRadioButtonList>
             <Rock:PersonPicker ID="ppOwner" runat="server" Label="Owner"  />
         </Rock:GridFilter>
-        <Rock:Grid ID="rGrid" runat="server" RowItemText="Tag" OnRowSelected="rGrid_Edit">
+        <Rock:Grid ID="rGrid" runat="server" RowItemText="Tag" OnRowSelected="rGrid_Edit" TooltipField="Description">
             <Columns>
                 <Rock:ReorderField />
                 <asp:BoundField DataField="Id" HeaderText="Id" Visible="false" />

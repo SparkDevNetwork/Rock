@@ -189,7 +189,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
-            var qry = new AuditService().Queryable();
+            var qry = new AuditService().Queryable("PersonAlias.Person");
 
             int entityTypeId = int.MinValue;
             if (int.TryParse( gfSettings.GetUserPreference( "Entity Type" ), out entityTypeId))
@@ -206,9 +206,10 @@ namespace RockWeb.Blocks.Core
             int personId = int.MinValue;
             if ( int.TryParse( gfSettings.GetUserPreference( "Who" ), out personId ) )
             {
-                qry = qry.Where( a => a.PersonId == personId );
+                qry = qry.Where( a => a.PersonAlias != null && a.PersonAlias.PersonId == personId );
             }
- 
+
+            int? nullInt = null;
             var queryable = qry.Select( a =>
                 new
                 {
@@ -219,8 +220,10 @@ namespace RockWeb.Blocks.Core
                     a.EntityId,
                     a.Title,
                     Properties = a.Details.Count(),
-                    PersonId = a.PersonId,
-                    PersonName = a.Person.NickName + " " + a.Person.LastName + ( a.Person.SuffixValueId.HasValue ? " " + a.Person.SuffixValue.Name : "" )
+                    PersonId = a.PersonAlias != null ? a.PersonAlias.PersonId : nullInt,
+                    PersonName = (a.PersonAlias != null && a.PersonAlias.Person != null) ? 
+                        a.PersonAlias.Person.NickName + " " + a.PersonAlias.Person.LastName + ( a.PersonAlias.Person.SuffixValueId.HasValue ? " " + a.PersonAlias.Person.SuffixValue.Name : "" ) :
+                        ""
                 } );
 
 

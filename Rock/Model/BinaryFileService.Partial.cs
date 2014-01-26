@@ -74,7 +74,6 @@ namespace Rock.Model
         /// <returns></returns>
         public override bool Save( BinaryFile item, int? personId )
         {
-            item.LastModifiedDateTime = DateTime.Now;
             Rock.Storage.ProviderComponent storageProvider = DetermineBinaryFileStorageProvider( item );
 
             if ( storageProvider != null )
@@ -231,7 +230,6 @@ namespace Rock.Model
                 binaryFile.Url = reader["Url"] as string;
                 binaryFile.FileName = reader["FileName"] as string;
                 binaryFile.MimeType = reader["MimeType"] as string;
-                binaryFile.LastModifiedDateTime = reader["LastModifiedDateTime"] as DateTime?;
                 binaryFile.Description = reader["Description"] as string;
                 int? storageEntityTypeId = reader["StorageEntityTypeId"] as int?;
                 binaryFile.SetStorageEntityTypeId( storageEntityTypeId );

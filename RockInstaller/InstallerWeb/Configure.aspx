@@ -58,7 +58,29 @@
         rockWebConfig.Save();
         
         // set organization address to their public address
-        txtOrgWebsite.Text = publicAddress.Replace("http://", "").Replace("https://", "").TrimEnd('/');
+        txtOrgWebsite.Text = publicAddress.TrimEnd('/');
+        
+        // set the site domains with the addresses above
+        SiteService siteService = new SiteService();
+        Site internalSite = siteService.Get(new Guid("C2D29296-6A87-47A9-A753-EE4E9159C4C4"));
+        
+        SiteDomain internalDomain = new SiteDomain();
+        internalDomain.Domain = InstallUtilities.GetDomainFromString(internalAddress);
+        internalDomain.IsSystem = false;
+
+        internalSite.SiteDomains.Add(internalDomain);
+        siteService.Save(internalSite, null);
+
+        Site externalSite = siteService.Get(new Guid("F3F82256-2D66-432B-9D67-3552CD2F4C2B"));
+
+        SiteDomain externalDomain = new SiteDomain();
+        externalDomain.Domain = InstallUtilities.GetDomainFromString(publicAddress);
+        externalDomain.IsSystem = false;
+
+        externalSite.SiteDomains.Add(externalDomain);
+
+        siteService.Save(externalSite, null);
+        
         
         pHosting.Visible = false;
         pOrganization.Visible = true;
@@ -72,7 +94,7 @@
     	globalAttributesCache.SetValue("OrganizationName", txtOrgName.Text, null, true);
     	globalAttributesCache.SetValue("OrganizationEmail", txtOrgEmail.Text, null, true);
     	globalAttributesCache.SetValue("OrganizationPhone", txtOrgPhone.Text, null, true);
-    	globalAttributesCache.SetValue("OrganizationWebsite", txtOrgWebsite.Text, null, true);
+        globalAttributesCache.SetValue("OrganizationWebsite", txtOrgWebsite.Text.Replace("http://", "").Replace("https://", ""), null, true);
     	
     	pOrganization.Visible = false;
     	pEmailSettings.Visible = true;
@@ -137,8 +159,14 @@
 		     <ProgressTemplate>
 		         
                 <div class="updateprogress-status">
-                    <i class="fa fa-refresh fa-spin fa-4x" ></i><br />
-                    This could take a few minutes...
+                    <p>This could take a few minutes...</p>
+                    <div class="spinner">
+                        <div class="rect1"></div>
+                        <div class="rect2"></div>
+                        <div class="rect3"></div>
+                        <div class="rect4"></div>
+                        <div class="rect5"></div>
+                    </div>
                 </div>      
 		            
 		        <div class="updateprogress-bg"></div>
@@ -220,14 +248,17 @@
                                 you go to do things like send emails. These settings can be changed at anytime in your <span class="navigation-tip">Global Settings</span>.
                                 <br />
                                 <small>If you are installing Rock in subdirectory be sure to include it in the address.</small></p>
+
+                            <div class="validation-summary"></div>
+
 							<div class="form-group">
-								<label class="control-label" for="inputEmail">Internal Url <small>Used Inside Organization</small></label>
+								<label class="control-label" for="inputEmail">Internal URL <small>Used Inside Organization</small></label>
 								<asp:TextBox ID="txtInternalAddress" runat="server" placeholder="http://yourinternalsite.com/" CssClass="required-field form-control" Text=""></asp:TextBox>
 							</div>
 							
 							<div class="form-group">
 								<label class="control-label" for="inputEmail">Public URL <small>Used Externally</small></label>
-								<asp:TextBox ID="txtPublicAddress" runat="server" placeholder="http://yoursite.com/" CssClass="required-field form-control" Text=""></asp:TextBox>
+								<asp:TextBox ID="txtPublicAddress" runat="server" placeholder="http://(www.)yoursite.com/" CssClass="required-field form-control" Text=""></asp:TextBox>
 							</div>
 
                             <div class="form-group">
@@ -244,6 +275,8 @@
                         <script>
                             function validateHosting() {
                                 var formValid = true;
+                                $("#pHosting .validation-summary").empty();
+                                var validationMessages = '';
 
                                 // ensure that all values were provided
                                 $("#pHosting .required-field").each(function (index, value) {
@@ -258,11 +291,13 @@
                                 // ensure inputs are valid urls
                                 if (!validateURL($('#txtInternalAddress').val())) {
                                     $('#txtInternalAddress').closest('.form-group').addClass('has-error');
+                                    validationMessages += "<p>Internal URL must be in the format http://www.yourinternalsite.com</p>";
                                     formValid = false;
                                 }
 
                                 if (!validateURL($('#txtPublicAddress').val())) {
                                     $('#txtPublicAddress').closest('.form-group').addClass('has-error');
+                                    validationMessages += "<p>External URL must be in the format http://(www.)yoursite.com</p>";
                                     formValid = false;
                                 }
 
@@ -270,6 +305,9 @@
                                     return true;
 
                                 } else {
+                                    if (validationMessages.length > 0) {
+                                        $("#pHosting .validation-summary").html("<div class='alert alert-danger'>" + validationMessages + "</div>");
+                                    }
                                     return false;
                                 }
                             }
@@ -302,7 +340,7 @@
 							
 							<div class="form-group">
 								<label class="control-label" for="inputEmail">Organization Website</label>
-								<asp:TextBox ID="txtOrgWebsite" placeholder="www.yourchurch.com" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
+								<asp:TextBox ID="txtOrgWebsite" placeholder="http://www.yourchurch.com" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
 							</div>
 
                             <div class="btn-list">

@@ -185,9 +185,16 @@ namespace RockWeb.Blocks.Core
                 dl.Add( "Query String", BuildQueryStringList( baseException.QueryString ) );
             }
 
+            if (baseException.CreatedByPersonAlias != null &&  baseException.CreatedByPersonAlias.Person != null)
+            {
+                dl.Add( "User", baseException.CreatedByPersonAlias.Person.FullName );
+            }
 
-            dl.Add( "User", baseException.CreatedByPersonId != null ? baseException.CreatedByPerson.FullName : "Anonymous" );
-            dl.Add( "Exception Date", string.Format( "{0:g}", baseException.ExceptionDateTime ) );
+            if ( baseException.CreatedDateTime.HasValue )
+            {
+                dl.Add( "Exception Date", string.Format( "{0:g}", baseException.CreatedDateTime.Value ) );
+            }
+
             lExceptionSummary.Text = dl.Html;
 
             lCookies.Text = baseException.Cookies;
@@ -198,7 +205,7 @@ namespace RockWeb.Blocks.Core
             {
                 //if so check check box and register script to show cookies div
                 chkShowCookies.Checked = true;
-                ScriptManager.RegisterStartupScript( upExcpetionDetail, upExcpetionDetail.GetType(), "ShowCookiesOnLoad" + DateTime.Now.Ticks, "$(\"#divCookies\").css(\"display\", \"inherit\");", true );
+                ScriptManager.RegisterStartupScript( upExcpetionDetail, upExcpetionDetail.GetType(), "ShowCookiesOnLoad" + RockDateTime.Now.Ticks, "$(\"#divCookies\").css(\"display\", \"inherit\");", true );
             }
             else
             {
@@ -209,7 +216,7 @@ namespace RockWeb.Blocks.Core
             if ( Convert.ToBoolean( GetAttributeValue( "ShowServerVariables" ) ) )
             {
                 chkShowServerVariables.Checked = true;
-                ScriptManager.RegisterStartupScript( upExcpetionDetail, upExcpetionDetail.GetType(), "ShowServerVariablesOnLoad" + DateTime.Now.Ticks, "$(\"#divServerVariables\").css(\"display\", \"inherit\");", true );
+                ScriptManager.RegisterStartupScript( upExcpetionDetail, upExcpetionDetail.GetType(), "ShowServerVariablesOnLoad" + RockDateTime.Now.Ticks, "$(\"#divServerVariables\").css(\"display\", \"inherit\");", true );
             }
             else
             {

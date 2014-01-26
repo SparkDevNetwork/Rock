@@ -114,25 +114,6 @@ namespace Rock.Model
         [DataMember]
         public int? RelatedEntityId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> who created the history.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who created the history.
-        /// </value>
-        [DataMember]
-        public int? CreatedByPersonId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the date and time that the history was created.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.DateTime"/> representing the date and time when the history was created.
-        /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public DateTime CreationDateTime { get; set; }
-
         #endregion
 
         #region Virtual Properties
@@ -146,20 +127,23 @@ namespace Rock.Model
         [DataMember]
         public virtual EntityType EntityType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the category.
+        /// </summary>
+        /// <value>
+        /// The category.
+        /// </value>
         [DataMember]
         public virtual Category Category { get; set; }
 
-        [DataMember]
-        public virtual EntityType RelatedEntityType { get; set; }
-
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> who created the history.
+        /// Gets or sets the type of the related entity.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Person"/> who created the history.
+        /// The type of the related entity.
         /// </value>
         [DataMember]
-        public virtual Person CreatedByPerson { get; set; }
+        public virtual EntityType RelatedEntityType { get; set; }
 
         /// <summary>
         /// Gets the parent security authority of this History. Where security is inherited from.
@@ -209,7 +193,7 @@ namespace Rock.Model
                 {
                     if ( oldValue.Trim() != newValue.Trim() )
                     {
-                        historyMessages.Add( string.Format( "Modified <span class='field-name'>{0}</span> value from <span class='field-value'>{1}<span> to <span class='field-value'>{2}</span>.", propertyName, oldValue, newValue ) );
+                        historyMessages.Add( string.Format( "Modified <span class='field-name'>{0}</span> value from <span class='field-value'>{1}</span> to <span class='field-value'>{2}</span>.", propertyName, oldValue, newValue ) );
                     }
                 }
                 else
@@ -295,7 +279,6 @@ namespace Rock.Model
             this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.Category ).WithMany().HasForeignKey( p => p.CategoryId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RelatedEntityType ).WithMany().HasForeignKey( p => p.RelatedEntityTypeId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete( false );
         }
     }
 

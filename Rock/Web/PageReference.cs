@@ -439,7 +439,6 @@ namespace Rock.Web
                                         if (control is RockBlock)
                                         {
                                             RockBlock rockBlock = control as RockBlock;
-                                            rockBlock.CurrentPageReference = parentPageReference;
                                             rockBlock.SetBlock(block);
                                             rockBlock.GetBreadCrumbs(parentPageReference).ForEach(c => parentPageReference.BreadCrumbs.Add(c));
                                         }
@@ -447,7 +446,7 @@ namespace Rock.Web
                                     }
                                     catch (Exception ex)
                                     {
-                                        ExceptionLogService.LogException(ex, HttpContext.Current, currentPage.Id, currentPage.Layout.SiteId, null);
+                                        ExceptionLogService.LogException(ex, HttpContext.Current, currentPage.Id, currentPage.Layout.SiteId);
                                     }
                                 }
 

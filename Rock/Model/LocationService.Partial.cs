@@ -197,7 +197,7 @@ namespace Rock.Model
 
                     // Log the results of the service
                     Model.ServiceLog log = new Model.ServiceLog();
-                    log.LogDateTime = DateTime.Now;
+                    log.LogDateTime = RockDateTime.Now;
                     log.Type = "Location Standardize";
                     log.Name = service.Value.Metadata.ComponentName;
                     log.Input = inputLocation;
@@ -211,12 +211,12 @@ namespace Rock.Model
                     {
                         location.StandardizeAttemptedServiceType = service.Value.Metadata.ComponentName;
                         location.StandardizeAttemptedResult = result;
-                        location.StandardizedDateTime = DateTime.Now;
+                        location.StandardizedDateTime = RockDateTime.Now;
                         break;
                     }
                 }
 
-            location.StandardizeAttemptedDateTime = DateTime.Now;
+            location.StandardizeAttemptedDateTime = RockDateTime.Now;
         }
 
         /// <summary>
@@ -239,7 +239,7 @@ namespace Rock.Model
 
                     // Log the results of the service
                     Model.ServiceLog log = new Model.ServiceLog();
-                    log.LogDateTime = DateTime.Now;
+                    log.LogDateTime = RockDateTime.Now;
                     log.Type = "Location Geocode";
                     log.Name = service.Value.Metadata.ComponentName;
                     log.Input = inputLocation;
@@ -253,12 +253,12 @@ namespace Rock.Model
                     {
                         location.GeocodeAttemptedServiceType = service.Value.Metadata.ComponentName;
                         location.GeocodeAttemptedResult = result;
-                        location.GeocodedDateTime = DateTime.Now;
+                        location.GeocodedDateTime = RockDateTime.Now;
                         break;
                     }
                 }
 
-            location.GeocodeAttemptedDateTime = DateTime.Now;
+            location.GeocodeAttemptedDateTime = RockDateTime.Now;
         }
 
         /// <summary>

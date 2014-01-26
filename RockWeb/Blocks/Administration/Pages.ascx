@@ -12,7 +12,7 @@
             <Columns>
                 <Rock:ReorderField />
                 <asp:BoundField DataField="Id" HeaderText="Id" />
-                <asp:HyperLinkField DataNavigateUrlFormatString="~/page/{0}" DataNavigateUrlFields="Id" DataTextField="Name" HeaderText="Name" Target="_parent" />
+                <asp:HyperLinkField DataNavigateUrlFormatString="~/page/{0}" DataNavigateUrlFields="Id" DataTextField="InternalName" HeaderText="Name" Target="_parent" />
                 <asp:BoundField DataField="Layout.Name" HeaderText="Layout"  />
                 <Rock:DeleteField OnClick="rGrid_Delete" />
             </Columns>
@@ -24,7 +24,7 @@
 
             <fieldset>
                 <legend><asp:Literal ID="lEditAction" runat="server"/> Child Page</legend>
-                <Rock:DataTextBox ID="dtbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Name" />
+                <Rock:DataTextBox ID="dtbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="InternalName" />
                 <Rock:RockDropDownList ID="ddlLayout" runat="server" Label="Layout"></Rock:RockDropDownList>
             </fieldset>
 
