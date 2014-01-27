@@ -416,13 +416,13 @@ namespace Rock.Web.UI.Controls
             string script = @"
     $('a.edit-note').click(function (e) {
         e.preventDefault();
-        $(this).closest('.note-editor').children().slideToggle('slow');
+        $(this).closest('.note-editor').children().slideToggle( 'slow' );
     });
     $('a.edit-note-cancel').click(function () {
-        $(this).closest('.note-editor').children().slideToggle('slow');
+        $(this).closest('.note-editor').children().slideToggle( 'slow' );
     });
     $('a.remove-note').click(function() {
-        return confirm('Are you sure you want to delete this note?');
+        return Rock.dialogs.confirmDelete( event, 'Note' );
     });
 ";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "edit-note", script, true );
