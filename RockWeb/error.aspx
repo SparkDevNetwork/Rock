@@ -40,34 +40,40 @@
                 <div class="row">
                     <div class="col-md-12">
                         
-                        <asp:Panel ID="pnlSecurity" runat="server" CssClass="error-wrap" Visible="false">
-                            <h1>Hey...</h1>
-                            <h3>We can't let you view this page...</h3>
+                        <asp:Panel ID="pnlSecurity" runat="server" Visible="false">
+                            <div class="error-wrap">
+                                <h1>Hey...</h1>
+                                <h3>We can't let you view this page...</h3>
 
-                            <p>Unfortunately, you are not authorized to view the page you requested. Please contact
-                                your Rock administrator if you need access to this resource.
-                            </p>
+                                <p class="error-icon">
+                                    <i class="fa fa-lock"></i>
+                                </p>
 
-                            <p style="text-align: center;">
-                                <img src="<%= Page.ResolveUrl("~/Assets/Images/chip-angry.png") %>" />
-                            </p>
+                                <p>Unfortunately, you are not authorized to view the page you requested. Please contact
+                                    your Rock administrator if you need access to this resource.
+                                </p>
 
-                            <p><a onclick="history.go(-1);" class="btn btn-sm btn-primary">Go Back</a></p>
-
+                                <p><a onclick="history.go(-1);" class="btn btn-sm btn-primary">Go Back</a></p>
+                            </div>
                         </asp:Panel>
                         
-                        <asp:Panel ID="pnlException" runat="server" CssClass="error-wrap" Visible="false">
-                            <h1>Ah Man... </h1>
-                            <p>An error has occurred while processing your request.  The Rock administrators have 
-                            been notified of this problem.</p>
+                        <asp:Panel ID="pnlException" runat="server" Visible="false">
+                            <div class="error-wrap">
+                                <h1>Ah Man... </h1>
+                            
+                                <p class="error-icon">
+                                    <i class="fa fa-exclamation-triangle"></i>
+                                </p>
 
-                            <p style="text-align: center;">
-                                <img src="<%= Page.ResolveUrl("~/Assets/Images/chip-shocked.png") %>" />
-                            </p>
+                                <p>An error has occurred while processing your request.  The Rock administrators have 
+                                been notified of this problem.</p>
 
-                            <p><a onclick="history.go(-1);" class="btn btn-sm btn-primary">Go Back</a></p>
+                                <p><a onclick="history.go(-1);" class="btn btn-sm btn-primary">Go Back</a></p>
+                            </div>
 
-                            <asp:Literal ID="lErrorInfo" runat="server"></asp:Literal>
+                            <div class="error-details">
+                                <asp:Literal ID="lErrorInfo" runat="server"></asp:Literal>
+                            </div>    
                         </asp:Panel>
 
                     </div>
