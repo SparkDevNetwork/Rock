@@ -466,12 +466,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                          !String.IsNullOrWhiteSpace( tbCity.Text ) ||
                                          !String.IsNullOrWhiteSpace( tbZip.Text ) )
                                     {
-                                        string addressChangeField = "Address";
+                                        string addressChangeField = "Location";
 
                                         var groupLocation = new GroupLocation();
-                                        var location = new LocationService().Get(
-                                            tbStreet1.Text, tbStreet2.Text, tbCity.Text, ddlState.SelectedValue, tbZip.Text );
+
+                                        // Get new or existing location and associate it with group
+                                        var location = new LocationService().Get(tbStreet1.Text, tbStreet2.Text, tbCity.Text, ddlState.SelectedValue, tbZip.Text );
                                         groupLocation.Location = location;
+                                        groupLocation.IsMailingLocation = true;
+                                        groupLocation.IsMappedLocation = true;
 
                                         Guid locationTypeGuid = Guid.Empty;
                                         if ( Guid.TryParse( GetAttributeValue( "LocationType" ), out locationTypeGuid ) )
@@ -479,7 +482,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                             var locationType = Rock.Web.Cache.DefinedValueCache.Read( locationTypeGuid );
                                             if ( locationType != null )
                                             {
-                                                addressChangeField = string.Format("{0} Address", locationType.Name);
+                                                addressChangeField = locationType.Name;
                                                 groupLocation.GroupLocationTypeValueId = locationType.Id;
                                             }
                                         }
@@ -487,8 +490,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         familyGroup.GroupLocations.Add( groupLocation );
 
                                         History.EvaluateChange( familyChanges, addressChangeField, string.Empty, groupLocation.Location.ToString() );
+                                        History.EvaluateChange( familyChanges, addressChangeField + " Is Mailing", string.Empty, groupLocation.IsMailingLocation.ToString() );
+                                        History.EvaluateChange( familyChanges, addressChangeField + " Is Map Location", string.Empty, groupLocation.IsMappedLocation.ToString() );
                                     }
-
 
                                     groupService.Add( familyGroup, CurrentPersonId );
                                     groupService.Save( familyGroup, CurrentPersonId );
