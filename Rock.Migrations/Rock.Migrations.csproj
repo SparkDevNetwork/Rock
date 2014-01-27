@@ -412,6 +412,10 @@
     <Compile Include="Migrations\201401271247579_RemoveFullAddress.Designer.cs">
       <DependentUpon>201401271247579_RemoveFullAddress.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401271902480_HideMetricsPage.cs" />
+    <Compile Include="Migrations\201401271902480_HideMetricsPage.Designer.cs">
+      <DependentUpon>201401271902480_HideMetricsPage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -700,6 +704,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401271247579_RemoveFullAddress.resx">
       <DependentUpon>201401271247579_RemoveFullAddress.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401271902480_HideMetricsPage.resx">
+      <DependentUpon>201401271902480_HideMetricsPage.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
