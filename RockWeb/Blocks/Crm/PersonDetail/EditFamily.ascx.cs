@@ -542,7 +542,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gLocations_Add( object sender, EventArgs e )
         {
-            FamilyAddresses.Add( new FamilyAddress { State = DefaultState } );
+            FamilyAddresses.Add( new FamilyAddress { State = DefaultState, IsMailing = true } );
             gLocations.EditIndex = FamilyAddresses.Count - 1;
 
             BindLocations();
@@ -581,6 +581,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 familyAddress.State = ddlState.SelectedValue;
                 familyAddress.Zip = tbZip.Text;
                 familyAddress.IsMailing = cbMailing.Checked;
+
+                // If setting this location to be a map location, unselect all the other loctions
+                if ( !familyAddress.IsLocation && cbLocation.Checked )
+                {
+                    foreach(var otherAddress in FamilyAddresses)
+                    {
+                        otherAddress.IsLocation = false;
+                    }
+                }
+
                 familyAddress.IsLocation = cbLocation.Checked;
                 familyAddress.LocationIsDirty = true;
             }
@@ -862,11 +872,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     var oldMemberChanges = new List<string>();
                                     History.EvaluateChange( oldMemberChanges, "Role", fm.GroupRole.Name, string.Empty );
 
+                                    historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                                        fm.Person.Id, oldMemberChanges, fm.Group.Name, typeof( Group ), fm.Group.Id, CurrentPersonId );
+
                                     familyMemberService.Delete( fm, CurrentPersonId );
                                     familyMemberService.Save( fm, CurrentPersonId );
-
-                                    historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                                        fm.Person.Id, oldMemberChanges, CurrentPersonId );
 
                                     var f = familyService.Queryable()
                                         .Where( g =>
@@ -936,18 +946,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 familyAddress.LocationTypeName );
                             groupLocation.GroupLocationTypeValueId = familyAddress.LocationTypeId;
 
-                            History.EvaluateChange( familyChanges, familyAddress.LocationTypeName + " Location Is Mailing",
+                            History.EvaluateChange( familyChanges, familyAddress.LocationTypeName + " Is Mailing",
                                 groupLocation.IsMailingLocation.ToString(), familyAddress.IsMailing.ToString() );
                             groupLocation.IsMailingLocation = familyAddress.IsMailing;
 
-                            History.EvaluateChange( familyChanges, familyAddress.LocationTypeName + " Location Is Location",
+                            History.EvaluateChange( familyChanges, familyAddress.LocationTypeName + " Is Map Location",
                                 groupLocation.IsMappedLocation.ToString(), familyAddress.IsLocation.ToString() );
                             groupLocation.IsMappedLocation = familyAddress.IsLocation;
 
                             if ( updatedAddress != null )
                             {
                                 History.EvaluateChange( familyChanges, familyAddress.LocationTypeName + " Location",
-                                    groupLocation.Location.ToString(), updatedAddress.ToString() );
+                                    groupLocation.Location != null ? groupLocation.Location.ToString() : "", updatedAddress.ToString() );
                                 groupLocation.Location = updatedAddress;
                             }
 
@@ -1044,6 +1054,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         private void BindLocations()
         {
+            int homeLocationTypeId = DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid()).Id;
+
+            // If there are not any addresses with a Map Location, set the first home location to be a mapped location
+            if ( !FamilyAddresses.Any( l => l.IsLocation == true ) )
+            {
+                var firstHomeAddress = FamilyAddresses.Where( l => l.LocationTypeId == homeLocationTypeId ).FirstOrDefault();
+                if (firstHomeAddress != null)
+                {
+                    firstHomeAddress.IsLocation = true;
+                }
+            }
+
             gLocations.DataSource = FamilyAddresses;
             gLocations.DataBind();
         }
