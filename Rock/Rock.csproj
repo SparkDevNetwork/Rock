@@ -696,10 +696,7 @@
     <Compile Include="Extension\IContainer.cs" />
     <Compile Include="Field\ConfigurationValue.cs" />
     <Compile Include="Field\Types\SelectMultiFieldType.cs" />
-    <Compile Include="Field\Types\DocumentFieldType.cs" />
     <Compile Include="Field\Types\PersonFieldType.cs" />
-    <Compile Include="Field\Types\UrlFieldType.cs" />
-    <Compile Include="Field\Types\CurrencyFieldType.cs" />
     <Compile Include="Field\Types\DecimalFieldType.cs" />
     <Compile Include="Field\Types\DefinedValueFieldType.cs" />
     <Compile Include="Field\Types\DefinedTypeFieldType.cs" />
