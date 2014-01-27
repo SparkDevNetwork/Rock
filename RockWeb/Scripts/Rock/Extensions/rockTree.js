@@ -527,8 +527,8 @@
         multiselect: false,
         loadingHtml: '<span class="rocktree-loading"><i class="fa fa-refresh fa-spin"></i></span>',
         iconClasses: {
-            branchOpen: 'fa fa-caret-down',
-            branchClosed: 'fa fa-caret-right',
+            branchOpen: 'fa fa-fw fa-caret-down',
+            branchClosed: 'fa fa-fw fa-caret-right',
             leaf: ''
         },
         mapping: {
