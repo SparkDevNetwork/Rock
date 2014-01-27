@@ -449,6 +449,7 @@ namespace Rock.Web.UI.Controls
 
             _lbSaveNote.ID = this.ID + "_lbSaveNote";
             _lbSaveNote.Attributes["class"] = "btn btn-primary btn-xs";
+            _lbSaveNote.CausesValidation = false;
             _lbSaveNote.Click += lbSaveNote_Click;
 
             Controls.Add(_lbSaveNote);
@@ -459,6 +460,7 @@ namespace Rock.Web.UI.Controls
 
             _lbDeleteNote.ID = this.ID + "_lbDeleteNote";
             _lbDeleteNote.Attributes["class"] = "remove-note";
+            _lbDeleteNote.CausesValidation = false;
             _lbDeleteNote.Click += lbDeleteNote_Click;
             Controls.Add( _lbDeleteNote );
             var iDelete = new HtmlGenericControl( "i" );

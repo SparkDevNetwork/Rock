@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.Core
     [TextField( "Entity Qualifier Value", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "", "Applies To", 2 )]
     [BooleanField( "Allow Setting of Values", "Should UI be available for setting values of the specified Entity ID?", false, "Advanced", 0 )]
     [IntegerField( "Entity Id", "The entity id that values apply to", false, 0, "Advanced", 1 )]
+    [BooleanField( "Enable Show In Grid", "Should the 'Show In Grid' option be displayed when editing attributes?", false, "Advanced", 2 )]
 
     public partial class Attributes : RockBlock
     {
@@ -75,6 +76,17 @@ namespace RockWeb.Blocks.Core
             if (!bool.TryParse( GetAttributeValue( "ConfigureType" ), out _configuredType))
             {
                 _configuredType = true;
+            }
+
+
+            bool displayShowInGrid = true;
+            if (bool.TryParse(GetAttributeValue("DisplayShowInGrid"), out displayShowInGrid) && displayShowInGrid)
+            {
+                edtAttribute.ShowInGridVisible = true;
+            }
+            else
+            {
+                edtAttribute.ShowInGridVisible = false;
             }
 
             Guid entityTypeGuid = Guid.Empty;
