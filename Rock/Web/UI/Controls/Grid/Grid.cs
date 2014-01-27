@@ -1286,11 +1286,6 @@ namespace Rock.Web.UI.Controls
             BoundField bf = new BoundField();
             Type baseType = propertyType;
 
-            if (propertyType.IsGenericType)
-            {
-                baseType = propertyType.GetGenericArguments()[0];
-            }
-
             if ( baseType == typeof( Boolean ) || baseType == typeof( Boolean? ) )
             {
                 bf = new BoolField();
@@ -1309,6 +1304,10 @@ namespace Rock.Web.UI.Controls
                 bf = new BoundField();
                 bf.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
                 bf.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
+            }
+            else if (baseType == typeof (IEnumerable<object>))
+            {
+                bf = new ListDelimitedField();
             }
 
             return bf;
