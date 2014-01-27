@@ -509,9 +509,7 @@ namespace RockWeb.Blocks.Security
                 }
             }
 
-            personService.Add(person, CurrentPersonId);
-            personService.Save(person, CurrentPersonId);
-
+            new GroupService().SaveNewFamily( person, null, null );
             return person;
         }
 

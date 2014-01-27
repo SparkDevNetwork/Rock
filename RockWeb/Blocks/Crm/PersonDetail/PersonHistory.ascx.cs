@@ -284,15 +284,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     Id = h.Id,
                     CategoryId = h.CategoryId,
-                    Category = h.Category.Name,
+                    Category = h.Category != null ? h.Category.Name : "",
                     EntityTypeId = h.EntityTypeId,
                     EntityId = h.EntityId,
                     Caption = h.Caption ?? string.Empty,
                     Summary = h.Summary,
                     RelatedEntityTypeId = h.RelatedEntityTypeId ?? 0,
                     RelatedEntityId = h.RelatedEntityId ?? 0,
-                    CreatedByPersonId = h.CreatedByPersonAlias.PersonId,
-                    PersonName = h.CreatedByPersonAlias.Person.NickName + " " + h.CreatedByPersonAlias.Person.LastName,
+                    CreatedByPersonId = h.CreatedByPersonAlias != null ? h.CreatedByPersonAlias.PersonId : 0,
+                    PersonName = h.CreatedByPersonAlias != null && h.CreatedByPersonAlias.Person != null ? h.CreatedByPersonAlias.Person.NickName + " " + h.CreatedByPersonAlias.Person.LastName : "",
                     CreatedDateTime = h.CreatedDateTime
                 } ).ToList();
                 gHistory.DataBind();

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Dynamic;
@@ -25,7 +26,9 @@ using System.Web.Security;
 using Facebook;
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Security.ExternalAuthentication
 {
@@ -132,62 +135,70 @@ namespace Rock.Security.ExternalAuthentication
                     var userLoginService = new UserLoginService();
                     var user = userLoginService.GetByUserName( facebookId );
 
-                    // if not user was found see if we can find a match in the person table
+                    // if no user was found see if we can find a match in the person table
                     if ( user == null )
                     {
                         try
                         {
-                            // determine if we can find a match and if so add an user login record
-
-                            // get properties from Facebook dynamic object
-                            string lastName = me.last_name.ToString();
-                            string firstName = me.first_name.ToString();
-                            string email = me.email.ToString();
-
-                            var personService = new PersonService();
-                            var person = personService.Queryable().FirstOrDefault( u => u.LastName == lastName && u.FirstName == firstName && u.Email == email );
-
-                            if ( person != null )
+                            RockTransactionScope.WrapTransaction( () =>
                             {
-                                // since we have the data enter the birthday from Facebook to the db if we don't have it yet
-                                DateTime birthdate = Convert.ToDateTime( me.birthday.ToString() );
-
-                                if ( person.BirthDay == null )
+                                using ( new UnitOfWorkScope() )
                                 {
-                                    person.BirthDate = birthdate;
-                                    personService.Save( person, person.Id );
+                                    var familyChanges = new List<string>();
+                                    var familyMemberChanges = new List<string>();
+                                    var PersonChanges = new List<string>();
+
+                                    // determine if we can find a match and if so add an user login record
+
+                                    // get properties from Facebook dynamic object
+                                    string lastName = me.last_name.ToString();
+                                    string firstName = me.first_name.ToString();
+                                    string email = me.email.ToString();
+
+                                    var personService = new PersonService();
+                                    var person = personService.Queryable().FirstOrDefault( u => u.LastName == lastName && u.FirstName == firstName && u.Email == email );
+
+                                    if ( person != null )
+                                    {
+                                        // since we have the data enter the birthday from Facebook to the db if we don't have it yet
+                                        DateTime birthdate = Convert.ToDateTime( me.birthday.ToString() );
+
+                                        if ( person.BirthDay == null )
+                                        {
+                                            person.BirthDate = birthdate;
+                                            History.EvaluateChange( PersonChanges, "Birth Date", null, person.BirthDate );
+
+                                            personService.Save( person, person.Id );
+                                            
+                                            new HistoryService().SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                                                person.Id, PersonChanges, person.Id );
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        person = new Person();
+                                        person.IsSystem = false;
+                                        person.RecordTypeValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                                        person.RecordStatusValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                                        person.FirstName = me.first_name.ToString();
+                                        person.LastName = me.last_name.ToString();
+                                        person.Email = me.email.ToString();
+                                        if ( me.gender.ToString() == "male" )
+                                            person.Gender = Gender.Male;
+                                        else if ( me.gender.ToString() == "female" )
+                                            person.Gender = Gender.Female;
+                                        else
+                                            person.Gender = Gender.Unknown;
+                                        person.BirthDate = Convert.ToDateTime( me.birthday.ToString() );
+                                        person.DoNotEmail = false;
+
+                                        new GroupService().SaveNewFamily( person, null, null );
+                                    }
+
+                                    user = userLoginService.Create( person, AuthenticationServiceType.External, this.TypeId, facebookId, "fb", true, person.Id );
                                 }
-
-                            }
-                            else
-                            {
-
-                                var dvService = new DefinedValueService();
-
-                                person = new Person();
-                                person.IsSystem = false;
-                                person.RecordTypeValueId = dvService.GetIdByGuid( new Guid( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON ) );
-                                person.RecordStatusValueId = dvService.GetIdByGuid( new Guid( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ) );
-
-                                person.FirstName = me.first_name.ToString();
-                                person.LastName = me.last_name.ToString();
-                                person.Email = me.email.ToString();
-
-                                if ( me.gender.ToString() == "male" )
-                                    person.Gender = Gender.Male;
-                                else if ( me.gender.ToString() == "female" )
-                                    person.Gender = Gender.Female;
-                                else
-                                    person.Gender = Gender.Unknown;
-
-                                person.BirthDate = Convert.ToDateTime( me.birthday.ToString() );
-                                person.DoNotEmail = false;
-
-                                personService.Add( person, null );
-                                personService.Save( person, null );
-                            }
-
-                            user = userLoginService.Create( person, AuthenticationServiceType.External, this.TypeId, facebookId, "fb", true, person.Id );
+                            } );
                         }
                         catch ( Exception ex )
                         {

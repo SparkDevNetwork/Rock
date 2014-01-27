@@ -886,38 +886,14 @@ achieve our mission.  We are so grateful for your commitment.
                                 person.PhoneNumbers.Add( phone );
                             }
 
-                            // Create Family Role
-                            var groupMember = new GroupMember();
-                            groupMember.Person = person;
-                            groupMember.GroupRole = new GroupTypeRoleService().Get(new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) );
-
                             // Create Family
-                            var group = new Group();
-                            group.Members.Add( groupMember );
-                            group.Name = person.LastName + " Family";
-                            group.GroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
-
-                            var groupLocation = new GroupLocation();
-                            var location = new LocationService().Get(
-                                txtStreet.Text, string.Empty, txtCity.Text, ddlState.SelectedValue, txtZip.Text );
-                            if ( location != null )
-                            {
-                                Guid addressTypeGuid = Guid.Empty;
-                                if ( !Guid.TryParse( GetAttributeValue( "AddressType" ), out addressTypeGuid ) )
-                                {
-                                    addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
-                                }
-
-                                groupLocation = new GroupLocation();
-                                groupLocation.Location = location;
-                                groupLocation.GroupLocationTypeValueId = DefinedValueCache.Read( addressTypeGuid ).Id;
-
-                                group.GroupLocations.Add( groupLocation );
-                            }
-
                             var groupService = new GroupService();
-                            groupService.Add( group, CurrentPersonId );
-                            groupService.Save( group, CurrentPersonId );
+                            var familyGroup = groupService.SaveNewFamily( person, null, CurrentPersonId );
+                            if (familyGroup != null)
+                            {
+                                groupService.AddNewFamilyAddress(familyGroup, GetAttributeValue( "AddressType" ), 
+                                    txtStreet.Text, string.Empty, txtCity.Text , ddlState.SelectedValue, txtZip.Text, CurrentPersonId );
+                            }
                         }
 
                         ViewState["PersonId"] = person != null ? person.Id : 0;

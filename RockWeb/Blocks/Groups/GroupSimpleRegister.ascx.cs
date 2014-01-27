@@ -202,21 +202,7 @@ namespace RockWeb.Blocks.Groups
                     person.LastName = txtLastName.Text;
                     person.Email = txtEmail.Text;
 
-                    // Create Family Role
-                    var groupMember = new GroupMember();
-                    groupMember.Person = person;
-                    groupMember.GroupRole = new GroupTypeRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) );
-
-                    // Create Family
-                    var group = new Group();
-                    group.Members.Add( groupMember );
-                    group.Name = person.LastName + " Family";
-                    group.GroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
-
-                    // Save person/family
-                    var groupService = new GroupService();
-                    groupService.Add( group, CurrentPersonId );
-                    groupService.Save( group, CurrentPersonId );
+                    new GroupService().SaveNewFamily( person, null, CurrentPersonId );
 
                     return personService.Get( person.Id );
                 }
