@@ -27,18 +27,7 @@ namespace Rock.Model
     /// </summary>
     public partial class LocationService 
     {
-        /// <summary>
-        /// Returns a <see cref="Rock.Model.Location"/> based on a provided full address string.
-        /// </summary>
-        /// <param name="fullAddress">A <see cref="System.String"/> representing the a location's full mailing/street address.</param>
-        /// <returns>
-        /// The first <see cref="Rock.Model.Location"/> where the FullAddress property matches the provided value.
-        /// </returns>
-        public Location GetByFullAddress( string fullAddress )
-        {
-            return Repository.FirstOrDefault( t => ( t.FullAddress == fullAddress || ( fullAddress == null && t.FullAddress == null ) ) );
-        }
-        
+       
         /// <summary>
         /// Returns the first <see cref="Rock.Model.Location"/> where the address matches the provided address.  If no address is found with the provided values, 
         /// the address will be standardized. If there is still not a match, the address will be saved as a new location.
