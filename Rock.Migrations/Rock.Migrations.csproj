@@ -404,6 +404,10 @@
     <Compile Include="Migrations\201401250002455_TagDescription.Designer.cs">
       <DependentUpon>201401250002455_TagDescription.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401271236495_DeleteSampleReportPage.cs" />
+    <Compile Include="Migrations\201401271236495_DeleteSampleReportPage.Designer.cs">
+      <DependentUpon>201401271236495_DeleteSampleReportPage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -686,6 +690,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401250002455_TagDescription.resx">
       <DependentUpon>201401250002455_TagDescription.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401271236495_DeleteSampleReportPage.resx">
+      <DependentUpon>201401271236495_DeleteSampleReportPage.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
