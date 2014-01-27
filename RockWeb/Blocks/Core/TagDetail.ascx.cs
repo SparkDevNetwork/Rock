@@ -196,7 +196,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rblScope_SelectedIndexChanged( object sender, EventArgs e )
         {
-            if ( rblScope.SelectedValue == "Private" && CurrentPerson != null )
+            if ( rblScope.SelectedValue == "Personal" && CurrentPerson != null )
             {
                 ppOwner.SetValue( CurrentPerson );
                 ppOwner.Visible = _canConfigure;
@@ -327,11 +327,11 @@ namespace RockWeb.Blocks.Core
             tbDescription.Text = tag.Description;
             if ( tag.OwnerId.HasValue )
             {
-                rblScope.SelectedValue = "Private";
+                rblScope.SelectedValue = "Personal";
             }
             else
             {
-                rblScope.SelectedValue = "Public";
+                rblScope.SelectedValue = "Organization";
             }
             ppOwner.SetValue( tag.Owner );
 
