@@ -132,8 +132,8 @@ namespace RockWeb.Blocks.Finance
                             if ( !pledge.IsValid )
                                 continue;
 
-                            pledgeService.Add( pledge, person.Id );
-                            pledgeService.Save( pledge, person.Id );
+                            pledgeService.Add( pledge, CurrentPersonAlias );
+                            pledgeService.Save( pledge, CurrentPersonAlias );
                         }
 
                         ShowReceipt( pledges.Select( p => p.Id ) );
@@ -161,8 +161,8 @@ namespace RockWeb.Blocks.Finance
                             continue;
 
                         var pledgeService = new FinancialPledgeService();
-                        pledgeService.Add( pledge, CurrentPersonId );
-                        pledgeService.Save( pledge, CurrentPersonId );
+                        pledgeService.Add( pledge, CurrentPersonAlias );
+                        pledgeService.Save( pledge, CurrentPersonAlias );
                     }
 
                     Session.Remove( "CachedPledges" );

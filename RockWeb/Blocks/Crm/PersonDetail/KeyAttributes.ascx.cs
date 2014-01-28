@@ -198,7 +198,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         if ( attributeControl != null )
                         {
                             string value = attribute.FieldType.Field.GetEditValue( attributeControl, attribute.QualifierValues );
-                            Rock.Attribute.Helper.SaveAttributeValue( Person, attribute, value, CurrentPersonId );
+                            Rock.Attribute.Helper.SaveAttributeValue( Person, attribute, value, CurrentPersonAlias );
                         }
                     }
                 }

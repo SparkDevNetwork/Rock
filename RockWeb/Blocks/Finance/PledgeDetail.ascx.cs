@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Finance
             if ( pledgeId == 0 )
             {
                 pledge = new FinancialPledge();
-                pledgeService.Add( pledge, CurrentPersonId );
+                pledgeService.Add( pledge, CurrentPersonAlias );
             }
             else
             {
@@ -92,7 +92,7 @@ namespace RockWeb.Blocks.Finance
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () => pledgeService.Save( pledge, CurrentPersonId ) );
+            RockTransactionScope.WrapTransaction( () => pledgeService.Save( pledge, CurrentPersonAlias ) );
             NavigateToParentPage();
         }
 

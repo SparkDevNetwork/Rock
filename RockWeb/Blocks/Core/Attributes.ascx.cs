@@ -320,8 +320,8 @@ namespace RockWeb.Blocks.Core
             {
                 Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
 
-                attributeService.Delete( attribute, CurrentPersonId );
-                attributeService.Save( attribute, CurrentPersonId );
+                attributeService.Delete( attribute, CurrentPersonAlias );
+                attributeService.Save( attribute, CurrentPersonAlias );
             }
 
             BindGrid();
@@ -427,13 +427,13 @@ namespace RockWeb.Blocks.Core
 
             if ( _configuredType )
             {
-                attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtAttribute, 
-                    _entityTypeId, _entityQualifierColumn, _entityQualifierValue, CurrentPersonId );
+                attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtAttribute,
+                    _entityTypeId, _entityQualifierColumn, _entityQualifierValue, CurrentPersonAlias );
             }
             else
             {
                 attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtAttribute,
-                    ddlAttrEntityType.SelectedValueAsInt(), tbAttrQualifierField.Text, tbAttrQualifierValue.Text, CurrentPersonId );
+                    ddlAttrEntityType.SelectedValueAsInt(), tbAttrQualifierField.Text, tbAttrQualifierValue.Text, CurrentPersonAlias );
             }
 
             // Attribute will be null if it was not valid
@@ -485,13 +485,13 @@ namespace RockWeb.Blocks.Core
                         attributeValue = new Rock.Model.AttributeValue();
                         attributeValue.AttributeId = attributeId;
                         attributeValue.EntityId = _entityId;
-                        attributeValueService.Add( attributeValue, CurrentPersonId );
+                        attributeValueService.Add( attributeValue, CurrentPersonAlias );
                     }
 
                     var fieldType = Rock.Web.Cache.FieldTypeCache.Read( attribute.FieldType.Id );
                     attributeValue.Value = fieldType.Field.GetEditValue( attribute.GetControl( fsEditControl.Controls[0] ), attribute.QualifierValues );
 
-                    attributeValueService.Save( attributeValue, CurrentPersonId );
+                    attributeValueService.Save( attributeValue, CurrentPersonAlias );
 
                     Rock.Web.Cache.AttributeCache.Flush( attributeId );
                     if ( !_entityTypeId.HasValue && _entityQualifierColumn == string.Empty && _entityQualifierValue == string.Empty && !_entityId.HasValue )

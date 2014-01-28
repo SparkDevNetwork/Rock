@@ -66,9 +66,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to Rock on the server.</param>
         /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
-        /// <param name="currentPersonId">A <see cref="System.Int32" /> that contains the Id of the currently logged on <see cref="Rock.Model.Person" />.</param>
+        /// <param name="personAlias">A <see cref="Rock.Model.PersonAlias" /> for the currently logged on <see cref="Rock.Model.Person" />.</param>
         /// <param name="refreshAll">if set to <c>true</c> will refresh name, category, and description for all block types (not just the new ones)</param>
-        public void RegisterBlockTypes( string physWebAppPath, System.Web.UI.Page page, int? currentPersonId, bool refreshAll = false)
+        public void RegisterBlockTypes( string physWebAppPath, System.Web.UI.Page page, PersonAlias personAlias, bool refreshAll = false)
         {
             // Dictionary for block types.  Key is path, value is friendly name
             var list = new Dictionary<string, string>();
@@ -98,7 +98,7 @@ namespace Rock.Model
                             blockType = new BlockType();
                             blockType.Path = path;
                             blockType.Guid = new Guid();
-                            this.Add( blockType, currentPersonId );
+                            this.Add( blockType, personAlias );
                         }
 
                         Type controlType = control.GetType();
@@ -126,7 +126,7 @@ namespace Rock.Model
                         blockType.Category = Rock.Reflection.GetCategory( controlType ) ?? string.Empty;
                         blockType.Description = Rock.Reflection.GetDescription( controlType ) ?? string.Empty;
 
-                        this.Save( blockType, currentPersonId );
+                        this.Save( blockType, personAlias );
                     }
                 }
             }

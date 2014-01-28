@@ -83,7 +83,7 @@ namespace Rock.Rest.Controllers
                 if ( model.IsValid )
                 {
                     model.Order = service.GetMaxOrder( model );
-                    service.Save( model, user.PersonId );
+                    service.Save( model, user.Person.PrimaryAlias );
                 }
                 else
                     throw new HttpResponseException( HttpStatusCode.BadRequest );

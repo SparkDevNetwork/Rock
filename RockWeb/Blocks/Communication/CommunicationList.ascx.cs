@@ -217,8 +217,8 @@ namespace RockWeb.Blocks.Communication
                         return;
                     }
 
-                    communicationService.Delete( communication, CurrentPersonId );
-                    communicationService.Save( communication, CurrentPersonId );
+                    communicationService.Delete( communication, CurrentPersonAlias );
+                    communicationService.Save( communication, CurrentPersonAlias );
                 }
             } );
 

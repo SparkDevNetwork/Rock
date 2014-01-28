@@ -74,8 +74,8 @@ namespace Rock.Model
 
                 attendanceCode.IssueDateTime = RockDateTime.Now;
                 attendanceCode.Code = code;
-                this.Add( attendanceCode, null );
-                this.Save( attendanceCode, null );
+                this.Add( attendanceCode );
+                this.Save( attendanceCode );
             }
 
             return attendanceCode;

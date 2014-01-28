@@ -474,7 +474,7 @@ namespace RockWeb.Blocks.Prayer
                         }
                     }
 
-                    prayerRequestService.Save( prayerRequest, CurrentPersonId );
+                    prayerRequestService.Save( prayerRequest, CurrentPersonAlias );
                 }
 
                 BindGrid();
@@ -510,8 +510,8 @@ namespace RockWeb.Blocks.Prayer
                         return;
                     }
 
-                    prayerRequestService.Delete( prayerRequest, CurrentPersonId );
-                    prayerRequestService.Save( prayerRequest, CurrentPersonId );
+                    prayerRequestService.Delete( prayerRequest, CurrentPersonAlias );
+                    prayerRequestService.Save( prayerRequest, CurrentPersonAlias );
                 }
             } );
 
@@ -526,8 +526,8 @@ namespace RockWeb.Blocks.Prayer
             var prayerComments = noteService.Get( noteType.Id, prayerRequest.Id );
             foreach ( Note prayerComment in prayerComments )
             {
-                noteService.Delete( prayerComment, CurrentPersonId );
-                noteService.Save( prayerComment, CurrentPersonId );
+                noteService.Delete( prayerComment, CurrentPersonAlias );
+                noteService.Save( prayerComment, CurrentPersonAlias );
             }
         }
 

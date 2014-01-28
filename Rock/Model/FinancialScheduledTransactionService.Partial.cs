@@ -75,10 +75,10 @@ namespace Rock.Model
         /// Updates the status.
         /// </summary>
         /// <param name="scheduledTransaction">The scheduled transaction.</param>
-        /// <param name="currentPersonId">The current person identifier.</param>
+        /// <param name="currentPersonAlias">The current person alias.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public bool UpdateStatus(FinancialScheduledTransaction scheduledTransaction, int? currentPersonId, out string errorMessages)
+        public bool UpdateStatus(FinancialScheduledTransaction scheduledTransaction, PersonAlias currentPersonAlias, out string errorMessages)
         {
             if ( scheduledTransaction.GatewayEntityType != null )
             {
@@ -87,7 +87,7 @@ namespace Rock.Model
                 {
                     if ( gateway.GetScheduledPaymentStatus( scheduledTransaction, out errorMessages ) )
                     {
-                        Save( scheduledTransaction, currentPersonId );
+                        Save( scheduledTransaction, currentPersonAlias );
                         return true;
                     }
                 }

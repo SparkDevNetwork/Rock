@@ -982,8 +982,10 @@ namespace Rock.Web.UI
                 transaction.DateViewed = RockDateTime.Now;
                 transaction.PageId = _pageCache.Id;
                 transaction.SiteId = _pageCache.Layout.Site.Id;
-                if ( CurrentPersonId != null )
-                    transaction.PersonId = (int)CurrentPersonId;
+                if ( CurrentPerson != null )
+                {
+                    transaction.PersonId = CurrentPerson.Id;
+                }
                 transaction.IPAddress = Request.UserHostAddress;
                 transaction.UserAgent = Request.UserAgent;
 
@@ -1922,7 +1924,7 @@ namespace Rock.Web.UI
                 sessionValues.Add( key, newValues );
 
             if ( CurrentPerson != null )
-                new PersonService().SaveUserPreference( CurrentPerson, key, newValues, CurrentPersonId );
+                new PersonService().SaveUserPreference( CurrentPerson, key, newValues, CurrentPersonAlias );
         }
 
         /// <summary>
@@ -1935,7 +1937,7 @@ namespace Rock.Web.UI
         private Dictionary<string, List<string>> SessionUserPreferences()
         {
             string sessionKey = string.Format( "{0}_{1}",
-                Person.USER_VALUE_ENTITY, CurrentPersonId.HasValue ? CurrentPersonId.Value : 0 );
+                Person.USER_VALUE_ENTITY, CurrentPerson != null ? CurrentPerson.Id : 0 );
 
             var userPreferences = Session[sessionKey] as Dictionary<string, List<string>>;
             if ( userPreferences == null )

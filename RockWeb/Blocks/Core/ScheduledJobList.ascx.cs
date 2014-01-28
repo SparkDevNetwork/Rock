@@ -112,8 +112,8 @@ namespace RockWeb.Blocks.Administration
                     return;
                 }
 
-                jobService.Delete( job, CurrentPersonId );
-                jobService.Save( job, CurrentPersonId );
+                jobService.Delete( job, CurrentPersonAlias );
+                jobService.Save( job, CurrentPersonAlias );
             } );
 
             BindGrid();

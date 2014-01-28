@@ -128,8 +128,8 @@ namespace RockWeb.Blocks.Groups
                                             // If a confirmation email is configured, set status to Pending otherwise set it to active
                                             member.GroupMemberStatus = email != null ? GroupMemberStatus.Pending : GroupMemberStatus.Active;
 
-                                            groupMemberService.Add( member, CurrentPersonId );
-                                            groupMemberService.Save( member, CurrentPersonId );
+                                            groupMemberService.Add( member, CurrentPersonAlias );
+                                            groupMemberService.Save( member, CurrentPersonAlias );
                                             member = groupMemberService.Get( member.Id );
                                         }
 

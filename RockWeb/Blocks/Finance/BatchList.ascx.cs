@@ -141,8 +141,8 @@ namespace RockWeb.Blocks.Finance
             Rock.Model.FinancialBatch FinancialBatch = FinancialBatchService.Get( (int)rGridBatch.DataKeys[e.RowIndex]["id"] );
             if ( FinancialBatch != null )
             {
-                FinancialBatchService.Delete( FinancialBatch, CurrentPersonId );
-                FinancialBatchService.Save( FinancialBatch, CurrentPersonId );
+                FinancialBatchService.Delete( FinancialBatch, CurrentPersonAlias );
+                FinancialBatchService.Save( FinancialBatch, CurrentPersonAlias );
             }
 
             BindGrid();
@@ -217,7 +217,7 @@ namespace RockWeb.Blocks.Finance
             var queryable = batchService.Queryable();
 
             List<Rock.Model.FinancialBatch> items = queryable.ToList();
-            batchService.Reorder( items, e.OldIndex, e.NewIndex, CurrentPersonId );
+            batchService.Reorder( items, e.OldIndex, e.NewIndex, CurrentPersonAlias );
             BindGrid();
         }
 

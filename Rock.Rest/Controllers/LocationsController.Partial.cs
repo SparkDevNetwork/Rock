@@ -80,7 +80,7 @@ namespace Rock.Rest.Controllers
                 if ( location != null )
                 {
                     var locationService = new LocationService();
-                    locationService.Geocode( location, user.PersonId );
+                    locationService.Geocode( location, user.Person.PrimaryAlias );
                     return location;
                 }
 
@@ -105,7 +105,7 @@ namespace Rock.Rest.Controllers
                 if ( location != null )
                 {
                     var locationService = new LocationService();
-                    locationService.Standardize( location, user.PersonId );
+                    locationService.Standardize( location, user.Person.PrimaryAlias );
                     return location;
                 }
 

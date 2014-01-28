@@ -189,8 +189,8 @@ namespace RockWeb.Blocks.Core
                         return;
                     }
 
-                    DeviceService.Delete( Device, CurrentPersonId );
-                    DeviceService.Save( Device, CurrentPersonId );
+                    DeviceService.Delete( Device, CurrentPersonAlias );
+                    DeviceService.Save( Device, CurrentPersonAlias );
                 }
             } );
 

@@ -687,16 +687,16 @@ namespace RockWeb.Blocks.CheckIn
                     groupsToDelete.Reverse();
                     foreach ( var groupToDelete in groupsToDelete )
                     {
-                        groupService.Delete( groupToDelete, this.CurrentPersonId );
-                        groupService.Save( groupToDelete, this.CurrentPersonId );
+                        groupService.Delete( groupToDelete, CurrentPersonAlias );
+                        groupService.Save( groupToDelete, CurrentPersonAlias );
                     }
 
                     // delete in reverse order to get deepest child items first
                     groupTypesToDelete.Reverse();
                     foreach ( var groupTypeToDelete in groupTypesToDelete )
                     {
-                        groupTypeService.Delete( groupTypeToDelete, this.CurrentPersonId );
-                        groupTypeService.Save( groupTypeToDelete, this.CurrentPersonId );
+                        groupTypeService.Delete( groupTypeToDelete, CurrentPersonAlias );
+                        groupTypeService.Save( groupTypeToDelete, CurrentPersonAlias );
                     }
 
                     // Add/Update grouptypes and groups that are in the UI
@@ -721,7 +721,7 @@ namespace RockWeb.Blocks.CheckIn
 
                         if ( groupTypeDB.Id == 0 )
                         {
-                            groupTypeService.Add( groupTypeDB, this.CurrentPersonId );
+                            groupTypeService.Add( groupTypeDB, this.CurrentPersonAlias );
                         }
 
                         if ( !groupTypeDB.IsValid )
@@ -733,9 +733,9 @@ namespace RockWeb.Blocks.CheckIn
                             return;
                         }
 
-                        groupTypeService.Save( groupTypeDB, this.CurrentPersonId );
+                        groupTypeService.Save( groupTypeDB, CurrentPersonAlias );
 
-                        Rock.Attribute.Helper.SaveAttributeValues( groupTypeDB, this.CurrentPersonId );
+                        Rock.Attribute.Helper.SaveAttributeValues( groupTypeDB, this.CurrentPersonAlias );
 
                         // get fresh from database to make sure we have Id so we can update the CheckinLabel Attributes
                         groupTypeDB = groupTypeService.Get( groupTypeDB.Guid );
@@ -745,7 +745,7 @@ namespace RockWeb.Blocks.CheckIn
                         {
                             var attribute = attributeService.Get( labelAttributeDB.Value.Guid );
                             Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
-                            attributeService.Delete( attribute, this.CurrentPersonId );
+                            attributeService.Delete( attribute, CurrentPersonAlias );
                         }
 
                         foreach ( var checkinLabelAttributeInfo in GroupTypeCheckinLabelAttributesState[groupTypeUI.Guid] )
@@ -770,8 +770,8 @@ namespace RockWeb.Blocks.CheckIn
                                 return;
                             }
 
-                            attributeService.Add( attribute, this.CurrentPersonId );
-                            attributeService.Save( attribute, this.CurrentPersonId );
+                            attributeService.Add( attribute, CurrentPersonAlias );
+                            attributeService.Save( attribute, CurrentPersonAlias );
                         }
                     }
 
@@ -815,7 +815,7 @@ namespace RockWeb.Blocks.CheckIn
 
                         if ( groupDB.Id == 0 )
                         {
-                            groupService.Add( groupDB, this.CurrentPersonId );
+                            groupService.Add( groupDB, CurrentPersonAlias );
                         }
 
                         if ( !groupDB.IsValid )
@@ -828,9 +828,9 @@ namespace RockWeb.Blocks.CheckIn
                             return;
                         }
 
-                        groupService.Save( groupDB, this.CurrentPersonId );
+                        groupService.Save( groupDB, CurrentPersonAlias );
 
-                        Rock.Attribute.Helper.SaveAttributeValues( groupDB, this.CurrentPersonId );
+                        Rock.Attribute.Helper.SaveAttributeValues( groupDB, this.CurrentPersonAlias );
                     }
 
                     /* now that we have all the grouptypes saved, now lets go back and save them again with the current UI ChildGroupTypes */
@@ -844,7 +844,7 @@ namespace RockWeb.Blocks.CheckIn
                         parentGroupTypeDB.ChildGroupTypes.Add( childGroupTypeDB );
                     }
 
-                    groupTypeService.Save( parentGroupTypeDB, this.CurrentPersonId );
+                    groupTypeService.Save( parentGroupTypeDB, CurrentPersonAlias );
 
                     // loop thru all the other GroupTypes in the UI and save their childgrouptypes
                     foreach ( var groupTypeUI in groupTypesToAddUpdate )
@@ -858,7 +858,7 @@ namespace RockWeb.Blocks.CheckIn
                             groupTypeDB.ChildGroupTypes.Add( childGroupTypeDB );
                         }
 
-                        groupTypeService.Save( groupTypeDB, this.CurrentPersonId );
+                        groupTypeService.Save( groupTypeDB, CurrentPersonAlias );
                     }
                 } );
             }

@@ -212,7 +212,7 @@ namespace RockWeb.Blocks.Cms
                     htmlContent.Version = 1;
                 }
 
-                htmlContentService.Add( htmlContent, CurrentPersonId );
+                htmlContentService.Add( htmlContent, CurrentPersonAlias );
             }
 
             htmlContent.StartDateTime = drpDateRange.LowerValue;
@@ -234,7 +234,7 @@ namespace RockWeb.Blocks.Cms
 
             htmlContent.Content = newContent;
 
-            if ( htmlContentService.Save( htmlContent, CurrentPersonId ) )
+            if ( htmlContentService.Save( htmlContent, CurrentPersonAlias ) )
             {
                 // flush cache content 
                 this.FlushCacheItem( entityValue );

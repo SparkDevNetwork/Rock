@@ -74,8 +74,8 @@ namespace Rock.Transactions
                         if ( workflowType.IsPersisted )
                         {
                             var workflowService = new Rock.Model.WorkflowService();
-                            workflowService.AddUsingAlias( workflow, PersonAlias );
-                            workflowService.SaveUsingAlias( workflow, PersonAlias );
+                            workflowService.Add( workflow, PersonAlias );
+                            workflowService.Save( workflow, PersonAlias );
                         }
                     }
                 }

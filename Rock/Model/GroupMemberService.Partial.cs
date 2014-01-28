@@ -191,14 +191,14 @@ namespace Rock.Model
         /// <param name="groupMember">A <see cref="Rock.Model.GroupMember" /> representing the person to find the inverse relationship for.</param>
         /// <param name="createGroup">A <see cref="System.Boolean"/> flag indicating if a new <see cref="Rock.Model.Group"/> can be created 
         /// for the person with the inverse relationship. </param>
-        /// <param name="personId">The Id of the <see cref="Rock.Model.Person"/> who has the inverse relationship.</param>
+        /// <param name="personAlias">The alias of the <see cref="Rock.Model.Person"/> who has the inverse relationship.</param>
         /// <returns>
         /// A <see cref="Rock.Model.GroupMember"/> representing the <see cref="Rock.Model.Person"/> with the inverse relationship.
         /// </returns>
         /// <remarks>
         /// In Rock, examples of inverse relationships include: Parent/Child, Can Check In/Check in By, Sibling/Sibling, Grandparent/Grandchild, etc.
         /// </remarks>
-        public GroupMember GetInverseRelationship( GroupMember groupMember, bool createGroup, int? personId )
+        public GroupMember GetInverseRelationship( GroupMember groupMember, bool createGroup, PersonAlias personAlias )
         {
             var groupRole = groupMember.GroupRole;
             if ( groupRole == null )
@@ -284,7 +284,7 @@ namespace Rock.Model
                                         inverseGroupMember.PersonId = ownerPersonId.Value;
                                         inverseGroupMember.Group = inverseGroup;
                                         inverseGroupMember.GroupRoleId = inverseRole.Id;
-                                        Add( inverseGroupMember, personId );
+                                        Add( inverseGroupMember, personAlias );
                                     }
                                 }
 
