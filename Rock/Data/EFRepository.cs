@@ -245,10 +245,11 @@ namespace Rock.Data
         /// Saves the entity and returns a list of any entity changes that
         /// need to be logged
         /// </summary>
-        /// <param name="PersonId">The id of the person making the change</param>
+        /// <param name="personAlias">The person alias.</param>
         /// <param name="audits">The audits.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
+        /// <exception cref="System.Exception"></exception>
         public bool Save( PersonAlias personAlias, out List<Audit> audits, out List<string> errorMessages )
         {
             int? personAliasId = null;

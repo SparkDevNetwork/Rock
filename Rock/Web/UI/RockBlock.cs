@@ -493,7 +493,7 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Sets the value of an block attribute key in memory. Once values have been set, use the <see cref="SaveAttributeValues(int?)" /> method to save all values to database 
+        /// Sets the value of an block attribute key in memory. Once values have been set, use the <see cref="SaveAttributeValues(PersonAlias)" /> method to save all values to database 
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the block attribute's key name.</param>
         /// <param name="value">A <see cref="System.String"/> representing the value of the attribute.</param>

@@ -72,7 +72,6 @@ namespace Rock.Model
         /// <param name="username">A <see cref="System.String" /> containing the UserName.</param>
         /// <param name="password">A <see cref="System.String" /> containing the unhashed/unencrypted password.</param>
         /// <param name="isConfirmed">A <see cref="System.Boolean" /> flag indicating if the user has been confirmed.</param>
-        /// <param name="currentPersonId">A <see cref="System.Int32" /> representing the Id of the <see cref="Rock.Model.Person" /> creating the <see cref="Rock.Model.UserLogin" /></param>
         /// <returns></returns>
         /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the Username already exists.</exception>
         /// <exception cref="System.ArgumentException">Thrown when the service does not exist or is not active.</exception>

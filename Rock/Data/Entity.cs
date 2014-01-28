@@ -315,7 +315,7 @@ namespace Rock.Data
         /// Raises the adding event.
         /// </summary>
         /// <param name="cancel">if set to <c>true</c> [cancel].</param>
-        /// <param name="personId">The person id.</param>
+        /// <param name="personAlias">The person alias.</param>
         public virtual void RaiseAddingEvent( out bool cancel, PersonAlias personAlias )
         {
             ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this, personAlias );
@@ -341,7 +341,7 @@ namespace Rock.Data
         /// <summary>
         /// Raises the added event.
         /// </summary>
-        /// <param name="personId">The person id.</param>
+        /// <param name="personAlias">The person alias.</param>
         public virtual void RaiseAddedEvent( PersonAlias personAlias )
         {
             OnAdded( new ModelUpdatedEventArgs( this, personAlias ) );
@@ -366,7 +366,7 @@ namespace Rock.Data
         /// Raises the deleting event.
         /// </summary>
         /// <param name="cancel">if set to <c>true</c> [cancel].</param>
-        /// <param name="personId">The person id.</param>
+        /// <param name="personAlias">The person alias.</param>
         public virtual void RaiseDeletingEvent( out bool cancel, PersonAlias personAlias )
         {
             ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this, personAlias );
@@ -392,7 +392,7 @@ namespace Rock.Data
         /// <summary>
         /// Raises the deleted event.
         /// </summary>
-        /// <param name="personId">The person id.</param>
+        /// <param name="personAlias">The person alias.</param>
         public virtual void RaiseDeletedEvent( PersonAlias personAlias )
         {
             OnDeleted( new ModelUpdatedEventArgs( this, personAlias ) );
@@ -417,7 +417,7 @@ namespace Rock.Data
         /// Raises the updating event.
         /// </summary>
         /// <param name="cancel">if set to <c>true</c> [cancel].</param>
-        /// <param name="personId">The person id.</param>
+        /// <param name="personAlias">The person alias.</param>
         public virtual void RaiseUpdatingEvent( out bool cancel, PersonAlias personAlias )
         {
             ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this, personAlias );
@@ -443,7 +443,7 @@ namespace Rock.Data
         /// <summary>
         /// Raises the updated event.
         /// </summary>
-        /// <param name="personId">The person id.</param>
+        /// <param name="personAlias">The person alias.</param>
         public virtual void RaiseUpdatedEvent( PersonAlias personAlias )
         {
             OnUpdated( new ModelUpdatedEventArgs( this, personAlias ) );
@@ -471,10 +471,10 @@ namespace Rock.Data
         public readonly Rock.Model.PersonAlias PersonAlias;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ModelUpdatedEventArgs"/> class.
+        /// Initializes a new instance of the <see cref="ModelUpdatedEventArgs" /> class.
         /// </summary>
         /// <param name="model">The model.</param>
-        /// <param name="personId">The person id.</param>
+        /// <param name="personAlias">The person alias.</param>
         public ModelUpdatedEventArgs( IEntity model, PersonAlias personAlias )
         {
             Model = model;
@@ -505,10 +505,10 @@ namespace Rock.Data
 
         }
         /// <summary>
-        /// Initializes a new instance of the <see cref="ModelUpdatingEventArgs"/> class.
+        /// Initializes a new instance of the <see cref="ModelUpdatingEventArgs" /> class.
         /// </summary>
         /// <param name="model">The model.</param>
-        /// <param name="personId">The person id.</param>
+        /// <param name="personAlias"></param>
         public ModelUpdatingEventArgs( IEntity model, Rock.Model.PersonAlias personAlias )
             : base( model, personAlias )
         {

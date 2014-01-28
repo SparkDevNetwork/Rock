@@ -204,7 +204,7 @@ Rock.controls.tagList.initialize({{
         /// <summary>
         /// Saves the tag values that user entered for the entity (
         /// </summary>
-        /// <param name="currentPersonId">The current person identifier.</param>
+        /// <param name="personAlias">The person alias.</param>
         public void SaveTagValues(PersonAlias personAlias)
         {
             int? currentPersonId = null;
