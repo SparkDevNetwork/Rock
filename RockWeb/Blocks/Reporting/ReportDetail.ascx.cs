@@ -732,6 +732,23 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 Type entityType = EntityTypeCache.Read( report.EntityTypeId.Value ).GetEntityType();
+
+                bool isPersonDataSet = report.EntityTypeId == EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+
+                if ( isPersonDataSet )
+                {
+                    gReport.PersonIdField = "Id";
+                }
+                else
+                {
+                    gReport.PersonIdField = null;
+                }
+
+                if ( report.EntityTypeId.HasValue )
+                {
+                    gReport.RowItemText = EntityTypeCache.Read( report.EntityTypeId.Value ).FriendlyName;
+                }
+
                 List<EntityField> entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType );
 
                 var selectedEntityFields = new Dictionary<int,EntityField>();

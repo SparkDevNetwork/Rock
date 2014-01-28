@@ -32,10 +32,10 @@ namespace Rock.Reporting.DataSelect.Person
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Select the names of the Person's Parents" )]
+    [Description( "Select the names of the Person's Children" )]
     [Export( typeof( DataSelectComponent ) )]
-    [ExportMetadata( "ComponentName", "Select Person's Parents' Names" )]
-    public class ParentsNamesSelect : DataSelectComponent<Rock.Model.Person>
+    [ExportMetadata( "ComponentName", "Select Person's Children's Names" )]
+    public class ChildNamesSelect : DataSelectComponent<Rock.Model.Person>
     {
         #region Properties
 
@@ -64,7 +64,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "ParentsNames";
+                return "ChildNames";
             }
         }
 
@@ -89,7 +89,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "Parent's Names";
+                return "Children's Names";
             }
         }
 
@@ -107,7 +107,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override string GetTitle( Type entityType )
         {
-            return "Parent's Names";
+            return "Children's Names";
         }
 
         /// <summary>
@@ -126,17 +126,18 @@ namespace Rock.Reporting.DataSelect.Person
             var familyGroupMembers = new GroupMemberService( context ).Queryable()
                 .Where( m => m.Group.GroupType.Guid == familyGuid );
 
-            // this returns Enumerable of Person for Parents per row. The Grid then uses ListDelimiterField to convert the list into Parents Names
-            var personParentsQuery = new PersonService( context ).Queryable()
-                .Select( p => familyGroupMembers.Where( s => s.PersonId == p.Id && s.GroupRole.Guid == childGuid )
+            // this returns Enumerable of Person for Children per row. The Grid then uses ListDelimiterField to convert the list into Children's Names
+            // sorted from oldest to youngest
+            var personChildrenQuery = new PersonService( context ).Queryable()
+                .Select( p => familyGroupMembers.Where( s => s.PersonId == p.Id && s.GroupRole.Guid == adultGuid )
                     .SelectMany( m => m.Group.Members )
-                    .Where( m => m.GroupRole.Guid == adultGuid )
-                    .OrderBy( m => m.Person.Gender)
+                    .Where( m => m.GroupRole.Guid ==  childGuid)
+                    .OrderBy( m => m.Person.BirthYear ).ThenBy( m => m.Person.BirthMonth ).ThenBy( m => m.Person.BirthDay )
                     .Select( m => m.Person ).AsEnumerable() );
 
-            var selectParentsExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personParentsQuery, entityIdProperty, "p" );
+            var selectChildrenExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personChildrenQuery, entityIdProperty, "p" );
 
-            return selectParentsExpression;
+            return selectChildrenExpression;
         }
 
         /// <summary>

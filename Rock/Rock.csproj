@@ -231,6 +231,7 @@
     <Compile Include="Reporting\DataFilter\Person\InGroupGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupFilter.cs" />
     <Compile Include="Reporting\DataSelect\Person\FamilyNameSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\ChildNames.cs" />
     <Compile Include="Reporting\DataSelect\Person\ParentsNamesSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\SpouseNameSelect.cs">
       <SubType>Code</SubType>
