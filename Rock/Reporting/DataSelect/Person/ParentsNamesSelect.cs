@@ -126,10 +126,12 @@ namespace Rock.Reporting.DataSelect.Person
             var familyGroupMembers = new GroupMemberService( context ).Queryable()
                 .Where( m => m.Group.GroupType.Guid == familyGuid );
 
+            // this returns Enumerable of Person for Parents per row. The Grid then uses ListDelimiterField to convert the list into Parents Names
             var personParentsQuery = new PersonService( context ).Queryable()
                 .Select( p => familyGroupMembers.Where( s => s.PersonId == p.Id && s.GroupRole.Guid == childGuid )
                     .SelectMany( m => m.Group.Members )
                     .Where( m => m.GroupRole.Guid == adultGuid )
+                    .OrderBy( m => m.Person.Gender)
                     .Select( m => m.Person ).AsEnumerable() );
 
             var selectParentsExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personParentsQuery, entityIdProperty, "p" );
