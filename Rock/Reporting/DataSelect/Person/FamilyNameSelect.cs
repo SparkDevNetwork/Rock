@@ -120,7 +120,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="entityIdProperty">The entity identifier property.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( RockContext context, Expression entityIdProperty, string selection )
+        public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
             // groupmembers
             var groupMembers = context.Set<GroupMember>();

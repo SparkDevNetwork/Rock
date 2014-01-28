@@ -176,11 +176,11 @@ namespace Rock.Model
                 Type genericServiceType = typeof( Rock.Data.Service<> );
                 Type modelServiceType = genericServiceType.MakeGenericType( modelType );
 
-                object serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { context } );
+                IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { context } ) as IService;
 
                 if ( serviceInstance != null )
                 {
-                    ParameterExpression paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
+                    ParameterExpression paramExpression = serviceInstance.ParameterExpression;
                     MemberExpression idExpression = Expression.Property( paramExpression, "Id" );
 
                     // Get AttributeValue queryable and parameter

@@ -41,9 +41,9 @@ namespace Rock.Reporting
             /// </summary>
             /// <param name="propertyExpression">The property expression.</param>
             /// <param name="parameterName">Name of the parameter.</param>
-            public PropertyParameterExpressionVisitor( Expression propertyExpression, string parameterName )
+            public PropertyParameterExpressionVisitor( MemberExpression propertyExpression, string parameterName )
             {
-                this._propertyExpression = propertyExpression as MemberExpression;
+                this._propertyExpression = propertyExpression;
                 this._parameterName = parameterName;
             }
 
@@ -66,16 +66,17 @@ namespace Rock.Reporting
         /// <summary>
         /// Extracts the first inner SELECT from an IQueryable. Useful for building DataSelect expressions for Reporting
         /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="qry">The qry.</param>
-        /// <param name="parameterExpression">The original parameter expression.</param>
+        /// <param name="propertyExpression">The property expression.</param>
         /// <param name="parameterName">Name of the parameter (forexample: 'p') from the qry to replace with the parameterExpression.</param>
         /// <returns></returns>
-        public static Expression Extract<T>( IQueryable qry, Expression parameterExpression, string parameterName )
+        public static Expression Extract<T>( IQueryable qry, MemberExpression propertyExpression, string parameterName )
         {
             MethodCallExpression methodCallExpression = qry.Expression as MethodCallExpression;
             Expression<Func<LambdaExpression>> executionLambda = Expression.Lambda<Func<LambdaExpression>>( methodCallExpression.Arguments[1] );
             Expression extractedExpression = ( executionLambda.Compile().Invoke()).Body;
-            var propertyParameterExpressionVisitor = new PropertyParameterExpressionVisitor( parameterExpression, parameterName );
+            var propertyParameterExpressionVisitor = new PropertyParameterExpressionVisitor( propertyExpression, parameterName );
 
             return propertyParameterExpressionVisitor.Visit( extractedExpression );
         }

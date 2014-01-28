@@ -41,9 +41,9 @@ namespace Rock.Reporting
             /// </summary>
             /// <param name="parameterExpression">The parameter expression.</param>
             /// <param name="parameterName">Name of the parameter.</param>
-            public ParameterExpressionVisitor( Expression parameterExpression, string parameterName )
+            public ParameterExpressionVisitor( ParameterExpression parameterExpression, string parameterName )
             {
-                this._parameterExpression = parameterExpression as ParameterExpression;
+                this._parameterExpression = parameterExpression;
                 this._parameterName = parameterName;
             }
 
@@ -70,7 +70,7 @@ namespace Rock.Reporting
         /// <param name="parameterExpression">The original parameter expression.</param>
         /// <param name="parameterName">Name of the parameter (forexample: 'p') from the qry to replace with the parameterExpression.</param>
         /// <returns></returns>
-        public static Expression Extract<T>( IQueryable qry, Expression parameterExpression, string parameterName )
+        public static Expression Extract<T>( IQueryable qry, ParameterExpression parameterExpression, string parameterName )
         {
             MethodCallExpression methodCallExpression = qry.Expression as MethodCallExpression;
             Expression<Func<LambdaExpression>> executionLambda = Expression.Lambda<Func<LambdaExpression>>( methodCallExpression.Arguments[1] );

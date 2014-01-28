@@ -77,7 +77,7 @@ namespace Rock.Rest.Controllers
             IQueryable<Category> qry;
             qry = Get().Where( a => ( a.ParentCategoryId ?? 0 ) == id );
 
-            object serviceInstance = null;
+            IService serviceInstance = null;
 
             var cachedEntityType = EntityTypeCache.Read( entityTypeId );
             if ( cachedEntityType != null )
@@ -106,7 +106,7 @@ namespace Rock.Rest.Controllers
                         Type genericServiceType = typeof( Rock.Data.Service<> );
                         Type modelServiceType = genericServiceType.MakeGenericType( modelType );
 
-                        serviceInstance = Activator.CreateInstance( modelServiceType );
+                        serviceInstance = Activator.CreateInstance( modelServiceType ) as IService;
                     }
                 }
             }
@@ -196,14 +196,14 @@ namespace Rock.Rest.Controllers
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="categoryId">The category id.</param>
         /// <returns></returns>
-        private object GetCategorizedItems( object serviceInstance, int categoryId )
+        private object GetCategorizedItems( IService serviceInstance, int categoryId )
         {
             if ( serviceInstance != null )
             {
                 MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
                 if ( getMethod != null )
                 {
-                    var paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
+                    var paramExpression = serviceInstance.ParameterExpression;
                     var propertyExpreesion = Expression.Property( paramExpression, "CategoryId" );
                     var zeroExpression = Expression.Constant( 0 );
                     var coalesceExpression = Expression.Coalesce( propertyExpreesion, zeroExpression );

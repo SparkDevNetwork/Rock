@@ -25,6 +25,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using Rock;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -639,7 +640,7 @@ namespace Rock.Reporting.DataFilter
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( Type entityType, object serviceInstance, Expression parameterExpression, string selection )
+        public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
             if ( !string.IsNullOrWhiteSpace( selection ) )
             {
@@ -694,7 +695,7 @@ namespace Rock.Reporting.DataFilter
         /// <param name="entityField">The property.</param>
         /// <param name="values">The values.</param>
         /// <returns></returns>
-        private Expression GetPropertyExpression( object serviceInstance, Expression parameterExpression, EntityField entityField, List<string> values )
+        private Expression GetPropertyExpression( IService serviceInstance, ParameterExpression parameterExpression, EntityField entityField, List<string> values )
         {
             Expression trueValue = Expression.Constant( true );
             MemberExpression propertyExpression = Expression.Property( parameterExpression, entityField.Name );
@@ -854,13 +855,13 @@ namespace Rock.Reporting.DataFilter
         /// <param name="property">The property.</param>
         /// <param name="values">The values.</param>
         /// <returns></returns>
-        private Expression GetAttributeExpression( object serviceInstance, Expression parameterExpression, EntityField property, List<string> values )
+        private Expression GetAttributeExpression( IService serviceInstance, ParameterExpression parameterExpression, EntityField property, List<string> values )
         {
             IEnumerable<int> ids = null;
 
             ComparisonType comparisonType = ComparisonType.EqualTo;
 
-            var service = new AttributeValueService();
+            var service = new AttributeValueService( serviceInstance.RockContext );
             var attributeValues = service.Queryable().Where( v =>
                 v.AttributeId == property.AttributeId &&
                 v.EntityId.HasValue &&
