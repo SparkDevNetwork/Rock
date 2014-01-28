@@ -410,6 +410,12 @@ namespace Rock.Web.UI.Controls
                 bool canAdd = AllowAnonymousEntry || GetCurrentPerson() != null;
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-note" );
+
+                if (this.DisplayType == NoteDisplayType.Light)
+                {
+                    writer.AddAttribute(HtmlTextWriterAttribute.Class, "panel-note-light");
+                }
+
                 writer.RenderBeginTag( "section" );
 
                 // Heading
