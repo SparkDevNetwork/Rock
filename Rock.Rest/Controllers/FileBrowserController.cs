@@ -86,11 +86,11 @@ namespace Rock.Rest.Controllers
             {
                 // figure out the extension of the file
                 string fileExtension = Path.GetExtension( relativeFilePath ).TrimStart( '.' );
-                string virtualThumbnailFilePath = string.Format( "~/Assets/Images/file-thumbnail-{0}.svg", fileExtension);
+                string virtualThumbnailFilePath = string.Format( "~/Assets/Icons/FileTypes/filetype-{0}.svg", fileExtension);
                 string thumbnailFilePath = HttpContext.Current.Request.MapPath( virtualThumbnailFilePath );
                 if (!File.Exists(thumbnailFilePath))
                 {
-                    virtualThumbnailFilePath = string.Format( "~/Assets/Images/file-thumbnail-other.svg", fileExtension );
+                    virtualThumbnailFilePath = string.Format( "~/Assets/Icons/FileTypes/filetype-other.svg", fileExtension );
                     thumbnailFilePath = HttpContext.Current.Request.MapPath( virtualThumbnailFilePath );
                 }
 
