@@ -711,6 +711,12 @@ namespace Rock.Web.UI.Controls
                     note.MakePrivate( "View", currentPerson, currentPersonId );
                 }
 
+                if ( !IsPrivate && note.IsPrivate( "View", currentPerson ) )
+                {
+                    note.MakeUnPrivate( "View", currentPerson, currentPersonId );
+                }
+
+
                 if ( SaveButtonClick != null )
                 {
                     SaveButtonClick( this, e );
