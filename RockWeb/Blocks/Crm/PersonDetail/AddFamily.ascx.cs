@@ -403,11 +403,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             using ( new UnitOfWorkScope() )
                             {
                                 var groupService = new GroupService();
-                                var familyGroup = groupService.SaveNewFamily( familyMembers, cpCampus.SelectedValueAsInt(), CurrentPersonId );
+                                var familyGroup = groupService.SaveNewFamily( familyMembers, cpCampus.SelectedValueAsInt(), CurrentPersonAlias );
                                 if (familyGroup != null)
                                 {
-                                    groupService.AddNewFamilyAddress(familyGroup, GetAttributeValue( "LocationType" ), 
-                                        tbStreet1.Text, tbStreet2.Text, tbCity.Text , ddlState.SelectedValue, tbZip.Text, CurrentPersonId );
+                                    groupService.AddNewFamilyAddress(familyGroup, GetAttributeValue( "LocationType" ),
+                                        tbStreet1.Text, tbStreet2.Text, tbCity.Text, ddlState.SelectedValue, tbZip.Text, CurrentPersonAlias );
                                 }
                             }
                         } );

@@ -397,8 +397,8 @@ namespace Rock.Security
         /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personId">The person identifier.</param>
-        public static void MakeUnPrivate( ISecured entity, string action, Person person, int? personId )
+        /// <param name="personAlias">The person alias.</param>
+        public static void MakeUnPrivate( ISecured entity, string action, Person person, PersonAlias personAlias )
         {
             if ( IsPrivate( entity, action, person ) )
             {
@@ -408,7 +408,7 @@ namespace Rock.Security
                 foreach ( AuthRule authRule in Authorizations[entity.TypeId][entity.Id][action] )
                 {
                     var oldAuth = authService.Get( authRule.Id );
-                    authService.Delete( oldAuth, personId );
+                    authService.Delete( oldAuth, personAlias );
                 }
 
                 Authorizations[entity.TypeId][entity.Id][action] = new List<AuthRule>();

@@ -888,11 +888,11 @@ achieve our mission.  We are so grateful for your commitment.
 
                             // Create Family
                             var groupService = new GroupService();
-                            var familyGroup = groupService.SaveNewFamily( person, null, CurrentPersonId );
+                            var familyGroup = groupService.SaveNewFamily( person, null, CurrentPersonAlias );
                             if (familyGroup != null)
                             {
-                                groupService.AddNewFamilyAddress(familyGroup, GetAttributeValue( "AddressType" ), 
-                                    txtStreet.Text, string.Empty, txtCity.Text , ddlState.SelectedValue, txtZip.Text, CurrentPersonId );
+                                groupService.AddNewFamilyAddress(familyGroup, GetAttributeValue( "AddressType" ),
+                                    txtStreet.Text, string.Empty, txtCity.Text, ddlState.SelectedValue, txtZip.Text, CurrentPersonAlias );
                             }
                         }
 
