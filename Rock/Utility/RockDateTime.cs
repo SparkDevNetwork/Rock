@@ -70,5 +70,20 @@ namespace Rock
                 return TimeZoneInfo.ConvertTime( DateTime.UtcNow, OrgTimeZoneInfo );
             }
         }
+
+        /// <summary>
+        /// Gets the current date based on the OrgTimeZone setting set in web.config
+        /// </summary>
+        /// <value>
+        /// The today.
+        /// </value>
+        public static DateTime Today
+        {
+            get
+            {
+                var currentRockDateTime = RockDateTime.Now;
+                return currentRockDateTime.Date;
+            }
+        }
     }
 }

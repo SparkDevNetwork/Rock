@@ -400,7 +400,7 @@ namespace RockWeb.Blocks.Prayer
             // TODO save users filter setting?
             if ( !cbShowExpired.Checked )
             {
-                prayerRequests = prayerRequests.Where( a => DateTime.Today <= a.ExpirationDate );
+                prayerRequests = prayerRequests.Where( a => RockDateTime.Today <= a.ExpirationDate );
             }
 
             // Sort by the given property otherwise sort by the EnteredDate (and Id)

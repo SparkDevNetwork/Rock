@@ -45,7 +45,7 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
             {
-                DateTime sixMonthsAgo = DateTime.Today.AddMonths( -6 );
+                DateTime sixMonthsAgo = RockDateTime.Today.AddMonths( -6 );
                 var attendanceService = new AttendanceService();
 
                 foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )

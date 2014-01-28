@@ -741,7 +741,7 @@ namespace Rock.Model
                 DateTime bday;
                 if ( DateTime.TryParse( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + BirthYear, out bday ) )
                 {
-                    DateTime today = DateTime.Today;
+                    DateTime today = RockDateTime.Today;
                     int age = today.Year - bday.Year;
                     if ( bday > today.AddYears( -age ) ) age--;
                     return age;
@@ -767,7 +767,7 @@ namespace Rock.Model
                 }
                 else
                 {
-                    var today = DateTime.Today;
+                    var today = RockDateTime.Today;
                     var birthdate = Convert.ToDateTime( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + today.Year.ToString() );
                     if ( birthdate.CompareTo( today ) < 0 )
                     {
@@ -793,7 +793,7 @@ namespace Rock.Model
                 if ( DateTime.TryParse( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + BirthYear, out bday ) )
                 {
                     // Calculate years
-                    DateTime today = DateTime.Today;
+                    DateTime today = RockDateTime.Today;
                     int years = today.Year - bday.Year;
                     if ( bday > today.AddYears( -years ) ) years--;
 
