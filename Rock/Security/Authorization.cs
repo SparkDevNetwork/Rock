@@ -314,7 +314,8 @@ namespace Rock.Security
         }
 
         /// <summary>
-        /// Makes the private.
+        /// Makes the entity private by setting up two authorization rules, one granting the selected person, and 
+        /// then another that denies all other users.
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
@@ -390,6 +391,29 @@ namespace Rock.Security
             }
         }
 
+        /// <summary>
+        /// Removes that two authorization rules that made the entity private.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="personId">The person identifier.</param>
+        public static void MakeUnPrivate( ISecured entity, string action, Person person, int? personId )
+        {
+            if ( IsPrivate( entity, action, person ) )
+            {
+                var authService = new AuthService();
+
+                // if is private, then there are only two rules for this action that should be deleted
+                foreach ( AuthRule authRule in Authorizations[entity.TypeId][entity.Id][action] )
+                {
+                    var oldAuth = authService.Get( authRule.Id );
+                    authService.Delete( oldAuth, personId );
+                }
+
+                Authorizations[entity.TypeId][entity.Id][action] = new List<AuthRule>();
+            }
+        }
 
         /// <summary>
         /// Updates authorization rules for the entity so that the current person is allowed to perform the specified action.

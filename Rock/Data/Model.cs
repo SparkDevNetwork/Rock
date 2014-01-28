@@ -218,6 +218,17 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// If the action on the current entity is private, removes the auth rules that made it private.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="personId">The current person id.</param>
+        public virtual void MakeUnPrivate( string action, Person person, int? personId )
+        {
+            Security.Authorization.MakeUnPrivate( this, action, person, personId );
+        }
+
+        /// <summary>
         /// Adds an 'Allow' rule for the current person as the first rule for the selected action
         /// </summary>
         /// <param name="action">The action.</param>
