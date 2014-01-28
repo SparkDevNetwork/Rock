@@ -75,7 +75,7 @@ namespace RockWeb.Blocks.Security
                 {
                     if ( userLoginService.ChangePassword( userLogin, tbOldPassword.Text, tbPassword.Text ) )
                     {
-                        userLoginService.Save( userLogin, CurrentPersonId );
+                        userLoginService.Save( userLogin, CurrentPersonAlias );
 
                         lSuccess.Text = GetAttributeValue( "SuccessCaption" );
                         pnlEntry.Visible = false;

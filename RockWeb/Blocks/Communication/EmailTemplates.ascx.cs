@@ -131,8 +131,8 @@ namespace RockWeb.Blocks.Communication
             EmailTemplate emailTemplate = emailTemplateService.Get( (int)gEmailTemplates.DataKeys[e.RowIndex]["id"] );
             if ( emailTemplate != null )
             {
-                emailTemplateService.Delete( emailTemplate, CurrentPersonId );
-                emailTemplateService.Save( emailTemplate, CurrentPersonId );
+                emailTemplateService.Delete( emailTemplate, CurrentPersonAlias );
+                emailTemplateService.Save( emailTemplate, CurrentPersonAlias );
             }
 
             BindGrid();
@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Communication
             if ( emailTemplateId == 0 )
             {
                 emailTemplate = new EmailTemplate();
-                emailTemplateService.Add( emailTemplate, CurrentPersonId );
+                emailTemplateService.Add( emailTemplate, CurrentPersonAlias );
             }
             else
             {
@@ -200,7 +200,7 @@ namespace RockWeb.Blocks.Communication
                 return;
             }
 
-            emailTemplateService.Save( emailTemplate, CurrentPersonId );
+            emailTemplateService.Save( emailTemplate, CurrentPersonAlias );
             BindFilter();
             BindGrid();
             pnlDetails.Visible = false;

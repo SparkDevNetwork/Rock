@@ -114,8 +114,8 @@ namespace RockWeb.Blocks.Cms
                         return;
                     }
 
-                    marketingCampaignAdTypeService.Delete( marketingCampaignAdType, CurrentPersonId );
-                    marketingCampaignAdTypeService.Save( marketingCampaignAdType, CurrentPersonId );
+                    marketingCampaignAdTypeService.Delete( marketingCampaignAdType, CurrentPersonAlias );
+                    marketingCampaignAdTypeService.Save( marketingCampaignAdType, CurrentPersonAlias );
                 }
             } );
 

@@ -233,7 +233,7 @@ namespace RockWeb.Blocks.Prayer
                 {
                     request.IsApproved = false;
                 }
-                service.Save( request, this.CurrentPersonId );
+                service.Save( request, this.CurrentPersonAlias );
             }
 
             mdFlag.Hide();
@@ -261,8 +261,8 @@ namespace RockWeb.Blocks.Prayer
                 noteType.EntityTypeQualifierColumn = string.Empty;
                 noteType.EntityTypeQualifierValue = string.Empty;
                 noteType.Name = noteTypeName;
-                service.Add( noteType, CurrentPersonId );
-                service.Save( noteType, CurrentPersonId );
+                service.Add( noteType, CurrentPersonAlias );
+                service.Save( noteType, CurrentPersonAlias );
             }
 
             NoteTypeId = noteType.Id;
@@ -431,7 +431,7 @@ namespace RockWeb.Blocks.Prayer
             CurrentPrayerRequestId = prayerRequest.Id;
 
             // save because the prayer count was just modified.
-            service.Save( prayerRequest, this.CurrentPersonId );
+            service.Save( prayerRequest, CurrentPersonAlias );
         }
 
         #endregion

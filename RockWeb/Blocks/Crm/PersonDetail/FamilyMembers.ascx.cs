@@ -229,15 +229,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 switch ( e.CommandName )
                 {
                     case "geocode":
-                        service.Geocode( location, CurrentPersonId );
+                        service.Geocode( location, CurrentPersonAlias );
                         break;
 
                     case "standardize":
-                        service.Standardize( location, CurrentPersonId );
+                        service.Standardize( location, CurrentPersonAlias );
                         break;
                 }
 
-                service.Save( location, CurrentPersonId );
+                service.Save( location, CurrentPersonAlias );
             }
 
             BindFamilies();
@@ -277,8 +277,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         family.Members.Add( groupMember );
 
                         var groupService = new GroupService();
-                        groupService.Add( family, CurrentPersonId );
-                        groupService.Save( family, CurrentPersonId );
+                        groupService.Add( family, CurrentPersonAlias );
+                        groupService.Save( family, CurrentPersonAlias );
 
                         families.Add( groupService.Get( family.Id ) );
                     }

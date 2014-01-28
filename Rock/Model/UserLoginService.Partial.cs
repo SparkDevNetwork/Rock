@@ -58,7 +58,7 @@ namespace Rock.Model
         public UserLogin GetByUserName( string userName )
         {
             return Repository
-                .AsQueryable( "Person" )
+                .AsQueryable( "Person.Aliases" )
                 .Where( u => u.UserName == userName )
                 .FirstOrDefault();
         }
@@ -81,8 +81,7 @@ namespace Rock.Model
             int entityTypeId,
             string username,
             string password,
-            bool isConfirmed,
-            int? currentPersonId )
+            bool isConfirmed )
         {
             if ( person != null )
             {
@@ -111,8 +110,8 @@ namespace Rock.Model
                         user.Password = authenticationComponent.EncodePassword( user, password );
                     }
 
-                    this.Add( user, currentPersonId );
-                    this.Save( user, currentPersonId );
+                this.Add( user, person.PrimaryAlias );
+                this.Save( user, person.PrimaryAlias );
 
                     var changes = new List<string>();
                     History.EvaluateChange(changes, "User Login", string.Empty, username);

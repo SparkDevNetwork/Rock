@@ -211,10 +211,10 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personId">The current person id.</param>
-        public virtual void MakePrivate( string action, Person person, int? personId )
+        /// <param name="personAlias">The current person alias.</param>
+        public virtual void MakePrivate( string action, Person person, PersonAlias personAlias )
         {
-            Security.Authorization.MakePrivate( this, action, person, personId );
+            Security.Authorization.MakePrivate( this, action, person, personAlias );
         }
 
         /// <summary>
@@ -233,10 +233,10 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personId">The person identifier.</param>
-        public virtual void AllowPerson( string action, Person person, int? personId )
+        /// <param name="personAlias">The person alias.</param>
+        public virtual void AllowPerson( string action, Person person, PersonAlias personAlias )
         {
-            Security.Authorization.AllowPerson( this, action, person, personId );
+            Security.Authorization.AllowPerson( this, action, person, personAlias );
         }
 
         /// <summary>

@@ -155,7 +155,7 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
             string zoneName = this.PageParameter( "ZoneName" );
 
-            blockService.Reorder( blockService.GetByLayoutAndZone( page.LayoutId, zoneName ).ToList(), e.OldIndex, e.NewIndex, CurrentPersonId );
+            blockService.Reorder( blockService.GetByLayoutAndZone( page.LayoutId, zoneName ).ToList(), e.OldIndex, e.NewIndex, CurrentPersonAlias );
 
             BindGrids();
         }
@@ -184,8 +184,8 @@ namespace RockWeb.Blocks.Administration
             Rock.Model.Block block = blockService.Get( (int)gLayoutBlocks.DataKeys[e.RowIndex]["id"] );
             if ( block != null )
             {
-                blockService.Delete( block, CurrentPersonId );
-                blockService.Save( block, CurrentPersonId );
+                blockService.Delete( block, CurrentPersonAlias );
+                blockService.Save( block, CurrentPersonAlias );
                 Rock.Web.Cache.PageCache.FlushLayoutBlocks( page.LayoutId );
             }
 
@@ -224,7 +224,7 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
             string zoneName = this.PageParameter( "ZoneName" );
 
-            blockService.Reorder( blockService.GetByPageAndZone( page.Id, zoneName ).ToList(), e.OldIndex, e.NewIndex, CurrentPersonId );
+            blockService.Reorder( blockService.GetByPageAndZone( page.Id, zoneName ).ToList(), e.OldIndex, e.NewIndex, CurrentPersonAlias );
 
             BindGrids();
         }
@@ -254,8 +254,8 @@ namespace RockWeb.Blocks.Administration
             Rock.Model.Block block = blockService.Get( e.RowKeyId );
             if ( block != null )
             {
-                blockService.Delete( block, CurrentPersonId );
-                blockService.Save( block, CurrentPersonId );
+                blockService.Delete( block, CurrentPersonAlias );
+                blockService.Save( block, CurrentPersonAlias );
                 page.FlushBlocks();
             }
 
@@ -343,7 +343,7 @@ namespace RockWeb.Blocks.Administration
                     block.Order = 0;
                 }
 
-                blockService.Add( block, CurrentPersonId );
+                blockService.Add( block, CurrentPersonAlias );
             }
             else
             {
@@ -353,9 +353,9 @@ namespace RockWeb.Blocks.Administration
             block.Name = tbBlockName.Text;
             block.BlockTypeId = Convert.ToInt32( ddlBlockType.SelectedValue );
 
-            blockService.Save( block, CurrentPersonId );
+            blockService.Save( block, CurrentPersonAlias );
 
-            Rock.Security.Authorization.CopyAuthorization( page, block, CurrentPersonId );
+            Rock.Security.Authorization.CopyAuthorization( page, block, CurrentPersonAlias );
 
             if ( block.Layout != null )
             {
@@ -445,7 +445,7 @@ namespace RockWeb.Blocks.Administration
                 Rock.Model.BlockTypeService blockTypeService = new Rock.Model.BlockTypeService();
 
                 // Add any unregistered blocks
-                blockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page, CurrentPersonId );
+                blockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page, CurrentPersonAlias );
 
                 // Load the block types
                 var blockTypes = blockTypeService.Queryable()

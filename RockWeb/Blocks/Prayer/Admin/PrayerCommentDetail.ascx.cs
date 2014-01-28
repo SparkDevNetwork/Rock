@@ -170,8 +170,8 @@ namespace RockWeb.Blocks.Prayer
                 }
             }
 
-            service.Add( note, CurrentPersonId );
-            service.Save( note, CurrentPersonId );
+            service.Add( note, CurrentPersonAlias );
+            service.Save( note, CurrentPersonAlias );
 
             ShowNotes();
         }
@@ -192,8 +192,8 @@ namespace RockWeb.Blocks.Prayer
                 noteType.EntityTypeQualifierColumn = string.Empty;
                 noteType.EntityTypeQualifierValue = string.Empty;
                 noteType.Name = noteTypeName;
-                service.Add( noteType, CurrentPersonId );
-                service.Save( noteType, CurrentPersonId );
+                service.Add( noteType, CurrentPersonAlias );
+                service.Save( noteType, CurrentPersonAlias );
             }
         }
 
@@ -337,7 +337,7 @@ namespace RockWeb.Blocks.Prayer
                     return;
                 }
 
-                noteService.Save( note, CurrentPersonId );
+                noteService.Save( note, CurrentPersonAlias );
             }
         }
 

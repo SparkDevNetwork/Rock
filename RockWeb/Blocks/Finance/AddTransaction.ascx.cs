@@ -688,7 +688,7 @@ achieve our mission.  We are so grateful for your commitment.
                             var userLoginService = new Rock.Model.UserLoginService();
                             var user = userLoginService.Create( authorizedPerson, Rock.Model.AuthenticationServiceType.Internal, 
                                 EntityTypeCache.Read(Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid()).Id,
-                                txtUserName.Text, txtPassword.Text, false, CurrentPersonId );
+                                txtUserName.Text, txtPassword.Text, false );
 
                             var mergeObjects = new Dictionary<string, object>();
                             mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
@@ -727,8 +727,8 @@ achieve our mission.  We are so grateful for your commitment.
                             savedAccount.CreditCardTypeValueId = CreditCardTypeValueId;
 
                             var savedAccountService = new FinancialPersonSavedAccountService();
-                            savedAccountService.Add( savedAccount, CurrentPersonId );
-                            savedAccountService.Save( savedAccount, CurrentPersonId );
+                            savedAccountService.Add( savedAccount, CurrentPersonAlias );
+                            savedAccountService.Save( savedAccount, CurrentPersonAlias );
 
                             cbSaveAccount.Visible = false;
                             txtSaveAccount.Visible = false;
@@ -1325,8 +1325,8 @@ achieve our mission.  We are so grateful for your commitment.
                         }
 
                         var transactionService = new FinancialScheduledTransactionService();
-                        transactionService.Add( scheduledTransaction, CurrentPersonId );
-                        transactionService.Save( scheduledTransaction, CurrentPersonId );
+                        transactionService.Add( scheduledTransaction, CurrentPersonAlias );
+                        transactionService.Save( scheduledTransaction, CurrentPersonAlias );
 
                         ScheduleId = scheduledTransaction.GatewayScheduleId;
                         TransactionCode = scheduledTransaction.TransactionCode;
@@ -1395,19 +1395,19 @@ achieve our mission.  We are so grateful for your commitment.
                                     batch.BatchStartDateTime.Value.AddDays( -1 );
                                 }
                                 batch.BatchEndDateTime = batch.BatchStartDateTime.Value.AddDays( 1 ).AddMilliseconds( -1 );
-                                batchService.Add( batch, CurrentPersonId );
-                                batchService.Save( batch, CurrentPersonId );
+                                batchService.Add( batch, CurrentPersonAlias );
+                                batchService.Save( batch, CurrentPersonAlias );
 
                                 batch = batchService.Get( batch.Id );
                             }
 
                             batch.ControlAmount += transaction.Amount;
-                            batchService.Save( batch, CurrentPersonId );
+                            batchService.Save( batch, CurrentPersonAlias );
 
                             var transactionService = new FinancialTransactionService();
                             transaction.BatchId = batch.Id;
-                            transactionService.Add( transaction, CurrentPersonId );
-                            transactionService.Save( transaction, CurrentPersonId );
+                            transactionService.Add( transaction, CurrentPersonAlias );
+                            transactionService.Save( transaction, CurrentPersonAlias );
                         }
 
                         TransactionCode = transaction.TransactionCode;

@@ -324,7 +324,7 @@ namespace RockWeb.Blocks.Administration
                             RouteTable.Routes.Remove( existingRoute );
                         }
 
-                        routeService.Delete( pageRoute, CurrentPersonId );
+                        routeService.Delete( pageRoute, CurrentPersonAlias );
                     }
 
                     page.PageRoutes.Clear();
@@ -339,7 +339,7 @@ namespace RockWeb.Blocks.Administration
 
                     foreach ( var pageContext in page.PageContexts.ToList() )
                     {
-                        contextService.Delete( pageContext, CurrentPersonId );
+                        contextService.Delete( pageContext, CurrentPersonAlias );
                     }
 
                     page.PageContexts.Clear();
@@ -360,7 +360,7 @@ namespace RockWeb.Blocks.Administration
 
                     if ( page.IsValid )
                     {
-                        pageService.Save( page, CurrentPersonId );
+                        pageService.Save( page, CurrentPersonAlias );
 
                         foreach ( var pageRoute in new PageRouteService().GetByPageId( page.Id ) )
                         {
@@ -368,7 +368,7 @@ namespace RockWeb.Blocks.Administration
                         }
 
                         Rock.Attribute.Helper.GetEditValues( phAttributes, _page );
-                        _page.SaveAttributeValues( CurrentPersonId );
+                        _page.SaveAttributeValues( CurrentPersonAlias );
 
                         if ( orphanedIconFileId.HasValue)
                         {
@@ -378,7 +378,7 @@ namespace RockWeb.Blocks.Administration
                             {
                                 // marked the old images as IsTemporary so they will get cleaned up later
                                 binaryFile.IsTemporary = true;
-                                binaryFileService.Save( binaryFile, CurrentPersonId );
+                                binaryFileService.Save( binaryFile, CurrentPersonAlias );
                             }
                         }
 
@@ -429,7 +429,7 @@ namespace RockWeb.Blocks.Administration
 
             using ( new UnitOfWorkScope() )
             {
-                importResult = packageService.ImportPage( fuImport.FileBytes, fuImport.FileName, CurrentPerson.Id, _page.Id, _page.Layout.SiteId );
+                importResult = packageService.ImportPage( fuImport.FileBytes, fuImport.FileName, CurrentPersonAlias, _page.Id, _page.Layout.SiteId );
             }
 
             if ( !importResult )
@@ -492,7 +492,7 @@ namespace RockWeb.Blocks.Administration
         {
             ddlLayout.Items.Clear();
             var layoutService = new LayoutService();
-            layoutService.RegisterLayouts( Request.MapPath( "~" ), Site, CurrentPersonId );
+            layoutService.RegisterLayouts( Request.MapPath( "~" ), Site, CurrentPersonAlias );
             foreach ( var layout in layoutService.GetBySiteId( Site.Id ) )
             {
                 ddlLayout.Items.Add( new ListItem( layout.Name, layout.Id.ToString() ) );

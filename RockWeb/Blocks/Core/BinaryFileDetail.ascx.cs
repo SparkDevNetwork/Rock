@@ -233,7 +233,7 @@ namespace RockWeb.Blocks.Core
             if ( binaryFileId == 0 )
             {
                 binaryFile = new BinaryFile();
-                binaryFileService.Add( binaryFile, CurrentPersonId );
+                binaryFileService.Add( binaryFile, CurrentPersonAlias );
             }
             else
             {
@@ -277,8 +277,8 @@ namespace RockWeb.Blocks.Core
 
             RockTransactionScope.WrapTransaction( () =>
             {
-                binaryFileService.Save( binaryFile, CurrentPersonId );
-                Rock.Attribute.Helper.SaveAttributeValues( binaryFile, CurrentPersonId );
+                binaryFileService.Save( binaryFile, CurrentPersonAlias );
+                Rock.Attribute.Helper.SaveAttributeValues( binaryFile, CurrentPersonAlias );
             } );
 
             NavigateToParentPage();
@@ -341,8 +341,8 @@ namespace RockWeb.Blocks.Core
                                 if ( workflowType.IsPersisted )
                                 {
                                     var workflowService = new Rock.Model.WorkflowService();
-                                    workflowService.Add( workflow, CurrentPersonId );
-                                    workflowService.Save( workflow, CurrentPersonId );
+                                    workflowService.Add( workflow, CurrentPersonAlias );
+                                    workflowService.Save( workflow, CurrentPersonAlias );
                                 }
                             }
                         }

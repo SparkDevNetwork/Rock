@@ -103,6 +103,7 @@ namespace Rock.Model
                 if ( !isParent )
                 {
                     exceptionLog = log.Clone( false );
+                    exceptionLog.CreatedByPersonAlias = log.CreatedByPersonAlias.Clone( false );
 
                     if ( exceptionLog != null )
                     {
@@ -130,8 +131,8 @@ namespace Rock.Model
 
                 // Write ExceptionLog record to database.
                 var exceptionLogService = new ExceptionLogService();
-                exceptionLogService.Add( exceptionLog, exceptionLog.CreatedByPersonId );
-                exceptionLogService.Save( exceptionLog, exceptionLog.CreatedByPersonId );
+                exceptionLogService.Add( exceptionLog, exceptionLog.CreatedByPersonAlias );
+                exceptionLogService.Save( exceptionLog, exceptionLog.CreatedByPersonAlias );
 
                 // Recurse if inner exception is found
                 if ( exceptionLog.HasInnerException.GetValueOrDefault( false ) )

@@ -117,9 +117,9 @@ namespace RockWeb.Blocks.Cms
                         mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                         return;
                     }
-                    
-                    siteService.Delete( site, CurrentPersonId );
-                    siteService.Save( site, CurrentPersonId );
+
+                    siteService.Delete( site, CurrentPersonAlias );
+                    siteService.Save( site, CurrentPersonAlias );
 
                     SiteCache.Flush( site.Id );
                 }

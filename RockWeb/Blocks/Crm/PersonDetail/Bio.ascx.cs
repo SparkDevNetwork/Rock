@@ -108,7 +108,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     if ( person != null )
                     {
                         person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
-                        personService.Save( person, CurrentPersonId );
+                        personService.Save( person, CurrentPersonAlias );
                         Person = person;
                     }
                 }

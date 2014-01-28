@@ -498,7 +498,7 @@ achieve our mission.  We are so grateful for your commitment.
                         if ( refresh )
                         {
                             string errorMessages = string.Empty;
-                            service.UpdateStatus( scheduledTransaction, CurrentPersonId, out errorMessages );
+                            service.UpdateStatus( scheduledTransaction, CurrentPersonAlias, out errorMessages );
                         }
 
                         return scheduledTransaction;
@@ -665,7 +665,7 @@ achieve our mission.  We are so grateful for your commitment.
         {
             rblSavedCC.Items.Clear();
              
-            if ( TargetPersonId.HasValue && TargetPersonId == CurrentPersonId )
+            if ( TargetPersonId.HasValue && CurrentPerson != null && TargetPersonId == CurrentPerson.Id )
             {
                 // Get the saved accounts for the target person
                 var savedAccounts = new FinancialPersonSavedAccountService()
@@ -987,7 +987,7 @@ achieve our mission.  We are so grateful for your commitment.
                         foreach ( var deletedAccount in deletedAccounts )
                         {
                             scheduledTransaction.ScheduledTransactionDetails.Remove( deletedAccount );
-                            transactionDetailService.Delete( deletedAccount, CurrentPersonId );
+                            transactionDetailService.Delete( deletedAccount, CurrentPersonAlias );
                         }
 
                         foreach ( var account in SelectedAccounts )
@@ -1003,7 +1003,7 @@ achieve our mission.  We are so grateful for your commitment.
                             detail.Amount = account.Amount;
                         }
 
-                        transactionService.Save( scheduledTransaction, CurrentPersonId );
+                        transactionService.Save( scheduledTransaction, CurrentPersonAlias );
 
                         ScheduleId = scheduledTransaction.GatewayScheduleId;
                         TransactionCode = scheduledTransaction.TransactionCode;

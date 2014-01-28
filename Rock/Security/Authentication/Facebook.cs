@@ -156,7 +156,7 @@ namespace Rock.Security.ExternalAuthentication
                                     string email = me.email.ToString();
 
                                     var personService = new PersonService();
-                                    var person = personService.Queryable().FirstOrDefault( u => u.LastName == lastName && u.FirstName == firstName && u.Email == email );
+                                    var person = personService.Queryable( "Aliases" ).FirstOrDefault( u => u.LastName == lastName && u.FirstName == firstName && u.Email == email );
 
                                     if ( person != null )
                                     {
@@ -168,7 +168,7 @@ namespace Rock.Security.ExternalAuthentication
                                             person.BirthDate = birthdate;
                                             History.EvaluateChange( PersonChanges, "Birth Date", null, person.BirthDate );
 
-                                            personService.Save( person, person.Id );
+                                            personService.Save( person, person.PrimaryAlias );
                                             
                                             new HistoryService().SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
                                                 person.Id, PersonChanges, person.Id );

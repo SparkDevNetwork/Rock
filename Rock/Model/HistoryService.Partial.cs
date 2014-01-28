@@ -36,10 +36,10 @@ namespace Rock.Model
         /// <param name="categoryGuid">The category unique identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="changes">The changes.</param>
-        /// <param name="CurrentPersonId">The current person identifier.</param>
-        public void SaveChanges (Type modelType, Guid categoryGuid, int entityId, List<string> changes, int? CurrentPersonId )
+        /// <param name="currentPersonAlias">The current person alias.</param>
+        public void SaveChanges( Type modelType, Guid categoryGuid, int entityId, List<string> changes, PersonAlias currentPersonAlias )
         {
-            SaveChanges( modelType, categoryGuid, entityId, changes, null, null, null, CurrentPersonId );
+            SaveChanges( modelType, categoryGuid, entityId, changes, null, null, null, currentPersonAlias );
         }
 
         /// <summary>
@@ -52,8 +52,8 @@ namespace Rock.Model
         /// <param name="caption">The caption.</param>
         /// <param name="relatedModelType">Type of the related model.</param>
         /// <param name="relatedEntityId">The related entity identifier.</param>
-        /// <param name="CurrentPersonId">The current person identifier.</param>
-        public void SaveChanges( Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId, int? CurrentPersonId )
+        /// <param name="currentPersonAlias">The current person alias.</param>
+        public void SaveChanges( Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId, PersonAlias currentPersonAlias )
         {
 
             var entityType = EntityTypeCache.Read(modelType);
@@ -85,9 +85,9 @@ namespace Rock.Model
 
                     // Manually set creation date on these history items so that they will be grouped together
                     history.CreatedDateTime = creationDate;
-                    
-                    Add( history, CurrentPersonId );
-                    Save( history, CurrentPersonId );
+
+                    Add( history, currentPersonAlias );
+                    Save( history, currentPersonAlias );
                 }
             }
         }

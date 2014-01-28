@@ -209,7 +209,7 @@ namespace RockWeb.Blocks.Administration
             int entityTypeId = iSecured.TypeId;
 
             List<Rock.Model.Auth> rules = authService.GetAuths( iSecured.TypeId, iSecured.Id, CurrentAction ).ToList();
-            authService.Reorder( rules, e.OldIndex, e.NewIndex, CurrentPersonId );
+            authService.Reorder( rules, e.OldIndex, e.NewIndex, CurrentPersonAlias );
 
             Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
 
@@ -231,8 +231,8 @@ namespace RockWeb.Blocks.Administration
             Rock.Model.Auth auth = authService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
             if ( auth != null )
             {
-                authService.Delete( auth, CurrentPersonId );
-                authService.Save( auth, CurrentPersonId );
+                authService.Delete( auth, CurrentPersonAlias );
+                authService.Save( auth, CurrentPersonAlias );
 
                 Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
             }
@@ -275,7 +275,7 @@ namespace RockWeb.Blocks.Administration
                 if ( auth != null )
                 {
                     auth.AllowOrDeny = rblAllowDeny.SelectedValue;
-                    authService.Save( auth, CurrentPersonId );
+                    authService.Save( auth, CurrentPersonAlias );
 
                     Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
                 }
@@ -357,8 +357,8 @@ namespace RockWeb.Blocks.Administration
                         auth.SpecialRole = specialRole;
                         auth.GroupId = groupId;
                         auth.Order = ++maxOrder;
-                        authService.Add( auth, CurrentPersonId );
-                        authService.Save( auth, CurrentPersonId );
+                        authService.Add( auth, CurrentPersonAlias );
+                        authService.Save( auth, CurrentPersonAlias );
 
                         actionUpdated = true;
                     }
@@ -407,8 +407,8 @@ namespace RockWeb.Blocks.Administration
                     auth.SpecialRole = Rock.Model.SpecialRole.None;
                     auth.PersonId = personId;
                     auth.Order = ++maxOrder;
-                    authService.Add( auth, CurrentPersonId );
-                    authService.Save( auth, CurrentPersonId );
+                    authService.Add( auth, CurrentPersonAlias );
+                    authService.Save( auth, CurrentPersonAlias );
 
                     actionUpdated = true;
                 }
