@@ -21,6 +21,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -247,12 +248,12 @@ function() {
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( Type entityType, object serviceInstance, Expression parameterExpression, string selection )
+        public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
-                GroupMemberService groupMemberService = new GroupMemberService();
+                GroupMemberService groupMemberService = new GroupMemberService( serviceInstance.RockContext );
                 int groupTypeId = selectionValues[0].AsInteger() ?? 0;
 
                 var groupMemberServiceQry = groupMemberService.Queryable().Where( xx => xx.Group.GroupTypeId == groupTypeId );
@@ -263,7 +264,7 @@ function() {
                     groupMemberServiceQry = groupMemberServiceQry.Where( xx => groupRoleIds.Contains( xx.GroupRoleId ) );
                 }
 
-                var qry = new Rock.Data.Service<Rock.Model.Person>().Queryable()
+                var qry = new PersonService( serviceInstance.RockContext ).Queryable()
                     .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id ) );
 
                 Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );

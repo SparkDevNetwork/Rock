@@ -181,7 +181,7 @@ namespace Rock.Reporting
         /// <param name="entityIdProperty">The entity identifier property.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public abstract Expression GetExpression( RockContext context, Expression entityIdProperty, string selection );
+        public abstract Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection );
 
         #endregion
 

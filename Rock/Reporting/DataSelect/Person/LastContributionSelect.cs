@@ -117,7 +117,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="entityIdProperty">The entity identifier property.</param>
         /// <param name="selection"></param>
         /// <returns></returns>
-        public override Expression GetExpression( RockContext context, Expression entityIdProperty, string selection )
+        public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
             // transactions
             var transactionDetails = context.Set<FinancialTransactionDetail>();

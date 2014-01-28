@@ -114,7 +114,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="entityIdProperty">The entity identifier property.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( RockContext context, Expression entityIdProperty, string selection )
+        public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
             //// Spouse is determined if all these conditions are met
             //// 1) Adult in the same family as Person (GroupType = Family, GroupRole = Adult, and in same Group)
