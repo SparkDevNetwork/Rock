@@ -108,6 +108,7 @@ namespace Rock.Model
             target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
             target.Name = source.Name;
+            target.Description = source.Description;
             target.Order = source.Order;
             target.OwnerId = source.OwnerId;
             target.CreatedDateTime = source.CreatedDateTime;
