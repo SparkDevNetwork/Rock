@@ -290,7 +290,7 @@ achieve our mission.  We are so grateful for your commitment.
                             btnFrequency.Items.Insert( 0, new ListItem( oneTimeFrequency.Name, oneTimeFrequency.Id.ToString() ) );
                         }
                         btnFrequency.SelectedValue = oneTimeFrequency.Id.ToString();
-                        dtpStartDate.SelectedDate = DateTime.Today;
+                        dtpStartDate.SelectedDate = RockDateTime.Today;
                     };
 
                 }
@@ -788,8 +788,8 @@ achieve our mission.  We are so grateful for your commitment.
                     f.IsActive &&
                     f.PublicName != null &&
                     f.PublicName.Trim() != "" &&
-                    ( f.StartDate == null || f.StartDate <= DateTime.Today ) &&
-                    ( f.EndDate == null || f.EndDate >= DateTime.Today ) )
+                    ( f.StartDate == null || f.StartDate <= RockDateTime.Today ) &&
+                    ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) )
                 .OrderBy( f => f.Order ) )
             {
                 var accountItem = new AccountItem( account.Id, account.Order, account.Name, account.CampusId );
@@ -991,7 +991,7 @@ achieve our mission.  We are so grateful for your commitment.
             if ( schedule != null )
             {
                 // Make sure a repeating payment starts in the future
-                if ( schedule.StartDate <= DateTime.Today )
+                if ( schedule.StartDate <= RockDateTime.Today )
                 {
                     errorMessages.Add( "When scheduling a repeating payment, make sure the First Gift date is in the future (after today)" );
                 }
@@ -1064,7 +1064,7 @@ achieve our mission.  We are so grateful for your commitment.
                         errorMessages.Add( "Make sure to enter a valid credit card number" );
                     }
 
-                    var currentMonth = DateTime.Today;
+                    var currentMonth = RockDateTime.Today;
                     currentMonth = new DateTime(currentMonth.Year, currentMonth.Month, 1);
                     if ( !mypExpiration.SelectedDate.HasValue || mypExpiration.SelectedDate.Value.CompareTo(currentMonth) < 0)
                     {
@@ -1237,7 +1237,7 @@ achieve our mission.  We are so grateful for your commitment.
             {
                 // If a one-time gift was selected for today's date, then treat as a onetime immediate transaction (not scheduled)
                 int oneTimeFrequencyId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
-                if ( btnFrequency.SelectedValue == oneTimeFrequencyId.ToString() && dtpStartDate.SelectedDate == DateTime.Today )
+                if ( btnFrequency.SelectedValue == oneTimeFrequencyId.ToString() && dtpStartDate.SelectedDate == RockDateTime.Today )
                 {
                     // one-time immediate payment
                     return null;
@@ -1245,7 +1245,7 @@ achieve our mission.  We are so grateful for your commitment.
 
                 var schedule = new PaymentSchedule();
                 schedule.TransactionFrequencyValue = DefinedValueCache.Read( btnFrequency.SelectedValueAsId().Value );
-                if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > DateTime.Today )
+                if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > RockDateTime.Today )
                 {
                     schedule.StartDate = dtpStartDate.SelectedDate.Value;
                 }

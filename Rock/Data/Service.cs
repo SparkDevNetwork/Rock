@@ -402,7 +402,7 @@ namespace Rock.Data
                 {
                     if ( !model.CreatedDateTime.HasValue )
                     {
-                        model.CreatedDateTime = DateTime.Now;
+                        model.CreatedDateTime = RockDateTime.Now;
                     }
                     if ( !model.CreatedByPersonAliasId.HasValue )
                     {
@@ -411,7 +411,7 @@ namespace Rock.Data
                 }
 
                 model.ModifiedByPersonAliasId = personAliasId;
-                model.ModifiedDateTime = DateTime.Now;
+                model.ModifiedDateTime = RockDateTime.Now;
             }
 
             List<Audit> audits;

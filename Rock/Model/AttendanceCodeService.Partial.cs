@@ -67,7 +67,7 @@ namespace Rock.Model
                 // Find a good unique code for today
                 while ( code == string.Empty ||
                     noGood.Any( s => s == code ) ||
-                    Get(DateTime.Today, code).Any())
+                    Get( RockDateTime.Today, code ).Any() )
                 {
                     code = GenerateRandomCode( codeLength );
                 }

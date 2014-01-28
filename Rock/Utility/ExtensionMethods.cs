@@ -684,7 +684,7 @@ namespace Rock
         /// <returns></returns>
         public static int Age( this DateTime start )
         {
-            var now = DateTime.Today;
+            var now = RockDateTime.Today;
             int age = now.Year - start.Year;
             if ( start > now.AddYears( -age ) ) age--;
 
@@ -916,7 +916,7 @@ namespace Rock
         /// <returns></returns>
         public static string ToTimeString( this TimeSpan timespan )
         {
-            return DateTime.Today.Add( timespan ).ToShortTimeString();
+            return RockDateTime.Today.Add( timespan ).ToShortTimeString();
         }
 
         #endregion
