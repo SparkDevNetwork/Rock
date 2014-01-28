@@ -420,6 +420,10 @@
     <Compile Include="Migrations\201401272157461_RemoveFieldTypes.Designer.cs">
       <DependentUpon>201401272157461_RemoveFieldTypes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401282147345_StatementPersonFullNameFix.cs" />
+    <Compile Include="Migrations\201401282147345_StatementPersonFullNameFix.Designer.cs">
+      <DependentUpon>201401282147345_StatementPersonFullNameFix.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -714,6 +718,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401272157461_RemoveFieldTypes.resx">
       <DependentUpon>201401272157461_RemoveFieldTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401282147345_StatementPersonFullNameFix.resx">
+      <DependentUpon>201401282147345_StatementPersonFullNameFix.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
