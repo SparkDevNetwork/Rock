@@ -171,9 +171,11 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new family group and adds the list of new people to this family.  
+        /// Saves the new family.
         /// </summary>
-        /// <param name="people">The people.</param>
+        /// <param name="familyMembers">The family members.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
         public Group SaveNewFamily( List<GroupMember> familyMembers, int? campusId, PersonAlias personAlias )
         {
@@ -296,6 +298,17 @@ namespace Rock.Model
             return null;
         }
 
+        /// <summary>
+        /// Adds the new family address.
+        /// </summary>
+        /// <param name="family">The family.</param>
+        /// <param name="locationTypeGuid">The location type unique identifier.</param>
+        /// <param name="street1">The street1.</param>
+        /// <param name="street2">The street2.</param>
+        /// <param name="city">The city.</param>
+        /// <param name="state">The state.</param>
+        /// <param name="zip">The zip.</param>
+        /// <param name="personAlias">The person alias.</param>
         public void AddNewFamilyAddress( Group family, string locationTypeGuid, string street1, string street2, string city, string state, string zip, PersonAlias personAlias )
         {
             if ( !String.IsNullOrWhiteSpace( street1 ) ||

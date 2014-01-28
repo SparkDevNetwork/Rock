@@ -37,9 +37,9 @@ namespace Rock.Reporting
             private string _parameterName;
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="ParameterExpressionVisitor"/> class.
+            /// Initializes a new instance of the <see cref="PropertyParameterExpressionVisitor" /> class.
             /// </summary>
-            /// <param name="parameterExpression">The parameter expression.</param>
+            /// <param name="propertyExpression">The property expression.</param>
             /// <param name="parameterName">Name of the parameter.</param>
             public PropertyParameterExpressionVisitor( Expression propertyExpression, string parameterName )
             {

@@ -378,7 +378,6 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual bool Save(T item, PersonAlias personAlias)
         {
-            // TODO: Make this method the public 'Save' method and remove the previous save
             int? personAliasId = null;
             if ( personAlias != null )
             {
@@ -489,6 +488,12 @@ namespace Rock.Data
             return Delete( item, GetPersonAlias( null ) );
         }
 
+        /// <summary>
+        /// Deletes the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="personAlias">The person alias.</param>
+        /// <returns></returns>
         public virtual bool Delete(T item, PersonAlias personAlias)
         {
             ErrorMessages = new List<string>();
@@ -523,7 +528,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <param name="triggerType">Type of the trigger.</param>
-        /// <param name="personId">The person id.</param>
+        /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
         private bool TriggerWorkflows( IEntity entity, WorkflowTriggerType triggerType, PersonAlias personAlias )
         {

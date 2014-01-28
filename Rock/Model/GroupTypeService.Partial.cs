@@ -61,7 +61,6 @@ namespace Rock.Model
         /// </summary>
         /// <param name="item">The <see cref="Rock.Model.GroupType"/> to delete.</param>
         /// <param name="personAlias">The person alias.</param>
-        /// <see cref="Rock.Model.GroupType"/>.</param>
         /// <returns>A <see cref="System.Boolean"/> value that is <c>true</c> if the <see cref="Rock.Model.GroupType"/> was able to be successfully deleted, otherwise <c>false</c>.</returns>
         public override bool Delete( GroupType item, PersonAlias personAlias )
         {
