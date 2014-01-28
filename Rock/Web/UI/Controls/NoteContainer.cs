@@ -336,7 +336,7 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
             string script = @"
     $('a.add-note').click(function () {
-        $(this).closest('.panel-note').find('.note-new > .note-editor').children().slideToggle(""slow"");
+        $(this).closest('.panel-note').find('.note-new > .note').children().slideToggle(""slow"");
     });
 ";
 
@@ -344,11 +344,11 @@ namespace Rock.Web.UI.Controls
             //            if ( !string.IsNullOrWhiteSpace( noteId ) )
             //            {
             //                script += string.Format( @"
-            //                    $('html, body').animate( {{scrollTop: $("".note-editor[rel='{0}']"").offset().top }},
+            //                    $('html, body').animate( {{scrollTop: $("".note[rel='{0}']"").offset().top }},
             //                        'slow',
             //                        'swing',
             //                        function() {{ 
-            //                            $("".note-editor[rel='{0}'] > article"").css( ""boxShadow"", ""1px 1px 8px 1px #888888"" );
+            //                            $("".note[rel='{0}'] > article"").css( ""boxShadow"", ""1px 1px 8px 1px #888888"" );
             //                        }}
             //                    );",
             //                noteId );

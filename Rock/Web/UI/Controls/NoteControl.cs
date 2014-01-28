@@ -416,10 +416,10 @@ namespace Rock.Web.UI.Controls
             string script = @"
     $('a.edit-note').click(function (e) {
         e.preventDefault();
-        $(this).closest('.note-editor').children().slideToggle( 'slow' );
+        $(this).closest('.note').children().slideToggle( 'slow' );
     });
     $('a.edit-note-cancel').click(function () {
-        $(this).closest('.note-editor').children().slideToggle( 'slow' );
+        $(this).closest('.note').children().slideToggle( 'slow' );
     });
     $('a.remove-note').click(function() {
         return Rock.dialogs.confirmDelete( event, 'Note' );
@@ -480,7 +480,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "note-editor" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "note" );
             if ( this.NoteId.HasValue )
             {
                 writer.AddAttribute( "rel", this.NoteId.Value.ToStringSafe() );
