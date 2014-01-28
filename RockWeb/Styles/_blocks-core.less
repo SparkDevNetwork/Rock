@@ -107,6 +107,27 @@
     }
 }
 
+.panel-note-light {
+    border: 0;
+    background: none;
+
+    .panel-body {
+        background: none;
+    }
+
+    article {
+        background: none;
+        border-radius: 0;
+        border-width: 0 0 1px 0;
+
+        .note-author,
+        .note-created {
+            font-size: @font-size-base - 1px;
+            opacity: 0.7;
+        }
+    }
+}
+
 .panel-noteentry
 {
     .panel-variant(@accent-color; @accent-text-color; @accent-text-color; @accent-text-color);
