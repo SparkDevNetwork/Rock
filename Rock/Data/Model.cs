@@ -222,10 +222,10 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personId">The current person id.</param>
-        public virtual void MakeUnPrivate( string action, Person person, int? personId )
+        /// <param name="personAlias">The current person alias.</param>
+        public virtual void MakeUnPrivate( string action, Person person, PersonAlias personAlias )
         {
-            Security.Authorization.MakeUnPrivate( this, action, person, personId );
+            Security.Authorization.MakeUnPrivate( this, action, person, personAlias );
         }
 
         /// <summary>

@@ -713,7 +713,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( !IsPrivate && note.IsPrivate( "View", currentPerson ) )
                 {
-                    note.MakeUnPrivate( "View", currentPerson, currentPersonId );
+                    note.MakeUnPrivate( "View", currentPerson, personAlias );
                 }
 
 

@@ -151,9 +151,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="campusId">The campus identifier.</param>
-        /// <param name="personId">The person identifier.</param>
+        /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
-        public Group SaveNewFamily( Person person, int? campusId, int? personId )
+        public Group SaveNewFamily( Person person, int? campusId, PersonAlias personAlias )
         {
             var groupMember = new GroupMember();
             groupMember.Person = person;
@@ -167,7 +167,7 @@ namespace Rock.Model
             var groupMembers = new List<GroupMember>();
             groupMembers.Add( groupMember );
 
-            return SaveNewFamily( groupMembers, campusId, personId );
+            return SaveNewFamily( groupMembers, campusId, personAlias );
         }
 
         /// <summary>
@@ -175,7 +175,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="people">The people.</param>
         /// <returns></returns>
-        public Group SaveNewFamily( List<GroupMember> familyMembers, int? campusId, int? personId )
+        public Group SaveNewFamily( List<GroupMember> familyMembers, int? campusId, PersonAlias personAlias )
         {
             var familyGroupType = GroupTypeCache.GetFamilyGroupType();
 
@@ -248,13 +248,13 @@ namespace Rock.Model
                     }
                 }
 
-                Add( familyGroup, personId );
-                Save( familyGroup, personId );
+                Add( familyGroup, personAlias );
+                Save( familyGroup, personAlias );
 
                 var historyService = new HistoryService( this.RockContext );
 
                 historyService.SaveChanges( typeof( Group ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                    familyGroup.Id, familyChanges, personId );
+                    familyGroup.Id, familyChanges, personAlias );
 
                 var personService = new PersonService( this.RockContext );
 
@@ -279,14 +279,14 @@ namespace Rock.Model
 
                         if ( updateRequired )
                         {
-                            personService.Save( person, personId );
+                            personService.Save( person, personAlias );
                         }
 
                         historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                            person.Id, changes, personId );
+                            person.Id, changes, personAlias );
 
                         historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                            person.Id, familyMemberChanges[person.Guid], familyGroup.Name, typeof( Group ), familyGroup.Id, personId );
+                            person.Id, familyMemberChanges[person.Guid], familyGroup.Name, typeof( Group ), familyGroup.Id, personAlias );
                     }
                 }
 
@@ -296,7 +296,7 @@ namespace Rock.Model
             return null;
         }
 
-        public void AddNewFamilyAddress( Group family, string locationTypeGuid, string street1, string street2, string city, string state, string zip, int? personId )
+        public void AddNewFamilyAddress( Group family, string locationTypeGuid, string street1, string street2, string city, string state, string zip, PersonAlias personAlias )
         {
             if ( !String.IsNullOrWhiteSpace( street1 ) ||
                  !String.IsNullOrWhiteSpace( street2 ) ||
@@ -331,11 +331,11 @@ namespace Rock.Model
                 History.EvaluateChange( familyChanges, addressChangeField + " Is Mailing", string.Empty, groupLocation.IsMailingLocation.ToString() );
                 History.EvaluateChange( familyChanges, addressChangeField + " Is Map Location", string.Empty, groupLocation.IsMappedLocation.ToString() );
 
-                Save( family, personId );
+                Save( family, personAlias );
 
                 var historyService = new HistoryService(this.RockContext);
                 historyService.SaveChanges( typeof( Group ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                    family.Id, familyChanges, personId );
+                    family.Id, familyChanges, personAlias );
             }
         }
 

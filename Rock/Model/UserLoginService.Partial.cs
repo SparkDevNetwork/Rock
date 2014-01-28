@@ -116,7 +116,7 @@ namespace Rock.Model
                     var changes = new List<string>();
                     History.EvaluateChange(changes, "User Login", string.Empty, username);
                     new HistoryService().SaveChanges(typeof(Person),
-                        CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid() ).Guid, person.Id, changes, person.Id);
+                        CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid() ).Guid, person.Id, changes, person.PrimaryAlias);
 
                     return user;
                 }

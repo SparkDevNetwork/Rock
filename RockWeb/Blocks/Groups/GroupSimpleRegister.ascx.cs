@@ -202,7 +202,7 @@ namespace RockWeb.Blocks.Groups
                     person.LastName = txtLastName.Text;
                     person.Email = txtEmail.Text;
 
-                    new GroupService().SaveNewFamily( person, null, CurrentPersonId );
+                    new GroupService().SaveNewFamily( person, null, CurrentPersonAlias );
 
                     return personService.Get( person.Id );
                 }

@@ -171,7 +171,7 @@ namespace Rock.Security.ExternalAuthentication
                                             personService.Save( person, person.PrimaryAlias );
                                             
                                             new HistoryService().SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                                person.Id, PersonChanges, person.Id );
+                                                person.Id, PersonChanges, person.PrimaryAlias );
                                         }
 
                                     }
@@ -196,7 +196,7 @@ namespace Rock.Security.ExternalAuthentication
                                         new GroupService().SaveNewFamily( person, null, null );
                                     }
 
-                                    user = userLoginService.Create( person, AuthenticationServiceType.External, this.TypeId, facebookId, "fb", true, person.Id );
+                                    user = userLoginService.Create( person, AuthenticationServiceType.External, this.TypeId, facebookId, "fb", true );
                                 }
                             } );
                         }
