@@ -32,7 +32,7 @@ namespace Rock.Data
     /// Generic POCO service class
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class Service<T> where T : Rock.Data.Entity<T>, new()
+    public class Service<T> : IService where T : Rock.Data.Entity<T>, new()
     {
 
         #region Fields
@@ -94,7 +94,7 @@ namespace Rock.Data
 
         #endregion
 
-        #region Contstructors
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Service&lt;T&gt;"/> class.
@@ -658,7 +658,7 @@ namespace Rock.Data
         public IQueryable<T> Transform( IQueryable<T> source, Rock.Reporting.DataTransformComponent<T> transformation, Rock.Web.UI.Controls.SortProperty sortProperty = null )
         {
             var paramExpression = Expression.Parameter( source.ElementType, "p" );
-            var whereExpression = transformation.GetExpression( source, paramExpression );
+            var whereExpression = transformation.GetExpression( this, source, paramExpression );
             return Get( paramExpression, whereExpression, sortProperty );
         }
 
