@@ -298,8 +298,17 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                person = personService.GetByEmail( tbEmail.Text )
-                    .FirstOrDefault( p => p.FirstName == tbFirstName.Text && p.LastName == tbLastName.Text );
+                var people = personService.GetByMatch( tbFirstName.Text, tbLastName.Text, tbEmail.Text );
+                if ( people.Count() == 1 )
+                {
+                    person = people.FirstOrDefault();
+                }
+                else
+                {
+                    // TODO multiple matches, identify the correct person otherwise we're creating duplicates
+                    // here.
+                    person = null;
+                }
             }
 
             if ( person == null )
