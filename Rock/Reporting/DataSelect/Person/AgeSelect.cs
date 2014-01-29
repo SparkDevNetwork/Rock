@@ -17,15 +17,11 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Linq.Expressions;
-
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock;
-using System.Data.Entity.SqlServer;
-using System.Collections.Generic;
 
 namespace Rock.Reporting.DataSelect.Person
 {
@@ -120,9 +116,12 @@ namespace Rock.Reporting.DataSelect.Person
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
             DateTime currentDate = RockDateTime.Today;
+            int currentDayOfYear = currentDate.DayOfYear;
             
+            //// have SQL Server do the following math (DateDiff only returns the integers):
+            //// If the person has had their birthday this year, their age is the DateDiff in Years, but if they haven't had their birthday yet, it is the DateDiff in years - 1;
             var personAgeQuery = new PersonService( context ).Queryable()
-                .Select( p => SqlFunctions.DateDiff("hour", p.BirthDate, currentDate ) / 8766);
+                .Select( p => currentDayOfYear >= SqlFunctions.DatePart( "dayofyear", p.BirthDate ) ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1 );
 
             var selectAgeExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personAgeQuery, entityIdProperty, "p" );
 
