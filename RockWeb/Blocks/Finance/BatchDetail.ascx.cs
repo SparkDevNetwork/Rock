@@ -112,7 +112,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             var savedFinancialBatch = new FinancialBatchService().Get( hfBatchId.ValueAsInt() );
-            ShowReadOnly( savedFinancialBatch );
+            ShowSummary( savedFinancialBatch );
         }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Finance
         protected void btnCancelFinancialBatch_Click( object sender, EventArgs e )
         {
             var savedFinancialBatch = new FinancialBatchService().Get( hfBatchId.ValueAsInt() );
-            ShowReadOnly( savedFinancialBatch );
+            ShowSummary( savedFinancialBatch );
         }
 
         /// <summary>
@@ -150,14 +150,14 @@ namespace RockWeb.Blocks.Finance
         {
             pnlEditDetails.Visible = editable;
             valSummaryBatch.Enabled = editable;
-            fieldsetViewDetails.Visible = !editable;
+            fieldsetViewSummary.Visible = !editable;
         }
 
         /// <summary>
-        /// Shows the readonly details.
+        /// Shows the financial batch summary.
         /// </summary>
         /// <param name="financialBatch">The financial batch.</param>
-        private void ShowReadOnly( FinancialBatch financialBatch )
+        private void ShowSummary( FinancialBatch financialBatch )
         {
             string batchDate = string.Empty;
             if (financialBatch.BatchStartDateTime != null)
@@ -176,13 +176,16 @@ namespace RockWeb.Blocks.Finance
             }
 
             hfBatchId.SetValue( financialBatch.Id );
-            lblDetails.Text = new DescriptionList()
+            lblDetailsLeft.Text = new DescriptionList()
                 .Add( "Title", financialBatch.Name )
-                .Add( "Control Amount", financialBatch.ControlAmount.ToString() )
                 .Add( "Status", financialBatch.Status.ToString() )
+                .Add( "Batch Start Date", Convert.ToDateTime( financialBatch.BatchStartDateTime ).ToString("MM/dd/yyyy") )
+                .Html;
+
+            lblDetailsRight.Text = new DescriptionList()
+                .Add( "Control Amount", financialBatch.ControlAmount.ToString() )
                 .Add( "Campus", campus )
-                .Add( "Batch Start Date", financialBatch.BatchStartDateTime )
-                .Add( "Batch End Date", financialBatch.BatchEndDateTime )
+                .Add( "Batch End Date", Convert.ToDateTime( financialBatch.BatchEndDateTime ).ToString( "MM/dd/yyyy" ) )
                 .Html;
         }
 
@@ -252,7 +255,7 @@ namespace RockWeb.Blocks.Finance
                 btnEdit.Visible = true;
                 if ( financialBatch.Id > 0 )
                 {
-                    ShowReadOnly( financialBatch );
+                    ShowSummary( financialBatch );
                 }
                 else
                 {
@@ -262,7 +265,7 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 btnEdit.Visible = false;
-                ShowReadOnly( financialBatch );
+                ShowSummary( financialBatch );
             }
 
             btnSave.Visible = !readOnly;

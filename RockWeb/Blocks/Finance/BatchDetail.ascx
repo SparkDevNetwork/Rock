@@ -37,12 +37,17 @@
                 </div>
             </div>
 
-            <fieldset id="fieldsetViewDetails" runat="server">
+            <fieldset id="fieldsetViewSummary" runat="server">
                 <div class="row">
                     <div class="col-md-12">
                         <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />                            
-                        <asp:Literal ID="lblDetails" runat="server" />
-                    </div>                        
+                    </div>
+                    <div class="col-md-6">
+                        <asp:Literal ID="lblDetailsLeft" runat="server" />
+                    </div>
+                    <div class="col-md-6">
+                        <asp:Literal ID="lblDetailsRight" runat="server" />
+                    </div>
                 </div>
                 <div class="actions">
                     <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-sm" CausesValidation="false" OnClick="btnEdit_Click" />
