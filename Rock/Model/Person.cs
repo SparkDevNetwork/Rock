@@ -686,10 +686,10 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.DateTime"/> representing the Person's birthdate.  If no birthdate is available, null is returned. If the year is not available then the birthdate is returned with the DateTime.MinValue.Year.
         /// </value>
-        [NotMapped]
         [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [MergeField]
-        public virtual DateTime? BirthDate
+        public DateTime? BirthDate
         {
             get
             {
