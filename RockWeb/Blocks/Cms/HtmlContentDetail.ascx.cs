@@ -156,8 +156,8 @@ namespace RockWeb.Blocks.Cms
                 bool userSpecificFolders = false;
                 if ( bool.TryParse( GetAttributeValue( "UserSpecificFolders" ), out userSpecificFolders ) && userSpecificFolders )
                 {
-                    documentRoot = System.IO.Path.Combine( documentRoot, CurrentUser.Id.ToString() );
-                    imageRoot = System.IO.Path.Combine( imageRoot, CurrentUser.Id.ToString() );
+                    documentRoot = System.Web.VirtualPathUtility.Combine( documentRoot, CurrentUser.Id.ToString() );
+                    imageRoot = System.Web.VirtualPathUtility.Combine( imageRoot, CurrentUser.Id.ToString() );
                 }
             }
 
