@@ -41,7 +41,20 @@ namespace RockWeb.Blocks.Cms
     [Description("Displays the details of a specific site.")]
     public partial class SiteDetail : RockBlock, IDetailBlock
     {
-        #region Control Methods
+
+        #region Fields
+
+        // used for private variables
+
+        #endregion
+
+        #region Properties
+
+        // used for public / protected properties
+
+        #endregion
+
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -79,7 +92,7 @@ namespace RockWeb.Blocks.Cms
 
         #endregion
 
-        #region Edit Events
+        #region Events
 
         /// <summary>
         /// Handles the Click event of the btnEdit control.
@@ -99,6 +112,8 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
+            bool issues = false;
+
             RockTransactionScope.WrapTransaction( () =>
             {
                 SiteService siteService = new SiteService();
@@ -106,9 +121,10 @@ namespace RockWeb.Blocks.Cms
                 if ( site != null )
                 {
                     string errorMessage;
-                    if ( !siteService.CanDelete( site, out errorMessage ) )
+                    issues = ! siteService.CanDelete( site, out errorMessage ) || ! siteService.CanDeleteAlternate( site, out errorMessage );
+                    if ( issues )
                     {
-                        mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                        mdDeleteWarning.Show( errorMessage, ModalAlertType.Alert );
                         return;
                     }
 
@@ -119,8 +135,10 @@ namespace RockWeb.Blocks.Cms
                 }
             } );
 
-            NavigateToParentPage();
-
+            if ( ! issues )
+            {
+                NavigateToParentPage();
+            }
         }
 
         /// <summary>
@@ -288,7 +306,7 @@ namespace RockWeb.Blocks.Cms
 
         #endregion
 
-        #region Internal Methods
+        #region Methods
 
         /// <summary>
         /// Loads the drop downs.
