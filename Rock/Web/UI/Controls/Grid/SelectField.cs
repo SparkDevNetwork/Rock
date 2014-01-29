@@ -28,18 +28,21 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class SelectField : TemplateField, INotRowSelectedField
     {
+
+        #region Properties
+
         /// <summary>
         /// Gets the parent grid.
         /// </summary>
         /// <value>
         /// The parent grid.
         /// </value>
-        public List<int> SelectedKeys 
+        public List<object> SelectedKeys 
         {
             get { return _selectedKeys; }
             internal set { _selectedKeys = value; } 
         }
-        private List<int> _selectedKeys = new List<int>();
+        private List<object> _selectedKeys = new List<object>();
 
         /// <summary>
         /// Gets or sets the selection mode.
@@ -122,6 +125,10 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        #endregion
+
+        #region Base Control Methods
+
         /// <summary>
         /// Performs basic instance initialization for a data control field.
         /// </summary>
@@ -142,10 +149,8 @@ namespace Rock.Web.UI.Controls
             return base.Initialize( sortingEnabled, control );
         }
 
-        protected override void LoadViewState( object savedState )
-        {
-            base.LoadViewState( savedState );
-        }
+        #endregion
+
     }
 
     /// <summary>
@@ -153,6 +158,9 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class SelectFieldTemplate : ITemplate
     {
+
+        #region Properties
+
         /// <summary>
         /// Gets the selection mode.
         /// </summary>
@@ -185,6 +193,10 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public int ColumnIndex { get; private set; }
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// When implemented by a class, defines the <see cref="T:System.Web.UI.Control" /> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
         /// </summary>
@@ -211,10 +223,6 @@ namespace Rock.Web.UI.Controls
                     else
                     {
                         cb = new RadioButton();
-                        if (SelectionMode == SelectionMode.SingleRow)
-                        {
-                            ( (RadioButton)cb ).GroupName = "cbSelect_" + ColumnIndex.ToString();
-                        }
                     }
 
                     cb.ID = "cbSelect_" + ColumnIndex.ToString();
@@ -223,6 +231,10 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
+
+        #endregion
+
+        #region Events
 
         /// <summary>
         /// Handles the DataBinding event of the cb control.
@@ -245,7 +257,7 @@ namespace Rock.Web.UI.Controls
                         object selectValue = DataBinder.Eval( gridViewRow.DataItem, DataSelectedField );
                         cb.Checked = (bool)selectValue;
 
-                        if ( SelectionMode == SelectionMode.SingleColumn )
+                        if ( SelectionMode == SelectionMode.Single )
                         {
                             ( (RadioButton)cb ).GroupName = "cbSelect_" + gridViewRow.RowIndex.ToString();
                         }
@@ -253,23 +265,25 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
+
+        #endregion
+
     }
+
+    #region Enumerations
 
     public enum SelectionMode
     {
         /// <summary>
         /// Renders a checkbox
         /// </summary>
-        Multiple = 0,
-
-        /// <summary>
-        /// Renders a radio button that allows selecting one column for every row
-        /// </summary>
-        SingleColumn = 1,
+        Multiple,
 
         /// <summary>
         /// Renders a radio button that allows selecting one row for the column
         /// </summary>
-        SingleRow = 2
+        Single,
     }
+
+    #endregion
 }
