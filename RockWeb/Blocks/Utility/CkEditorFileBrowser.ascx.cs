@@ -135,6 +135,15 @@ namespace RockWeb.Blocks.Utility
             sb.AppendLine( "<ul id=\"treeview\">" );
             string physicalRootFolder = this.Request.MapPath( GetRootFolderPath() );
 
+            if (!Directory.Exists(physicalRootFolder))
+            {
+                try
+                {
+                    Directory.CreateDirectory( physicalRootFolder );
+                }
+                catch { }
+            }
+
             if ( Directory.Exists( physicalRootFolder ) )
             {
                 List<string> directoryList = Directory.GetDirectories( physicalRootFolder ).OrderBy( a => a ).ToList();
