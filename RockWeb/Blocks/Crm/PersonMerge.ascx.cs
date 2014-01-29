@@ -52,21 +52,21 @@ namespace RockWeb.Blocks.Crm
         /// <value>
         /// The people.
         /// </value>
-        private Dictionary<int, List<PersonProperty>> PeopleValues
+        private MergeData MergeData
         {
             get
             {
-                var peopleValues = ViewState["PeopleValues"] as Dictionary<int, List<PersonProperty>>;
-                if (peopleValues == null)
+                var data = ViewState["MergeData"] as MergeData;
+                if (data == null)
                 {
-                    peopleValues = new Dictionary<int, List<PersonProperty>>();
-                    PeopleValues = peopleValues;
+                    data = new MergeData();
+                    MergeData = data;
                 }
-                return peopleValues;
+                return data;
             }
             set
             {
-                ViewState["PeopleValues"] = value;
+                ViewState["MergeData"] = value;
             }
         }
 
@@ -80,20 +80,28 @@ namespace RockWeb.Blocks.Crm
 
             if (!Page.IsPostBack)
             {
-                PeopleValues = new Dictionary<int, List<PersonProperty>>();
-                var personIDs = new List<int>();
-                PageParameter( "People" ).SplitDelimitedValues().ToList().ForEach(p => personIDs.Add(p.AsInteger().Value));
-                foreach ( var person in new PersonService().Queryable().Where( p => personIDs.Contains( p.Id ) ) )
+                var personIDs = PageParameter( "People" ).SplitDelimitedValues().Select( p => p.AsInteger().Value).ToList();
+                var people = new PersonService().Queryable().Where( p => personIDs.Contains( p.Id ) );
+
+                // Create the data structure used to build grid
+                MergeData = new MergeData();
+                foreach ( var person in people )
                 {
-                    PeopleValues.Add( person.Id, GetPersonValues( person ) );
+                    MergeData.AddPerson(person);
                 }
+                MergeData.SetSelection( people.OrderBy( p => p.CreatedDateTime ).Select( p => p.Id ).FirstOrDefault() );
             }
 
-            BuildDisplay( !Page.IsPostBack );
+            // Build the grid columns
+            BuildColumns();
         }
 
         protected override void OnLoad( EventArgs e )
         {
+            if (!Page.IsPostBack)
+            {
+                BindData();
+            }
         }
        
         #endregion
@@ -104,90 +112,40 @@ namespace RockWeb.Blocks.Crm
 
         #region Methods
 
-        private List<PersonProperty> GetPersonValues( Person person )
-        {
-            var personValues = new List<PersonProperty>();
 
-            personValues.Add( new PersonProperty( "Name", person.TitleValue ) );
-            personValues.Add( new PersonProperty( "Title", person.TitleValue ) );
-            personValues.Add( new PersonProperty( "FirstName", person.FirstName ) );
-            personValues.Add( new PersonProperty( "NickName", person.NickName ) );
-            personValues.Add( new PersonProperty( "MiddleName", person.MiddleName ) );
-            personValues.Add( new PersonProperty( "LastName", person.LastName ) );
-            personValues.Add( new PersonProperty( "Suffix", person.SuffixValue ) );
-            personValues.Add( new PersonProperty( "RecordType", person.RecordTypeValue ) );
-            personValues.Add( new PersonProperty( "RecordStatus", person.RecordStatusValue ) );
-            personValues.Add( new PersonProperty( "RecordStatusReason",person.RecordStatusReasonValue ) );
-            personValues.Add( new PersonProperty( "ConnectionStatus", person.ConnectionStatusValue ) );
-            personValues.Add( new PersonProperty( "Deceased", person.IsDeceased ) );
-            personValues.Add( new PersonProperty( "Gender", person.Gender ) );
-            personValues.Add( new PersonProperty( "MaritalStatus", person.MaritalStatusValue ) );
-            personValues.Add( new PersonProperty( "AnniversaryDate", person.AnniversaryDate ) );
-            personValues.Add( new PersonProperty( "GraduationDate", person.GraduationDate ) );
-            personValues.Add( new PersonProperty( "Email", person.Email ) );
-            personValues.Add( new PersonProperty( "IsEmailActive", person.IsEmailActive ) );
-            personValues.Add( new PersonProperty( "EmailNote", person.EmailNote ) );
-            personValues.Add( new PersonProperty( "DoNotEmail", person.DoNotEmail ) );
-            personValues.Add( new PersonProperty( "SystemNote", person.SystemNote ) );
-            // TODO: Giving Group
-
-            return personValues;
-        }
-
-        private void BuildDisplay( bool SetSelection )
+        private void BuildColumns()
         {
             gMerge.Columns.Clear();
 
-            if ( PeopleValues.Any() )
+            if ( MergeData.People.Any() )
             {
-                // Create Columns
-                var tbl = new DataTable();
-                tbl.Columns.Add( "Key" );
-                tbl.Columns.Add( "Label" );
+                var keyCol = new BoundField();
+                keyCol.DataField = "Key";
+                keyCol.Visible = false;
+                gMerge.Columns.Add( keyCol );
 
                 var labelCol = new BoundField();
                 labelCol.DataField = "Label";
                 labelCol.HeaderText = "Value";
                 gMerge.Columns.Add( labelCol );
 
-                foreach ( var person in PeopleValues )
+                foreach ( var person in MergeData.People )
                 {
-                    tbl.Columns.Add( person.Key.ToString() );
-
-                    var personCol = new BoundField();
-                    personCol.DataField = person.Key.ToString();
-                    personCol.HeaderText = person.Key.ToString();
+                    var personCol = new SelectField();
+                    personCol.SelectionMode = SelectionMode.SingleColumn;
+                    personCol.HeaderText = person.FullName;
+                    personCol.DataTextField = string.Format( "property_{0}", person.Id );
+                    personCol.DataSelectedField = string.Format( "property_{0}_selected", person.Id );
                     gMerge.Columns.Add( personCol );
                 }
-
-                var propertyList = PeopleValues.FirstOrDefault().Value;
-                foreach(PersonProperty property in propertyList)
-                {
-                    var rowValues = new List<object>();
-                    rowValues.Add(property.Key);
-                    rowValues.Add(property.Label);
-                    bool display = false;
-
-                    foreach(var valueList in PeopleValues.Select( p => p.Value))
-                    {
-                        string value = valueList.Where( v => v.Key == property.Key).Select( v => v.FormattedValue).FirstOrDefault() ?? string.Empty;
-                        rowValues.Add(value);
-                        if ( value != ( property.FormattedValue ?? string.Empty ) )
-                        {
-                            display = true;
-                        }
-                    }
-
-                    if ( display )
-                    {
-                        tbl.Rows.Add( rowValues.ToArray() );
-                    }
-                }
-
-                gMerge.DataSource = tbl;
-                gMerge.DataBind();
-
             }
+        }
+
+        private void BindData()
+        {
+            DataTable dt = MergeData.GetDataTable();
+            gMerge.DataSource = dt;
+            gMerge.DataBind();
         }
 
         #endregion
@@ -195,17 +153,174 @@ namespace RockWeb.Blocks.Crm
     }
 
     [Serializable]
+    class MergeData
+    {
+        public List<Person> People { get; set; }
+        public List<PersonProperty> Properties { get; set; }
+        
+        public MergeData()
+        {
+            People = new List<Person>();
+            Properties = new List<PersonProperty>();
+        }
+
+        public void AddPerson(Person person)
+        {
+            People.Add(person);
+
+            AddProperty( "Title", person.Id, person.TitleValue );
+            AddProperty( "FirstName", person.Id, person.FirstName );
+            AddProperty( "NickName", person.Id, person.NickName );
+            AddProperty( "MiddleName", person.Id, person.MiddleName );
+            AddProperty( "LastName", person.Id, person.LastName );
+            AddProperty( "Suffix", person.Id, person.SuffixValue );
+            AddProperty( "RecordType", person.Id, person.RecordTypeValue );
+            AddProperty( "RecordStatus", person.Id, person.RecordStatusValue );
+            AddProperty( "RecordStatusReason", person.Id, person.RecordStatusReasonValue );
+            AddProperty( "ConnectionStatus", person.Id, person.ConnectionStatusValue );
+            AddProperty( "Deceased", person.Id, person.IsDeceased );
+            AddProperty( "Gender", person.Id, person.Gender );
+            AddProperty( "MaritalStatus", person.Id, person.MaritalStatusValue );
+            AddProperty( "AnniversaryDate", person.Id, person.AnniversaryDate );
+            AddProperty( "GraduationDate", person.Id, person.GraduationDate );
+            AddProperty( "Email", person.Id, person.Email );
+            AddProperty( "IsEmailActive", person.Id, person.IsEmailActive );
+            AddProperty( "EmailNote", person.Id, person.EmailNote );
+            AddProperty( "DoNotEmail", person.Id, person.DoNotEmail );
+            AddProperty( "SystemNote", person.Id, person.SystemNote );
+        }
+
+        public void AddProperty( string key, int personId, string value, bool selected = false )
+        {
+            AddProperty( key, personId, value, value, selected );
+        }
+
+        public void AddProperty(string key, int personId, string value, string formattedValue, bool selected = false)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                var property = GetProperty(key);
+                var propertyValue = property.Values.Where( v => v.PersonId == personId).FirstOrDefault();
+                if (propertyValue == null)
+                {
+                    propertyValue = new PersonPropertyValue { PersonId = personId };
+                    property.Values.Add(propertyValue);
+                }
+                propertyValue.Value = value;
+                propertyValue.FormattedValue = formattedValue;
+                propertyValue.Selected = selected;
+            }
+        }
+
+
+
+        public void AddProperty( string key, int personId, DefinedValue value, bool selected = false )
+        {
+            AddProperty( key, personId, value != null ? value.Name : "", selected );
+        }
+
+        public void AddProperty( string key, int personId, bool? value, bool selected = false )
+        {
+            AddProperty( key, personId, ( value ?? false ).ToString(), selected );
+        }
+
+        public void AddProperty( string key, int personId, DateTime? value, bool selected = false )
+        {
+            AddProperty( key, personId, value.HasValue ? value.Value.ToShortDateString() : string.Empty, selected );
+        }
+
+        public void AddProperty( string key, int personId, Enum value, bool selected = false )
+        {
+            AddProperty( key, personId, value.ConvertToString(), selected );
+        }
+
+        public void SetSelection(int primaryPersonId)
+        {
+            foreach( var personProperty in Properties)
+            {
+                // Unselect all the values
+                personProperty.Values.ForEach( v => v.Selected = false);
+
+                // Find primary person's non-blank value
+                var value = personProperty.Values.Where( v => v.PersonId == primaryPersonId && v.FormattedValue != "" ).FirstOrDefault();
+                if (value == null)
+                {
+                    // Find first non-blank value
+                    value = personProperty.Values.Where( v => v.FormattedValue != "").FirstOrDefault();                
+                    if (value == null)
+                    {
+                        value = personProperty.Values.FirstOrDefault();
+                    }
+                }
+
+                if (value != null)
+                {
+                    value.Selected = true;
+                }
+            }
+        }
+
+        public DataTable GetDataTable()
+        {
+            var tbl = new DataTable();
+
+            tbl.Columns.Add( "Key" );
+            tbl.Columns.Add( "Label" );
+
+            foreach ( var person in People )
+            {
+                tbl.Columns.Add( string.Format("property_{0}", person.Id ) );
+                tbl.Columns.Add( string.Format("property_{0}_selected", person.Id ), typeof(bool) );
+            }
+
+            foreach( var personProperty in Properties)
+            {
+                var rowValues = new List<object>();
+                rowValues.Add(personProperty.Key);
+                rowValues.Add(personProperty.Label);
+
+                var values = new List<string>();
+                foreach(var person in People )
+                {
+                    var value = personProperty.Values.Where( v => v.PersonId == person.Id).FirstOrDefault();
+                    string formattedValue = value != null ? value.FormattedValue : string.Empty;
+                    values.Add(formattedValue);
+                    rowValues.Add( formattedValue );
+                    rowValues.Add( value != null ? value.Selected : false );
+                }
+
+                // Only add rows where people have different values
+                if ( values.Distinct().Count() > 1 )
+                {
+                    tbl.Rows.Add( rowValues.ToArray() );
+                }
+            }
+
+            return tbl;
+        }
+
+        private PersonProperty GetProperty(string key)
+        {
+            var property = Properties.Where( p => p.Key.Equals(key, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+            if (property == null)
+            {
+                property = new PersonProperty(key);
+                Properties.Add( property );
+            }
+            return property;
+        }
+    }
+
+    [Serializable]
     class PersonProperty
     {
         public string Key { get; set; }
         public string Label { get; set; }
-        public string FormattedValue { get; set; }
-        public object Value { get; set; }
-        public bool Selected { get; set; }
+        public List<PersonPropertyValue> Values { get; set; }
 
         public PersonProperty()
         {
-            Selected = false;
+            Values = new List<PersonPropertyValue>();
         }
 
         public PersonProperty( string key ) : this()
@@ -213,56 +328,15 @@ namespace RockWeb.Blocks.Crm
             Key = key;
             Label = key.SplitCase();
         }
+    }
 
-        public PersonProperty( string key, string value )
-            : this(key)
-        {
-            FormattedValue = value;
-            Value = value;
-        }
-
-        public PersonProperty( string key, DefinedValue value )
-            : this(key)
-        {
-            if ( value != null )
-            {
-                FormattedValue = value.Name;
-                Value = value.Id;
-            }
-            else
-            {
-                FormattedValue = string.Empty;
-                Value = null;
-            }
-        }
-
-        public PersonProperty( string key, bool? value )
-            : this( key )
-        {
-            FormattedValue = (value ?? false).ToString();
-            Value = value;
-        }
-
-        public PersonProperty( string key, DateTime? value )
-            : this( key )
-        {
-            FormattedValue = value.HasValue ? value.Value.ToShortDateString() : string.Empty;
-            Value = value;
-        }
-
-        public PersonProperty( string key, Enum value )
-            : this( key )
-        {
-            FormattedValue = value.ConvertToString();
-            Value = value;
-        }
-
-        public PersonProperty( string key, string formattedValue, object value )
-            : this( key )
-        {
-            FormattedValue = formattedValue;
-            Value = value;
-        }
+    [Serializable]
+    class PersonPropertyValue
+    {
+        public int PersonId { get; set; }
+        public bool Selected { get; set; }
+        public string Value { get; set; }
+        public string FormattedValue { get; set; }
     }
  
 }

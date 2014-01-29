@@ -45,7 +45,6 @@ namespace Rock.Web.UI.Controls
         private Table _table;
         private GridViewRow _actionRow;
         private GridActions _gridActions;
-        private List<int> _selectedKeys = new List<int>();
 
         #region Properties
 
@@ -341,6 +340,28 @@ namespace Rock.Web.UI.Controls
             }                
         }
 
+        /// <summary>
+        /// Gets the selected keys.
+        /// </summary>
+        /// <value>
+        /// The selected keys.
+        /// </value>
+        private List<int> SelectedKeys
+        {
+            get
+            {
+                foreach ( var col in this.Columns.OfType<SelectField>() )
+                {
+                    if (col.SelectionMode == SelectionMode.Multiple)
+                    {
+                        return col.SelectedKeys;
+                    }
+                }
+
+                return new List<int>();
+            }
+        }
+
         #region Action Row Properties
 
         /// <summary>
@@ -485,15 +506,21 @@ namespace Rock.Web.UI.Controls
             
             if (Page.IsPostBack)
             {
-                foreach ( GridViewRow row in this.Rows )
+                foreach ( var col in this.Columns.OfType<SelectField>() )
                 {
-                    CheckBox cb = row.FindControl( "cbSelect" ) as CheckBox;
-                    if ( cb != null && cb.Checked )
+                    var colIndex = this.Columns.IndexOf(col).ToString();
+
+                    col.SelectedKeys = new List<int>();
+                    foreach ( GridViewRow row in this.Rows )
                     {
-                        int? key = this.DataKeys[row.RowIndex].Value as int?;
-                        if ( key.HasValue )
+                        CheckBox cb = row.FindControl( "cbSelect_" +  colIndex) as CheckBox;
+                        if ( cb != null && cb.Checked )
                         {
-                            _selectedKeys.Add( key.Value );
+                            int? key = this.DataKeys[row.RowIndex].Value as int?;
+                            if ( key.HasValue )
+                            {
+                                col.SelectedKeys.Add( key.Value );
+                            }
                         }
                     }
                 }
@@ -511,7 +538,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( !string.IsNullOrWhiteSpace( PersonIdField ) )
             {
-                var peopleSelected = _selectedKeys.ToList();
+                var peopleSelected = SelectedKeys.ToList();
 
                 if ( !peopleSelected.Any() )
                 {
@@ -1084,13 +1111,17 @@ namespace Rock.Web.UI.Controls
 
             if ( RowSelected != null && e.Row.RowType == DataControlRowType.DataRow )
             {
-                if ( _selectedKeys.Any() )
+                foreach ( var col in this.Columns.OfType<SelectField>() )
                 {
-                    CheckBox cbSelect = e.Row.FindControl( "cbSelect" ) as CheckBox;
-                    if ( cbSelect != null )
+                    if ( col.SelectedKeys.Any() )
                     {
-                        int? key = this.DataKeys[e.Row.RowIndex].Value as int?;
-                        cbSelect.Checked = ( key.HasValue && _selectedKeys.Contains( key.Value ) );
+                        var colIndex = this.Columns.IndexOf( col ).ToString();
+                        CheckBox cbSelect = e.Row.FindControl( "cbSelect_" + colIndex ) as CheckBox;
+                        if ( cbSelect != null )
+                        {
+                            int? key = this.DataKeys[e.Row.RowIndex].Value as int?;
+                            cbSelect.Checked = ( key.HasValue && col.SelectedKeys.Contains( key.Value ) );
+                        }
                     }
                 }
 
