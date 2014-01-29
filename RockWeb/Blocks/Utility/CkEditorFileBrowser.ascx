@@ -51,8 +51,8 @@
                         });
                     }
 
-                    // init the file list treeview on every load
-                    $('.js-file-list .treeview').rockTree({});
+                    // init the file list RockList on every load
+                    $('.js-file-list .js-listview').rockList();
                     $('.js-file-list').tinyscrollbar({ size: 120, sizethumb: 20 });
 
                     // js for when a file delete is clicked
@@ -75,8 +75,8 @@
                     });
 
                     // js for when a file is selected
-                    $('.js-file-list .treeview').off('rockTree:selected');
-                    $('.js-file-list .treeview').on('rockTree:selected', function (e, data) {
+                    $('.js-file-list .js-listview').off('rockList:selected');
+                    $('.js-file-list .js-listview').on('rockList:selected', function (e, data) {
                         // do an ajax call back to the current url to get the image src and alt
                         // we want the server to figure this out in order to minimize exposing how the rootfolder is encrypted
                         $.ajax({
@@ -150,7 +150,7 @@
                     <div class="viewport">
                         <div class="overview">
                             <Rock:NotificationBox ID="nbNoFilesInfo" runat="server" Text="No Files Found" Visible="false" NotificationBoxType="Info" />
-                            <asp:Label ID="lblFiles" CssClass="treeview treeview-items" runat="server" />
+                            <asp:Label ID="lblFiles" CssClass="js-listview" runat="server" />
                         </div>
                     </div>
                 </div>

@@ -373,3 +373,43 @@ img.file-browser-image {
     float: left;
     margin: 0 12px 0 4px;
 }
+
+/* MP - rocklist css to get it functional */
+ul.rocklist, ul.rocklist ul {
+    list-style-type: none;
+    margin-bottom: 30px;
+    padding: 0;
+}
+ul.rocklist ul {
+    margin: 0 0 0 15px;
+}
+.rocklist .rocklist-item {
+    white-space: nowrap;
+}
+.rocklist .rocklist-item>i {
+    cursor: pointer;
+    padding: 4px;
+}
+.rocklist li {
+    margin: 0;
+}
+.rocklist span, .rocklist a {
+    margin: 1px;
+    display: inline-block;
+}
+.rocklist .rocklist-name:hover, .rocklist span:hover, .rocklist span:hover a {
+    background: #8498ab;
+    color: #ecf0f3;
+}
+.rocklist .selected, .rocklist .selected a {
+    background: #a4b4c4;
+    color: #fff;
+}
+.rocklist .rocklist-name {
+    padding: 2px 6px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.rocklist .rocklist-leaf {
+    padding-left: 15px;
+}

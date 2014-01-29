@@ -245,7 +245,7 @@ namespace RockWeb.Blocks.Utility
             string physicalFolder = Path.Combine( physicalRootFolder, relativeFolderPath.TrimStart( '/', '\\' ) );
 
             var sb = new StringBuilder();
-            sb.AppendLine( "<ul>" );
+            sb.AppendLine( "<ul class='js-rocklist rocklist'>" );
             
             string fileFilter = PageParameter( "fileFilter" );
             if ( string.IsNullOrWhiteSpace( fileFilter ) )
@@ -266,8 +266,8 @@ namespace RockWeb.Blocks.Utility
             foreach ( var filePath in fileList )
             {
                 string nameHtmlFormat = @"
-<li data-id='{2}' data-expanded='true'>
-    <span class='rocktree-name'>
+<li class='js-rocklist-item rocklist-item' data-id='{2}'>
+    <span class='rocklist-name'>
         <div class='rollover-container'>
           <div class='rollover-item pull-right'>
             <a title='delete' class='btn btn-xs btn-danger js-delete-file'>
