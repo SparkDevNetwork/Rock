@@ -428,6 +428,10 @@
     <Compile Include="Migrations\201401290012560_PersonBirthdateDbComputed.Designer.cs">
       <DependentUpon>201401290012560_PersonBirthdateDbComputed.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401291637496_HTMLContentNotRequired.cs" />
+    <Compile Include="Migrations\201401291637496_HTMLContentNotRequired.Designer.cs">
+      <DependentUpon>201401291637496_HTMLContentNotRequired.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -728,6 +732,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401290012560_PersonBirthdateDbComputed.resx">
       <DependentUpon>201401290012560_PersonBirthdateDbComputed.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401291637496_HTMLContentNotRequired.resx">
+      <DependentUpon>201401291637496_HTMLContentNotRequired.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
