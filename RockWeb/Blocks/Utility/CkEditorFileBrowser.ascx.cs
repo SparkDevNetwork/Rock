@@ -267,18 +267,16 @@ namespace RockWeb.Blocks.Utility
             {
                 string nameHtmlFormat = @"
 <li class='js-rocklist-item rocklist-item' data-id='{2}'>
-    <span class='rocklist-name'>
-        <div class='rollover-container'>
-          <div class='rollover-item pull-right'>
-            <a title='delete' class='btn btn-xs btn-danger js-delete-file'>
-              <i class='fa fa-times'></i>
-            </a>
-          </div>
-          <img src='{0}' class='file-browser-image' />
-          <br />
-          <span class='file-name'>{1}</span>
+    <div class='rollover-container'>
+        <div class='rollover-item actions'>
+        <a title='delete' class='btn btn-xs btn-danger js-delete-file'>
+            <i class='fa fa-times'></i>
+        </a>
         </div>
-    </span>
+        <img src='{0}' class='file-browser-image' />
+        <br />
+        <span class='file-name'>{1}</span>
+    </div>
 </li>
 ";
 

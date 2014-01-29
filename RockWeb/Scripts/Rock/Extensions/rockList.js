@@ -22,7 +22,7 @@
             this.$el.off('click');
 
             // Selecting an item...
-            this.$el.on('click', '.rocklist-item > span', function (e) {
+            this.$el.on('click', '.rocklist-item', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
 
