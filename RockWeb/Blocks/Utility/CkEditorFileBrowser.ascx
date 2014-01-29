@@ -4,10 +4,13 @@
     <%-- Folders - Separate UpdatePanel so that Tree doesn't get rebuilt on postbacks (unless the server explicity wants it to get rebuilt) --%>
     <asp:UpdatePanel ID="upnlFolders" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
         <ContentTemplate>
-            <asp:LinkButton ID="lbCreateFolder" runat="server" CssClass="btn btn-sm btn-action" OnClick="lbCreateFolder_Click" CausesValidation="false" ToolTip="New Folder"><i class="fa fa-plus"></i></asp:LinkButton>
-            <asp:LinkButton ID="lbRenameFolder" runat="server" CssClass="btn btn-sm  btn-action" OnClick="lbRenameFolder_Click" CausesValidation="false" ToolTip="Rename Folder"><i class="fa fa-pencil"></i></asp:LinkButton>
-            <asp:LinkButton ID="lbDeleteFolder" runat="server" CssClass="btn btn-sm btn-action" OnClientClick="Rock.dialogs.confirmDelete(event, 'folder and all its contents');" OnClick="lbDeleteFolder_Click" CausesValidation="false" ToolTip="Delete Folder"><i class="fa fa-times"></i></asp:LinkButton>
-            <asp:LinkButton ID="lbRefresh" runat="server" CssClass="btn btn-sm  btn-action" OnClick="lbRefresh_Click" CausesValidation="false" ToolTip="Refresh"><i class="fa fa-refresh"></i></asp:LinkButton>
+            
+            <div class="actions">
+                <asp:LinkButton ID="lbCreateFolder" runat="server" CssClass="btn btn-sm btn-action" OnClick="lbCreateFolder_Click" CausesValidation="false" ToolTip="New Folder"><i class="fa fa-plus"></i></asp:LinkButton>
+                <asp:LinkButton ID="lbRenameFolder" runat="server" CssClass="btn btn-sm  btn-action" OnClick="lbRenameFolder_Click" CausesValidation="false" ToolTip="Rename Folder"><i class="fa fa-pencil"></i></asp:LinkButton>
+                <asp:LinkButton ID="lbDeleteFolder" runat="server" CssClass="btn btn-sm btn-action" OnClientClick="Rock.dialogs.confirmDelete(event, 'folder and all its contents');" OnClick="lbDeleteFolder_Click" CausesValidation="false" ToolTip="Delete Folder"><i class="fa fa-times"></i></asp:LinkButton>
+                <asp:LinkButton ID="lbRefresh" runat="server" CssClass="btn btn-sm  btn-action" OnClick="lbRefresh_Click" CausesValidation="false" ToolTip="Refresh"><i class="fa fa-refresh"></i></asp:LinkButton>
+            </div>
 
             <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" Text="Folder not found" Visible="false" />
 
