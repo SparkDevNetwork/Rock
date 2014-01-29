@@ -37,5 +37,30 @@ namespace Rock.Model
         {
             return Repository.Find( t => ( t.DefaultPageId == defaultPageId || ( defaultPageId == null && t.DefaultPageId == null ) ) );
         }
+
+        /// <summary>
+        /// Determines whether the specified site can be deleted.
+        /// Performs some additional checks that are missing from the
+        /// auto-generated SiteService.CanDelete().
+        /// TODO This should move into the SiteService CanDelete at some point
+        /// once the generator tool is adjusted.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>
+        ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanDeleteAlternate( Site item, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            if ( new Service<Layout>().Queryable().Where( l => l.SiteId == item.Id ).Any( a => a.Pages.Count() > 0 ) )
+            {
+                errorMessage = string.Format( "This {0} has a {1} which is used by a {2}.", Site.FriendlyTypeName, Layout.FriendlyTypeName, Page.FriendlyTypeName );
+                return false;
+            }
+
+            return true;
+        }
     }
 }
