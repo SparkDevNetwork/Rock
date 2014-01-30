@@ -59,13 +59,13 @@ namespace Rock.Rest.Controllers
         [Authenticate]
         public IQueryable<CategoryItem> GetChildren( int id, bool getCategorizedItems, int entityTypeId )
         {
-            return GetChildren(id, getCategorizedItems, entityTypeId, null, null);
+            return GetChildren( id, getCategorizedItems, entityTypeId, null, null );
         }
 
         [Authenticate]
         public IQueryable<CategoryItem> GetChildren( int id, bool getCategorizedItems, int entityTypeId, string entityQualifier )
         {
-            return GetChildren(id, getCategorizedItems, entityTypeId, entityQualifier, null);
+            return GetChildren( id, getCategorizedItems, entityTypeId, entityQualifier, null );
         }
 
         [Authenticate]
@@ -83,9 +83,9 @@ namespace Rock.Rest.Controllers
             if ( cachedEntityType != null )
             {
                 qry = qry.Where( a => a.EntityTypeId == entityTypeId );
-                if (!string.IsNullOrWhiteSpace(entityQualifier))
+                if ( !string.IsNullOrWhiteSpace( entityQualifier ) )
                 {
-                    qry = qry.Where( a => string.Compare(a.EntityTypeQualifierColumn, entityQualifier, true) == 0);
+                    qry = qry.Where( a => string.Compare( a.EntityTypeQualifierColumn, entityQualifier, true ) == 0 );
                     if ( !string.IsNullOrWhiteSpace( entityQualifierValue ) )
                     {
                         qry = qry.Where( a => string.Compare( a.EntityTypeQualifierValue, entityQualifierValue, true ) == 0 );
@@ -111,7 +111,7 @@ namespace Rock.Rest.Controllers
                 }
             }
 
-            List<Category> categoryList = qry.OrderBy( c => c.Order).ThenBy(c => c.Name).ToList();
+            List<Category> categoryList = qry.OrderBy( c => c.Order ).ThenBy( c => c.Name ).ToList();
             List<CategoryItem> categoryItemList = new List<CategoryItem>();
 
             foreach ( var category in categoryList )
@@ -120,7 +120,7 @@ namespace Rock.Rest.Controllers
                 {
                     var categoryItem = new CategoryItem();
                     categoryItem.Id = category.Id.ToString();
-                    categoryItem.Name = System.Web.HttpUtility.HtmlEncode( category.Name );
+                    categoryItem.Name = category.Name;
                     categoryItem.IsCategory = true;
                     categoryItem.IconCssClass = category.IconCssClass;
                     categoryItemList.Add( categoryItem );
