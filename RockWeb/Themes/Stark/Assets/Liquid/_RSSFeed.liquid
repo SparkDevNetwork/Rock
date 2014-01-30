@@ -1,20 +1,15 @@
 <h1>{{title}}</h1>
 {{description}}
-<div class="rssArticles">
+<div class="rss-articles">
 	{% for article in item -%}
-		<div class="rssArticle">
+		<div class="rss-article">
 			<h2>{{article.title}}</h2>
 
-			<div class="articleByLine">
-				{% comment -%}
-				{% if article.Authors != empty -%}
-					{{article.Authors[0].Name}} |
-				{% endif -%}
-				{% endcomment -%}
+			<div class="rss-article-byline">
 					{{article.pubDate}}
 			</div> 
 			<br />
-			<div class="articleSummary">
+			<div class="rss-article-summary">
 				{{article.description}}
 			</div>
 			<p>

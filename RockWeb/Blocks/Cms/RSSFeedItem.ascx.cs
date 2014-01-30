@@ -142,19 +142,19 @@ namespace RockWeb.Blocks.Cms
                     List<Dictionary<string, object>> items = ( (List<Dictionary<string, object>>)feedDictionary.Where(i => i.Key == "item" || i.Key == "entry").FirstOrDefault().Value );
                     for ( int i = 0; i < items.Count; i++ )
                     {
-                        if ( items[i]["articleHashCode"].ToString() == feedItemId )
+                        if ( items[i]["articleHash"].ToString() == feedItemId )
                         {
                             selectedItem = items[i];
 
 
                             if ( i > 0 )
                             {
-                                previousItem = items[i - 1];
+                                nextItem = items[i - 1];
                             }
 
                             if ( i < ( items.Count - 1 ) )
                             {
-                                nextItem = items[i + 1];
+                                previousItem = items[i + 1];
                             }
                             break;
                         }
