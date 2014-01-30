@@ -131,7 +131,7 @@ namespace Rock.Reporting.DataSelect.Person
             var personChildrenQuery = new PersonService( context ).Queryable()
                 .Select( p => familyGroupMembers.Where( s => s.PersonId == p.Id && s.GroupRole.Guid == adultGuid )
                     .SelectMany( m => m.Group.Members )
-                    .Where( m => m.GroupRole.Guid ==  childGuid)
+                    .Where( m => m.GroupRole.Guid == childGuid )
                     .OrderBy( m => m.Person.BirthYear ).ThenBy( m => m.Person.BirthMonth ).ThenBy( m => m.Person.BirthDay )
                     .Select( m => m.Person ).AsEnumerable() );
 
