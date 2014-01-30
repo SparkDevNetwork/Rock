@@ -139,23 +139,22 @@ namespace RockWeb.Blocks.Cms
                     Dictionary<string, object> previousItem = null;
                     Dictionary<string, object> selectedItem = null;
                     Dictionary<string, object> nextItem = null;
-                    List<Dictionary<string, object>> items = ( (List<Dictionary<string, object>>)feedDictionary["Items"] );
+                    List<Dictionary<string, object>> items = ( (List<Dictionary<string, object>>)feedDictionary.Where(i => i.Key == "item" || i.Key == "entry").FirstOrDefault().Value );
                     for ( int i = 0; i < items.Count; i++ )
                     {
-                        if ( items[i]["Id"].ToString() == feedItemId )
+                        if ( items[i]["articleHashCode"].ToString() == feedItemId )
                         {
                             selectedItem = items[i];
 
 
-                            //items are in descending order so the previous item will be the next indexed item
                             if ( i > 0 )
                             {
-                                nextItem = items[i - 1];
+                                previousItem = items[i - 1];
                             }
 
                             if ( i < ( items.Count - 1 ) )
                             {
-                                previousItem = items[i + 1];
+                                nextItem = items[i + 1];
                             }
                             break;
                         }
