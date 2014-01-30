@@ -28,7 +28,7 @@
 
                 var $rockList = $(this).parents('.rocklist'),
                     $item = $(this),
-                    id = $item.parent('li').attr('data-id');
+                    id = $item.closest('li').attr('data-id');
 
                 // clear all previous selections
                 $rockList.find('.selected').removeClass('selected');
