@@ -4,7 +4,7 @@
     <%-- Folders - Separate UpdatePanel so that Tree doesn't get rebuilt on postbacks (unless the server explicity wants it to get rebuilt) --%>
     <asp:UpdatePanel ID="upnlFolders" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
         <ContentTemplate>
-            
+
             <div class="actions">
                 <asp:LinkButton ID="lbCreateFolder" runat="server" CssClass="btn btn-sm btn-action" OnClick="lbCreateFolder_Click" CausesValidation="false" ToolTip="New Folder"><i class="fa fa-plus"></i></asp:LinkButton>
                 <asp:LinkButton ID="lbRenameFolder" runat="server" CssClass="btn btn-sm  btn-action" OnClick="lbRenameFolder_Click" CausesValidation="false" ToolTip="Rename Folder"><i class="fa fa-pencil"></i></asp:LinkButton>
@@ -14,8 +14,8 @@
 
             <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" Text="Folder not found" Visible="false" />
 
-            <div style="height: 100%;">
-                <div class="scroll-container scroll-container-vertical scroll-container-picker js-folder-treeview">
+            <div>
+                <div class="scroll-container scroll-container-vertical scroll-container-picker js-folder-treeview" >
                     <div class="scrollbar">
                         <div class="track">
                             <div class="thumb">
@@ -32,15 +32,6 @@
             </div>
             </div>
             <script type="text/javascript">
-
-                // init scroll bars for folder and file list divs
-                $('.js-folder-treeview').tinyscrollbar({ size: 120, sizethumb: 20 });
-
-                $('.js-folder-treeview .treeview').on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree:rendered', function (evt) {
-                    // update the folder treeview scroll bar
-                    $('.js-folder-treeview').tinyscrollbar_update('relative');
-                });
-
                 Sys.Application.add_load(function () {
 
                     var folderTreeData = $('.js-folder-treeview .treeview').data('rockTree');
@@ -51,6 +42,14 @@
                         // init rockTree on folder (no url option since we are generating off static html)
                         $('.js-folder-treeview .treeview').rockTree({
                             selectedIds: selectedFolders
+                        });
+
+                        // init scroll bars for folder divs
+                        $('.js-folder-treeview').tinyscrollbar({ size: 120, sizethumb: 20 });
+
+                        $('.js-folder-treeview .treeview').on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree:rendered', function (evt) {
+                            // update the folder treeview scroll bar
+                            $('.js-folder-treeview').tinyscrollbar_update('relative');
                         });
                     }
 
@@ -74,7 +73,7 @@
                     $('.js-folder-treeview .treeview').on('rockTree:selected', function (e, data) {
                         var relativeFolderPath = data;
                         $('#<%=hfSelectedFolder.ClientID%>').val(data);
-                    __doPostBack('<%=upnlFiles.ClientID %>', 'folder-selected:' + relativeFolderPath + '');
+                        __doPostBack('<%=upnlFiles.ClientID %>', 'folder-selected:' + relativeFolderPath + '');
                     });
 
                     // js for when a file is selected

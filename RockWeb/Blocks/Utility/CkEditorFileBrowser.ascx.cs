@@ -135,7 +135,7 @@ namespace RockWeb.Blocks.Utility
             sb.AppendLine( "<ul id=\"treeview\">" );
             string physicalRootFolder = this.Request.MapPath( GetRootFolderPath() );
 
-            if (!Directory.Exists(physicalRootFolder))
+            if ( !Directory.Exists( physicalRootFolder ) )
             {
                 try
                 {
@@ -213,7 +213,7 @@ namespace RockWeb.Blocks.Utility
             bool dataExpanded = hfSelectedFolder.Value.StartsWith( relativeFolderPath );
             bool selected = hfSelectedFolder.Value == relativeFolderPath;
 
-            sb.AppendFormat( "<li data-expanded='{2}' data-id='{0}'><span class='{3}'><i class=\"fa fa-folder\"></i> {1}</span> \n", HttpUtility.HtmlEncode(relativeFolderPath), directoryInfo.Name, dataExpanded.ToTrueFalse().ToLower(), selected ? "selected" : string.Empty );
+            sb.AppendFormat( "<li data-expanded='{2}' data-id='{0}'><span class='{3}'><i class=\"fa fa-folder\"></i> {1}</span> \n", HttpUtility.HtmlEncode( relativeFolderPath ), directoryInfo.Name, dataExpanded.ToTrueFalse().ToLower(), selected ? "selected" : string.Empty );
 
             List<string> subDirectoryList = Directory.GetDirectories( directoryPath ).OrderBy( a => a ).ToList();
 
@@ -246,7 +246,7 @@ namespace RockWeb.Blocks.Utility
 
             var sb = new StringBuilder();
             sb.AppendLine( "<ul class='js-rocklist rocklist'>" );
-            
+
             string fileFilter = PageParameter( "fileFilter" );
             if ( string.IsNullOrWhiteSpace( fileFilter ) )
             {
@@ -266,16 +266,16 @@ namespace RockWeb.Blocks.Utility
             foreach ( var filePath in fileList )
             {
                 string nameHtmlFormat = @"
-<li class='js-rocklist-item rocklist-item' data-id='{2}'>
+<li class='js-rocklist-item rocklist-item' data-id='{0}'>
     <div class='rollover-container'>
         <div class='rollover-item actions'>
         <a title='delete' class='btn btn-xs btn-danger js-delete-file'>
             <i class='fa fa-times'></i>
         </a>
         </div>
-        <img src='{0}' class='file-browser-image' />
+        <img src='{1}' class='file-browser-image' />
         <br />
-        <span class='file-name'>{1}</span>
+        <span class='file-name'>{2}</span>
     </div>
 </li>
 ";
@@ -284,8 +284,13 @@ namespace RockWeb.Blocks.Utility
                 string relativeFilePath = filePath.Replace( physicalRootFolder, string.Empty );
                 string imagePath = rootFolder.TrimEnd( '/', '\\' ) + "/" + relativeFilePath.TrimStart( '/', '\\' ).Replace( "\\", "/" );
                 string imageUrl = this.ResolveUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + HttpUtility.UrlEncode( imagePath ) + "&width=100&height=100" );
+                string nameHtml = string.Format(
+                    nameHtmlFormat,
+                    HttpUtility.HtmlEncode(relativeFilePath),
+                    imageUrl,
+                    fileName );
 
-                sb.AppendLine( string.Format( nameHtmlFormat, imageUrl, fileName, relativeFilePath ) );
+                sb.AppendLine( nameHtml );
             }
 
             sb.AppendLine( "</ul>" );
@@ -321,7 +326,8 @@ namespace RockWeb.Blocks.Utility
         {
             string rootFolder = GetRootFolderPath();
             string imageUrl = rootFolder.TrimEnd( '\\', '/' ) + '/' + relativeFilePath.TrimStart( '\\', '/' ).Replace( '\\', '/' );
-            return string.Format( "{0},{1}", imageUrl.TrimStart( '~', '/', '\\' ), Path.GetFileName(relativeFilePath) );
+            string result =  string.Format( "{0},{1}", imageUrl.TrimStart( '~', '/', '\\' ), Path.GetFileName( relativeFilePath ) );
+            return result;
         }
 
         #endregion
