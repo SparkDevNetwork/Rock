@@ -28,10 +28,10 @@ namespace Rock.Reporting.DataSelect.Person
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Select the name of the Family that the Person belongs to" )]
+    [Description( "Select the name of the Campus that the Person belongs to" )]
     [Export( typeof( DataSelectComponent ) )]
-    [ExportMetadata( "ComponentName", "Select Person Family Name" )]
-    public class FamilyNameSelect : DataSelectComponent<Rock.Model.Person>
+    [ExportMetadata( "ComponentName", "Select Person's Campus" )]
+    public class CampusSelect : DataSelectComponent<Rock.Model.Person>
     {
         #region Properties
 
@@ -60,7 +60,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "FamilyName";
+                return "Campus";
             }
         }
 
@@ -85,7 +85,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "Family Name";
+                return "Campus";
             }
         }
 
@@ -103,7 +103,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override string GetTitle( Type entityType )
         {
-            return "Family Name";
+            return "Campus";
         }
 
         /// <summary>
@@ -126,6 +126,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             // m.Group
             MemberExpression groupProperty = Expression.Property( groupMemberParameter, "Group" );
+            MemberExpression groupCampusProperty = Expression.Property( groupProperty, "Campus" );
 
             // m.Group.GroupType
             MemberExpression groupTypeProperty = Expression.Property( groupProperty, "GroupType" );
@@ -154,14 +155,14 @@ namespace Rock.Reporting.DataSelect.Person
             // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid)
             Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( GroupMember ) }, compare );
 
-            // m.Group.Name
-            MemberExpression groupName = Expression.Property( groupProperty, "Name" );
+            // m.Group.Campus.Name
+            MemberExpression groupCampusName = Expression.Property( groupCampusProperty, "Name" );
 
-            // m => m.Group.Name
-            Expression groupNameLambda = Expression.Lambda( groupName, new ParameterExpression[] { groupMemberParameter } );
+            // m => m.Group.Campus.Name
+            Expression groupCampusNameLambda = Expression.Lambda( groupCampusName, new ParameterExpression[] { groupMemberParameter } );
 
             // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid).Select( m => m.Group.Name);
-            Expression selectName = Expression.Call( typeof( Queryable ), "Select", new Type[] { typeof( GroupMember ), typeof( string ) }, whereExpression, groupNameLambda );
+            Expression selectName = Expression.Call( typeof( Queryable ), "Select", new Type[] { typeof( GroupMember ), typeof( string ) }, whereExpression, groupCampusNameLambda );
 
             // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid).Select( m => m.Group.Name).FirstOrDefault();
             Expression firstOrDefault = Expression.Call( typeof( Queryable ), "FirstOrDefault", new Type[] { typeof( string ) }, selectName );
