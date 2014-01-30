@@ -825,7 +825,14 @@ namespace Rock.Web.UI.Controls
                         string value = "";
                         if ( propValue != null )
                         {
-                            value = propValue.ToString();
+                            if ( propValue is IEnumerable<object> )
+                            {
+                                value = ( propValue as IEnumerable<object> ).ToList().AsDelimited( "," );
+                            }
+                            else
+                            {
+                                value = propValue.ToString();
+                            }
                         }
 
                         worksheet.Cells[rowCounter, columnCounter].Value = value;
