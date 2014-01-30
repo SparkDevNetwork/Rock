@@ -17,7 +17,6 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
@@ -31,10 +30,10 @@ namespace Rock.Reporting.DataSelect.Person
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Select a Phone Number of the Person" )]
+    [Description( "Select an Address of the Person" )]
     [Export( typeof( DataSelectComponent ) )]
-    [ExportMetadata( "ComponentName", "Select Person's Phone Number" )]
-    public class PhoneNumberSelect : DataSelectComponent<Rock.Model.Person>
+    [ExportMetadata( "ComponentName", "Select Person's Address" )]
+    public class AddressSelect : DataSelectComponent<Rock.Model.Person>
     {
         #region Properties
 
@@ -63,7 +62,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "PhoneNumber";
+                return "Address";
             }
         }
 
@@ -75,7 +74,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override Type ColumnFieldType
         {
-            get { return typeof( Rock.Model.PhoneNumber ); }
+            get { return typeof( string ); }
         }
 
         /// <summary>
@@ -88,7 +87,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "Phone Number";
+                return "Address";
             }
         }
 
@@ -106,7 +105,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override string GetTitle( Type entityType )
         {
-            return "Phone Number";
+            return "Address";
         }
 
         /// <summary>
@@ -118,17 +117,24 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
-            int? phoneNumberTypeValidId = selection.AsInteger( false );
-            if (!phoneNumberTypeValidId.HasValue)
-            {
-                phoneNumberTypeValidId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() ).Id;
-            }
+            int? locationTypeValidId = selection.AsInteger( false );
 
-            // NOTE: This actually selects the entire PhoneNumber record instead of just one field. This is done intentionally so that the Grid will call the .ToString() method of PhoneNumber which formats it correctly
-            var personPhoneNumberQuery = new PersonService( context ).Queryable()
-                .Select( p => p.PhoneNumbers.FirstOrDefault( a => a.NumberTypeValueId == phoneNumberTypeValidId ) );
+            Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+            int familyGroupTypeId = new GroupTypeService().Get( familyGuid ).Id;
 
-            var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personPhoneNumberQuery, entityIdProperty, "p" );
+            var groupMemberQuery = new GroupMemberService( context ).Queryable();
+
+            // NOTE: This builds the FullAddress similar to how Location.ToString() does, but using SQL functions (selecting the entire Location record then doing ToString() is slow)
+            var personLocationQuery = new PersonService( context ).Queryable()
+                .Select( p =>
+                    groupMemberQuery
+                    .Where( m => m.Group.GroupTypeId == familyGroupTypeId && m.PersonId == p.Id )
+                    .SelectMany( m => m.Group.GroupLocations )
+                    .Where( gl => gl.GroupLocationTypeValueId == locationTypeValidId )
+                    .Select( s => ( s.Location.Street1 + " " + s.Location.Street2 + " " + s.Location.City + ", " + s.Location.State + " " + s.Location.Zip ).Replace( "  ", " " ) )
+                    .FirstOrDefault() );
+
+            var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personLocationQuery, entityIdProperty, "p" );
 
             return selectExpression;
         }
@@ -140,18 +146,20 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override System.Web.UI.Control[] CreateChildControls( System.Web.UI.Control parentControl )
         {
-            RockDropDownList phoneNumberTypeList = new RockDropDownList();
-            phoneNumberTypeList.Items.Clear();
-            foreach (var value in DefinedTypeCache.Read(Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid()).DefinedValues.OrderBy( a => a.Order).ThenBy(a => a.Name))
+            RockDropDownList locationTypeList = new RockDropDownList();
+            locationTypeList.Items.Clear();
+            foreach ( var value in DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
-                phoneNumberTypeList.Items.Add( new ListItem( value.Name, value.Id.ToString() ) );
+                locationTypeList.Items.Add( new ListItem( value.Name, value.Id.ToString() ) );
             }
 
-            phoneNumberTypeList.ID = parentControl.ID + "_phoneTypeList";
-            phoneNumberTypeList.Label = "Phone Type";
-            parentControl.Controls.Add( phoneNumberTypeList );
-            
-            return new System.Web.UI.Control[] { phoneNumberTypeList };
+            locationTypeList.Items.Insert( 0, Rock.Constants.None.ListItem );
+
+            locationTypeList.ID = parentControl.ID + "_grouplocationType";
+            locationTypeList.Label = "Address Type";
+            parentControl.Controls.Add( locationTypeList );
+
+            return new System.Web.UI.Control[] { locationTypeList };
         }
 
         /// <summary>
@@ -205,7 +213,7 @@ namespace Rock.Reporting.DataSelect.Person
                     return dropDownList.SelectedValueAsId().ToString();
                 }
             }
-            
+
             return null;
         }
 

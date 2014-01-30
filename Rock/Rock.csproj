@@ -230,6 +230,7 @@
     <Compile Include="Reporting\DataFilter\Person\DistanceFromFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupFilter.cs" />
+    <Compile Include="Reporting\DataSelect\Person\AddressSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PhoneNumberSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\AgeSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\FamilyNameSelect.cs" />
