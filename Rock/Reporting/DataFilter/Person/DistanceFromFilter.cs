@@ -187,8 +187,9 @@ function() {
             if ( selectionValues.Length >= 2 )
             {
                 var locationPicker = controls[0] as LocationPicker;
-                locationPicker.Location = new LocationService().Get( selectionValues[0].AsInteger() ?? 0 );
-                locationPicker.CurrentPickerMode = locationPicker.GetBestPickerModeForLocation( locationPicker.Location );
+                var selectedLocation = new LocationService().Get( selectionValues[0].AsInteger() ?? 0 );
+                locationPicker.CurrentPickerMode = locationPicker.GetBestPickerModeForLocation( selectedLocation );
+                locationPicker.Location = selectedLocation;
                 var numberBox = controls[1] as NumberBox;
                 numberBox.Text = selectionValues[1];
             }
