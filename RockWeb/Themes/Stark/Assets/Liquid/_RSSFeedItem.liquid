@@ -1,12 +1,12 @@
 <div class="rss-item">
 	<h1>{{title}}</h1>
 	<h2>{{SelectedItem.title}}</h2>
-	<div class="byline">
-		{% if SelectedItem.authors != empty -%}
-			{{SelectedItem.authros[0].Name}}
+	<div class="rss-item-byline">
+		{% if SelectedItem.dc_creator != empty -%}
+			{{SelectedItem.dc_creator}} |
 		{% endif -%}
 		{% if SelectedItem.pubDate == '1/1/0000 12:00:00 AM' -%}
-			{{SelectedItem.lastUpdatedTime}}
+			{{SelectedItem.updated}}
 		{% else -%}
 			{{SelectedItem.pubDate}}
 		{% endif -%}		

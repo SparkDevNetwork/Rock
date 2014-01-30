@@ -144,27 +144,43 @@ public class SyndicationFeedHelper
 
                 foreach ( var article in articles )
                 {
-                    if(article.ContainsKey("id") || article.ContainsKey("guid"))
-                    {
-                        var idEntry = article.Where( a => a.Key == "id" || a.Key == "guid" ).FirstOrDefault();
 
-                        string idValue = string.Empty;
-                        if ( idEntry.Value.GetType() == typeof( Dictionary<string, object> ) )
+                    string idEntry = String.Empty;
+                    string idEntryHashed = string.Empty;
+                    if ( article.ContainsKey( "id" ) )
+                    {
+                        idEntry = article["id"].ToString();
+                    }
+
+                    if ( article.ContainsKey( "guid" ) )
+                    {
+                        if ( article["guid"].GetType() == typeof( Dictionary<string, object> ) )
                         {
-                            idValue = ( (Dictionary<string, object>)idEntry.Value )["value"].ToString();
+                            idEntry = ( (Dictionary<string, object>)article["guid"] )["value"].ToString();
                         }
                         else
                         {
-                            idValue = idEntry.Value.GetHashCode().ToString();
+                            idEntry = article["guid"].ToString();
                         }
-
-                        Dictionary<string, string> queryString = new Dictionary<string, string>();
-                        queryString.Add( "feedItemId", idValue.GetHashCode().ToString() );
-
-                        article.Add( "detailPageUrl", new PageReference( detailPageID, 0, queryString ).BuildUrl() );
-                        article.Add( "articleHashCode", idValue.GetHashCode().ToString() );
                     }
 
+                    if ( !String.IsNullOrWhiteSpace( idEntry ) )
+                    {
+                        System.Security.Cryptography.HashAlgorithm hashAlgorithm = System.Security.Cryptography.SHA1.Create();
+                        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                        foreach ( byte b in hashAlgorithm.ComputeHash( System.Text.Encoding.UTF8.GetBytes( idEntry ) ) )
+                        {
+                            sb.Append( b.ToString( "X2" ) );
+                        }
+
+                        idEntryHashed = sb.ToString();
+
+                        Dictionary<string, string> queryString = new Dictionary<string, string>();
+                        queryString.Add( "feedItemId", idEntryHashed );
+
+                        article.Add( "detailPageUrl", new PageReference( detailPageID, 0, queryString ).BuildUrl() );
+                        article.Add( "articleHash", idEntryHashed );
+                    }
 
                     if ( article.ContainsKey("pubDate") )
                     {
@@ -201,78 +217,6 @@ public class SyndicationFeedHelper
 
     #region Private Methods
 
-    //private static Dictionary<string, object> BuildRSSDictionary( XDocument feed, string detailPageGuid )
-    //{
-    //    int detailPageId = 0;
-    //    if ( !String.IsNullOrWhiteSpace( detailPageGuid ) )
-    //    {
-    //        Rock.Model.Page page = new Rock.Model.PageService().Get( new Guid( detailPageGuid ) );
-    //        //Dictionary<string, string> queryString = new Dictionary<string, string>();
-    //        //queryString.Add( "feedItemId", System.Web.HttpUtility.UrlEncode( i.Id ) );
-    //        //detailPageUrl = new PageReference( page.Id, 0, queryString ).BuildUrl();
-    //        detailPageId = page.Id;
-    //    }
-
-    //    var Namespaces = feed.Root.Attributes()
-    //                .Where( a => a.IsNamespaceDeclaration )
-    //                .GroupBy( a => a.Name.Namespace == XNamespace.None ? String.Empty : a.Name.LocalName,
-    //                            a => XNamespace.Get( a.Value ) )
-    //                .ToDictionary( g => g.Key, g => g.First() );
-
-    //    XNamespace  mediaNS = "http://search.yahoo.com/mrss/";
-    //    var rss = feed.Descendants( "channel" )
-    //        .Select( r => new
-    //            {
-    //                Title = r.Element( "title" ) == null ? null : r.Element( "title" ).Value,
-    //                Link = r.Element( "link" ) == null ? null : r.Element( "link" ).Value,
-    //                Description = r.Element( "description" ) == null ? null : r.Element( "description" ).Value,
-    //                Image = r.Element( "image" ) == null ? null : r.Descendants( "image" )
-    //                        .Select( i => new
-    //                        {
-    //                            Url = i.Element( "url" ) == null ? null : i.Element( "url" ).Value,
-    //                            Title = i.Element( "title" ) == null ? null : i.Element( "title" ).Value,
-    //                            Link = i.Element( "link" ) == null ? null : i.Element( "link" ).Value
-    //                        } ),
-    //                Copyright = r.Element( "copyright" ) == null ? null : r.Element( "copyright" ).Value,
-    //                LastBuildDate = r.Element( "lastBuildDate" ) == null ? new DateTimeOffset().LocalDateTime : String.IsNullOrWhiteSpace( r.Element( "lastBuildDate" ).Value ) ? new DateTimeOffset().LocalDateTime : DateTimeOffset.Parse( r.Element( "lastBuildDate" ).Value ).LocalDateTime,
-    //                Generator = r.Element( "generator" ) == null ? null : r.Element( "generator" ).Value,
-    //                ManagingEditor = r.Element( "managingEditor" ) == null ? null : r.Element( "managingEditor" ).Value,
-    //                webMaster = r.Element( "webMaster" ) == null ? null : r.Element( "webMaster" ).Value,
-    //                Item = r.Element( "item" ) == null ? null : r.Descendants( "item" )
-    //                    .Select( i => new
-    //                        {
-    //                            Title = i.Element( "title" ) == null ? null : i.Element( "title" ).Value,
-    //                            Link = i.Element( "link" ) == null ? null : i.Element( "link" ).Value,
-    //                            Comments = i.Element( "comments" ) == null ? null : i.Element( "comments" ).Value,
-    //                            PubDate = i.Element( "pubDate" ) == null ? new DateTimeOffset().LocalDateTime : DateTimeOffset.Parse( i.Element( "pubDate" ).Value ).LocalDateTime,
-    //                            Creator = i.Elements().Where( c => c.Name.ToString().Contains( "creator" ) ).FirstOrDefault() == null ? null : i.Elements().Where( c => c.Name.ToString().Contains( "creator" ) ).FirstOrDefault().Value,
-    //                            Category = i.Element( "category" ) == null ? null : i.Elements( "category" ).Select( c => c.Value ).ToList(),
-    //                            Guid = i.Element( "guid" ) == null ? null : i.Element( "guid" ).Value,
-    //                            Description = i.Element( "description" ) == null ? null : i.Element( "description" ).Value,
-    //                            //Content = i.Elements().Where( c => c.Name.ToString().Contains( "content" ) ).FirstOrDefault() == null ? null : i.Elements().Where( c => c.Name.ToString().Contains( "content" ) ).FirstOrDefault().Value,
-    //                            Content = !Namespaces.ContainsKey("content") ||  i.Element(Namespaces["content"] + "encoded") == null ? null : i.Element(Namespaces["content"] + "encoded").Value,
-    //                            CommentRSS = i.Elements().Where( c => c.Name.ToString().Contains( "commentRSS" ) ).FirstOrDefault() == null ? null : i.Elements().Where( c => c.Name.ToString().Contains( "commentRSS" ) ).FirstOrDefault().Value,
-    //                            OrigLink = i.Elements().Where( l => l.Name.ToString().Contains( "origLink" ) ).FirstOrDefault() == null ? null : i.Elements().Where( l => l.Name.ToString().Contains( "origLink" ) ).FirstOrDefault().Value,
-    //                            MediaThumbnail = !Namespaces.ContainsKey( "media" ) || i.Element( Namespaces["media"] + "thumbnail" ) == null && i.Element( Namespaces["media"] + "thumbnail" ).Attribute( "url" ) == null ? null : i.Element( Namespaces["media"] + "thumbnail" ).Attribute( "url" ).Value,
-    //                            Media = !Namespaces.ContainsKey( "media" ) || i.Element( Namespaces["media"] + "content" ) == null ? null : i.Elements( Namespaces["media"] + "content" )
-    //                                .Select( m => new
-    //                                    {
-    //                                        Url = m.Attribute( "url" ) == null ? null : m.Attribute( "url" ).Value,
-    //                                        Medium = m.Attribute( "medium" ) == null ? null : m.Attribute( "medium" ).Value,
-    //                                        Title = !Namespaces.ContainsKey( "media" ) || m.Element( Namespaces["media"] + "title" ) == null ? null : m.Element( Namespaces["media"] + "title" ).Value,
-    //                                        Thumbnail = !Namespaces.ContainsKey( "media" ) || ( m.Element( Namespaces["media"] + "thumbnail" ) == null || m.Element( Namespaces["media"] + "thumbnail" ).Attribute( "url" ) == null ) ? null : m.Element( Namespaces["media"] + "thumbnail" ).Attribute( "url" ).Value
-    //                                    }
-
-    //                                ),
-    //                            DetailPageUrl = BuildDetailPageLink( detailPageId, i.Element( "guid" ).Value.GetHashCode().ToString() )
-    //                        } ).OrderByDescending( i => i.PubDate )
-
-    //            }
-    //        ).FirstOrDefault();
-
-    //    return rss.GetType().GetProperties().ToDictionary( r => r.Name, r => r.GetValue( rss ) );
-    //}
-
     private static Dictionary<string,object> BuildElementDictionary( XElement feedElement, Dictionary<string, XNamespace> namespaces )
     {
         Dictionary<string, object> elementDictionary = new Dictionary<string, object>();
@@ -297,7 +241,15 @@ public class SyndicationFeedHelper
 
                     if(elementNamespace.Count() > 0)
                     {
-                        updatedName = updatedName.Replace( "{" + elementNamespace.First().Value.ToString() + "}", elementNamespace.First().Key + "_" );
+                        if ( !String.IsNullOrWhiteSpace( elementNamespace.First().Key ) )
+                        {
+                            updatedName = updatedName.Replace( "{" + elementNamespace.First().Value.ToString() + "}", elementNamespace.First().Key + "_" );
+                        }
+                        else
+                        {
+                            updatedName = updatedName.Replace( "{" + elementNamespace.First().Value.ToString() + "}", String.Empty );
+                        }
+                        
                     }
 
                     if ( elementType.count == 1 )
@@ -309,7 +261,12 @@ public class SyndicationFeedHelper
                         }
                         else if ( element.HasAttributes )
                         {
-                            var itemDictionary = element.Attributes().ToDictionary( a => a.Name, a => a.Value );
+
+                            Dictionary<string, object> itemDictionary = new Dictionary<string, object>();
+                            foreach ( var item in element.Attributes() )
+                            {
+                                itemDictionary.Add( item.Name.ToString(), item.Value );
+                            }
                             itemDictionary.Add( "value", element.Value );
 
                             elementDictionary.Add( updatedName, itemDictionary );
@@ -338,7 +295,14 @@ public class SyndicationFeedHelper
 
                 if ( elementNamespace.Count() > 0 )
                 {
-                    updatedName = updatedName.ToString().Replace( "{" + elementNamespace.First().Value.ToString() + "}", elementNamespace.First().Key + "_" );
+                    if ( !String.IsNullOrWhiteSpace( elementNamespace.First().Key ) )
+                    {
+                        updatedName = updatedName.Replace( "{" + elementNamespace.First().Value.ToString() + "}", elementNamespace.First().Key + "_" );
+                    }
+                    else
+                    {
+                        updatedName = updatedName.Replace( "{" + elementNamespace.First().Value.ToString() + "}", String.Empty );
+                    }
                 }
                 elementDictionary.Add( updatedName.ToString(), feedElement.Value );
             }
