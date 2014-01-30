@@ -1,22 +1,24 @@
-<h1>{{Title}}</h1>
-{{Description}}
+<h1>{{title}}</h1>
+{{description}}
 <div class="rssArticles">
-	{% for article in Items -%}
+	{% for article in item -%}
 		<div class="rssArticle">
-			<h2>{{article.Title}}</h2>
+			<h2>{{article.title}}</h2>
 
 			<div class="articleByLine">
+				{% comment -%}
 				{% if article.Authors != empty -%}
 					{{article.Authors[0].Name}} |
 				{% endif -%}
-					{{article.PublishDate}}
+				{% endcomment -%}
+					{{article.pubDate}}
 			</div> 
 			<br />
 			<div class="articleSummary">
-				{{article.Summary}}
+				{{article.description}}
 			</div>
 			<p>
-				<a href="{{article.DetailPageUrl}}" class="btn btn-default">View Article <i class="fa fa-angle-double-right"></i></a>
+				<a href="{{article.detailPageUrl}}" class="btn btn-default">View Article <i class="fa fa-angle-double-right"></i></a>
 			</p>
 		</div>
 	{% endfor -%}
