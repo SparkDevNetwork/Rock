@@ -440,6 +440,10 @@
     <Compile Include="Migrations\201401302003574_AddBlocksToRightSideBar.Designer.cs">
       <DependentUpon>201401302003574_AddBlocksToRightSideBar.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401312207050_RockInstanceId.cs" />
+    <Compile Include="Migrations\201401312207050_RockInstanceId.Designer.cs">
+      <DependentUpon>201401312207050_RockInstanceId.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -749,6 +753,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401302003574_AddBlocksToRightSideBar.resx">
       <DependentUpon>201401302003574_AddBlocksToRightSideBar.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401312207050_RockInstanceId.resx">
+      <DependentUpon>201401312207050_RockInstanceId.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
