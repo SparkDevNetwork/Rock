@@ -120,6 +120,25 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets an enumerable collection of <see cref="Rock.Model.Person"/> entities that have a matching email address, firstname and lastname.
+        /// </summary>
+        /// <param name="firstName">A <see cref="System.String"/> representing the first name to search by.</param>
+        /// <param name="lastName">A <see cref="System.String"/> representing the last name to search by.</param>
+        /// <param name="email">A <see cref="System.String"/> representing the email address to search by.</param>
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in the search results, if
+        /// <c>true</c> then they will be included, otherwise <c>false</c>. Default value is false.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
+        /// </returns>
+        public IEnumerable<Person> GetByMatch( string firstName, string lastName, string email, bool includeDeceased = false )
+        {
+            return Repository.Find( t =>
+                ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value ) &&
+                ( t.Email == email && t.FirstName == firstName && t.LastName == lastName )
+            );
+        }
+
+        /// <summary>
         /// Gets an enumerable collection of <see cref="Rock.Model.Person"/> entities by martial status <see cref="Rock.Model.DefinedValue"/>
         /// </summary>
         /// <param name="maritalStatusId">An <see cref="System.Int32"/> representing the Id of the Marital Status <see cref="Rock.Model.DefinedValue"/> to search by.</param>

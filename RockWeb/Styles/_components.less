@@ -21,6 +21,7 @@
     18. Code Editor - Styles for the code editor control
     19. Update Panel Status - Styles for the wait screen on an update panel
     20. Group List - styles a group of people in a ul -> li format
+    21. Rock List - styles for the Rock list component
 */
 
 // 1. Pickers
@@ -1323,4 +1324,84 @@ ul.groupmembers {
         }
     }
 }
-    
+   
+// 21. Rock List
+// -------------------------
+
+ul.rocklist {
+    list-style-type: none;
+    padding: 0;
+    list-style-type: none;
+
+    .rocklist-item {
+        white-space: nowrap;
+        padding: 6px;
+        margin: 0 12px 12px 0;
+        border-radius: @border-radius-base;
+        width: 140px;
+        float: left;
+        position: relative;
+        text-align: center;
+
+        img {
+
+        }
+
+        .actions {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+        }
+
+        i {
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .file-name {
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            display: block;
+        }
+        
+        &:hover {
+            background-color: @accent-semibold-color;
+            color: @accent-semibold-text-color;
+        }
+
+        &.selected {
+            background-color: @accent-bold-color;
+            color: @accent-bold-text-color;
+        }
+    }
+}
+
+
+/*.rocklist span, .rocklist a {
+    margin: 1px;
+    display: inline-block;
+}
+
+.rocklist .rocklist-name:hover, 
+.rocklist span:hover, 
+.rocklist span:hover a {
+    background: #8498ab;
+    color: #ecf0f3;
+}
+
+.rocklist .selected, 
+.rocklist .selected a {
+    background: #a4b4c4;
+    color: #fff;
+}
+
+.rocklist .rocklist-name {
+    padding: 2px 6px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.rocklist .rocklist-leaf {
+    padding-left: 15px;
+}*/

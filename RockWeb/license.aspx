@@ -93,6 +93,7 @@
                             <li><a href="#fluidbox">Fluidbox</a> (None) - <a href="http://terrymun.github.io/Fluidbox/">Project Site</a></li>
                             <li><a href="#imagesloaded">imagesLoaded</a> (MIT) - <a href="http://imagesloaded.desandro.com/">Project Site</a></li>
                             <li><a href="#spinkit">SpinKit</a> (MIT) - <a href="https://github.com/tobiasahlin/SpinKit">Project Site</a></li>
+                            <li><a href="#webicon">Web Icon Set (File Type Icons)</a> (Custom) - <a href="http://www.webiconset.com/file-type-icons/">Project Site</a></li>
                         </ul>
 
 
@@ -2373,6 +2374,23 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+</pre>
+
+                        <a name="webicon"></a>
+                        <h3>Web Icon Set (File Type Icons)</h3>
+                        <pre>
+You are free:
+
+- to use the icons for your personal or commercial projects in any way you like 
+
+However:
+
+- Redistribution, Release for Download or Selling of these icons on an another site without permission is completely prohibited.
+
+
+It's not compulsory but it's highly recomended that you give credits to http://www.webiconset.com/file-type-icons/ whenever necessary.
+
+ You can use the royalty-free icons for any personal, commercial project including web design, software, application, advertising, film, video, computer game, gui design, illustration, for you or for your clients for FREE.
 </pre>
 
 

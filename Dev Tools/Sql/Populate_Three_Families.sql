@@ -13,8 +13,8 @@ SET @AdultRole = (SELECT id FROM GroupTypeRole WHERE guid = '2639F9A5-2AAE-4E48-
 DECLARE @ChildRole int
 SET @ChildRole = (SELECT id FROM GroupTypeRole WHERE guid = 'C8B1814F-6AA7-4055-B2D7-48FE20429CB9')
 
-DECLARE @PrimaryPhone int
-SET @PrimaryPhone = (SELECT id FROM DefinedValue WHERE guid = '407E7E45-7B2E-4FCD-9605-ECB1339F2453')
+DECLARE @HomePhone int
+SET @HomePhone = (SELECT id FROM DefinedValue WHERE guid = 'AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303')
 
 DECLARE @LocationTypeValueHome int = (select id from DefinedValue where guid = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC')
 
@@ -48,7 +48,7 @@ SET @PersonId = SCOPE_IDENTITY()
 INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid, GroupMemberStatus)
 VALUES (0, @GroupId, @PersonId, @AdultRole, newid(), 0)
 INSERT INTO [PhoneNumber] (IsSystem, PersonId, Number, IsMessagingEnabled, IsUnlisted, Guid, NumberTypeValueId)
-VALUES (0, @PersonId, '6234512120', 1, 0, newid(), @PrimaryPhone)
+VALUES (0, @PersonId, '6234512120', 1, 0, newid(), @HomePhone)
 
 INSERT INTO [Person] ([IsSystem],[FirstName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId], [MaritalStatusValueId],[GivingGroupId])
 VALUES (0, 'Jan', 'Turner', 8, 8, 1967, 2, 'jan@azturners.com', 1, 0, NEWID(), @PersonRecordType, @ActiveRecordStatus, @MaritalStatus,@GroupId)
@@ -56,7 +56,7 @@ SET @PersonId = SCOPE_IDENTITY()
 INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid, GroupMemberStatus)
 VALUES (0, @GroupId, @PersonId, @AdultRole, newid(), 0)
 INSERT INTO [PhoneNumber] (IsSystem, PersonId, Number, IsMessagingEnabled, IsUnlisted, Guid, NumberTypeValueId)
-VALUES (0, @PersonId, '6234513336', 1, 0, newid(), @PrimaryPhone)
+VALUES (0, @PersonId, '6234513336', 1, 0, newid(), @HomePhone)
 
 INSERT INTO [Person] ([IsSystem],[FirstName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId])
 VALUES (0, 'Hannah', 'Turner', 2, 6, 1999, 2, 'hannah@azturners.com', 1, 0, NEWID(), @PersonRecordType, @ActiveRecordStatus)
@@ -105,7 +105,7 @@ SET @PersonId = SCOPE_IDENTITY()
 INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid, GroupMemberStatus)
 VALUES (0, @GroupId, @PersonId, @AdultRole, newid(), 0)
 INSERT INTO [PhoneNumber] (IsSystem, PersonId, Number, IsMessagingEnabled, IsUnlisted, Guid, NumberTypeValueId)
-VALUES (0, @PersonId, '6232982911', 1, 0, newid(), @PrimaryPhone)
+VALUES (0, @PersonId, '6232982911', 1, 0, newid(), @HomePhone)
 
 INSERT INTO [Person] ([IsSystem],[FirstName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId], [MaritalStatusValueId],[GivingGroupId])
 VALUES (0, 'Heidi', 'Edmiston', 9, 4, 1974, 2, 'heidi.edmiston@gmail.com', 1, 0, NEWID(), @PersonRecordType, @ActiveRecordStatus, @MaritalStatus, @GroupId)
@@ -113,7 +113,7 @@ SET @PersonId = SCOPE_IDENTITY()
 INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid, GroupMemberStatus)
 VALUES (0, @GroupId, @PersonId, @AdultRole, newid(), 0)
 INSERT INTO [PhoneNumber] (IsSystem, PersonId, Number, IsMessagingEnabled, IsUnlisted, Guid, NumberTypeValueId)
-VALUES (0, @PersonId, '6028191804', 1, 0, newid(), @PrimaryPhone)
+VALUES (0, @PersonId, '6028191804', 1, 0, newid(), @HomePhone)
 
 INSERT INTO [Person] ([IsSystem],[FirstName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId])
 VALUES (0, 'Alex', 'Edmiston', 8, 8, 2002, 1, 'alex.edmiston@gmail.com', 1, 0, NEWID(), @PersonRecordType, @ActiveRecordStatus)
@@ -154,7 +154,7 @@ SET @PersonId = SCOPE_IDENTITY()
 INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid, GroupMemberStatus)
 VALUES (0, @GroupId, @PersonId, @AdultRole, newid(), 0)
 INSERT INTO [PhoneNumber] (IsSystem, PersonId, Number, IsMessagingEnabled, IsUnlisted, Guid, NumberTypeValueId)
-VALUES (0, @PersonId, '6234442282', 1, 0, newid(), @PrimaryPhone)
+VALUES (0, @PersonId, '6234442282', 1, 0, newid(), @HomePhone)
 
 INSERT INTO [Person] ([IsSystem],[FirstName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId], [MaritalStatusValueId],[GivingGroupId])
 VALUES (0, 'April', 'Peterson', 4, 4, 1974, 2, 'april@mikeapril.com', 1, 0, NEWID(), @PersonRecordType, @ActiveRecordStatus, @MaritalStatus, @GroupId)
@@ -162,7 +162,7 @@ SET @PersonId = SCOPE_IDENTITY()
 INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid, GroupMemberStatus)
 VALUES (0, @GroupId, @PersonId, @AdultRole, newid(), 0)
 INSERT INTO [PhoneNumber] (IsSystem, PersonId, Number, IsMessagingEnabled, IsUnlisted, Guid, NumberTypeValueId)
-VALUES (0, @PersonId, '6234442282', 1, 0, newid(), @PrimaryPhone)
+VALUES (0, @PersonId, '6234442282', 1, 0, newid(), @HomePhone)
 
 INSERT INTO [Person] ([IsSystem],[FirstName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId])
 VALUES (0, 'Nicolas', 'Peterson', 7, 11, 1998, 1, 'nicolas@mikeapril.com', 1, 0, NEWID(), @PersonRecordType, @ActiveRecordStatus)

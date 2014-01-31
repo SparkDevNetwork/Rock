@@ -678,6 +678,30 @@ namespace Rock.Attribute
 
         }
 
+        public static void SaveAttributeValue(int entityId, Rock.Web.Cache.AttributeCache attribute, string newValue, PersonAlias currentPersonAlias)
+        {
+            Model.AttributeValueService attributeValueService = new Model.AttributeValueService();
+
+            var attributeValue = attributeValueService.GetByAttributeIdAndEntityId(attribute.Id, entityId).FirstOrDefault();
+            if (attributeValue == null)
+            {
+                if (newValue == null)
+                {
+                    return;
+                }
+
+                attributeValue = new Rock.Model.AttributeValue();
+                attributeValue.AttributeId = attribute.Id;
+                attributeValue.EntityId = entityId;
+                attributeValue.Order = 0;
+                attributeValueService.Add(attributeValue, currentPersonAlias);
+            }
+
+            attributeValue.Value = newValue;
+
+            attributeValueService.Save(attributeValue, currentPersonAlias);
+        }
+
         /// <summary>
         /// Saves an attribute value.
         /// </summary>

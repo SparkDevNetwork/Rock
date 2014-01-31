@@ -35,6 +35,7 @@
         padding: @spacing-md-px;
         margin-bottom: @spacing-md-px;
         background-color: @accent-light-color;
+        position: relative;
 
         .date {
             font-size: 13px;
@@ -43,7 +44,7 @@
         }
 
         & > i {
-            float: left;
+            position: absolute;
             color: darken(@accent-light-color, 10%);
             width: 28px;
             font-size: 28px;
@@ -51,18 +52,22 @@
         }
 
         .details {
-            float: left;
-            width: 75%;
+            margin-left: 50px; 
 
             h5 {
                 margin-top: 0;
                 margin-bottom: 6px;
+                max-width: 70%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
         }
 
         .actions {
-            float: right;
-            width: 10%;
+            position: absolute;
+            right: 15px;
+            top: 10px;
 
             a {
                 float: right;

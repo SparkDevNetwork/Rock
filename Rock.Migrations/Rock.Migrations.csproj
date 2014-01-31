@@ -424,6 +424,22 @@
     <Compile Include="Migrations\201401282147345_StatementPersonFullNameFix.Designer.cs">
       <DependentUpon>201401282147345_StatementPersonFullNameFix.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401290012560_PersonBirthdateDbComputed.cs" />
+    <Compile Include="Migrations\201401290012560_PersonBirthdateDbComputed.Designer.cs">
+      <DependentUpon>201401290012560_PersonBirthdateDbComputed.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401291637496_HTMLContentNotRequired.cs" />
+    <Compile Include="Migrations\201401291637496_HTMLContentNotRequired.Designer.cs">
+      <DependentUpon>201401291637496_HTMLContentNotRequired.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401291720147_AttendanceHistory.cs" />
+    <Compile Include="Migrations\201401291720147_AttendanceHistory.Designer.cs">
+      <DependentUpon>201401291720147_AttendanceHistory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401302003574_AddBlocksToRightSideBar.cs" />
+    <Compile Include="Migrations\201401302003574_AddBlocksToRightSideBar.Designer.cs">
+      <DependentUpon>201401302003574_AddBlocksToRightSideBar.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -721,6 +737,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401282147345_StatementPersonFullNameFix.resx">
       <DependentUpon>201401282147345_StatementPersonFullNameFix.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401290012560_PersonBirthdateDbComputed.resx">
+      <DependentUpon>201401290012560_PersonBirthdateDbComputed.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401291637496_HTMLContentNotRequired.resx">
+      <DependentUpon>201401291637496_HTMLContentNotRequired.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401291720147_AttendanceHistory.resx">
+      <DependentUpon>201401291720147_AttendanceHistory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401302003574_AddBlocksToRightSideBar.resx">
+      <DependentUpon>201401302003574_AddBlocksToRightSideBar.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
