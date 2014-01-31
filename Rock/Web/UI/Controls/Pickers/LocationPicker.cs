@@ -82,7 +82,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                LocationPickerMode pickerMode = _hfCurrentPickerMode.Value.ConvertToEnum<LocationPickerMode>();
+                LocationPickerMode pickerMode = _hfCurrentPickerMode.Value.ConvertToEnum<LocationPickerMode>(LocationPickerMode.Named );
 
                 if ( string.IsNullOrWhiteSpace( _hfCurrentPickerMode.Value ) )
                 {
@@ -269,26 +269,28 @@ namespace Rock.Web.UI.Controls
 
             int modesEnabled = 0;
 
+            var currentPickerMode = this.CurrentPickerMode;
+
             _radNamed.Visible = nameEnabled;
-            _radNamed.Checked = this.CurrentPickerMode == LocationPickerMode.Named;
+            _radNamed.Checked = currentPickerMode == LocationPickerMode.Named;
             modesEnabled = nameEnabled ? modesEnabled + 1 : modesEnabled;
 
             _radAddress.Visible = addressEnabled;
-            _radAddress.Checked = this.CurrentPickerMode == LocationPickerMode.Address;
+            _radAddress.Checked = currentPickerMode == LocationPickerMode.Address;
             modesEnabled = addressEnabled ? modesEnabled + 1 : modesEnabled;
 
             _radPoint.Visible = pointEnabled;
-            _radPoint.Checked = this.CurrentPickerMode == LocationPickerMode.Point;
+            _radPoint.Checked = currentPickerMode == LocationPickerMode.Point;
             modesEnabled = pointEnabled ? modesEnabled + 1 : modesEnabled;
 
             _radPolygon.Visible = polygonEnabled;
-            _radPolygon.Checked = this.CurrentPickerMode == LocationPickerMode.Polygon;
+            _radPolygon.Checked = currentPickerMode == LocationPickerMode.Polygon;
             modesEnabled = polygonEnabled ? modesEnabled + 1 : modesEnabled;
 
-            _namedPicker.Visible = nameEnabled && this.CurrentPickerMode == LocationPickerMode.Named;
-            _addressPicker.Visible = addressEnabled && this.CurrentPickerMode == LocationPickerMode.Address;
-            _pointPicker.Visible = pointEnabled && this.CurrentPickerMode == LocationPickerMode.Point;
-            _polygonPicker.Visible = polygonEnabled && this.CurrentPickerMode == LocationPickerMode.Polygon;
+            _namedPicker.Visible = nameEnabled && currentPickerMode == LocationPickerMode.Named;
+            _addressPicker.Visible = addressEnabled && currentPickerMode == LocationPickerMode.Address;
+            _pointPicker.Visible = pointEnabled && currentPickerMode == LocationPickerMode.Point;
+            _polygonPicker.Visible = polygonEnabled && currentPickerMode == LocationPickerMode.Polygon;
 
             _pnlModeSelection.Visible = modesEnabled > 1;
 
