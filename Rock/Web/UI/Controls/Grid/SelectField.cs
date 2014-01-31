@@ -70,6 +70,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the data visible field.
+        /// </summary>
+        /// <value>
+        /// The data visible field.
+        /// </value>
+        public string DataVisibleField
+        {
+            get
+            {
+                return ViewState["DataVisibleField"] as string;
+            }
+
+            set
+            {
+                ViewState["DataVisibleField"] = value;
+            }
+        }
+        
+        /// <summary>
         /// Gets or sets the data selected field.
         /// </summary>
         /// <value>
@@ -170,6 +189,14 @@ namespace Rock.Web.UI.Controls
         public SelectionMode SelectionMode { get; private set; }
 
         /// <summary>
+        /// Gets the data visible field.
+        /// </summary>
+        /// <value>
+        /// The data visible field.
+        /// </value>
+        public string DataVisibleField { get; private set; }
+
+        /// <summary>
         /// Gets the data selected field.
         /// </summary>
         /// <value>
@@ -210,6 +237,7 @@ namespace Rock.Web.UI.Controls
                 if ( selectField != null )
                 {
                     SelectionMode = selectField.SelectionMode;
+                    DataVisibleField = selectField.DataVisibleField;
                     DataSelectedField = selectField.DataSelectedField;
                     DataTextField = selectField.DataTextField;
                     ColumnIndex = selectField.ColumnIndex;
@@ -249,18 +277,39 @@ namespace Rock.Web.UI.Controls
                 GridViewRow gridViewRow = cb.NamingContainer as GridViewRow;
                 if ( gridViewRow.DataItem != null )
                 {
-                    if ( !string.IsNullOrWhiteSpace( DataSelectedField ) )
+                    if ( !string.IsNullOrWhiteSpace( DataTextField ) )
                     {
                         object dataValue = DataBinder.Eval( gridViewRow.DataItem, DataTextField );
                         cb.Text = dataValue.ToString();
+                    }
+                    else
+                    {
+                        cb.Text = string.Empty;
+                    }
 
+                    if ( !string.IsNullOrWhiteSpace( DataSelectedField ) )
+                    {
                         object selectValue = DataBinder.Eval( gridViewRow.DataItem, DataSelectedField );
                         cb.Checked = (bool)selectValue;
+                    }
+                    else
+                    {
+                        cb.Checked =false;
+                    }
 
-                        if ( SelectionMode == SelectionMode.Single )
-                        {
-                            ( (RadioButton)cb ).GroupName = "cbSelect_" + gridViewRow.RowIndex.ToString();
-                        }
+                    if ( !string.IsNullOrWhiteSpace( DataVisibleField ) )
+                    {
+                        object visibleValue = DataBinder.Eval( gridViewRow.DataItem, DataVisibleField );
+                        cb.Visible = (bool)visibleValue;
+                    }
+                    else
+                    {
+                        cb.Visible = true;
+                    }
+
+                    if ( SelectionMode == SelectionMode.Single )
+                    {
+                        ( (RadioButton)cb ).GroupName = "cbSelect_" + gridViewRow.RowIndex.ToString();
                     }
                 }
             }

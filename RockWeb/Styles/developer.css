@@ -374,3 +374,8 @@ img.file-browser-image {
     margin: 0 12px 0 4px;
 }
 
+/* DT- Merge*/
+tr.merge-section-header > td
+{
+    background-color:#d9e1e8 
+}

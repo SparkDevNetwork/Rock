@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm
@@ -39,6 +40,11 @@ namespace RockWeb.Blocks.Crm
     {
 
         #region Fields
+
+        List<string> headingKeys = new List<string> {
+            "PhoneNumbers", 
+            "PersonAttributes"
+        };
 
         #endregion
 
@@ -67,34 +73,63 @@ namespace RockWeb.Blocks.Crm
             base.OnInit( e );
 
             gMerge.DataKeyNames = new string[] { "Key" };
+            gMerge.AllowPaging = false;
+            gMerge.ShowActionRow = false;
+            gMerge.RowDataBound += gMerge_RowDataBound;
 
-            if (!Page.IsPostBack)
+            if ( !Page.IsPostBack )
             {
-                var personIDs = PageParameter( "People" ).SplitDelimitedValues().Select( p => p.AsInteger().Value).ToList();
-                var people = new PersonService().Queryable().Where( p => personIDs.Contains( p.Id ) );
+                var personIDs = PageParameter( "People" ).SplitDelimitedValues().Select( p => p.AsInteger().Value ).ToList();
+                var people = new PersonService().Queryable( "CreatedByPersonAlias.Person" ).Where( p => personIDs.Contains( p.Id ) ).ToList();
 
                 // Create the data structure used to build grid
-                MergeData = new MergeData();
-                foreach ( var person in people )
-                {
-                    MergeData.AddPerson(person);
-                }
-
-                MergeData.RemoveEqualValues();
-                MergeData.SetSelection( people.OrderBy( p => p.CreatedDateTime ).Select( p => p.Id ).FirstOrDefault() );
+                MergeData = new MergeData(people);
+                MergeData.AddMissingValues( headingKeys );
+                MergeData.RemoveEqualValues( headingKeys );
+                MergeData.SetPrimary( people.OrderBy( p => p.CreatedDateTime ).Select( p => p.Id ).FirstOrDefault() );
             }
 
-            // Build the grid columns
-            BuildColumns();
+            string script = @"
+    $(""input[name$='PrimaryPerson']"").change( function (event) {
+        var rbId = $(this).attr('id');
+        var colId = rbId.substring(rbId.lastIndexOf('_')+1);
+        $(this).closest('table').find(""input[id$='cbSelect_"" + colId + ""']"").each(function(index) {
+            var textNode = this.nextSibling;
+            if (textNode && textNode.nodeType == 3) {
+                $(this).prop('checked', true);
+            }
+        });
+    });
+";
+            ScriptManager.RegisterStartupScript( gMerge, gMerge.GetType(), "primary-person-click", script, true );
+
         }
 
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
 
-            if (!Page.IsPostBack)
+            if ( !Page.IsPostBack )
             {
+                BuildColumns();
                 BindData();
+            }
+            else
+            {
+                // Save the primary header radio button's selection
+                foreach ( var col in gMerge.Columns.OfType<PersonMergeField>() )
+                {
+                    var colIndex = gMerge.Columns.IndexOf( col ).ToString();
+                    var rb = gMerge.HeaderRow.FindControl( "rbSelectPrimary_" + colIndex ) as RadioButton;
+                    if ( rb != null )
+                    {
+                        string value = Page.Request.Form[rb.UniqueID.Replace( rb.ID, rb.GroupName )];
+                        if ( value == rb.ClientID )
+                        {
+                            MergeData.PrimaryPersonId = col.PersonId;
+                        }
+                    }
+                }
             }
         }
 
@@ -108,6 +143,17 @@ namespace RockWeb.Blocks.Crm
 
         #region Events
 
+        void gMerge_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                if ( headingKeys.Contains( gMerge.DataKeys[e.Row.RowIndex].Value.ToString() ) )
+                {
+                    e.Row.AddCssClass( "grid-section-header" );
+                }
+            }
+        }
+
         protected void lbGo_Click( object sender, EventArgs e )
         {
             GetSelection();
@@ -118,6 +164,11 @@ namespace RockWeb.Blocks.Crm
         #endregion
 
         #region Methods
+
+        private void AddMergeData(Person person)
+        {
+
+        }
 
         private void BuildColumns()
         {
@@ -137,11 +188,15 @@ namespace RockWeb.Blocks.Crm
 
                 foreach ( var person in MergeData.People )
                 {
-                    var personCol = new SelectField();
+                    var personCol = new PersonMergeField();
                     personCol.SelectionMode = SelectionMode.Single;
-                    personCol.HeaderText = person.FullName;
+                    personCol.PersonId = person.Id;
+                    personCol.PersonName = person.FullName;
+                    personCol.DateCreated = person.DateCreated;
+                    personCol.CreatedBy = person.CreatedBy;
                     personCol.DataTextField = string.Format( "property_{0}", person.Id );
                     personCol.DataSelectedField = string.Format( "property_{0}_selected", person.Id );
+                    personCol.DataVisibleField = string.Format( "property_{0}_visible", person.Id );
                     gMerge.Columns.Add( personCol );
                 }
             }
@@ -149,14 +204,19 @@ namespace RockWeb.Blocks.Crm
 
         private void BindData()
         {
-            DataTable dt = MergeData.GetDataTable();
+            foreach ( var col in gMerge.Columns.OfType<PersonMergeField>() )
+            {
+                col.IsPrimaryPerson = col.PersonId == MergeData.PrimaryPersonId;
+            }
+
+            DataTable dt = MergeData.GetDataTable(headingKeys);
             gMerge.DataSource = dt;
             gMerge.DataBind();
         }
 
         private void GetSelection()
         {
-            foreach ( var column in gMerge.Columns.OfType<SelectField>() )
+            foreach ( var column in gMerge.Columns.OfType<PersonMergeField>() )
             {
                 // Get person id from the datafield that has format 'property_{0}' with {0} being the person id
                 int personId = int.Parse( column.DataTextField.Substring( 9 ) );
@@ -180,14 +240,51 @@ namespace RockWeb.Blocks.Crm
     {
         public List<MergePerson> People { get; set; }
         public List<PersonProperty> Properties { get; set; }
-        
-        public MergeData()
+        public int? PrimaryPersonId { get; set; }
+
+        public MergeData( List<Person> people )
         {
             People = new List<MergePerson>();
             Properties = new List<PersonProperty>();
+
+            foreach ( var person in people )
+            {
+                AddPerson( person );
+            }
+
+            foreach ( var person in people )
+            {
+                AddProperty( "PhoneNumbers", "Phone Numbers", 0, string.Empty );
+
+                foreach ( var phoneType in person.PhoneNumbers )
+                {
+                    string keyRoot = "phone_" + phoneType.NumberTypeValueId.ToString();
+
+                    int i = 1;
+                    string key = keyRoot;
+                    while ( Properties.Where( p => p.Key == key && p.Values.Any( v => v.PersonId == person.Id ) ).Any() )
+                    {
+                        key = string.Format( "{0}_{1}", keyRoot, i++ );
+                    }
+
+                    AddProperty( key, phoneType.NumberTypeValue.Name, person.Id, phoneType.Number, phoneType.NumberFormatted );
+                }
+            }
+
+            foreach ( var person in people )
+            {
+                AddProperty( "PersonAttributes", "Person Attributes", 0, string.Empty );
+                person.LoadAttributes();
+                foreach ( var attribute in person.Attributes.OrderBy( a => a.Value.Order ) )
+                {
+                    string value = person.GetAttributeValue( attribute.Key );
+                    string formattedValue = attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, false );
+                    AddProperty( "attr_" + attribute.Key, attribute.Value.Name, person.Id, value, formattedValue );
+                }
+            }
         }
 
-        public void AddPerson(Person person)
+        public void AddPerson( Person person )
         {
             People.Add( new MergePerson( person ) );
 
@@ -213,26 +310,30 @@ namespace RockWeb.Blocks.Crm
             AddProperty( "SystemNote", person.Id, person.SystemNote );
         }
 
+
         public void AddProperty( string key, int personId, string value, bool selected = false )
         {
-            AddProperty( key, personId, value, value, selected );
+            AddProperty( key, key.SplitCase(), personId, value, value, selected );
         }
 
-        public void AddProperty(string key, int personId, string value, string formattedValue, bool selected = false)
+        public void AddProperty( string key, string label, int personId, string value, bool selected = false )
         {
-            var property = GetProperty(key);
-            var propertyValue = property.Values.Where( v => v.PersonId == personId).FirstOrDefault();
-            if (propertyValue == null)
+            AddProperty( key, label, personId, value, value, selected );
+        }
+
+        public void AddProperty( string key, string label, int personId, string value, string formattedValue, bool selected = false )
+        {
+            var property = GetProperty( key, label );
+            var propertyValue = property.Values.Where( v => v.PersonId == personId ).FirstOrDefault();
+            if ( propertyValue == null )
             {
                 propertyValue = new PersonPropertyValue { PersonId = personId };
-                property.Values.Add(propertyValue);
+                property.Values.Add( propertyValue );
             }
             propertyValue.Value = value ?? string.Empty;
             propertyValue.FormattedValue = formattedValue ?? string.Empty;
             propertyValue.Selected = selected;
         }
-
-
 
         public void AddProperty( string key, int personId, DefinedValue value, bool selected = false )
         {
@@ -254,31 +355,54 @@ namespace RockWeb.Blocks.Crm
             AddProperty( key, personId, value.ConvertToString(), selected );
         }
 
-        public void RemoveEqualValues()
+        public void AddMissingValues( List<string> headingKeys )
         {
-            Properties.Where( p => p.Values.Select( v => v.Value).Distinct().Count() == 1 ).ToList().ForEach( p => Properties.Remove( p ) );
+            foreach(var property in Properties.Where( p => !headingKeys.Contains( p.Key ) ))
+            {
+                foreach(var person in People.Where( p => !property.Values.Any( v => v.PersonId == p.Id)))
+                {
+                    property.Values.Add( new PersonPropertyValue() { PersonId = person.Id } );
+                }
+            }
         }
 
-        public void SetSelection(int primaryPersonId)
+        public void RemoveEqualValues( List<string> headingKeys )
         {
-            foreach( var personProperty in Properties)
-            {
-                // Unselect all the values
-                personProperty.Values.ForEach( v => v.Selected = false);
+            Properties
+                .Where( p =>
+                    !headingKeys.Contains( p.Key ) &&
+                    p.Values.Select( v => v.Value ).Distinct().Count() == 1 )
+                .ToList()
+                .ForEach( p => Properties.Remove( p ) );
+        }
 
+        public void SetPrimary( int primaryPersonId )
+        {
+            PrimaryPersonId = primaryPersonId;
+
+            foreach ( var personProperty in Properties )
+            {
                 // Find primary person's non-blank value
-                var value = personProperty.Values.Where( v => v.PersonId == primaryPersonId && v.FormattedValue != "" ).FirstOrDefault();
-                if (value == null)
+                var value = personProperty.Values.Where( v => v.PersonId == primaryPersonId && v.FormattedValue != null && v.FormattedValue != "" ).FirstOrDefault();
+                if ( value == null )
                 {
-                    // Find first non-blank value
-                    value = personProperty.Values.Where( v => v.FormattedValue != "").FirstOrDefault();                
-                    if (value == null)
+                    // Find any other selected value
+                    value = personProperty.Values.Where( v => v.Selected ).FirstOrDefault();
+                    if ( value == null )
                     {
-                        value = personProperty.Values.FirstOrDefault();
+                        // Find first non-blank value
+                        value = personProperty.Values.Where( v => v.FormattedValue != "" ).FirstOrDefault();
+                        if ( value == null )
+                        {
+                            value = personProperty.Values.FirstOrDefault();
+                        }
                     }
                 }
 
-                if (value != null)
+                // Unselect all the values
+                personProperty.Values.ForEach( v => v.Selected = false );
+
+                if ( value != null )
                 {
                     value.Selected = true;
                 }
@@ -301,7 +425,7 @@ namespace RockWeb.Blocks.Crm
             return selection;
         }
 
-        public DataTable GetDataTable()
+        public DataTable GetDataTable(List<string> headingKeys)
         {
             var tbl = new DataTable();
 
@@ -310,24 +434,31 @@ namespace RockWeb.Blocks.Crm
 
             foreach ( var person in People )
             {
-                tbl.Columns.Add( string.Format("property_{0}", person.Id ) );
-                tbl.Columns.Add( string.Format("property_{0}_selected", person.Id ), typeof(bool) );
+                tbl.Columns.Add( string.Format( "property_{0}", person.Id ) );
+                tbl.Columns.Add( string.Format( "property_{0}_selected", person.Id ), typeof( bool ) );
+                tbl.Columns.Add( string.Format( "property_{0}_visible", person.Id ), typeof( bool ) );
             }
 
-            foreach( var personProperty in Properties)
+            foreach ( var personProperty in Properties )
             {
                 var rowValues = new List<object>();
-                rowValues.Add(personProperty.Key);
-                rowValues.Add(personProperty.Label);
+                rowValues.Add( personProperty.Key );
+                rowValues.Add( personProperty.Label );
 
-                var values = new List<string>();
-                foreach(var person in People )
+                foreach ( var person in People )
                 {
-                    var value = personProperty.Values.Where( v => v.PersonId == person.Id).FirstOrDefault();
+                    var value = personProperty.Values.Where( v => v.PersonId == person.Id ).FirstOrDefault();
                     string formattedValue = value != null ? value.FormattedValue : string.Empty;
-                    values.Add(formattedValue);
                     rowValues.Add( formattedValue );
                     rowValues.Add( value != null ? value.Selected : false );
+                    if ( headingKeys.Contains( personProperty.Key ) )
+                    {
+                        rowValues.Add( false );
+                    }
+                    else
+                    {
+                        rowValues.Add( true );
+                    }
                 }
 
                 tbl.Rows.Add( rowValues.ToArray() );
@@ -336,12 +467,12 @@ namespace RockWeb.Blocks.Crm
             return tbl;
         }
 
-        private PersonProperty GetProperty(string key)
+        private PersonProperty GetProperty( string key, string label )
         {
-            var property = Properties.Where( p => p.Key.Equals(key, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-            if (property == null)
+            var property = Properties.Where( p => p.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
+            if ( property == null )
             {
-                property = new PersonProperty(key);
+                property = new PersonProperty( key, label );
                 Properties.Add( property );
             }
             return property;
@@ -353,11 +484,19 @@ namespace RockWeb.Blocks.Crm
     {
         public int Id { get; set; }
         public string FullName { get; set; }
+        public DateTime? DateCreated { get; set; }
+        public string CreatedBy { get; set; }
 
-        public MergePerson(Person person)
+        public MergePerson( Person person )
         {
             Id = person.Id;
             FullName = person.FullName;
+            DateCreated = person.CreatedDateTime;
+            if ( person.CreatedByPersonAlias != null &&
+                person.CreatedByPersonAlias.Person != null )
+            {
+                CreatedBy = person.CreatedByPersonAlias.Person.FullName;
+            }
         }
     }
 
@@ -373,10 +512,18 @@ namespace RockWeb.Blocks.Crm
             Values = new List<PersonPropertyValue>();
         }
 
-        public PersonProperty( string key ) : this()
+        public PersonProperty( string key )
+            : this()
         {
             Key = key;
             Label = key.SplitCase();
+        }
+
+        public PersonProperty( string key, string label )
+            : this()
+        {
+            Key = key;
+            Label = label;
         }
     }
 
@@ -388,5 +535,5 @@ namespace RockWeb.Blocks.Crm
         public string Value { get; set; }
         public string FormattedValue { get; set; }
     }
- 
+
 }
