@@ -105,6 +105,8 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSites_Delete( object sender, RowEventArgs e )
         {
+            bool issues = false;
+
             RockTransactionScope.WrapTransaction( () =>
             {
                 SiteService siteService = new SiteService();
@@ -112,20 +114,24 @@ namespace RockWeb.Blocks.Cms
                 if ( site != null )
                 {
                     string errorMessage;
-                    if ( !siteService.CanDelete( site, out errorMessage ) )
+                    issues = !siteService.CanDelete( site, out errorMessage ) || !siteService.CanDeleteAlternate( site, out errorMessage );
+                    if ( issues )
                     {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Alert );
                         return;
                     }
-                    
-                    siteService.Delete( site, CurrentPersonId );
-                    siteService.Save( site, CurrentPersonId );
+
+                    siteService.Delete( site, CurrentPersonAlias );
+                    siteService.Save( site, CurrentPersonAlias );
 
                     SiteCache.Flush( site.Id );
                 }
             } );
 
-            BindGrid();
+            if ( !issues )
+            {
+                BindGrid();
+            }
         }
 
         /// <summary>

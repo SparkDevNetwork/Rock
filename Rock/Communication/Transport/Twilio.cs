@@ -47,14 +47,14 @@ namespace Rock.Communication.Transport
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        /// <param name="CurrentPersonId">The current person id.</param>
+        /// <param name="CurrentPersonAlias">The current person alias.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override void Send( Rock.Model.Communication communication, int? CurrentPersonId )
+        public override void Send( Rock.Model.Communication communication, PersonAlias CurrentPersonAlias )
         {
             if ( communication != null &&
                 communication.Status == Model.CommunicationStatus.Approved &&
                 communication.Recipients.Where( r => r.Status == Model.CommunicationRecipientStatus.Pending ).Any() &&
-                ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( DateTime.Now ) > 0 ) )
+                ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) > 0 ) )
             {
                 string fromPhone = string.Empty;
                 string fromValue = communication.GetChannelDataValue( "FromValue" );
@@ -109,7 +109,7 @@ namespace Rock.Communication.Transport
                                         recipient.StatusNote = "Twilio Exception: " + ex.Message;
                                     }
                                 }
-                                recipientService.Save( recipient, CurrentPersonId );
+                                recipientService.Save( recipient, CurrentPersonAlias );
                             }
                             else
                             {

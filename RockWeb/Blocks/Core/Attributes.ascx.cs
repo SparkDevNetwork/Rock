@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.Core
     [TextField( "Entity Qualifier Value", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "", "Applies To", 2 )]
     [BooleanField( "Allow Setting of Values", "Should UI be available for setting values of the specified Entity ID?", false, "Advanced", 0 )]
     [IntegerField( "Entity Id", "The entity id that values apply to", false, 0, "Advanced", 1 )]
+    [BooleanField( "Enable Show In Grid", "Should the 'Show In Grid' option be displayed when editing attributes?", false, "Advanced", 2 )]
 
     public partial class Attributes : RockBlock
     {
@@ -62,7 +63,7 @@ namespace RockWeb.Blocks.Core
 
         #endregion
 
-        #region Control Methods
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -75,6 +76,17 @@ namespace RockWeb.Blocks.Core
             if (!bool.TryParse( GetAttributeValue( "ConfigureType" ), out _configuredType))
             {
                 _configuredType = true;
+            }
+
+
+            bool displayShowInGrid = true;
+            if (bool.TryParse(GetAttributeValue("DisplayShowInGrid"), out displayShowInGrid) && displayShowInGrid)
+            {
+                edtAttribute.ShowInGridVisible = true;
+            }
+            else
+            {
+                edtAttribute.ShowInGridVisible = false;
             }
 
             Guid entityTypeGuid = Guid.Empty;
@@ -110,9 +122,10 @@ namespace RockWeb.Blocks.Core
                 rGrid.RowDataBound += rGrid_RowDataBound;
 
                 rGrid.Columns[1].Visible = !_configuredType;   // qualifier
+
                 rGrid.Columns[4].Visible = !_displayValueEdit; // default value / value
-                rGrid.Columns[5].Visible = _displayValueEdit;  // edit
-                rGrid.Columns[6].Visible = _displayValueEdit;  // secure
+                rGrid.Columns[5].Visible = _displayValueEdit; // default value / value
+                rGrid.Columns[6].Visible = _displayValueEdit;  // edit
 
                 SecurityField securityField = rGrid.Columns[7] as SecurityField;
                 securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
@@ -281,11 +294,15 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void rGrid_EditValue( object sender, RowEventArgs e )
+        protected void rGrid_RowSelected( object sender, RowEventArgs e )
         {
             if ( _displayValueEdit )
             {
                 ShowEditValue( (int)rGrid.DataKeys[e.RowIndex]["id"], true );
+            }
+            else
+            {
+                ShowEdit( (int)rGrid.DataKeys[e.RowIndex]["id"] );
             }
         }
 
@@ -303,8 +320,8 @@ namespace RockWeb.Blocks.Core
             {
                 Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
 
-                attributeService.Delete( attribute, CurrentPersonId );
-                attributeService.Save( attribute, CurrentPersonId );
+                attributeService.Delete( attribute, CurrentPersonAlias );
+                attributeService.Save( attribute, CurrentPersonAlias );
             }
 
             BindGrid();
@@ -410,13 +427,13 @@ namespace RockWeb.Blocks.Core
 
             if ( _configuredType )
             {
-                attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtAttribute, 
-                    _entityTypeId, _entityQualifierColumn, _entityQualifierValue, CurrentPersonId );
+                attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtAttribute,
+                    _entityTypeId, _entityQualifierColumn, _entityQualifierValue, CurrentPersonAlias );
             }
             else
             {
                 attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtAttribute,
-                    ddlAttrEntityType.SelectedValueAsInt(), tbAttrQualifierField.Text, tbAttrQualifierValue.Text, CurrentPersonId );
+                    ddlAttrEntityType.SelectedValueAsInt(), tbAttrQualifierField.Text, tbAttrQualifierValue.Text, CurrentPersonAlias );
             }
 
             // Attribute will be null if it was not valid
@@ -441,8 +458,6 @@ namespace RockWeb.Blocks.Core
             pnlDetails.Visible = false;
             pnlList.Visible = true;
         }
-
-        #endregion
 
         /// <summary>
         /// Handles the SaveClick event of the modalDetails control.
@@ -470,13 +485,13 @@ namespace RockWeb.Blocks.Core
                         attributeValue = new Rock.Model.AttributeValue();
                         attributeValue.AttributeId = attributeId;
                         attributeValue.EntityId = _entityId;
-                        attributeValueService.Add( attributeValue, CurrentPersonId );
+                        attributeValueService.Add( attributeValue, CurrentPersonAlias );
                     }
 
                     var fieldType = Rock.Web.Cache.FieldTypeCache.Read( attribute.FieldType.Id );
                     attributeValue.Value = fieldType.Field.GetEditValue( attribute.GetControl( fsEditControl.Controls[0] ), attribute.QualifierValues );
 
-                    attributeValueService.Save( attributeValue, CurrentPersonId );
+                    attributeValueService.Save( attributeValue, CurrentPersonAlias );
 
                     Rock.Web.Cache.AttributeCache.Flush( attributeId );
                     if ( !_entityTypeId.HasValue && _entityQualifierColumn == string.Empty && _entityQualifierValue == string.Empty && !_entityId.HasValue )
@@ -491,6 +506,8 @@ namespace RockWeb.Blocks.Core
 
             BindGrid();
         }
+
+        #endregion
 
         #region Methods
 

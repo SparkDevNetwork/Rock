@@ -112,8 +112,10 @@ namespace Rock.Model
             target.ApprovedDateTime = source.ApprovedDateTime;
             target.StartDateTime = source.StartDateTime;
             target.ExpireDateTime = source.ExpireDateTime;
-            target.LastModifiedDateTime = source.LastModifiedDateTime;
-            target.LastModifiedPersonId = source.LastModifiedPersonId;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

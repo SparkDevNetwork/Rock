@@ -58,21 +58,20 @@ namespace Rock.Model
         public UserLogin GetByUserName( string userName )
         {
             return Repository
-                .AsQueryable( "Person" )
+                .AsQueryable( "Person.Aliases" )
                 .Where( u => u.UserName == userName )
                 .FirstOrDefault();
         }
 
         /// <summary>
-        /// Creates a new <see cref="Rock.Model.UserLogin"/>
+        /// Creates a new <see cref="Rock.Model.UserLogin" />
         /// </summary>
-        /// <param name="person">The <see cref="Rock.Model.Person"/> that this <see cref="UserLogin"/> will be associated with.</param>
-        /// <param name="serviceType">The <see cref="Rock.Model.AuthenticationServiceType"/> type of Login</param>
-        /// <param name="serviceName">A <see cref="System.String"/> representing the service class/type name of the authentication service</param>
-        /// <param name="username">A <see cref="System.String"/> containing the UserName.</param>
-        /// <param name="password">A <see cref="System.String"/> containing the unhashed/unencrypted password.</param>
-        /// <param name="isConfirmed">A <see cref="System.Boolean"/> flag indicating if the user has been confirmed.</param>
-        /// <param name="currentPersonId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> creating the <see cref="Rock.Model.UserLogin"/></param>
+        /// <param name="person">The <see cref="Rock.Model.Person" /> that this <see cref="UserLogin" /> will be associated with.</param>
+        /// <param name="serviceType">The <see cref="Rock.Model.AuthenticationServiceType" /> type of Login</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="username">A <see cref="System.String" /> containing the UserName.</param>
+        /// <param name="password">A <see cref="System.String" /> containing the unhashed/unencrypted password.</param>
+        /// <param name="isConfirmed">A <see cref="System.Boolean" /> flag indicating if the user has been confirmed.</param>
         /// <returns></returns>
         /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the Username already exists.</exception>
         /// <exception cref="System.ArgumentException">Thrown when the service does not exist or is not active.</exception>
@@ -81,51 +80,60 @@ namespace Rock.Model
             int entityTypeId,
             string username,
             string password,
-            bool isConfirmed,
-            int? currentPersonId )
+            bool isConfirmed )
         {
-            var entityType = EntityTypeCache.Read( entityTypeId );
-            if ( entityType != null )
+            if ( person != null )
             {
-                UserLogin user = this.GetByUserName( username );
-                if ( user != null )
-                    throw new ArgumentOutOfRangeException( "username", "Username already exists" );
+                var entityType = EntityTypeCache.Read( entityTypeId );
+                if ( entityType != null )
+                {
+                    UserLogin user = this.GetByUserName( username );
+                    if ( user != null )
+                        throw new ArgumentOutOfRangeException( "username", "Username already exists" );
 
-                DateTime createDate = DateTime.Now;
+                    DateTime createDate = RockDateTime.Now;
 
-                user = new UserLogin();
-                user.EntityTypeId = entityTypeId;
-                user.UserName = username;
-                user.IsConfirmed = isConfirmed;
-                user.CreationDateTime = createDate;
-                user.LastPasswordChangedDateTime = createDate;
-                if ( person != null )
+                    user = new UserLogin();
+                    user.EntityTypeId = entityTypeId;
+                    user.UserName = username;
+                    user.IsConfirmed = isConfirmed;
+                    user.LastPasswordChangedDateTime = createDate;
                     user.PersonId = person.Id;
 
-                if ( serviceType == AuthenticationServiceType.Internal )
-                {
-                    var authenticationComponent = AuthenticationContainer.GetComponent( entityType.Name );
-                    if ( authenticationComponent == null || !authenticationComponent.IsActive )
-                        throw new ArgumentException( string.Format( "'{0}' service does not exist, or is not active", entityType.FriendlyName ), "entityTypeId" );
+                    if ( serviceType == AuthenticationServiceType.Internal )
+                    {
+                        var authenticationComponent = AuthenticationContainer.GetComponent( entityType.Name );
+                        if ( authenticationComponent == null || !authenticationComponent.IsActive )
+                            throw new ArgumentException( string.Format( "'{0}' service does not exist, or is not active", entityType.FriendlyName ), "entityTypeId" );
 
-                    user.Password = authenticationComponent.EncodePassword( user, password );
+                        user.Password = authenticationComponent.EncodePassword( user, password );
+                    }
+
+                this.Add( user, person.PrimaryAlias );
+                this.Save( user, person.PrimaryAlias );
+
+                    var changes = new List<string>();
+                    History.EvaluateChange(changes, "User Login", string.Empty, username);
+                    new HistoryService().SaveChanges(typeof(Person),
+                        CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid() ).Guid, person.Id, changes, person.PrimaryAlias);
+
+                    return user;
                 }
-
-                this.Add( user, currentPersonId );
-                this.Save( user, currentPersonId );
-
-                return user;
+                else
+                {
+                    throw new ArgumentException( "Invalid EntityTypeId, entity does not exist", "entityTypeId" );
+                }
             }
             else
             {
-                throw new ArgumentException( "Invalid EntityTypeId, entity does not exist", "entityTypeId" );
+                throw new ArgumentException( "Invalid Person, person does not exist", "person" );
             }
         }
 
         /// <summary>
         /// Updates the last login.
         /// </summary>
-        /// <param name="user">The user.</param>
+        /// <param name="userName">Name of the user.</param>
         public void UpdateLastLogin(string userName)
         {
             if ( !string.IsNullOrWhiteSpace( userName ) && !userName.StartsWith( "rckipid=" ) )
@@ -133,7 +141,7 @@ namespace Rock.Model
                 var userLogin = GetByUserName( userName );
                 if ( userLogin != null )
                 {
-                    userLogin.LastLoginDateTime = DateTime.Now;
+                    userLogin.LastLoginDateTime = RockDateTime.Now;
                     Save( userLogin, null );
                 }
             }
@@ -159,7 +167,7 @@ namespace Rock.Model
                 return false;
 
             user.Password = authenticationComponent.EncodePassword( user, newPassword );
-            user.LastPasswordChangedDateTime = DateTime.Now;
+            user.LastPasswordChangedDateTime = RockDateTime.Now;
 
             return true;
         }
@@ -179,7 +187,7 @@ namespace Rock.Model
                 throw new Exception( "Cannot change password on external service type" );
 
             user.Password = authenticationComponent.EncodePassword( user, password );
-            user.LastPasswordChangedDateTime = DateTime.Now;
+            user.LastPasswordChangedDateTime = RockDateTime.Now;
         }
 
         /// <summary>
@@ -211,13 +219,13 @@ namespace Rock.Model
             int attempts = user.FailedPasswordAttemptCount ?? 0;
 
             TimeSpan window = new TimeSpan( 0, passwordAttemptWindow, 0 );
-            if ( DateTime.Now.CompareTo( firstAttempt.Add( window ) ) < 0 )
+            if ( RockDateTime.Now.CompareTo( firstAttempt.Add( window ) ) < 0 )
             {
                 attempts++;
                 if ( attempts >= maxInvalidPasswordAttempts )
                 {
                     user.IsLockedOut = true;
-                    user.LastLockedOutDateTime = DateTime.Now;
+                    user.LastLockedOutDateTime = RockDateTime.Now;
                 }
 
                 user.FailedPasswordAttemptCount = attempts;
@@ -225,7 +233,7 @@ namespace Rock.Model
             else
             {
                 user.FailedPasswordAttemptCount = 1;
-                user.FailedPasswordAttemptWindowStartDateTime = DateTime.Now;
+                user.FailedPasswordAttemptWindowStartDateTime = RockDateTime.Now;
             }
         }
 
@@ -255,7 +263,7 @@ namespace Rock.Model
                         DateTime dateTime = new DateTime( ticks );
 
                         // Confirmation Code is only valid for an hour
-                        if ( DateTime.Now.Subtract( dateTime ).Hours > 1 )
+                        if ( RockDateTime.Now.Subtract( dateTime ).Hours > 1 )
                             return null;
 
                         UserLogin user = this.GetByEncryptedKey( publicKey );
@@ -306,7 +314,7 @@ namespace Rock.Model
                         // Save last activity date
                         var transaction = new Rock.Transactions.UserLastActivityTransaction();
                         transaction.UserId = user.Id;
-                        transaction.LastActivityDate = DateTime.Now;
+                        transaction.LastActivityDate = RockDateTime.Now;
                         Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                     }
 

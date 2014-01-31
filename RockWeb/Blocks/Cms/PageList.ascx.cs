@@ -126,7 +126,7 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
             LayoutService layoutService = new LayoutService();
-            layoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ), CurrentPersonId );
+            layoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ), CurrentPersonAlias );
             var layouts = layoutService.Queryable().Where( a => a.SiteId.Equals( siteId ) ).ToList();
             ddlLayoutFilter.DataSource = layouts;
             ddlLayoutFilter.DataBind();
@@ -152,15 +152,16 @@ namespace RockWeb.Blocks.Cms
             pnlPages.Visible = true;
 
             LayoutService layoutService = new LayoutService();
-            layoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ), CurrentPersonId );
+            layoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ), CurrentPersonAlias );
             var layouts = layoutService.Queryable().Where( a => a.SiteId.Equals( siteId ) ).Select( a => a.Id ).ToList();
 
             var siteService = new SiteService();
             var pageId = siteService.Get( siteId ).DefaultPageId;
 
             var pageService = new PageService();
-            var qry = pageService.GetAllDescendents( (int)pageId ).AsQueryable().Where( a => layouts.Contains(a.LayoutId) );
-
+            var qry = pageService.GetAllDescendents( (int)pageId ).AsQueryable().Where( a => layouts.Contains( a.LayoutId ) )
+                .Concat( pageService.GetByIds( new List<int>{ (int)pageId } ) );
+       
             string layoutFilter = gPagesFilter.GetUserPreference( "Layout" );
             if ( !string.IsNullOrWhiteSpace( layoutFilter ) && layoutFilter != Rock.Constants.All.Text )
             {

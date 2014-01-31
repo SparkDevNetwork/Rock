@@ -172,13 +172,13 @@ namespace RockWeb.Blocks.Groups
                         Rock.Security.Role.Flush( group.Id );
                         foreach ( var auth in authService.Queryable().Where( a => a.GroupId == group.Id ).ToList() )
                         {
-                            authService.Delete( auth, CurrentPersonId );
-                            authService.Save( auth, CurrentPersonId );
+                            authService.Delete( auth, CurrentPersonAlias );
+                            authService.Save( auth, CurrentPersonAlias );
                         }
                     }
 
-                    groupService.Delete( group, CurrentPersonId );
-                    groupService.Save( group, CurrentPersonId );
+                    groupService.Delete( group, CurrentPersonAlias );
+                    groupService.Save( group, CurrentPersonAlias );
 
                     if ( isSecurityRoleGroup )
                     {

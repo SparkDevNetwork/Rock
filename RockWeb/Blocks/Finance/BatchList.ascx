@@ -1,21 +1,20 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BatchList.ascx.cs" Inherits="RockWeb.Blocks.Finance.BatchList" %>
 
-<asp:UpdatePanel ID="upFinancialBatch" runat="server">
+<asp:UpdatePanel ID="upnlFinancialBatch" runat="server">
     <ContentTemplate>
 
-        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
-        <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
+        <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Danger" Visible="true" />
 
         <asp:Panel ID="pnlBatchList" runat="server">
 
-            <Rock:GridFilter ID="rFBFilter" runat="server">
-                <Rock:DatePicker ID="dtBatchDate" runat="server" Label="Date" />
-                <Rock:RockTextBox ID="txtTitle" runat="server" Label="Title"></Rock:RockTextBox>
+            <Rock:GridFilter ID="gfBatchFilter" runat="server">
+                <Rock:DatePicker ID="dpBatchDate" runat="server" Label="Date" />
+                <Rock:RockTextBox ID="tbTitle" runat="server" Label="Title"></Rock:RockTextBox>
                 <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
-                <Rock:CampusPicker ID="ddlCampus" runat="server" />
+                <Rock:CampusPicker ID="campCampus" runat="server" />
             </Rock:GridFilter>
 
-            <Rock:Grid ID="rGridBatch" runat="server" OnRowDataBound="rGridBatch_RowDataBound" ShowConfirmDeleteDialog="true" OnRowSelected="rGridBatch_Edit">
+            <Rock:Grid ID="gBatchList" runat="server" OnRowDataBound="gBatchList_RowDataBound" ShowConfirmDeleteDialog="true" OnRowSelected="gBatchList_Edit">
                 <Columns>
                     <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
                     <asp:TemplateField HeaderText="Date">
@@ -43,7 +42,7 @@
                     </asp:TemplateField>
                     <asp:BoundField DataField="Campus" HeaderText="Campus" />
                     <Rock:EnumField DataField="Status" HeaderText="Status" SortExpression="Status" />
-                    <Rock:DeleteField OnClick="rGridBatch_Delete" />
+                    <Rock:DeleteField OnClick="gBatchList_Delete" />
                 </Columns>
             </Rock:Grid>
 

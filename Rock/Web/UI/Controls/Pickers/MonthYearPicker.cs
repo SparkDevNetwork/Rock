@@ -215,7 +215,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 int? year = ViewState["MaximumYear"] as int?;
-                return year ?? DateTime.Now.Year + 20;
+                return year ?? RockDateTime.Now.Year + 20;
             }
 
             set

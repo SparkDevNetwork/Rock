@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             phoneNumber.NumberFormatted, string.Empty );
 
                         person.PhoneNumbers.Remove( phoneNumber );
-                        phoneNumberService.Delete( phoneNumber, CurrentPersonId );
+                        phoneNumberService.Delete( phoneNumber, CurrentPersonAlias );
                     }
 
                     History.EvaluateChange( changes, "Email", person.Email, tbEmail.Text );
@@ -271,12 +271,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         return;
                     }
 
-                    if ( personService.Save( person, CurrentPersonId ) )
+                    if ( personService.Save( person, CurrentPersonAlias ) )
                     {
                         if ( changes.Any() )
                         {
                             new HistoryService().SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                Person.Id, changes, CurrentPersonId );
+                                Person.Id, changes, CurrentPersonAlias );
                         }
 
                         if ( orphanedPhotoId.HasValue )
@@ -287,7 +287,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             {
                                 // marked the old images as IsTemporary so they will get cleaned up later
                                 binaryFile.IsTemporary = true;
-                                binaryFileService.Save( binaryFile, CurrentPersonId );
+                                binaryFileService.Save( binaryFile, CurrentPersonAlias );
                             }
                         }
                     }

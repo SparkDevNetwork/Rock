@@ -295,6 +295,50 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether root folder should be specific to user.  If true
+        /// a folder name equal to the the current user's login will be added to the root path.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [user specific root]; otherwise, <c>false</c>.
+        /// </value>
+        public bool UserSpecificRoot
+        {
+            get
+            {
+                return ViewState["UserSpecificRoot"] as bool? ?? false;
+            }
+            set
+            {
+                ViewState["UserSpecificRoot"] = value;
+            }
+        }
+        /// <summary>
+        /// Gets or sets the image file filter.
+        /// </summary>
+        /// <value>
+        /// The image file filter.
+        /// </value>
+        public string ImageFileFilter
+        {
+            get
+            {
+                string result = ViewState["ImageFileFilter"] as string;
+                if (string.IsNullOrWhiteSpace(result))
+                {
+                    // default to common ones that are supported by most browsers
+                    result = "*.png;*.jpg;*.gif;*.svg;*.bmp";
+                }
+                
+                return result;
+            }
+
+            set
+            {
+                ViewState["ImageFileFilter"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the merge fields to make available.  This should include either a list of
         /// entity type names (full name), or other non-object string values
         /// </summary>
@@ -397,7 +441,7 @@ var toolbar_RockCustomConfigFull =
         ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat'],
         ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-'], 
         ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
-        ['-', 'Image', 'Table'],
+        ['-', 'Table'],
         ['rockmergefield', '-', 'rockimagebrowser', 'rockdocumentbrowser']
 	];	
 
@@ -409,8 +453,12 @@ CKEDITOR.replace('{0}', {{
   baseFloatZIndex: 200000,  // set zindex to be 200000 so it will be on top of our modals (100000)
   extraPlugins: '{5}',
   resize_maxWidth: '{3}',
-  rockFileBrowserOptions: {{ documentFolderRoot: '{6}', imageFolderRoot: '{7}'}},
-  rockMergeFieldOptions: {{ mergeFields: '{8}' }},
+  rockFileBrowserOptions: {{ 
+    documentFolderRoot: '{6}', 
+    imageFolderRoot: '{7}',
+    imageFileFilter: '{8}'
+  }},
+  rockMergeFieldOptions: {{ mergeFields: '{9}' }},
   on : {{
        change: function (e) {{
          // update the underlying TextElement on every little change to ensure that Posting and Validation works consistently (doing it OnSubmit or OnBlur misses some cases)
@@ -440,7 +488,10 @@ CKEDITOR.replace('{0}', {{
 
             string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(),
                 this.Height, this.ResizeMaxWidth ?? 0, customOnChangeScript, enabledPlugins.AsDelimited( "," ), 
-                this.DocumentFolderRoot, this.ImageFolderRoot, this.MergeFields.AsDelimited(",") );
+                Rock.Security.Encryption.EncryptString(this.DocumentFolderRoot), // encrypt the folders so the folder can only be configured on the server
+                Rock.Security.Encryption.EncryptString(this.ImageFolderRoot),
+                this.ImageFileFilter,
+                this.MergeFields.AsDelimited(",") );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckeditorInitScript, true );
 

@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.Administration
 
             var pageService = new PageService();
             pageService.Reorder( pageService.GetByParentPageId( parentPageId ).ToList(),
-                e.OldIndex, e.NewIndex, CurrentPersonId );
+                e.OldIndex, e.NewIndex, CurrentPersonAlias );
 
             BindGrid();
         }
@@ -149,12 +149,12 @@ namespace RockWeb.Blocks.Administration
 
                             if (updateSite)
                             {
-                                siteService.Save( site, CurrentPersonId );
+                                siteService.Save( site, CurrentPersonAlias );
                             }
                         }
 
-                        pageService.Delete( page, CurrentPersonId );
-                        pageService.Save( page, CurrentPersonId );
+                        pageService.Delete( page, CurrentPersonAlias );
+                        pageService.Save( page, CurrentPersonAlias );
 
                         Rock.Web.Cache.PageCache.Flush( page.Id );
 
@@ -227,7 +227,7 @@ namespace RockWeb.Blocks.Administration
                     else
                         page.Order = 0;
 
-                    pageService.Add( page, CurrentPersonId );
+                    pageService.Add( page, CurrentPersonAlias );
 
                 }
                 else
@@ -238,11 +238,11 @@ namespace RockWeb.Blocks.Administration
 
                 if ( page.IsValid )
                 {
-                    pageService.Save( page, CurrentPersonId );
+                    pageService.Save( page, CurrentPersonAlias );
 
                     if ( _page != null )
                     {
-                        Rock.Security.Authorization.CopyAuthorization( _page, page, CurrentPersonId );
+                        Rock.Security.Authorization.CopyAuthorization( _page, page, CurrentPersonAlias );
                         _page.FlushChildPages();
                     }
 

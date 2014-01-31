@@ -2,6 +2,7 @@
 
 <Rock:Grid ID="gPeople" runat="server" EmptyDataText="No People Found" AllowSorting="true" OnRowSelected="gPeople_RowSelected">
     <Columns>
+        <Rock:SelectField />
         <asp:BoundField 
             DataField="FullNameReversed"  
             HeaderText="Person"  

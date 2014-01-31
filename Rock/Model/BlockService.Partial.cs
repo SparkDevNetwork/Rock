@@ -50,7 +50,7 @@ namespace Rock.Model
         {
             return Repository
                 .Find( t => t.LayoutId == layoutId)
-                .OrderBy( t => t.Order );
+                .OrderBy( t => t.Zone ).ThenBy( t => t.Order );
         }
 
         /// <summary>

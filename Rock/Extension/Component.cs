@@ -303,10 +303,10 @@ namespace Rock.Extension
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personId">The current person id.</param>
-        public void MakePrivate( string action, Model.Person person, int? personId )
+        /// <param name="currentPersonAlias">The current person alias.</param>
+        public void MakePrivate( string action, Model.Person person, Rock.Model.PersonAlias currentPersonAlias )
         {
-            Security.Authorization.MakePrivate( this, action, person, personId );
+            Security.Authorization.MakePrivate( this, action, person, currentPersonAlias );
         }
     }
 }

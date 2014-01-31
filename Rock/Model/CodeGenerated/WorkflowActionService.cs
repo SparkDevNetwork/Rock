@@ -107,6 +107,10 @@ namespace Rock.Model
             target.ActionTypeId = source.ActionTypeId;
             target.LastProcessedDateTime = source.LastProcessedDateTime;
             target.CompletedDateTime = source.CompletedDateTime;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

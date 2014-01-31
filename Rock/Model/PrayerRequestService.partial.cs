@@ -60,7 +60,7 @@ namespace Rock.Model
 
             if ( onlyUnexpired )
             {
-                list = list.Where( p => DateTime.Today <= p.ExpirationDate );
+                list = list.Where( p => RockDateTime.Today <= p.ExpirationDate );
             }
 
             return list;
@@ -74,7 +74,7 @@ namespace Rock.Model
         public IQueryable<PrayerRequest> GetActiveApprovedUnexpired()
         {
             return Repository.AsQueryable()
-                .Where( p => p.IsActive == true && p.IsApproved == true && DateTime.Today <= p.ExpirationDate )
+                .Where( p => p.IsActive == true && p.IsApproved == true && RockDateTime.Today <= p.ExpirationDate )
                 .OrderByDescending( p => p.IsUrgent ).ThenBy( p => p.PrayerCount );
         }
     }

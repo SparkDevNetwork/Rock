@@ -4,8 +4,14 @@
             <li class="dropdown pagenav-item">
                 <a class="dropdown-toggle" data-toggle="dropdown" href="#">
                     <i class="{{ topPage.icon-css-class }}"></i>
-                    {{ topPage.title }}
-                    <b class="fa fa-caret-down"></b>
+                    
+						<div>
+							<span>
+								{{ topPage.title }}
+							</span>
+						</div>
+                    
+					<b class="fa fa-caret-down"></b>
                 </a>
                 {% if topPage.display-child-pages == 'true' and topPage.pages != empty %}
                     <ul class="dropdown-menu" role="menu">

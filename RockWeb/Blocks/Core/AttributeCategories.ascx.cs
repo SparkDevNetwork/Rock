@@ -179,8 +179,8 @@ namespace RockWeb.Blocks.Core
                 if ( service.CanDelete( category, out errorMessage ) )
                 {
 
-                    service.Delete( category, CurrentPersonId );
-                    service.Save( category, CurrentPersonId );
+                    service.Delete( category, CurrentPersonAlias );
+                    service.Save( category, CurrentPersonAlias );
                 }
                 else
                 {
@@ -253,7 +253,7 @@ namespace RockWeb.Blocks.Core
                 var categories = GetCategories();
                 if ( categories != null )
                 {
-                    new CategoryService().Reorder( categories.ToList(), e.OldIndex, e.NewIndex, CurrentPersonId );
+                    new CategoryService().Reorder( categories.ToList(), e.OldIndex, e.NewIndex, CurrentPersonAlias );
                 }
 
                 BindGrid();
@@ -291,7 +291,7 @@ namespace RockWeb.Blocks.Core
                     .OrderByDescending( c => c.Order ).FirstOrDefault();
                 category.Order = lastCategory != null ? lastCategory.Order + 1 : 0;
 
-                service.Add( category, CurrentPersonId );
+                service.Add( category, CurrentPersonAlias );
             }
 
             category.Name = tbName.Text;
@@ -312,7 +312,7 @@ namespace RockWeb.Blocks.Core
             {
                 RockTransactionScope.WrapTransaction( () =>
                 {
-                    service.Save( category, CurrentPersonId );
+                    service.Save( category, CurrentPersonAlias );
 
                     BinaryFileService binaryFileService = new BinaryFileService();
                     foreach ( int binaryFileId in orphanedBinaryFileIdList )
@@ -322,7 +322,7 @@ namespace RockWeb.Blocks.Core
                         {
                             // marked the old images as IsTemporary so they will get cleaned up later
                             binaryFile.IsTemporary = true;
-                            binaryFileService.Save( binaryFile, CurrentPersonId );
+                            binaryFileService.Save( binaryFile, CurrentPersonAlias );
                         }
                     }
 

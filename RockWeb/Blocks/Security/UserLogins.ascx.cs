@@ -209,8 +209,8 @@ namespace RockWeb.Blocks.Security
                         return;
                     }
 
-                    service.Delete( userLogin, CurrentPersonId );
-                    service.Save( userLogin, CurrentPersonId );
+                    service.Delete( userLogin, CurrentPersonAlias );
+                    service.Save( userLogin, CurrentPersonAlias );
 
                 }
             }
@@ -249,7 +249,19 @@ namespace RockWeb.Blocks.Security
                 if ( userLogin == null )
                 {
                     userLogin = new UserLogin();
-                    service.Add( userLogin, CurrentPersonId );
+                    service.Add( userLogin, CurrentPersonAlias );
+                }
+
+                if ( _personId.HasValue )
+                {
+                    userLogin.PersonId = _personId;
+                }
+                else
+                {
+                    nbErrorMessage.Title = "Invalid Situation";
+                    nbErrorMessage.Text = "The person you are editing has no person Id.";
+                    nbErrorMessage.Visible = true;
+                    return;
                 }
 
                 userLogin.UserName = tbUserName.Text;
@@ -271,7 +283,7 @@ namespace RockWeb.Blocks.Security
                                 if ( UserLoginService.IsPasswordValid( tbPassword.Text ) )
                                 {
                                     userLogin.Password = component.EncodePassword( userLogin, tbPassword.Text );
-                                    userLogin.LastPasswordChangedDateTime = DateTime.Now;
+                                    userLogin.LastPasswordChangedDateTime = RockDateTime.Now;
                                 }
                                 else
                                 {
@@ -300,7 +312,7 @@ namespace RockWeb.Blocks.Security
 
                 RockTransactionScope.WrapTransaction( () =>
                 {
-                    service.Save( userLogin, CurrentPersonId );
+                    service.Save( userLogin, CurrentPersonAlias );
                 } );
 
                 mdDetails.Hide();
@@ -356,12 +368,12 @@ namespace RockWeb.Blocks.Security
             drp.DelimitedValues = gfSettings.GetUserPreference( "Created" );
             if ( drp.LowerValue.HasValue )
             {
-                qry = qry.Where( l => l.CreationDateTime >= drp.LowerValue.Value );
+                qry = qry.Where( l => l.CreatedDateTime.HasValue && l.CreatedDateTime.Value >= drp.LowerValue.Value );
             }
             if ( drp.UpperValue.HasValue )
             {
                 DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
-                qry = qry.Where( l => l.CreationDateTime < upperDate );
+                qry = qry.Where( l => l.CreatedDateTime.HasValue && l.CreatedDateTime < upperDate );
             }
 
             // last login filter
@@ -406,7 +418,7 @@ namespace RockWeb.Blocks.Security
                         PersonId = l.PersonId,
                         PersonName = l.Person.LastName + ", " + l.Person.NickName,
                         ProviderName = l.EntityType.FriendlyName,
-                        CreationDateTime = l.CreationDateTime,
+                        CreatedDateTime = l.CreatedDateTime,
                         LastLoginDateTime = l.LastLoginDateTime,
                         IsConfirmed = l.IsConfirmed,
                         IsLockedOut = l.IsLockedOut

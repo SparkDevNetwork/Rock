@@ -64,11 +64,11 @@ namespace Rock.Jobs
 
             // delete accounts that have not been confirmed in X hours
             int userExpireHours = Int32.Parse( dataMap.GetString( "HoursKeepUnconfirmedAccounts" ) );
-            DateTime userAccountExpireDate = DateTime.Now.Add( new TimeSpan( userExpireHours * -1,0,0 ) );
+            DateTime userAccountExpireDate = RockDateTime.Now.Add( new TimeSpan( userExpireHours * -1, 0, 0 ) );
 
             var userLoginService = new UserLoginService();
 
-            foreach (var user in userLoginService.Queryable().Where(u => u.IsConfirmed == false && u.CreationDateTime < userAccountExpireDate).ToList() )
+            foreach (var user in userLoginService.Queryable().Where(u => u.IsConfirmed == false && (u.CreatedDateTime ?? DateTime.MinValue) < userAccountExpireDate).ToList() )
             {
                 userLoginService.Delete( user, null );
                 userLoginService.Save( user, null );
@@ -76,11 +76,11 @@ namespace Rock.Jobs
 
             // purge exception log
             int exceptionExpireDays = Int32.Parse( dataMap.GetString( "DaysKeepExceptions" ) );
-            DateTime exceptionExpireDate = DateTime.Now.Add( new TimeSpan( exceptionExpireDays * -1, 0, 0, 0 ) );
+            DateTime exceptionExpireDate = RockDateTime.Now.Add( new TimeSpan( exceptionExpireDays * -1, 0, 0, 0 ) );
 
             ExceptionLogService exceptionLogService = new ExceptionLogService();
 
-            foreach ( var exception in exceptionLogService.Queryable().Where( e => e.ExceptionDateTime < exceptionExpireDate ).ToList() )
+            foreach ( var exception in exceptionLogService.Queryable().Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime < exceptionExpireDate ).ToList() )
             {
                 exceptionLogService.Delete( exception, null );
                 exceptionLogService.Save( exception, null );
@@ -88,7 +88,7 @@ namespace Rock.Jobs
 
             // purge audit log
             int auditExpireDays = Int32.Parse( dataMap.GetString( "AuditLogExpirationDays" ) );
-            DateTime auditExpireDate = DateTime.Now.Add( new TimeSpan( auditExpireDays * -1, 0, 0, 0 ) );
+            DateTime auditExpireDate = RockDateTime.Now.Add( new TimeSpan( auditExpireDays * -1, 0, 0, 0 ) );
             AuditService auditService = new AuditService();
             foreach( var audit in auditService.Queryable().Where( a => a.DateTime < auditExpireDate ).ToList() )
             {
@@ -101,7 +101,7 @@ namespace Rock.Jobs
             //get the attributes
             string cacheDirectoryPath = dataMap.GetString( "BaseCacheDirectory" );
             int cacheExpirationDays = int.Parse( dataMap.GetString( "DaysKeepCachedFiles" ) );
-            DateTime cacheExpirationDate = DateTime.Now.Add( new TimeSpan( cacheExpirationDays * -1, 0, 0, 0 ) );
+            DateTime cacheExpirationDate = RockDateTime.Now.Add( new TimeSpan( cacheExpirationDays * -1, 0, 0, 0 ) );
 
             //if job is being run by the IIS scheduler and path is not null
             if ( context.Scheduler.SchedulerName == "RockSchedulerIIS" && !String.IsNullOrEmpty( cacheDirectoryPath ) )
@@ -111,7 +111,7 @@ namespace Rock.Jobs
             }
 
             //if directory is not blank and cache expiration date not in the future
-            if ( !String.IsNullOrEmpty( cacheDirectoryPath ) && cacheExpirationDate <= DateTime.Now )
+            if ( !String.IsNullOrEmpty( cacheDirectoryPath ) && cacheExpirationDate <= RockDateTime.Now )
             {
                 //Clean cache directory
                 CleanCacheDirectory( cacheDirectoryPath, cacheExpirationDate );
@@ -121,7 +121,7 @@ namespace Rock.Jobs
             BinaryFileService binaryFileService = new BinaryFileService();
             foreach( var binaryFile in binaryFileService.Queryable().Where( bf => bf.IsTemporary == true ).ToList() )
             {
-                if ( binaryFile.LastModifiedDateTime < DateTime.Now.AddDays(-1) )
+                if ( binaryFile.ModifiedDateTime < RockDateTime.Now.AddDays( -1 ) )
                 {
                     binaryFileService.Delete( binaryFile, null );
                     binaryFileService.Save( binaryFile, null );

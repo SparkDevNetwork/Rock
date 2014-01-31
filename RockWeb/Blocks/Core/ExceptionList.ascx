@@ -54,7 +54,7 @@
 
             <Rock:Grid ID="gExceptionOccurrences" runat="server" AllowSorting="true">
                 <Columns>
-                    <Rock:DateTimeField DataField="ExceptionDateTime" HeaderText="Date" SortExpression="ExceptionDateTime" />
+                    <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="Date" SortExpression="CreatedDateTime" />
                     <asp:BoundField DataField="FullName" HeaderText="Logged In User" SortExpression="FullName" />
                     <asp:BoundField DataField="Description" HeaderText="Exception" SortExpression="Description" />
                 </Columns>

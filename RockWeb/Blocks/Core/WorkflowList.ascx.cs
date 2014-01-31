@@ -118,8 +118,8 @@ namespace RockWeb.Blocks.Core
                         return;
                     }
 
-                    workflowService.Delete( workflow, CurrentPersonId );
-                    workflowService.Save( workflow, CurrentPersonId );
+                    workflowService.Delete( workflow, CurrentPersonAlias );
+                    workflowService.Save( workflow, CurrentPersonAlias );
                 }
             } );
 

@@ -9,12 +9,12 @@
             <Rock:RockDropDownList ID="ddlEntityType" runat="server" Label="Entity Type" />
             <Rock:RockRadioButtonList ID="rblScope" runat="server" Label="Scope" RepeatDirection="Horizontal" 
                 AutoPostBack="true" OnSelectedIndexChanged="rblScope_SelectedIndexChanged">
-                <asp:ListItem Value="Public" Text="Public" Selected="True" />
-                <asp:ListItem Value="Private" Text="Private" />
+                <asp:ListItem Value="Organization" Text="Organization" Selected="True" />
+                <asp:ListItem Value="Personal" Text="Personal" />
             </Rock:RockRadioButtonList>
             <Rock:PersonPicker ID="ppOwner" runat="server" Label="Owner"  />
         </Rock:GridFilter>
-        <Rock:Grid ID="rGrid" runat="server" RowItemText="Tag" OnRowSelected="rGrid_Edit">
+        <Rock:Grid ID="rGrid" runat="server" RowItemText="Tag" OnRowSelected="rGrid_Edit" TooltipField="Description">
             <Columns>
                 <Rock:ReorderField />
                 <asp:BoundField DataField="Id" HeaderText="Id" Visible="false" />

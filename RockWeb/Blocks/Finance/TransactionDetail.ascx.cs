@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Finance
                 if ( financialTransactionId == 0 )
                 {
                     financialTransaction = new Rock.Model.FinancialTransaction();
-                    financialTransactionService.Add( financialTransaction, CurrentPersonId );
+                    financialTransactionService.Add( financialTransaction, CurrentPersonAlias );
                     financialTransaction.BatchId = batchId;
                 }
                 else
@@ -172,7 +172,7 @@ namespace RockWeb.Blocks.Finance
                 financialTransaction.TransactionCode = tbTransactionCode.Text;
                 financialTransaction.TransactionDateTime = dtTransactionDateTime.SelectedDateTime;
 
-                financialTransactionService.Save( financialTransaction, CurrentPersonId );
+                financialTransactionService.Save( financialTransaction, CurrentPersonAlias );
 
                 if ( batchId != null )
                 {

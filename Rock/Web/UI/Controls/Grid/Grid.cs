@@ -299,6 +299,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the merge page route.
+        /// </summary>
+        /// <value>
+        /// The merge page route.
+        /// </value>
+        public virtual string MergePageRoute
+        {
+            get { return ViewState["MergePageRoute"] as string ?? "~/PersonMerge/{0}"; }
+            set { ViewState["MergePageRoute"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the new communication page route.
         /// </summary>
         /// <value>
@@ -326,6 +338,28 @@ namespace Rock.Web.UI.Controls
             {
                 ViewState["RowSelectedColumns"] = value;
             }                
+        }
+
+        /// <summary>
+        /// Gets the selected keys.
+        /// </summary>
+        /// <value>
+        /// The selected keys.
+        /// </value>
+        private List<int> SelectedKeys
+        {
+            get
+            {
+                foreach ( var col in this.Columns.OfType<SelectField>() )
+                {
+                    if (col.SelectionMode == SelectionMode.Multiple)
+                    {
+                        return col.SelectedKeys;
+                    }
+                }
+
+                return new List<int>();
+            }
         }
 
         #region Action Row Properties
@@ -425,6 +459,7 @@ namespace Rock.Web.UI.Controls
 
             this.Sorting += Grid_Sorting;
 
+            this.Actions.MergeClick += Actions_MergeClick;
             this.Actions.CommunicateClick += Actions_CommunicateClick;
             this.Actions.ExcelExportClick += Actions_ExcelExportClick;
 
@@ -469,7 +504,96 @@ namespace Rock.Web.UI.Controls
             string gridSelectCellScript = string.Format( gridSelectCellScriptFormat, this.ClientID, clickScript );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-select-cell-script-" + this.ClientID, gridSelectCellScript, true );
             
+            if (Page.IsPostBack)
+            {
+                foreach ( var col in this.Columns.OfType<SelectField>() )
+                {
+                    var colIndex = this.Columns.IndexOf(col).ToString();
+
+                    col.SelectedKeys = new List<int>();
+                    foreach ( GridViewRow row in this.Rows )
+                    {
+                        CheckBox cb = row.FindControl( "cbSelect_" +  colIndex) as CheckBox;
+                        if ( cb != null && cb.Checked )
+                        {
+                            int? key = this.DataKeys[row.RowIndex].Value as int?;
+                            if ( key.HasValue )
+                            {
+                                col.SelectedKeys.Add( key.Value );
+                            }
+                        }
+                    }
+                }
+            }
+
             base.OnLoad( e );
+        }
+
+        /// <summary>
+        /// Handles the MergeClick event of the Actions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void Actions_MergeClick( object sender, EventArgs e )
+        {
+            if ( !string.IsNullOrWhiteSpace( PersonIdField ) )
+            {
+                var peopleSelected = SelectedKeys.ToList();
+
+                if ( !peopleSelected.Any() )
+                {
+                    OnGridRebind( e );
+
+                    if ( this.DataSource is DataTable || this.DataSource is DataView )
+                    {
+
+                        DataTable data = null;
+                        if ( this.DataSource is DataTable )
+                        {
+                            data = (DataTable)this.DataSource;
+                        }
+                        else if ( this.DataSource is DataView )
+                        {
+                            data = ( (DataView)this.DataSource ).Table;
+                        }
+
+                        if ( data != null )
+                        {
+                            foreach ( DataRow row in data.Rows )
+                            {
+                                object idObj = row[this.PersonIdField];
+                                if ( idObj != null )
+                                {
+                                    int? personId = idObj as int?;
+                                    if ( personId.HasValue )
+                                    {
+                                        peopleSelected.Add( personId.Value );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // get access to the List<> and its properties
+                        IList data = (IList)this.DataSource;
+                        Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
+
+                        PropertyInfo idProp = oType.GetProperty( this.PersonIdField );
+                        if ( idProp != null )
+                        {
+                            foreach ( var item in data )
+                            {
+                                int personId = (int)idProp.GetValue( item, null );
+                                peopleSelected.Add( personId );
+                            }
+                        }
+                    }
+                }
+
+                Page.Response.Redirect( string.Format(MergePageRoute, peopleSelected.AsDelimited(",") ), false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
         }
 
         /// <summary>
@@ -490,9 +614,9 @@ namespace Rock.Web.UI.Controls
                     var communication = new Rock.Model.Communication();
                     communication.Status = Model.CommunicationStatus.Transient;
 
-                    if ( rockPage.CurrentPersonId.HasValue )
+                    if ( rockPage.CurrentPerson != null )
                     {
-                        communication.SenderPersonId = rockPage.CurrentPersonId.Value;
+                        communication.SenderPersonId = rockPage.CurrentPerson.Id;
                     }
 
                     if ( this.DataSource is DataTable || this.DataSource is DataView )
@@ -567,8 +691,8 @@ namespace Rock.Web.UI.Controls
                     }
 
                     var service = new Rock.Model.CommunicationService();
-                    service.Add( communication, rockPage.CurrentPersonId );
-                    service.Save( communication, rockPage.CurrentPersonId );
+                    service.Add( communication, rockPage.CurrentPersonAlias );
+                    service.Save( communication, rockPage.CurrentPersonAlias );
 
                     Page.Response.Redirect( string.Format( CommunicationPageRoute, communication.Id ), false );
                     Context.ApplicationInstance.CompleteRequest();
@@ -701,7 +825,14 @@ namespace Rock.Web.UI.Controls
                         string value = "";
                         if ( propValue != null )
                         {
-                            value = propValue.ToString();
+                            if ( propValue is IEnumerable<object> )
+                            {
+                                value = ( propValue as IEnumerable<object> ).ToList().AsDelimited( "," );
+                            }
+                            else
+                            {
+                                value = propValue.ToString();
+                            }
                         }
 
                         worksheet.Cells[rowCounter, columnCounter].Value = value;
@@ -987,6 +1118,20 @@ namespace Rock.Web.UI.Controls
 
             if ( RowSelected != null && e.Row.RowType == DataControlRowType.DataRow )
             {
+                foreach ( var col in this.Columns.OfType<SelectField>() )
+                {
+                    if ( col.SelectedKeys.Any() )
+                    {
+                        var colIndex = this.Columns.IndexOf( col ).ToString();
+                        CheckBox cbSelect = e.Row.FindControl( "cbSelect_" + colIndex ) as CheckBox;
+                        if ( cbSelect != null )
+                        {
+                            int? key = this.DataKeys[e.Row.RowIndex].Value as int?;
+                            cbSelect.Checked = ( key.HasValue && col.SelectedKeys.Contains( key.Value ) );
+                        }
+                    }
+                }
+
                 foreach ( var col in RowSelectedColumns)
                 {
                     var cell = e.Row.Cells[col.Key];
@@ -1117,6 +1262,11 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the preview columns.
+        /// </summary>
+        /// <param name="modelType">Type of the model.</param>
+        /// <returns></returns>
         public List<BoundField> GetPreviewColumns( Type modelType )
         {
             var displayColumns = new List<BoundField>();
@@ -1174,11 +1324,6 @@ namespace Rock.Web.UI.Controls
             BoundField bf = new BoundField();
             Type baseType = propertyType;
 
-            if (propertyType.IsGenericType)
-            {
-                baseType = propertyType.GetGenericArguments()[0];
-            }
-
             if ( baseType == typeof( Boolean ) || baseType == typeof( Boolean? ) )
             {
                 bf = new BoolField();
@@ -1197,6 +1342,10 @@ namespace Rock.Web.UI.Controls
                 bf = new BoundField();
                 bf.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
                 bf.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
+            }
+            else if (baseType == typeof (IEnumerable<object>))
+            {
+                bf = new ListDelimitedField();
             }
 
             return bf;

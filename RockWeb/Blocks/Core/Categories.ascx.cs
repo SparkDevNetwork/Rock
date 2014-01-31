@@ -66,24 +66,39 @@ namespace RockWeb.Blocks.Core
                 Guid entityTypeGuid = Guid.Empty;
                 if ( Guid.TryParse( GetAttributeValue( "EntityType" ), out entityTypeGuid ) )
                 {
-                    _entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityTypeGuid ).Id;
-                    catpParentCategory.EntityTypeId = _entityTypeId;
-
-                    int parentCategoryId = int.MinValue;
-                    if (int.TryParse(PageParameter("CategoryId"), out parentCategoryId))
+                    var entityType = Rock.Web.Cache.EntityTypeCache.Read( entityTypeGuid );
+                    if (entityType != null)
                     {
-                        _parentCategoryId = parentCategoryId;
+                        _entityTypeId = entityType.Id;
+
+                        SecurityField securityField = gCategories.Columns[5] as SecurityField;
+                        securityField.Visible = entityType.IsSecured;
+                        securityField.EntityTypeId = EntityTypeCache.Read(typeof(Category)).Id;
+
+                        catpParentCategory.EntityTypeId = _entityTypeId;
+
+                        int parentCategoryId = int.MinValue;
+                        if (int.TryParse(PageParameter("CategoryId"), out parentCategoryId))
+                        {
+                            _parentCategoryId = parentCategoryId;
+                        }
+
+                        gCategories.DataKeyNames = new string[] { "id" };
+                        gCategories.Actions.ShowAdd = true;
+
+                        gCategories.Actions.AddClick += gCategories_Add;
+                        gCategories.GridReorder += gCategories_GridReorder;
+                        gCategories.GridRebind += gCategories_GridRebind;
+
+                        mdDetails.SaveClick += mdDetails_SaveClick;
+                        mdDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
                     }
-
-                    gCategories.DataKeyNames = new string[] { "id" };
-                    gCategories.Actions.ShowAdd = true;
-
-                    gCategories.Actions.AddClick += gCategories_Add;
-                    gCategories.GridReorder += gCategories_GridReorder;
-                    gCategories.GridRebind += gCategories_GridRebind;
-
-                    mdDetails.SaveClick += mdDetails_SaveClick;
-                    mdDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
+                    else
+                    {
+                        pnlList.Visible = false;
+                        nbMessage.Text = "Block has not been configured for a valid Enity Type.";
+                        nbMessage.Visible = true;
+                    }
                 }
                 else
                 {
@@ -196,8 +211,8 @@ namespace RockWeb.Blocks.Core
                 if ( service.CanDelete( category, out errorMessage ) )
                 {
 
-                    service.Delete( category, CurrentPersonId );
-                    service.Save( category, CurrentPersonId );
+                    service.Delete( category, CurrentPersonAlias );
+                    service.Save( category, CurrentPersonAlias );
                 }
                 else
                 {
@@ -236,7 +251,7 @@ namespace RockWeb.Blocks.Core
                 var categories = GetCategories();
                 if ( categories != null )
                 {
-                    new CategoryService().Reorder( categories.ToList(), e.OldIndex, e.NewIndex, CurrentPersonId );
+                    new CategoryService().Reorder( categories.ToList(), e.OldIndex, e.NewIndex, CurrentPersonAlias );
                 }
 
                 BindGrid();
@@ -272,7 +287,7 @@ namespace RockWeb.Blocks.Core
                     .OrderByDescending( c => c.Order ).FirstOrDefault();
                 category.Order = lastCategory != null ? lastCategory.Order + 1 : 0;
 
-                service.Add( category, CurrentPersonId );
+                service.Add( category, CurrentPersonAlias );
             }
 
             category.Name = tbName.Text;
@@ -286,7 +301,7 @@ namespace RockWeb.Blocks.Core
             {
                 RockTransactionScope.WrapTransaction( () =>
                 {
-                    service.Save( category, CurrentPersonId );
+                    service.Save( category, CurrentPersonAlias );
 
                     BinaryFileService binaryFileService = new BinaryFileService();
                     foreach ( int binaryFileId in orphanedBinaryFileIdList )
@@ -296,7 +311,7 @@ namespace RockWeb.Blocks.Core
                         {
                             // marked the old images as IsTemporary so they will get cleaned up later
                             binaryFile.IsTemporary = true;
-                            binaryFileService.Save( binaryFile, CurrentPersonId );
+                            binaryFileService.Save( binaryFile, CurrentPersonAlias );
                         }
                     }
 

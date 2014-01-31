@@ -1,31 +1,45 @@
 ﻿/*
     Used to manage styles related to the person details page
     
-    1. Header
-    2. Badge Bar
-    3. Family Bar
-    4. Page Tabs
-    5. Edit Family Page
-    6. Add Family Page
+    1. Page Styles
+    2. Header
+    3. Badge Bar
+    4. Family Bar
+    5. Page Tabs
+    6. Styles to Tab Pages
+    7. Edit Family Page
+    8. Add Family Page
+    9. Responsive Overrides
 */
 
-
-// 1. Header
+// 1. Page Styles
 // -------------------------
-.persondetails-header {
-    padding-bottom: 24px;
+
+.personprofile { // offset pageheader margin
+    margin-top: -@spacing-md-px;
+}
+
+// 2. Header
+// -------------------------
+
+.personprofilebar-bio {
     background-color: @accent-light-color;
     border-bottom: 1px solid darken(@accent-light-color, @const-border-darken-amt);
+    padding: @spacing-md-px;
+
+    .name {
+        text-align: center;
+    }
+
+    .labels {
+        margin-bottom: @spacing-sm-px;
+        text-align: center;
+    }
 
     .actions { // edit individual button
         position: absolute;
         right: 12px;
         margin-top: 50px;
-    }
-
-    .labels {
-        margin-top: 11px;
-        text-align: right;
     }
 
     .photo {
@@ -35,53 +49,42 @@
         display: table;
         width: 100%;
         max-width: 200px;
+        margin: 0 auto;
 
         img {
             width: 100%;
         }
     }
 
+    .taglist {
+        margin-top: @spacing-sm-px;
+    }
+
     .demographics {
-        margin-top: 44px;
+        margin-top: @spacing-lg-px;
+        text-align: center;
     }
 
-    ul.phonenumbers {
-        list-style: none;
-        padding-left: 0;
+    .personcontact {
+        text-align: center;
+        margin-top: @spacing-md-px;
     }
 
-    // style actions dropdown 
-    a.persondetails-actions.dropdown-toggle {
-        color: @accent-light-text-color;
-        padding: 2px 15px;
-
-        &:hover, &:focus {
-            color: lighten(@accent-light-text-color, 10%);
-        }
-
-    }
-
-    .dropdown-menu {
-        text-align: left;
-    }
 }
 
 
-// 2. Badge Bar
+// 3. Badge Bar
 // -------------------------
 
-.persondetails-badgebar
+.personprofilebar-badge
 {
     background-color: @accent-color;
     min-height: 50px;
     border-bottom: 1px solid darken(@accent-color, @const-border-darken-amt);
 
     .badge-group {
-        margin: 10px 0;
-
-        &:last-child {
-            text-align: right;
-        }
+        margin: @spacing-sm-px 0;
+        text-align: center;
 
         .badge { // might take this out when we get real badges
             background-color: inherit;
@@ -90,10 +93,10 @@
 }
 
 
-// 3. Family Bar
+// 4. Family Bar
 // -------------------------
 
-.persondetails-familybar {
+.personprofilebar-family {
     background: @accent-color;
     padding: 12px 0;
     border-bottom: 1px solid darken(@accent-color, @const-border-darken-amt);
@@ -106,17 +109,14 @@
 
     header {
         font-size: 16px;
-        margin-bottom: 12px;
+        margin-bottom: @spacing-sm-px;
     }
 
     ul {
         li.member {
             img {
-                max-width: 37px;
-                max-height: 37px;
                 float: left;
-                margin-right: 8px;
-                border: 2px solid white;
+                margin-right: @spacing-sm-px;
             }
 
             h4 {
@@ -133,7 +133,8 @@
         li {
             display: block;
             clear: both;
-            margin-bottom: 12px;
+            margin-bottom: @spacing-md-px;
+            &:first-child { margin-bottom: 0; }
         }
 
         h4 {
@@ -154,14 +155,13 @@
         & div.actions,
         & div.address {
             float: left;
-            margin-right: 4px;
         }
     }
 }
 
 
 
-// 4. Page Tabs
+// 5. Page Tabs
 // -------------------------
 
 .pagetabs
@@ -174,16 +174,12 @@
 }
 
 
-// 5. Edit Family Page
+// 6. Edit Family Page
 // -------------------------
 .editfamily-list {
     
     li.member {
         max-width: 200px;
-
-        img {
-            max-width: 65px;
-        }
 
         .radio { // put adult/child radios side by side
             width: 65px;
@@ -195,10 +191,95 @@
     
 }
 
+// 7. Styles for Page Tabs
+// -------------------------
 
-// 6. Add Families
+// history page
+span.field-name {
+    font-family: Monaco,Menlo,Consolas,"Courier New",monospace;
+    padding: 2px 4px;
+    font-size: 90%;
+    color: #515151;
+    background-color: #d9e1e8;
+    white-space: nowrap;
+    border-radius: 4px;
+}
+
+span.field-value {
+    font-family: Monaco,Menlo,Consolas,"Courier New",monospace;
+    padding: 2px 4px;
+    font-size: 90%;
+    color: #515151;
+    background-color: #d9e1e8;
+    white-space: nowrap;
+    border-radius: 4px;
+}
+
+// 8. Add Families
 // -------------------------
 
 .table-familymembers .radio:first-child {
     margin-top: 0;
 }
+
+// 9. Responsive Overrides
+// -------------------------
+
+/* Small devices (tablets, 768px and up) */
+@media (min-width: @screen-sm-min) {
+    
+    // bio bar
+    .personprofilebar-bio {
+        
+        .name {
+            text-align: left;
+        }
+        
+        .labels {
+            text-align: right;
+        }
+
+        .photo {
+            margin: 0;
+        }
+
+        .taglist {
+            margin-top: 0;
+        }
+
+        .demographics {
+            text-align: left;
+        }
+
+        .personcontact {
+            text-align: left;
+        }
+    }
+
+    .personprofilebar-badge {
+        .badge-group {
+            text-align: left;
+
+            &:last-child {
+                text-align: right;
+            }
+        }
+    }
+}
+
+/* Medium devices (desktops, 992px and up) */
+@media (min-width: @screen-md-min) {
+ 
+    // bio bar
+    .personprofilebar-bio {
+        .personcontact {
+            margin-top: 0;
+        }
+    }
+}
+
+/* Large devices (large desktops, 1200px and up) */
+@media (min-width: @screen-lg-min) {
+
+}
+

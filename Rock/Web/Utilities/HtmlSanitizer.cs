@@ -21,8 +21,14 @@ using HtmlAgilityPack;
 
 namespace Rock.Web.Utilities
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class HtmlSanitizer
     {
+        /// <summary>
+        /// The black list
+        /// </summary>
         public HashSet<string> BlackList = new HashSet<string>() 
         {
                 { "script" },
@@ -38,7 +44,8 @@ namespace Rock.Web.Utilities
         /// <summary>
         /// Cleans up an HTML string and removes HTML tags in blacklist
         /// </summary>
-        /// <param name="html"></param>
+        /// <param name="html">The HTML.</param>
+        /// <param name="blackList">The black list.</param>
         /// <returns></returns>
         public static string SanitizeHtml( string html, params string[] blackList )
         {
@@ -65,7 +72,8 @@ namespace Rock.Web.Utilities
         {
             var doc = new HtmlDocument();
 
-            doc.LoadHtml( html );
+            doc.LoadHtml( html.Replace( "&nbsp;", "<nbsp />" ) );
+
             SanitizeHtmlNode( doc.DocumentNode );
 
             //return doc.DocumentNode.WriteTo();
@@ -90,11 +98,16 @@ namespace Rock.Web.Utilities
             }
             doc = null;
 
-            return output;
+            return output.Replace( "<nbsp />", "&nbsp;" );
         }
 
         private void SanitizeHtmlNode( HtmlNode node )
         {
+            if (node.NodeType == HtmlNodeType.Text)
+            {
+                
+            }
+
             if ( node.NodeType == HtmlNodeType.Element )
             {
                 // check for blacklist items and remove

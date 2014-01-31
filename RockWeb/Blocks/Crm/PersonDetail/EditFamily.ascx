@@ -119,7 +119,7 @@
                                 <asp:CheckBox ID="cbMailing" runat="server" Checked='<%# Eval("IsMailing") %>' />
                             </EditItemTemplate>
                         </asp:TemplateField>
-                        <asp:TemplateField HeaderText="Location" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
+                        <asp:TemplateField HeaderText="Map Location" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
                             <ItemTemplate>
                                 <%# ((bool)Eval("IsLocation")) ? "<i class=\"fa fa-check\"></i>" : "" %>
                             </ItemTemplate>

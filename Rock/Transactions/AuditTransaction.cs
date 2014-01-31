@@ -44,8 +44,8 @@ namespace Rock.Transactions
 
                 foreach ( var audit in Audits )
                 {
-                    auditService.Add( audit, audit.PersonId );
-                    auditService.Save( audit, audit.PersonId );
+                    auditService.Add( audit, audit.PersonAlias );
+                    auditService.Save( audit, audit.PersonAlias );
                 }
             }
         }

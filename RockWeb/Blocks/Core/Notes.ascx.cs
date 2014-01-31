@@ -78,8 +78,8 @@ namespace RockWeb.Blocks.Core
                     noteType.EntityTypeQualifierColumn = string.Empty;
                     noteType.EntityTypeQualifierValue = string.Empty;
                     noteType.Name = noteTypeName;
-                    service.Add( noteType, CurrentPersonId );
-                    service.Save( noteType, CurrentPersonId );
+                    service.Add( noteType, CurrentPersonAlias );
+                    service.Save( noteType, CurrentPersonAlias );
                 }
 
                 notesTimeline.NoteTypeId = noteType.Id;

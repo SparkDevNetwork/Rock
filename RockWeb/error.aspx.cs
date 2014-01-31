@@ -77,12 +77,14 @@ public partial class error : System.Web.UI.Page
 
             if ( userLogin != null && adminGroup.Members.Where( m => m.PersonId == userLogin.PersonId ).Count() > 0 )
             {
-                // is an admin
-                lErrorInfo.Text = "<h3>Exception Log:</h3>";
+                
 
                 // get exception from Session
                 if ( Session["Exception"] != null )
                 {
+                    // is an admin
+                    lErrorInfo.Text = "<h3>Exception Log:</h3>";
+
                     ProcessException( (Exception)Session["Exception"], " " );
                 }
             }

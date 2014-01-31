@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.Finance
                 if ( accountId == 0 )
                 {
                     account = new Rock.Model.FinancialAccount();
-                    accountService.Add( account, CurrentPersonId );
+                    accountService.Add( account, CurrentPersonAlias );
                 }
                 else
                 {
@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Finance
                 account.EndDate = dtpEndDate.SelectedDate;
                 account.IsTaxDeductible = cbIsTaxDeductible.Checked;
 
-                accountService.Save( account, CurrentPersonId );
+                accountService.Save( account, CurrentPersonAlias );
             }
 
             NavigateToParentPage();

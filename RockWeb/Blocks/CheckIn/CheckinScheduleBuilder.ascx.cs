@@ -387,7 +387,7 @@ namespace RockWeb.Blocks.CheckIn
                                 }
                             }
 
-                            groupLocationService.Save( groupLocation, this.CurrentPersonId );
+                            groupLocationService.Save( groupLocation, CurrentPersonAlias );
                         }
                     }
 
