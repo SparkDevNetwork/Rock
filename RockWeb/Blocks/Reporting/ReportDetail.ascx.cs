@@ -873,6 +873,7 @@ namespace RockWeb.Blocks.Reporting
             panelWidget.ID = string.Format( "reportFieldWidget_{0}", reportFieldGuid.ToString( "N" ) );
 
             string fieldTitle = null;
+            string defaultColumnHeaderText = null;
             DataSelectComponent dataSelectComponent = null;
             switch ( reportFieldType )
             {
@@ -882,6 +883,7 @@ namespace RockWeb.Blocks.Reporting
                     if ( entityField != null )
                     {
                         fieldTitle = entityField.Title;
+                        defaultColumnHeaderText = entityField.Title;
                     }
 
                     break;
@@ -891,6 +893,7 @@ namespace RockWeb.Blocks.Reporting
                     if ( attribute != null )
                     {
                         fieldTitle = attribute.Name;
+                        defaultColumnHeaderText = attribute.Name;
                     }
 
                     break;
@@ -901,6 +904,7 @@ namespace RockWeb.Blocks.Reporting
                     if ( dataSelectComponent != null )
                     {
                         fieldTitle = dataSelectComponent.GetTitle( null );
+                        defaultColumnHeaderText = dataSelectComponent.ColumnHeaderText;
                     }
 
                     break;
@@ -944,7 +948,7 @@ namespace RockWeb.Blocks.Reporting
             columnHeaderTextTextBox.Label = "Column Label";
             if ( setReportFieldValues )
             {
-                columnHeaderTextTextBox.Text = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? fieldTitle : reportField.ColumnHeaderText;
+                columnHeaderTextTextBox.Text = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? defaultColumnHeaderText : reportField.ColumnHeaderText;
             }
 
             panelWidget.Controls.Add( columnHeaderTextTextBox );
