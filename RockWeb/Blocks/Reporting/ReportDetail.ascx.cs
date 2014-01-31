@@ -958,7 +958,7 @@ namespace RockWeb.Blocks.Reporting
 
                 if ( setReportFieldValues )
                 {
-                    dataSelectComponent.SetSelection( dataSelectControls, reportField.Selection );
+                    dataSelectComponent.SetSelection( dataSelectControls, reportField.Selection ?? string.Empty );
                 }
             }
 
