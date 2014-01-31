@@ -18,6 +18,7 @@ using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Model;
+using Rock;
 
 namespace Rock.Web.UI.Controls
 {
@@ -39,6 +40,7 @@ namespace Rock.Web.UI.Controls
         private LocationAddressPicker _addressPicker;
         private GeoPicker _pointPicker;
         private GeoPicker _polygonPicker;
+        private HiddenField _hfCurrentPickerMode;
 
         #endregion
 
@@ -80,8 +82,9 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                var pickerMode = ViewState["CurrentPickerMode"] as LocationPickerMode?;
-                if ( !pickerMode.HasValue )
+                LocationPickerMode pickerMode = _hfCurrentPickerMode.Value.ConvertToEnum<LocationPickerMode>();
+
+                if ( string.IsNullOrWhiteSpace( _hfCurrentPickerMode.Value ) )
                 {
                     if ( ( this.AllowedPickerModes & LocationPickerMode.Address ) == LocationPickerMode.Address )
                     {
@@ -100,15 +103,15 @@ namespace Rock.Web.UI.Controls
                         pickerMode = LocationPickerMode.Named;
                     }
 
-                    CurrentPickerMode = pickerMode.Value;
+                    CurrentPickerMode = pickerMode;
                 }
 
-                return pickerMode.Value;
+                return pickerMode;
             }
 
             set
             {
-                ViewState["CurrentPickerMode"] = value;
+                _hfCurrentPickerMode.Value = value.ConvertToString( false );
             }
         }
 
@@ -346,6 +349,9 @@ namespace Rock.Web.UI.Controls
             _polygonPicker.DrawingMode = GeoPicker.ManagerDrawingMode.Polygon;
             _polygonPicker.SelectGeography += _polygonPicker_SelectGeography;
 
+            _hfCurrentPickerMode = new HiddenField();
+            _hfCurrentPickerMode.ID = this.ID + "_hfCurrentPickerMode";
+
             _namedPicker.ModePanel = _pnlModeSelection;
             _pointPicker.ModePanel = _pnlModeSelection;
             _polygonPicker.ModePanel = _pnlModeSelection;
@@ -355,6 +361,7 @@ namespace Rock.Web.UI.Controls
             _pickersPanel.Controls.Add( _addressPicker );
             _pickersPanel.Controls.Add( _pointPicker );
             _pickersPanel.Controls.Add( _polygonPicker );
+            _pickersPanel.Controls.Add( _hfCurrentPickerMode );
         }
 
         /// <summary>
