@@ -115,7 +115,11 @@ public class SyndicationFeedHelper
                     detailPageBaseUrl = new PageReference( detailPageID ).BuildUrl();
                 }
 
-  
+                if ( detailPageID > 0 )
+                {
+                    detailPageBaseUrl = new PageReference( detailPageID ).BuildUrl();
+                }
+
                 Dictionary<string, XNamespace> namespaces = feed.Root.Attributes()
                     .Where( a => a.IsNamespaceDeclaration )
                     .GroupBy( a => a.Name.Namespace == XNamespace.None ? String.Empty : a.Name.LocalName,
@@ -178,7 +182,11 @@ public class SyndicationFeedHelper
                         Dictionary<string, string> queryString = new Dictionary<string, string>();
                         queryString.Add( "feedItemId", idEntryHashed );
 
-                        article.Add( "detailPageUrl", new PageReference( detailPageID, 0, queryString ).BuildUrl() );
+                        if(detailPageID > 0)
+                        {
+                            article.Add( "detailPageUrl", new PageReference( detailPageID, 0, queryString ).BuildUrl() );
+                        }
+
                         article.Add( "articleHash", idEntryHashed );
                     }
 
@@ -199,8 +207,6 @@ public class SyndicationFeedHelper
                     feedDictionary.Add( "DetailPageBaseUrl", detailPageBaseUrl );
                 }
             }
-
-
 
             if ( feedDictionary != null )
             {
