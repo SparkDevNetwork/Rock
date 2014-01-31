@@ -791,12 +791,15 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
-                // For each column that supports the clicking to select add the css class to enable this functionality
-                foreach ( var col in RowSelectedColumns)
+                if ( this.RowSelected != null )
                 {
-                    var cell = e.Row.Cells[col.Key];
-                    cell.AddCssClass( col.Value );
-                    cell.AddCssClass( "grid-select-cell" );
+                    // For each column that supports the clicking to select add the css class to enable this functionality
+                    foreach ( var col in RowSelectedColumns )
+                    {
+                        var cell = e.Row.Cells[col.Key];
+                        cell.AddCssClass( col.Value );
+                        cell.AddCssClass( "grid-select-cell" );
+                    }
                 }
             }
         }
