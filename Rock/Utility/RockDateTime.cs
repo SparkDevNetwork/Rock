@@ -26,56 +26,62 @@ namespace Rock
     /// </summary>
     public class RockDateTime
     {
-        /// <summary>
-        /// Gets or sets the org time zone information.
-        /// </summary>
-        /// <value>
-        /// The org time zone information.
-        /// </value>
-        private static TimeZoneInfo OrgTimeZoneInfo { get; set; }
 
+        private static TimeZoneInfo _orgTimeZoneInfo = null;
         /// <summary>
-        /// Gets current datetime based on the OrgTimeZone setting set in web.config
+        /// Gets the time zone information from the OrgTimeZone setting set in web.config.
         /// </summary>
         /// <value>
-        /// The current datetime for the Organization's TimeZone
+        /// A <see cref="System.TimeZoneInfo"/> that represents the organization's time zone.
         /// </value>
-        public static DateTime Now
+        public static TimeZoneInfo OrgTimeZoneInfo
         {
             get
             {
-                // determine the OrgTimeZOneInfo from web.config then cache it 
-                if ( OrgTimeZoneInfo == null )
+                if ( _orgTimeZoneInfo == null )
                 {
                     string orgTimeZoneSetting = ConfigurationManager.AppSettings["OrgTimeZone"];
 
                     if ( string.IsNullOrWhiteSpace( orgTimeZoneSetting ) )
                     {
-                        OrgTimeZoneInfo = TimeZoneInfo.Local;
+                        _orgTimeZoneInfo = TimeZoneInfo.Local;
                     }
                     else
                     {
                         // if Web.Config has the OrgTimeZone set to the special "Local" (intended for Developer Mode), just use the Local DateTime. However, a production install of Rock will always have a real Time Zone string
                         if ( orgTimeZoneSetting.Equals( "Local", StringComparison.OrdinalIgnoreCase ) )
                         {
-                            OrgTimeZoneInfo = TimeZoneInfo.Local;
+                            _orgTimeZoneInfo = TimeZoneInfo.Local;
                         }
                         else
                         {
-                            OrgTimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById( orgTimeZoneSetting );
+                            _orgTimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById( orgTimeZoneSetting );
                         }
                     }
                 }
-
+                return _orgTimeZoneInfo;
+            }
+        }
+            
+        /// <summary>
+        /// Gets current datetime based on the OrgTimeZone setting set in web.config.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.DateTime"/> that current datetime based on the Organization's TimeZone.
+        /// </value>
+        public static DateTime Now
+        {
+            get
+            {
                 return TimeZoneInfo.ConvertTime( DateTime.UtcNow, OrgTimeZoneInfo );
             }
         }
 
         /// <summary>
-        /// Gets the current date based on the OrgTimeZone setting set in web.config
+        /// Gets the current date based on the OrgTimeZone setting set in web.config.
         /// </summary>
         /// <value>
-        /// The today.
+        /// A <see cref="System.DateTime"/> that current date based on the Organization's TimeZone.
         /// </value>
         public static DateTime Today
         {
