@@ -154,12 +154,12 @@ namespace RockWeb.Blocks.Core
                 {
                     foreach ( var value in definedValues )
                     {
-                        definedValueService.Delete( value, CurrentPersonId );
-                        definedValueService.Save( value, CurrentPersonId );
+                        definedValueService.Delete( value, CurrentPersonAlias );
+                        definedValueService.Save( value, CurrentPersonAlias );
                     }
 
-                    definedTypeService.Delete( type, CurrentPersonId );
-                    definedTypeService.Save( type, CurrentPersonId );
+                    definedTypeService.Delete( type, CurrentPersonAlias );
+                    definedTypeService.Save( type, CurrentPersonAlias );
                 } );
             }
 

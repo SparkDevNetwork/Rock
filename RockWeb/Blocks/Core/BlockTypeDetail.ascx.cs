@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Core
             if ( blockTypeId == 0 )
             {
                 blockType = new BlockType();
-                blockTypeService.Add( blockType, CurrentPersonId );
+                blockTypeService.Add( blockType, CurrentPersonAlias );
             }
             else
             {
@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.Core
 
             RockTransactionScope.WrapTransaction( () =>
             {
-                blockTypeService.Save( blockType, CurrentPersonId );
+                blockTypeService.Save( blockType, CurrentPersonAlias );
             } );
 
             NavigateToParentPage();

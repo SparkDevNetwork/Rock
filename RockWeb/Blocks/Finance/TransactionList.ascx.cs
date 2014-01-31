@@ -231,8 +231,8 @@ namespace RockWeb.Blocks.Finance
             FinancialTransaction financialTransaction = financialTransactionService.Get( (int)e.RowKeyValue );
             if ( financialTransaction != null )
             {
-                financialTransactionService.Delete( financialTransaction, CurrentPersonId );
-                financialTransactionService.Save( financialTransaction, CurrentPersonId );
+                financialTransactionService.Delete( financialTransaction, CurrentPersonAlias );
+                financialTransactionService.Save( financialTransaction, CurrentPersonAlias );
             }
 
             BindGrid();

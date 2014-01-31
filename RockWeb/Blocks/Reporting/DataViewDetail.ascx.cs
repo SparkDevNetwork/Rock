@@ -187,10 +187,10 @@ $(document).ready(function() {
                 {
                     if ( dataView.Id.Equals( 0 ) )
                     {
-                        service.Add( dataView, CurrentPersonId );
+                        service.Add( dataView, CurrentPersonAlias );
                     }
 
-                    service.Save( dataView, CurrentPersonId );
+                    service.Save( dataView, CurrentPersonAlias );
 
                     // Delete old report filter
                     if ( dataViewFilterId.HasValue )
@@ -198,7 +198,7 @@ $(document).ready(function() {
                         DataViewFilterService dataViewFilterService = new DataViewFilterService();
                         DataViewFilter dataViewFilter = dataViewFilterService.Get( dataViewFilterId.Value );
                         DeleteDataViewFilter( dataViewFilter, dataViewFilterService );
-                        dataViewFilterService.Save( dataViewFilter, CurrentPersonId );
+                        dataViewFilterService.Save( dataViewFilter, CurrentPersonAlias );
                     }
 
                 } );
@@ -261,8 +261,8 @@ $(document).ready(function() {
                 {
                     categoryId = dataView.CategoryId;
 
-                    dataViewService.Delete( dataView, CurrentPersonId );
-                    dataViewService.Save( dataView, CurrentPersonId );
+                    dataViewService.Delete( dataView, CurrentPersonAlias );
+                    dataViewService.Save( dataView, CurrentPersonAlias );
 
                     // reload page, selecting the deleted data view's parent
                     var qryParams = new Dictionary<string, string>();
@@ -624,7 +624,7 @@ $(document).ready(function() {
                 {
                     DeleteDataViewFilter( childFilter, service );
                 }
-                service.Delete( dataViewFilter, CurrentPersonId );
+                service.Delete( dataViewFilter, CurrentPersonAlias );
             }
         }
 

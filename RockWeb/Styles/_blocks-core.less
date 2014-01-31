@@ -32,9 +32,10 @@
     article {
         border-radius: @border-radius-base;
         border: 1px solid darken(@accent-light-color, @const-border-darken-amt);
-        padding: 12px;
-        margin-bottom: 12px;
+        padding: @spacing-md-px;
+        margin-bottom: @spacing-md-px;
         background-color: @accent-light-color;
+        position: relative;
 
         .date {
             font-size: 13px;
@@ -43,7 +44,7 @@
         }
 
         & > i {
-            float: left;
+            position: absolute;
             color: darken(@accent-light-color, 10%);
             width: 28px;
             font-size: 28px;
@@ -51,18 +52,22 @@
         }
 
         .details {
-            float: left;
-            width: 84%;
+            margin-left: 50px; 
 
             h5 {
                 margin-top: 0;
                 margin-bottom: 6px;
+                max-width: 70%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
         }
 
         .actions {
-            float: right;
-            width: 10%;
+            position: absolute;
+            right: 15px;
+            top: 10px;
 
             a {
                 float: right;
@@ -76,29 +81,54 @@
             border: 1px solid darken(spin(@state-danger-bg, -10), 3%);
             color: @state-danger-text;
 
-            i {
-                color: darken(spin(@state-danger-bg, -10), 3%);
+            a {
+                color: @state-danger-text;
+            }
+
+            & > i {
+                color: darken(spin(@state-danger-bg, -10), 5%);
             }
         }
 
         &.personal {
-            background-color: @state-info-bg;
-            border: 1px solid darken(spin(@state-info-bg, -10), 3%);
-            color: @state-info-text;
+            background-color: @accent-semibold-color;
+            border: 1px solid darken(spin(@accent-semibold-color, -10), 3%);
+            color: @accent-semibold-text-color;
 
-            i {
-                color: darken(spin(@state-info-bg, -10), 3%);
+            & > i {
+                color: lighten(spin(@accent-semibold-color, -10), 3%);
             }
         }
     }
 
     .load-more {
         margin: 0 40%;
-        min-width: 120px;
+        min-width: 150px;
         width: 20%;
 
         span {
             margin: 0 12px;
+        }
+    }
+}
+
+.panel-note-light {
+    border: 0;
+    background: none;
+
+    .panel-body {
+        background: none;
+    }
+
+    article {
+        background: none;
+        border-radius: 0;
+        border-width: 0 0 1px 0;
+
+        .note-author,
+        .note-created {
+            font-size: @font-size-base - 1px;
+            opacity: 0.7;
         }
     }
 }
@@ -115,9 +145,17 @@
         }
     }
     
+    .panel-body {
+        
+        .noteentry-control {
+            overflow: hidden;
+        }
+
+    }
+
     .options .checkbox {
         float: left;
-        margin: 0 15px 0 5px;
+        margin: 0 @spacing-md-px 0 5px;
     } 
 
     .panel-footer {
@@ -130,7 +168,7 @@
 
 .recurrence-pattern-type {
     margin-top: 12px;
-    padding-left: 30px;
+    padding-left: @spacing-lg-px;
 }
 
 .recurrence-pattern-specific-date {
@@ -150,19 +188,19 @@
 .recurrence-pattern-daily {
 
     .form-control-group {
-        min-height: 30px;
+        min-height: @spacing-lg-px;
     }
 }
 
 .recurrence-pattern-weekly {
 
     .week-days {
-        margin-top: 12px;
+        margin-top: @spacing-md-px;
         .clearfix();
 
         .checkbox {
             float: left;
-            margin: 0 12px;
+            margin: 0 @spacing-md-px;
         }
     }
 }

@@ -62,11 +62,11 @@ namespace Rock.Web.UI.Controls
                 this.SourceTypeValueId = value.SourceTypeValueId;
                 this.Caption = value.Caption;
 
-                if (value.CreatedByPerson != null)
+                if (value.CreatedByPersonAlias != null && value.CreatedByPersonAlias.Person != null)
                 {
-                    this.CreatedByName = value.CreatedByPerson.FullName;
-                    this.CreatedByPhotoId = value.CreatedByPerson.PhotoId;
-                    this.CreatedByGender = value.CreatedByPerson.Gender;
+                    this.CreatedByName = value.CreatedByPersonAlias.Person.FullName;
+                    this.CreatedByPhotoId = value.CreatedByPersonAlias.Person.PhotoId;
+                    this.CreatedByGender = value.CreatedByPersonAlias.Person.Gender;
                 }
                 else
                 {
@@ -75,7 +75,7 @@ namespace Rock.Web.UI.Controls
                     this.CreatedByGender = Gender.Male;
                 }
 
-                this.CreatedDateTime = value.CreationDateTime;
+                this.CreatedDateTime = value.CreatedDateTime;
                 this.Text = value.Text;
                 this.IsAlert = value.IsAlert.HasValue && value.IsAlert.Value;
             }
@@ -93,12 +93,24 @@ namespace Rock.Web.UI.Controls
             set { ViewState["NoteId"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the note type identifier.
+        /// </summary>
+        /// <value>
+        /// The note type identifier.
+        /// </value>
         public int? NoteTypeId
         {
             get { return ViewState["NoteTypeId"] as int?; }
             set { ViewState["NoteTypeId"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the entity identifier.
+        /// </summary>
+        /// <value>
+        /// The entity identifier.
+        /// </value>
         public int? EntityId
         {
             get { return ViewState["EntityId"] as int?; }
@@ -404,13 +416,13 @@ namespace Rock.Web.UI.Controls
             string script = @"
     $('a.edit-note').click(function (e) {
         e.preventDefault();
-        $(this).closest('.note-editor').children().slideToggle('slow');
+        $(this).closest('.note').children().slideToggle( 'slow' );
     });
     $('a.edit-note-cancel').click(function () {
-        $(this).closest('.note-editor').children().slideToggle('slow');
+        $(this).closest('.note').children().slideToggle( 'slow' );
     });
     $('a.remove-note').click(function() {
-        return confirm('Are you sure you want to delete this note?');
+        return Rock.dialogs.confirmDelete( event, 'Note' );
     });
 ";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "edit-note", script, true );
@@ -437,6 +449,7 @@ namespace Rock.Web.UI.Controls
 
             _lbSaveNote.ID = this.ID + "_lbSaveNote";
             _lbSaveNote.Attributes["class"] = "btn btn-primary btn-xs";
+            _lbSaveNote.CausesValidation = false;
             _lbSaveNote.Click += lbSaveNote_Click;
 
             Controls.Add(_lbSaveNote);
@@ -447,6 +460,7 @@ namespace Rock.Web.UI.Controls
 
             _lbDeleteNote.ID = this.ID + "_lbDeleteNote";
             _lbDeleteNote.Attributes["class"] = "remove-note";
+            _lbDeleteNote.CausesValidation = false;
             _lbDeleteNote.Click += lbDeleteNote_Click;
             Controls.Add( _lbDeleteNote );
             var iDelete = new HtmlGenericControl( "i" );
@@ -466,7 +480,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "note-editor" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "note" );
             if ( this.NoteId.HasValue )
             {
                 writer.AddAttribute( "rel", this.NoteId.Value.ToStringSafe() );
@@ -489,7 +503,11 @@ namespace Rock.Web.UI.Controls
                 writer.Write( Person.GetPhotoImageTag( CreatedByPhotoId, CreatedByGender, 50, 50 ) );
             }
 
+            writer.AddAttribute(HtmlTextWriterAttribute.Class, "noteentry-control");
+            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+            
             _tbNote.RenderControl( writer );
+            writer.RenderEndTag();
 
             if ( DisplayType == NoteDisplayType.Full )
             {
@@ -532,7 +550,7 @@ namespace Rock.Web.UI.Controls
 
             if ( NoteId.HasValue || !AddAlwaysVisible )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note-cancel btn btn-xs" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note-cancel btn btn-link btn-xs" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
                 writer.Write( "Cancel" );
                 writer.RenderEndTag();
@@ -574,7 +592,7 @@ namespace Rock.Web.UI.Controls
                     {
                         heading = CreatedByName;
                     }
-                    writer.Write( heading.SanitizeHtml( true ).EncodeHtml() );
+                    writer.Write( heading.EncodeHtml() );
                     if ( CreatedDateTime.HasValue )
                     {
                         writer.Write( " " );
@@ -585,11 +603,11 @@ namespace Rock.Web.UI.Controls
                     }
                     writer.RenderEndTag();
 
-                    writer.Write( Text.SanitizeHtml( false ).EncodeHtml().ConvertCrLfToHtmlBr() );
+                    writer.Write( Text.EncodeHtml().ConvertCrLfToHtmlBr() );
                 }
                 else
                 {
-                    writer.Write( Text.SanitizeHtml( false ).EncodeHtml().ConvertCrLfToHtmlBr() );
+                    writer.Write( Text.EncodeHtml().ConvertCrLfToHtmlBr() );
                     writer.Write( " - " );
                     if ( !string.IsNullOrWhiteSpace( CreatedByName ) )
                     {
@@ -648,11 +666,11 @@ namespace Rock.Web.UI.Controls
             var rockPage = this.Page as RockPage;
             if (rockPage != null && NoteTypeId.HasValue)
             {
-                int? currentPersonId = null;
+                PersonAlias personAlias = null;
                 var currentPerson = rockPage.CurrentPerson;
                 if (currentPerson != null)
                 {
-                    currentPersonId = currentPerson.Id;
+                    personAlias = currentPerson.PrimaryAlias;
                 }
 
                 var service = new NoteService();
@@ -673,27 +691,31 @@ namespace Rock.Web.UI.Controls
                     note.IsSystem = false;
                     note.NoteTypeId = NoteTypeId.Value;
                     note.EntityId = EntityId;
-                    note.CreatedByPersonId = currentPersonId;
-                    note.CreationDateTime = DateTime.Now;
                     note.SourceTypeValueId = SourceTypeValueId;
-                    service.Add( note, currentPersonId );
+                    service.Add( note, personAlias );
                 }
 
                 note.Caption = IsPrivate ? "You - Personal Note" : string.Empty;
                 note.Text = Text;
                 note.IsAlert = IsAlert;
 
-                service.Save( note, currentPersonId );
+                service.Save( note, personAlias );
 
                 if ( newNote )
                 {
-                    note.AllowPerson( "Edit", currentPerson, currentPersonId );
+                    note.AllowPerson( "Edit", currentPerson, personAlias );
                 }
 
                 if ( IsPrivate && !note.IsPrivate( "View", currentPerson ) )
                 {
-                    note.MakePrivate( "View", currentPerson, currentPersonId );
+                    note.MakePrivate( "View", currentPerson, personAlias );
                 }
+
+                if ( !IsPrivate && note.IsPrivate( "View", currentPerson ) )
+                {
+                    note.MakeUnPrivate( "View", currentPerson, personAlias );
+                }
+
 
                 if ( SaveButtonClick != null )
                 {
@@ -712,11 +734,11 @@ namespace Rock.Web.UI.Controls
             var rockPage = this.Page as RockPage;
             if ( rockPage != null )
             {
-                int? currentPersonId = null;
+                PersonAlias personAlias = null;
                 var currentPerson = rockPage.CurrentPerson;
                 if ( currentPerson != null )
                 {
-                    currentPersonId = currentPerson.Id;
+                    personAlias = currentPerson.PrimaryAlias;
                 }
 
                 var service = new NoteService();
@@ -727,8 +749,8 @@ namespace Rock.Web.UI.Controls
                     note = service.Get( NoteId.Value );
                     if ( note != null && note.IsAuthorized( "Edit", currentPerson ) )
                     {
-                        service.Delete( note, currentPersonId );
-                        service.Save( note, currentPersonId );
+                        service.Delete( note, personAlias );
+                        service.Save( note, personAlias );
                     }
                 }
 

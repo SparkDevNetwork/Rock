@@ -113,6 +113,10 @@ namespace Rock.Model
             target.ProcessingIntervalSeconds = source.ProcessingIntervalSeconds;
             target.IsPersisted = source.IsPersisted;
             target.LoggingLevel = source.LoggingLevel;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

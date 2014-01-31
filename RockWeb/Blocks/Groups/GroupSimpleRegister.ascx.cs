@@ -128,8 +128,8 @@ namespace RockWeb.Blocks.Groups
                                             // If a confirmation email is configured, set status to Pending otherwise set it to active
                                             member.GroupMemberStatus = email != null ? GroupMemberStatus.Pending : GroupMemberStatus.Active;
 
-                                            groupMemberService.Add( member, CurrentPersonId );
-                                            groupMemberService.Save( member, CurrentPersonId );
+                                            groupMemberService.Add( member, CurrentPersonAlias );
+                                            groupMemberService.Save( member, CurrentPersonAlias );
                                             member = groupMemberService.Get( member.Id );
                                         }
 
@@ -202,21 +202,7 @@ namespace RockWeb.Blocks.Groups
                     person.LastName = txtLastName.Text;
                     person.Email = txtEmail.Text;
 
-                    // Create Family Role
-                    var groupMember = new GroupMember();
-                    groupMember.Person = person;
-                    groupMember.GroupRole = new GroupTypeRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) );
-
-                    // Create Family
-                    var group = new Group();
-                    group.Members.Add( groupMember );
-                    group.Name = person.LastName + " Family";
-                    group.GroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
-
-                    // Save person/family
-                    var groupService = new GroupService();
-                    groupService.Add( group, CurrentPersonId );
-                    groupService.Save( group, CurrentPersonId );
+                    new GroupService().SaveNewFamily( person, null, CurrentPersonAlias );
 
                     return personService.Get( person.Id );
                 }

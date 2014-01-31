@@ -340,7 +340,7 @@ namespace RockWeb.Blocks.Communication
                         else
                         {
                             communication.Status = CommunicationStatus.Approved;
-                            communication.ReviewedDateTime = DateTime.Now;
+                            communication.ReviewedDateTime = RockDateTime.Now;
                             communication.ReviewerPersonId = CurrentPersonId;
                             message = "Communication has been queued for sending.";
 
@@ -359,7 +359,7 @@ namespace RockWeb.Blocks.Communication
                             }
                         );
 
-                        service.Save( communication, CurrentPersonId );
+                        service.Save( communication, CurrentPersonAlias );
 
                         if ( communication.Status == CommunicationStatus.Approved )
                         {
@@ -368,7 +368,7 @@ namespace RockWeb.Blocks.Communication
                             {
                                 var transaction = new Rock.Transactions.SendCommunicationTransaction();
                                 transaction.CommunicationId = communication.Id;
-                                transaction.PersonId = CurrentPersonId;
+                                transaction.PersonAlias = CurrentPersonAlias;
                                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                             }
                         }
@@ -399,11 +399,11 @@ namespace RockWeb.Blocks.Communication
                         if ( IsUserAuthorized( "Approve" ) )
                         {
                             communication.Status = CommunicationStatus.Approved;
-                            communication.ReviewedDateTime = DateTime.Now;
+                            communication.ReviewedDateTime = RockDateTime.Now;
                             communication.ReviewerPersonId = CurrentPersonId;
                         }
 
-                        service.Save( communication, CurrentPersonId );
+                        service.Save( communication, CurrentPersonAlias );
 
                         ShowResult( "The communication has been approved", communication );
                     }
@@ -431,11 +431,11 @@ namespace RockWeb.Blocks.Communication
                         if ( IsUserAuthorized( "Approve" ) )
                         {
                             communication.Status = CommunicationStatus.Denied;
-                            communication.ReviewedDateTime = DateTime.Now;
+                            communication.ReviewedDateTime = RockDateTime.Now;
                             communication.ReviewerPersonId = CurrentPersonId;
                         }
 
-                        service.Save( communication, CurrentPersonId );
+                        service.Save( communication, CurrentPersonAlias );
 
                         // TODO: Send notice to sneder that communication was denied
                         
@@ -467,7 +467,7 @@ namespace RockWeb.Blocks.Communication
                             communication.Status = CommunicationStatus.Draft;
                         }
 
-                        service.Save( communication, CurrentPersonId );
+                        service.Save( communication, CurrentPersonAlias );
 
                         ShowResult( "The communication has been saved", communication );
                     }
@@ -498,7 +498,7 @@ namespace RockWeb.Blocks.Communication
                             .ForEach( r => r.Status = CommunicationRecipientStatus.Cancelled );
 
                         // Save and re-read communication to reload recipient statuses
-                        service.Save( communication, CurrentPersonId );
+                        service.Save( communication, CurrentPersonAlias );
                         communication = service.Get( communication.Id );
 
                         if ( !communication.Recipients
@@ -544,8 +544,8 @@ namespace RockWeb.Blocks.Communication
                             StatusNote = string.Empty
                         } ) );
 
-                    service.Add( newCommunication, CurrentPersonId );
-                    service.Save( newCommunication, CurrentPersonId );
+                    service.Add( newCommunication, CurrentPersonAlias );
+                    service.Save( newCommunication, CurrentPersonAlias );
 
                     // Redirect to new communication
                     if ( CurrentPageReference.Parameters.ContainsKey( "CommunicationId" ) )
@@ -914,7 +914,7 @@ namespace RockWeb.Blocks.Communication
                 communication = new Rock.Model.Communication();
                 communication.Status = CommunicationStatus.Transient;
                 communication.SenderPersonId = CurrentPersonId;
-                service.Add( communication, CurrentPersonId );
+                service.Add( communication, CurrentPersonAlias );
             }
 
             communication.ChannelEntityTypeId = ChannelEntityTypeId;

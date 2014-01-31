@@ -363,7 +363,38 @@ namespace Rock.Model
 
         #endregion
 
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Person"/> class.
+        /// </summary>
+        public Person() : base()
+        {
+            _users = new Collection<UserLogin>();
+            _emailTemplates = new Collection<EmailTemplate>();
+            _phoneNumbers = new Collection<PhoneNumber>();
+            _members = new Collection<GroupMember>();
+            _attendances = new Collection<Attendance>();
+            _aliases = new Collection<PersonAlias>();
+        }
+
+        #endregion
+
         #region Virtual Properties
+
+        /// <summary>
+        /// Gets the primary alias.
+        /// </summary>
+        /// <value>
+        /// The primary alias.
+        /// </value>
+        public virtual PersonAlias PrimaryAlias
+        {
+            get
+            {
+                return Aliases.FirstOrDefault( a => a.AliasPersonId == Id );
+            }
+        }
 
         /// <summary>
         /// Gets the Full Name of the Person using the Title FirstName LastName format.
@@ -480,7 +511,7 @@ namespace Rock.Model
         [MergeField]
         public virtual ICollection<UserLogin> Users
         {
-            get { return _users ?? ( _users = new Collection<UserLogin>() ); }
+            get { return _users; }
             set { _users = value; }
         }
         private ICollection<UserLogin> _users;
@@ -494,7 +525,7 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<EmailTemplate> EmailTemplates
         {
-            get { return _emailTemplates ?? ( _emailTemplates = new Collection<EmailTemplate>() ); }
+            get { return _emailTemplates; }
             set { _emailTemplates = value; }
         }
         private ICollection<EmailTemplate> _emailTemplates;
@@ -509,7 +540,7 @@ namespace Rock.Model
         [MergeField]
         public virtual ICollection<PhoneNumber> PhoneNumbers
         {
-            get { return _phoneNumbers ?? ( _phoneNumbers = new Collection<PhoneNumber>() ); }
+            get { return _phoneNumbers; }
             set { _phoneNumbers = value; }
         }
         private ICollection<PhoneNumber> _phoneNumbers;
@@ -525,7 +556,7 @@ namespace Rock.Model
         [MergeField]
         public virtual ICollection<GroupMember> Members
         {
-            get { return _members ?? ( _members = new Collection<GroupMember>() ); }
+            get { return _members; }
             set { _members = value; }
         }
         private ICollection<GroupMember> _members;
@@ -540,10 +571,25 @@ namespace Rock.Model
         [MergeField]
         public virtual ICollection<Attendance> Attendances
         {
-            get { return _attendances ?? ( _attendances = new Collection<Attendance>() ); }
+            get { return _attendances; }
             set { _attendances = value; }
         }
         private ICollection<Attendance> _attendances;
+
+        /// <summary>
+        /// Gets or sets the aliases for this person
+        /// </summary>
+        /// <value>
+        /// The aliases.
+        /// </value>
+        [DataMember]
+        [MergeField]
+        public virtual ICollection<PersonAlias> Aliases
+        {
+            get { return _aliases; }
+            set { _aliases = value; }
+        }
+        private ICollection<PersonAlias> _aliases;
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the Person's marital status.
@@ -640,10 +686,10 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.DateTime"/> representing the Person's birthdate.  If no birthdate is available, null is returned. If the year is not available then the birthdate is returned with the DateTime.MinValue.Year.
         /// </value>
-        [NotMapped]
         [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [MergeField]
-        public virtual DateTime? BirthDate
+        public DateTime? BirthDate
         {
             get
             {
@@ -695,7 +741,7 @@ namespace Rock.Model
                 DateTime bday;
                 if ( DateTime.TryParse( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + BirthYear, out bday ) )
                 {
-                    DateTime today = DateTime.Today;
+                    DateTime today = RockDateTime.Today;
                     int age = today.Year - bday.Year;
                     if ( bday > today.AddYears( -age ) ) age--;
                     return age;
@@ -721,7 +767,7 @@ namespace Rock.Model
                 }
                 else
                 {
-                    var today = DateTime.Today;
+                    var today = RockDateTime.Today;
                     var birthdate = Convert.ToDateTime( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + today.Year.ToString() );
                     if ( birthdate.CompareTo( today ) < 0 )
                     {
@@ -747,7 +793,7 @@ namespace Rock.Model
                 if ( DateTime.TryParse( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + BirthYear, out bday ) )
                 {
                     // Calculate years
-                    DateTime today = DateTime.Today;
+                    DateTime today = RockDateTime.Today;
                     int years = today.Year - bday.Year;
                     if ( bday > today.AddYears( -years ) ) years--;
 
@@ -792,8 +838,8 @@ namespace Rock.Model
                         return null;
                     }
 
-                    int gradeMaxFactorReactor = ( DateTime.Now < transitionDate ) ? 12 : 13;
-                    return gradeMaxFactorReactor - ( GraduationDate.Value.Year - DateTime.Now.Year );
+                    int gradeMaxFactorReactor = ( RockDateTime.Now < transitionDate ) ? 12 : 13;
+                    return gradeMaxFactorReactor - ( GraduationDate.Value.Year - RockDateTime.Now.Year );
                 }
             }
 
@@ -805,7 +851,7 @@ namespace Rock.Model
                     var globalAttributes = GlobalAttributesCache.Read();
                     if ( DateTime.TryParse( globalAttributes.GetValue( "GradeTransitionDate" ), out transitionDate ) )
                     {
-                        int gradeFactorReactor = ( DateTime.Now < transitionDate ) ? 12 : 13;
+                        int gradeFactorReactor = ( RockDateTime.Now < transitionDate ) ? 12 : 13;
                         GraduationDate = transitionDate.AddYears( gradeFactorReactor - value.Value );
                     }
                 }
@@ -994,8 +1040,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the Person.</param>
         /// <param name="relatedPersonId">A <see cref="System.Int32"/> representing the Id of the related Person.</param>
-        /// <param name="currentPersonId">A <see cref="System.Int32"/> representing the Id of the Person who is logged in.</param>
-        public static void CreateCheckinRelationship( int personId, int relatedPersonId, int? currentPersonId )
+        /// <param name="currentPersonAlias">A <see cref="Rock.Model.PersonAlias"/> representing the Person who is logged in.</param>
+        public static void CreateCheckinRelationship( int personId, int relatedPersonId, PersonAlias currentPersonAlias )
         {
             using ( new UnitOfWorkScope() )
             {
@@ -1028,14 +1074,14 @@ namespace Rock.Model
                             canCheckInMember.GroupId = knownRelationshipGroup.Id;
                             canCheckInMember.PersonId = relatedPersonId;
                             canCheckInMember.GroupRoleId = canCheckInRoleId.Value;
-                            groupMemberService.Add( canCheckInMember, currentPersonId );
-                            groupMemberService.Save( canCheckInMember, currentPersonId );
+                            groupMemberService.Add( canCheckInMember, currentPersonAlias );
+                            groupMemberService.Save( canCheckInMember, currentPersonAlias );
                         }
 
-                        var inverseGroupMember = groupMemberService.GetInverseRelationship( canCheckInMember, true, currentPersonId );
+                        var inverseGroupMember = groupMemberService.GetInverseRelationship( canCheckInMember, true, currentPersonAlias );
                         if ( inverseGroupMember != null )
                         {
-                            groupMemberService.Save( inverseGroupMember, currentPersonId );
+                            groupMemberService.Save( inverseGroupMember, currentPersonAlias );
                         }
                     }
                 }

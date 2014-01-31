@@ -90,15 +90,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? DateTime { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who modified the entity and created the audit entry.
+        /// Gets or sets the person alias identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who modified the entity and crated the audit entity.
+        /// The person alias identifier.
         /// </value>
         [DataMember]
-        public int? PersonId { get; set; }
+        public int? PersonAliasId { get; set; }
 
         #endregion
 
@@ -114,13 +114,13 @@ namespace Rock.Model
         public virtual Model.EntityType EntityType { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> who modified the entity and created the audit entity.
+        /// Gets or sets the person alias.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Person"/> who modified the entity and created the audit entry.
+        /// The person alias.
         /// </value>
         [DataMember]
-        public virtual Rock.Model.Person Person { get; set; }
+        public virtual Rock.Model.PersonAlias PersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets the details.
@@ -178,7 +178,7 @@ namespace Rock.Model
         /// </summary>
         public AuditConfiguration()
         {
-            this.HasOptional( p => p.Person ).WithMany().HasForeignKey( p => p.PersonId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.PersonAlias ).WithMany().HasForeignKey( p => p.PersonAliasId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }

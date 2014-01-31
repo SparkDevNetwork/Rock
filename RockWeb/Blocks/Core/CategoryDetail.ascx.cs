@@ -165,8 +165,8 @@ namespace RockWeb.Blocks.Core
                 {
                     parentCategoryId = category.ParentCategoryId;
 
-                    categoryService.Delete( category, CurrentPersonId );
-                    categoryService.Save( category, CurrentPersonId );
+                    categoryService.Delete( category, CurrentPersonAlias );
+                    categoryService.Save( category, CurrentPersonAlias );
 
                     // reload page, selecting the deleted category's parent
                     var qryParams = new Dictionary<string, string>();
@@ -240,10 +240,10 @@ namespace RockWeb.Blocks.Core
                 {
                     if ( category.Id.Equals( 0 ) )
                     {
-                        categoryService.Add( category, CurrentPersonId );
+                        categoryService.Add( category, CurrentPersonAlias );
                     }
 
-                    categoryService.Save( category, CurrentPersonId );
+                    categoryService.Save( category, CurrentPersonAlias );
 
                     BinaryFileService binaryFileService = new BinaryFileService();
                     foreach (int binaryFileId in orphanedBinaryFileIdList)
@@ -253,7 +253,7 @@ namespace RockWeb.Blocks.Core
                         {
                             // marked the old images as IsTemporary so they will get cleaned up later
                             binaryFile.IsTemporary = true;
-                            binaryFileService.Save( binaryFile, CurrentPersonId );
+                            binaryFileService.Save( binaryFile, CurrentPersonAlias );
                         }
                     }
                 } );

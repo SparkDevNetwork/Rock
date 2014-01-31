@@ -41,7 +41,20 @@ namespace RockWeb.Blocks.Cms
     [Description("Displays the details of a specific site.")]
     public partial class SiteDetail : RockBlock, IDetailBlock
     {
-        #region Control Methods
+
+        #region Fields
+
+        // used for private variables
+
+        #endregion
+
+        #region Properties
+
+        // used for public / protected properties
+
+        #endregion
+
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -79,7 +92,7 @@ namespace RockWeb.Blocks.Cms
 
         #endregion
 
-        #region Edit Events
+        #region Events
 
         /// <summary>
         /// Handles the Click event of the btnEdit control.
@@ -99,6 +112,8 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
+            bool issues = false;
+
             RockTransactionScope.WrapTransaction( () =>
             {
                 SiteService siteService = new SiteService();
@@ -106,21 +121,24 @@ namespace RockWeb.Blocks.Cms
                 if ( site != null )
                 {
                     string errorMessage;
-                    if ( !siteService.CanDelete( site, out errorMessage ) )
+                    issues = ! siteService.CanDelete( site, out errorMessage ) || ! siteService.CanDeleteAlternate( site, out errorMessage );
+                    if ( issues )
                     {
-                        mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                        mdDeleteWarning.Show( errorMessage, ModalAlertType.Alert );
                         return;
                     }
 
-                    siteService.Delete( site, CurrentPersonId );
-                    siteService.Save( site, CurrentPersonId );
+                    siteService.Delete( site, CurrentPersonAlias );
+                    siteService.Save( site, CurrentPersonAlias );
 
                     SiteCache.Flush( site.Id );
                 }
             } );
 
-            NavigateToParentPage();
-
+            if ( ! issues )
+            {
+                NavigateToParentPage();
+            }
         }
 
         /// <summary>
@@ -146,7 +164,7 @@ namespace RockWeb.Blocks.Cms
                     {
                         newSite = true;
                         site = new Rock.Model.Site();
-                        siteService.Add( site, CurrentPersonId );
+                        siteService.Add( site, CurrentPersonAlias );
                     }
                     else
                     {
@@ -176,7 +194,7 @@ namespace RockWeb.Blocks.Cms
                     foreach ( var domain in site.SiteDomains.Where( w => !currentDomains.Contains( w.Domain ) ).ToList() )
                     {
                         site.SiteDomains.Remove( domain );
-                        siteDomainService.Delete( domain, CurrentPersonId );
+                        siteDomainService.Delete( domain, CurrentPersonAlias );
                     }
 
                     foreach ( string domain in currentDomains )
@@ -205,11 +223,11 @@ namespace RockWeb.Blocks.Cms
 
                     RockTransactionScope.WrapTransaction( () =>
                     {
-                        siteService.Save( site, CurrentPersonId );
+                        siteService.Save( site, CurrentPersonAlias );
 
                         if ( newSite )
                         {
-                            Rock.Security.Authorization.CopyAuthorization( RockPage.Layout.Site, site, CurrentPersonId );
+                            Rock.Security.Authorization.CopyAuthorization( RockPage.Layout.Site, site, CurrentPersonAlias );
                         }
                     } );
 
@@ -222,7 +240,7 @@ namespace RockWeb.Blocks.Cms
 
                         // Create the layouts for the site, and find the first one
                         var layoutService = new LayoutService();
-                        layoutService.RegisterLayouts( Request.MapPath( "~" ), siteCache, CurrentPersonId );
+                        layoutService.RegisterLayouts( Request.MapPath( "~" ), siteCache, CurrentPersonAlias );
 
                         var layouts = layoutService.GetBySiteId( siteCache.Id );
                         Layout layout = layouts.FirstOrDefault( l => l.FileName.Equals("FullWidth", StringComparison.OrdinalIgnoreCase));
@@ -246,12 +264,12 @@ namespace RockWeb.Blocks.Cms
                                 OrderByDescending( b => b.Order ).FirstOrDefault();
 
                             page.Order = lastPage != null ? lastPage.Order + 1 : 0;
-                            pageService.Add( page, CurrentPersonId );
-                            pageService.Save( page, CurrentPersonId );
+                            pageService.Add( page, CurrentPersonAlias );
+                            pageService.Save( page, CurrentPersonAlias );
 
                             site = siteService.Get( siteCache.Id );
                             site.DefaultPageId = page.Id;
-                            siteService.Save( site, CurrentPersonId );
+                            siteService.Save( site, CurrentPersonAlias );
 
                             SiteCache.Flush( site.Id );
                         }
@@ -288,7 +306,7 @@ namespace RockWeb.Blocks.Cms
 
         #endregion
 
-        #region Internal Methods
+        #region Methods
 
         /// <summary>
         /// Loads the drop downs.

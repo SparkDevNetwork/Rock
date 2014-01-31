@@ -14,8 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Data.Services;
 using System.Runtime.Serialization;
@@ -32,9 +34,107 @@ namespace Rock.Data
     [IgnoreProperties( new[] { "ParentAuthority", "SupportedActions", "AuthEntity", "AttributeValues" } )]
     [IgnoreModelErrors( new[] { "ParentAuthority" } )]
     [DataContract]
-    public abstract class Model<T> : Entity<T>, ISecured, IHasAttributes
+    public abstract class Model<T> : Entity<T>, IModel, ISecured, IHasAttributes
         where T : Model<T>, ISecured, new()
     {
+        #region Entity Properties
+
+        /// <summary>
+        /// Gets or sets the created date time.
+        /// </summary>
+        /// <value>
+        /// The created date time.
+        /// </value>
+        [DataMember]
+        public DateTime? CreatedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the modified date time.
+        /// </summary>
+        /// <value>
+        /// The modified date time.
+        /// </value>
+        [DataMember]
+        public DateTime? ModifiedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the created by person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The created by person alias identifier.
+        /// </value>
+        [DataMember]
+        public int? CreatedByPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the modified by person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The modified by person alias identifier.
+        /// </value>
+        [DataMember]
+        public int? ModifiedByPersonAliasId { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the created by person alias.
+        /// </summary>
+        /// <value>
+        /// The created by person alias.
+        /// </value>
+        [DataMember]
+        public virtual PersonAlias CreatedByPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the modified by person alias.
+        /// </summary>
+        /// <value>
+        /// The modified by person alias.
+        /// </value>
+        [DataMember]
+        public virtual PersonAlias ModifiedByPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets the created by person identifier.
+        /// </summary>
+        /// <value>
+        /// The created by person identifier.
+        /// </value>
+        public virtual int? CreatedByPersonId
+        {
+            get
+            {
+                if (CreatedByPersonAlias != null)
+                {
+                    return CreatedByPersonAlias.PersonId;
+                }
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the modified by person identifier.
+        /// </summary>
+        /// <value>
+        /// The modified by person identifier.
+        /// </value>
+        public virtual int? ModifiedByPersonId
+        {
+            get
+            {
+                if ( ModifiedByPersonAlias != null )
+                {
+                    return ModifiedByPersonAlias.PersonId;
+                }
+                return null;
+            }
+        }
+
+        #endregion
+
         #region ISecured implementation
 
         /// <summary>
@@ -111,10 +211,21 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personId">The current person id.</param>
-        public virtual void MakePrivate( string action, Person person, int? personId )
+        /// <param name="personAlias">The current person alias.</param>
+        public virtual void MakePrivate( string action, Person person, PersonAlias personAlias )
         {
-            Security.Authorization.MakePrivate( this, action, person, personId );
+            Security.Authorization.MakePrivate( this, action, person, personAlias );
+        }
+
+        /// <summary>
+        /// If the action on the current entity is private, removes the auth rules that made it private.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="personAlias">The current person alias.</param>
+        public virtual void MakeUnPrivate( string action, Person person, PersonAlias personAlias )
+        {
+            Security.Authorization.MakeUnPrivate( this, action, person, personAlias );
         }
 
         /// <summary>
@@ -122,10 +233,10 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personId">The person identifier.</param>
-        public virtual void AllowPerson( string action, Person person, int? personId )
+        /// <param name="personAlias">The person alias.</param>
+        public virtual void AllowPerson( string action, Person person, PersonAlias personAlias )
         {
-            Security.Authorization.AllowPerson( this, action, person, personId );
+            Security.Authorization.AllowPerson( this, action, person, personAlias );
         }
 
         /// <summary>
@@ -242,4 +353,17 @@ namespace Rock.Data
 
         #endregion
     }
+
+    //public partial class RockModelConfiguration<T> : EntityTypeConfiguration<T>
+    //    where T : Model<T>, new()
+    //{
+    //    /// <summary>
+    //    /// Initializes a new instance of the <see cref="AuthConfiguration"/> class.
+    //    /// </summary>
+    //    public RockModelConfiguration()
+    //    {
+    //        this.HasOptional( m => m.CreatedByPersonAlias ).WithMany().HasForeignKey( m => m.CreatedByPersonAliasId).WillCascadeOnDelete( false );
+    //        this.HasOptional( m => m.ModifiedByPersonAlias ).WithMany().HasForeignKey( m => m.ModifiedByPersonAliasId ).WillCascadeOnDelete( false );
+    //    }
+    //}
 }

@@ -147,7 +147,7 @@ namespace RockWeb.Blocks.Prayer
                 if ( prayerComment != null )
                 {
                     failure = false;
-                    noteService.Save( prayerComment, CurrentPersonId );
+                    noteService.Save( prayerComment, CurrentPersonAlias );
                 }
 
                 BindCommentsGrid();
@@ -181,8 +181,8 @@ namespace RockWeb.Blocks.Prayer
                         return;
                     }
 
-                    noteService.Delete( note, CurrentPersonId );
-                    noteService.Save( note, CurrentPersonId );
+                    noteService.Delete( note, CurrentPersonAlias );
+                    noteService.Save( note, CurrentPersonAlias );
                 }
             } );
 
@@ -276,14 +276,14 @@ namespace RockWeb.Blocks.Prayer
             if ( drpDateRange.LowerValue.HasValue )
             {
                 DateTime startDate = drpDateRange.LowerValue.Value.Date;
-                prayerComments = prayerComments.Where( a => a.CreationDateTime >= startDate );
+                prayerComments = prayerComments.Where( a => a.CreatedDateTime.HasValue && a.CreatedDateTime.Value >= startDate );
             }
 
             if ( drpDateRange.UpperValue.HasValue )
             {
                 // Add one day in order to include everything up to the end of the selected datetime.
                 var endDate = drpDateRange.UpperValue.Value.AddDays( 1 );
-                prayerComments = prayerComments.Where( a => a.CreationDateTime < endDate );
+                prayerComments = prayerComments.Where( a => a.CreatedDateTime.HasValue && a.CreatedDateTime.Value < endDate );
             }
 
             // Sort by the given property otherwise sort by the EnteredDate
@@ -293,7 +293,7 @@ namespace RockWeb.Blocks.Prayer
             }
             else
             {
-                gPrayerComments.DataSource = prayerComments.OrderBy( n => n.CreationDateTime ).ToList();
+                gPrayerComments.DataSource = prayerComments.OrderBy( n => n.CreatedDateTime ).ToList();
             }
 
             gPrayerComments.DataBind();

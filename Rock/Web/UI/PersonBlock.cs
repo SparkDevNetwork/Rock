@@ -56,6 +56,10 @@ namespace Rock.Web.UI
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -63,13 +67,13 @@ namespace Rock.Web.UI
             if ( !Page.IsPostBack && 
                 Context.Items["PersonViewed"] == null &&
                 Person != null && 
-                CurrentPersonId.HasValue && 
-                Person.Id != CurrentPersonId.Value )
+                CurrentPerson != null && 
+                Person.Id != CurrentPerson.Id )
             {
                 var transaction = new PersonViewTransaction();
-                transaction.DateTimeViewed = DateTime.Now;
+                transaction.DateTimeViewed = RockDateTime.Now;
                 transaction.TargetPersonId = Person.Id;
-                transaction.ViewerPersonId = CurrentPersonId.Value;
+                transaction.ViewerPersonId = CurrentPerson.Id;
                 transaction.Source = RockPage.PageTitle;
                 transaction.IPAddress = Request.UserHostAddress;
                 RockQueue.TransactionQueue.Enqueue( transaction );

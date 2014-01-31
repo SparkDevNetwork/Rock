@@ -163,8 +163,8 @@ namespace RockWeb.Blocks.Core
                         return;
                     }
 
-                    service.Delete( taggedItem, CurrentPersonId );
-                    service.Save( taggedItem, CurrentPersonId );
+                    service.Delete( taggedItem, CurrentPersonAlias );
+                    service.Save( taggedItem, CurrentPersonAlias );
                 }
             }
 

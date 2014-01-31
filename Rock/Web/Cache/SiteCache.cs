@@ -481,7 +481,8 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Returns site based on domain
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="host">The host.</param>
+        /// <returns></returns>
         public static SiteCache GetSiteByDomain(string host)
         {
             SiteCache site = null;

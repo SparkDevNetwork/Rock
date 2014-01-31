@@ -79,8 +79,8 @@ namespace Rock.Rest.Controllers
                         tag.EntityTypeQualifierValue = entityQualifierValue;
                         tag.OwnerId = ownerId;
                         tag.Name = name;
-                        tagService.Add( tag, user.PersonId );
-                        tagService.Save( tag, user.PersonId );
+                        tagService.Add( tag, user.Person.PrimaryAlias );
+                        tagService.Save( tag, user.Person.PrimaryAlias );
                     }
 
                     var taggedItem = taggedItemService.Get( tag.Id, entityGuid );
@@ -89,8 +89,8 @@ namespace Rock.Rest.Controllers
                         taggedItem = new TaggedItem();
                         taggedItem.TagId = tag.Id;
                         taggedItem.EntityGuid = entityGuid;
-                        taggedItemService.Add( taggedItem, user.PersonId );
-                        taggedItemService.Save( taggedItem, user.PersonId );
+                        taggedItemService.Add( taggedItem, user.Person.PrimaryAlias );
+                        taggedItemService.Save( taggedItem, user.Person.PrimaryAlias );
                     }
                 }
 
@@ -134,8 +134,8 @@ namespace Rock.Rest.Controllers
                     if ( taggedItem == null )
                         throw new HttpResponseException( HttpStatusCode.NotFound );
 
-                    taggedItemService.Delete( taggedItem, user.PersonId );
-                    taggedItemService.Save( taggedItem, user.PersonId );
+                    taggedItemService.Delete( taggedItem, user.Person.PrimaryAlias );
+                    taggedItemService.Save( taggedItem, user.Person.PrimaryAlias );
                 }
             }
             else

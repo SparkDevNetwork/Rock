@@ -99,7 +99,7 @@ namespace RockWeb.Blocks.Core
             if ( scheduleId == 0 )
             {
                 schedule = new Schedule();
-                scheduleService.Add( schedule, CurrentPersonId );
+                scheduleService.Add( schedule, CurrentPersonAlias );
             }
             else
             {
@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.Core
 
             RockTransactionScope.WrapTransaction( () =>
             {
-                scheduleService.Save( schedule, CurrentPersonId );
+                scheduleService.Save( schedule, CurrentPersonAlias );
             } );
 
             var qryParams = new Dictionary<string, string>();
@@ -200,8 +200,8 @@ namespace RockWeb.Blocks.Core
                 {
                     categoryId = item.CategoryId;
 
-                    service.Delete( item, CurrentPersonId );
-                    service.Save( item, CurrentPersonId );
+                    service.Delete( item, CurrentPersonAlias );
+                    service.Save( item, CurrentPersonAlias );
 
                     // reload page, selecting the deleted data view's parent
                     var qryParams = new Dictionary<string, string>();
@@ -246,7 +246,7 @@ namespace RockWeb.Blocks.Core
 
             if ( calendarEvent.DTStart != null )
             {
-                List<Occurrence> nextOccurrences = calendar.GetOccurrences( DateTime.Now.Date, DateTime.Now.Date.AddYears( 1 ) ).Take( 26 ).ToList();
+                List<Occurrence> nextOccurrences = calendar.GetOccurrences( RockDateTime.Now.Date, RockDateTime.Now.Date.AddYears( 1 ) ).Take( 26 ).ToList();
 
                 string listHtml = "<hr /><strong>Occurrences Preview</strong><ul>";
                 foreach ( var occurrence in nextOccurrences )
@@ -390,7 +390,7 @@ namespace RockWeb.Blocks.Core
             {
                 if ( calendarEvent.DTStart != null )
                 {
-                    var occurrences = calendarEvent.GetOccurrences( DateTime.Now.Date, DateTime.Now.Date.AddYears( 1 ) );
+                    var occurrences = calendarEvent.GetOccurrences( RockDateTime.Now.Date, RockDateTime.Now.Date.AddYears( 1 ) );
                     if ( occurrences.Any() )
                     {
                         var occurrence = occurrences[0];

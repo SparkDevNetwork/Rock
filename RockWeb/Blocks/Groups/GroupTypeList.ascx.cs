@@ -173,8 +173,8 @@ namespace RockWeb.Blocks.Groups
                         return;
                     }
 
-                    groupTypeService.Delete( groupType, CurrentPersonId );
-                    groupTypeService.Save( groupType, CurrentPersonId );
+                    groupTypeService.Delete( groupType, CurrentPersonAlias );
+                    groupTypeService.Save( groupType, CurrentPersonAlias );
 
                     GroupTypeCache.Flush( groupTypeId );
                 }
@@ -195,7 +195,7 @@ namespace RockWeb.Blocks.Groups
                 var groupTypes = GetGroupTypes();
                 if (groupTypes != null)
                 {
-                    new GroupTypeService().Reorder( groupTypes.ToList(), e.OldIndex, e.NewIndex, CurrentPersonId);
+                    new GroupTypeService().Reorder( groupTypes.ToList(), e.OldIndex, e.NewIndex, CurrentPersonAlias );
                 }
 
                 BindGrid();

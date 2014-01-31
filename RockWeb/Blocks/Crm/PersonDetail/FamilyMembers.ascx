@@ -40,7 +40,7 @@
 
                         <div class="col-md-4 addresses clearfix">
 
-                            <ul>
+                            <ul class="list-unstyled">
 
                                 <asp:Repeater ID="rptrAddresses" runat="server">
                                     <ItemTemplate>

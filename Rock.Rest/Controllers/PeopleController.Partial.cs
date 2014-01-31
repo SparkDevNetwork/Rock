@@ -225,10 +225,10 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         public Person GetByUserName( string username )
         {
-            int? personId = new UserLoginService().Queryable().Where( u => u.UserName.Equals( username ) ).Select( a => a.Id ).FirstOrDefault();
+            int? personId = new UserLoginService().Queryable().Where( u => u.UserName.Equals( username ) ).Select( a => a.PersonId ).FirstOrDefault();
             if ( personId != null )
             {
-                return this.Get(personId.Value);
+                return this.Get( personId.Value );
             }
 
             throw new HttpResponseException( System.Net.HttpStatusCode.NotFound );

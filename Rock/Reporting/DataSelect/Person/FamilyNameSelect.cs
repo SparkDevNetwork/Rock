@@ -15,18 +15,13 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.UI.Controls;
-using Rock;
 
 namespace Rock.Reporting.DataSelect.Person
 {
@@ -38,7 +33,6 @@ namespace Rock.Reporting.DataSelect.Person
     [ExportMetadata( "ComponentName", "Select Person Family Name" )]
     public class FamilyNameSelect : DataSelectComponent<Rock.Model.Person>
     {
-
         #region Properties
 
         /// <summary>
@@ -55,7 +49,6 @@ namespace Rock.Reporting.DataSelect.Person
                 return typeof( Rock.Model.Person ).FullName;
             }
         }
-
 
         /// <summary>
         /// The PropertyName of the property in the anonymous class returned by the SelectExpression
@@ -107,7 +100,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         /// <value>
         /// The title.
-        ///   </value>
+        /// </value>
         public override string GetTitle( Type entityType )
         {
             return "Family Name";
@@ -120,7 +113,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="entityIdProperty">The entity identifier property.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( RockContext context, Expression entityIdProperty, string selection )
+        public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
             // groupmembers
             var groupMembers = context.Set<GroupMember>();
@@ -141,7 +134,7 @@ namespace Rock.Reporting.DataSelect.Person
             MemberExpression groupTypeGuidProperty = Expression.Property( groupTypeProperty, "Guid" );
 
             // family group type guid
-            Expression groupTypeConstant = Expression.Constant(Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid());
+            Expression groupTypeConstant = Expression.Constant( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
 
             // m.PersonId == p.Id
             Expression personCompare = Expression.Equal( memberPersonIdProperty, entityIdProperty );
@@ -159,19 +152,19 @@ namespace Rock.Reporting.DataSelect.Person
             };
 
             // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid)
-            Expression whereExpression = Expression.Call(typeof(Queryable), "Where", new Type[] { typeof(GroupMember)}, compare);
+            Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( GroupMember ) }, compare );
 
             // m.Group.Name
-            MemberExpression groupName = Expression.Property(groupProperty, "Name");
+            MemberExpression groupName = Expression.Property( groupProperty, "Name" );
 
             // m => m.Group.Name
-            Expression groupNameLambda = Expression.Lambda(groupName, new ParameterExpression[] { groupMemberParameter });
+            Expression groupNameLambda = Expression.Lambda( groupName, new ParameterExpression[] { groupMemberParameter } );
 
             // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid).Select( m => m.Group.Name);
             Expression selectName = Expression.Call( typeof( Queryable ), "Select", new Type[] { typeof( GroupMember ), typeof( string ) }, whereExpression, groupNameLambda );
 
             // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid).Select( m => m.Group.Name).FirstOrDefault();
-            Expression firstOrDefault = Expression.Call(typeof(Queryable), "FirstOrDefault", new Type[] { typeof(string)}, selectName);
+            Expression firstOrDefault = Expression.Call( typeof( Queryable ), "FirstOrDefault", new Type[] { typeof( string ) }, selectName );
 
             return firstOrDefault;
         }
@@ -193,7 +186,6 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override string FormatSelection( string selection )
         {
-            // TODO: 
             return base.FormatSelection( selection );
         }
 
@@ -206,10 +198,9 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         /// <value>
         /// The client format script.
-        ///   </value>
+        /// </value>
         public override string GetClientFormatSelection()
         {
-            // TODO: 
             return base.GetClientFormatSelection();
         }
 
@@ -221,7 +212,6 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="controls">The controls.</param>
         public override void RenderControls( System.Web.UI.Control parentControl, System.Web.UI.HtmlTextWriter writer, System.Web.UI.Control[] controls )
         {
-            // TODO: 
             base.RenderControls( parentControl, writer, controls );
         }
 
@@ -246,6 +236,5 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         #endregion
-
     }
 }

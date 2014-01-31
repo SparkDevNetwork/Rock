@@ -21,7 +21,13 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="tbName" runat="server" Label="Name" />
-                        </div>
+                         </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine" Rows="3" />
+                       </div>
                     </div>
                     
                     <div class="row">
@@ -34,8 +40,8 @@
                             <Rock:RockDropDownList id="ddlEntityType" runat="server" Label="Entity Type" />
                             <Rock:RockRadioButtonList ID="rblScope" runat="server" Label="Scope" RepeatDirection="Horizontal"
                                 AutoPostBack="true" OnSelectedIndexChanged="rblScope_SelectedIndexChanged">
-                                <asp:ListItem Value="Public" Text="Public" Selected="True" />
-                                <asp:ListItem Value="Private" Text="Private" />
+                                <asp:ListItem Value="Organization" Text="Organization" Selected="True" />
+                                <asp:ListItem Value="Personal" Text="Personal" />
                             </Rock:RockRadioButtonList>
                        </div>
                     </div>

@@ -116,14 +116,7 @@
         
             <fieldset>
                 <legend>Select User to Add</legend>
-                <Rock:RockTextBox ID="tbUser" runat="server" Label="User" />
-                <dl>
-                    <dt></dt>
-                    <dd>
-                        <asp:LinkButton ID="lbUserSearch" runat="server" Text="Search" onclick="lbUserSearch_Click" CssClass="btn x-small"></asp:LinkButton>
-                        <asp:CheckBoxList ID="cbUsers" runat="server" CssClass="inputs-list" RepeatDirection="Vertical"></asp:CheckBoxList>
-                    </dd>
-                </dl>
+                <Rock:PersonPicker ID="ppUser" runat="server" Label="User" />
             </fieldset>
 
             <div class="actions">

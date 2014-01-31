@@ -352,9 +352,98 @@
     <Compile Include="Migrations\201401202137085_AddPageLiquidAttribute.Designer.cs">
       <DependentUpon>201401202137085_AddPageLiquidAttribute.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201401211151533_NoteAttributes.cs" />
+    <Compile Include="Migrations\201401211151533_NoteAttributes.Designer.cs">
+      <DependentUpon>201401211151533_NoteAttributes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401212018517_HistoryPageBreadcrumb.cs" />
+    <Compile Include="Migrations\201401212018517_HistoryPageBreadcrumb.Designer.cs">
+      <DependentUpon>201401212018517_HistoryPageBreadcrumb.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401220441223_MiscUIChanges.cs" />
+    <Compile Include="Migrations\201401220441223_MiscUIChanges.Designer.cs">
+      <DependentUpon>201401220441223_MiscUIChanges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401221752081_PersonAlias.cs" />
+    <Compile Include="Migrations\201401221752081_PersonAlias.Designer.cs">
+      <DependentUpon>201401221752081_PersonAlias.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401222126036_AddCreatedModifiedFields.cs" />
+    <Compile Include="Migrations\201401222126036_AddCreatedModifiedFields.Designer.cs">
+      <DependentUpon>201401222126036_AddCreatedModifiedFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401231551591_ExceptionCreatedInfo.cs" />
+    <Compile Include="Migrations\201401231551591_ExceptionCreatedInfo.Designer.cs">
+      <DependentUpon>201401231551591_ExceptionCreatedInfo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401231618180_NoteCreatedInfo.cs" />
+    <Compile Include="Migrations\201401231618180_NoteCreatedInfo.Designer.cs">
+      <DependentUpon>201401231618180_NoteCreatedInfo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401231638103_FinancialBatchCreatedInfo.cs" />
+    <Compile Include="Migrations\201401231638103_FinancialBatchCreatedInfo.Designer.cs">
+      <DependentUpon>201401231638103_FinancialBatchCreatedInfo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401232057334_AuditPersonAlias.cs" />
+    <Compile Include="Migrations\201401232057334_AuditPersonAlias.Designer.cs">
+      <DependentUpon>201401232057334_AuditPersonAlias.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401232243283_CkEditorPluginLayout.cs" />
+    <Compile Include="Migrations\201401232243283_CkEditorPluginLayout.Designer.cs">
+      <DependentUpon>201401232243283_CkEditorPluginLayout.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401240107095_AddPersonViewed.cs" />
+    <Compile Include="Migrations\201401240107095_AddPersonViewed.Designer.cs">
+      <DependentUpon>201401240107095_AddPersonViewed.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401241331091_PersonMerge.cs" />
+    <Compile Include="Migrations\201401241331091_PersonMerge.Designer.cs">
+      <DependentUpon>201401241331091_PersonMerge.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401250002455_TagDescription.cs" />
+    <Compile Include="Migrations\201401250002455_TagDescription.Designer.cs">
+      <DependentUpon>201401250002455_TagDescription.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401271236495_DeleteSampleReportPage.cs" />
+    <Compile Include="Migrations\201401271236495_DeleteSampleReportPage.Designer.cs">
+      <DependentUpon>201401271236495_DeleteSampleReportPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401271247579_RemoveFullAddress.cs" />
+    <Compile Include="Migrations\201401271247579_RemoveFullAddress.Designer.cs">
+      <DependentUpon>201401271247579_RemoveFullAddress.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401271902480_HideMetricsPage.cs" />
+    <Compile Include="Migrations\201401271902480_HideMetricsPage.Designer.cs">
+      <DependentUpon>201401271902480_HideMetricsPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401272157461_RemoveFieldTypes.cs" />
+    <Compile Include="Migrations\201401272157461_RemoveFieldTypes.Designer.cs">
+      <DependentUpon>201401272157461_RemoveFieldTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401282147345_StatementPersonFullNameFix.cs" />
+    <Compile Include="Migrations\201401282147345_StatementPersonFullNameFix.Designer.cs">
+      <DependentUpon>201401282147345_StatementPersonFullNameFix.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401290012560_PersonBirthdateDbComputed.cs" />
+    <Compile Include="Migrations\201401290012560_PersonBirthdateDbComputed.Designer.cs">
+      <DependentUpon>201401290012560_PersonBirthdateDbComputed.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401291637496_HTMLContentNotRequired.cs" />
+    <Compile Include="Migrations\201401291637496_HTMLContentNotRequired.Designer.cs">
+      <DependentUpon>201401291637496_HTMLContentNotRequired.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401291720147_AttendanceHistory.cs" />
+    <Compile Include="Migrations\201401291720147_AttendanceHistory.Designer.cs">
+      <DependentUpon>201401291720147_AttendanceHistory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401302003574_AddBlocksToRightSideBar.cs" />
+    <Compile Include="Migrations\201401302003574_AddBlocksToRightSideBar.Designer.cs">
+      <DependentUpon>201401302003574_AddBlocksToRightSideBar.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
+    <Compile Include="Migrations\RockMigration2.cs" />
     <Compile Include="Migrations\RockMigration1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -594,6 +683,72 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401202137085_AddPageLiquidAttribute.resx">
       <DependentUpon>201401202137085_AddPageLiquidAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401211151533_NoteAttributes.resx">
+      <DependentUpon>201401211151533_NoteAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401212018517_HistoryPageBreadcrumb.resx">
+      <DependentUpon>201401212018517_HistoryPageBreadcrumb.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401220441223_MiscUIChanges.resx">
+      <DependentUpon>201401220441223_MiscUIChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401221752081_PersonAlias.resx">
+      <DependentUpon>201401221752081_PersonAlias.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401222126036_AddCreatedModifiedFields.resx">
+      <DependentUpon>201401222126036_AddCreatedModifiedFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401231551591_ExceptionCreatedInfo.resx">
+      <DependentUpon>201401231551591_ExceptionCreatedInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401231618180_NoteCreatedInfo.resx">
+      <DependentUpon>201401231618180_NoteCreatedInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401231638103_FinancialBatchCreatedInfo.resx">
+      <DependentUpon>201401231638103_FinancialBatchCreatedInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401232057334_AuditPersonAlias.resx">
+      <DependentUpon>201401232057334_AuditPersonAlias.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401232243283_CkEditorPluginLayout.resx">
+      <DependentUpon>201401232243283_CkEditorPluginLayout.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401240107095_AddPersonViewed.resx">
+      <DependentUpon>201401240107095_AddPersonViewed.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401241331091_PersonMerge.resx">
+      <DependentUpon>201401241331091_PersonMerge.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401250002455_TagDescription.resx">
+      <DependentUpon>201401250002455_TagDescription.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401271236495_DeleteSampleReportPage.resx">
+      <DependentUpon>201401271236495_DeleteSampleReportPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401271247579_RemoveFullAddress.resx">
+      <DependentUpon>201401271247579_RemoveFullAddress.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401271902480_HideMetricsPage.resx">
+      <DependentUpon>201401271902480_HideMetricsPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401272157461_RemoveFieldTypes.resx">
+      <DependentUpon>201401272157461_RemoveFieldTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401282147345_StatementPersonFullNameFix.resx">
+      <DependentUpon>201401282147345_StatementPersonFullNameFix.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401290012560_PersonBirthdateDbComputed.resx">
+      <DependentUpon>201401290012560_PersonBirthdateDbComputed.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401291637496_HTMLContentNotRequired.resx">
+      <DependentUpon>201401291637496_HTMLContentNotRequired.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401291720147_AttendanceHistory.resx">
+      <DependentUpon>201401291720147_AttendanceHistory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401302003574_AddBlocksToRightSideBar.resx">
+      <DependentUpon>201401302003574_AddBlocksToRightSideBar.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

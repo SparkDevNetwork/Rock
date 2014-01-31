@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using Rock.Data;
@@ -29,7 +28,6 @@ namespace Rock.Reporting
     /// </summary>
     public abstract class DataSelectComponent : Component
     {
-
         #region Properties
 
         /// <summary>
@@ -51,7 +49,7 @@ namespace Rock.Reporting
         {
             get { return "Other"; }
         }
-        
+
         /// <summary>
         /// The PropertyName of the property in the anonymous class returned by the SelectExpression
         /// </summary>
@@ -113,7 +111,7 @@ namespace Rock.Reporting
         /// <returns></returns>
         /// <value>
         /// The client format script.
-        ///   </value>
+        /// </value>
         public virtual string GetClientFormatSelection()
         {
             return this.GetTitle( null );
@@ -181,10 +179,9 @@ namespace Rock.Reporting
         /// <param name="entityIdProperty">The entity identifier property.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public abstract Expression GetExpression( RockContext context, Expression entityIdProperty, string selection );
+        public abstract Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection );
 
         #endregion
-
     }
 
     /// <summary>
@@ -193,6 +190,6 @@ namespace Rock.Reporting
     /// <typeparam name="T"></typeparam>
     public abstract class DataSelectComponent<T> : DataSelectComponent
     {
-
+        //
     }
 }

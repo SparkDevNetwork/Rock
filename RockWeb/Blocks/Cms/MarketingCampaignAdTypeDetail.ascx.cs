@@ -251,7 +251,7 @@ namespace RockWeb.Blocks.Cms
                 if ( marketingCampaignAdTypeId == 0 )
                 {
                     marketingCampaignAdType = new MarketingCampaignAdType();
-                    marketingCampaignAdTypeService.Add( marketingCampaignAdType, CurrentPersonId );
+                    marketingCampaignAdTypeService.Add( marketingCampaignAdType, CurrentPersonAlias );
                 }
                 else
                 {
@@ -273,7 +273,7 @@ namespace RockWeb.Blocks.Cms
                     AttributeQualifierService attributeQualifierService = new AttributeQualifierService();
                     CategoryService categoryService = new CategoryService();
 
-                    marketingCampaignAdTypeService.Save( marketingCampaignAdType, CurrentPersonId );
+                    marketingCampaignAdTypeService.Save( marketingCampaignAdType, CurrentPersonAlias );
 
                     // get it back to make sure we have a good Id for it for the Attributes
                     marketingCampaignAdType = marketingCampaignAdTypeService.Get( marketingCampaignAdType.Guid );
@@ -291,15 +291,15 @@ namespace RockWeb.Blocks.Cms
                     {
                         Rock.Web.Cache.AttributeCache.Flush( attr.Id );
 
-                        attributeService.Delete( attr, CurrentPersonId );
-                        attributeService.Save( attr, CurrentPersonId );
+                        attributeService.Delete( attr, CurrentPersonAlias );
+                        attributeService.Save( attr, CurrentPersonAlias );
                     }
 
                     // Update the Attributes that were assigned in the UI
                     foreach ( var attributeState in AttributesState )
                     {
                         Rock.Attribute.Helper.SaveAttributeEdits( attributeState, attributeService, attributeQualifierService, categoryService,
-                            entityTypeId, qualifierColumn, qualifierValue, CurrentPersonId );
+                            entityTypeId, qualifierColumn, qualifierValue, CurrentPersonAlias );
                     }
                 } );
             }
@@ -337,12 +337,12 @@ namespace RockWeb.Blocks.Cms
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 marketingCampaignAdType = new MarketingCampaignAdTypeService().Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( MarketingCampaignAdType.FriendlyTypeName ).FormatAsHtmlTitle();
+                lActionTitle.Text = "Ad Type Detail".FormatAsHtmlTitle();
             }
             else
             {
                 marketingCampaignAdType = new MarketingCampaignAdType { Id = 0 };
-                lActionTitle.Text = ActionTitle.Add( MarketingCampaignAdType.FriendlyTypeName ).FormatAsHtmlTitle();
+                lActionTitle.Text = "Ad Type Detail".FormatAsHtmlTitle();
             }
 
             LoadDropDowns();

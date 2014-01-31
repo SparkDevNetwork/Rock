@@ -177,7 +177,7 @@ namespace Rock.Model
         /// <param name="parameter">A <see cref="System.Linq.Expressions.ParameterExpression"/> containing the parameter for the expression.</param>
         /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}"/> that contains any error/exception messages that are returned.</param>
         /// <returns></returns>
-        public virtual Expression GetExpression( Type filteredEntityType, object serviceInstance, ParameterExpression parameter, List<string> errorMessages )
+        public virtual Expression GetExpression( Type filteredEntityType, IService serviceInstance, ParameterExpression parameter, List<string> errorMessages )
         {
             switch ( ExpressionType )
             {

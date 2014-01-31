@@ -64,7 +64,7 @@ namespace Rock.Jobs
             foreach ( var workflow in service.GetActive() )
             {
                 if ( !workflow.LastProcessedDateTime.HasValue ||
-                    DateTime.Now.Subtract( workflow.LastProcessedDateTime.Value ).TotalSeconds >= workflow.WorkflowType.ProcessingIntervalSeconds )
+                    RockDateTime.Now.Subtract( workflow.LastProcessedDateTime.Value ).TotalSeconds >= workflow.WorkflowType.ProcessingIntervalSeconds )
                 {
                     var errorMessages = new List<string>();
                     service.Process( workflow, null, out errorMessages );

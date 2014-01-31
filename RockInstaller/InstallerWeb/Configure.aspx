@@ -58,7 +58,29 @@
         rockWebConfig.Save();
         
         // set organization address to their public address
-        txtOrgWebsite.Text = publicAddress.Replace("http://", "").Replace("https://", "").TrimEnd('/');
+        txtOrgWebsite.Text = publicAddress.TrimEnd('/');
+        
+        // set the site domains with the addresses above
+        SiteService siteService = new SiteService();
+        Site internalSite = siteService.Get(new Guid("C2D29296-6A87-47A9-A753-EE4E9159C4C4"));
+        
+        SiteDomain internalDomain = new SiteDomain();
+        internalDomain.Domain = InstallUtilities.GetDomainFromString(internalAddress);
+        internalDomain.IsSystem = false;
+
+        internalSite.SiteDomains.Add(internalDomain);
+        siteService.Save(internalSite, null);
+
+        Site externalSite = siteService.Get(new Guid("F3F82256-2D66-432B-9D67-3552CD2F4C2B"));
+
+        SiteDomain externalDomain = new SiteDomain();
+        externalDomain.Domain = InstallUtilities.GetDomainFromString(publicAddress);
+        externalDomain.IsSystem = false;
+
+        externalSite.SiteDomains.Add(externalDomain);
+
+        siteService.Save(externalSite, null);
+        
         
         pHosting.Visible = false;
         pOrganization.Visible = true;
@@ -72,7 +94,7 @@
     	globalAttributesCache.SetValue("OrganizationName", txtOrgName.Text, null, true);
     	globalAttributesCache.SetValue("OrganizationEmail", txtOrgEmail.Text, null, true);
     	globalAttributesCache.SetValue("OrganizationPhone", txtOrgPhone.Text, null, true);
-    	globalAttributesCache.SetValue("OrganizationWebsite", txtOrgWebsite.Text, null, true);
+        globalAttributesCache.SetValue("OrganizationWebsite", txtOrgWebsite.Text.Replace("http://", "").Replace("https://", ""), null, true);
     	
     	pOrganization.Visible = false;
     	pEmailSettings.Visible = true;
@@ -80,22 +102,66 @@
     
     void EmailNext_Click(Object sender, EventArgs e)
     {
-    	// save email settings
-    	var globalAttributesCache = Rock.Web.Cache.GlobalAttributesCache.Read();
-    	globalAttributesCache.SetValue("SMTPServer", txtEmailServer.Text, null, true);
-    	globalAttributesCache.SetValue("SMTPPort", txtEmailServerPort.Text, null, true);
-    	globalAttributesCache.SetValue("SMTPUseSSL", cbEmailUseSsl.Checked.ToString(), null, true);
-    	
-    	if (txtEmailUsername.Text.Length > 0)
-    		globalAttributesCache.SetValue("SMTPUsername", txtEmailUsername.Text, null, true);
-    	else
-    		globalAttributesCache.SetValue("SMTPUsername", "", null, true);
-    		
-    	if (txtEmailPassword.Text.Length > 0)	
-    		globalAttributesCache.SetValue("SMTPPassword", txtEmailPassword.Text, null, true);
-    	else
-    		globalAttributesCache.SetValue("SMTPPassword", "", null, true);
+        using (new Rock.Data.UnitOfWorkScope())
+        {
+            // save email settings
+            AttributeService attribService = new AttributeService();
+            Rock.Model.Attribute aSmtpServer = attribService.Get(new Guid("6CFFDF99-E93A-49B8-B440-0EF93878A51F"));
+            Rock.Model.Attribute aSmtpPort = attribService.Get(new Guid("C6B13F15-9D6F-45B2-BDB9-E77D29A32EBF"));
+            Rock.Model.Attribute aSmtpSsl = attribService.Get(new Guid("B3B2308B-6CD2-4853-8220-C80D861F5D3C"));
+            Rock.Model.Attribute aSmtpUsername = attribService.Get(new Guid("2CE8D3AC-F851-462C-93D5-DB82F48DDBFD"));
+            Rock.Model.Attribute aSmtpPassword = attribService.Get(new Guid("D3641DA0-9E50-4C98-A994-978AF308E745"));
 
+            AttributeValueService attribValueService = new AttributeValueService();
+
+            // server
+            AttributeValue vSmtpServer = new AttributeValue();
+            vSmtpServer.Attribute = aSmtpServer;
+            vSmtpServer.EntityId = 0;
+            vSmtpServer.Value = txtEmailServer.Text.Trim();
+            attribValueService.Add(vSmtpServer, null);
+            attribValueService.Save(vSmtpServer, null);
+
+            // port
+            AttributeValue vSmtpPort = new AttributeValue();
+            vSmtpPort.EntityId = 0;
+            vSmtpPort.Attribute = aSmtpPort;
+            vSmtpPort.Value = txtEmailServerPort.Text.Trim();
+            attribValueService.Add(vSmtpPort, null);
+            attribValueService.Save(vSmtpPort, null);
+
+            // ssl
+            AttributeValue vSmtpSsl = new AttributeValue();
+            vSmtpSsl.EntityId = 0;
+            vSmtpSsl.Attribute = aSmtpSsl;
+            vSmtpSsl.Value = cbEmailUseSsl.Checked.ToString();
+            attribValueService.Add(vSmtpSsl, null);
+            attribValueService.Save(vSmtpSsl, null);
+
+            // username
+            if (txtEmailUsername.Text.Trim().Length > 0)
+            {
+                AttributeValue vSmtpUsername = new AttributeValue();
+                vSmtpUsername.EntityId = 0;
+                vSmtpUsername.Attribute = aSmtpUsername;
+                vSmtpUsername.Value = txtEmailUsername.Text.Trim();
+                attribValueService.Add(vSmtpUsername, null);
+                attribValueService.Save(vSmtpUsername, null);
+            }
+
+            // password
+            if (txtEmailPassword.Text.Trim().Length > 0)
+            {
+                AttributeValue vSmtpPassword = new AttributeValue();
+                vSmtpPassword.EntityId = 0;
+                vSmtpPassword.Attribute = aSmtpPassword;
+                vSmtpPassword.Value = txtEmailPassword.Text.Trim();
+                attribValueService.Add(vSmtpPassword, null);
+                attribValueService.Save(vSmtpPassword, null);
+            }
+        }
+        
+    	var globalAttributesCache = Rock.Web.Cache.GlobalAttributesCache.Read();
     	globalAttributesCache.SetValue("EmailExceptionsList", txtEmailExceptions.Text, null, true);
     		
     	
@@ -137,8 +203,14 @@
 		     <ProgressTemplate>
 		         
                 <div class="updateprogress-status">
-                    <i class="fa fa-refresh fa-spin fa-4x" ></i><br />
-                    This could take a few minutes...
+                    <p>This could take a few minutes...</p>
+                    <div class="spinner">
+                        <div class="rect1"></div>
+                        <div class="rect2"></div>
+                        <div class="rect3"></div>
+                        <div class="rect4"></div>
+                        <div class="rect5"></div>
+                    </div>
                 </div>      
 		            
 		        <div class="updateprogress-bg"></div>
@@ -220,14 +292,17 @@
                                 you go to do things like send emails. These settings can be changed at anytime in your <span class="navigation-tip">Global Settings</span>.
                                 <br />
                                 <small>If you are installing Rock in subdirectory be sure to include it in the address.</small></p>
+
+                            <div class="validation-summary"></div>
+
 							<div class="form-group">
-								<label class="control-label" for="inputEmail">Internal Url <small>Used Inside Organization</small></label>
+								<label class="control-label" for="inputEmail">Internal URL <small>Used Inside Organization</small></label>
 								<asp:TextBox ID="txtInternalAddress" runat="server" placeholder="http://yourinternalsite.com/" CssClass="required-field form-control" Text=""></asp:TextBox>
 							</div>
 							
 							<div class="form-group">
 								<label class="control-label" for="inputEmail">Public URL <small>Used Externally</small></label>
-								<asp:TextBox ID="txtPublicAddress" runat="server" placeholder="http://yoursite.com/" CssClass="required-field form-control" Text=""></asp:TextBox>
+								<asp:TextBox ID="txtPublicAddress" runat="server" placeholder="http://(www.)yoursite.com/" CssClass="required-field form-control" Text=""></asp:TextBox>
 							</div>
 
                             <div class="form-group">
@@ -244,6 +319,8 @@
                         <script>
                             function validateHosting() {
                                 var formValid = true;
+                                $("#pHosting .validation-summary").empty();
+                                var validationMessages = '';
 
                                 // ensure that all values were provided
                                 $("#pHosting .required-field").each(function (index, value) {
@@ -258,11 +335,13 @@
                                 // ensure inputs are valid urls
                                 if (!validateURL($('#txtInternalAddress').val())) {
                                     $('#txtInternalAddress').closest('.form-group').addClass('has-error');
+                                    validationMessages += "<p>Internal URL must be in the format http://www.yourinternalsite.com</p>";
                                     formValid = false;
                                 }
 
                                 if (!validateURL($('#txtPublicAddress').val())) {
                                     $('#txtPublicAddress').closest('.form-group').addClass('has-error');
+                                    validationMessages += "<p>External URL must be in the format http://(www.)yoursite.com</p>";
                                     formValid = false;
                                 }
 
@@ -270,6 +349,9 @@
                                     return true;
 
                                 } else {
+                                    if (validationMessages.length > 0) {
+                                        $("#pHosting .validation-summary").html("<div class='alert alert-danger'>" + validationMessages + "</div>");
+                                    }
                                     return false;
                                 }
                             }
@@ -302,7 +384,7 @@
 							
 							<div class="form-group">
 								<label class="control-label" for="inputEmail">Organization Website</label>
-								<asp:TextBox ID="txtOrgWebsite" placeholder="www.yourchurch.com" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
+								<asp:TextBox ID="txtOrgWebsite" placeholder="http://www.yourchurch.com" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
 							</div>
 
                             <div class="btn-list">

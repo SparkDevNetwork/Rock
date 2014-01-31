@@ -62,7 +62,7 @@ namespace Rock.Migrations
                 isSecured ? "1" : "0",
                 guid ) );
         }
-        
+
         /// <summary>
         /// Updates the type of the entity.
         /// </summary>
@@ -159,7 +159,7 @@ namespace Rock.Migrations
                     assembly,
                     className,
                     guid,
-                    IsSystem ? "1" : "0") );
+                    IsSystem ? "1" : "0" ) );
         }
 
         /// <summary>
@@ -275,7 +275,7 @@ namespace Rock.Migrations
         /// <param name="description">The description.</param>
         /// <param name="guid">The GUID.</param>
         /// <param name="iconCssClass">The icon CSS class.</param>
-        public void AddPage( string parentPageGuid, string layoutGuid, string name, string description, string guid, string iconCssClass = ""  )
+        public void AddPage( string parentPageGuid, string layoutGuid, string name, string description, string guid, string iconCssClass = "" )
         {
             Sql( string.Format( @"
 
@@ -289,7 +289,7 @@ namespace Rock.Migrations
                 SELECT @Order = ISNULL(MAX([order])+1,0) FROM [Page] WHERE [ParentPageId] = @ParentPageId;
 
                 INSERT INTO [Page] (
-                    [Name],[Title],[IsSystem],[ParentPageId],[LayoutId],
+                    [InternalName],[PageTitle],[BrowserTitle],[IsSystem],[ParentPageId],[LayoutId],
                     [RequiresEncryption],[EnableViewState],
                     [PageDisplayTitle],[PageDisplayBreadCrumb],[PageDisplayIcon],[PageDisplayDescription],
                     [MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
@@ -297,7 +297,7 @@ namespace Rock.Migrations
                     [Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
                     [IconCssClass],[Guid])
                 VALUES(
-                    '{2}','{2}',1,@ParentPageId,@LayoutId,
+                    '{2}','{2}','{2}',1,@ParentPageId,@LayoutId,
                     0,1,
                     1,1,1,1,
                     0,0,1,0,
@@ -384,7 +384,7 @@ namespace Rock.Migrations
 ", pageGuid, entity, idParameter ) );
 
         }
-        
+
         #endregion
 
         #region Block Methods
@@ -408,7 +408,7 @@ namespace Rock.Migrations
 
                 DECLARE @LayoutId int
                 SET @LayoutId = null
-");
+" );
 
             if ( !string.IsNullOrWhiteSpace( pageGuid ) )
             {
@@ -501,7 +501,7 @@ namespace Rock.Migrations
             {
                 throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself. Sorry!" );
             }
-            
+
             Sql( string.Format( @"
                 
                 DECLARE @BlockTypeId int
@@ -570,7 +570,7 @@ namespace Rock.Migrations
             {
                 throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself. Sorry!" );
             }
-            
+
             EnsureEntityTypeExists( entityTypeName );
 
             Sql( string.Format( @"

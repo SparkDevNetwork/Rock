@@ -22,7 +22,7 @@
                     <Rock:Zone Name="Header" runat="server" />
                 </div>
 			
-				<Rock:SearchField ID="searchField" CssClass="pull-right" runat="server" />
+				<Rock:SearchField ID="searchField" runat="server" />
 
         </div>
 
@@ -38,31 +38,31 @@
 
     </header>
 
-    <div class="persondetails">
+    <div class="personprofile">
 
-        <div class="navbar navbar-static-top persondetails-header">
+        <div class="navbar navbar-static-top personprofilebar-bio">
             <div class="container">
                 <Rock:Zone Name="Individual Detail" runat="server" />
             </div>
         </div>
 
-        <div class="navbar navbar-static-top persondetails-badgebar">
+        <div class="navbar navbar-static-top personprofilebar-badge">
             <div class="container">
                 <div class="row">
-                    <div class="badge-group col-md-3">
+                    <div class="badge-group col-sm-4">
                         <Rock:Zone Name="Badg Bar Left" runat="server" />
                     </div>
-                    <div class="badge-group col-md-3">
+                    <div class="badge-group col-sm-4">
                         <Rock:Zone Name="Badg Bar Middle" runat="server" />
                     </div>
-                    <div class="badge-group col-md-6">
+                    <div class="badge-group col-sm-4">
                         <Rock:Zone Name="Badg Bar Right" runat="server" />
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="navbar navbar-static-top persondetails-familybar">
+        <div class="navbar navbar-static-top personprofilebar-family">
 			<div class="container">    
                 <Rock:Zone Name="Family Detail" runat="server" />
             </div>

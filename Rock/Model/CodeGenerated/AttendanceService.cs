@@ -115,6 +115,10 @@ namespace Rock.Model
             target.EndDateTime = source.EndDateTime;
             target.DidAttend = source.DidAttend;
             target.Note = source.Note;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

@@ -78,8 +78,8 @@ namespace Rock.Jobs
                         if ( workflowType.IsPersisted )
                         {
                             var workflowService = new Rock.Model.WorkflowService();
-                            workflowService.Add( workflow, CurrentPersonId );
-                            workflowService.Save( workflow, CurrentPersonId );
+                            workflowService.Add( workflow, CurrentPersonAlias );
+                            workflowService.Save( workflow, CurrentPersonAlias );
                         }
                     }
                 }

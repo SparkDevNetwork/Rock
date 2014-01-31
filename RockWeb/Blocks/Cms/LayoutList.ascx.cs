@@ -99,8 +99,8 @@ namespace RockWeb.Blocks.Cms
 
                     int siteId = layout.SiteId;
 
-                    layoutService.Delete( layout, CurrentPersonId );
-                    layoutService.Save( layout, CurrentPersonId );
+                    layoutService.Delete( layout, CurrentPersonAlias );
+                    layoutService.Save( layout, CurrentPersonAlias );
 
                     LayoutCache.Flush( e.RowKeyId );
                 }
@@ -162,7 +162,7 @@ namespace RockWeb.Blocks.Cms
             LayoutService layoutService = new LayoutService();
 
             // Add any missing layouts
-            layoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ), CurrentPersonId );
+            layoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ), CurrentPersonAlias );
 
             var qry = layoutService.Queryable().Where( a => a.SiteId.Equals( siteId ) );
 
