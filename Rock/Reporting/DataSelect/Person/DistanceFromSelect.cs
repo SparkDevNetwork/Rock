@@ -17,6 +17,7 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
@@ -87,7 +88,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "Distance";
+                return "Distance (miles)";
             }
         }
 
@@ -148,7 +149,7 @@ namespace Rock.Reporting.DataSelect.Person
                         .SelectMany( m => m.Group.GroupLocations )
                         .Where( gl => gl.GroupLocationTypeValueId == locationTypeValidId )
                         .Where( gl => gl.Location.GeoPoint != null )
-                        .Select( s => s.Location.GeoPoint.Distance( selectedLocation.GeoPoint ) * milesPerMeter )
+                        .Select( s => DbFunctions.Truncate(s.Location.GeoPoint.Distance( selectedLocation.GeoPoint ) * milesPerMeter, 2) )
                         .FirstOrDefault() );
             }
             else
