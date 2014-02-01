@@ -1,6 +1,12 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RockUpdate.ascx.cs" Inherits="RockWeb.Blocks.Core.RockUpdate" %>
 <%@ Import namespace="Rock" %>
-
+<style>
+    /* This is here because it prevents the contents from jumping around when/if
+        the user clicks the release notes and the content expands the height of the
+        page enough to need the scrollbar.
+    */
+    html {overflow-y: scroll;}
+</style>
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
     <div class="container">
@@ -41,15 +47,21 @@
                                     </div>
                                     <div class="col-md-10">
                                         <asp:Literal ID="litPackageDescription" runat="server" Text='<%# Eval( "Description" ) %>'></asp:Literal>
-                                        <h4>Release Notes</h4>
-                                        <asp:Literal ID="litReleaseNotes" runat="server" Text='<%# System.Web.HttpUtility.HtmlEncode( Eval( "ReleaseNotes" ) ).ConvertCrLfToHtmlBr()  %>'></asp:Literal>
+                                        <div class="releasenotes">
+                                            <div class="releasenotes-heading margin-v-md">
+                                                <strong>
+                                                    <asp:Label ID="lblReleaseNotes" runat="server" Text="Release Notes" />
+                                                    <i class="fa fa-caret-right"></i>
+                                                </strong>
+                                            </div>
+                                            <div class="releasenotes-body" style="display: none">
+                                                <asp:Literal ID="litReleaseNotes" runat="server" Text='<%# System.Web.HttpUtility.HtmlEncode( Eval( "ReleaseNotes" ) ).ConvertCrLfToHtmlBr()  %>'></asp:Literal>
+                                            </div>
+                                     </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-
-
                     </ItemTemplate>
             </asp:Repeater>
         </div>
@@ -57,3 +69,12 @@
     </ContentTemplate>
 </asp:UpdatePanel>
 
+<script>
+    $(function () {
+        $(".releasenotes-heading").on("click", function (event) {
+            var $top = $(event.target).closest(".releasenotes");
+            $top.find("i").toggleClass("fa-caret-right").toggleClass("fa-caret-down");
+            $top.find(".releasenotes-body").slideToggle(500);
+        });
+    });
+</script>
