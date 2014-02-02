@@ -15,6 +15,7 @@ namespace CheckVariableNaming
     class Program
     {
         // Define a class to receive parsed values
+        // Parameter syntax is -[parameter] [value] i.e. -p c:/mypathtorockweb
         class Options
         {
             [Option( 'd', "outputDictionary", DefaultValue = false, HelpText = "Set to true to output a dictionary for use with future versions of this program." )]
