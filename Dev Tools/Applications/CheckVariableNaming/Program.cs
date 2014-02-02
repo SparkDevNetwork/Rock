@@ -359,7 +359,7 @@ namespace CheckVariableNaming
                 { "MonthDayPicker", "mdp" },
                 { "MonthYearPicker", "myp" },
                 { "NewFamilyMembers", "nfm" },
-                { "NoteEditor", "note" },
+                { "NoteContainer", "note" },
                 { "NotificationBox", "nb" },
                 { "NumberBox", "numb" },
                 { "NumberRangeEditor", "nre" },
