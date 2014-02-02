@@ -241,6 +241,9 @@ namespace RockWeb.Blocks.Finance
                             break;
                     }
                 }
+
+                var startDate = Convert.ToDateTime( e.Row.DataItem.GetPropertyValue( "BatchStartDateTime" ) ).ToShortDateString();
+                e.Row.Cells[1].Text = startDate;
             }
         }
 
