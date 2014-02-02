@@ -296,6 +296,11 @@ namespace RockWeb.Blocks.Finance
                 // If transactions are for a batch, the filter is hidden so only check the batch id
                 queryable = queryable.Where( t => t.BatchId.HasValue && t.BatchId.Value == _batch.Id );
             }
+            else if ( !string.IsNullOrWhiteSpace( PageParameter( "financialBatchId" ) ) && _batch == null )
+            {
+                // this makes sure the grid will show no transactions when you're adding a new financial batch.
+                queryable = queryable.Where( t => t.BatchId.HasValue && t.BatchId.Value == 0 );
+            }
             else
             {
                 // otherwise set the selection based on filter settings
