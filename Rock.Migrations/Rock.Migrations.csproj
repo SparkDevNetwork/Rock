@@ -448,6 +448,10 @@
     <Compile Include="Migrations\201401312232533_BinaryFileLastModifiedDateTime.Designer.cs">
       <DependentUpon>201401312232533_BinaryFileLastModifiedDateTime.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402021358481_FixBatchDetailTransactionList.cs" />
+    <Compile Include="Migrations\201402021358481_FixBatchDetailTransactionList.Designer.cs">
+      <DependentUpon>201402021358481_FixBatchDetailTransactionList.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -763,6 +767,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201401312232533_BinaryFileLastModifiedDateTime.resx">
       <DependentUpon>201401312232533_BinaryFileLastModifiedDateTime.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402021358481_FixBatchDetailTransactionList.resx">
+      <DependentUpon>201402021358481_FixBatchDetailTransactionList.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
