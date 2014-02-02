@@ -201,6 +201,12 @@ namespace RockWeb.Blocks.Finance
             Rock.Model.FinancialBatch batch = e.Row.DataItem as Rock.Model.FinancialBatch;
             if ( batch != null )
             {
+                var startDate = Convert.ToDateTime( e.Row.DataItem.GetPropertyValue( "BatchStartDateTime" ) ).ToShortDateString();
+                e.Row.Cells[1].Text = startDate;
+
+                var controlAmount = string.Format( "{0:C}", e.Row.DataItem.GetPropertyValue( "ControlAmount" ) );
+                e.Row.Cells[3].Text = controlAmount;
+
                 Literal transactionTotal = e.Row.FindControl( "TransactionTotal" ) as Literal;
                 if ( transactionTotal != null )
                 {
@@ -241,9 +247,6 @@ namespace RockWeb.Blocks.Finance
                             break;
                     }
                 }
-
-                var startDate = Convert.ToDateTime( e.Row.DataItem.GetPropertyValue( "BatchStartDateTime" ) ).ToShortDateString();
-                e.Row.Cells[1].Text = startDate;
             }
         }
 
