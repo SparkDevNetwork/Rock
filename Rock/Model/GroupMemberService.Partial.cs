@@ -174,12 +174,8 @@ namespace Rock.Model
             return Queryable()
                 .Where( m => m.Group.GroupType.Guid == groupTypefamilyGuid )
                 .SelectMany( g => g.Group.GroupLocations )
-                .Where( gl => gl.GroupLocationTypeValueId == homeAddressTypeValueId && (
-                    gl.Location.Street1 + " " +
-                    gl.Location.Street2 + " " +
-                    gl.Location.City + ", " + 
-                    gl.Location.State + " " +
-                    gl.Location.Zip ).Contains(partialHomeAddress) )
+                .Where( gl => gl.GroupLocationTypeValueId == homeAddressTypeValueId && 
+                    gl.Location.Street1.Contains(partialHomeAddress) )
                 .SelectMany( gl => gl.Group.Members )
                 .Select( gm => gm.PersonId ).Distinct();
         }
