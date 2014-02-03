@@ -41,7 +41,6 @@ namespace RockWeb.Blocks.Administration
     [Description( "Displays system information on the installed version of Rock." )]
     public partial class SystemInfo : Rock.Web.UI.RockBlock
     {
-
         #region Base Control Methods
 
         protected override void OnInit( EventArgs e )
@@ -50,17 +49,100 @@ namespace RockWeb.Blocks.Administration
 
             // Get Version, database info and executing assembly location
             lRockVersion.Text = VersionInfo.GetRockProductVersionFullName();
-            var csBuilder = new System.Data.Odbc.OdbcConnectionStringBuilder( ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString );
-            object dataSource, catalog = string.Empty;
-            if ( csBuilder.TryGetValue( "data source", out dataSource) && csBuilder.TryGetValue( "initial catalog", out catalog) )
-            {
-                lDatabase.Text = string.Format( "{0} @ {1}", catalog, dataSource );
-            }
+            lDatabase.Text = GetDbInfo();
             lExecLocation.Text = Assembly.GetExecutingAssembly().Location;
 
+            lCacheOverview.Text = GetCacheInfo();
+            lRoutes.Text = GetRoutesInfo();
+        }
+
+        //protected void OnLoad( object sender, EventArgs e )
+        //{
+        //    ScriptManager scriptManager = ScriptManager.GetCurrent( Page );
+        //    scriptManager.RegisterPostBackControl( btnDumpDiagnostics );
+        //}
+        
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Used to manually flush the attribute cache.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void btnClearCache_Click( object sender, EventArgs e )
+        {
+            foreach ( var attribute in new Rock.Model.AttributeService().Queryable().ToList() )
+            {
+                Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+            }
+
+            foreach ( var blockType in new Rock.Model.BlockTypeService().Queryable().ToList() )
+            {
+                Rock.Web.Cache.BlockTypeCache.Flush( blockType.Id );
+            }
+
+            foreach ( var block in new Rock.Model.BlockService().Queryable().ToList() )
+            {
+                Rock.Web.Cache.BlockCache.Flush( block.Id );
+            }
+
+            foreach ( var page in new Rock.Model.PageService().Queryable().ToList() )
+            {
+                Rock.Web.Cache.PageCache.Flush( page.Id );
+            }
+
+            foreach ( var definedType in new Rock.Model.DefinedTypeService().Queryable().ToList() )
+            {
+                Rock.Web.Cache.DefinedTypeCache.Flush( definedType.Id );
+            }
+
+            foreach ( var definedValue in new Rock.Model.DefinedValueService().Queryable().ToList() )
+            {
+                Rock.Web.Cache.DefinedValueCache.Flush( definedValue.Id );
+            }
+        }
+
+        protected void btnRestart_Click( object sender, EventArgs e )
+        {
+            RestartWebApplication();
+        }
+
+        protected void btnDumpDiagnostics_Click( object sender, EventArgs e )
+        {
+            System.Web.HttpResponse response = System.Web.HttpContext.Current.Response;
+
+            response.ClearHeaders();
+            response.ClearContent();
+            response.Clear();
+            response.ContentType = "text/plain";
+            response.AddHeader( "content-disposition", "attachment; filename=RockDiagnostics-" + System.Environment.MachineName + ".txt" );
+            response.Charset = "";
+
+            ResponseWrite( "Version:", lRockVersion.Text, response );
+            ResponseWrite( "Database:", lDatabase.Text, response );
+            ResponseWrite( "Execution Location:", lExecLocation.Text, response );
+            ResponseWrite( "Cache:", lCacheOverview.Text, response ); ;
+            ResponseWrite( "Routes:", lRoutes.Text, response );
+            
+            foreach ( string key in Request.ServerVariables )
+            {
+                ResponseWrite( key, Request.ServerVariables[key], response );
+            }
+
+            response.Flush();
+            response.End();
+        }
+        #endregion
+
+        #region Methods
+
+        private string GetCacheInfo()
+        {
             var cache = MemoryCache.Default;
 
-            StringBuilder sbItems = new StringBuilder();
+            //StringBuilder sbItems = new StringBuilder();
             Dictionary<string, int> cacheSize = new Dictionary<string, int>();
             int totalSize = 0;
 
@@ -121,7 +203,6 @@ namespace RockWeb.Blocks.Administration
             //                            sb.AppendFormat( "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{0}: {1}<br/>", sizeField.Name, sizeField.GetValue( sizeObj, null ) );
             //                        }
             //                    }
-
             //                    else
             //                    {
             //                        sb.AppendFormat( "&nbsp;&nbsp;&nbsp;&nbsp;{0}: {1}<br/>", monitorField.Name, monitorField.GetValue( monitorObj ) );
@@ -130,7 +211,6 @@ namespace RockWeb.Blocks.Administration
 
             //                int currentPressure = (int)monitorType.InvokeMember( "GetCurrentPressure", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.InvokeMethod, null, monitorObj, null );
             //                sb.AppendFormat( "&nbsp;&nbsp;&nbsp;&nbsp;Current Pressure: {0} %<br/>", currentPressure );
-
             //            }
             //            else
             //            {
@@ -138,65 +218,37 @@ namespace RockWeb.Blocks.Administration
             //            }
             //        }
             //    }
+            //lCacheObjects.Text = sbItems.ToString();
 
-            lCacheOverview.Text = sb.ToString();
-            lCacheObjects.Text = sbItems.ToString();
+            return sb.ToString();
+        }
 
+        private string GetRoutesInfo()
+        {
             var routes = new SortedDictionary<string, System.Web.Routing.Route>();
             foreach ( System.Web.Routing.Route route in System.Web.Routing.RouteTable.Routes )
-                if ( ! routes.ContainsKey( route.Url ) ) routes.Add( route.Url, route );
+            {
+                if ( !routes.ContainsKey( route.Url ) ) routes.Add( route.Url, route );
+            }
 
-            sb = new StringBuilder();
-            foreach(var routeItem in routes)
-                sb.AppendFormat("{0}<br/>", routeItem.Key);
-            lRoutes.Text = sb.ToString();
+            StringBuilder sb = new StringBuilder();
+            foreach ( var routeItem in routes )
+            {
+                sb.AppendFormat( "{0}<br/>", routeItem.Key );
+            }
+
+            return sb.ToString();
         }
 
-        #endregion
-
-        #region Events
-
-        /// <summary>
-        /// Used to manually flush the attribute cache.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected void btnClearCache_Click( object sender, EventArgs e )
+        private string GetDbInfo()
         {
-            foreach ( var attribute in new Rock.Model.AttributeService().Queryable().ToList() )
+            var csBuilder = new System.Data.Odbc.OdbcConnectionStringBuilder( ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString );
+            object dataSource, catalog = string.Empty;
+            if ( csBuilder.TryGetValue( "data source", out dataSource ) && csBuilder.TryGetValue( "initial catalog", out catalog ) )
             {
-                Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+                return string.Format( "{0} @ {1}", catalog, dataSource );
             }
-
-            foreach ( var blockType in new Rock.Model.BlockTypeService().Queryable().ToList() )
-            {
-                Rock.Web.Cache.BlockTypeCache.Flush( blockType.Id );
-            }
-
-            foreach ( var block in new Rock.Model.BlockService().Queryable().ToList() )
-            {
-                Rock.Web.Cache.BlockCache.Flush( block.Id );
-            }
-
-            foreach ( var page in new Rock.Model.PageService().Queryable().ToList() )
-            {
-                Rock.Web.Cache.PageCache.Flush( page.Id );
-            }
-
-            foreach ( var definedType in new Rock.Model.DefinedTypeService().Queryable().ToList() )
-            {
-                Rock.Web.Cache.DefinedTypeCache.Flush( definedType.Id );
-            }
-
-            foreach ( var definedValue in new Rock.Model.DefinedValueService().Queryable().ToList() )
-            {
-                Rock.Web.Cache.DefinedValueCache.Flush( definedValue.Id );
-            }
-        }
-
-        protected void btnRestart_Click(object sender, EventArgs e)
-        {
-            RestartWebApplication();
+            return string.Empty;
         }
 
         // method from Rick Strahl http://weblog.west-wind.com/posts/2006/Oct/08/Recycling-an-ASPNET-Application-from-within
@@ -214,7 +266,7 @@ namespace RockWeb.Blocks.Administration
                 Error = true;
             }
 
-            if (!Error)
+            if ( !Error )
                 return true;
 
             // *** Couldn't unload with Runtime - let's try modifying web.config
@@ -222,7 +274,7 @@ namespace RockWeb.Blocks.Administration
 
             try
             {
-                File.SetLastWriteTimeUtc(ConfigPath, DateTime.UtcNow);
+                File.SetLastWriteTimeUtc( ConfigPath, DateTime.UtcNow );
             }
             catch
             {
@@ -232,7 +284,11 @@ namespace RockWeb.Blocks.Administration
             return true;
         }
 
-        #endregion
+        private void ResponseWrite( string key, string value, HttpResponse response )
+        {
+            response.Write( string.Format( "{0}: {1}{2}", key, value, System.Environment.NewLine ) );
+        }
 
+        #endregion
     }
 }
