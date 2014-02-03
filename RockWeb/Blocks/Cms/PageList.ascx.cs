@@ -192,17 +192,31 @@ namespace RockWeb.Blocks.Cms
             hfSiteId.SetValue( siteId );
             pnlPages.Visible = true;
 
+            // Question: Is this RegisterLayouts necessary here?  Since if it's a new layout
+            // there would not be any pages on them (which is our concern here).
+            // It seems like it should be the concern of some other part of the puzzle.
             LayoutService layoutService = new LayoutService();
             layoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ), CurrentPersonAlias );
-            var layouts = layoutService.Queryable().Where( a => a.SiteId.Equals( siteId ) ).Select( a => a.Id ).ToList();
+            //var layouts = layoutService.Queryable().Where( a => a.SiteId.Equals( siteId ) ).Select( a => a.Id ).ToList();
 
+            // Find all the pages that are related to this site...
+            // 1) pages used by one of this site's layouts and
+            // 2) the site's 'special' pages used directly by the site.
             var siteService = new SiteService();
-            var pageId = siteService.Get( siteId ).DefaultPageId;
-
+            var site = siteService.Get( siteId );
             var pageService = new PageService();
-            var qry = pageService.GetAllDescendents( (int)pageId ).AsQueryable().Where( a => layouts.Contains( a.LayoutId ) )
-                .Concat( pageService.GetByIds( new List<int>{ (int)pageId } ) );
-       
+
+            var qry = pageService.GetBySiteId( siteId ).AsQueryable()
+                    .Concat( pageService.GetByIds(
+                        new List<int>
+                        {
+                            site.DefaultPageId ?? -1,
+                            site.LoginPageId ?? -1,
+                            site.RegistrationPageId ?? -1, site.PageNotFoundPageId ?? -1
+                        }
+                    )
+                );
+
             string layoutFilter = gPagesFilter.GetUserPreference( "Layout" );
             if ( !string.IsNullOrWhiteSpace( layoutFilter ) && layoutFilter != Rock.Constants.All.Text )
             {

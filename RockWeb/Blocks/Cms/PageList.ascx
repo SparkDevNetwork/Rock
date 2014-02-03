@@ -15,7 +15,7 @@
                         <asp:BoundField DataField="InternalName" HeaderText="Name" SortExpression="InternalName" />
                         <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
                         <asp:BoundField DataField="Layout" HeaderText="Layout" SortExpression="Layout" />
-                        <Rock:DeleteField OnClick="gPages_Delete" />
+                        <Rock:DeleteField OnClick="gPages_Delete"/>
                     </Columns>
                 </Rock:Grid>
             </div>

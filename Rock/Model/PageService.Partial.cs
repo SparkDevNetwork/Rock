@@ -49,6 +49,18 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets an enumerable collection of <see cref="Rock.Model.Page" /> entities associated with a <see cref="Rock.Model.Site" />.
+        /// </summary>
+        /// <param name="siteId">The site id.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.Page">Pages</see> that use the given site.
+        /// </returns>
+        public IEnumerable<Page> GetBySiteId( int? siteId )
+        {
+            return Repository.Find( t => t.Layout.SiteId == siteId ).OrderBy( t => t.Layout.Name ).ThenBy( t => t.InternalName );
+        }
+
+        /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Page">Pages</see> that are descendants of a <see cref="Rock.Model.Page"/>
         /// </summary>
         /// <param name="parentPageId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Page"/></param>
