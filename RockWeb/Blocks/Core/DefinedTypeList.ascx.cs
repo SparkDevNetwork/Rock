@@ -186,7 +186,7 @@ namespace RockWeb.Blocks.Core
         private void BindFilter()
         {
             ddlCategoryFilter.Items.Clear();
-            ddlCategoryFilter.Items.Add( Rock.Constants.All.Text );
+            ddlCategoryFilter.Items.Add( new ListItem( Rock.Constants.All.Text, string.Empty ) );
 
             var items = new DefinedTypeService().Queryable()
                 .Where( a => a.Category != string.Empty)
