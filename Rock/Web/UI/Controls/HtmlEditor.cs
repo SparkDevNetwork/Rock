@@ -446,27 +446,28 @@ var toolbar_RockCustomConfigFull =
 	];	
 
 CKEDITOR.replace('{0}', {{ 
-  allowedContent: true,
-  toolbar: toolbar_RockCustomConfig{1},
-  removeButtons: '',
-  height: '{2}',
-  baseFloatZIndex: 200000,  // set zindex to be 200000 so it will be on top of our modals (100000)
-  extraPlugins: '{5}',
-  resize_maxWidth: '{3}',
-  rockFileBrowserOptions: {{ 
+    allowedContent: true,
+    toolbar: toolbar_RockCustomConfig{1},
+    removeButtons: '',
+    height: '{2}',
+    baseFloatZIndex: 200000,  // set zindex to be 200000 so it will be on top of our modals (100000)
+    extraPlugins: '{5}',
+    resize_maxWidth: '{3}',
+    rockFileBrowserOptions: {{ 
     documentFolderRoot: '{6}', 
     imageFolderRoot: '{7}',
     imageFileFilter: '{8}'
-  }},
-  rockMergeFieldOptions: {{ mergeFields: '{9}' }},
-  on : {{
-       change: function (e) {{
-         // update the underlying TextElement on every little change to ensure that Posting and Validation works consistently (doing it OnSubmit or OnBlur misses some cases)
-         e.editor.updateElement();  
-         {4}
-       }}
-  }}
+    }},
+    rockMergeFieldOptions: {{ mergeFields: '{9}' }},
+    on : {{
+        change: function (e) {{
+            // update the underlying TextElement on every little change to ensure that Posting and Validation works consistently (doing it OnSubmit or OnBlur misses some cases)
+            e.editor.updateElement();  
+            {4}
+        }}
+    }}
 }} );
+
             ";
 
             string customOnChangeScript = null;
