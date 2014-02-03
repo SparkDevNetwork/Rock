@@ -154,8 +154,7 @@
                         <fieldset>
                             <legend>Export Pages</legend>
                             <label class="checkbox">
-                                <asp:CheckBox runat="server" ID="cbExportChildren" />
-                                Export child pages?
+                                <Rock:RockCheckBox runat="server" ID="cbExportChildren" Text="Export child pages?" />
                             </label>
                             <asp:LinkButton runat="server" ID="lbExport" OnClick="lbExport_Click" CssClass="btn btn-default btn-sm">
                                 <i class="fa fa-download"></i> Export
