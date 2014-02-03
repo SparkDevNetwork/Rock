@@ -32,7 +32,7 @@
                     </asp:TemplateField>
                     <asp:TemplateField HeaderText="Variance">
                         <ItemTemplate>
-                            <asp:Literal ID="Variance" runat="server" />
+                            <asp:Label ID="lblVariance" runat="server"></asp:Label>
                         </ItemTemplate>
                     </asp:TemplateField>
                     <asp:TemplateField HeaderText="Transaction Count">

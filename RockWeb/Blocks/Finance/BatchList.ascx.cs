@@ -214,13 +214,17 @@ namespace RockWeb.Blocks.Finance
                     var totalSum = data.Sum( d => d.Amount );
                     transactionTotal.Text = string.Format( "{0:C}", totalSum );
 
-                    Literal variance = e.Row.FindControl( "Variance" ) as Literal;
+                    Label variance = e.Row.FindControl("lblVariance") as Label;
                     if ( variance != null )
                     {
                         if ( batch.ControlAmount > 0 )
                         {
                             var varianceAmount = Convert.ToDecimal( batch.ControlAmount ) - totalSum;
                             variance.Text = string.Format( "{0:C}", varianceAmount );
+                            if ( varianceAmount != 0 )
+                            {
+                                variance.AddCssClass( "text-danger" );
+                            }
                         }
                     }
                 }
