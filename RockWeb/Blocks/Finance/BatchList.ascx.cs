@@ -201,6 +201,12 @@ namespace RockWeb.Blocks.Finance
             Rock.Model.FinancialBatch batch = e.Row.DataItem as Rock.Model.FinancialBatch;
             if ( batch != null )
             {
+                var startDate = Convert.ToDateTime( e.Row.DataItem.GetPropertyValue( "BatchStartDateTime" ) ).ToShortDateString();
+                e.Row.Cells[1].Text = startDate;
+
+                var controlAmount = string.Format( "{0:C}", e.Row.DataItem.GetPropertyValue( "ControlAmount" ) );
+                e.Row.Cells[3].Text = controlAmount;
+
                 Literal transactionTotal = e.Row.FindControl( "TransactionTotal" ) as Literal;
                 if ( transactionTotal != null )
                 {
@@ -223,6 +229,23 @@ namespace RockWeb.Blocks.Finance
                 if ( transactionCount != null )
                 {
                     transactionCount.Text = batch.Transactions.Count.ToString();
+                }
+
+                var status = e.Row.DataItem.GetPropertyValue( "Status" ).ToString();
+                if ( !string.IsNullOrWhiteSpace(status) )
+                {
+                    switch ( status.ToUpper() )
+                    {
+                        case "CLOSED":
+                            e.Row.Cells[8].Text = "<span class='label label-success'>Closed</span>";
+                            break;
+                        case "OPEN":
+                            e.Row.Cells[8].Text = "<span class='label label-warning'>Open</span>";
+                            break;
+                        case "PENDING":
+                            e.Row.Cells[8].Text = "<span class='label label-default'>Pending</span>";
+                            break;
+                    }
                 }
             }
         }
@@ -275,9 +298,10 @@ namespace RockWeb.Blocks.Finance
                 batches = batches.Where( batch => batch.BatchStartDateTime >= dpBatchDate.SelectedDate );
             }
 
-            if ( (ddlStatus.SelectedValueAsInt() ?? 0) > 0 )
+            string status = gfBatchFilter.GetUserPreference( "Status" );
+            if ( !string.IsNullOrWhiteSpace( status ) )
             {
-                var batchStatus = ddlStatus.SelectedValueAsEnum<BatchStatus>();
+                var batchStatus = (BatchStatus)Enum.Parse( typeof( BatchStatus ), status );
                 batches = batches.Where( batch => batch.Status == batchStatus );
             }
 

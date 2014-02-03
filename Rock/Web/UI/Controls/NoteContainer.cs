@@ -88,6 +88,15 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether adds are allowed
+        /// </summary>
+        public bool AddAllowed
+        {
+            get { return ViewState["AddAllowed"] as bool? ?? true; }
+            set { ViewState["AddAllowed"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [add always visible].
         /// </summary>
         public bool AddAlwaysVisible
@@ -407,15 +416,12 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                bool canAdd = AllowAnonymousEntry || GetCurrentPerson() != null;
+                bool canAdd = AddAllowed && ( AllowAnonymousEntry || GetCurrentPerson() != null );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-note" );
+                string cssClass = "panel panel-note" + 
+                    (this.DisplayType == NoteDisplayType.Light ? " panel-note-light" : "");
 
-                if (this.DisplayType == NoteDisplayType.Light)
-                {
-                    writer.AddAttribute(HtmlTextWriterAttribute.Class, "panel-note-light");
-                }
-
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, cssClass );
                 writer.RenderBeginTag( "section" );
 
                 // Heading

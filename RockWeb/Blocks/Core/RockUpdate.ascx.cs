@@ -81,6 +81,7 @@ namespace RockWeb.Blocks.Core
                 if ( IsUpdateAvailable() )
                 {
                     divPackage.Visible = true;
+                    cbIncludeStats.Visible = true;
                     BindGrid();
                 }
             }
@@ -110,7 +111,6 @@ namespace RockWeb.Blocks.Core
                     nbSuccess.Visible = false;
                 }
 
-                hlUpdates.Visible = false;
                 divPackage.Visible = false;
                 litRockVersion.Text = "";
             }
@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Core
                     Boolean isExactPackageInstalled = NuGetService.IsPackageInstalled( package );
                     LinkButton lbInstall = e.Item.FindControl( "lbInstall" ) as LinkButton;
                     var divPanel = e.Item.FindControl( "divPanel" ) as HtmlGenericControl;
-                    // Only the first item in the list is "installable"
+                    // Only the first item in the list is the primary
                     if ( e.Item.ItemIndex == 0 )
                     {
                         lbInstall.Enabled = true;
@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Core
                     }
                     else
                     {
-                        lbInstall.Enabled = false;
+                        lbInstall.Enabled = true;
                         lbInstall.AddCssClass( "btn-default" );
                         divPanel.AddCssClass( "panel-default" );
                     }
@@ -261,7 +261,6 @@ namespace RockWeb.Blocks.Core
 
             if (verifiedPackages.Count > 0 )
             {
-                hlUpdates.Visible = true;
                 return true;
             }
             else
