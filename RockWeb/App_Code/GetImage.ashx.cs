@@ -143,7 +143,7 @@ namespace RockWeb
             }
 
             //// get just the binaryFileMetaData (not the file content) just in case we can get the filecontent faster from the cache
-            //// a null LastModifiedDateTime shouldn't happen, but just in case, set it to DateTime.MaxValue so we error on the side of not getting it from the cache
+            //// a null ModifiedDateTime shouldn't happen, but just in case, set it to DateTime.MaxValue so we error on the side of not getting it from the cache
             var binaryFileMetaData = binaryFileQuery.Select( a => new
             {
                 BinaryFileType_AllowCaching = a.BinaryFileType.AllowCaching,

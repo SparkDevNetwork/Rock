@@ -452,6 +452,10 @@
     <Compile Include="Migrations\201402021358481_FixBatchDetailTransactionList.Designer.cs">
       <DependentUpon>201402021358481_FixBatchDetailTransactionList.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402031658561_BinaryFileStoredProcUpdate.cs" />
+    <Compile Include="Migrations\201402031658561_BinaryFileStoredProcUpdate.Designer.cs">
+      <DependentUpon>201402031658561_BinaryFileStoredProcUpdate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -770,6 +774,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402021358481_FixBatchDetailTransactionList.resx">
       <DependentUpon>201402021358481_FixBatchDetailTransactionList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402031658561_BinaryFileStoredProcUpdate.resx">
+      <DependentUpon>201402031658561_BinaryFileStoredProcUpdate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
