@@ -216,6 +216,11 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void rGridTransactions_Edit( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
+            if ( _batch != null && _batch.Status == BatchStatus.Closed )
+            {
+                BindGrid();
+                return;
+            }
             ShowDetailForm( (int)e.RowKeyValue );
         }
 
@@ -295,6 +300,12 @@ namespace RockWeb.Blocks.Finance
             {
                 // If transactions are for a batch, the filter is hidden so only check the batch id
                 queryable = queryable.Where( t => t.BatchId.HasValue && t.BatchId.Value == _batch.Id );
+                // If the batch is closed, do not allow any editing of the transactions
+                if ( _batch.Status == BatchStatus.Closed )
+                {
+                    rGridTransactions.Actions.ShowAdd = false;
+                    rGridTransactions.IsDeleteEnabled = false;
+                }
             }
             else if ( !string.IsNullOrWhiteSpace( PageParameter( "financialBatchId" ) ) && _batch == null )
             {
