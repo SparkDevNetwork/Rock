@@ -107,6 +107,10 @@ namespace RockWeb.Blocks.Finance
             {
                 lTitle.Text = ("Add Transaction").FormatAsHtmlTitle();
             }
+            if ( ddlCurrencyType != null && ddlCurrencyType.SelectedItem.ToString() != "Credit Card" )
+            { 
+                ddlCreditCardType.Visible = false;
+            }
         }
 
         /// <summary>
@@ -144,7 +148,14 @@ namespace RockWeb.Blocks.Finance
 
                 if ( ddlCreditCardType.SelectedValue != Rock.Constants.All.IdValue )
                 {
-                    financialTransaction.CreditCardTypeValueId = int.Parse( ddlCreditCardType.SelectedValue );
+                    if ( ddlCurrencyType.SelectedItem.ToString() == "Credit Card" )
+                    {
+                        financialTransaction.CreditCardTypeValueId = int.Parse( ddlCreditCardType.SelectedValue );
+                    }
+                    else
+                    {
+                        financialTransaction.CreditCardTypeValueId = null;
+                    }
                 }
                 if ( ddlCurrencyType.SelectedValue != Rock.Constants.All.IdValue )
                 {
@@ -206,6 +217,24 @@ namespace RockWeb.Blocks.Finance
                 NavigateToParentPage();
             }
             
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlCurrencyType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlCurrencyType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            // We don't want to show the Credit Card Type drop down if the type of currency isn't Credit Card.
+            if ( ddlCurrencyType.SelectedItem.ToString() == "Credit Card" )
+            {
+                ddlCreditCardType.Visible = true;
+            }
+            else
+            {
+                ddlCreditCardType.Visible = false;
+            }
         }
 
         #endregion

@@ -39,7 +39,7 @@
             <div class="col-md-6">
                 <Rock:DataTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code" TabIndex="6"
                     SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionCode" />
-                <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" TabIndex="7" />
+                <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" TabIndex="7" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" />
                 <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" TabIndex="8" />
                 <Rock:ComponentPicker ID="ddlPaymentGateway" runat="server" Label="Payment Gateway" TabIndex="9" />
             </div>
