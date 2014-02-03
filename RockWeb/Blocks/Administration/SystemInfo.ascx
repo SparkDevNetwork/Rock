@@ -46,14 +46,14 @@
 
     <div id="diagnostics-tab" style="display:none">
         
-        <h6>Details</h6>
+        <h4>Details</h4>
         <p>Database: <asp:Literal ID="lDatabase" runat="server"></asp:Literal></p>
         <p>System Date Time: <%= DateTime.Now.ToString("G") + " " + DateTime.Now.ToString("zzz") %></p>
         <p>Rock Time: <%= Rock.RockDateTime.Now.ToString("G") + " " + Rock.RockDateTime.OrgTimeZoneInfo.BaseUtcOffset %></p>
 
         <p>Executing Location: <asp:Literal ID="lExecLocation" runat="server"></asp:Literal></p>
 
-        <h6>Cache</h6>
+        <h4>Cache</h4>
         <div id="cache-details">
             <asp:Literal ID="lCacheOverview" runat="server"></asp:Literal>
         </div>
@@ -66,10 +66,12 @@
             <asp:Literal ID="lCacheObjects" runat="server"></asp:Literal>
         </div>
         
-        <h6>Routes</h6>
+        <h4>Routes</h4>
         <asp:Literal ID="lRoutes" runat="server"></asp:Literal>
 
-        <asp:Button runat="server" ID="btnDumpDiagnostics" CssClass="btn btn-link btn-sm" Text="Get Diagnostics Dump" OnClick="btnDumpDiagnostics_Click" ToolTip="Generates a diagnostics file for sharing with others." />
+        <asp:LinkButton runat="server" ID="btnDumpDiagnostics" CssClass="btn btn-action btn-sm" OnClick="btnDumpDiagnostics_Click" ToolTip="Generates a diagnostics file for sharing with others.">
+            <i class="fa fa-download"></i> Download Diagnostics File
+        </asp:LinkButton>
 
     </div>
 
