@@ -41,7 +41,7 @@
                         </ItemTemplate>
                     </asp:TemplateField>
                     <asp:BoundField DataField="Campus" HeaderText="Campus" />
-                    <Rock:EnumField DataField="Status" HeaderText="Status" SortExpression="Status" />
+                    <asp:BoundField DataField="Status" HeaderText="Status" SortExpression="Status" />
                     <Rock:DeleteField OnClick="gBatchList_Delete" />
                 </Columns>
             </Rock:Grid>

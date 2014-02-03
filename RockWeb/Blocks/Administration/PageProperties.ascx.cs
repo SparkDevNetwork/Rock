@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Administration
 
         #region Fields
 
-        private PageCache _page;
+        private int? _pageId = null;
         private readonly List<string> _tabs = new List<string> { "Basic Settings", "Display Settings", "Advanced Settings", "Import/Export"} ;
 
         #endregion
@@ -86,24 +86,21 @@ namespace RockWeb.Blocks.Administration
                 int pageId = int.MinValue;
                 if ( int.TryParse( PageParameter( "Page" ), out pageId ) )
                 {
-                    _page = Rock.Web.Cache.PageCache.Read( pageId );
+                    var pageCache = Rock.Web.Cache.PageCache.Read( pageId );
 
                     DialogPage dialogPage = this.Page as DialogPage;
                     if ( dialogPage != null )
                     {
                         dialogPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
-                        dialogPage.SubTitle = string.Format( "Id: {0}", _page.Id );
+                        dialogPage.SubTitle = string.Format( "Id: {0}", pageCache.Id );
                     }
 
-                    if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
+                    if ( pageCache.IsAuthorized( "Administrate", CurrentPerson ) )
                     {
                         ddlMenuWhen.BindToEnum( typeof( DisplayInNavWhen ) );
 
-                        phAttributes.Controls.Clear();
-                        Rock.Attribute.Helper.AddEditControls( _page, phAttributes, !Page.IsPostBack );
-
                         var blockContexts = new Dictionary<string, string>();
-                        foreach ( var block in _page.Blocks )
+                        foreach ( var block in pageCache.Blocks )
                         {
                             var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
                             if ( blockControl != null )
@@ -128,13 +125,15 @@ namespace RockWeb.Blocks.Administration
                             tbContext.Required = true;
                             tbContext.Label = context.Value + " Parameter Name";
                             tbContext.Help = "The page parameter name that contains the id of this context entity.";
-                            if ( _page.PageContexts.ContainsKey( context.Key ) )
+                            if ( pageCache.PageContexts.ContainsKey( context.Key ) )
                             {
-                                tbContext.Text = _page.PageContexts[context.Key];
+                                tbContext.Text = pageCache.PageContexts[context.Key];
                             }
 
                             phContext.Controls.Add( tbContext );
                         }
+
+                        _pageId = pageCache.Id;
                     }
                     else
                     {
@@ -160,53 +159,50 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            if ( _page == null )
+            if ( !Page.IsPostBack && _pageId.HasValue )
             {
-                int pageId = Convert.ToInt32( PageParameter( "Page" ) );
-                _page = Rock.Web.Cache.PageCache.Read( pageId );
-            }
-
-            if ( !Page.IsPostBack && _page.IsAuthorized( "Administrate", CurrentPerson ) )
-            {
-                PageService pageService = new PageService();
-                Rock.Model.Page page = pageService.Get( _page.Id );
-
                 LoadSites();
-                if ( _page.Layout != null )
+
+                PageService pageService = new PageService();
+                Rock.Model.Page page = pageService.Queryable( "Layout,PageRoutes" )
+                    .Where( p => p.Id == _pageId.Value )
+                    .FirstOrDefault();
+
+                if ( page.Layout != null )
                 {
-                    ddlSite.SelectedValue = _page.Layout.SiteId.ToString();
-                    LoadLayouts( _page.Layout.Site );
-                    ddlLayout.SelectedValue = _page.Layout.Id.ToString();
+                    ddlSite.SelectedValue = page.Layout.SiteId.ToString();
+                    LoadLayouts( SiteCache.Read( page.Layout.SiteId ) );
+                    ddlLayout.SelectedValue = page.Layout.Id.ToString();
                 }
 
                 rptProperties.DataSource = _tabs;
                 rptProperties.DataBind();
 
-                tbPageName.Text = _page.InternalName;
-                tbPageTitle.Text = _page.PageTitle;
-                tbBrowserTitle.Text = _page.BrowserTitle;
+                tbPageName.Text = page.InternalName;
+                tbPageTitle.Text = page.PageTitle;
+                tbBrowserTitle.Text = page.BrowserTitle;
                 ppParentPage.SetValue( pageService.Get( page.ParentPageId ?? 0 ) );
-                tbIconCssClass.Text = _page.IconCssClass;
+                tbIconCssClass.Text = page.IconCssClass;
 
-                cbPageTitle.Checked = _page.PageDisplayTitle;
-                cbPageBreadCrumb.Checked = _page.PageDisplayBreadCrumb;
-                cbPageIcon.Checked = _page.PageDisplayIcon;
-                cbPageDescription.Checked = _page.PageDisplayDescription;
+                cbPageTitle.Checked = page.PageDisplayTitle;
+                cbPageBreadCrumb.Checked = page.PageDisplayBreadCrumb;
+                cbPageIcon.Checked = page.PageDisplayIcon;
+                cbPageDescription.Checked = page.PageDisplayDescription;
 
-                ddlMenuWhen.SelectedValue = ( (int)_page.DisplayInNavWhen ).ToString();
-                cbMenuDescription.Checked = _page.MenuDisplayDescription;
-                cbMenuIcon.Checked = _page.MenuDisplayIcon;
-                cbMenuChildPages.Checked = _page.MenuDisplayChildPages;
+                ddlMenuWhen.SelectedValue = ( (int)page.DisplayInNavWhen ).ToString();
+                cbMenuDescription.Checked = page.MenuDisplayDescription;
+                cbMenuIcon.Checked = page.MenuDisplayIcon;
+                cbMenuChildPages.Checked = page.MenuDisplayChildPages;
 
-                cbBreadCrumbIcon.Checked = _page.BreadCrumbDisplayIcon;
-                cbBreadCrumbName.Checked = _page.BreadCrumbDisplayName;
+                cbBreadCrumbIcon.Checked = page.BreadCrumbDisplayIcon;
+                cbBreadCrumbName.Checked = page.BreadCrumbDisplayName;
 
-                cbRequiresEncryption.Checked = _page.RequiresEncryption;
-                cbEnableViewState.Checked = _page.EnableViewState;
-                cbIncludeAdminFooter.Checked = _page.IncludeAdminFooter;
-                tbCacheDuration.Text = _page.OutputCacheDuration.ToString();
-                tbDescription.Text = _page.Description;
-                ceHeaderContent.Text = _page.HeaderContent;
+                cbRequiresEncryption.Checked = page.RequiresEncryption;
+                cbEnableViewState.Checked = page.EnableViewState;
+                cbIncludeAdminFooter.Checked = page.IncludeAdminFooter;
+                tbCacheDuration.Text = page.OutputCacheDuration.ToString();
+                tbDescription.Text = page.Description;
+                ceHeaderContent.Text = page.HeaderContent;
                 tbPageRoute.Text = string.Join( ",", page.PageRoutes.Select( route => route.Route ).ToArray() );
 
                 // Add enctype attribute to page's <form> tag to allow file upload control to function
@@ -253,7 +249,7 @@ namespace RockWeb.Blocks.Administration
         protected void masterPage_OnSave( object sender, EventArgs e )
         {
             Page.Validate( BlockValidationGroup );
-            if ( Page.IsValid )
+            if ( Page.IsValid && _pageId.HasValue)
             {
                 using ( new UnitOfWorkScope() )
                 {
@@ -261,7 +257,7 @@ namespace RockWeb.Blocks.Administration
                     var routeService = new PageRouteService();
                     var contextService = new PageContextService();
 
-                    var page = pageService.Get( _page.Id );
+                    var page = pageService.Get( _pageId.Value );
 
                     int parentPageId = ppParentPage.SelectedValueAsInt() ?? 0;
                     if ( page.ParentPageId != parentPageId )
@@ -367,9 +363,6 @@ namespace RockWeb.Blocks.Administration
                             RouteTable.Routes.AddPageRoute( pageRoute );
                         }
 
-                        Rock.Attribute.Helper.GetEditValues( phAttributes, _page );
-                        _page.SaveAttributeValues( CurrentPersonAlias );
-
                         if ( orphanedIconFileId.HasValue)
                         {
                             BinaryFileService binaryFileService = new BinaryFileService();
@@ -382,7 +375,7 @@ namespace RockWeb.Blocks.Administration
                             }
                         }
 
-                        Rock.Web.Cache.PageCache.Flush( _page.Id );
+                        Rock.Web.Cache.PageCache.Flush( page.Id );
 
                         string script = "if (typeof window.parent.Rock.controls.modal.close === 'function') window.parent.Rock.controls.modal.close('PAGE_UPDATED');";
                         ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
@@ -393,63 +386,70 @@ namespace RockWeb.Blocks.Administration
 
         protected void lbExport_Click( object sender, EventArgs e )
         {
-            var pageService = new PageService();
-            var page = pageService.Get( _page.Guid );
-            var packageService = new PackageService();
-            var pageName = page.InternalName.Replace( " ", "_" ) + ( ( cbExportChildren.Checked ) ? "_wChildPages" : "" );
-            using ( var stream = packageService.ExportPage( page, cbExportChildren.Checked ) )
+            if ( _pageId.HasValue )
             {
-                EnableViewState = false;
-                Response.Clear();
-                Response.ContentType = "application/octet-stream";
-                Response.AddHeader( "content-disposition", "attachment; filename=" + pageName + ".nupkg" );
-                Response.Charset = "";
-                Response.BinaryWrite( stream.ToArray() );
-                Response.Flush();
-                Response.End();
+                var pageService = new PageService();
+                var page = pageService.Get( _pageId.Value );
+                var packageService = new PackageService();
+                var pageName = page.InternalName.Replace( " ", "_" ) + ( ( cbExportChildren.Checked ) ? "_wChildPages" : "" );
+                using ( var stream = packageService.ExportPage( page, cbExportChildren.Checked ) )
+                {
+                    EnableViewState = false;
+                    Response.Clear();
+                    Response.ContentType = "application/octet-stream";
+                    Response.AddHeader( "content-disposition", "attachment; filename=" + pageName + ".nupkg" );
+                    Response.Charset = "";
+                    Response.BinaryWrite( stream.ToArray() );
+                    Response.Flush();
+                    Response.End();
+                }
             }
         }
 
         protected void lbImport_Click( object sender, EventArgs e )
         {
-            var extension = fuImport.FileName.Substring( fuImport.FileName.LastIndexOf( '.' ) );
-
-            if ( fuImport.PostedFile == null && extension != ".nupkg"  )
+            var page = PageCache.Read( _pageId ?? 0 );
+            if ( page != null )
             {
-                var errors = new List<string> { "Please attach an export file when trying to import a package." };
-                rptImportErrors.DataSource = errors;
-                rptImportErrors.DataBind();
-                rptImportErrors.Visible = true;
-                pnlImportSuccess.Visible = false;
-                return;
-            }
+                var extension = fuImport.FileName.Substring( fuImport.FileName.LastIndexOf( '.' ) );
 
-            var packageService = new PackageService();
-            bool importResult;
-
-            using ( new UnitOfWorkScope() )
-            {
-                importResult = packageService.ImportPage( fuImport.FileBytes, fuImport.FileName, CurrentPersonAlias, _page.Id, _page.Layout.SiteId );
-            }
-
-            if ( !importResult )
-            {
-                rptImportErrors.DataSource = packageService.ErrorMessages;
-                rptImportErrors.DataBind();
-                rptImportErrors.Visible = true;
-                pnlImportSuccess.Visible = false;
-            }
-            else
-            {
-                pnlImportSuccess.Visible = true;
-                rptImportWarnings.Visible = false;
-                rptImportErrors.Visible = false;
-
-                if ( packageService.WarningMessages.Count > 0 )
+                if ( fuImport.PostedFile == null && extension != ".nupkg" )
                 {
-                    rptImportErrors.DataSource = packageService.WarningMessages;
+                    var errors = new List<string> { "Please attach an export file when trying to import a package." };
+                    rptImportErrors.DataSource = errors;
                     rptImportErrors.DataBind();
-                    rptImportWarnings.Visible = true;
+                    rptImportErrors.Visible = true;
+                    pnlImportSuccess.Visible = false;
+                    return;
+                }
+
+                var packageService = new PackageService();
+                bool importResult;
+
+                using ( new UnitOfWorkScope() )
+                {
+                    importResult = packageService.ImportPage( fuImport.FileBytes, fuImport.FileName, CurrentPersonAlias, page.Id, page.Layout.SiteId );
+                }
+
+                if ( !importResult )
+                {
+                    rptImportErrors.DataSource = packageService.ErrorMessages;
+                    rptImportErrors.DataBind();
+                    rptImportErrors.Visible = true;
+                    pnlImportSuccess.Visible = false;
+                }
+                else
+                {
+                    pnlImportSuccess.Visible = true;
+                    rptImportWarnings.Visible = false;
+                    rptImportErrors.Visible = false;
+
+                    if ( packageService.WarningMessages.Count > 0 )
+                    {
+                        rptImportErrors.DataSource = packageService.WarningMessages;
+                        rptImportErrors.DataBind();
+                        rptImportWarnings.Visible = true;
+                    }
                 }
             }
         }

@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="SystemInfo.ascx.cs" Inherits="RockWeb.Blocks.Administration.SystemInfo" %>
 
-<script language="javascript">
+<script type="text/javascript">
 
     $(document).ready(function () {
 
@@ -29,38 +29,48 @@
 
 <ul class="nav nav-pills" >
     <li class='active'><a pill="version-info" class="show-pill" href="#">Version Info</a></li>
-    <li><a pill="memory-cache" class="show-pill" href="#">Memory Cache</a></li>
-    <li><a pill="routes" class="show-pill" href="#">Routes</a></li>
+    <li><a pill="diagnostics-tab" class="show-pill" href="#">Diagnostics</a></li>
 </ul>
 
 <div class="tabContent" >
 
     <div id="version-info">
-        <p>Rock Version:  <asp:Literal ID="lRockVersion" runat="server"></asp:Literal></p>
-        <p>Database: <asp:Literal ID="lDatabase" runat="server"></asp:Literal></p>
-        <p>Executing Location: <asp:Literal ID="lExecLocation" runat="server"></asp:Literal></p>
 
-         <asp:Button runat="server" ID="btnRestart" CssClass="btn btn-action restart" Text="Restart Rock" OnClick="btnRestart_Click" ToolTip="Restarts the Application." />
+        <p>Rock Version: 
+            <asp:Literal ID="lRockVersion" runat="server"></asp:Literal></p>
+        <div class="actions margin-t-xl">
+            <asp:Button runat="server" ID="btnFlushCache" CssClass="btn btn-primary btn-sm" Text="Clear Cache" OnClick="btnClearCache_Click" ToolTip="Flushes Pages, BlockTypes, Blocks and Attributes from the Rock web cache." />
+            <asp:Button runat="server" ID="btnRestart" CssClass="btn btn-link btn-sm restart" Text="Restart Rock" OnClick="btnRestart_Click" ToolTip="Restarts the Application." />
+        </div>
     </div>
 
-    <div id="memory-cache" style="display:none">
+    <div id="diagnostics-tab" style="display:none">
         
+        <h6>Details</h6>
+        <p>Database: <asp:Literal ID="lDatabase" runat="server"></asp:Literal></p>
+        <p>System Date Time: <%= DateTime.Now.ToString("G") + " " + DateTime.Now.ToString("zzz") %></p>
+        <p>Rock Time: <%= Rock.RockDateTime.Now.ToString("G") + " " + Rock.RockDateTime.OrgTimeZoneInfo.BaseUtcOffset %></p>
+
+        <p>Executing Location: <asp:Literal ID="lExecLocation" runat="server"></asp:Literal></p>
+
+        <h6>Cache</h6>
         <div id="cache-details">
             <asp:Literal ID="lCacheOverview" runat="server"></asp:Literal>
         </div>
-        
-        <a id="show-cache-objects" href="#">Show Cache Objects</a> 
-        <asp:Button runat="server" ID="btnFlushCache" CssClass="btn btn-action" Text="Clear Cache" OnClick="btnClearCache_Click" ToolTip="Flushes Pages, BlockTypes, Blocks and Attributes from the Rock web cache." />
-       
-       
+
+<%-- This appears to have been disabled 9/19/2012:
+    https://github.com/SparkDevNetwork/Rock/commit/f295069b2152d4b1ff93d44fa0d82fd2a2fb0d14#diff-357e7f0be3ea16b9658156b1ee1f8145L27    
+    but this link was still here:         --%>
+        <a id="show-cache-objects" href="#">Show Cache Objects</a>
         <div id="cache-objects" style="display:none">
             <asp:Literal ID="lCacheObjects" runat="server"></asp:Literal>
         </div>
-
-    </div>
-
-    <div id="routes" style="display:none">
+        
+        <h6>Routes</h6>
         <asp:Literal ID="lRoutes" runat="server"></asp:Literal>
+
+        <asp:Button runat="server" ID="btnDumpDiagnostics" CssClass="btn btn-link btn-sm" Text="Get Diagnostics Dump" OnClick="btnDumpDiagnostics_Click" ToolTip="Generates a diagnostics file for sharing with others." />
+
     </div>
 
     <script>

@@ -112,7 +112,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
-            bool issues = false;
+            bool canDelete = false;
 
             RockTransactionScope.WrapTransaction( () =>
             {
@@ -121,11 +121,11 @@ namespace RockWeb.Blocks.Cms
                 if ( site != null )
                 {
                     string errorMessage;
-                    issues = ! siteService.CanDelete( site, out errorMessage ) || ! siteService.CanDeleteAlternate( site, out errorMessage );
-                    if ( issues )
+                    canDelete = siteService.CanDelete( site, out errorMessage );
+                    if ( ! canDelete )
                     {
                         mdDeleteWarning.Show( errorMessage, ModalAlertType.Alert );
-                        return;
+                        return; // returns out of RockTransactionScope
                     }
 
                     siteService.Delete( site, CurrentPersonAlias );
@@ -135,7 +135,7 @@ namespace RockWeb.Blocks.Cms
                 }
             } );
 
-            if ( ! issues )
+            if ( canDelete )
             {
                 NavigateToParentPage();
             }

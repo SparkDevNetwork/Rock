@@ -67,25 +67,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// A <see cref="System.String"/> that represents the page title of the Page.
         /// </value>
-        public string PageTitle
-        {
-            get
-            {
-                if ( _pageTitle != null && _pageTitle != string.Empty )
-                {
-                    return _pageTitle;
-                }
-                else
-                {
-                    return InternalName;
-                }
-            }
-
-            set
-            {
-                _pageTitle = value;
-            }
-        }
+        public string PageTitle { get; set; }
 
         /// <summary>
         /// Gets or sets the browser title to use for the page
@@ -645,7 +627,7 @@ namespace Rock.Web.Cache
 
                 XElement pageElement = new XElement( "page",
                     new XAttribute( "id", this.Id ),
-                    new XAttribute( "title", this.PageTitle ?? this.InternalName ),
+                    new XAttribute( "title", string.IsNullOrWhiteSpace(this.PageTitle) ? this.InternalName : this.PageTitle ),
                     new XAttribute( "current", isCurrentPage.ToString() ),
                     new XAttribute( "url", new PageReference( this.Id, 0, parameters, queryString ).BuildUrl() ),
                     new XAttribute( "display-description", this.MenuDisplayDescription.ToString().ToLower() ),
@@ -721,7 +703,7 @@ namespace Rock.Web.Cache
 
                 var properties = new Dictionary<string, object>();
                 properties.Add( "id", this.Id );
-                properties.Add( "title", this.PageTitle ?? this.InternalName );
+                properties.Add( "title", string.IsNullOrWhiteSpace( this.PageTitle ) ? this.InternalName : this.PageTitle );
                 properties.Add( "current", isCurrentPage.ToString().ToLower() );
                 properties.Add( "isParentOfCurrent", isParentOfCurrent.ToString().ToLower() );
                 properties.Add( "url", new PageReference( this.Id, 0, parameters, queryString ).BuildUrl() );
