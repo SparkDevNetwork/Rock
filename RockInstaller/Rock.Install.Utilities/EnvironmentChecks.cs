@@ -169,7 +169,7 @@ namespace Rock.Install.Utilities
             // check sql version
             if (!CheckSqlServerVersion(dbServer, dbUsername, dbPassword, out sqlVersion))
             {
-                errorDetails = string.Format("You are running SQL Server version: {0} <a href='http://www.rockchms.com/installer/help/sqlserver-version.html' class='btn btn-info btn-xs'>Let's Fix It Together</a>", sqlVersion);
+                errorDetails = string.Format("You are running SQL Server version: {0} <a href='http://www.rockrms.com/Rock/LetsFixThis#SqlServerWrongVersion' class='btn btn-info btn-xs'>Let's Fix It Together</a>", sqlVersion);
                 return false;
             }
 
@@ -179,7 +179,7 @@ namespace Rock.Install.Utilities
                 // try creating the database
                 if (!CheckSqlPermissionsCreateDatabase(dbServer, dbUsername, dbPassword))
                 {
-                    errorDetails = String.Format("The database '{0}' does not exist and the user '{1}' does not have permissions to create a database. <a href='http://www.rockchms.com/installer/help/sqlserver-no-database-no-permissions.html' class='btn btn-info btn-xs'>Let's Fix It Together</a>", dbDatabase, dbUsername);
+                    errorDetails = String.Format("The database '{0}' does not exist and the user '{1}' does not have permissions to create a database. <a href='http://www.rockrms.com/Rock/LetsFixThis#NoDatabaseNoPermissions' class='btn btn-info btn-xs'>Let's Fix It Together</a>", dbDatabase, dbUsername);
                     return false;
                 }
 
@@ -190,14 +190,14 @@ namespace Rock.Install.Utilities
                 // check that we have permissions to create a table in the database
                 if (!CheckSqlPermissionsCreateTable(dbServer, dbUsername, dbPassword, dbDatabase))
                 {
-                    errorDetails = String.Format("The user '{0}' does not have write access to the database '{1}'. <a href='http://www.rockchms.com/installer/help/sqlserver-permissions.html' class='btn btn-info btn-xs'>Let's Fix It Together</a>", dbUsername, dbDatabase);
+                    errorDetails = String.Format("The user '{0}' does not have write access to the database '{1}'. <a href='http://www.rockrms.com/Rock/LetsFixThis#SqlServerPermissions' class='btn btn-info btn-xs'>Let's Fix It Together</a>", dbUsername, dbDatabase);
                     return false;
                 }
                 
                 // since the database exists make sure it's empty
                 if (!CheckSqlServerEmpty(dbServer, dbUsername, dbPassword, dbDatabase))
                 {
-                    errorDetails = String.Format("The database '{0}' is not empty. To protect your existing data Rock must be installed into a empty database. <a href='http://www.rockchms.com/installer/help/sqlserver-empty.html' class='btn btn-info btn-xs'>Let's Fix It Together</a>", dbDatabase);
+                    errorDetails = String.Format("The database '{0}' is not empty. To protect your existing data Rock must be installed into a empty database. <a href='http://www.rockrms.com/Rock/LetsFixThis#DatabaseNotEmpty' class='btn btn-info btn-xs'>Let's Fix It Together</a>", dbDatabase);
                     return false;
                 }
             }
