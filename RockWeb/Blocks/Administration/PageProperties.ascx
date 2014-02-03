@@ -165,8 +165,6 @@
                 </div>
             </asp:Panel>
 
-            <asp:PlaceHolder id="phAttributes" runat="server" />
-
         </div>
 
     </asp:PlaceHolder>
