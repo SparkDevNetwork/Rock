@@ -96,7 +96,7 @@ namespace Rock
         /// Converts the local date time to rock date time.
         /// Use this to convert a local datetime (for example, the datetime of a file stored on the server) to the Rock OrgTimeZone
         /// </summary>
-        /// <param name="dateTime">The local date time.</param>
+        /// <param name="localDateTime">The local date time.</param>
         /// <returns></returns>
         public static DateTime ConvertLocalDateTimeToRockDateTime( DateTime localDateTime)
         {

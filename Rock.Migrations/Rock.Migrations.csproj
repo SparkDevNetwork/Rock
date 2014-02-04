@@ -460,6 +460,10 @@
     <Compile Include="Migrations\201402031741471_MiscConfigChanges.Designer.cs">
       <DependentUpon>201402031741471_MiscConfigChanges.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402032112129_CreateRestEntities.cs" />
+    <Compile Include="Migrations\201402032112129_CreateRestEntities.Designer.cs">
+      <DependentUpon>201402032112129_CreateRestEntities.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -784,6 +788,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402031741471_MiscConfigChanges.resx">
       <DependentUpon>201402031741471_MiscConfigChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402032112129_CreateRestEntities.resx">
+      <DependentUpon>201402032112129_CreateRestEntities.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

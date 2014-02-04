@@ -56,23 +56,22 @@ namespace Rock.Rest.Controllers
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="getCategorizedItems">if set to <c>true</c> [get categorized items].</param>
         /// <returns></returns>
-        [Authenticate]
+        [Authenticate, Secured]
         public IQueryable<CategoryItem> GetChildren( int id, bool getCategorizedItems, int entityTypeId )
         {
             return GetChildren( id, getCategorizedItems, entityTypeId, null, null );
         }
 
-        [Authenticate]
+        [Authenticate, Secured]
         public IQueryable<CategoryItem> GetChildren( int id, bool getCategorizedItems, int entityTypeId, string entityQualifier )
         {
             return GetChildren( id, getCategorizedItems, entityTypeId, entityQualifier, null );
         }
 
-        [Authenticate]
+        [Authenticate, Secured]
         public IQueryable<CategoryItem> GetChildren( int id, bool getCategorizedItems, int entityTypeId, string entityQualifier, string entityQualifierValue )
         {
-            var user = CurrentUser();
-            Person currentPerson = user != null ? user.Person : null;
+            Person currentPerson = GetPerson();
 
             IQueryable<Category> qry;
             qry = Get().Where( a => ( a.ParentCategoryId ?? 0 ) == id );
@@ -196,6 +195,7 @@ namespace Rock.Rest.Controllers
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="categoryId">The category id.</param>
         /// <returns></returns>
+        [Authenticate, Secured]
         private object GetCategorizedItems( IService serviceInstance, int categoryId )
         {
             if ( serviceInstance != null )

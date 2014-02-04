@@ -535,6 +535,22 @@ namespace Rock.Data
         public DbSet<ReportField> ReportFields { get; set; }
 
         /// <summary>
+        /// Gets or sets the REST Actions.
+        /// </summary>
+        /// <value>
+        /// The reports.
+        /// </value>
+        public DbSet<RestAction> RestActions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the REST Controllers.
+        /// </summary>
+        /// <value>
+        /// The reports.
+        /// </value>
+        public DbSet<RestController> RestControllers { get; set; }
+
+        /// <summary>
         /// Gets or sets the schedules.
         /// </summary>
         /// <value>
@@ -772,6 +788,8 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new PhoneNumberConfiguration() );
             modelBuilder.Configurations.Add( new PrayerRequestConfiguration() );
             modelBuilder.Configurations.Add( new ReportConfiguration() );
+            modelBuilder.Configurations.Add( new RestActionConfiguration() );
+            modelBuilder.Configurations.Add( new RestControllerConfiguration() );
             modelBuilder.Configurations.Add( new ScheduleConfiguration() );
             modelBuilder.Configurations.Add( new ServiceJobConfiguration() );
             modelBuilder.Configurations.Add( new ServiceLogConfiguration() );

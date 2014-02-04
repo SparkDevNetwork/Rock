@@ -21,6 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Web.Http;
 
+using Rock.Rest.Filters;
 using Rock.Search.Person;
 using Rock.Model;
 
@@ -80,6 +81,7 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns></returns>
+        [Authenticate, Secured]
         [HttpGet]
         public IQueryable<PersonSearchResult> Search( string name)
         {
@@ -91,6 +93,7 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns></returns>
+        [Authenticate, Secured]
         [HttpGet]
         public IQueryable<PersonSearchResult> Search( string name, bool includeHtml)
         {
@@ -222,6 +225,7 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="username">The username.</param>
         /// <returns></returns>
+        [Authenticate, Secured]
         [HttpGet]
         public Person GetByUserName( string username )
         {
@@ -239,6 +243,7 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
+        [Authenticate, Secured]
         [HttpGet]
         public PersonSearchResult GetPopupHtml( int personId )
         {

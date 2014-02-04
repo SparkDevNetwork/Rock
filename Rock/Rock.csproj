@@ -135,6 +135,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RockWeb\Bin\System.Web.Http.dll</HintPath>
     </Reference>
+    <Reference Include="System.Web.Http.WebHost, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="Twilio.Api">
@@ -210,7 +211,11 @@
     <Compile Include="Model\CodeGenerated\LayoutService.cs" />
     <Compile Include="Model\CodeGenerated\PersonAliasService.cs" />
     <Compile Include="Model\CodeGenerated\ReportFieldService.cs" />
+    <Compile Include="Model\CodeGenerated\RestActionService.cs" />
+    <Compile Include="Model\CodeGenerated\RestControllerService.cs" />
     <Compile Include="Model\DbGeographyConverter.cs" />
+    <Compile Include="Model\RestAction.cs" />
+    <Compile Include="Model\RestController.cs" />
     <Compile Include="Model\FinancialTransactionImageService.partial.cs" />
     <Compile Include="Model\FinancialScheduledTransactionService.Partial.cs" />
     <Compile Include="Model\HistoryService.Partial.cs" />
@@ -220,6 +225,7 @@
     <Compile Include="Model\History.cs" />
     <Compile Include="Model\PersonAlias.cs" />
     <Compile Include="Model\ReportField.cs" />
+    <Compile Include="Model\RestControllerService.Partial.cs" />
     <Compile Include="Net\RestParameters\ContributionStatementOptions.cs" />
     <Compile Include="PersonProfile\Badge\Baptized.cs" />
     <Compile Include="PersonProfile\Badge\NextSteps.cs">

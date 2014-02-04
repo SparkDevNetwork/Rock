@@ -49,47 +49,45 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="block"></param>
         /// <returns></returns>
+        [Authenticate, Secured]
         [HttpPut]
-        [Authenticate]
         public void Move( int id, Block block )
         {
-            var user = CurrentUser();
-            if ( user != null )
+            var person = GetPerson();
+
+            var service = new BlockService();
+            block.Id = id;
+            Block model;
+            if ( !service.TryGet( id, out model ) )
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+
+            if ( !model.IsAuthorized( "Edit", person ) )
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+
+            if ( model.LayoutId.HasValue && model.LayoutId != block.LayoutId )
+                Rock.Web.Cache.PageCache.FlushLayoutBlocks( model.LayoutId.Value );
+
+            if ( block.LayoutId.HasValue )
+                Rock.Web.Cache.PageCache.FlushLayoutBlocks( block.LayoutId.Value );
+            else
             {
-                var service = new BlockService();
-                block.Id = id;
-                Block model;
-                if ( !service.TryGet( id, out model ) )
-                    throw new HttpResponseException( HttpStatusCode.NotFound );
+                var page = Rock.Web.Cache.PageCache.Read( block.PageId.Value );
+                page.FlushBlocks();
+            }
 
-                if ( !model.IsAuthorized( "Edit", user.Person ) )
-                    throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            model.Zone = block.Zone;
+            model.PageId = block.PageId;
+            model.LayoutId = block.LayoutId;
 
-                if ( model.LayoutId.HasValue && model.LayoutId != block.LayoutId )
-                    Rock.Web.Cache.PageCache.FlushLayoutBlocks( model.LayoutId.Value );
-
-                if ( block.LayoutId.HasValue )
-                    Rock.Web.Cache.PageCache.FlushLayoutBlocks( block.LayoutId.Value );
-                else
-                {
-                    var page = Rock.Web.Cache.PageCache.Read( block.PageId.Value );
-                    page.FlushBlocks();
-                }
-
-                model.Zone = block.Zone;
-                model.PageId = block.PageId;
-                model.LayoutId = block.LayoutId;
-
-                if ( model.IsValid )
-                {
-                    model.Order = service.GetMaxOrder( model );
-                    service.Save( model, user.Person.PrimaryAlias );
-                }
-                else
-                    throw new HttpResponseException( HttpStatusCode.BadRequest );
+            if ( model.IsValid )
+            {
+                model.Order = service.GetMaxOrder( model );
+                service.Save( model, person != null ? person.PrimaryAlias : null );
             }
             else
-                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            {
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
+            }
         }
     }
 }
