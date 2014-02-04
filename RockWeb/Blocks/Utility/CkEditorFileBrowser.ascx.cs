@@ -339,7 +339,17 @@ namespace RockWeb.Blocks.Utility
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbCreateFolder_Click( object sender, EventArgs e )
         {
-            tbNewFolderName.PrependText = hfSelectedFolder.Value.TrimEnd( '\\' ) + "\\";
+            // truncate dir name if it's really long
+            if (hfSelectedFolder.Value.Length > 20)
+            {
+                int startingPoint = hfSelectedFolder.Value.Length - 19;
+                tbNewFolderName.PrependText = "..." + hfSelectedFolder.Value.Substring(startingPoint).TrimEnd('\\') + "\\";
+            }
+            else
+            {
+                tbNewFolderName.PrependText = hfSelectedFolder.Value.TrimEnd('\\') + "\\";
+            }
+
             tbNewFolderName.Text = string.Empty;
             mdCreateFolder.Show();
         }
