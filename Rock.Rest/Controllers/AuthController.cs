@@ -49,7 +49,6 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="loginParameters">The login parameters.</param>
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
-        [Authenticate, Secured]
         [HttpPost]
         public void Login( [FromBody]LoginParameters loginParameters )
         {
