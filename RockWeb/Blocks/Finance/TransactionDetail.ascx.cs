@@ -146,23 +146,16 @@ namespace RockWeb.Blocks.Finance
                 decimal.TryParse( tbAmount.Text.Replace( "$", string.Empty ), out Amount );
                 financialTransaction.Amount = Amount;
 
-                if ( ddlCreditCardType.SelectedValue != Rock.Constants.All.IdValue )
+                if ( ddlCurrencyType.SelectedItem.ToString() == "Credit Card" )
                 {
-                    if ( ddlCurrencyType.SelectedItem.ToString() == "Credit Card" )
-                    {
-                        financialTransaction.CreditCardTypeValueId = int.Parse( ddlCreditCardType.SelectedValue );
-                    }
-                    else
-                    {
-                        financialTransaction.CreditCardTypeValueId = null;
-                    }
+                    financialTransaction.CreditCardTypeValueId = int.Parse( ddlCreditCardType.SelectedValue );
                 }
-                if ( ddlCurrencyType.SelectedValue != Rock.Constants.All.IdValue )
+                else
                 {
-                    financialTransaction.CurrencyTypeValueId = int.Parse( ddlCurrencyType.SelectedValue );
+                    financialTransaction.CreditCardTypeValueId = null;
                 }
-
-                if ( !string.IsNullOrEmpty( ddlPaymentGateway.SelectedValue ) && ddlPaymentGateway.SelectedValue != Rock.Constants.All.IdValue )
+                financialTransaction.CurrencyTypeValueId = int.Parse( ddlCurrencyType.SelectedValue );
+                if ( !string.IsNullOrEmpty( ddlPaymentGateway.SelectedValue ) )
                 {
                     var gatewayEntity = Rock.Web.Cache.EntityTypeCache.Read( new Guid( ddlPaymentGateway.SelectedValue ) );
                     if ( gatewayEntity != null )
@@ -170,14 +163,8 @@ namespace RockWeb.Blocks.Finance
                         financialTransaction.GatewayEntityTypeId = gatewayEntity.Id;
                     }
                 }
-                if ( ddlSourceType.SelectedValue != Rock.Constants.All.IdValue )
-                {
-                    financialTransaction.SourceTypeValueId = int.Parse( ddlSourceType.SelectedValue );
-                }
-                if ( ddlTransactionType.SelectedValue != Rock.Constants.All.IdValue )
-                {
-                    financialTransaction.TransactionTypeValueId = int.Parse( ddlTransactionType.SelectedValue );
-                }
+                financialTransaction.SourceTypeValueId = int.Parse( ddlSourceType.SelectedValue );
+                financialTransaction.TransactionTypeValueId = int.Parse( ddlTransactionType.SelectedValue );
 
                 financialTransaction.Summary = tbSummary.Text;
                 financialTransaction.TransactionCode = tbTransactionCode.Text;
