@@ -49,8 +49,6 @@ namespace Rock.Web.Cache
 
         #endregion
 
-        private string _pageTitle;
-
         #region Properties
 
         /// <summary>

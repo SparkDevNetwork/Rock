@@ -18,6 +18,7 @@ using System.Net;
 using System.Web.Http;
 
 using Rock.Model;
+using Rock.Rest.Filters;
 using Rock.Security;
 
 namespace Rock.Rest.Controllers
@@ -48,6 +49,7 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="loginParameters">The login parameters.</param>
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [Authenticate, Secured]
         [HttpPost]
         public void Login( [FromBody]LoginParameters loginParameters )
         {

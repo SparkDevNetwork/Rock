@@ -104,6 +104,8 @@
     <Compile Include="Controllers\CodeGenerated\PrayerRequestsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ReportFieldsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ReportsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\RestActionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\RestControllersController.cs" />
     <Compile Include="Controllers\FileBrowserController.cs" />
     <Compile Include="Controllers\MergeFieldsController.cs" />
     <Compile Include="Controllers\FinancialAccountsController.Partial.cs" />
@@ -174,6 +176,7 @@
     <Compile Include="Controllers\TagsController.Partial.cs" />
     <Compile Include="Controllers\UserLoginsController.Partial.cs" />
     <Compile Include="Filters\AuthenticateAttribute.cs" />
+    <Compile Include="Filters\SecuredAttribute.cs" />
     <Compile Include="Filters\RequireHttpsAttribute.cs" />
     <Compile Include="Filters\ValidateAttribute.cs" />
     <Compile Include="IHasCustomRoutes.cs" />

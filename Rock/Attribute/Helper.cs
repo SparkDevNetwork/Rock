@@ -678,6 +678,13 @@ namespace Rock.Attribute
 
         }
 
+        /// <summary>
+        /// Saves the attribute value.
+        /// </summary>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="newValue">The new value.</param>
+        /// <param name="currentPersonAlias">The current person alias.</param>
         public static void SaveAttributeValue(int entityId, Rock.Web.Cache.AttributeCache attribute, string newValue, PersonAlias currentPersonAlias)
         {
             Model.AttributeValueService attributeValueService = new Model.AttributeValueService();

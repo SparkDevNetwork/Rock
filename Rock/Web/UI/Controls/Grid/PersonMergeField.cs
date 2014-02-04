@@ -43,18 +43,36 @@ namespace Rock.Web.UI.Controls
             set { ViewState["PersonId"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the name of the person.
+        /// </summary>
+        /// <value>
+        /// The name of the person.
+        /// </value>
         public string PersonName
         {
             get { return ViewState["PersonName"] as string; }
             set { ViewState["PersonName"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the date created.
+        /// </summary>
+        /// <value>
+        /// The date created.
+        /// </value>
         public DateTime? DateCreated
         {
             get { return ViewState["DateCreated"] as DateTime?; }
             set { ViewState["DateCreated"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the created by.
+        /// </summary>
+        /// <value>
+        /// The created by.
+        /// </value>
         public string CreatedBy
         {
             get { return ViewState["CreatedBy"] as string; }

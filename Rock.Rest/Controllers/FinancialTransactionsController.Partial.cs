@@ -82,7 +82,7 @@ namespace Rock.Rest.Controllers
         /// <param name="financialTransaction">The financial transaction.</param>
         /// <param name="checkMicr">The check micr.</param>
         /// <returns></returns>
-        [Authenticate]
+        [Authenticate, Secured]
         [HttpPost]
         public HttpResponseMessage PostScanned( [FromBody]FinancialTransactionScannedCheck financialTransactionScannedCheck )
         {
@@ -98,23 +98,10 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         /// <exception cref="System.Web.Http.HttpResponseException">
         /// </exception>
-        [Authenticate]
+        [Authenticate, Secured]
         [HttpPost]
         public DataSet GetContributionPersonGroupAddress( [FromBody]Rock.Net.RestParameters.ContributionStatementOptions options )
         {
-            var user = CurrentUser();
-            if ( user == null )
-            {
-                // unable to determine user
-                throw new HttpResponseException( HttpStatusCode.Unauthorized );
-            }
-
-            if ( !new FinancialTransaction().IsAuthorized( "View", user.Person ) )
-            {
-                // user can't view FinancialTransactions
-                throw new HttpResponseException( HttpStatusCode.Unauthorized );
-            }
-
             Service service = new Service();
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             parameters.Add( "startDate", options.StartDate );
@@ -162,7 +149,7 @@ namespace Rock.Rest.Controllers
         /// <param name="groupId">The group unique identifier.</param>
         /// <param name="options">The options.</param>
         /// <returns></returns>
-        [Authenticate]
+        [Authenticate, Secured]
         [HttpPost]
         public DataSet GetContributionTransactions( int groupId, [FromBody]Rock.Net.RestParameters.ContributionStatementOptions options )
         {
@@ -177,23 +164,10 @@ namespace Rock.Rest.Controllers
         /// <param name="options">The options.</param>
         /// <returns></returns>
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
-        [Authenticate]
+        [Authenticate, Secured]
         [HttpPost]
         public DataSet GetContributionTransactions( int groupId, int? personId, [FromBody]Rock.Net.RestParameters.ContributionStatementOptions options )
         {
-            var user = CurrentUser();
-            if ( user == null )
-            {
-                // unable to determine user
-                throw new HttpResponseException( HttpStatusCode.Unauthorized );
-            }
-
-            if ( !new FinancialTransaction().IsAuthorized( "View", user.Person ) )
-            {
-                // user can't view FinancialTransactions
-                throw new HttpResponseException( HttpStatusCode.Unauthorized );
-            }
-            
             var qry = Get()
                 .Where( a => a.TransactionDateTime >= options.StartDate )
                 .Where( a => a.TransactionDateTime < ( options.EndDate ?? DateTime.MaxValue ) );

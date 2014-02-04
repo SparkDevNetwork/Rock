@@ -321,6 +321,9 @@ namespace Rock.Web.UI.Controls
 
     #region Enumerations
 
+    /// <summary>
+    /// 
+    /// </summary>
     public enum SelectionMode
     {
         /// <summary>
