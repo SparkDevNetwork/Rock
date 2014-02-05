@@ -103,6 +103,11 @@ namespace RockWeb.Blocks.Finance
                 tbSummary.Text = transaction.Summary;
                 tbTransactionCode.Text = transaction.TransactionCode;
                 dtTransactionDateTime.SelectedDateTime = transaction.TransactionDateTime;
+                if ( transaction.AuthorizedPersonId != null )
+                {
+                    ppAuthorizedPerson.PersonId = transaction.AuthorizedPersonId;
+                    ppAuthorizedPerson.PersonName = transaction.AuthorizedPerson.FullName;
+                }
             }
             else
             {
@@ -145,6 +150,10 @@ namespace RockWeb.Blocks.Finance
                 if ( ppAuthorizedPerson.PersonId != null )
                 {
                     financialTransaction.AuthorizedPersonId = ppAuthorizedPerson.PersonId;
+                }
+                else
+                {
+                    financialTransaction.AuthorizedPersonId = null;
                 }
 
                 decimal amount = 0M;
