@@ -65,7 +65,7 @@ namespace Rock.PersonProfile.Badge
             {
                 foreach (DataRow row in results.Tables[0].Rows)
                 {
-                    writer.Write("<br> - " + row["AttendanceCount"]);
+                    //writer.Write("<br> - " + row["AttendanceCount"]);
                 }
             }
         }
