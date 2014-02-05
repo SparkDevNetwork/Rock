@@ -251,12 +251,48 @@ namespace RockWeb.Blocks.Finance
                             break;
                     }
                 }
+
+                // Get any warnings for this row and display them in the Warnings column
+                Label warnings = e.Row.FindControl( "lblWarnings" ) as Label;
+                var warningList = GetWarnings( batch );
+                if ( warningList != null )
+                {
+                    foreach (var warning in warningList)
+                    {
+                        switch (warning.ToUpper())
+                        {
+                            case "UNTIED":
+                                warnings.Text += "<span class='label label-danger'>Untied Transactions</span>";
+                                break;
+                        }
+                    }
+                }
             }
         }
 
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Gets the warnings.
+        /// </summary>
+        /// <returns></returns>
+        private List<string> GetWarnings( FinancialBatch batch )
+        {
+            var warningList = new List<string>();
+            if ( batch.Status == BatchStatus.Open )
+            {
+                var transactionService = new FinancialTransactionService();
+                var transactionList = transactionService.Queryable().Where( trans => trans.BatchId == batch.Id && trans.AuthorizedPersonId == null ).ToList();
+                if ( transactionList.Count > 0 )
+                {
+                    warningList.Add( "UNTIED" );
+                }
+            }
+
+            return warningList;
+        }
 
         /// <summary>
         /// Binds the filter.
