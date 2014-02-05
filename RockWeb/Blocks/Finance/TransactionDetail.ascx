@@ -31,14 +31,15 @@
                 <Rock:DateTimePicker ID="dtTransactionDateTime" TabIndex="2" runat="server" Label="Transaction Date/Time" />
                 <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" TabIndex="4" />
                 <Rock:RockDropDownList ID="ddlTransactionType" runat="server" Label="Transaction Type" TabIndex="5" />
+                <Rock:PersonPicker ID="ppAuthorizedPerson" runat="server" Label="Authorized Person" TabIndex="6" />
             </div>
 
             <div class="col-md-6">
-                <Rock:DataTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code" TabIndex="6"
+                <Rock:DataTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code" TabIndex="7"
                     SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionCode" />
-                <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" TabIndex="7" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" />
-                <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" TabIndex="8" />
-                <Rock:ComponentPicker ID="ddlPaymentGateway" runat="server" Label="Payment Gateway" TabIndex="9" />
+                <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" TabIndex="8" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" />
+                <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" TabIndex="9" />
+                <Rock:ComponentPicker ID="ddlPaymentGateway" runat="server" Label="Payment Gateway" TabIndex="10" />
             </div>
         </div>
 

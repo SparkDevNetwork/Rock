@@ -142,7 +142,10 @@ namespace RockWeb.Blocks.Finance
                     financialTransaction = financialTransactionService.Get( financialTransactionId );
                 }
 
-                financialTransaction.AuthorizedPersonId = CurrentPerson.Id;
+                if ( ppAuthorizedPerson.PersonId != null )
+                {
+                    financialTransaction.AuthorizedPersonId = ppAuthorizedPerson.PersonId;
+                }
 
                 decimal amount = 0M;
                 decimal.TryParse( tbAmount.Text.Replace( "$", string.Empty ), out amount );
