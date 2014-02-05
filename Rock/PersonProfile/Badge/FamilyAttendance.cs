@@ -19,6 +19,9 @@ using System.ComponentModel.Composition;
 using System.IO;
 
 using Rock.Model;
+using Rock.Data;
+using System.Collections.Generic;
+using System.Data;
 
 namespace Rock.PersonProfile.Badge
 {
@@ -30,7 +33,7 @@ namespace Rock.PersonProfile.Badge
     [Description( "Family Attendance Badge" )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Family Attendance" )]
-    public class FamilyAttendance : IconBadge
+    public class FamilyAttendance : BadgeComponent
     {
         /// <summary>
         /// Gets the attribute value defaults.
@@ -48,24 +51,25 @@ namespace Rock.PersonProfile.Badge
             }
         }
 
-        /// <summary>
-        /// Gets the tool tip text.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        public override string GetToolTipText( Person person )
+        public override void Render(System.Web.UI.HtmlTextWriter writer)
         {
-            return "Family Attendance Summary for the last 12 months";
+            writer.Write("Hi");
+            Service service = new Service();
+
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            parameters.Add("PersonId", Person.Id);
+
+            var results = service.GetDataSet("spCheckin_BadgeAttendance", System.Data.CommandType.StoredProcedure, parameters);
+
+            if (results.Tables.Count > 0)
+            {
+                foreach (DataRow row in results.Tables[0].Rows)
+                {
+                    writer.Write("<br> - " + row["AttendanceCount"]);
+                }
+            }
         }
 
-        /// <summary>
-        /// Gets the icon path.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        public override string GetIconPath( Person person )
-        {
-            return Path.Combine( System.Web.VirtualPathUtility.ToAbsolute( "~" ), "Assets/Mockup/attendence-bars.jpg" );
-        }
+
     }
 }
