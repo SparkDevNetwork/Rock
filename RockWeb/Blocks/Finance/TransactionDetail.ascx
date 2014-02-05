@@ -28,12 +28,9 @@
 
         <div class="row">
             <div class="col-md-6">
-                <Rock:DateTimePicker ID="dtTransactionDateTime" TabIndex="2" runat="server" 
-                    SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionDateTime" Label="Transaction Date/Time" />
-                                       
+                <Rock:DateTimePicker ID="dtTransactionDateTime" TabIndex="2" runat="server" Label="Transaction Date/Time" />
                 <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" TabIndex="4" />
                 <Rock:RockDropDownList ID="ddlTransactionType" runat="server" Label="Transaction Type" TabIndex="5" />
-
             </div>
 
             <div class="col-md-6">

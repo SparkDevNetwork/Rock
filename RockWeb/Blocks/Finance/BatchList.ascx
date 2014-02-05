@@ -23,7 +23,6 @@
                         </ItemTemplate>
                     </asp:TemplateField>
                     <asp:BoundField DataField="Name" HeaderText="Title" SortExpression="Name" />
-                    
                     <asp:BoundField DataField="ControlAmount" HeaderText="Control Amount" />
                     <asp:TemplateField HeaderText="Transaction Total">
                         <ItemTemplate>
@@ -42,6 +41,11 @@
                     </asp:TemplateField>
                     <asp:BoundField DataField="Campus" HeaderText="Campus" />
                     <asp:BoundField DataField="Status" HeaderText="Status" SortExpression="Status" />
+                    <asp:TemplateField HeaderText="Messages">
+                        <ItemTemplate>
+                            <asp:Label ID="lblWarnings" runat="server"></asp:Label>
+                        </ItemTemplate>
+                    </asp:TemplateField>
                     <Rock:DeleteField OnClick="gBatchList_Delete" />
                 </Columns>
             </Rock:Grid>
