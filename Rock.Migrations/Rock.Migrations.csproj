@@ -464,6 +464,10 @@
     <Compile Include="Migrations\201402032112129_CreateRestEntities.Designer.cs">
       <DependentUpon>201402032112129_CreateRestEntities.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402050535388_CreateFunctionsAndSpForAttendanceBadge.cs" />
+    <Compile Include="Migrations\201402050535388_CreateFunctionsAndSpForAttendanceBadge.Designer.cs">
+      <DependentUpon>201402050535388_CreateFunctionsAndSpForAttendanceBadge.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -791,6 +795,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402032112129_CreateRestEntities.resx">
       <DependentUpon>201402032112129_CreateRestEntities.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402050535388_CreateFunctionsAndSpForAttendanceBadge.resx">
+      <DependentUpon>201402050535388_CreateFunctionsAndSpForAttendanceBadge.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
