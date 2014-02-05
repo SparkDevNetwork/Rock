@@ -14,21 +14,21 @@
 
         <div class="row">
             <div class="col-md-6">
-                <Rock:DataTextBox ID="tbAmount" runat="server" PrependText="$" CssClass="input-width-md" Label="Amount" TabIndex="3"
+                <Rock:DataTextBox ID="tbAmount" runat="server" PrependText="$" CssClass="input-width-md" Label="Amount" TabIndex="1"
                     SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="Amount" />
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-12">
-                <Rock:DataTextBox ID="tbSummary" TabIndex="1" runat="server" Label="Summary" TextMode="MultiLine" Rows="4"
+                <Rock:DataTextBox ID="tbSummary" TabIndex="2" runat="server" Label="Summary" TextMode="MultiLine" Rows="4"
                     SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="Summary" />
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-6">
-                <Rock:DateTimePicker ID="dtTransactionDateTime" TabIndex="2" runat="server" Label="Transaction Date/Time" />
+                <Rock:DateTimePicker ID="dtTransactionDateTime" TabIndex="3" runat="server" Label="Transaction Date/Time" />
                 <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" TabIndex="4" />
                 <Rock:RockDropDownList ID="ddlTransactionType" runat="server" Label="Transaction Type" TabIndex="5" />
                 <Rock:PersonPicker ID="ppAuthorizedPerson" runat="server" Label="Authorized Person" TabIndex="6" />
