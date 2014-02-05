@@ -19,6 +19,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.WebControls.Adapters;
+using System.Linq;
 
 namespace Rock.Web.UI.Adapters
 {
@@ -37,42 +38,45 @@ namespace Rock.Web.UI.Adapters
             string currentOptionGroup;
             var renderedOptionGroups = new List<string>();
 
-            foreach ( ListItem item in list.Items )
+            // group the items by optiongroup first, but honor whatever the original sorting was
+            foreach ( IGrouping<string, ListItem> itemGrouping in list.Items.OfType<ListItem>().GroupBy(g => g.Attributes["OptionGroup"]) )
             {
-                if ( item.Attributes["OptionGroup"] != null )
+                currentOptionGroup = itemGrouping.Key;
+                foreach ( var item in itemGrouping )
                 {
-                    //'The item is part of an option group'
-                    currentOptionGroup = item.Attributes["OptionGroup"];
-
-                    //'the option header was already written, just render the list item'
-                    if ( renderedOptionGroups.Contains( currentOptionGroup ) )
+                    // Determine if the item is part of an option group
+                    if ( currentOptionGroup != null )
                     {
-                        RenderListItem( item, writer );
+                        // the option header was already written, just render the list item
+                        if ( renderedOptionGroups.Contains( currentOptionGroup ) )
+                        {
+                            RenderListItem( item, writer );
+                        }
+                        else
+                        {
+                            // the header was not written- do that first
+                            if ( renderedOptionGroups.Count > 0 )
+                            {
+                                // need to close previous group
+                                RenderOptionGroupEndTag( writer );
+                            }
+
+                            RenderOptionGroupBeginTag( currentOptionGroup, writer );
+                            renderedOptionGroups.Add( currentOptionGroup );
+
+                            RenderListItem( item, writer );
+                        }
                     }
                     else
                     {
-                        //the header was not written- do that first
-                        if ( renderedOptionGroups.Count > 0 )
-                        {
-                            //need to close previous group'
-                            RenderOptionGroupEndTag( writer ); 
-                        }
-
-                        RenderOptionGroupBeginTag( currentOptionGroup, writer );
-                        renderedOptionGroups.Add( currentOptionGroup );
-
+                        // default behavior: render the list item as normal
                         RenderListItem( item, writer );
                     }
-                }
-                else
-                {
-                    //default behavior: render the list item as normal'
-                    RenderListItem( item, writer );
-                }
 
-                if ( Page != null && Page.ClientScript != null )
-                {
-                    Page.ClientScript.RegisterForEventValidation( list.UniqueID, item.Value );
+                    if ( Page != null && Page.ClientScript != null )
+                    {
+                        Page.ClientScript.RegisterForEventValidation( list.UniqueID, item.Value );
+                    }
                 }
             }
 
