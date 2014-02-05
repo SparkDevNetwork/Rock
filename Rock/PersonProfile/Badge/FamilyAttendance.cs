@@ -22,6 +22,8 @@ using Rock.Model;
 using Rock.Data;
 using System.Collections.Generic;
 using System.Data;
+using System;
+using System.Diagnostics;
 
 namespace Rock.PersonProfile.Badge
 {
@@ -35,6 +37,9 @@ namespace Rock.PersonProfile.Badge
     [ExportMetadata( "ComponentName", "Family Attendance" )]
     public class FamilyAttendance : BadgeComponent
     {
+        //private int _chartHeight = 25;
+        private int _minBarHeight = 2;
+        
         /// <summary>
         /// Gets the attribute value defaults.
         /// </summary>
@@ -53,21 +58,43 @@ namespace Rock.PersonProfile.Badge
 
         public override void Render(System.Web.UI.HtmlTextWriter writer)
         {
-            writer.Write("Hi");
-            Service service = new Service();
+            writer.Write("<div class='badge badge-attendance' data-original-title='Family attendance for the last 24 months. Each bar is a month.'>");
 
-            Dictionary<string, object> parameters = new Dictionary<string, object>();
-            parameters.Add("PersonId", Person.Id);
+            writer.Write("</div>");
 
-            var results = service.GetDataSet("spCheckin_BadgeAttendance", System.Data.CommandType.StoredProcedure, parameters);
+            writer.Write(@"
+                <script>
+                    $( document ).ready(function() {
+                        
+                        var monthNames = [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ];
+                        
+                        
+                        $.ajax({
+                                type: 'GET',
+                                url: Rock.settings.get('baseUrl') + 'api/PersonBadges/FamilyAttendance/2',
+                                statusCode: {
+                                    200: function (data, status, xhr) {
+                                            var chartHtml = '<ul class=\'badge-attendance-chart list-unstyled\'>';
+                                            $.each(data, function() {
+                                                var barHeight = (this.AttendanceCount / this.SundaysInMonth) * 100;
+                                                if (barHeight < 2) {
+                                                    barHeight = 2;
+                                                }
+                                
+                                                chartHtml += '<li title=\'' + monthNames[this.Month -1] + ' ' + this.Year +'\'><span style=\'height: ' + barHeight + '%\'></span></li>';                
+                                            });
+                                            chartHtml += '</ul>';
+                                            
+                                            $('.badge-attendance').html(chartHtml);
 
-            if (results.Tables.Count > 0)
-            {
-                foreach (DataRow row in results.Tables[0].Rows)
-                {
-                    //writer.Write("<br> - " + row["AttendanceCount"]);
-                }
-            }
+                                        }
+                                },
+                        });
+                    });
+                </script>
+                
+            ");
+
         }
 
 
