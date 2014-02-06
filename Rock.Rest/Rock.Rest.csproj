@@ -102,6 +102,7 @@
     <Compile Include="Controllers\CodeGenerated\NotesController.cs" />
     <Compile Include="Controllers\CodeGenerated\NoteTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonAliasController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PersonBadgesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PrayerRequestsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ReportFieldsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ReportsController.cs" />

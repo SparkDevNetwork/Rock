@@ -261,16 +261,17 @@ namespace Rock.Data
             audits = new List<Audit>();
             errorMessages = new List<string>();
 
-            Context.ChangeTracker.DetectChanges();
 
             var addedEntities = new List<ContextItem>();
             var deletedEntities = new List<ContextItem>();
             var modifiedEntities = new List<ContextItem>();
 
+            Context.ChangeTracker.DetectChanges();
             var contextAdapter = ( (IObjectContextAdapter)Context );
 
-            foreach ( ObjectStateEntry entry in contextAdapter.ObjectContext.ObjectStateManager.GetObjectStateEntries(
-                EntityState.Added | EntityState.Deleted | EntityState.Modified | EntityState.Unchanged ) )
+            foreach ( var entry in Context.ChangeTracker.Entries() )
+            //foreach ( ObjectStateEntry entry in contextAdapter.ObjectContext.ObjectStateManager.GetObjectStateEntries(
+            //    EntityState.Added | EntityState.Deleted | EntityState.Modified | EntityState.Unchanged ) )
             {
                 var rockEntity = entry.Entity as Entity<T>;
 

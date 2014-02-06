@@ -32,21 +32,6 @@ namespace Rock.PersonProfile.Badge
     [ExportMetadata( "ComponentName", "Disc Score" )]
     public class DiscScore : IconBadge
     {
-        /// <summary>
-        /// Gets the attribute value defaults.
-        /// </summary>
-        /// <value>
-        /// The attribute defaults.
-        /// </value>
-        public override System.Collections.Generic.Dictionary<string, string> AttributeValueDefaults
-        {
-            get
-            {
-                var defaults = base.AttributeValueDefaults;
-                defaults["Order"] = "6";
-                return defaults;
-            }
-        }
 
         /// <summary>
         /// Gets the tool tip text.

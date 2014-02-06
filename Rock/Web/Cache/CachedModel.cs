@@ -170,6 +170,17 @@ namespace Rock.Web.Cache
             Security.Authorization.MakePrivate( this, action, person, currentPersonAlias );
         }
 
+        /// <summary>
+        /// If action on the current entity is private, removes security that made it private.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="currentPersonAlias">The current person alias.</param>
+        public virtual void MakeUnPrivate( string action, Person person, PersonAlias currentPersonAlias )
+        {
+            Security.Authorization.MakeUnPrivate( this, action, person, currentPersonAlias );
+        }
+
         #endregion
 
         #region IHasAttribute Implementation

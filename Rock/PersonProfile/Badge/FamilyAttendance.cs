@@ -41,22 +41,11 @@ namespace Rock.PersonProfile.Badge
         private int _minBarHeight = 2;
         
         /// <summary>
-        /// Gets the attribute value defaults.
+        /// Renders the specified writer.
         /// </summary>
-        /// <value>
-        /// The attribute defaults.
-        /// </value>
-        public override System.Collections.Generic.Dictionary<string, string> AttributeValueDefaults
-        {
-            get
-            {
-                var defaults = base.AttributeValueDefaults;
-                defaults["Order"] = "7";
-                return defaults;
-            }
-        }
-
-        public override void Render(System.Web.UI.HtmlTextWriter writer)
+        /// <param name="badge">The badge.</param>
+        /// <param name="writer">The writer.</param>
+        public override void Render( PersonBadge badge, System.Web.UI.HtmlTextWriter writer )
         {
             writer.Write("<div class='badge badge-attendance' data-original-title='Family attendance for the last 24 months. Each bar is a month.'>");
 

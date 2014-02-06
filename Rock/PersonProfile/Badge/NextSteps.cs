@@ -32,21 +32,6 @@ namespace Rock.PersonProfile.Badge
     [ExportMetadata( "ComponentName", "Next Steps" )]
     public class NextSteps : IconBadge
     {
-        /// <summary>
-        /// Gets the attribute value defaults.
-        /// </summary>
-        /// <value>
-        /// The attribute defaults.
-        /// </value>
-        public override System.Collections.Generic.Dictionary<string, string> AttributeValueDefaults
-        {
-            get
-            {
-                var defaults = base.AttributeValueDefaults;
-                defaults["Order"] = "9";
-                return defaults;
-            }
-        }
 
         /// <summary>
         /// Gets the tool tip text.

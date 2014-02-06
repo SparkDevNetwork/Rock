@@ -43,8 +43,9 @@ namespace Rock.PersonProfile
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
+        /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( System.Web.UI.HtmlTextWriter writer )
+        public override void Render( PersonBadge badge, System.Web.UI.HtmlTextWriter writer )
         {
             if ( Person != null )
             {

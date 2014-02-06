@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Web.UI;
 
@@ -43,20 +44,6 @@ namespace Rock.PersonProfile
                 defaults.Add( "Active", "True" );
                 defaults.Add( "Order", "0" );
                 return defaults;
-            }
-        }
-
-        /// <summary>
-        /// Gets the type of the entity.
-        /// </summary>
-        /// <value>
-        /// The type of the entity.
-        /// </value>
-        public EntityTypeCache EntityType
-        {
-            get
-            {
-                return EntityTypeCache.Read( this.GetType() );
             }
         }
 
@@ -91,19 +78,15 @@ namespace Rock.PersonProfile
         /// </summary>
         public BadgeComponent()
         {
-            using ( new Rock.Data.UnitOfWorkScope() )
-            {
-                Rock.Attribute.Helper.UpdateAttributes( this.GetType(), this.TypeId, null );
-            }
-            this.LoadAttributes();
+            // Override default constructor of Component that loads attributes (needs to be done by each instance)
         }
 
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
+        /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public abstract void Render( HtmlTextWriter writer );
+        public abstract void Render( PersonBadge badge, HtmlTextWriter writer );
 
     }
-
 }

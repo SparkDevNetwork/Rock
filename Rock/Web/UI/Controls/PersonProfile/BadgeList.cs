@@ -19,13 +19,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Newtonsoft.Json;
+using Rock.Model;
 using Rock.PersonProfile;
 
 namespace Rock.Web.UI.Controls
 { 
     /// <summary>
-    /// abstract class for controls used to render a Person Profile Badge
+    /// class for controls used to render a Person Profile Badge
     /// </summary>
     public class PersonProfileBadgeList : CompositeControl
     {
@@ -37,17 +38,49 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The component guids.
         /// </value>
-        public string ComponentGuids
-        {
+        public List<PersonBadge> PersonBadges 
+        { 
             get 
-            { 
-                return ViewState["ComponentGuids"] as string; 
+            {
+                return _personBadges;
             }
-            set 
-            { 
-                ViewState["ComponentGuids"] = value;
+            set
+            {
+                _personBadges = value;
                 RecreateChildControls();
             }
+        }
+        private List<PersonBadge> _personBadges = new List<PersonBadge>();
+
+        /// <summary>
+        /// Restores view-state information from a previous request that was saved with the <see cref="M:System.Web.UI.WebControls.WebControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An object that represents the control state to restore.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            var json = ViewState["PersonBadges"] as string;
+            if ( !string.IsNullOrWhiteSpace( json ) )
+            {
+                PersonBadges = JsonConvert.DeserializeObject( json, typeof( List<PersonBadge> ) ) as List<PersonBadge>;
+            }
+        }
+
+        /// <summary>
+        /// Saves any state that was modified after the <see cref="M:System.Web.UI.WebControls.Style.TrackViewState" /> method was invoked.
+        /// </summary>
+        /// <returns>
+        /// An object that contains the current view state of the control; otherwise, if there is no view state associated with the control, null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            if ( PersonBadges != null )
+            {
+                ViewState["PersonBadges"] = PersonBadges.ToJson();
+            }
+            
+            return base.SaveViewState();
         }
 
         /// <summary>
@@ -55,29 +88,24 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void CreateChildControls()
         {
-            _badges.Clear();
-
-            if ( !string.IsNullOrWhiteSpace( ComponentGuids ) )
-            {
-                var guids = new List<Guid>();
-                ComponentGuids.SplitDelimitedValues().ToList().ForEach( g => guids.Add( Guid.Parse( g ) ) );
-
-                foreach ( var component in BadgeContainer.Instance.Components )
-                {
-                    BadgeComponent badge = component.Value.Value;
-                    if ( guids.Contains( badge.TypeGuid ) )
-                    {
-                        var badgeControl = new PersonProfileBadge();
-                        badgeControl.BadgeEntityTypeName = badge.EntityType.Name;
-                        _badges.Add( badgeControl );
-                    }
-                }
-            }
-
             base.CreateChildControls();
             Controls.Clear();
 
-            _badges.ForEach( b => Controls.Add( b ) );
+            _badges.Clear();
+            if ( PersonBadges != null )
+            {
+                var currentPerson =  ((RockPage)Page).CurrentPerson;
+                foreach ( var personBadge in PersonBadges.OrderBy( b => b.Order ) )
+                {
+                    if (personBadge.IsAuthorized("View", currentPerson))
+                    {
+                        var badgeControl = new PersonProfileBadge();
+                        badgeControl.PersonBadge = personBadge;
+                        _badges.Add( badgeControl );
+                        Controls.Add( badgeControl );
+                    }
+                }
+            }
         }
 
         /// <summary>
