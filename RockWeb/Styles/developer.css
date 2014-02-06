@@ -375,7 +375,12 @@ img.file-browser-image {
 }
 
 /* DT- Merge*/
-tr.merge-section-header > td
+tr.grid-section-header > td
 {
-    background-color:#d9e1e8 
+    background-color:#BCCAD7 !important;
+}
+
+div.person-merge-confirm p.updated
+{
+    color:red;
 }

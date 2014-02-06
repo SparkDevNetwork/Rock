@@ -122,6 +122,16 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
+            if (!string.IsNullOrWhiteSpace(Name))
+            {
+                return Name;
+            }
+
+            if (this.Person != null)
+            {
+                return this.Person.ToString();
+            }
+
             return string.Format( "{0}->{1}", this.AliasPersonId, this.PersonId);
         }
 
