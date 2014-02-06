@@ -211,7 +211,7 @@ namespace RockWeb.Blocks.Reporting
                     for ( int i = 0; i < gReport.Columns.Count; i++ )
                     {
                         var boundField = gReport.Columns[i] as BoundField;
-                        
+
                         // AttributeFields are named in format "Attribute_{attributeId}_{columnIndex}". We need the attributeId portion
                         if ( boundField != null && boundField.DataField.StartsWith( "Attribute_" ) )
                         {
@@ -536,7 +536,7 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 // Add DataSelect MEF Components that apply to this EntityType
-                foreach ( var component in DataSelectContainer.GetComponentsBySelectedEntityTypeName( entityType.FullName ).OrderBy( c => c.Order ).ThenBy( c => c.GetTitle(entityType) ))
+                foreach ( var component in DataSelectContainer.GetComponentsBySelectedEntityTypeName( entityType.FullName ).OrderBy( c => c.Order ).ThenBy( c => c.GetTitle( entityType ) ) )
                 {
                     var selectEntityType = EntityTypeCache.Read( component.TypeName );
                     var listItem = new ListItem();
@@ -751,7 +751,7 @@ namespace RockWeb.Blocks.Reporting
 
                 List<EntityField> entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType );
 
-                var selectedEntityFields = new Dictionary<int,EntityField>();
+                var selectedEntityFields = new Dictionary<int, EntityField>();
                 var selectedAttributes = new Dictionary<int, AttributeCache>();
                 var selectedComponents = new Dictionary<int, ReportField>();
 
@@ -846,14 +846,20 @@ namespace RockWeb.Blocks.Reporting
                     }
                 }
 
-                gReport.DataSource = report.GetDataSource( new RockContext(), entityType, selectedEntityFields, selectedAttributes, selectedComponents, gReport.SortProperty, out errors );
+                try
+                {
+                    gReport.DataSource = report.GetDataSource( new RockContext(), entityType, selectedEntityFields, selectedAttributes, selectedComponents, gReport.SortProperty, out errors );
+                    gReport.DataBind();
+                }
+                catch ( Exception ex )
+                {
+                    errors.Add( ex.Message );
+                }
 
                 if ( errors.Any() )
                 {
                     nbEditModeMessage.Text = "INFO: There was a problem with one or more of the report's data components...<br/><br/> " + errors.AsDelimited( "<br/>" );
                 }
-
-                gReport.DataBind();
             }
         }
 
@@ -869,11 +875,11 @@ namespace RockWeb.Blocks.Reporting
         private void AddFieldPanelWidget( Guid reportFieldGuid, ReportFieldType reportFieldType, string fieldSelection, bool showExpanded, bool setReportFieldValues = false, ReportField reportField = null )
         {
             int entityTypeId = ddlEntityType.SelectedValueAsInt() ?? 0;
-            if (entityTypeId == 0)
+            if ( entityTypeId == 0 )
             {
                 return;
             }
-            
+
             PanelWidget panelWidget = new PanelWidget();
             panelWidget.ID = string.Format( "reportFieldWidget_{0}", reportFieldGuid.ToString( "N" ) );
 
