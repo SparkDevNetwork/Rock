@@ -37,7 +37,7 @@ namespace Rock.PersonProfile.Badge
     [ExportMetadata( "ComponentName", "Family Attendance" )]
     public class FamilyAttendance : BadgeComponent
     {
-        //private int _chartHeight = 25;
+
         private int _minBarHeight = 2;
         
         /// <summary>
@@ -62,38 +62,38 @@ namespace Rock.PersonProfile.Badge
 
             writer.Write("</div>");
 
-            writer.Write(@"
+            writer.Write(String.Format(@"
                 <script>
-                    $( document ).ready(function() {
+                    $( document ).ready(function() {{
                         
                         var monthNames = [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ];
                         
                         
-                        $.ajax({
+                        $.ajax({{
                                 type: 'GET',
-                                url: Rock.settings.get('baseUrl') + 'api/PersonBadges/FamilyAttendance/2',
-                                statusCode: {
-                                    200: function (data, status, xhr) {
+                                url: Rock.settings.get('baseUrl') + 'api/PersonBadges/FamilyAttendance/{0}' ,
+                                statusCode: {{
+                                    200: function (data, status, xhr) {{
                                             var chartHtml = '<ul class=\'badge-attendance-chart list-unstyled\'>';
-                                            $.each(data, function() {
+                                            $.each(data, function() {{
                                                 var barHeight = (this.AttendanceCount / this.SundaysInMonth) * 100;
-                                                if (barHeight < 2) {
-                                                    barHeight = 2;
-                                                }
+                                                if (barHeight < {1}) {{
+                                                    barHeight = {1};
+                                                }}
                                 
                                                 chartHtml += '<li title=\'' + monthNames[this.Month -1] + ' ' + this.Year +'\'><span style=\'height: ' + barHeight + '%\'></span></li>';                
-                                            });
+                                            }});
                                             chartHtml += '</ul>';
                                             
                                             $('.badge-attendance').html(chartHtml);
 
-                                        }
-                                },
-                        });
-                    });
+                                        }}
+                                }},
+                        }});
+                    }});
                 </script>
                 
-            ");
+            ", Person.Id.ToString(), _minBarHeight));
 
         }
 
