@@ -31,7 +31,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
-    public class PersonBadgesController : ApiController, IHasCustomRoutes
+    public partial class PersonBadgesController : IHasCustomRoutes
     {
         /// <summary>
         /// Adds the routes.
