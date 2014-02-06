@@ -18,7 +18,9 @@ using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
+using System.Linq;
 using System.Reflection;
+using System.Web;
 using Rock.Model;
 
 namespace Rock.Data
@@ -688,6 +690,51 @@ namespace Rock.Data
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
             ContextHelper.AddConfigurations( modelBuilder );
+        }
+
+        /// <summary>
+        /// Saves all changes made in this context to the underlying database.
+        /// </summary>
+        /// <returns>
+        /// The number of objects written to the underlying database.
+        /// </returns>
+        public override int SaveChanges()
+        {
+            // Try to get the current person alias
+            int? personAliasId = null;
+            if (HttpContext.Current.Items.Contains("CurrentPerson"))
+            {
+                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
+                if ( currentPerson != null && currentPerson.PrimaryAlias != null )
+                {
+                    personAliasId = currentPerson.PrimaryAlias.Id;
+                }
+            }
+
+            var changeSet = this.ChangeTracker.Entries().Where( e => e.Entity is IModel );
+            if (changeSet != null)
+            {
+                foreach(var entry in changeSet
+                    .Where( c => c.State == EntityState.Added)
+                    .Select( a => a.Entity as IModel))
+                {
+                    entry.CreatedDateTime = RockDateTime.Now;
+                    entry.CreatedByPersonAliasId = personAliasId;
+                    entry.ModifiedDateTime = RockDateTime.Now;
+                    entry.ModifiedByPersonAliasId = personAliasId;
+                }
+
+                foreach ( var entry in changeSet
+                    .Where( c => c.State == EntityState.Modified )
+                    .Select( a => a.Entity as IModel ) )
+                {
+                    entry.ModifiedDateTime = RockDateTime.Now;
+                    entry.ModifiedByPersonAliasId = personAliasId;
+                }
+            }
+
+            return base.SaveChanges();
+
         }
 
         /// <summary>
