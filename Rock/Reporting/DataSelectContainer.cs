@@ -104,7 +104,10 @@ namespace Rock.Reporting
         public static List<DataSelectComponent> GetComponentsBySelectedEntityTypeName( string entityTypeName )
         {
             return Instance.Components
-                .Where( c => c.Value.Value.AppliesToEntityType == entityTypeName )
+                .Where( c => 
+                    c.Value.Value.AppliesToEntityType == entityTypeName ||
+                    string.IsNullOrEmpty(c.Value.Value.AppliesToEntityType)
+                    )
                 .Select( c => c.Value.Value )
                 .OrderBy( c => c.Order )
                 .ToList();
