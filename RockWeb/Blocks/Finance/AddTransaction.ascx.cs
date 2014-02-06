@@ -466,7 +466,7 @@ achieve our mission.  We are so grateful for your commitment.
                                 addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
                             }
 
-                            var address = personService.GetFirstLocation( person, DefinedValueCache.Read( addressTypeGuid ).Id );
+                            var address = personService.GetFirstLocation( person.Id, DefinedValueCache.Read( addressTypeGuid ).Id );
                             if ( address != null )
                             {
                                 txtStreet.Text = address.Street1;

@@ -1192,7 +1192,7 @@ namespace RockWeb.Blocks.Groups
 
                                     foreach ( GroupMember member in new GroupMemberService().GetByGroupId( groupId ) )
                                     {
-                                        foreach ( Group family in personService.GetFamilies( member.Person ) )
+                                        foreach ( Group family in personService.GetFamilies( member.PersonId ) )
                                         {
                                             foreach ( GroupLocation familyGroupLocation in family.GroupLocations
                                                 .Where( l => l.IsMappedLocation && !l.GroupLocationTypeValue.Guid.Equals( previousLocationType ) ) )

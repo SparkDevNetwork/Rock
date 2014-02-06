@@ -56,27 +56,52 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the date created.
+        /// Gets or sets the family names.
         /// </summary>
         /// <value>
-        /// The date created.
+        /// The family names.
         /// </value>
-        public DateTime? DateCreated
+        public string HeaderContent
         {
-            get { return ViewState["DateCreated"] as DateTime?; }
-            set { ViewState["DateCreated"] = value; }
+            get 
+            {
+                var headerContent = ViewState["HeaderContent"] as string;
+                if (headerContent == null)
+                {
+                    headerContent = string.Empty;
+                    HeaderContent = headerContent;
+                }
+                return headerContent;
+            }
+
+            set 
+            {
+                ViewState["HeaderContent"] = value; 
+            }
         }
 
         /// <summary>
-        /// Gets or sets the created by.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The created by.
+        /// The modified date time.
         /// </value>
-        public string CreatedBy
+        public DateTime? ModifiedDateTime
         {
-            get { return ViewState["CreatedBy"] as string; }
-            set { ViewState["CreatedBy"] = value; }
+            get { return ViewState["ModifiedDateTime"] as DateTime?; }
+            set { ViewState["ModifiedDateTime"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the modified by.
+        /// </summary>
+        /// <value>
+        /// The modified by.
+        /// </value>
+        public string ModifiedBy
+        {
+            get { return ViewState["ModifiedBy"] as string; }
+            set { ViewState["ModifiedBy"] = value; }
         }
 
         /// <summary>
@@ -119,14 +144,6 @@ namespace Rock.Web.UI.Controls
     public class PersonMergeFieldHeaderTemplate : ITemplate
     {
         /// <summary>
-        /// Gets the header text.
-        /// </summary>
-        /// <value>
-        /// The header text.
-        /// </value>
-        public string HeaderText { get; private set; }
-
-        /// <summary>
         /// When implemented by a class, defines the <see cref="T:System.Web.UI.Control" /> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
         /// </summary>
         /// <param name="container">The <see cref="T:System.Web.UI.Control" /> object to contain the instances of controls from the inline template.</param>
@@ -138,8 +155,6 @@ namespace Rock.Web.UI.Controls
                 var mergeField = cell.ContainingField as PersonMergeField;
                 if ( mergeField != null )
                 {
-                    HeaderText = mergeField.HeaderText;
-
                     var rb = new RadioButton();
                     rb.Text = mergeField.PersonName;
                     rb.ID = "rbSelectPrimary_" + mergeField.ColumnIndex.ToString();
@@ -147,12 +162,13 @@ namespace Rock.Web.UI.Controls
                     rb.GroupName = "PrimaryPerson";
                     cell.Controls.Add( rb );
 
-                    string created = (mergeField.DateCreated.HasValue ? mergeField.DateCreated.ToElapsedString() + " " : "") +
-                        (!string.IsNullOrWhiteSpace(mergeField.CreatedBy) ? "by " + mergeField.CreatedBy : "");
+                    cell.Controls.Add( new LiteralControl( mergeField.HeaderContent ) );
 
+                    string created = (mergeField.ModifiedDateTime.HasValue ? mergeField.ModifiedDateTime.ToElapsedString() + " " : "") +
+                        (!string.IsNullOrWhiteSpace(mergeField.ModifiedBy) ? "by " + mergeField.ModifiedBy : "");
                     if ( created != string.Empty )
                     {
-                        cell.Controls.Add( new LiteralControl( string.Format( "<br/><span>Created {0}</span>", created ) ) );
+                        cell.Controls.Add( new LiteralControl( string.Format( "<small>Last Modifed {0}</small>", created ) ) );
                     }
                 }
             }

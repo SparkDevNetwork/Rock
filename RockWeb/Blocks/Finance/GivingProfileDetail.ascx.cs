@@ -610,7 +610,7 @@ achieve our mission.  We are so grateful for your commitment.
                     txtCardName.Visible = !Gateway.SplitNameOnCard;
                     txtCardName.Text = scheduledTransaction.AuthorizedPerson.FullName;
 
-                    var address = new PersonService().GetFirstLocation( scheduledTransaction.AuthorizedPerson,
+                    var address = new PersonService().GetFirstLocation( scheduledTransaction.AuthorizedPerson.Id,
                         DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id );
                     if ( address != null )
                     {
@@ -1087,7 +1087,7 @@ achieve our mission.  We are so grateful for your commitment.
                     addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
                 }
 
-                var address = personService.GetFirstLocation( scheduledTransaction.AuthorizedPerson, DefinedValueCache.Read( addressTypeGuid ).Id );
+                var address = personService.GetFirstLocation( scheduledTransaction.AuthorizedPerson.Id, DefinedValueCache.Read( addressTypeGuid ).Id );
                 if ( address != null )
                 {
                     paymentInfo.Street = address.Street1;

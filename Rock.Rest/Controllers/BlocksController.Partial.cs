@@ -64,6 +64,8 @@ namespace Rock.Rest.Controllers
             if ( !model.IsAuthorized( "Edit", person ) )
                 throw new HttpResponseException( HttpStatusCode.Unauthorized );
 
+            Rock.Web.Cache.BlockCache.Flush( id );
+
             if ( model.LayoutId.HasValue && model.LayoutId != block.LayoutId )
                 Rock.Web.Cache.PageCache.FlushLayoutBlocks( model.LayoutId.Value );
 

@@ -7,11 +7,11 @@
             <b class="fa fa-caret-down"></b>
         </a>
         <ul class="dropdown-menu">
-            <li>
-                <asp:PlaceHolder ID="phMyAccount" runat="server">
+            <asp:PlaceHolder ID="phMyAccount" runat="server">
+                <li>
                     <asp:HyperLink ID="hlMyAccount" runat="server" Text="My Account" />
-                </asp:PlaceHolder>
-            </li>
+                </li>
+            </asp:PlaceHolder>
             <li class="divider"></li>
             <li><asp:LinkButton ID="lbLoginLogout" runat="server" OnClick="lbLoginLogout_Click" CausesValidation="false"></asp:LinkButton></li>
         </ul>
