@@ -375,11 +375,6 @@ img.file-browser-image {
 }
 
 /* DT- Merge*/
-tr.grid-section-header > td
-{
-    background-color:#BCCAD7 !important;
-}
-
 div.person-merge-confirm p.updated
 {
     color:red;

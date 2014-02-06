@@ -11,6 +11,7 @@
     8. Add Family Page
     9. Fluidbox
     10. Responsive Overrides
+    11. Person Merge
 */
 
 // 1. Page Styles
@@ -348,3 +349,35 @@ span.field-value {
 
 }
 
+// 11. Person Merge
+// -------------------------
+
+.merge-personselect {
+    
+    vertical-align: top !important;
+
+    .merge-header-summary {
+        margin-left: 20px;
+    }
+
+    .radio-inline {
+        font-size: 16px;
+        font-weight: @font-weight-bold;
+    }
+
+    small {
+        color: darken(@accent-bold-text-color, 15%);
+    }
+
+    .merge-heading-family {
+        span {
+            display: block;
+        }
+
+        margin-bottom: 12px;
+    }
+}
+
+.merge-photo {
+    border: 3px solid @accent-bold-color;
+}

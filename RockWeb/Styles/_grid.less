@@ -7,6 +7,8 @@
     4. Footer
     5. Light Style - Used for small grids
     5. Reusable classes
+    6. Column Types
+    7. Row Types
 
 */
 
@@ -196,4 +198,31 @@ td.grid-col-actions {
     td, th {
         padding: 12px !important;
     }
+}
+
+// 6. Column Types
+// -------------------------
+
+.grid-select-field { // checkbox field
+                        
+    .checkbox, .radio {
+
+        padding-left: 0;
+        margin: 0;
+
+        input {
+            float: none;
+            margin: 0;
+        }
+    }
+    // future add this: http://webdesign.tutsplus.com/tutorials/quick-tip-easy-css3-checkboxes-and-radio-buttons--webdesign-8953
+}
+
+
+// 6. Row Types
+// -------------------------
+.table > tbody > tr.grid-section-header > td
+{
+    background-color: @accent-light-color;
+    color: @accent-light-text-color;
 }

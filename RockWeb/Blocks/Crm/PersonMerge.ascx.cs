@@ -459,7 +459,6 @@ namespace RockWeb.Blocks.Crm
 
                 var labelCol = new BoundField();
                 labelCol.DataField = "Label";
-                labelCol.HeaderText = "Value";
                 gValues.Columns.Add( labelCol );
 
                 var personService = new PersonService();
@@ -472,6 +471,7 @@ namespace RockWeb.Blocks.Crm
                     personCol.HeaderContent = GetValuesColumnHeader( person.Id );
                     personCol.ModifiedDateTime = person.ModifiedDateTime;
                     personCol.ModifiedBy = person.ModifiedBy;
+                    personCol.HeaderStyle.CssClass = "merge-personselect";
                     personCol.DataTextField = string.Format( "property_{0}", person.Id );
                     personCol.DataSelectedField = string.Format( "property_{0}_selected", person.Id );
                     personCol.DataVisibleField = string.Format( "property_{0}_visible", person.Id );
@@ -948,7 +948,7 @@ namespace RockWeb.Blocks.Crm
 
             AddProperty( "Photo", "Photo", person.Id,
                 person.PhotoId.HasValue ? person.PhotoId.ToString() : string.Empty,
-                Person.GetPhotoImageTag( person, 100, 100 ) );
+                Person.GetPhotoImageTag( person, 65, 65, "merge-photo" ) );
             AddProperty( "Title", person.Id, person.TitleValue );
             AddProperty( "FirstName", person.Id, person.FirstName );
             AddProperty( "NickName", person.Id, person.NickName );

@@ -162,14 +162,20 @@ namespace Rock.Web.UI.Controls
                     rb.GroupName = "PrimaryPerson";
                     cell.Controls.Add( rb );
 
-                    cell.Controls.Add( new LiteralControl( mergeField.HeaderContent ) );
+                    HtmlGenericContainer headerSummary = new HtmlGenericContainer("div", "merge-header-summary");
+                    headerSummary.Controls.Add(new LiteralControl(mergeField.HeaderContent));
+
+                    //cell.Controls.Add( new LiteralControl( mergeField.HeaderContent ) );
 
                     string created = (mergeField.ModifiedDateTime.HasValue ? mergeField.ModifiedDateTime.ToElapsedString() + " " : "") +
                         (!string.IsNullOrWhiteSpace(mergeField.ModifiedBy) ? "by " + mergeField.ModifiedBy : "");
                     if ( created != string.Empty )
                     {
-                        cell.Controls.Add( new LiteralControl( string.Format( "<small>Last Modifed {0}</small>", created ) ) );
+                        headerSummary.Controls.Add(new LiteralControl(string.Format("<small>Last Modifed {0}</small>", created)));
+                        //cell.Controls.Add( new LiteralControl( string.Format( "<small>Last Modifed {0}</small>", created ) ) );
                     }
+
+                    cell.Controls.Add(headerSummary);
                 }
             }
         }

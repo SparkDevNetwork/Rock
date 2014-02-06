@@ -44,7 +44,7 @@
             <Rock:Grid ID="gValues" runat="server" AllowSorting="false" EmptyDataText="No Results" />
             
             <div class="actions pull-right">
-                <asp:LinkButton ID="lbSelectValuesBack" runat="server" Text="Back" CssClass="btn btn-secondary" OnClick="lbSelectValuesBack_Click" />
+                <asp:LinkButton ID="lbSelectValuesBack" runat="server" Text="Back" CssClass="btn btn-link" OnClick="lbSelectValuesBack_Click" />
                 <asp:LinkButton ID="lbSelectValues" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="lbSelectValues_Click" />
             </div>
 
@@ -65,7 +65,7 @@
             </Rock:Grid>
 
             <div class="actions pull-right">
-                <asp:LinkButton ID="lbConfirmBack" runat="server" Text="Back" CssClass="btn btn-secondary" OnClick="lbConfirmBack_Click" />
+                <asp:LinkButton ID="lbConfirmBack" runat="server" Text="Back" CssClass="btn btn-link" OnClick="lbConfirmBack_Click" />
                 <asp:LinkButton ID="lbConfirm" runat="server" Text="Finish" CssClass="btn btn-primary" OnClick="lbConfirm_Click" />
             </div>
 
