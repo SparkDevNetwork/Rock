@@ -472,6 +472,10 @@
     <Compile Include="Migrations\201402051857216_AuthorizedPersonIdNotRequired.Designer.cs">
       <DependentUpon>201402051857216_AuthorizedPersonIdNotRequired.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402061548097_ImprovePerformanceAttendanceBadgeSP.cs" />
+    <Compile Include="Migrations\201402061548097_ImprovePerformanceAttendanceBadgeSP.Designer.cs">
+      <DependentUpon>201402061548097_ImprovePerformanceAttendanceBadgeSP.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -805,6 +809,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402051857216_AuthorizedPersonIdNotRequired.resx">
       <DependentUpon>201402051857216_AuthorizedPersonIdNotRequired.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402061548097_ImprovePerformanceAttendanceBadgeSP.resx">
+      <DependentUpon>201402061548097_ImprovePerformanceAttendanceBadgeSP.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
