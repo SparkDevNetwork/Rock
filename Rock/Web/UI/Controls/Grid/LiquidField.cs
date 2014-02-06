@@ -126,6 +126,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// To the dictionary.
         /// </summary>
+        /// <param name="gridViewRow">The grid view row.</param>
         /// <param name="dataItem">The data item.</param>
         /// <returns></returns>
         private Dictionary<string, object> ToGridItemsDictionary( GridViewRow gridViewRow, object dataItem )

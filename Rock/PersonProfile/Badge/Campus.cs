@@ -32,21 +32,6 @@ namespace Rock.PersonProfile.Badge
     [ExportMetadata("ComponentName", "Campus")]
     public class Campus : TextBadge
     {
-        /// <summary>
-        /// Gets the attribute value defaults.
-        /// </summary>
-        /// <value>
-        /// The attribute defaults.
-        /// </value>
-        public override System.Collections.Generic.Dictionary<string, string> AttributeValueDefaults
-        {
-            get
-            {
-                var defaults = base.AttributeValueDefaults;
-                defaults["Order"] = "1";
-                return defaults;
-            }
-        }
 
         /// <summary>
         /// Gets the badge label

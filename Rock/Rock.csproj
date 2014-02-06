@@ -148,6 +148,7 @@
     </Compile>
     <Compile Include="Attribute\AccountsFieldAttribute.cs" />
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
+    <Compile Include="Attribute\PersonBadgesAttribute.cs" />
     <Compile Include="Attribute\CampusFieldAttribute.cs" />
     <Compile Include="Attribute\BinaryFileTypeFieldAttribute.cs" />
     <Compile Include="Attribute\ComponentFieldAttribute.cs" />
@@ -188,6 +189,7 @@
     <Compile Include="Data\IModel.cs" />
     <Compile Include="Data\IService.cs" />
     <Compile Include="Data\LinqRuntimeTypeBuilder.cs" />
+    <Compile Include="Field\Types\PersonBadgesFieldType.cs" />
     <Compile Include="Field\Types\GroupLocationTypeFieldType.cs" />
     <Compile Include="Field\Types\CodeEditorFieldType.cs" />
     <Compile Include="Field\Types\TimeFieldType.cs" />
@@ -206,6 +208,8 @@
     </Compile>
     <Compile Include="Jobs\RunSQL.cs" />
     <Compile Include="Model\AuditDetail.cs" />
+    <Compile Include="Model\CodeGenerated\PersonBadgeService.cs" />
+    <Compile Include="Model\PersonBadge.cs" />
     <Compile Include="Model\CodeGenerated\AuditDetailService.cs" />
     <Compile Include="Model\CodeGenerated\HistoryService.cs" />
     <Compile Include="Model\CodeGenerated\LayoutService.cs" />

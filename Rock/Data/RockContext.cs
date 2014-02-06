@@ -497,6 +497,14 @@ namespace Rock.Data
         public DbSet<PersonAlias> PersonAliases { get; set; }
 
         /// <summary>
+        /// Gets or sets the person badge types.
+        /// </summary>
+        /// <value>
+        /// The person badge types.
+        /// </value>
+        public DbSet<PersonBadge> PersonBadges { get; set; }
+
+        /// <summary>
         /// Gets or sets the Person Vieweds.
         /// </summary>
         /// <value>
@@ -831,6 +839,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new PageRouteConfiguration() );
             modelBuilder.Configurations.Add( new PersonConfiguration() );
             modelBuilder.Configurations.Add( new PersonAliasConfiguration() );
+            modelBuilder.Configurations.Add( new PersonBadgeConfiguration() );
             modelBuilder.Configurations.Add( new PersonViewedConfiguration() );
             modelBuilder.Configurations.Add( new PhoneNumberConfiguration() );
             modelBuilder.Configurations.Add( new PrayerRequestConfiguration() );

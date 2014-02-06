@@ -30,21 +30,6 @@ namespace Rock.PersonProfile.Badge
     [ExportMetadata("ComponentName", "Connection Status")]
     public class ConnectionStatus : TextBadge
     {
-        /// <summary>
-        /// Gets the attribute value defaults.
-        /// </summary>
-        /// <value>
-        /// The attribute defaults.
-        /// </value>
-        public override System.Collections.Generic.Dictionary<string, string> AttributeValueDefaults
-        {
-            get
-            {
-                var defaults = base.AttributeValueDefaults;
-                defaults["Order"] = "0";
-                return defaults;
-            }
-        }
 
         /// <summary>
         /// Gets the badge label

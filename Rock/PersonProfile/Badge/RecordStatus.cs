@@ -31,21 +31,6 @@ namespace Rock.PersonProfile.Badge
     [ExportMetadata( "ComponentName", "Record Status" )]
     public class RecordStatus : TextBadge
     {
-        /// <summary>
-        /// Gets the attribute value defaults.
-        /// </summary>
-        /// <value>
-        /// The attribute defaults.
-        /// </value>
-        public override System.Collections.Generic.Dictionary<string, string> AttributeValueDefaults
-        {
-            get
-            {
-                var defaults = base.AttributeValueDefaults;
-                defaults["Order"] = "2";
-                return defaults;
-            }
-        }
 
         /// <summary>
         /// Gets the badge label
