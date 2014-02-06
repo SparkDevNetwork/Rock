@@ -702,7 +702,7 @@ namespace Rock.Data
         {
             // Try to get the current person alias
             int? personAliasId = null;
-            if (HttpContext.Current.Items.Contains("CurrentPerson"))
+            if ( HttpContext.Current != null && HttpContext.Current.Items.Contains("CurrentPerson"))
             {
                 var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
                 if ( currentPerson != null && currentPerson.PrimaryAlias != null )
