@@ -15,17 +15,14 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
-
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock;
-using System.Data.Entity.SqlServer;
-using System.Collections.Generic;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Person
 {
@@ -55,6 +52,20 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         /// <summary>
+        /// Gets the section that this will appear in in the Field Selector
+        /// </summary>
+        /// <value>
+        /// The section.
+        /// </value>
+        public override string Section
+        {
+            get
+            {
+                return base.Section;
+            }
+        }
+
+        /// <summary>
         /// The PropertyName of the property in the anonymous class returned by the SelectExpression
         /// </summary>
         /// <value>
@@ -76,7 +87,18 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override Type ColumnFieldType
         {
-            get { return typeof( IEnumerable<object> ); }
+            get { return typeof( IEnumerable<Rock.Model.Person> ); }
+        }
+
+        /// <summary>
+        /// Gets the grid field.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public override System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
+        {
+            return new ListDelimitedField();
         }
 
         /// <summary>
@@ -131,7 +153,7 @@ namespace Rock.Reporting.DataSelect.Person
                 .Select( p => familyGroupMembers.Where( s => s.PersonId == p.Id && s.GroupRole.Guid == childGuid )
                     .SelectMany( m => m.Group.Members )
                     .Where( m => m.GroupRole.Guid == adultGuid )
-                    .OrderBy( m => m.Person.Gender)
+                    .OrderBy( m => m.Person.Gender )
                     .Select( m => m.Person ).AsEnumerable() );
 
             var selectParentsExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personParentsQuery, entityIdProperty, "p" );

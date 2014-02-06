@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Extension;
 
@@ -40,7 +41,7 @@ namespace Rock.Reporting
         public abstract string AppliesToEntityType { get; }
 
         /// <summary>
-        /// Gets the section.
+        /// Gets the section that this will appear in in the Field Selector
         /// </summary>
         /// <value>
         /// The section.
@@ -73,6 +74,18 @@ namespace Rock.Reporting
         /// The default column header text.
         /// </value>
         public abstract string ColumnHeaderText { get; }
+
+        /// <summary>
+        /// Gets the grid field.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public virtual System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
+        {
+            BoundField result = Rock.Web.UI.Controls.Grid.GetGridField( this.ColumnFieldType );
+            return result;
+        }
 
         /// <summary>
         /// Gets the attribute value defaults.
