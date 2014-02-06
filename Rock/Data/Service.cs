@@ -394,26 +394,6 @@ namespace Rock.Data
             if ( item != null && item.Guid == Guid.Empty )
                 item.Guid = Guid.NewGuid();
 
-            // Update the created by and modified by fields
-            IModel model = item as IModel;
-            if (model != null)
-            {
-                if ( model.Id <= 0 )
-                {
-                    if ( !model.CreatedDateTime.HasValue )
-                    {
-                        model.CreatedDateTime = RockDateTime.Now;
-                    }
-                    if ( !model.CreatedByPersonAliasId.HasValue )
-                    {
-                        model.CreatedByPersonAliasId = personAliasId;
-                    }
-                }
-
-                model.ModifiedByPersonAliasId = personAliasId;
-                model.ModifiedDateTime = RockDateTime.Now;
-            }
-
             List<Audit> audits;
             List<string> errorMessages;
 
