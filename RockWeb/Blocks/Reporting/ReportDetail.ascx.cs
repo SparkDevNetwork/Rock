@@ -536,7 +536,7 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 // Add DataSelect MEF Components that apply to this EntityType
-                foreach ( var component in DataSelectContainer.GetComponentsBySelectedEntityTypeName( entityType.FullName ).OrderBy( c => c.Order ) )
+                foreach ( var component in DataSelectContainer.GetComponentsBySelectedEntityTypeName( entityType.FullName ).OrderBy( c => c.Order ).ThenBy( c => c.GetTitle(entityType) ))
                 {
                     var selectEntityType = EntityTypeCache.Read( component.TypeName );
                     var listItem = new ListItem();
@@ -831,11 +831,16 @@ namespace RockWeb.Blocks.Reporting
                             DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
                             if ( selectComponent != null )
                             {
-                                var boundField = Grid.GetGridField( selectComponent.ColumnFieldType );
-                                boundField.DataField = string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, columnIndex );
-                                boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? selectComponent.ColumnHeaderText : reportField.ColumnHeaderText;
-                                boundField.SortExpression = null;
-                                gReport.Columns.Add( boundField );
+                                DataControlField columnField = selectComponent.GetGridField( entityType, reportField.Selection );
+
+                                if ( columnField is BoundField )
+                                {
+                                    ( columnField as BoundField ).DataField = string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, columnIndex );
+                                }
+
+                                columnField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? selectComponent.ColumnHeaderText : reportField.ColumnHeaderText;
+                                columnField.SortExpression = null;
+                                gReport.Columns.Add( columnField );
                             }
                         }
                     }
