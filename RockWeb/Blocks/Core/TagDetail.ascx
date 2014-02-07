@@ -40,7 +40,7 @@
                             <Rock:RockDropDownList id="ddlEntityType" runat="server" Label="Entity Type" />
                             <Rock:RockRadioButtonList ID="rblScope" runat="server" Label="Scope" RepeatDirection="Horizontal"
                                 AutoPostBack="true" OnSelectedIndexChanged="rblScope_SelectedIndexChanged">
-                                <asp:ListItem Value="Organization" Text="Organization" Selected="True" />
+                                <asp:ListItem Value="Organization" Text="Organizational" Selected="True" />
                                 <asp:ListItem Value="Personal" Text="Personal" />
                             </Rock:RockRadioButtonList>
                        </div>
