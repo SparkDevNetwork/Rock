@@ -62,6 +62,6 @@ using System.Runtime.InteropServices;
 // This is the "official" product name that will be shown to people. 
 // It's shown in the SystemInfo details and perhaps the RockUpdate page.
 // JICK - J(on) / (N)ick versioning system.
-[assembly: AssemblyInformationalVersion( "Rock Humphreys 1.4 (alpha)" )]
+[assembly: AssemblyInformationalVersion( "Rock Humphreys 1.5 (alpha)" )]
 //[assembly: AssemblyInformationalVersion( "Rock McKinley 0.7 (beta)" )]    // 1.0.7
 //[assembly: AssemblyInformationalVersion( "Rock McKinley 1.0" )]           // 1.1.0
