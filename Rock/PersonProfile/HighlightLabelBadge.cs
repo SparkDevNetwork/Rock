@@ -14,39 +14,48 @@
 // limitations under the License.
 // </copyright>
 //
-using System.ComponentModel;
-using System.ComponentModel.Composition;
+using System.Collections.Generic;
+using System.Web.UI;
 
+using Rock.Extension;
 using Rock.Model;
+using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace Rock.PersonProfile.Badge
+namespace Rock.PersonProfile
 {
     /// <summary>
-    /// Connection Status Badge
+    /// Base class for person profile icon badges
     /// </summary>
-    [Description( "Connection Status Badge" )]
-    [Export( typeof( BadgeComponent ) )]
-    [ExportMetadata("ComponentName", "Connection Status")]
-    public class ConnectionStatus : HighlightLabelBadge
+    public abstract class HighlightLabelBadge : BadgeComponent
     {
-
         /// <summary>
         /// Gets the badge label
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public override HighlightLabel GetLabel(Person person)
+        public virtual HighlightLabel GetLabel( Person person )
+        {
+            return new HighlightLabel();
+        }
+
+        /// <summary>
+        /// Renders the specified writer.
+        /// </summary>
+        /// <param name="badge">The badge.</param>
+        /// <param name="writer">The writer.</param>
+        public override void Render( PersonBadge badge, System.Web.UI.HtmlTextWriter writer )
         {
             if ( Person != null )
             {
-                var label = new HighlightLabel();
-                label.LabelType = LabelType.Success;
-                label.Text = Person.ConnectionStatusValueId.DefinedValue();
-                return label;
+                var label = GetLabel( Person );
+                if ( label != null )
+                {
+                    label.RenderControl( writer );
+                }
             }
-
-            return null;
-        } 
+        }
     }
+
 }

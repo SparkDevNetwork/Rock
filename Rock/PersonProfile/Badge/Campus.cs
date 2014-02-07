@@ -30,7 +30,7 @@ namespace Rock.PersonProfile.Badge
     [Description( "Campus Badge" )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata("ComponentName", "Campus")]
-    public class Campus : TextBadge
+    public class Campus : HighlightLabelBadge
     {
 
         /// <summary>
