@@ -387,19 +387,36 @@ namespace Rock.Web.UI
         /// <param name="writer"></param>
         protected override void Render( HtmlTextWriter writer )
         {
+            string preHtml = string.Empty;
+            string postHtml = string.Empty;
+
             string appRoot = ResolveRockUrl( "~/" );
             string themeRoot = ResolveRockUrl( "~~/" );
 
-            if ( Visible && !string.IsNullOrWhiteSpace( _blockCache.PreHtml ) )
+            if ( Visible )
             {
-                var preHtmlControl = (Literal)this.FindControl("lPreHtml");
-                if (preHtmlControl != null)
+                if ( !string.IsNullOrWhiteSpace( _blockCache.PreHtml ) )
                 {
-                    preHtmlControl.Text = _blockCache.PreHtml.Replace("~~/", themeRoot).Replace("~/", appRoot);
+                    preHtml = _blockCache.PreHtml.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+
+                    var preHtmlControl = this.FindControl( "lPreHtml" ) as Literal;
+                    if ( preHtmlControl != null )
+                    {
+                        preHtmlControl.Text = preHtml;
+                        preHtml = string.Empty;
+                    }
                 }
-                else
+
+                if ( !string.IsNullOrWhiteSpace( _blockCache.PostHtml ) )
                 {
-                    writer.Write(_blockCache.PreHtml.Replace("~~/", themeRoot).Replace("~/", appRoot));
+                    postHtml = _blockCache.PostHtml.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+
+                    var postHtmlControl = this.FindControl( "lPostHtml" ) as Literal;
+                    if ( postHtmlControl != null )
+                    {
+                        postHtmlControl.Text = postHtml;
+                        postHtml = string.Empty;
+                    }
                 }
             }
 
@@ -419,20 +436,9 @@ namespace Rock.Web.UI
                 cache.Set( blockCacheKey, sbOutput.ToString(), cacheDuration );
             }
 
+            writer.Write( preHtml );
             base.Render( writer );
-
-            if ( Visible && !string.IsNullOrWhiteSpace( _blockCache.PostHtml ) )
-            {
-                var postHtmlControl = (Literal)this.FindControl("lPostHtml");
-                if (postHtmlControl != null)
-                {
-                    postHtmlControl.Text = _blockCache.PostHtml.Replace("~~/", themeRoot).Replace("~/", appRoot);
-                }
-                else
-                {
-                    writer.Write(_blockCache.PostHtml.Replace("~~/", themeRoot).Replace("~/", appRoot));
-                }
-            }
+            writer.Write( postHtml );
 
         }
 
