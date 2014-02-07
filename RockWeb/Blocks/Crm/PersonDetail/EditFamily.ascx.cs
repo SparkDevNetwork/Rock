@@ -312,6 +312,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         {
                             imgPerson.ImageUrl = string.Format( "~/Assets/Images/person-no-photo-{0}.svg",
                                 familyMember.Gender == Gender.Female ? "female" : "male" );
+
+                            imgPerson.CssClass = "no-photo";
                         }
                     }
 
