@@ -168,25 +168,6 @@ namespace RockWeb.Blocks.Administration
                 //numbMaxSize.MinimumValue = Math.Round(section.RequestLengthDiskThreshold * 10.48576, 0 ).ToString();
                 //numbMaxSize.ToolTip = string.Format( "between {0} and {1} MB", section.RequestLengthDiskThreshold, numbMaxSize.MaximumValue );
             }
-
-            ConfigurationSection configSection = ConfigurationManager.GetSection( "system.webServer" ) as ConfigurationSection;
-            
-            Configuration rockWebConfig = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration( "~" );
-            string rawXML = rockWebConfig.GetSection( "system.webServer" ).SectionInformation.GetRawXml();
-            ConfigXmlDocument xdoc = new ConfigXmlDocument();
-            xdoc.LoadXml( rawXML );
-            XmlNode xnodes = xdoc.SelectSingleNode( "/system.webServer/security/requestFiltering" );
-            foreach (XmlNode node in xnodes.ChildNodes)
-            {
-                var maxAllowedContentLength = node.Attributes["maxAllowedContentLength"];
-
-                if ( maxAllowedContentLength != null )
-                {
-                    int bytes = int.Parse( maxAllowedContentLength.Value );
-                    // convert bytes to MB
-                    numbMaxContentLength.Text = ( bytes / 1048576 ).ToString();
-                }
-            }
         }
 
         /// <summary>
@@ -204,7 +185,7 @@ namespace RockWeb.Blocks.Administration
                 document.PreserveWhitespace = true;
                 document.Load( webConfig );
 
-                int maxContentLengthBytes = int.Parse( numbMaxContentLength.Text ) * 1048576;
+                int maxContentLengthBytes = int.Parse( numbMaxSize.Text ) * 1048576;
 
                 string transformString = string.Format( @"<?xml version='1.0'?>
 <configuration xmlns:xdt='http://schemas.microsoft.com/XML-Document-Transform'>  

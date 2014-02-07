@@ -484,6 +484,10 @@
     <Compile Include="Migrations\201402070040267_RefactorPersonBadge.Designer.cs">
       <DependentUpon>201402070040267_RefactorPersonBadge.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402072059288_DataSelectPageBlock.cs" />
+    <Compile Include="Migrations\201402072059288_DataSelectPageBlock.Designer.cs">
+      <DependentUpon>201402072059288_DataSelectPageBlock.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -826,6 +830,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402070040267_RefactorPersonBadge.resx">
       <DependentUpon>201402070040267_RefactorPersonBadge.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402072059288_DataSelectPageBlock.resx">
+      <DependentUpon>201402072059288_DataSelectPageBlock.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
