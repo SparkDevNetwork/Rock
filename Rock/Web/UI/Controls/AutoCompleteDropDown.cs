@@ -427,7 +427,7 @@ namespace Rock.Web.UI.Controls
 
             if ( RequiredFieldValidator != null )
             {
-                RequiredFieldValidator.ID = "rfv";
+                RequiredFieldValidator.ID = this.ID + "_rfv";
                 RequiredFieldValidator.ControlToValidate = _hfValue.ID;
                 RequiredFieldValidator.Display = ValidatorDisplay.Dynamic;
                 RequiredFieldValidator.CssClass = "validation-error help-inline";
