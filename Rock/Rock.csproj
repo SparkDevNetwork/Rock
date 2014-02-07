@@ -237,6 +237,7 @@
     <Compile Include="Reporting\DataFilter\Person\InGroupGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupFilter.cs" />
     <Compile Include="Reporting\DataSelect\LiquidSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\InGroupGroupTypeSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PhotoSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\GradeSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\DistanceFromSelect.cs" />
