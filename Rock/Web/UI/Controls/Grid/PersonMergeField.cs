@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
@@ -116,6 +117,14 @@ namespace Rock.Web.UI.Controls
             set { ViewState["IsPrimaryPerson"] = value; }
         }
 
+        /// <summary>
+        /// Gets the parent grid.
+        /// </summary>
+        /// <value>
+        /// The parent grid.
+        /// </value>
+        public Grid ParentGrid { get; internal set; }
+
         #endregion
 
         #region Base Control Methods
@@ -130,12 +139,45 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         public override bool Initialize( bool sortingEnabled, Control control )
         {
-            this.HeaderTemplate = new PersonMergeFieldHeaderTemplate();
+            PersonMergeFieldHeaderTemplate headerTemplate = new PersonMergeFieldHeaderTemplate();
+            headerTemplate.LinkButtonClick += HeaderTemplate_LinkButtonClick;
+            this.HeaderTemplate = headerTemplate;
+            this.ParentGrid = control as Grid;
             return base.Initialize( sortingEnabled, control );
         }
 
         #endregion
 
+        #region Events
+
+        /// <summary>
+        /// Handles the LinkButtonClick event of the HeaderTemplate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void HeaderTemplate_LinkButtonClick( object sender, EventArgs e )
+        {
+            Delete( e );
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:Click"/> event.
+        /// </summary>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        internal virtual void Delete( EventArgs e )
+        {
+            if ( OnDelete != null )
+            {
+                OnDelete( this, e );
+            }
+        }
+        
+        /// <summary>
+        /// Occurs when [delete].
+        /// </summary>
+        public event EventHandler OnDelete;
+
+        #endregion
     }
 
     /// <summary>
@@ -162,17 +204,30 @@ namespace Rock.Web.UI.Controls
                     rb.GroupName = "PrimaryPerson";
                     cell.Controls.Add( rb );
 
+                    var lbDelete = new LinkButton();
+                    lbDelete.CausesValidation = false;
+                    lbDelete.CssClass = "btn btn-danger btn-xs pull-right";
+                    lbDelete.ToolTip = "Remove Person";
+                    cell.Controls.Add( lbDelete );
+
+                    HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
+                    buttonIcon.Attributes.Add( "class", "fa fa-times" );
+                    lbDelete.Controls.Add( buttonIcon );
+
+                    lbDelete.Click += lbDelete_Click;
+
+                    // make sure delete button is registered for async postback (needed just in case the grid was created at runtime)
+                    var sm = ScriptManager.GetCurrent( mergeField.ParentGrid.Page );
+                    sm.RegisterAsyncPostBackControl( lbDelete );
+
                     HtmlGenericContainer headerSummary = new HtmlGenericContainer("div", "merge-header-summary");
                     headerSummary.Controls.Add(new LiteralControl(mergeField.HeaderContent));
-
-                    //cell.Controls.Add( new LiteralControl( mergeField.HeaderContent ) );
 
                     string created = (mergeField.ModifiedDateTime.HasValue ? mergeField.ModifiedDateTime.ToElapsedString() + " " : "") +
                         (!string.IsNullOrWhiteSpace(mergeField.ModifiedBy) ? "by " + mergeField.ModifiedBy : "");
                     if ( created != string.Empty )
                     {
                         headerSummary.Controls.Add(new LiteralControl(string.Format("<small>Last Modifed {0}</small>", created)));
-                        //cell.Controls.Add( new LiteralControl( string.Format( "<small>Last Modifed {0}</small>", created ) ) );
                     }
 
                     cell.Controls.Add(headerSummary);
@@ -180,5 +235,22 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void lbDelete_Click( object sender, EventArgs e )
+        {
+            if ( LinkButtonClick != null )
+            {
+                LinkButtonClick( sender, e );
+            }
+        }
+
+        /// <summary>
+        /// Occurs when [link button click].
+        /// </summary>
+        internal event EventHandler LinkButtonClick;
     }
 }
