@@ -60,16 +60,17 @@ namespace Rock.Migrations
 
             // Add Block to Page: Person Profile Badge Detail, Site: Rock RMS
             AddBlock( "D376EFD7-5B0D-44BF-A44D-03C466D2D30D", "", "A79336CD-2265-4E36-B915-CF49956FD689", "Person Badge Detail", "Main", "", "", 0, "F20D430A-3E15-4AD9-A015-4F4D5A5A6DED" );
-            
+
             // Attrib for BlockType: Person Badge List:Detail Page
             AddBlockTypeAttribute( "D8CCD577-2200-44C5-9073-FD16F174D364", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Detail Page", "DetailPage", "", "", 0, @"", "C4F9BFD0-8529-437A-9BAA-3A39289639E4" );
-            
+
             // Attrib Value for Block:Person Badge List, Attribute:Detail Page Page: Person Profile Badges, Site: Rock RMS
             AddBlockAttributeValue( "C5B56466-6EAF-404A-A803-C2314B36C38F", "C4F9BFD0-8529-437A-9BAA-3A39289639E4", @"d376efd7-5b0d-44bf-a44d-03c466d2d30d" );
-            
+
             UpdateFieldType( "Person Badges", "", "Rock", "Rock.Field.Types.PersonBadgesFieldType", "3F1AE891-7DC8-46D2-865D-11543B34FB60" );
-            
+
             Sql( @"
+    -- Update person badge list to use new block type
     DECLARE @BlockTypeId int
     SET @BlockTypeId = (SELECT [Id] FROM [BlockType] WHERE [Guid] = 'D8CCD577-2200-44C5-9073-FD16F174D364') 
 
@@ -77,6 +78,57 @@ namespace Rock.Migrations
 	    [BlockTypeId] = @BlockTypeId,
 	    [Name] = 'Person Badge List'
     WHERE [Guid] = 'C5B56466-6EAF-404A-A803-C2314B36C38F'
+
+    -- Insert badge instance records
+    DECLARE @ConnectionStatusBadge int
+    DECLARE @CampusBadge int
+    DECLARE @RecordStatusBadge int
+    DECLARE @16WeekAttendanceBadge int
+    DECLARE @FamilyAttendanceBadge int
+    DECLARE @BaptizedBadge int
+
+    SET @ConnectionStatusBadge = (SELECT [ID] FROM [EntityType] WHERE [Name] = 'Rock.PersonProfile.Badge.ConnectionStatus')
+    SET @CampusBadge = (SELECT [ID] FROM [EntityType] WHERE [Name] = 'Rock.PersonProfile.Badge.Campus')
+    SET @RecordStatusBadge = (SELECT [ID] FROM [EntityType] WHERE [Name] = 'Rock.PersonProfile.Badge.RecordStatus')
+    SET @16WeekAttendanceBadge = (SELECT [ID] FROM [EntityType] WHERE [Name] = 'Rock.PersonProfile.Badge.eraAttendanceAttendance')
+    SET @FamilyAttendanceBadge = (SELECT [ID] FROM [EntityType] WHERE [Name] = 'Rock.PersonProfile.Badge.FamilyAttendance')
+    SET @BaptizedBadge = (SELECT [ID] FROM [EntityType] WHERE [Name] = 'Rock.PersonProfile.Badge.Baptized')
+
+    INSERT INTO [PersonBadge] ([Name],[Description],[EntityTypeId],[Order],[Guid])
+    VALUES
+	    ('Connection Status', 'Connection Status Badge', @ConnectionStatusBadge, 0, '43B4800D-B995-459E-82FC-5FD575F9E348'),
+	    ('Campus', 'Campus Badge', @CampusBadge, 1, 'B21DCD49-AC35-4B2B-9857-75213209B643'),
+	    ('Record Status', 'Record Status Badge', @RecordStatusBadge, 1, 'A999125F-E2B8-48AD-AA25-DF94147E65C2'),
+	    ('16 Week Attendance', '16 Week Attendance Badge', @16WeekAttendanceBadge, 1, '452CF317-D3A1-49B5-84B1-4206DDADC653'),
+	    ('Family Attendance', 'Family Attendance Badge', @FamilyAttendanceBadge, 1, '3F7D648D-D6BA-4F03-931C-AFBDFA24BBD8'),
+	    ('Baptized', 'Baptized Badge', @BaptizedBadge, 1,'44E4D9CD-8143-4333-8C66-89DF95B9F580')
+
+    -- Update the Bio and BadgeList attributes to be a Person Badge field type
+    DECLARE @PersonBadgeFieldTypeId int
+    SET @PersonBadgeFieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '3F1AE891-7DC8-46D2-865D-11543B34FB60')
+    UPDATE [Attribute]
+    SET [FieldTypeId] = @PersonBadgeFieldTypeId
+    WHERE [Guid] in ('8E11F65B-7272-4E9F-A4F1-89CE08E658DE','F5AB231E-3836-4D52-BD03-BF79773C237A')
+
+    -- Set Bio badges
+    UPDATE [AttributeValue] SET
+    VALUE = '43B4800D-B995-459E-82FC-5FD575F9E348,B21DCD49-AC35-4B2B-9857-75213209B643,A999125F-E2B8-48AD-AA25-DF94147E65C2'
+    WHERE [Guid] = 'E0C5374F-3B93-4A78-BAB3-854D022B0E96'
+
+    -- Set first badge list badges
+    UPDATE [AttributeValue] SET
+    VALUE = '452CF317-D3A1-49B5-84B1-4206DDADC653,3F7D648D-D6BA-4F03-931C-AFBDFA24BBD8'
+    WHERE [Guid] = '4F41CA56-BF42-4601-8123-EC71737C4E36'
+
+    -- Set second badge list badges
+    UPDATE [AttributeValue] SET
+    VALUE = ''
+    WHERE [Guid] = 'F14BE42A-D356-4F06-9EE0-0396B1C487F6'
+
+    -- Set third badge list badges
+    UPDATE [AttributeValue] SET
+    VALUE = '44E4D9CD-8143-4333-8C66-89DF95B9F580'
+    WHERE [Guid] = 'AC977001-8059-43A1-AB35-55F37DA40695'
 " );
 
         }
@@ -86,25 +138,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            Sql( @"
-    DECLARE @BlockTypeId int
-    SET @BlockTypeId = (SELECT [Id] FROM [BlockType] WHERE [Guid] = '21F5F466-59BC-40B2-8D73-7314D936C3CB') 
-
-    UPDATE [Block] SET 
-	    [BlockTypeId] = @BlockTypeId,
-	    [Name] = 'Badge Components'
-    WHERE [Guid] = 'C5B56466-6EAF-404A-A803-C2314B36C38F'
-" );
-
-            // Attrib for BlockType: Person Badge List:Detail Page
-            DeleteAttribute( "C4F9BFD0-8529-437A-9BAA-3A39289639E4" );
-            // Remove Block: Person Badge Detail, from Page: Person Profile Badge Detail, Site: Rock RMS
-            DeleteBlock( "F20D430A-3E15-4AD9-A015-4F4D5A5A6DED" );
-            DeleteBlockType( "D8CCD577-2200-44C5-9073-FD16F174D364" ); // Person Badge List
-            DeleteBlockType( "A79336CD-2265-4E36-B915-CF49956FD689" ); // Person Badge Detail
-            DeletePage( "D376EFD7-5B0D-44BF-A44D-03C466D2D30D" ); // Page: Person Profile Badge DetailLayout: Full Width Panel, Site: Rock RMS
-
-            DropForeignKey( "dbo.PersonBadge", "ModifiedByPersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey("dbo.PersonBadge", "ModifiedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.PersonBadge", "EntityTypeId", "dbo.EntityType");
             DropForeignKey("dbo.PersonBadge", "CreatedByPersonAliasId", "dbo.PersonAlias");
             DropIndex("dbo.PersonBadge", new[] { "ModifiedByPersonAliasId" });

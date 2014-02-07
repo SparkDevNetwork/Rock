@@ -13,7 +13,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201402061830538_RefactorPersonBadge"; }
+            get { return "201402070040267_RefactorPersonBadge"; }
         }
         
         string IMigrationMetadata.Source
