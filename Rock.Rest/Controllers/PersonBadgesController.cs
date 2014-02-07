@@ -41,7 +41,7 @@ namespace Rock.Rest.Controllers
         {
             routes.MapHttpRoute(
                 name: "GetFamilyAttendance",
-                routeTemplate: "api/PersonBadges/FamilyAttendance/{personId}",
+                routeTemplate: "api/PersonBadges/FamilyAttendance/{personId}/{monthCount}",
                 defaults: new
                 {
                     controller = "PersonBadges",
@@ -56,7 +56,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        public IQueryable<MonthlyAttendanceSummary> GetFamilyAttendance(int personId)
+        public IQueryable<MonthlyAttendanceSummary> GetFamilyAttendance(int personId, int monthCount)
         {
             List<MonthlyAttendanceSummary> attendanceSummary = new List<MonthlyAttendanceSummary>();
             
@@ -64,6 +64,7 @@ namespace Rock.Rest.Controllers
 
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             parameters.Add("PersonId", personId);
+            parameters.Add("MonthCount", monthCount);
 
             var results = service.GetDataSet("spCheckin_BadgeAttendance", System.Data.CommandType.StoredProcedure, parameters);
 
