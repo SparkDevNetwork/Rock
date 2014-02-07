@@ -883,9 +883,9 @@ namespace RockWeb.Blocks.Reporting
             PanelWidget panelWidget = new PanelWidget();
             panelWidget.ID = string.Format( "reportFieldWidget_{0}", reportFieldGuid.ToString( "N" ) );
 
-            string fieldTitle = null;
             string defaultColumnHeaderText = null;
             DataSelectComponent dataSelectComponent = null;
+            bool fieldDefined = false;
             switch ( reportFieldType )
             {
                 case ReportFieldType.Property:
@@ -893,8 +893,8 @@ namespace RockWeb.Blocks.Reporting
                     var entityField = EntityHelper.GetEntityFields( entityType ).FirstOrDefault( a => a.Name == fieldSelection );
                     if ( entityField != null )
                     {
-                        fieldTitle = entityField.Title;
                         defaultColumnHeaderText = entityField.Title;
+                        fieldDefined = true;
                     }
 
                     break;
@@ -903,8 +903,8 @@ namespace RockWeb.Blocks.Reporting
                     var attribute = AttributeCache.Read( fieldSelection.AsInteger() ?? 0 );
                     if ( attribute != null )
                     {
-                        fieldTitle = attribute.Name;
                         defaultColumnHeaderText = attribute.Name;
+                        fieldDefined = true;
                     }
 
                     break;
@@ -914,17 +914,27 @@ namespace RockWeb.Blocks.Reporting
                     dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );
                     if ( dataSelectComponent != null )
                     {
-                        fieldTitle = dataSelectComponent.GetTitle( null );
                         defaultColumnHeaderText = dataSelectComponent.ColumnHeaderText;
+                        fieldDefined = true;
                     }
 
                     break;
             }
 
-            if ( fieldTitle == null )
+            if ( !fieldDefined )
             {
                 // return if we can't determine field
                 return;
+            }
+
+            string fieldTitle;
+            if ( setReportFieldValues )
+            {
+                fieldTitle = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? defaultColumnHeaderText : reportField.ColumnHeaderText;
+            }
+            else
+            {
+                fieldTitle = defaultColumnHeaderText;
             }
 
             panelWidget.Title = fieldTitle;
@@ -957,6 +967,7 @@ namespace RockWeb.Blocks.Reporting
             RockTextBox columnHeaderTextTextBox = new RockTextBox();
             columnHeaderTextTextBox.ID = panelWidget.ID + "_columnHeaderTextTextBox";
             columnHeaderTextTextBox.Label = "Column Label";
+            columnHeaderTextTextBox.CssClass = "js-column-header-textbox";
             if ( setReportFieldValues )
             {
                 columnHeaderTextTextBox.Text = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? defaultColumnHeaderText : reportField.ColumnHeaderText;

@@ -172,31 +172,6 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         /// <summary>
-        /// Formats the selection.
-        /// </summary>
-        /// <param name="selection">The selection.</param>
-        /// <returns></returns>
-        public override string FormatSelection( string selection )
-        {
-            return base.FormatSelection( selection );
-        }
-
-        /// <summary>
-        /// Formats the selection on the client-side.  When the widget is collapsed by the user, the Filterfield control
-        /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before
-        /// referencing this property.
-        /// </summary>
-        /// <returns></returns>
-        /// <value>
-        /// The client format script.
-        /// </value>
-        public override string GetClientFormatSelection()
-        {
-            return base.GetClientFormatSelection();
-        }
-
-        /// <summary>
         /// Renders the controls.
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
