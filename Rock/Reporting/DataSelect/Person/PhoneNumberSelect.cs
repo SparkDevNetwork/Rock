@@ -34,7 +34,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select a Phone Number of the Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Phone Number" )]
-    public class PhoneNumberSelect : DataSelectComponent<Rock.Model.Person>
+    public class PhoneNumberSelect : DataSelectComponent
     {
         #region Properties
 

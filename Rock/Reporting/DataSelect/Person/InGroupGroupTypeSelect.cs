@@ -34,7 +34,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Show if person is in a group of a specific group type" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select if Person in specific group type" )]
-    public class InGroupGroupTypeSelect : DataSelectComponent<Rock.Model.Person>
+    public class InGroupGroupTypeSelect : DataSelectComponent
     {
         #region Properties
 

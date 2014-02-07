@@ -52,6 +52,22 @@ namespace Rock.Reporting
         }
 
         /// <summary>
+        /// Gets the attribute value defaults.
+        /// </summary>
+        /// <value>
+        /// The attribute defaults.
+        /// </value>
+        public override Dictionary<string, string> AttributeValueDefaults
+        {
+            get
+            {
+                var defaults = new Dictionary<string, string>();
+                defaults.Add( "Active", "True" );
+                return defaults;
+            }
+        }
+
+        /// <summary>
         /// The PropertyName of the property in the anonymous class returned by the SelectExpression
         /// </summary>
         /// <value>
@@ -75,6 +91,10 @@ namespace Rock.Reporting
         /// </value>
         public abstract string ColumnHeaderText { get; }
 
+        #endregion
+
+        #region Public Methods
+
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -86,26 +106,6 @@ namespace Rock.Reporting
             BoundField result = Rock.Web.UI.Controls.Grid.GetGridField( this.ColumnFieldType );
             return result;
         }
-
-        /// <summary>
-        /// Gets the attribute value defaults.
-        /// </summary>
-        /// <value>
-        /// The attribute defaults.
-        /// </value>
-        public override Dictionary<string, string> AttributeValueDefaults
-        {
-            get
-            {
-                var defaults = new Dictionary<string, string>();
-                defaults.Add( "Active", "True" );
-                return defaults;
-            }
-        }
-
-        #endregion
-
-        #region Methods
 
         /// <summary>
         /// Gets the title.
@@ -182,7 +182,7 @@ namespace Rock.Reporting
         /// <param name="selection">The selection.</param>
         public virtual void SetSelection( Control[] controls, string selection )
         {
-            string[] selectionValues = selection.Split( '|' );
+            //
         }
 
         /// <summary>
@@ -195,14 +195,5 @@ namespace Rock.Reporting
         public abstract Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection );
 
         #endregion
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public abstract class DataSelectComponent<T> : DataSelectComponent
-    {
-        //
     }
 }

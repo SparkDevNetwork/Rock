@@ -34,7 +34,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Shows the distance of the person's home from a location" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person Distance" )]
-    public class DistanceFromSelect : DataSelectComponent<Rock.Model.Person>
+    public class DistanceFromSelect : DataSelectComponent
     {
         #region Properties
 

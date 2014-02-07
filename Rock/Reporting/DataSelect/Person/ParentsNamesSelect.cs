@@ -32,7 +32,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the names of the Person's Parents" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Parents' Names" )]
-    public class ParentsNamesSelect : DataSelectComponent<Rock.Model.Person>
+    public class ParentsNamesSelect : DataSelectComponent
     {
         #region Properties
 

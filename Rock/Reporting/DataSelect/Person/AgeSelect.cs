@@ -31,7 +31,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the Age of the Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Age" )]
-    public class AgeSelect : DataSelectComponent<Rock.Model.Person>
+    public class AgeSelect : DataSelectComponent
     {
         #region Properties
 

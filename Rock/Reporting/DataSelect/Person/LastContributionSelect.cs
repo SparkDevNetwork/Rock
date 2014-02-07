@@ -35,7 +35,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Selects Last Contribution Date for a Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person Last Contribution" )]
-    public class LastContributionSelect : DataSelectComponent<Rock.Model.Person>
+    public class LastContributionSelect : DataSelectComponent
     {
 
         #region Properties
