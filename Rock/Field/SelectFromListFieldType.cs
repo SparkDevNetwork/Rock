@@ -97,7 +97,7 @@ namespace Rock.Field.Types
                 {
                     RockCheckBoxList cbl = (RockCheckBoxList)control;
                     foreach ( ListItem li in cbl.Items )
-                        li.Selected = values.Contains( li.Value );
+                        li.Selected = values.Contains( li.Value, StringComparer.OrdinalIgnoreCase );
                 }
             }
         }
