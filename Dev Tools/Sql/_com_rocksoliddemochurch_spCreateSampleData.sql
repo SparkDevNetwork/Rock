@@ -79,6 +79,7 @@ BEGIN TRY
 	@visitorConnectionStatus INT = (SELECT Id FROM [DefinedValue] WHERE Guid = 'B91BA046-BC1E-400C-B85D-638C1F4E0CE2'),
 	@participantConnectionStatus INT = (SELECT Id FROM [DefinedValue] WHERE Guid = '1E3DE7EE-4DAF-4718-B39F-3D843CCACABE'),
     @primaryPhone INT = (SELECT Id FROM [DefinedValue] WHERE Guid = '407E7E45-7B2E-4FCD-9605-ECB1339F2453'),
+	@mainCampus INT = (SELECT Id FROM [Campus] WHERE Guid = '76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8'),
     @personId INT,
     @firstName NVARCHAR(50),
     @lastName NVARCHAR(50),
@@ -144,8 +145,8 @@ BEGIN TRY
 			DELETE [AttendanceCode] WHERE [Id] NOT IN (SELECT [AttendanceCodeId] FROM [Attendance])
         END
         
-        INSERT INTO [Group] (IsSystem, GroupTypeId, Name, IsSecurityRole, IsActive, Guid, [Order])
-        VALUES (0, @FamilyGroupType, 'Decker Family', 0, 1, '53A02527-C2A7-4F36-8585-71A85B8E4601', 0)
+        INSERT INTO [Group] (IsSystem, GroupTypeId, Name, CampusId IsSecurityRole, IsActive, Guid, [Order])
+        VALUES (0, @FamilyGroupType, 'Decker Family', @mainCampus, 0, 1, '53A02527-C2A7-4F36-8585-71A85B8E4601', 0)
         SET @groupId = SCOPE_IDENTITY()
 
             -- Decker home address
@@ -189,7 +190,7 @@ E160CCD24A861A891274839674C332D57BFB4DB2DE1682BAB3B98F549D0D307398E9D9566D4B22D2
         VALUES(@photoId, @tempGuid, CONVERT(varbinary(max), @tempVarcharString, 1))
         
 		-- ted
-		EXEC _com_rocksoliddemochurch_spCreateSampleDataPerson 'Ted', 'Theodore', 'Decker', '2/10/1973', 38, @male, 'ted@rocksoliddemochurch.com', 1, 0, '8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4', @personRecordType, @activeRecordStatus, @married, @groupId, @adultRole, @photoId, @memberConnectionStatus, '6235553322', '6235553322', '602555-2911'
+		EXEC _com_rocksoliddemochurch_spCreateSampleDataPerson 'Theodore', 'Ted', 'Decker', '2/10/1973', 38, @male, 'ted@rocksoliddemochurch.com', 1, 0, '8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4', @personRecordType, @activeRecordStatus, @married, @groupId, @adultRole, @photoId, @memberConnectionStatus, '6235553322', '6235553322', '602555-2911'
 
         -- Cindy's photo
         SET @tempGuid = NEWID()
@@ -202,7 +203,7 @@ B06D7563F8B779019FBD79D4D324396E66E72A5B8EB8875484B0564E13804E0F97A551EB6FB2EB3C
         VALUES(@photoId, @tempGuid, CONVERT(varbinary(max), @tempVarcharString, 1))
         
 		-- cindy
-		EXEC _com_rocksoliddemochurch_spCreateSampleDataPerson 'Cindy', 'Cynthia', 'Decker', '3/10/1973', 37, @female, 'cindy@rocksoliddemochurch.com', 1, 0, 'B71494DB-D809-451A-A950-28898D0FD92C', @personRecordType, @activeRecordStatus, @married, @groupId, @adultRole, @photoId, @memberConnectionStatus, '6235553323', '6235553323', null
+		EXEC _com_rocksoliddemochurch_spCreateSampleDataPerson  'Cynthia', 'Cindy', 'Decker', '3/10/1973', 37, @female, 'cindy@rocksoliddemochurch.com', 1, 0, 'B71494DB-D809-451A-A950-28898D0FD92C', @personRecordType, @activeRecordStatus, @married, @groupId, @adultRole, @photoId, @memberConnectionStatus, '6235553323', '6235553323', null
 
         -- Noah's photo
         SET @tempGuid = NEWID()
@@ -230,7 +231,7 @@ F77CFFFE1DB5192421D90782975FE1E56C403DE763E4828B112C5843858F8018E371220AC4007910
         VALUES(@photoId, @tempGuid, CONVERT(varbinary(max), @tempVarcharString, 1))
 
 		-- alexis
-		EXEC _com_rocksoliddemochurch_spCreateSampleDataPerson 'Alex', 'Alexis', 'Decker', '2/10/1973', 7, @female, '', 1, 0, '27919690-3CCE-4FA6-95C4-CD21419EB51F', @personRecordType, @activeRecordStatus, @single, @groupId, @childRole, @photoId, @attendeeConnectionStatus, null, null, null
+		EXEC _com_rocksoliddemochurch_spCreateSampleDataPerson  'Alexis', 'Alex', 'Decker', '2/10/1973', 7, @female, '', 1, 0, '27919690-3CCE-4FA6-95C4-CD21419EB51F', @personRecordType, @activeRecordStatus, @single, @groupId, @childRole, @photoId, @attendeeConnectionStatus, null, null, null
 
 		---
 		-- Attendance Data for Decker family
