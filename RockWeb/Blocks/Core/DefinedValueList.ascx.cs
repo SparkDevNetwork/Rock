@@ -130,8 +130,8 @@ namespace RockWeb.Blocks.Core
 
             if ( value != null )
             {
-                valueService.Delete( value, CurrentPersonId );
-                valueService.Save( value, CurrentPersonId );
+                valueService.Delete( value, CurrentPersonAlias );
+                valueService.Save( value, CurrentPersonAlias );
             }
 
             BindDefinedValuesGrid();
@@ -188,11 +188,11 @@ namespace RockWeb.Blocks.Core
             {
                 if ( definedValue.Id.Equals( 0 ) )
                 {
-                    definedValueService.Add( definedValue, CurrentPersonId );
+                    definedValueService.Add( definedValue, CurrentPersonAlias );
                 }
 
-                definedValueService.Save( definedValue, CurrentPersonId );
-                Rock.Attribute.Helper.SaveAttributeValues( definedValue, CurrentPersonId );
+                definedValueService.Save( definedValue, CurrentPersonAlias );
+                Rock.Attribute.Helper.SaveAttributeValues( definedValue, CurrentPersonAlias );
 
                 Rock.Web.Cache.DefinedTypeCache.Flush( definedValue.DefinedTypeId );
                 Rock.Web.Cache.DefinedValueCache.Flush( definedValue.Id );
@@ -260,7 +260,7 @@ namespace RockWeb.Blocks.Core
             {
                 var definedValueService = new DefinedValueService();               
                 var definedValues = definedValueService.Queryable().Where( a => a.DefinedTypeId == definedTypeId ).OrderBy( a => a.Order );
-                definedValueService.Reorder( definedValues.ToList(), e.OldIndex, e.NewIndex, CurrentPersonId );
+                definedValueService.Reorder( definedValues.ToList(), e.OldIndex, e.NewIndex, CurrentPersonAlias );
                 BindDefinedValuesGrid();
             }
         }

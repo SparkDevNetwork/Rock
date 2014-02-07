@@ -147,7 +147,7 @@ namespace RockWeb.Blocks.Prayer
                 if ( prayerComment != null )
                 {
                     failure = false;
-                    noteService.Save( prayerComment, CurrentPersonId );
+                    noteService.Save( prayerComment, CurrentPersonAlias );
                 }
 
                 BindCommentsGrid();
@@ -181,8 +181,8 @@ namespace RockWeb.Blocks.Prayer
                         return;
                     }
 
-                    noteService.Delete( note, CurrentPersonId );
-                    noteService.Save( note, CurrentPersonId );
+                    noteService.Delete( note, CurrentPersonAlias );
+                    noteService.Save( note, CurrentPersonAlias );
                 }
             } );
 

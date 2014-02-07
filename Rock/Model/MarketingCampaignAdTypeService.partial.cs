@@ -31,9 +31,9 @@ namespace Rock.Model
         /// Deletes a specified <see cref="MarketingCampaignAdType"/>.
         /// </summary>
         /// <param name="item">The <see cref="MarketingCampaignAdType"/> to delete</param>
-        /// <param name="personId">An <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> that is performing the deletion.</param>
+        /// <param name="personAlias">The person alias.</param>
         /// <returns>A <see cref="System.Boolean"/> flag that indicates if the deletion was completed successfully.</returns>
-        public override bool Delete( MarketingCampaignAdType item, int? personId )
+        public override bool Delete( MarketingCampaignAdType item, PersonAlias personAlias )
         {
             string message;
             if ( !CanDelete( item, out message ) )
@@ -41,7 +41,7 @@ namespace Rock.Model
                 return false;
             }
 
-            return base.Delete( item, personId );
+            return base.Delete( item, personAlias );
         }
     }
 }

@@ -2,6 +2,7 @@
 
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
+        <asp:Panel ID="pnlDetails" runat="server" >
 
         <asp:HiddenField ID="hfSiteId" runat="server" />
         <asp:HiddenField ID="hfLayoutId" runat="server" />
@@ -47,5 +48,26 @@
 
         </div>
 
+            <fieldset id="fieldsetViewDetails" runat="server">
+
+                <p class="description"><asp:Literal ID="lLayoutDescription" runat="server"></asp:Literal></p>
+
+                <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <asp:Literal ID="lblMainDetails" runat="server" />
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-sm" CausesValidation="false" OnClick="btnEdit_Click" />
+<%--                    <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
+                    <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link btn-sm" CausesValidation="false" OnClick="btnDelete_Click" />--%>
+                </div>
+
+            </fieldset>
+
+        </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>

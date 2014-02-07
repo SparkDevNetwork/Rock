@@ -17,7 +17,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-
+using Rock.Data;
 using Rock.Extension;
 
 namespace Rock.Reporting
@@ -66,7 +66,7 @@ namespace Rock.Reporting
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="whereExpression">The where expression.</param>
         /// <returns></returns>
-        public abstract Expression GetExpression( object service, Expression parameterExpression, Expression whereExpression );
+        public abstract Expression GetExpression( IService service, ParameterExpression parameterExpression, Expression whereExpression );
     }
 
     /// <summary>
@@ -78,9 +78,10 @@ namespace Rock.Reporting
         /// <summary>
         /// Gets the expression.
         /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
         /// <param name="query">The query.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <returns></returns>
-        public abstract Expression GetExpression ( IQueryable<T> query, Expression parameterExpression);
+        public abstract Expression GetExpression( IService serviceInstance, IQueryable<T> query, ParameterExpression parameterExpression );
     }
 }

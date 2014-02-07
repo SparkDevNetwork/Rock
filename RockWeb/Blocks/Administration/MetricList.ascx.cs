@@ -122,8 +122,8 @@ namespace RockWeb.Blocks.Administration
             Metric metric = metricService.Get( (int)e.RowKeyValue );
             if ( metric != null )
             {
-                metricService.Delete( metric, CurrentPersonId );
-                metricService.Save( metric, CurrentPersonId );
+                metricService.Delete( metric, CurrentPersonAlias );
+                metricService.Save( metric, CurrentPersonAlias );
             }
 
             BindGrid();

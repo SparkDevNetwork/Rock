@@ -40,7 +40,7 @@ namespace Rock.Field.Types
         {
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var imagePath = Path.Combine( parentControl.ResolveUrl( "~" ), "GetImage.ashx" );
+                var imagePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetImage.ashx" );
 
                 // create querystring parms
                 string queryParms = string.Empty;

@@ -185,17 +185,6 @@ namespace Rock.Model
         public string Zip { get; set; }
 
         /// <summary>
-        /// Gets or sets the Full Street/Mailing address for the Location representing as a single string.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> containing the Full Street/Mailing Address of the Location. If this Location does not have a Street/Mailing Address
-        /// this value will be null.
-        /// </value>
-        [MaxLength( 400 )]
-        [DataMember]
-        public string FullAddress { get; set; }
-
-        /// <summary>
         /// Gets or sets the Local Assessor's parcel identification value that is linked to the location.
         /// </summary>
         /// <value>
@@ -394,7 +383,7 @@ namespace Rock.Model
                 result = GetFullStreetAddress();
             }
 
-            if ( string.IsNullOrWhiteSpace( result.Replace(",", string.Empty) ))
+            if ( string.IsNullOrWhiteSpace( result ) )
             {
                 if ( this.GeoPoint != null )
                 {
@@ -417,8 +406,15 @@ namespace Rock.Model
         /// <returns></returns>
         public string GetFullStreetAddress()
         {
-            return string.Format( "{0} {1} {2}, {3} {4}",
+            var address = string.Format( "{0} {1} {2}, {3} {4}",
                 this.Street1, this.Street2, this.City, this.State, this.Zip ).ReplaceWhileExists( "  ", " " );
+
+            if ( string.IsNullOrWhiteSpace( address.Replace( ",", string.Empty ) ) )
+            {
+                return string.Empty;
+            }
+
+            return address;
         }
 
         /// <summary>

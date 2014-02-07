@@ -68,7 +68,7 @@ namespace Rock.Web.UI.Controls
             get { return ViewState["ShowHeading"] as bool? ?? true; }
             set { ViewState["ShowHeading"] = value; }
         }
-        
+
         /// <summary>
         /// Gets or sets the CSS Class to use for the title icon.
         /// </summary>
@@ -88,21 +88,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether adds are allowed
+        /// </summary>
+        public bool AddAllowed
+        {
+            get { return ViewState["AddAllowed"] as bool? ?? true; }
+            set { ViewState["AddAllowed"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [add always visible].
         /// </summary>
         public bool AddAlwaysVisible
         {
             get
             {
-                if ( !ShowHeading )
-                {
-                    return true;
-                }
-                else
-                {
-                    EnsureChildControls();
-                    return _noteNew.AddAlwaysVisible;
-                }
+                EnsureChildControls();
+                return _noteNew.AddAlwaysVisible;
             }
 
             set
@@ -112,6 +114,33 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the css for the add anchor tag
+        /// </summary>
+        public string AddAnchorCSSClass
+        {
+            get { return ViewState["AddAnchorCSSClass"] as string ?? "btn btn-sm btn-action"; }
+            set { ViewState["AddAnchorCSSClass"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the add icon CSS class.
+        /// </summary>
+        public string AddIconCSSClass
+        {
+            get { return ViewState["AddIconCSSClass"] as string ?? "fa fa-plus"; }
+            set { ViewState["AddIconCSSClass"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the add text.
+        /// </summary>
+        public string AddText
+        {
+            get { return ViewState["AddText"] as string ?? string.Empty; }
+            set { ViewState["AddText"] = value; }
+        }
+        
         /// <summary>
         /// Gets or sets the title to display.
         /// </summary>
@@ -130,7 +159,7 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        
+
         /// <summary>
         /// Gets or sets the display type.  Full or Light
         /// </summary>
@@ -248,7 +277,7 @@ namespace Rock.Web.UI.Controls
                 _noteNew.SourceTypeValueId = value;
             }
         }
-        
+
         /// <summary>
         /// Gets or sets a value indicating whether the author's photo should 
         /// be displayed wiht the note instead of an icon based on the source
@@ -302,7 +331,7 @@ namespace Rock.Web.UI.Controls
             get { return ViewState["DisplayCount"] as int? ?? 10; }
             set { ViewState["DisplayCount"] = value; }
         }
-        
+
         #endregion
 
         #region Base Control Methods
@@ -316,23 +345,23 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
             string script = @"
     $('a.add-note').click(function () {
-        $(this).closest('.panel-note').find('.note-editor:first-child').children().slideToggle(""slow"");
+        $(this).closest('.panel-note').find('.note-new > .note').children().slideToggle(""slow"");
     });
 ";
 
-//            string noteId = PageParameter( "noteId" );
-//            if ( !string.IsNullOrWhiteSpace( noteId ) )
-//            {
-//                script += string.Format( @"
-//                    $('html, body').animate( {{scrollTop: $("".note-editor[rel='{0}']"").offset().top }},
-//                        'slow',
-//                        'swing',
-//                        function() {{ 
-//                            $("".note-editor[rel='{0}'] > article"").css( ""boxShadow"", ""1px 1px 8px 1px #888888"" );
-//                        }}
-//                    );",
-//                noteId );
-//            }
+            //            string noteId = PageParameter( "noteId" );
+            //            if ( !string.IsNullOrWhiteSpace( noteId ) )
+            //            {
+            //                script += string.Format( @"
+            //                    $('html, body').animate( {{scrollTop: $("".note[rel='{0}']"").offset().top }},
+            //                        'slow',
+            //                        'swing',
+            //                        function() {{ 
+            //                            $("".note[rel='{0}'] > article"").css( ""boxShadow"", ""1px 1px 8px 1px #888888"" );
+            //                        }}
+            //                    );",
+            //                noteId );
+            //            }
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "add-note", script, true );
 
@@ -363,7 +392,7 @@ namespace Rock.Web.UI.Controls
             _lbShowMore = new LinkButton();
             _lbShowMore.ID = "lbShowMore";
             _lbShowMore.Click += _lbShowMore_Click;
-            _lbShowMore.AddCssClass("load-more btn btn-mini btn-action");
+            _lbShowMore.AddCssClass( "load-more btn btn-mini btn-action" );
             Controls.Add( _lbShowMore );
 
             var iDownPre = new HtmlGenericControl( "i" );
@@ -387,9 +416,12 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                bool canAdd = AllowAnonymousEntry || GetCurrentPerson() != null;
+                bool canAdd = AddAllowed && ( AllowAnonymousEntry || GetCurrentPerson() != null );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-note" );
+                string cssClass = "panel panel-note" + 
+                    (this.DisplayType == NoteDisplayType.Light ? " panel-note-light" : "");
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, cssClass );
                 writer.RenderBeginTag( "section" );
 
                 // Heading
@@ -420,26 +452,25 @@ namespace Rock.Web.UI.Controls
                         writer.RenderEndTag();      // H3
                     }
 
-                    if ( !AddAlwaysVisible && canAdd )
+                    if ( !AddAlwaysVisible && canAdd && SortDirection == ListSortDirection.Descending )
                     {
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-sm btn-action add-note" );
-                        writer.RenderBeginTag( HtmlTextWriterTag.A );
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-plus" );
-                        writer.RenderBeginTag( HtmlTextWriterTag.I );
-                        writer.RenderEndTag();      // I
-                        writer.RenderEndTag();      // A
+                        RenderAddButton( writer );
                     }
 
                     writer.RenderEndTag();      // Div.panel-heading
 
                 }
 
-                writer.AddAttribute(HtmlTextWriterAttribute.Class, "panel-body");
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 if ( canAdd && SortDirection == ListSortDirection.Descending )
                 {
-                    _noteNew.RenderControl( writer );
+                    if (!ShowHeading && !AddAlwaysVisible )
+                    {
+                        RenderAddButton( writer );
+                    }
+                    RenderNewNoteControl( writer );
                 }
 
                 foreach ( Control control in Controls )
@@ -458,7 +489,11 @@ namespace Rock.Web.UI.Controls
 
                 if ( canAdd && SortDirection == ListSortDirection.Ascending )
                 {
-                    _noteNew.RenderControl( writer );
+                    if ( !AddAlwaysVisible )
+                    {
+                        RenderAddButton( writer );
+                    }
+                    RenderNewNoteControl( writer );
                 }
                 else
                 {
@@ -493,6 +528,10 @@ namespace Rock.Web.UI.Controls
             _noteNew.NoteId = null;
 
             RebuildNotes( true );
+            if ( NotesUpdated != null )
+            {
+                NotesUpdated( this, e );
+            }
         }
 
         /// <summary>
@@ -503,6 +542,10 @@ namespace Rock.Web.UI.Controls
         protected void note_Updated( object sender, EventArgs e )
         {
             RebuildNotes( true );
+            if ( NotesUpdated != null )
+            {
+                NotesUpdated( this, e );
+            }
         }
 
         /// <summary>
@@ -514,6 +557,10 @@ namespace Rock.Web.UI.Controls
         {
             DisplayCount += 10;
             RebuildNotes( true );
+            if ( NotesUpdated != null )
+            {
+                NotesUpdated( this, e );
+            }
         }
 
         #endregion
@@ -567,7 +614,7 @@ namespace Rock.Web.UI.Controls
 
                 int noteCount = 0;
 
-                var qry = new NoteService().Queryable("CreatedByPersonAlias.Person")
+                var qry = new NoteService().Queryable( "CreatedByPersonAlias.Person" )
                     .Where( n =>
                         n.NoteTypeId == NoteTypeId.Value &&
                         n.EntityId == EntityId.Value );
@@ -619,7 +666,40 @@ namespace Rock.Web.UI.Controls
             return null;
         }
 
+        private void RenderAddButton( HtmlTextWriter writer )
+        {
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "add-note " + AddAnchorCSSClass );
+            writer.RenderBeginTag( HtmlTextWriterTag.A );
+
+            if ( !string.IsNullOrWhiteSpace( AddIconCSSClass ) )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-plus" );
+                writer.RenderBeginTag( HtmlTextWriterTag.I );
+                writer.RenderEndTag();      // I
+            }
+
+            writer.Write( AddText );
+
+            writer.RenderEndTag();      // A
+        }
+
+        private void RenderNewNoteControl(HtmlTextWriter writer)
+        {
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "note-new" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _noteNew.RenderControl( writer );
+            writer.RenderEndTag();
+        }
+
         #endregion
 
+        #region Event Handlers
+
+        /// <summary>
+        /// Occurs when notes are updated.
+        /// </summary>
+        public event EventHandler NotesUpdated;
+        
+        #endregion
     }
 }

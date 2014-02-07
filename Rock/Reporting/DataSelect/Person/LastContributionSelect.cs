@@ -35,7 +35,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Selects Last Contribution Date for a Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person Last Contribution" )]
-    public class LastContributionSelect : DataSelectComponent<Rock.Model.Person>
+    public class LastContributionSelect : DataSelectComponent
     {
 
         #region Properties
@@ -51,6 +51,20 @@ namespace Rock.Reporting.DataSelect.Person
             get
             {
                 return typeof( Rock.Model.Person ).FullName;
+            }
+        }
+
+        /// <summary>
+        /// Gets the section that this will appear in in the Field Selector
+        /// </summary>
+        /// <value>
+        /// The section.
+        /// </value>
+        public override string Section
+        {
+            get
+            {
+                return base.Section;
             }
         }
 
@@ -117,7 +131,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="entityIdProperty">The entity identifier property.</param>
         /// <param name="selection"></param>
         /// <returns></returns>
-        public override Expression GetExpression( RockContext context, Expression entityIdProperty, string selection )
+        public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
             // transactions
             var transactionDetails = context.Set<FinancialTransactionDetail>();
@@ -189,33 +203,6 @@ namespace Rock.Reporting.DataSelect.Person
             parentControl.Controls.Add( accountPicker );
 
             return new System.Web.UI.Control[] { accountPicker };
-        }
-
-        /// <summary>
-        /// Formats the selection.
-        /// </summary>
-        /// <param name="selection">The selection.</param>
-        /// <returns></returns>
-        public override string FormatSelection( string selection )
-        {
-            // TODO: 
-            return base.FormatSelection( selection );
-        }
-
-        /// <summary>
-        /// Formats the selection on the client-side.  When the widget is collapsed by the user, the Filterfield control
-        /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before
-        /// referencing this property.
-        /// </summary>
-        /// <returns></returns>
-        /// <value>
-        /// The client format script.
-        ///   </value>
-        public override string GetClientFormatSelection()
-        {
-            // TODO: 
-            return base.GetClientFormatSelection();
         }
 
         /// <summary>

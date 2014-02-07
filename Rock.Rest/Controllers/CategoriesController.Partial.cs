@@ -56,36 +56,35 @@ namespace Rock.Rest.Controllers
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="getCategorizedItems">if set to <c>true</c> [get categorized items].</param>
         /// <returns></returns>
-        [Authenticate]
+        [Authenticate, Secured]
         public IQueryable<CategoryItem> GetChildren( int id, bool getCategorizedItems, int entityTypeId )
         {
-            return GetChildren(id, getCategorizedItems, entityTypeId, null, null);
+            return GetChildren( id, getCategorizedItems, entityTypeId, null, null );
         }
 
-        [Authenticate]
+        [Authenticate, Secured]
         public IQueryable<CategoryItem> GetChildren( int id, bool getCategorizedItems, int entityTypeId, string entityQualifier )
         {
-            return GetChildren(id, getCategorizedItems, entityTypeId, entityQualifier, null);
+            return GetChildren( id, getCategorizedItems, entityTypeId, entityQualifier, null );
         }
 
-        [Authenticate]
+        [Authenticate, Secured]
         public IQueryable<CategoryItem> GetChildren( int id, bool getCategorizedItems, int entityTypeId, string entityQualifier, string entityQualifierValue )
         {
-            var user = CurrentUser();
-            Person currentPerson = user != null ? user.Person : null;
+            Person currentPerson = GetPerson();
 
             IQueryable<Category> qry;
             qry = Get().Where( a => ( a.ParentCategoryId ?? 0 ) == id );
 
-            object serviceInstance = null;
+            IService serviceInstance = null;
 
             var cachedEntityType = EntityTypeCache.Read( entityTypeId );
             if ( cachedEntityType != null )
             {
                 qry = qry.Where( a => a.EntityTypeId == entityTypeId );
-                if (!string.IsNullOrWhiteSpace(entityQualifier))
+                if ( !string.IsNullOrWhiteSpace( entityQualifier ) )
                 {
-                    qry = qry.Where( a => string.Compare(a.EntityTypeQualifierColumn, entityQualifier, true) == 0);
+                    qry = qry.Where( a => string.Compare( a.EntityTypeQualifierColumn, entityQualifier, true ) == 0 );
                     if ( !string.IsNullOrWhiteSpace( entityQualifierValue ) )
                     {
                         qry = qry.Where( a => string.Compare( a.EntityTypeQualifierValue, entityQualifierValue, true ) == 0 );
@@ -106,12 +105,12 @@ namespace Rock.Rest.Controllers
                         Type genericServiceType = typeof( Rock.Data.Service<> );
                         Type modelServiceType = genericServiceType.MakeGenericType( modelType );
 
-                        serviceInstance = Activator.CreateInstance( modelServiceType );
+                        serviceInstance = Activator.CreateInstance( modelServiceType ) as IService;
                     }
                 }
             }
 
-            List<Category> categoryList = qry.OrderBy( c => c.Order).ThenBy(c => c.Name).ToList();
+            List<Category> categoryList = qry.OrderBy( c => c.Order ).ThenBy( c => c.Name ).ToList();
             List<CategoryItem> categoryItemList = new List<CategoryItem>();
 
             foreach ( var category in categoryList )
@@ -120,7 +119,7 @@ namespace Rock.Rest.Controllers
                 {
                     var categoryItem = new CategoryItem();
                     categoryItem.Id = category.Id.ToString();
-                    categoryItem.Name = System.Web.HttpUtility.HtmlEncode( category.Name );
+                    categoryItem.Name = category.Name;
                     categoryItem.IsCategory = true;
                     categoryItem.IconCssClass = category.IconCssClass;
                     categoryItemList.Add( categoryItem );
@@ -196,14 +195,15 @@ namespace Rock.Rest.Controllers
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="categoryId">The category id.</param>
         /// <returns></returns>
-        private object GetCategorizedItems( object serviceInstance, int categoryId )
+        [Authenticate, Secured]
+        private object GetCategorizedItems( IService serviceInstance, int categoryId )
         {
             if ( serviceInstance != null )
             {
                 MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
                 if ( getMethod != null )
                 {
-                    var paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
+                    var paramExpression = serviceInstance.ParameterExpression;
                     var propertyExpreesion = Expression.Property( paramExpression, "CategoryId" );
                     var zeroExpression = Expression.Constant( 0 );
                     var coalesceExpression = Expression.Coalesce( propertyExpreesion, zeroExpression );

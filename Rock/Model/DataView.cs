@@ -237,11 +237,11 @@ namespace Rock.Model
                         Type genericServiceType = typeof( Rock.Data.Service<> );
                         Type modelServiceType = genericServiceType.MakeGenericType( modelType );
 
-                        object serviceInstance = Activator.CreateInstance( modelServiceType );
+                        IService serviceInstance = Activator.CreateInstance( modelServiceType ) as IService;
 
                         if ( serviceInstance != null )
                         {
-                            ParameterExpression paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
+                            ParameterExpression paramExpression = serviceInstance.ParameterExpression;
                             Expression whereExpression = GetExpression( serviceInstance, paramExpression, out errorMessages );
 
                             MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
@@ -278,7 +278,7 @@ namespace Rock.Model
         /// <param name="paramExpression">The param expression.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public Expression GetExpression( object serviceInstance, ParameterExpression paramExpression, out List<string> errorMessages )
+        public Expression GetExpression( IService serviceInstance, ParameterExpression paramExpression, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -312,7 +312,7 @@ namespace Rock.Model
         /// <param name="whereExpression">The where expression.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        private Expression GetTransformExpression( object service, Expression parameterExpression, Expression whereExpression, List<string> errorMessages )
+        private Expression GetTransformExpression( IService service, ParameterExpression parameterExpression, Expression whereExpression, List<string> errorMessages )
         {
             if ( this.TransformEntityTypeId.HasValue )
             {

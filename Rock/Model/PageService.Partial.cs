@@ -49,6 +49,18 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets an enumerable collection of <see cref="Rock.Model.Page" /> entities associated with a <see cref="Rock.Model.Site" />.
+        /// </summary>
+        /// <param name="siteId">The site id.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.Page">Pages</see> that use the given site.
+        /// </returns>
+        public IEnumerable<Page> GetBySiteId( int? siteId )
+        {
+            return Repository.Find( t => t.Layout.SiteId == siteId ).OrderBy( t => t.Layout.Name ).ThenBy( t => t.InternalName );
+        }
+
+        /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Page">Pages</see> that are descendants of a <see cref="Rock.Model.Page"/>
         /// </summary>
         /// <param name="parentPageId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Page"/></param>
@@ -65,6 +77,34 @@ namespace Rock.Model
                 )
                 select * from CTE
                 ", parentPageId );
+        }
+
+        /// <summary>
+        /// Determines whether the specified page can be deleted.
+        /// Performs some additional checks that are missing from the
+        /// auto-generated PageService.CanDelete().
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <param name="includeSecondLvl">If set to true, verifies that the item is not referenced by any second level relationships.</param>
+        /// <returns>
+        ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanDelete( Page item, out string errorMessage, bool includeSecondLvl )
+        {
+            errorMessage = string.Empty;
+
+            bool canDelete = CanDelete( item, out errorMessage );
+
+            var site = new Service<Site>().Queryable().Where( s => ( s.DefaultPageId == item.Id || s.LoginPageId == item.Id
+                || s.RegistrationPageId == item.Id || s.PageNotFoundPageId == item.Id ) ).FirstOrDefault();
+            if ( canDelete && includeSecondLvl && site != null )
+            {
+                errorMessage = string.Format( "This {0} is used by a special page on the {1} {2}.", Page.FriendlyTypeName, site.Name, Site.FriendlyTypeName );
+                canDelete = false;
+            }
+
+            return canDelete;
         }
 
     }

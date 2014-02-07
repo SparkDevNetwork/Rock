@@ -209,8 +209,8 @@ namespace RockWeb.Blocks.Security
                         return;
                     }
 
-                    service.Delete( userLogin, CurrentPersonId );
-                    service.Save( userLogin, CurrentPersonId );
+                    service.Delete( userLogin, CurrentPersonAlias );
+                    service.Save( userLogin, CurrentPersonAlias );
 
                 }
             }
@@ -249,7 +249,7 @@ namespace RockWeb.Blocks.Security
                 if ( userLogin == null )
                 {
                     userLogin = new UserLogin();
-                    service.Add( userLogin, CurrentPersonId );
+                    service.Add( userLogin, CurrentPersonAlias );
                 }
 
                 if ( _personId.HasValue )
@@ -312,7 +312,7 @@ namespace RockWeb.Blocks.Security
 
                 RockTransactionScope.WrapTransaction( () =>
                 {
-                    service.Save( userLogin, CurrentPersonId );
+                    service.Save( userLogin, CurrentPersonAlias );
                 } );
 
                 mdDetails.Hide();

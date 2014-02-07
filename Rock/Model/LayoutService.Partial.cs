@@ -44,8 +44,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to Rock on the server.</param>
         /// <param name="site">The site.</param>
-        /// <param name="currentPersonId">A <see cref="System.Int32" /> that contains the Id of the currently logged on <see cref="Rock.Model.Person" />.</param>
-        public void RegisterLayouts( string physWebAppPath, SiteCache site, int? currentPersonId )
+        /// <param name="currentPersonAlias">A <see cref="Rock.Model.PersonAlias" /> for the currently logged in <see cref="Rock.Model.Person" />.</param>
+        public void RegisterLayouts( string physWebAppPath, SiteCache site, PersonAlias currentPersonAlias )
         {
             // Dictionary for block types.  Key is path, value is friendly name
             var list = new Dictionary<string, string>();
@@ -77,8 +77,8 @@ namespace Rock.Model
                 layout.Name = layoutFile.SplitCase();
                 layout.Guid = new Guid();
 
-                this.Add( layout, currentPersonId );
-                this.Save( layout, currentPersonId );
+                this.Add( layout, currentPersonAlias );
+                this.Save( layout, currentPersonAlias );
             }
         }
 

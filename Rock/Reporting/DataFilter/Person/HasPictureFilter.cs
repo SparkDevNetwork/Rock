@@ -21,6 +21,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Data;
+using Rock.Model;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataTransform.Person
@@ -137,7 +139,7 @@ namespace Rock.Reporting.DataTransform.Person
         /// <param name="controls">The controls.</param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
-            controls[0].RenderControl( writer );
+            base.RenderControls( entityType, filterControl, writer, controls );
         }
 
         /// <summary>
@@ -170,9 +172,9 @@ namespace Rock.Reporting.DataTransform.Person
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( Type entityType, object serviceInstance, Expression parameterExpression, string selection )
+        public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            var qry = new Rock.Data.Service<Rock.Model.Person>().Queryable()
+            var qry = new PersonService( serviceInstance.RockContext ).Queryable()
                 .Where( p => p.PhotoId.HasValue == ( selection == "1" ) );
 
             return FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );

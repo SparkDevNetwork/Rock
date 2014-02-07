@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Groups
                     else
                     {
                         groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                        groupMemberService.Save( groupMember, CurrentPersonId );
+                        groupMemberService.Save( groupMember, CurrentPersonAlias );
 
                         nbMessage.NotificationBoxType = NotificationBoxType.Success;
                         nbMessage.Title = "Success";

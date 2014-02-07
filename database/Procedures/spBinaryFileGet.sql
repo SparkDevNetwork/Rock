@@ -1,4 +1,4 @@
-CREATE PROCEDURE [spBinaryFileGet]
+ALTER PROCEDURE [spBinaryFileGet]
     @Id int,
     @Guid uniqueidentifier
 AS
@@ -14,7 +14,7 @@ BEGIN
         bf.Url,
         bf.[FileName], 
         bf.MimeType,
-        bf.LastModifiedDateTime,
+        bf.ModifiedDateTime,
         bf.[Description],
         bf.StorageEntityTypeId,
         bf.[Guid],

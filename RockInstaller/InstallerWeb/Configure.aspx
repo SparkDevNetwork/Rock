@@ -102,22 +102,66 @@
     
     void EmailNext_Click(Object sender, EventArgs e)
     {
-    	// save email settings
-    	var globalAttributesCache = Rock.Web.Cache.GlobalAttributesCache.Read();
-    	globalAttributesCache.SetValue("SMTPServer", txtEmailServer.Text, null, true);
-    	globalAttributesCache.SetValue("SMTPPort", txtEmailServerPort.Text, null, true);
-    	globalAttributesCache.SetValue("SMTPUseSSL", cbEmailUseSsl.Checked.ToString(), null, true);
-    	
-    	if (txtEmailUsername.Text.Length > 0)
-    		globalAttributesCache.SetValue("SMTPUsername", txtEmailUsername.Text, null, true);
-    	else
-    		globalAttributesCache.SetValue("SMTPUsername", "", null, true);
-    		
-    	if (txtEmailPassword.Text.Length > 0)	
-    		globalAttributesCache.SetValue("SMTPPassword", txtEmailPassword.Text, null, true);
-    	else
-    		globalAttributesCache.SetValue("SMTPPassword", "", null, true);
+        using (new Rock.Data.UnitOfWorkScope())
+        {
+            // save email settings
+            AttributeService attribService = new AttributeService();
+            Rock.Model.Attribute aSmtpServer = attribService.Get(new Guid("6CFFDF99-E93A-49B8-B440-0EF93878A51F"));
+            Rock.Model.Attribute aSmtpPort = attribService.Get(new Guid("C6B13F15-9D6F-45B2-BDB9-E77D29A32EBF"));
+            Rock.Model.Attribute aSmtpSsl = attribService.Get(new Guid("B3B2308B-6CD2-4853-8220-C80D861F5D3C"));
+            Rock.Model.Attribute aSmtpUsername = attribService.Get(new Guid("2CE8D3AC-F851-462C-93D5-DB82F48DDBFD"));
+            Rock.Model.Attribute aSmtpPassword = attribService.Get(new Guid("D3641DA0-9E50-4C98-A994-978AF308E745"));
 
+            AttributeValueService attribValueService = new AttributeValueService();
+
+            // server
+            AttributeValue vSmtpServer = new AttributeValue();
+            vSmtpServer.Attribute = aSmtpServer;
+            vSmtpServer.EntityId = 0;
+            vSmtpServer.Value = txtEmailServer.Text.Trim();
+            attribValueService.Add(vSmtpServer, null);
+            attribValueService.Save(vSmtpServer, null);
+
+            // port
+            AttributeValue vSmtpPort = new AttributeValue();
+            vSmtpPort.EntityId = 0;
+            vSmtpPort.Attribute = aSmtpPort;
+            vSmtpPort.Value = txtEmailServerPort.Text.Trim();
+            attribValueService.Add(vSmtpPort, null);
+            attribValueService.Save(vSmtpPort, null);
+
+            // ssl
+            AttributeValue vSmtpSsl = new AttributeValue();
+            vSmtpSsl.EntityId = 0;
+            vSmtpSsl.Attribute = aSmtpSsl;
+            vSmtpSsl.Value = cbEmailUseSsl.Checked.ToString();
+            attribValueService.Add(vSmtpSsl, null);
+            attribValueService.Save(vSmtpSsl, null);
+
+            // username
+            if (txtEmailUsername.Text.Trim().Length > 0)
+            {
+                AttributeValue vSmtpUsername = new AttributeValue();
+                vSmtpUsername.EntityId = 0;
+                vSmtpUsername.Attribute = aSmtpUsername;
+                vSmtpUsername.Value = txtEmailUsername.Text.Trim();
+                attribValueService.Add(vSmtpUsername, null);
+                attribValueService.Save(vSmtpUsername, null);
+            }
+
+            // password
+            if (txtEmailPassword.Text.Trim().Length > 0)
+            {
+                AttributeValue vSmtpPassword = new AttributeValue();
+                vSmtpPassword.EntityId = 0;
+                vSmtpPassword.Attribute = aSmtpPassword;
+                vSmtpPassword.Value = txtEmailPassword.Text.Trim();
+                attribValueService.Add(vSmtpPassword, null);
+                attribValueService.Save(vSmtpPassword, null);
+            }
+        }
+        
+    	var globalAttributesCache = Rock.Web.Cache.GlobalAttributesCache.Read();
     	globalAttributesCache.SetValue("EmailExceptionsList", txtEmailExceptions.Text, null, true);
     		
     	

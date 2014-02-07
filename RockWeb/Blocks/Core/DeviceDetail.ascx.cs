@@ -200,7 +200,7 @@ namespace RockWeb.Blocks.Core
             if ( DeviceId == 0 )
             {
                 Device = new Device();
-                DeviceService.Add( Device, CurrentPersonId );
+                DeviceService.Add( Device, CurrentPersonAlias );
             }
             else
             {
@@ -228,7 +228,7 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            DeviceService.Save( Device, CurrentPersonId );
+            DeviceService.Save( Device, CurrentPersonAlias );
 
             NavigateToParentPage();
         }

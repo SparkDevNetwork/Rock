@@ -60,7 +60,6 @@ namespace Rock.Rest.Controllers
         /// <example>
         ///   <![CDATA[ <img src='api/FileBrowser/GetFileThumbnail?relativeFilePath=External+Site%5cMarketing%5cFunnyCat.gif&width=100&height=100 ]]>
         /// </example>
-        [Authenticate]
         [HttpGet]
         public HttpResponseMessage GetFileThumbnail( string relativeFilePath, int? width = 100, int? height = 100 )
         {
@@ -86,11 +85,11 @@ namespace Rock.Rest.Controllers
             {
                 // figure out the extension of the file
                 string fileExtension = Path.GetExtension( relativeFilePath ).TrimStart( '.' );
-                string virtualThumbnailFilePath = string.Format( "~/Assets/Images/file-thumbnail-{0}.svg", fileExtension);
+                string virtualThumbnailFilePath = string.Format( "~/Assets/Icons/FileTypes/{0}.png", fileExtension);
                 string thumbnailFilePath = HttpContext.Current.Request.MapPath( virtualThumbnailFilePath );
                 if (!File.Exists(thumbnailFilePath))
                 {
-                    virtualThumbnailFilePath = string.Format( "~/Assets/Images/file-thumbnail-other.svg", fileExtension );
+                    virtualThumbnailFilePath = string.Format( "~/Assets/Icons/FileTypes/other.png", fileExtension );
                     thumbnailFilePath = HttpContext.Current.Request.MapPath( virtualThumbnailFilePath );
                 }
 

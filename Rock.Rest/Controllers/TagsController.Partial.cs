@@ -20,6 +20,7 @@ using System.Net;
 using System.Web.Http;
 
 using Rock.Model;
+using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
 {
@@ -56,18 +57,21 @@ namespace Rock.Rest.Controllers
                 } );
         }
 
+        [Authenticate, Secured]
         [HttpGet]
         public Tag Get( int entityTypeId, int ownerId, string name )
         {
             return Get( entityTypeId, ownerId, name, string.Empty, string.Empty );
         }
 
+        [Authenticate, Secured]
         [HttpGet]
         public Tag Get( int entityTypeId, int ownerId, string name, string entityQualifier )
         {
             return Get( entityTypeId, ownerId, name, entityQualifier, string.Empty );
         }
 
+        [Authenticate, Secured]
         [HttpGet]
         public Tag Get( int entityTypeId, int ownerId, string name, string entityQualifier, string entityQualifierValue )
         {
@@ -80,18 +84,21 @@ namespace Rock.Rest.Controllers
                 throw new HttpResponseException( HttpStatusCode.NotFound );
         }
 
+        [Authenticate, Secured]
         [HttpGet]
         public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid )
         {
             return AvailableNames( entityTypeId, ownerId, entityGuid, string.Empty, string.Empty );
         }
 
+        [Authenticate, Secured]
         [HttpGet]
         public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid, string entityQualifier )
         {
             return AvailableNames( entityTypeId, ownerId, entityGuid, entityQualifier, string.Empty );
         }
 
+        [Authenticate, Secured]
         [HttpGet]
         public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid, string entityQualifier, string entityQualifierValue )
         {

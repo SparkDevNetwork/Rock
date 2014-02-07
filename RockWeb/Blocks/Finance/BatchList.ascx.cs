@@ -21,8 +21,6 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
-using Rock.Constants;
-using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -34,7 +32,6 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Batch List" )]
     [Category( "Finance" )]
     [Description( "Lists all financial batches and provides filtering by campus, status, etc." )]
-
     [LinkedPage("Detail Page")]
     public partial class BatchList : Rock.Web.UI.RockBlock
     {
@@ -54,22 +51,23 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
-            rFBFilter.ApplyFilterClick += rFBFilter_ApplyFilterClick;
-            rFBFilter.DisplayFilterValue += rFBFilter_DisplayFilterValue;
+            gfBatchFilter.ApplyFilterClick += gfBatchFilter_ApplyFilterClick;
+            gfBatchFilter.DisplayFilterValue += gfBatchFilter_DisplayFilterValue;
 
             _canConfigure = RockPage.IsAuthorized( "Edit", CurrentPerson );
 
             if ( _canConfigure )
             {
-                rGridBatch.DataKeyNames = new string[] { "id" };
-                rGridBatch.Actions.ShowAdd = true;
-                rGridBatch.Actions.AddClick += rGridBatch_Add;
-                rGridBatch.GridRebind += rGridBatch_GridRebind;
-                rGridBatch.GridReorder += rGridBatch_GridReorder;
+                gBatchList.DataKeyNames = new string[] { "id" };
+                gBatchList.Actions.ShowAdd = true;
+                gBatchList.Actions.AddClick += gBatchList_Add;
+                gBatchList.GridRebind += gBatchList_GridRebind;
+                gBatchList.GridReorder += gBatchList_GridReorder;
             }
             else
             {
-                DisplayError( "You are not authorized to edit these batches" );
+                nbWarningMessage.Text = "You are not authorized to edit these batches";
+                nbWarningMessage.Visible = true;
             }
         }
 
@@ -91,12 +89,11 @@ namespace RockWeb.Blocks.Finance
         #region Events
 
         /// <summary>
-        /// Handles the filter display for each saved user value
+        /// Handles the DisplayFilterValue event of the gfBatchFilter control.
         /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        protected void rFBFilter_DisplayFilterValue( object sender, Rock.Web.UI.Controls.GridFilter.DisplayFilterValueArgs e )
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.GridFilter.DisplayFilterValueArgs"/> instance containing the event data.</param>
+        protected void gfBatchFilter_DisplayFilterValue( object sender, Rock.Web.UI.Controls.GridFilter.DisplayFilterValueArgs e )
         {
             switch ( e.Key )
             {
@@ -111,84 +108,208 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Handles the ApplyFilterClick event of the rFBFilter control.
+        /// Handles the ApplyFilterClick event of the gfBatchFilter control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void rFBFilter_ApplyFilterClick( object sender, EventArgs e )
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gfBatchFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFBFilter.SaveUserPreference( "From Date", dtBatchDate.Text );
-            rFBFilter.SaveUserPreference( "Title", txtTitle.Text );
+            gfBatchFilter.SaveUserPreference( "From Date", dpBatchDate.Text );
+            gfBatchFilter.SaveUserPreference( "Title", tbTitle.Text );
 
             int? statusFilter = ddlStatus.SelectedValueAsInt( false );
-            rFBFilter.SaveUserPreference( "Status", statusFilter.HasValue && statusFilter.Value >= 0 ? statusFilter.ToString() : "" );
+            gfBatchFilter.SaveUserPreference( "Status", statusFilter.HasValue && statusFilter.Value >= 0 ? statusFilter.ToString() : string.Empty );
 
-            int? campusFilter = ddlCampus.SelectedCampusId;
-            rFBFilter.SaveUserPreference( "Campus", campusFilter.HasValue && campusFilter.Value > 0 ? campusFilter.ToString() : "" ); 
+            int? campusFilter = campCampus.SelectedCampusId;
+            gfBatchFilter.SaveUserPreference( "Campus", campusFilter.HasValue && campusFilter.Value > 0 ? campusFilter.ToString() : string.Empty ); 
                         
             BindGrid();
         }
 
         /// <summary>
-        /// Handles the Delete event of the grdFinancialBatch control.
+        /// Handles the Delete event of the gBatchList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void rGridBatch_Delete( object sender, RowEventArgs e )
+        protected void gBatchList_Delete( object sender, RowEventArgs e )
         {
-            var FinancialBatchService = new Rock.Model.FinancialBatchService();
+            var financialBatchService = new Rock.Model.FinancialBatchService();
 
-            Rock.Model.FinancialBatch FinancialBatch = FinancialBatchService.Get( (int)rGridBatch.DataKeys[e.RowIndex]["id"] );
-            if ( FinancialBatch != null )
+            Rock.Model.FinancialBatch financialBatch = financialBatchService.Get( (int)gBatchList.DataKeys[e.RowIndex]["id"] );
+            if ( financialBatch != null )
             {
-                FinancialBatchService.Delete( FinancialBatch, CurrentPersonId );
-                FinancialBatchService.Save( FinancialBatch, CurrentPersonId );
+                financialBatchService.Delete( financialBatch, CurrentPersonAlias );
+                financialBatchService.Save( financialBatch, CurrentPersonAlias );
             }
 
             BindGrid();
         }
         
         /// <summary>
-        /// Handles the RowSelected event of the rGridBatch control.
+        /// Handles the RowSelected event of the gBatchList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void rGridBatch_Edit( object sender, RowEventArgs e )
+        protected void gBatchList_Edit( object sender, RowEventArgs e )
         {
-            ShowDetailForm( (int)rGridBatch.DataKeys[e.RowIndex]["id"] );
+            ShowDetailForm( (int)gBatchList.DataKeys[e.RowIndex]["id"] );
         }
 
         /// <summary>
-        /// Handles the Add event of the gridFinancialBatch control.
+        /// Handles the Add event of the gBatchList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void rGridBatch_Add( object sender, EventArgs e )
+        protected void gBatchList_Add( object sender, EventArgs e )
         {
             BindFilter();
             ShowDetailForm( 0 );
         }
-                
+
+        /// <summary>
+        /// Handles the GridReorder event of the gBatchList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        private void gBatchList_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            var batchService = new Rock.Model.FinancialBatchService();
+            var queryable = batchService.Queryable();
+
+            List<Rock.Model.FinancialBatch> items = queryable.ToList();
+            batchService.Reorder( items, e.OldIndex, e.NewIndex, CurrentPersonAlias );
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gBatchList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void gBatchList_GridRebind( object sender, EventArgs e )
+        {
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gBatchList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gBatchList_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            Rock.Model.FinancialBatch batch = e.Row.DataItem as Rock.Model.FinancialBatch;
+            if ( batch != null )
+            {
+                var startDate = Convert.ToDateTime( e.Row.DataItem.GetPropertyValue( "BatchStartDateTime" ) ).ToShortDateString();
+                e.Row.Cells[1].Text = startDate;
+
+                var controlAmount = string.Format( "{0:C}", e.Row.DataItem.GetPropertyValue( "ControlAmount" ) );
+                e.Row.Cells[3].Text = controlAmount;
+
+                Literal transactionTotal = e.Row.FindControl( "TransactionTotal" ) as Literal;
+                if ( transactionTotal != null )
+                {
+                    var data = batch.Transactions.Where( d => d.Amount > 0 );
+                    var totalSum = data.Sum( d => d.Amount );
+                    transactionTotal.Text = string.Format( "{0:C}", totalSum );
+
+                    Label variance = e.Row.FindControl("lblVariance") as Label;
+                    if ( variance != null )
+                    {
+                        if ( batch.ControlAmount > 0 )
+                        {
+                            var varianceAmount = Convert.ToDecimal( batch.ControlAmount ) - totalSum;
+                            variance.Text = string.Format( "{0:C}", varianceAmount );
+                            if ( varianceAmount != 0 )
+                            {
+                                variance.AddCssClass( "text-danger" );
+                            }
+                        }
+                    }
+                }
+
+                Literal transactionCount = e.Row.FindControl( "TransactionCount" ) as Literal;
+                if ( transactionCount != null )
+                {
+                    transactionCount.Text = batch.Transactions.Count.ToString();
+                }
+
+                var status = e.Row.DataItem.GetPropertyValue( "Status" ).ToString();
+                if ( !string.IsNullOrWhiteSpace(status) )
+                {
+                    switch ( status.ToUpper() )
+                    {
+                        case "CLOSED":
+                            e.Row.Cells[8].Text = "<span class='label label-success'>Closed</span>";
+                            break;
+                        case "OPEN":
+                            e.Row.Cells[8].Text = "<span class='label label-warning'>Open</span>";
+                            break;
+                        case "PENDING":
+                            e.Row.Cells[8].Text = "<span class='label label-default'>Pending</span>";
+                            break;
+                    }
+                }
+
+                // Get any warnings for this row and display them in the Warnings column
+                Label warnings = e.Row.FindControl( "lblWarnings" ) as Label;
+                var warningList = GetWarnings( batch );
+                if ( warningList != null )
+                {
+                    foreach (var warning in warningList)
+                    {
+                        switch (warning.ToUpper())
+                        {
+                            case "UNTIED":
+                                warnings.Text += "<span class='label label-danger'>Untied Transactions</span>";
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Gets the warnings.
+        /// </summary>
+        /// <returns></returns>
+        private List<string> GetWarnings( FinancialBatch batch )
+        {
+            var warningList = new List<string>();
+            if ( batch.Status == BatchStatus.Open )
+            {
+                var transactionService = new FinancialTransactionService();
+                var transactionList = transactionService.Queryable().Where( trans => trans.BatchId == batch.Id && trans.AuthorizedPersonId == null ).ToList();
+                if ( transactionList.Count > 0 )
+                {
+                    warningList.Add( "UNTIED" );
+                }
+            }
+
+            return warningList;
+        }
 
         /// <summary>
         /// Binds the filter.
         /// </summary>
         private void BindFilter()
         {
-            string titleFilter = rFBFilter.GetUserPreference( "Title" );
-            txtTitle.Text = !string.IsNullOrWhiteSpace( titleFilter ) ? titleFilter : string.Empty;
+            string titleFilter = gfBatchFilter.GetUserPreference( "Title" );
+            tbTitle.Text = !string.IsNullOrWhiteSpace( titleFilter ) ? titleFilter : string.Empty;
 
             ddlStatus.BindToEnum( typeof( BatchStatus ) );
             ddlStatus.Items.Insert( 0, Rock.Constants.All.ListItem );
-            ddlStatus.SetValue( rFBFilter.GetUserPreference( "Status" ) );
+            ddlStatus.SetValue( gfBatchFilter.GetUserPreference( "Status" ) );
 
             var campusi = new CampusService().Queryable().OrderBy( a => a.Name ).ToList();
-            ddlCampus.Campuses = campusi;
-            ddlCampus.Visible = campusi.Any();
-            ddlCampus.SetValue( rFBFilter.GetUserPreference( "Campus" ) );
+            campCampus.Campuses = campusi;
+            campCampus.Visible = campusi.Any();
+            campCampus.SetValue( gfBatchFilter.GetUserPreference( "Campus" ) );
         }
 
         /// <summary>
@@ -197,38 +318,11 @@ namespace RockWeb.Blocks.Finance
         /// <param name="ListControl">The list control.</param>
         /// <param name="definedTypeGuid">The defined type GUID.</param>
         /// <param name="userPreferenceKey">The user preference key.</param>
-        private void BindDefinedTypeDropdown( ListControl ListControl, Guid definedTypeGuid, string userPreferenceKey )
+        private void BindDefinedTypeDropdown( ListControl listControl, Guid definedTypeGuid, string userPreferenceKey )
         {
-            ListControl.BindToDefinedType( DefinedTypeCache.Read( definedTypeGuid ) );
-            //ListControl.Items.Insert( 0, new ListItem( All.Text, All.Id.ToString() ) );
-
-            ListControl.SelectedValue = !string.IsNullOrWhiteSpace( rFBFilter.GetUserPreference( userPreferenceKey ) ) ?
-                ListControl.SelectedValue = rFBFilter.GetUserPreference( userPreferenceKey ) : null;
-        }
-
-        /// <summary>
-        /// Handles the GridReorder event of the grdFinancialBatch control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
-        private void rGridBatch_GridReorder( object sender, GridReorderEventArgs e )
-        {
-            var batchService = new Rock.Model.FinancialBatchService();
-            var queryable = batchService.Queryable();
-
-            List<Rock.Model.FinancialBatch> items = queryable.ToList();
-            batchService.Reorder( items, e.OldIndex, e.NewIndex, CurrentPersonId );
-            BindGrid();
-        }
-
-        /// <summary>
-        /// Handles the GridRebind event of the grdFinancialBatch control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void rGridBatch_GridRebind( object sender, EventArgs e )
-        {
-            BindGrid();
+            listControl.BindToDefinedType( DefinedTypeCache.Read( definedTypeGuid ) );
+            listControl.SelectedValue = !string.IsNullOrWhiteSpace( gfBatchFilter.GetUserPreference( userPreferenceKey ) ) ?
+                listControl.SelectedValue = gfBatchFilter.GetUserPreference( userPreferenceKey ) : null;
         }
 
         /// <summary>
@@ -238,39 +332,40 @@ namespace RockWeb.Blocks.Finance
         {
             var batchService = new FinancialBatchService();
             var batches = batchService.Queryable();
-            SortProperty sortProperty = rGridBatch.SortProperty;
 
-            if ( dtBatchDate.SelectedDate.HasValue )
+            if ( dpBatchDate.SelectedDate.HasValue )
             {
-                batches = batches.Where( batch => batch.BatchStartDateTime >= dtBatchDate.SelectedDate );
+                batches = batches.Where( batch => batch.BatchStartDateTime >= dpBatchDate.SelectedDate );
             }
 
-            if ( (ddlStatus.SelectedValueAsInt() ?? 0) > 0 )
+            string status = gfBatchFilter.GetUserPreference( "Status" );
+            if ( !string.IsNullOrWhiteSpace( status ) )
             {
-                var batchStatus = ddlStatus.SelectedValueAsEnum<BatchStatus>();
-                batches = batches.Where( Batch => Batch.Status == batchStatus );
+                var batchStatus = (BatchStatus)Enum.Parse( typeof( BatchStatus ), status );
+                batches = batches.Where( batch => batch.Status == batchStatus );
             }
 
-            if ( !string.IsNullOrEmpty( txtTitle.Text ) )
+            if ( !string.IsNullOrEmpty( tbTitle.Text ) )
             {
-                batches = batches.Where( Batch => Batch.Name == txtTitle.Text );
+                batches = batches.Where( batch => batch.Name == tbTitle.Text );
             }
 
-            if ( ddlCampus.SelectedCampusId.HasValue )
+            if ( campCampus.SelectedCampusId.HasValue )
             {
-                batches = batches.Where( Batch => Batch.CampusId == ddlCampus.SelectedCampusId.Value );
+                batches = batches.Where( batch => batch.CampusId == campCampus.SelectedCampusId.Value );
             }
-            
+
+            SortProperty sortProperty = gBatchList.SortProperty;
             if ( sortProperty != null )
             {
-                rGridBatch.DataSource = batches.Sort( sortProperty ).ToList();
+                gBatchList.DataSource = batches.Sort( sortProperty ).ToList();
             }
             else
             {
-                rGridBatch.DataSource = batches.OrderBy( b => b.Name ).ToList();
+                gBatchList.DataSource = batches.OrderBy( batch => batch.Name ).ToList();
             }
 
-            rGridBatch.DataBind();
+            gBatchList.DataBind();
         }
 
         /// <summary>
@@ -282,54 +377,6 @@ namespace RockWeb.Blocks.Finance
             NavigateToLinkedPage( "DetailPage", "financialBatchId", id );
         }
 
-        /// <summary>
-        /// Displays the error.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        private void DisplayError( string message )
-        {
-            valSummaryTop.Controls.Clear();
-            valSummaryTop.Controls.Add( new LiteralControl( message ) );
-            valSummaryTop.Visible = true;
-        }
-
-        /// <summary>
-        /// Handles the RowDataBound event of the grdFinancialBatch control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        protected void rGridBatch_RowDataBound( object sender, GridViewRowEventArgs e )
-        {
-            Rock.Model.FinancialBatch batch = e.Row.DataItem as Rock.Model.FinancialBatch;
-            if ( batch != null )
-            {
-                Literal lDateRange = e.Row.FindControl( "lDateRange" ) as Literal;
-                Literal TransactionTotal = e.Row.FindControl( "TransactionTotal" ) as Literal;
-                if ( TransactionTotal != null )
-                {
-                    var data = batch.Transactions.Where(d => d.Amount > 0);
-                    var totalSum = data.Sum(d => d.Amount);
-                    TransactionTotal.Text = String.Format("{0:C}", totalSum); 
-
-                    Literal Variance = e.Row.FindControl( "Variance" ) as Literal;
-                    if ( Variance != null )
-                    {
-                        if ( batch.ControlAmount > 0 )
-                        {
-                            var variance = Convert.ToDecimal(batch.ControlAmount) - totalSum;
-                            Variance.Text = String.Format( "{0:C}", variance ); 
-                        }
-                    }
-                }
-                Literal TransactionCount = e.Row.FindControl( "TransactionCount" ) as Literal;
-                if ( TransactionCount != null )
-                {
-                    TransactionCount.Text = batch.Transactions.Count.ToString();
-                }               
-            }
-        }
-
         #endregion
-        
     }        
 }

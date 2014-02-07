@@ -33,15 +33,15 @@ namespace Rock.Model
         /// </summary>
         /// <param name="workflowType">The <see cref="Rock.Model.WorkflowType"/> to be activated.</param>
         /// <param name="name">A <see cref="System.String"/> representing the name of the <see cref="Rock.Model.Workflow"/> instance.</param>
-        /// <param name="currentPersonId">A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who is activating the 
+        /// <param name="currentPersonAlias">A <see cref="Rock.Model.PersonAlias"/> representing the <see cref="Rock.Model.Person"/> who is activating the 
         /// <see cref="Rock.Model.Workflow"/> instance; this will be null if it was completed by the anonymous user.</param>
         /// <returns>The activated <see cref="Rock.Model.Workflow"/> instance</returns>
-        public Workflow Activate( WorkflowType workflowType, string name, int? currentPersonId )
+        public Workflow Activate( WorkflowType workflowType, string name, PersonAlias currentPersonAlias )
         {
             var workflow = Workflow.Activate( workflowType, name );
-            
-            this.Add( workflow, currentPersonId );
-            this.Save( workflow, currentPersonId );
+
+            this.Add( workflow, currentPersonAlias );
+            this.Save( workflow, currentPersonAlias );
 
             return workflow;
         }
@@ -50,17 +50,18 @@ namespace Rock.Model
         /// Processes the specified <see cref="Rock.Model.Workflow"/>
         /// </summary>
         /// <param name="workflow">The <see cref="Rock.Model.Workflow"/> instance to process.</param>
-        /// <param name="CurrentPersonId">A <see cref="System.String"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who is processing the <see cref="Rock.Model.Workflow"/>.</param>
+        /// <param name="currentPersonAlias">A <see cref="Rock.Model.PersonAlias"/> representing the <see cref="Rock.Model.Person"/> who is activating the 
+        /// <see cref="Rock.Model.Workflow"/> instance; this will be null if it was completed by the anonymous user.</param>
         /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}"/> that contains any error messages that were returned while processing the <see cref="Rock.Model.Workflow"/>.</param>
-        public void Process( Workflow workflow, int? CurrentPersonId, out List<string> errorMessages )
+        public void Process( Workflow workflow, PersonAlias currentPersonAlias, out List<string> errorMessages )
         {
             workflow.IsProcessing = true;
-            this.Save( workflow, null );
+            this.Save( workflow, currentPersonAlias );
 
             workflow.Process(out errorMessages); 
 
             workflow.IsProcessing = false;
-            this.Save( workflow, null );
+            this.Save( workflow, currentPersonAlias );
         }
 
         /// <summary>

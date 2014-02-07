@@ -488,12 +488,23 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personId">The current person id.</param>
-        public virtual void MakePrivate( string action, Person person, int? personId )
+        /// <param name="currentPersonAlias">The current person alias.</param>
+        public virtual void MakePrivate( string action, Person person, PersonAlias currentPersonAlias )
         {
-            Security.Authorization.MakePrivate( this, action, person, personId );
+            Security.Authorization.MakePrivate( this, action, person, currentPersonAlias );
         }
 
+        /// <summary>
+        /// If action on the current entity is private, removes security that made it private.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="currentPersonAlias">The current person alias.</param>
+        public virtual void MakeUnPrivate( string action, Person person, PersonAlias currentPersonAlias )
+        {
+            Security.Authorization.MakePrivate( this, action, person, currentPersonAlias );
+        }        
+        
         #endregion
 
         #region Static Methods

@@ -121,8 +121,8 @@ namespace RockWeb.Blocks.Finance
                     return;
                 }
 
-                accountService.Delete( account, CurrentPersonId );
-                accountService.Save( account, CurrentPersonId );
+                accountService.Delete( account, CurrentPersonAlias );
+                accountService.Save( account, CurrentPersonAlias );
             }
 
             BindGrid();
@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.Finance
                 var accounts = GetAccounts();
                 if ( accounts != null )
                 {
-                    new FinancialAccountService().Reorder( accounts.ToList(), e.OldIndex, e.NewIndex, CurrentPersonId );
+                    new FinancialAccountService().Reorder( accounts.ToList(), e.OldIndex, e.NewIndex, CurrentPersonAlias );
                 }
 
                 BindGrid();

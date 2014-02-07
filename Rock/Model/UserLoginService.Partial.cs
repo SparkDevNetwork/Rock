@@ -58,7 +58,7 @@ namespace Rock.Model
         public UserLogin GetByUserName( string userName )
         {
             return Repository
-                .AsQueryable( "Person" )
+                .AsQueryable( "Person.Aliases" )
                 .Where( u => u.UserName == userName )
                 .FirstOrDefault();
         }
@@ -72,7 +72,6 @@ namespace Rock.Model
         /// <param name="username">A <see cref="System.String" /> containing the UserName.</param>
         /// <param name="password">A <see cref="System.String" /> containing the unhashed/unencrypted password.</param>
         /// <param name="isConfirmed">A <see cref="System.Boolean" /> flag indicating if the user has been confirmed.</param>
-        /// <param name="currentPersonId">A <see cref="System.Int32" /> representing the Id of the <see cref="Rock.Model.Person" /> creating the <see cref="Rock.Model.UserLogin" /></param>
         /// <returns></returns>
         /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the Username already exists.</exception>
         /// <exception cref="System.ArgumentException">Thrown when the service does not exist or is not active.</exception>
@@ -81,43 +80,53 @@ namespace Rock.Model
             int entityTypeId,
             string username,
             string password,
-            bool isConfirmed,
-            int? currentPersonId )
+            bool isConfirmed )
         {
-            var entityType = EntityTypeCache.Read( entityTypeId );
-            if ( entityType != null )
+            if ( person != null )
             {
-                UserLogin user = this.GetByUserName( username );
-                if ( user != null )
-                    throw new ArgumentOutOfRangeException( "username", "Username already exists" );
+                var entityType = EntityTypeCache.Read( entityTypeId );
+                if ( entityType != null )
+                {
+                    UserLogin user = this.GetByUserName( username );
+                    if ( user != null )
+                        throw new ArgumentOutOfRangeException( "username", "Username already exists" );
 
-                DateTime createDate = RockDateTime.Now;
+                    DateTime createDate = RockDateTime.Now;
 
-                user = new UserLogin();
-                user.EntityTypeId = entityTypeId;
-                user.UserName = username;
-                user.IsConfirmed = isConfirmed;
-                user.LastPasswordChangedDateTime = createDate;
-                if ( person != null )
+                    user = new UserLogin();
+                    user.EntityTypeId = entityTypeId;
+                    user.UserName = username;
+                    user.IsConfirmed = isConfirmed;
+                    user.LastPasswordChangedDateTime = createDate;
                     user.PersonId = person.Id;
 
-                if ( serviceType == AuthenticationServiceType.Internal )
-                {
-                    var authenticationComponent = AuthenticationContainer.GetComponent( entityType.Name );
-                    if ( authenticationComponent == null || !authenticationComponent.IsActive )
-                        throw new ArgumentException( string.Format( "'{0}' service does not exist, or is not active", entityType.FriendlyName ), "entityTypeId" );
+                    if ( serviceType == AuthenticationServiceType.Internal )
+                    {
+                        var authenticationComponent = AuthenticationContainer.GetComponent( entityType.Name );
+                        if ( authenticationComponent == null || !authenticationComponent.IsActive )
+                            throw new ArgumentException( string.Format( "'{0}' service does not exist, or is not active", entityType.FriendlyName ), "entityTypeId" );
 
-                    user.Password = authenticationComponent.EncodePassword( user, password );
+                        user.Password = authenticationComponent.EncodePassword( user, password );
+                    }
+
+                this.Add( user, person.PrimaryAlias );
+                this.Save( user, person.PrimaryAlias );
+
+                    var changes = new List<string>();
+                    History.EvaluateChange(changes, "User Login", string.Empty, username);
+                    new HistoryService().SaveChanges(typeof(Person),
+                        CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid() ).Guid, person.Id, changes, person.PrimaryAlias);
+
+                    return user;
                 }
-
-                this.Add( user, currentPersonId );
-                this.Save( user, currentPersonId );
-
-                return user;
+                else
+                {
+                    throw new ArgumentException( "Invalid EntityTypeId, entity does not exist", "entityTypeId" );
+                }
             }
             else
             {
-                throw new ArgumentException( "Invalid EntityTypeId, entity does not exist", "entityTypeId" );
+                throw new ArgumentException( "Invalid Person, person does not exist", "person" );
             }
         }
 

@@ -416,13 +416,13 @@ namespace Rock.Web.UI.Controls
             string script = @"
     $('a.edit-note').click(function (e) {
         e.preventDefault();
-        $(this).closest('.note-editor').children().slideToggle('slow');
+        $(this).closest('.note').children().slideToggle( 'slow' );
     });
     $('a.edit-note-cancel').click(function () {
-        $(this).closest('.note-editor').children().slideToggle('slow');
+        $(this).closest('.note').children().slideToggle( 'slow' );
     });
     $('a.remove-note').click(function() {
-        return confirm('Are you sure you want to delete this note?');
+        return Rock.dialogs.confirmDelete( event, 'Note' );
     });
 ";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "edit-note", script, true );
@@ -449,6 +449,7 @@ namespace Rock.Web.UI.Controls
 
             _lbSaveNote.ID = this.ID + "_lbSaveNote";
             _lbSaveNote.Attributes["class"] = "btn btn-primary btn-xs";
+            _lbSaveNote.CausesValidation = false;
             _lbSaveNote.Click += lbSaveNote_Click;
 
             Controls.Add(_lbSaveNote);
@@ -459,6 +460,7 @@ namespace Rock.Web.UI.Controls
 
             _lbDeleteNote.ID = this.ID + "_lbDeleteNote";
             _lbDeleteNote.Attributes["class"] = "remove-note";
+            _lbDeleteNote.CausesValidation = false;
             _lbDeleteNote.Click += lbDeleteNote_Click;
             Controls.Add( _lbDeleteNote );
             var iDelete = new HtmlGenericControl( "i" );
@@ -478,7 +480,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "note-editor" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "note" );
             if ( this.NoteId.HasValue )
             {
                 writer.AddAttribute( "rel", this.NoteId.Value.ToStringSafe() );
@@ -664,11 +666,11 @@ namespace Rock.Web.UI.Controls
             var rockPage = this.Page as RockPage;
             if (rockPage != null && NoteTypeId.HasValue)
             {
-                int? currentPersonId = null;
+                PersonAlias personAlias = null;
                 var currentPerson = rockPage.CurrentPerson;
                 if (currentPerson != null)
                 {
-                    currentPersonId = currentPerson.Id;
+                    personAlias = currentPerson.PrimaryAlias;
                 }
 
                 var service = new NoteService();
@@ -690,24 +692,30 @@ namespace Rock.Web.UI.Controls
                     note.NoteTypeId = NoteTypeId.Value;
                     note.EntityId = EntityId;
                     note.SourceTypeValueId = SourceTypeValueId;
-                    service.Add( note, currentPersonId );
+                    service.Add( note, personAlias );
                 }
 
                 note.Caption = IsPrivate ? "You - Personal Note" : string.Empty;
                 note.Text = Text;
                 note.IsAlert = IsAlert;
 
-                service.Save( note, currentPersonId );
+                service.Save( note, personAlias );
 
                 if ( newNote )
                 {
-                    note.AllowPerson( "Edit", currentPerson, currentPersonId );
+                    note.AllowPerson( "Edit", currentPerson, personAlias );
                 }
 
                 if ( IsPrivate && !note.IsPrivate( "View", currentPerson ) )
                 {
-                    note.MakePrivate( "View", currentPerson, currentPersonId );
+                    note.MakePrivate( "View", currentPerson, personAlias );
                 }
+
+                if ( !IsPrivate && note.IsPrivate( "View", currentPerson ) )
+                {
+                    note.MakeUnPrivate( "View", currentPerson, personAlias );
+                }
+
 
                 if ( SaveButtonClick != null )
                 {
@@ -726,11 +734,11 @@ namespace Rock.Web.UI.Controls
             var rockPage = this.Page as RockPage;
             if ( rockPage != null )
             {
-                int? currentPersonId = null;
+                PersonAlias personAlias = null;
                 var currentPerson = rockPage.CurrentPerson;
                 if ( currentPerson != null )
                 {
-                    currentPersonId = currentPerson.Id;
+                    personAlias = currentPerson.PrimaryAlias;
                 }
 
                 var service = new NoteService();
@@ -741,8 +749,8 @@ namespace Rock.Web.UI.Controls
                     note = service.Get( NoteId.Value );
                     if ( note != null && note.IsAuthorized( "Edit", currentPerson ) )
                     {
-                        service.Delete( note, currentPersonId );
-                        service.Save( note, currentPersonId );
+                        service.Delete( note, personAlias );
+                        service.Save( note, personAlias );
                     }
                 }
 

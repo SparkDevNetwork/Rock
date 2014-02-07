@@ -95,7 +95,7 @@ $('.checklist-item .checklist-desc-toggle').on('click', function (e) {
                             if ( value.GetAttributeValue( attributeKey ) != cbValue.Checked.ToString() )
                             {
                                 value.SetAttributeValue( attributeKey, cbValue.Checked.ToString() );
-                                Helper.SaveAttributeValues( value, CurrentPersonId );
+                                Helper.SaveAttributeValues( value, CurrentPersonAlias );
                                 DefinedValueCache.Flush( value.Id );
                             }
                         }

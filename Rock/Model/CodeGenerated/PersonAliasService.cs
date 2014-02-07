@@ -300,6 +300,14 @@ namespace Rock.Model
             
             // ignoring ReportField,ModifiedByPersonAliasId 
             
+            // ignoring RestAction,CreatedByPersonAliasId 
+            
+            // ignoring RestAction,ModifiedByPersonAliasId 
+            
+            // ignoring RestController,CreatedByPersonAliasId 
+            
+            // ignoring RestController,ModifiedByPersonAliasId 
+            
             // ignoring Schedule,CreatedByPersonAliasId 
             
             // ignoring Schedule,ModifiedByPersonAliasId 

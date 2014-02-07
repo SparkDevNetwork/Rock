@@ -320,8 +320,8 @@ namespace RockWeb.Blocks.Core
 
                 deletedActionTypes.ToList().ForEach( actionType =>
                 {
-                    workflowActionTypeService.Delete( actionType, CurrentPersonId );
-                    workflowActionTypeService.Save( actionType, CurrentPersonId );
+                    workflowActionTypeService.Delete( actionType, CurrentPersonAlias );
+                    workflowActionTypeService.Save( actionType, CurrentPersonAlias );
                 } );
 
                 // delete WorkflowActivityTypes that aren't assigned in the UI anymore
@@ -335,8 +335,8 @@ namespace RockWeb.Blocks.Core
 
                 deletedActivityTypes.ToList().ForEach( activityType =>
                 {
-                    workflowActivityTypeService.Delete( activityType, CurrentPersonId );
-                    workflowActivityTypeService.Save( activityType, CurrentPersonId );
+                    workflowActivityTypeService.Delete( activityType, CurrentPersonAlias );
+                    workflowActivityTypeService.Save( activityType, CurrentPersonAlias );
                 } );
 
                 // add or update WorkflowActivityTypes(and Actions) that are assigned in the UI
@@ -388,16 +388,16 @@ namespace RockWeb.Blocks.Core
 
                 if ( workflowType.Id.Equals( 0 ) )
                 {
-                    service.Add( workflowType, CurrentPersonId );
+                    service.Add( workflowType, CurrentPersonAlias );
                 }
 
-                service.Save( workflowType, CurrentPersonId );
+                service.Save( workflowType, CurrentPersonAlias );
 
                 foreach ( var activityType in workflowType.ActivityTypes )
                 {
                     foreach ( var workflowActionType in activityType.ActionTypes )
                     {
-                        Rock.Attribute.Helper.SaveAttributeValues( workflowActionType, CurrentPersonId );
+                        Rock.Attribute.Helper.SaveAttributeValues( workflowActionType, CurrentPersonAlias );
                     }
                 }
 
@@ -676,8 +676,8 @@ namespace RockWeb.Blocks.Core
                 }
 
                 Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
-                attributeService.Delete( attribute, CurrentPersonId );
-                attributeService.Save( attribute, CurrentPersonId );
+                attributeService.Delete( attribute, CurrentPersonAlias );
+                attributeService.Save( attribute, CurrentPersonAlias );
             }
 
             // reload page so that other blocks respond to any data that was changed
@@ -704,7 +704,7 @@ namespace RockWeb.Blocks.Core
         protected void btnSaveWorkflowTypeAttribute_Click( object sender, EventArgs e )
         {
             var attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtWorkflowTypeAttributes, EntityTypeCache.Read( typeof( Workflow ) ).Id,
-                "WorkflowTypeId", hfWorkflowTypeId.Value, CurrentPersonId );
+                "WorkflowTypeId", hfWorkflowTypeId.Value, CurrentPersonAlias );
 
             // Attribute will be null if it was not valid
             if ( attribute == null )

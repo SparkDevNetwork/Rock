@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Web.UI;
 
@@ -47,18 +48,33 @@ namespace Rock.PersonProfile
         }
 
         /// <summary>
-        /// Gets the type of the entity.
+        /// Gets a value indicating whether this instance is active.
         /// </summary>
         /// <value>
-        /// The type of the entity.
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
-        public EntityTypeCache EntityType
+        public override bool IsActive
         {
             get
             {
-                return EntityTypeCache.Read( this.GetType() );
+                return true;
             }
         }
+
+        /// <summary>
+        /// Gets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public override int Order
+        {
+            get
+            {
+                return 0;
+            }
+        }
+
 
         /// <summary>
         /// Gets or sets the parent person block.
@@ -91,19 +107,60 @@ namespace Rock.PersonProfile
         /// </summary>
         public BadgeComponent()
         {
-            using ( new Rock.Data.UnitOfWorkScope() )
-            {
-                Rock.Attribute.Helper.UpdateAttributes( this.GetType(), this.TypeId, null );
-            }
-            this.LoadAttributes();
+            // Override default constructor of Component that loads attributes (needs to be done by each instance)
         }
 
         /// <summary>
+        /// Loads the attributes.
+        /// </summary>
+        /// <exception cref="System.Exception">Person Badge attributes are saved specific to the current badge, which requires that the current badge is included in order to load or retrieve values.  Use the LoadAttributes( PersonBadge badge ) method instead.</exception>
+        [Obsolete( "Use LoadAttributes( PersonBadge badge ) instead", true )]
+        public void LoadAttributes()
+        {
+            // Compiler should generate error if referencing this method, so exception should never be thrown
+            // but method is needed to "override" the extension method for IHasAttributes objects
+            throw new Exception( "Person Badge attributes are saved specific to the current badge, which requires that the current badge is included in order to load or retrieve values.  Use the LoadAttributes( PersonBadge badge ) method instead." );
+        }
+
+        /// <summary>
+        /// Loads the attributes for the badge.  The attributes are loaded by the framework prior to executing the badge, 
+        /// so typically Person Badges do not need to load the attributes
+        /// </summary>
+        /// <param name="badge">The badge.</param>
+        public void LoadAttributes( PersonBadge badge )
+        {
+            badge.LoadAttributes();
+        }
+
+        /// <summary>
+        /// Use GetAttributeValue( PersonBadge badge, string key) instead.  Person Badge attribute values are 
+        /// specific to the badge instance (rather than global).  This method will throw an exception
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">Person Badge attributes are saved specific to the current badge, which requires that the current badge is included in order to load or retrieve values.  Use the GetAttributeValue( PersonBadge badge, string key ) method instead.</exception>
+        public override string GetAttributeValue( string key )
+        {
+            throw new Exception( "Person Badge attributes are saved specific to the current badge, which requires that the current badge is included in order to load or retrieve values.  Use the GetAttributeValue( PersonBadge badge, string key ) method instead." );
+        }
+
+        /// <summary>
+        /// Gets the attribute value for the badge
+        /// </summary>
+        /// <param name="badge">The badge.</param>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        protected string GetAttributeValue( PersonBadge badge, string key )
+        {
+            return badge.GetAttributeValue( key );
+        }
+        
+        /// <summary>
         /// Renders the specified writer.
         /// </summary>
+        /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public abstract void Render( HtmlTextWriter writer );
+        public abstract void Render( PersonBadge badge, HtmlTextWriter writer );
 
     }
-
 }

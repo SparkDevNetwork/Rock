@@ -134,7 +134,6 @@ namespace Rock.Model
             target.State = source.State;
             target.Country = source.Country;
             target.Zip = source.Zip;
-            target.FullAddress = source.FullAddress;
             target.AssessorParcelId = source.AssessorParcelId;
             target.StandardizeAttemptedDateTime = source.StandardizeAttemptedDateTime;
             target.StandardizeAttemptedServiceType = source.StandardizeAttemptedServiceType;

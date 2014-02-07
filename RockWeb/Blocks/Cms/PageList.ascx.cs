@@ -26,6 +26,7 @@ using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using Rock.Data;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -37,7 +38,7 @@ namespace RockWeb.Blocks.Cms
     [Description( "Lists pages for a site." )]
     public partial class PageList : RockBlock, ISecondaryBlock
     {
-        #region Control Methods
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -46,9 +47,14 @@ namespace RockWeb.Blocks.Cms
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
             gPages.DataKeyNames = new string[] { "Guid" };
             gPages.GridRebind += gPages_GridRebind;
             gPagesFilter.ApplyFilterClick += gPagesFilter_ApplyFilterClick;
+
+            // Block Security and special attributes (RockPage takes care of "View")
+            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            gPages.IsDeleteEnabled = canAddEditDelete;
         }
 
         /// <summary>
@@ -67,7 +73,7 @@ namespace RockWeb.Blocks.Cms
 
         #endregion
 
-        #region Edit Events
+        #region Events
 
         /// <summary>
         /// Handles the Edit event of the gPages control.
@@ -110,9 +116,44 @@ namespace RockWeb.Blocks.Cms
             BindPagesGrid();
         }
 
+        /// <summary>
+        /// Handles the Delete event of the gPages control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gPages_Delete( object sender, RowEventArgs e )
+        {
+            bool canDelete = false;
+
+            RockTransactionScope.WrapTransaction( () =>
+            {
+                PageService pageService = new PageService();
+                Rock.Model.Page page = pageService.Get( new Guid( e.RowKeyValue.ToString() ) );
+                if ( page != null )
+                {
+                    string errorMessage;
+                    canDelete = pageService.CanDelete( page, out errorMessage, includeSecondLvl: true );
+                    if ( ! canDelete )
+                    {
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Alert );
+                        return; // returns out of RockTransactionScope
+                    }
+
+                    pageService.Delete( page, CurrentPersonAlias );
+                    pageService.Save( page, CurrentPersonAlias );
+
+                    PageCache.Flush( page.Id );
+                }
+            } );
+
+            if ( canDelete )
+            {
+                BindPagesGrid();
+            }
+        }
         #endregion
 
-        #region Internal Methods
+        #region Methods
 
         /// <summary>
         /// Binds the filter.
@@ -126,7 +167,7 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
             LayoutService layoutService = new LayoutService();
-            layoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ), CurrentPersonId );
+            layoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ), CurrentPersonAlias );
             var layouts = layoutService.Queryable().Where( a => a.SiteId.Equals( siteId ) ).ToList();
             ddlLayoutFilter.DataSource = layouts;
             ddlLayoutFilter.DataBind();
@@ -151,17 +192,31 @@ namespace RockWeb.Blocks.Cms
             hfSiteId.SetValue( siteId );
             pnlPages.Visible = true;
 
+            // Question: Is this RegisterLayouts necessary here?  Since if it's a new layout
+            // there would not be any pages on them (which is our concern here).
+            // It seems like it should be the concern of some other part of the puzzle.
             LayoutService layoutService = new LayoutService();
-            layoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ), CurrentPersonId );
-            var layouts = layoutService.Queryable().Where( a => a.SiteId.Equals( siteId ) ).Select( a => a.Id ).ToList();
+            layoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ), CurrentPersonAlias );
+            //var layouts = layoutService.Queryable().Where( a => a.SiteId.Equals( siteId ) ).Select( a => a.Id ).ToList();
 
+            // Find all the pages that are related to this site...
+            // 1) pages used by one of this site's layouts and
+            // 2) the site's 'special' pages used directly by the site.
             var siteService = new SiteService();
-            var pageId = siteService.Get( siteId ).DefaultPageId;
-
+            var site = siteService.Get( siteId );
             var pageService = new PageService();
-            var qry = pageService.GetAllDescendents( (int)pageId ).AsQueryable().Where( a => layouts.Contains( a.LayoutId ) )
-                .Concat( pageService.GetByIds( new List<int>{ (int)pageId } ) );
-       
+
+            var qry = pageService.GetBySiteId( siteId ).AsQueryable()
+                    .Concat( pageService.GetByIds(
+                        new List<int>
+                        {
+                            site.DefaultPageId ?? -1,
+                            site.LoginPageId ?? -1,
+                            site.RegistrationPageId ?? -1, site.PageNotFoundPageId ?? -1
+                        }
+                    )
+                );
+
             string layoutFilter = gPagesFilter.GetUserPreference( "Layout" );
             if ( !string.IsNullOrWhiteSpace( layoutFilter ) && layoutFilter != Rock.Constants.All.Text )
             {

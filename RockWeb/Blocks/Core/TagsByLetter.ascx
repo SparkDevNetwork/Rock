@@ -5,7 +5,7 @@
 
         <div class="nav nav-pills">
             <li class='<%= personalTagsCss %>'><asp:LinkButton id="lbPersonalTags" runat="server" OnClick="lbPersonalTags_Click" Text="Personal Tags" CssClass="active"></asp:LinkButton></li>
-            <li class="<%= publicTagsCss %>"><asp:LinkButton id="lbPublicTags" runat="server" OnClick="lbPublicTags_Click" Text="Public Tags"></asp:LinkButton></li>
+            <li class="<%= publicTagsCss %>"><asp:LinkButton id="lbPublicTags" runat="server" OnClick="lbPublicTags_Click" Text="Organization Tags"></asp:LinkButton></li>
         </div>
 
         <asp:Literal ID="lLetters" runat="server"></asp:Literal>

@@ -182,7 +182,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 {
                                     string originalValue = Person.GetAttributeValue( attribute.Key );
                                     string newValue = attribute.FieldType.Field.GetEditValue( attributeControl, attribute.QualifierValues );
-                                    Rock.Attribute.Helper.SaveAttributeValue( Person, attribute, newValue, CurrentPersonId );
+                                    Rock.Attribute.Helper.SaveAttributeValue( Person, attribute, newValue, CurrentPersonAlias );
 
                                     // Check for changes to write to history
                                     if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
@@ -208,7 +208,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         if ( changes.Any() )
                         {
                             new HistoryService().SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                Person.Id, changes, CurrentPersonId );
+                                Person.Id, changes, CurrentPersonAlias );
                         }
                     } );
                 }

@@ -38,14 +38,22 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:Grid runat=server></{0}:Grid>" )]
     public class Grid : System.Web.UI.WebControls.GridView, IPostBackEventHandler
     {
+
+        #region Constants
+
         private const int ALL_ITEMS_SIZE = 1000000;
         private const string DEFAULT_EMPTY_DATA_TEXT = "No Results Found";
         private const string PAGE_SIZE_KEY = "grid-page-size-preference";
 
+        #endregion
+
+        #region Fields
+
         private Table _table;
         private GridViewRow _actionRow;
         private GridActions _gridActions;
-        private List<int> _selectedKeys = new List<int>();
+
+        #endregion
 
         #region Properties
 
@@ -341,6 +349,28 @@ namespace Rock.Web.UI.Controls
             }                
         }
 
+        /// <summary>
+        /// Gets the selected keys for the first multiple selection mode SelectField column
+        /// </summary>
+        /// <value>
+        /// The selected keys.
+        /// </value>
+        private List<object> SelectedKeys
+        {
+            get
+            {
+                foreach ( var col in this.Columns.OfType<SelectField>() )
+                {
+                    if (col.SelectionMode == SelectionMode.Multiple)
+                    {
+                        return col.SelectedKeys;
+                    }
+                }
+
+                return new List<object>();
+            }
+        }
+
         #region Action Row Properties
 
         /// <summary>
@@ -423,7 +453,7 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
-        #region Overridden Methods
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init"/> event.
@@ -482,18 +512,36 @@ namespace Rock.Web.UI.Controls
 }});";
             string gridSelectCellScript = string.Format( gridSelectCellScriptFormat, this.ClientID, clickScript );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-select-cell-script-" + this.ClientID, gridSelectCellScript, true );
-            
-            if (Page.IsPostBack)
+
+            if ( Page.IsPostBack )
             {
-                foreach ( GridViewRow row in this.Rows )
+                if ( this.DataKeys != null && this.DataKeys.Count > 0 )
                 {
-                    CheckBox cb = row.FindControl( "cbSelect" ) as CheckBox;
-                    if ( cb != null && cb.Checked )
+                    // For each SelectField evaluate the checkbox/radiobutton to see if the cell was selected.  
+                    foreach ( var col in this.Columns.OfType<SelectField>() )
                     {
-                        int? key = this.DataKeys[row.RowIndex].Value as int?;
-                        if ( key.HasValue )
+                        var colIndex = this.Columns.IndexOf( col ).ToString();
+
+                        col.SelectedKeys = new List<object>();
+
+                        foreach ( GridViewRow row in this.Rows )
                         {
-                            _selectedKeys.Add( key.Value );
+                            CheckBox cb = row.FindControl( "cbSelect_" + colIndex ) as CheckBox;
+                            if ( col.SelectionMode == SelectionMode.Multiple )
+                            {
+                                if ( cb != null && cb.Checked )
+                                {
+                                    col.SelectedKeys.Add( this.DataKeys[row.RowIndex].Value );
+                                }
+                            }
+                            else
+                            {
+                                string value = Page.Request.Form[cb.UniqueID.Replace( cb.ID, ( (RadioButton)cb ).GroupName )];
+                                if ( value == cb.ClientID )
+                                {
+                                    col.SelectedKeys.Add( this.DataKeys[row.RowIndex].Value );
+                                }
+                            }
                         }
                     }
                 }
@@ -501,6 +549,383 @@ namespace Rock.Web.UI.Controls
 
             base.OnLoad( e );
         }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender"/> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs"/> that contains the event data.</param>
+        protected override void OnPreRender( EventArgs e )
+        {
+            base.OnPreRender( e );
+
+            UseAccessibleHeader = true;
+
+            if ( HeaderRow != null )
+            {
+                HeaderRow.TableSection = TableRowSection.TableHeader;
+            }
+
+            if ( FooterRow != null )
+            {
+                FooterRow.TableSection = TableRowSection.TableFooter;
+            }
+
+            if ( TopPagerRow != null )
+            {
+                TopPagerRow.TableSection = TableRowSection.TableHeader;
+            }
+
+            if ( BottomPagerRow != null )
+            {
+                BottomPagerRow.TableSection = TableRowSection.TableFooter;
+            }
+
+            if ( ActionRow != null )
+            {
+                ActionRow.TableSection = TableRowSection.TableFooter;
+            }
+        }
+
+        /// <summary>
+        /// TODO: Added this override to prevent the default behavior of rending a grid with a table inside
+        /// and div element.  The div may be needed for paging when grid is not used in an update panel
+        /// so if wierd errors start happening, this could be the culprit.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> used to render the server control content on the client's browser.</param>
+        protected override void Render( HtmlTextWriter writer )
+        {
+            bool renderPanel = !base.DesignMode;
+
+            if ( this.Page != null )
+            {
+                this.Page.VerifyRenderingInServerForm( this );
+            }
+
+            this.PrepareControlHierarchy();
+
+            // render script for popovers
+            string script = @"
+    $('.grid-table tr').tooltip({html: true, container: 'body', delay: { show: 500, hide: 100 }});
+    $('.grid-table tr').click( function(){ $(this).tooltip('hide'); });;
+";
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "grid-popover", script, true);
+
+            this.RenderContents( writer );
+        }
+
+        /// <summary>
+        /// Creates a new child table.
+        /// </summary>
+        /// <returns>
+        /// Always returns a new <see cref="T:System.Web.UI.WebControls.Table" /> that represents the child table.
+        /// </returns>
+        protected override Table CreateChildTable()
+        {
+            _table = base.CreateChildTable();
+            return _table;
+        }
+
+        /// <summary>
+        /// Creates the control hierarchy used to render the <see cref="T:System.Web.UI.WebControls.GridView"/> control using the specified data source.
+        /// </summary>
+        /// <param name="dataSource">An <see cref="T:System.Collections.IEnumerable"/> that contains the data source for the <see cref="T:System.Web.UI.WebControls.GridView"/> control.</param>
+        /// <param name="dataBinding">true to indicate that the child controls are bound to data; otherwise, false.</param>
+        /// <returns>
+        /// The number of rows created.
+        /// </returns>
+        /// <exception cref="T:System.Web.HttpException">
+        ///   <paramref name="dataSource"/> returns a null <see cref="T:System.Web.UI.DataSourceView"/>.-or-<paramref name="dataSource"/> does not implement the <see cref="T:System.Collections.ICollection"/> interface and cannot return a <see cref="P:System.Web.UI.DataSourceSelectArguments.TotalRowCount"/>. -or-<see cref="P:System.Web.UI.WebControls.GridView.AllowPaging"/> is true and <paramref name="dataSource"/> does not implement the <see cref="T:System.Collections.ICollection"/> interface and cannot perform data source paging.-or-<paramref name="dataSource"/> does not implement the <see cref="T:System.Collections.ICollection"/> interface and <paramref name="dataBinding"/> is set to false.</exception>
+        protected override int CreateChildControls( System.Collections.IEnumerable dataSource, bool dataBinding )
+        {
+            int result = base.CreateChildControls( dataSource, dataBinding );
+
+            if ( _table != null && _table.Parent != null )
+            {
+                if ( this.AllowPaging && this.BottomPagerRow != null )
+                {
+                    this.BottomPagerRow.Visible = true;
+
+                    // add paging style
+                    if ( this.BottomPagerRow.Cells.Count > 0 )
+                    {
+                        this.BottomPagerRow.Cells[0].CssClass = "grid-paging";
+                    }
+                }
+
+                _actionRow = base.CreateRow( -1, -1, DataControlRowType.Footer, DataControlRowState.Normal );
+                _table.Rows.Add( _actionRow );
+
+                TableCell cell = new TableCell();
+                cell.ColumnSpan = this.Columns.Count;
+                cell.CssClass = "grid-actions";
+                _actionRow.Cells.Add( cell );
+
+                cell.Controls.Add( _gridActions );
+
+                if ( !this.ShowActionRow )
+                {
+                    _actionRow.Visible = false;
+                }
+            }
+
+            return result;
+        }
+        
+        #endregion
+
+        #region Events
+
+        #region Grid Events
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.DataBinding" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnDataBinding( EventArgs e )
+        {
+            // Get the css class for any column that does not implement the INotRowSelectedField
+            RowSelectedColumns = new Dictionary<int, string>();
+            for ( int i = 0; i < this.Columns.Count; i++ )
+            {
+                if ( !( this.Columns[i] is INotRowSelectedField ) )
+                {
+                    RowSelectedColumns.Add( i, this.Columns[i].ItemStyle.CssClass );
+                }
+            }
+
+            base.OnDataBinding( e );
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.WebControls.BaseDataBoundControl.DataBound"/> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
+        protected override void OnDataBound( EventArgs e )
+        {
+            base.OnDataBound( e );
+
+            // Get ItemCount
+            int itemCount = 0;
+            if ( this.DataSource is DataTable || this.DataSource is DataView )
+            {
+                if ( this.DataSource is DataTable )
+                {
+                    itemCount = ( (DataTable)this.DataSource ).Rows.Count;
+                }
+                else if ( this.DataSource is DataView )
+                {
+                    itemCount = ( (DataView)this.DataSource ).Table.Rows.Count;
+                }
+            }
+            else if ( this.DataSource is IList )
+            {
+                itemCount = ( (IList)this.DataSource ).Count;
+            }
+            else
+            {
+                itemCount = 0;
+            }
+
+            PagerTemplate pagerTemplate = this.PagerTemplate as PagerTemplate;
+            if ( PagerTemplate != null )
+            {
+                pagerTemplate.SetNavigation( this.PageCount, this.PageIndex, this.PageSize, itemCount, this.RowItemText );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Sorting event of the Grid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewSortEventArgs"/> instance containing the event data.</param>
+        protected void Grid_Sorting( object sender, GridViewSortEventArgs e )
+        {
+            SortProperty sortProperty = this.SortProperty;
+            if ( sortProperty != null && sortProperty.Property == e.SortExpression )
+            {
+                if ( sortProperty.Direction == SortDirection.Ascending )
+                {
+                    sortProperty.Direction = SortDirection.Descending;
+                }
+                else
+                {
+                    sortProperty.Direction = SortDirection.Ascending;
+                }
+
+                this.SortProperty = sortProperty;
+            }
+            else
+            {
+                this.SortProperty = new SortProperty( e );
+            }
+
+            OnGridRebind( e );
+        }
+
+        #endregion
+
+        #region Row Events
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.WebControls.GridView.RowCreated" /> event.
+        /// </summary>
+        /// <param name="e">A <see cref="T:System.Web.UI.WebControls.GridViewRowEventArgs" /> that contains event data.</param>
+        protected override void OnRowCreated( GridViewRowEventArgs e )
+        {
+            base.OnRowCreated( e );
+
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                // For each select field that is not bound to a DataSelectedField set it's checkbox/radiobox from
+                // the previously posted back values in the columns SelectedKeys property
+                foreach ( var col in this.Columns.OfType<SelectField>() )
+                {
+                    if (string.IsNullOrWhiteSpace(col.DataSelectedField) && col.SelectedKeys.Any() )
+                    {
+                        var colIndex = this.Columns.IndexOf( col ).ToString();
+                        CheckBox cbSelect = e.Row.FindControl( "cbSelect_" + colIndex ) as CheckBox;
+                        if ( cbSelect != null )
+                        {
+                            cbSelect.Checked = ( col.SelectedKeys.Contains( this.DataKeys[e.Row.RowIndex].Value ) );
+                        }
+                    }
+                }
+
+                if ( this.RowSelected != null )
+                {
+                    // For each column that supports the clicking to select add the css class to enable this functionality
+                    foreach ( var col in RowSelectedColumns )
+                    {
+                        var cell = e.Row.Cells[col.Key];
+                        cell.AddCssClass( col.Value );
+                        cell.AddCssClass( "grid-select-cell" );
+                    }
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.WebControls.GridView.RowDataBound"/> event.
+        /// </summary>
+        /// <param name="e">A <see cref="T:System.Web.UI.WebControls.GridViewRowEventArgs"/> that contains event data.</param>
+        protected override void OnRowDataBound( GridViewRowEventArgs e )
+        {
+            base.OnRowDataBound( e );
+
+            if ( e.Row.RowType == DataControlRowType.Header && this.AllowSorting )
+            {
+                string asc = SortDirection.Ascending.ToString();
+                string desc = SortDirection.Descending.ToString();
+
+                // Remove the sort css classes
+                foreach ( TableCell cell in e.Row.Cells )
+                {
+                    cell.RemoveCssClass( asc );
+                    cell.RemoveCssClass( desc );
+                }
+
+                // Add the new sort css class
+                SortProperty sortProperty = this.SortProperty;
+                if ( sortProperty != null )
+                {
+                    foreach ( var column in this.Columns )
+                    {
+                        var dcf = column as DataControlField;
+                        if ( dcf != null && dcf.SortExpression == this.SortProperty.Property )
+                        {
+                            e.Row.Cells[this.Columns.IndexOf( dcf )].AddCssClass( sortProperty.Direction.ToString().ToLower() );
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                if ( e.Row.DataItem != null )
+                {
+                    if ( this.DataKeys != null && this.DataKeys.Count > 0 )
+                    {
+                        object dataKey = this.DataKeys[e.Row.RowIndex].Value as object;
+                        if ( dataKey != null )
+                        {
+                            string key = dataKey.ToString();
+                            e.Row.Attributes.Add( "datakey", key );
+                            e.Row.Attributes.Add( "data-row-index", e.Row.RowIndex.ToString() );
+                        }
+                    }
+
+                    if ( TooltipField != null )
+                    {
+                        PropertyInfo pi = e.Row.DataItem.GetType().GetProperty( TooltipField );
+                        if ( pi != null )
+                        {
+                            var piv = pi.GetValue( e.Row.DataItem );
+                            if ( piv != null )
+                            {
+                                string description = piv.ToString();
+                                if ( !string.IsNullOrWhiteSpace( description ) )
+                                {
+                                    e.Row.ToolTip = description;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.WebControls.GridView.RowCommand" /> event.
+        /// </summary>
+        /// <param name="e">A <see cref="T:System.Web.UI.WebControls.GridViewCommandEventArgs" /> that contains event data.</param>
+        protected override void OnRowCommand( GridViewCommandEventArgs e )
+        {
+            base.OnRowCommand( e );
+
+            if ( e.CommandName == "RowSelected" )
+            {
+                int rowIndex = Int32.Parse( e.CommandArgument.ToString() );
+                RowEventArgs a = new RowEventArgs( this.Rows[rowIndex] );
+                OnRowSelected( a );
+            }
+        }
+
+        #endregion
+
+        #region Paging Events
+
+        /// <summary>
+        /// Handles the ItemsPerPageClick event of the pagerTemplate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.NumericalEventArgs"/> instance containing the event data.</param>
+        void pagerTemplate_ItemsPerPageClick( object sender, NumericalEventArgs e )
+        {
+            var rockPage = this.Page as RockPage;
+            if ( rockPage != null )
+            {
+                rockPage.SetUserPreference( PAGE_SIZE_KEY, e.Number.ToString() );
+            }
+
+            this.PageSize = e.Number;
+            OnGridRebind( e );
+        }
+
+        /// <summary>
+        /// Handles the NavigateClick event of the pagerTemplate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.NumericalEventArgs"/> instance containing the event data.</param>
+        void pagerTemplate_NavigateClick( object sender, NumericalEventArgs e )
+        {
+            this.PageIndex = e.Number;
+            OnGridRebind( e );
+        }
+
+        #endregion
+
+        #region Action Events
 
         /// <summary>
         /// Handles the MergeClick event of the Actions control.
@@ -511,61 +936,19 @@ namespace Rock.Web.UI.Controls
         {
             if ( !string.IsNullOrWhiteSpace( PersonIdField ) )
             {
-                var peopleSelected = _selectedKeys.ToList();
+                var peopleSelected = SelectedKeys.ToList();
 
                 if ( !peopleSelected.Any() )
                 {
                     OnGridRebind( e );
-
-                    if ( this.DataSource is DataTable || this.DataSource is DataView )
-                    {
-
-                        DataTable data = null;
-                        if ( this.DataSource is DataTable )
-                        {
-                            data = (DataTable)this.DataSource;
-                        }
-                        else if ( this.DataSource is DataView )
-                        {
-                            data = ( (DataView)this.DataSource ).Table;
-                        }
-
-                        if ( data != null )
-                        {
-                            foreach ( DataRow row in data.Rows )
-                            {
-                                object idObj = row[this.PersonIdField];
-                                if ( idObj != null )
-                                {
-                                    int? personId = idObj as int?;
-                                    if ( personId.HasValue )
-                                    {
-                                        peopleSelected.Add( personId.Value );
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // get access to the List<> and its properties
-                        IList data = (IList)this.DataSource;
-                        Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
-
-                        PropertyInfo idProp = oType.GetProperty( this.PersonIdField );
-                        if ( idProp != null )
-                        {
-                            foreach ( var item in data )
-                            {
-                                int personId = (int)idProp.GetValue( item, null );
-                                peopleSelected.Add( personId );
-                            }
-                        }
-                    }
+                    peopleSelected = GetAllPersonIds();
                 }
 
-                Page.Response.Redirect( string.Format(MergePageRoute, peopleSelected.AsDelimited(",") ), false );
-                Context.ApplicationInstance.CompleteRequest();
+                if ( peopleSelected.Any() )
+                {
+                    Page.Response.Redirect( string.Format( MergePageRoute, peopleSelected.AsDelimited( "," ) ), false );
+                    Context.ApplicationInstance.CompleteRequest();
+                }
             }
         }
 
@@ -580,6 +963,8 @@ namespace Rock.Web.UI.Controls
 
             if ( !string.IsNullOrWhiteSpace( PersonIdField ) )
             {
+                var peopleSelected = SelectedKeys.ToList();
+
                 // Set Sender
                 var rockPage = Page as RockPage;
                 if ( rockPage != null )
@@ -587,9 +972,9 @@ namespace Rock.Web.UI.Controls
                     var communication = new Rock.Model.Communication();
                     communication.Status = Model.CommunicationStatus.Transient;
 
-                    if ( rockPage.CurrentPersonId.HasValue )
+                    if ( rockPage.CurrentPerson != null )
                     {
-                        communication.SenderPersonId = rockPage.CurrentPersonId.Value;
+                        communication.SenderPersonId = rockPage.CurrentPerson.Id;
                     }
 
                     if ( this.DataSource is DataTable || this.DataSource is DataView )
@@ -624,7 +1009,8 @@ namespace Rock.Web.UI.Controls
                                 }
                             }
 
-                            if ( personId.HasValue )
+                            // If valid personid and either no people were selected or this person was selected add them as a recipient
+                            if ( personId.HasValue && ( !peopleSelected.Any() || peopleSelected.Contains( personId.Value ) ) )
                             {
                                 var recipient = new Rock.Model.CommunicationRecipient();
                                 recipient.PersonId = personId.Value;
@@ -646,29 +1032,36 @@ namespace Rock.Web.UI.Controls
                         {
                             foreach ( var item in data )
                             {
-                                var recipient = new Rock.Model.CommunicationRecipient();
-                                recipient.PersonId = (int)idProp.GetValue( item, null );
-
-                                foreach ( string mergeField in CommunicateMergeFields )
+                                int personId = (int)idProp.GetValue( item, null );
+                                if ( !peopleSelected.Any() || peopleSelected.Contains( personId ) )
                                 {
-                                    object obj = item.GetPropertyValue( mergeField );
-                                    if ( obj != null )
-                                    {
-                                        recipient.AdditionalMergeValues.Add( mergeField.Replace( '.', '_' ), obj.ToString() );
-                                    }
-                                }
+                                    var recipient = new Rock.Model.CommunicationRecipient();
+                                    recipient.PersonId = personId;
 
-                                communication.Recipients.Add( recipient );
+                                    foreach ( string mergeField in CommunicateMergeFields )
+                                    {
+                                        object obj = item.GetPropertyValue( mergeField );
+                                        if ( obj != null )
+                                        {
+                                            recipient.AdditionalMergeValues.Add( mergeField.Replace( '.', '_' ), obj.ToString() );
+                                        }
+                                    }
+
+                                    communication.Recipients.Add( recipient );
+                                }
                             }
                         }
                     }
 
-                    var service = new Rock.Model.CommunicationService();
-                    service.Add( communication, rockPage.CurrentPersonId );
-                    service.Save( communication, rockPage.CurrentPersonId );
+                    if ( communication.Recipients.Any() )
+                    {
+                        var service = new Rock.Model.CommunicationService();
+                        service.Add( communication, rockPage.CurrentPersonAlias );
+                        service.Save( communication, rockPage.CurrentPersonAlias );
 
-                    Page.Response.Redirect( string.Format( CommunicationPageRoute, communication.Id ), false );
-                    Context.ApplicationInstance.CompleteRequest();
+                        Page.Response.Redirect( string.Format( CommunicationPageRoute, communication.Id ), false );
+                        Context.ApplicationInstance.CompleteRequest();
+                    }
                 }
             }
         }
@@ -798,7 +1191,14 @@ namespace Rock.Web.UI.Controls
                         string value = "";
                         if ( propValue != null )
                         {
-                            value = propValue.ToString();
+                            if ( propValue is IEnumerable<object> )
+                            {
+                                value = ( propValue as IEnumerable<object> ).ToList().AsDelimited( "," );
+                            }
+                            else
+                            {
+                                value = propValue.ToString();
+                            }
                         }
 
                         worksheet.Cells[rowCounter, columnCounter].Value = value;
@@ -884,331 +1284,11 @@ namespace Rock.Web.UI.Controls
             this.Page.Response.End();
         }
 
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.PreRender"/> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs"/> that contains the event data.</param>
-        protected override void OnPreRender( EventArgs e )
-        {
-            base.OnPreRender( e );
-
-            UseAccessibleHeader = true;
-
-            if ( HeaderRow != null )
-            {
-                HeaderRow.TableSection = TableRowSection.TableHeader;
-            }
-
-            if ( FooterRow != null )
-            {
-                FooterRow.TableSection = TableRowSection.TableFooter;
-            }
-
-            if ( TopPagerRow != null )
-            {
-                TopPagerRow.TableSection = TableRowSection.TableHeader;
-            }
-
-            if ( BottomPagerRow != null )
-            {
-                BottomPagerRow.TableSection = TableRowSection.TableFooter;
-            }
-
-            if ( ActionRow != null )
-            {
-                ActionRow.TableSection = TableRowSection.TableFooter;
-            }
-        }
-
-        /// <summary>
-        /// TODO: Added this override to prevent the default behavior of rending a grid with a table inside
-        /// and div element.  The div may be needed for paging when grid is not used in an update panel
-        /// so if wierd errors start happening, this could be the culprit.
-        /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> used to render the server control content on the client's browser.</param>
-        protected override void Render( HtmlTextWriter writer )
-        {
-            bool renderPanel = !base.DesignMode;
-
-            if ( this.Page != null )
-            {
-                this.Page.VerifyRenderingInServerForm( this );
-            }
-
-            this.PrepareControlHierarchy();
-
-            // render script for popovers
-            string script = @"
-    $('.grid-table tr').tooltip({html: true, container: 'body', delay: { show: 500, hide: 100 }});
-    $('.grid-table tr').click( function(){ $(this).tooltip('hide'); });;
-";
-            ScriptManager.RegisterStartupScript(this, this.GetType(), "grid-popover", script, true);
-
-            this.RenderContents( writer );
-        }
-
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.DataBinding" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnDataBinding( EventArgs e )
-        {
-            // Get the css class for any column that does not implement the INotRowSelectedField
-            RowSelectedColumns = new Dictionary<int, string>();
-            for ( int i = 0; i < this.Columns.Count; i++ )
-            {
-                if ( !( this.Columns[i] is INotRowSelectedField ) )
-                {
-                    RowSelectedColumns.Add( i, this.Columns[i].ItemStyle.CssClass );
-                }
-            }
-
-            base.OnDataBinding( e );
-        }
-
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.WebControls.BaseDataBoundControl.DataBound"/> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
-        protected override void OnDataBound( EventArgs e )
-        {
-            base.OnDataBound( e );
-
-            // Get ItemCount
-            int itemCount = 0;
-            if ( this.DataSource is DataTable || this.DataSource is DataView )
-            {
-                if ( this.DataSource is DataTable )
-                {
-                    itemCount = ( (DataTable)this.DataSource ).Rows.Count;
-                }
-                else if ( this.DataSource is DataView )
-                {
-                    itemCount = ( (DataView)this.DataSource ).Table.Rows.Count;
-                }
-            }
-            else if ( this.DataSource is IList )
-            {
-                itemCount = ( (IList)this.DataSource ).Count;
-            }
-            else
-            {
-                itemCount = 0;
-            }
-
-            PagerTemplate pagerTemplate = this.PagerTemplate as PagerTemplate;
-            if ( PagerTemplate != null )
-            {
-                pagerTemplate.SetNavigation( this.PageCount, this.PageIndex, this.PageSize, itemCount, this.RowItemText );
-            }
-        }
-
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.WebControls.GridView.RowDataBound"/> event.
-        /// </summary>
-        /// <param name="e">A <see cref="T:System.Web.UI.WebControls.GridViewRowEventArgs"/> that contains event data.</param>
-        protected override void OnRowDataBound( GridViewRowEventArgs e )
-        {
-            base.OnRowDataBound( e );
-
-            if ( e.Row.RowType == DataControlRowType.Header && this.AllowSorting )
-            {
-                string asc = SortDirection.Ascending.ToString();
-                string desc = SortDirection.Descending.ToString();
-
-                // Remove the sort css classes
-                foreach ( TableCell cell in e.Row.Cells )
-                {
-                    cell.RemoveCssClass( asc );
-                    cell.RemoveCssClass( desc );
-                }
-
-                // Add the new sort css class
-                SortProperty sortProperty = this.SortProperty;
-                if ( sortProperty != null )
-                {
-                    foreach ( var column in this.Columns )
-                    {
-                        var dcf = column as DataControlField;
-                        if ( dcf != null && dcf.SortExpression == this.SortProperty.Property )
-                        {
-                            e.Row.Cells[this.Columns.IndexOf( dcf )].AddCssClass( sortProperty.Direction.ToString().ToLower() );
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if ( e.Row.RowType == DataControlRowType.DataRow )
-            {
-                if ( e.Row.DataItem != null )
-                {
-                    if ( this.DataKeys != null && this.DataKeys.Count > 0 )
-                    {
-                        object dataKey = this.DataKeys[e.Row.RowIndex].Value as object;
-                        if ( dataKey != null )
-                        {
-                            string key = dataKey.ToString();
-                            e.Row.Attributes.Add( "datakey", key );
-                            e.Row.Attributes.Add( "data-row-index", e.Row.RowIndex.ToString() );
-                        }
-                    }
-
-                    if ( TooltipField != null )
-                    {
-                        PropertyInfo pi = e.Row.DataItem.GetType().GetProperty( TooltipField );
-                        if ( pi != null )
-                        {
-                            var piv = pi.GetValue( e.Row.DataItem );
-                            if ( piv != null )
-                            {
-                                string description = piv.ToString();
-                                if ( !string.IsNullOrWhiteSpace( description ) )
-                                {
-                                    e.Row.ToolTip = description;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.WebControls.GridView.RowCreated" /> event.
-        /// </summary>
-        /// <param name="e">A <see cref="T:System.Web.UI.WebControls.GridViewRowEventArgs" /> that contains event data.</param>
-        protected override void OnRowCreated( GridViewRowEventArgs e )
-        {
-            base.OnRowCreated( e );
-
-            if ( RowSelected != null && e.Row.RowType == DataControlRowType.DataRow )
-            {
-                if ( _selectedKeys.Any() )
-                {
-                    CheckBox cbSelect = e.Row.FindControl( "cbSelect" ) as CheckBox;
-                    if ( cbSelect != null )
-                    {
-                        int? key = this.DataKeys[e.Row.RowIndex].Value as int?;
-                        cbSelect.Checked = ( key.HasValue && _selectedKeys.Contains( key.Value ) );
-                    }
-                }
-
-                foreach ( var col in RowSelectedColumns)
-                {
-                    var cell = e.Row.Cells[col.Key];
-                    cell.AddCssClass( col.Value );
-                    cell.AddCssClass( "grid-select-cell" );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Creates a new child table.
-        /// </summary>
-        /// <returns>
-        /// Always returns a new <see cref="T:System.Web.UI.WebControls.Table" /> that represents the child table.
-        /// </returns>
-        protected override Table CreateChildTable()
-        {
-            _table = base.CreateChildTable();
-            return _table;
-        }
-
-        /// <summary>
-        /// Creates the control hierarchy used to render the <see cref="T:System.Web.UI.WebControls.GridView"/> control using the specified data source.
-        /// </summary>
-        /// <param name="dataSource">An <see cref="T:System.Collections.IEnumerable"/> that contains the data source for the <see cref="T:System.Web.UI.WebControls.GridView"/> control.</param>
-        /// <param name="dataBinding">true to indicate that the child controls are bound to data; otherwise, false.</param>
-        /// <returns>
-        /// The number of rows created.
-        /// </returns>
-        /// <exception cref="T:System.Web.HttpException">
-        ///   <paramref name="dataSource"/> returns a null <see cref="T:System.Web.UI.DataSourceView"/>.-or-<paramref name="dataSource"/> does not implement the <see cref="T:System.Collections.ICollection"/> interface and cannot return a <see cref="P:System.Web.UI.DataSourceSelectArguments.TotalRowCount"/>. -or-<see cref="P:System.Web.UI.WebControls.GridView.AllowPaging"/> is true and <paramref name="dataSource"/> does not implement the <see cref="T:System.Collections.ICollection"/> interface and cannot perform data source paging.-or-<paramref name="dataSource"/> does not implement the <see cref="T:System.Collections.ICollection"/> interface and <paramref name="dataBinding"/> is set to false.</exception>
-        protected override int CreateChildControls( System.Collections.IEnumerable dataSource, bool dataBinding )
-        {
-            int result = base.CreateChildControls( dataSource, dataBinding );
-
-            if ( _table != null && _table.Parent != null )
-            {
-                if ( this.AllowPaging && this.BottomPagerRow != null )
-                {
-                    this.BottomPagerRow.Visible = true;
-
-                    // add paging style
-                    if ( this.BottomPagerRow.Cells.Count > 0 )
-                    {
-                        this.BottomPagerRow.Cells[0].CssClass = "grid-paging";
-                    }
-                }
-
-                _actionRow = base.CreateRow( -1, -1, DataControlRowType.Footer, DataControlRowState.Normal );
-                _table.Rows.Add( _actionRow );
-
-                TableCell cell = new TableCell();
-                cell.ColumnSpan = this.Columns.Count;
-                cell.CssClass = "grid-actions";
-                _actionRow.Cells.Add( cell );
-
-                cell.Controls.Add( _gridActions );
-
-                if ( !this.ShowActionRow )
-                {
-                    _actionRow.Visible = false;
-                }
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Handles the Sorting event of the Grid control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewSortEventArgs"/> instance containing the event data.</param>
-        protected void Grid_Sorting( object sender, GridViewSortEventArgs e )
-        {
-            SortProperty sortProperty = this.SortProperty;
-            if ( sortProperty != null && sortProperty.Property == e.SortExpression )
-            {
-                if ( sortProperty.Direction == SortDirection.Ascending )
-                {
-                    sortProperty.Direction = SortDirection.Descending;
-                }
-                else
-                {
-                    sortProperty.Direction = SortDirection.Ascending;
-                }
-
-                this.SortProperty = sortProperty;
-            }
-            else
-            {
-                this.SortProperty = new SortProperty( e );
-            }
-
-            OnGridRebind( e );
-        }
-
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.WebControls.GridView.RowCommand" /> event.
-        /// </summary>
-        /// <param name="e">A <see cref="T:System.Web.UI.WebControls.GridViewCommandEventArgs" /> that contains event data.</param>
-        protected override void OnRowCommand( GridViewCommandEventArgs e )
-        {
-            base.OnRowCommand( e );
-
-            if ( e.CommandName == "RowSelected" )
-            {
-                int rowIndex = Int32.Parse( e.CommandArgument.ToString() );
-                RowEventArgs a = new RowEventArgs( this.Rows[rowIndex] );
-                OnRowSelected( a );
-            }
-        }
+        #endregion
 
         #endregion
 
-        #region Public Methods
+        #region Methods
 
         /// <summary>
         /// Creates grid columns by reflecting on the properties of a type.  If any of the properties
@@ -1272,74 +1352,56 @@ namespace Rock.Web.UI.Controls
             return columns;
         }
 
-        #endregion
-
-        #region Internal Methods
-
-        /// <summary>
-        /// Gets the grid field.
-        /// </summary>
-        /// <param name="propertyType">Type of the property.</param>
-        /// <returns></returns>
-        public static BoundField GetGridField( Type propertyType )
+        private List<object> GetAllPersonIds()
         {
-            BoundField bf = new BoundField();
-            Type baseType = propertyType;
+            var personIds = new List<object>();
 
-            if (propertyType.IsGenericType)
+            if ( this.DataSource is DataTable || this.DataSource is DataView )
             {
-                baseType = propertyType.GetGenericArguments()[0];
+                DataTable data = null;
+                if ( this.DataSource is DataTable )
+                {
+                    data = (DataTable)this.DataSource;
+                }
+                else if ( this.DataSource is DataView )
+                {
+                    data = ( (DataView)this.DataSource ).Table;
+                }
+
+                if ( data != null )
+                {
+                    foreach ( DataRow row in data.Rows )
+                    {
+                        object idObj = row[this.PersonIdField];
+                        if ( idObj != null )
+                        {
+                            int? personId = idObj as int?;
+                            if ( personId.HasValue )
+                            {
+                                personIds.Add( personId.Value );
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // get access to the List<> and its properties
+                IList data = (IList)this.DataSource;
+                Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
+
+                PropertyInfo idProp = oType.GetProperty( this.PersonIdField );
+                if ( idProp != null )
+                {
+                    foreach ( var item in data )
+                    {
+                        int personId = (int)idProp.GetValue( item, null );
+                        personIds.Add( personId );
+                    }
+                }
             }
 
-            if ( baseType == typeof( Boolean ) || baseType == typeof( Boolean? ) )
-            {
-                bf = new BoolField();
-            }
-            else if ( baseType == typeof( DateTime ) || baseType == typeof( DateTime? ) )
-            {
-                bf = new DateField();
-            }
-            else if ( baseType.IsEnum )
-            {
-                bf = new EnumField();
-            }
-            else if ( baseType == typeof( decimal ) || baseType == typeof( decimal? ) ||
-                baseType == typeof( int ) || baseType == typeof( int? ) )
-            {
-                bf = new BoundField();
-                bf.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
-                bf.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
-            }
-
-            return bf;
-        }
-
-        /// <summary>
-        /// Handles the ItemsPerPageClick event of the pagerTemplate control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.Web.UI.Controls.NumericalEventArgs"/> instance containing the event data.</param>
-        void pagerTemplate_ItemsPerPageClick( object sender, NumericalEventArgs e )
-        {
-            var rockPage = this.Page as RockPage;
-            if ( rockPage != null )
-            {
-                rockPage.SetUserPreference( PAGE_SIZE_KEY, e.Number.ToString() );
-            }
-
-            this.PageSize = e.Number;
-            OnGridRebind( e );
-        }
-
-        /// <summary>
-        /// Handles the NavigateClick event of the pagerTemplate control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.Web.UI.Controls.NumericalEventArgs"/> instance containing the event data.</param>
-        void pagerTemplate_NavigateClick( object sender, NumericalEventArgs e )
-        {
-            this.PageIndex = e.Number;
-            OnGridRebind( e );
+            return personIds;
         }
 
         #endregion
@@ -1385,7 +1447,7 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
-        #region Events
+        #region Event Handlers
 
         /// <summary>
         /// Occurs when [grid reorder].
@@ -1439,6 +1501,48 @@ namespace Rock.Web.UI.Controls
         }
 
         #endregion
+
+        #region Static Methods
+
+        /// <summary>
+        /// Gets the grid field.
+        /// </summary>
+        /// <param name="propertyType">Type of the property.</param>
+        /// <returns></returns>
+        public static BoundField GetGridField( Type propertyType )
+        {
+            BoundField bf = new BoundField();
+            Type baseType = propertyType;
+
+            if ( baseType == typeof( Boolean ) || baseType == typeof( Boolean? ) )
+            {
+                bf = new BoolField();
+            }
+            else if ( baseType == typeof( DateTime ) || baseType == typeof( DateTime? ) )
+            {
+                bf = new DateField();
+            }
+            else if ( baseType.IsEnum )
+            {
+                bf = new EnumField();
+            }
+            else if ( baseType == typeof( decimal ) || baseType == typeof( decimal? ) ||
+                baseType == typeof( int ) || baseType == typeof( int? ) )
+            {
+                bf = new BoundField();
+                bf.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
+                bf.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
+            }
+            else if ( baseType == typeof( IEnumerable<object> ) )
+            {
+                bf = new ListDelimitedField();
+            }
+
+            return bf;
+        }
+        
+        #endregion
+
     }
 
     #region Delegates
@@ -1936,4 +2040,5 @@ namespace Rock.Web.UI.Controls
 
 
     #endregion
+
 }
