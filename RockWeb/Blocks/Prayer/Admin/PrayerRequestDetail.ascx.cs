@@ -321,7 +321,7 @@ namespace RockWeb.Blocks.Prayer
             if ( prayerRequestId == 0 )
             {
                 prayerRequest = new PrayerRequest();
-                prayerRequestService.Add( prayerRequest, CurrentPersonId );
+                prayerRequestService.Add( prayerRequest, CurrentPersonAlias );
                 prayerRequest.EnteredDateTime = RockDateTime.Now;
             }
             else
@@ -384,7 +384,7 @@ namespace RockWeb.Blocks.Prayer
                 return;
             }
 
-            prayerRequestService.Save( prayerRequest, CurrentPersonId );
+            prayerRequestService.Save( prayerRequest, CurrentPersonAlias );
 
             NavigateToParentPage();
         }

@@ -196,7 +196,7 @@ namespace RockWeb.Blocks.Core
             entityType.FriendlyName = tbFriendlyName.Text;
             entityType.IsCommon = cbCommon.Checked;
 
-            entityTypeService.Save( entityType, CurrentPersonId );
+            entityTypeService.Save( entityType, CurrentPersonAlias );
 
             BindGrid();
 

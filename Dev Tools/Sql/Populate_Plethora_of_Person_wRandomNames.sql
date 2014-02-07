@@ -4,7 +4,7 @@
     @genderInt int,
 	@personRecordType int = (SELECT id FROM DefinedValue WHERE guid = '36CF10D6-C695-413D-8E7C-4546EFEF385E'),
 	@activeRecordStatus int = (SELECT id FROM DefinedValue WHERE guid = '618F906C-C33D-4FA3-8AEF-E58CB7B63F1E'),
-	@primaryPhone int = (SELECT id FROM DefinedValue WHERE guid = '407E7E45-7B2E-4FCD-9605-ECB1339F2453'),
+	@homePhone int = (SELECT id FROM DefinedValue WHERE guid = 'AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303'),
 	@personId int,
 	@firstName nvarchar(50),
 	@lastName nvarchar(50),
@@ -6056,12 +6056,12 @@ while @personCounter < @maxPerson
 		set @month = CONVERT(nvarchar(100), ROUND(rand() * 11, 0) + 1);
 		set @day = CONVERT(nvarchar(100), ROUND(rand() * 26, 0) + 1);
 		set @phoneNumber = ROUND(rand() * 0095551212, 0)+ 6230000000;
-		INSERT INTO [Person] ([IsSystem],[FirstName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId])
-		VALUES (0, @firstName , @lastName, @day, @month, @year, @genderInt, @email, 1, 0, NEWID(), @personRecordType, @activeRecordStatus)
+		INSERT INTO [Person] ([IsSystem],[FirstName],[NickName], [LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId])
+		VALUES (0, @firstName , @firstName, @lastName, @day, @month, @year, @genderInt, @email, 1, 0, NEWID(), @personRecordType, @activeRecordStatus)
 		SET @personId = SCOPE_IDENTITY()
 
 		INSERT INTO [PhoneNumber] (IsSystem, PersonId, Number, IsMessagingEnabled, IsUnlisted, [Guid], NumberTypeValueId)
-		VALUES (0, @personId, @phoneNumber, 1, 0, newid(), @primaryPhone);
+		VALUES (0, @personId, @phoneNumber, 1, 0, newid(), @homePhone);
 
         if @createGroups = 1
         begin

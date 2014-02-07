@@ -172,13 +172,13 @@ namespace RockWeb.Blocks.Groups
                         Rock.Security.Role.Flush( group.Id );
                         foreach ( var auth in authService.Queryable().Where( a => a.GroupId == group.Id ).ToList() )
                         {
-                            authService.Delete( auth, CurrentPersonId );
-                            authService.Save( auth, CurrentPersonId );
+                            authService.Delete( auth, CurrentPersonAlias );
+                            authService.Save( auth, CurrentPersonAlias );
                         }
                     }
 
-                    groupService.Delete( group, CurrentPersonId );
-                    groupService.Save( group, CurrentPersonId );
+                    groupService.Delete( group, CurrentPersonAlias );
+                    groupService.Save( group, CurrentPersonAlias );
 
                     if ( isSecurityRoleGroup )
                     {
@@ -264,12 +264,6 @@ namespace RockWeb.Blocks.Groups
                     gGroups.IsDeleteEnabled = false;
                     gGroups.Columns.OfType<DeleteField>().ToList().ForEach( f => f.Visible = false);
 
-                    int groupMemberEntityTypeId = EntityTypeCache.Read(typeof(GroupMember)).Id;
-                    var audits = new AuditService().Queryable()
-                        .Where( a => 
-                            a.EntityTypeId == groupMemberEntityTypeId &&
-                            a.AuditType == AuditType.Add);
-
                     gGroups.DataSource = new GroupMemberService().Queryable()
                         .Where( m => 
                             m.PersonId == personContext.Id &&
@@ -285,7 +279,7 @@ namespace RockWeb.Blocks.Groups
                                 Description = m.Group.Description,
                                 IsSystem = m.Group.IsSystem,
                                 GroupRole = m.GroupRole.Name,
-                                DateAdded = audits.Where( a => a.EntityId == m.Id).Select(a => a.DateTime).FirstOrDefault(),
+                                DateAdded = m.CreatedDateTime,
                                 MemberCount = 0
                             })
                         .Sort(sortProperty)

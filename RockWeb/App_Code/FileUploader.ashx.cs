@@ -154,8 +154,8 @@ namespace RockWeb
             binaryFile.Data.Content = GetFileBytes( context, uploadedFile );
 
             var binaryFileService = new BinaryFileService( rockContext );
-            binaryFileService.Add( binaryFile, null );
-            binaryFileService.Save( binaryFile, null );
+            binaryFileService.Add( binaryFile );
+            binaryFileService.Save( binaryFile );
 
             var response = new
             {

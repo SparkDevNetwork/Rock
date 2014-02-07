@@ -376,7 +376,14 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public enum UploaderDisplayMode
         {
+            /// <summary>
+            /// As a dropzone
+            /// </summary>
             DropZone,
+
+            /// <summary>
+            /// As a button
+            /// </summary>
             Button
         }
 

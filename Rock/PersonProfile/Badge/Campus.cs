@@ -30,23 +30,8 @@ namespace Rock.PersonProfile.Badge
     [Description( "Campus Badge" )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata("ComponentName", "Campus")]
-    public class Campus : TextBadge
+    public class Campus : HighlightLabelBadge
     {
-        /// <summary>
-        /// Gets the attribute value defaults.
-        /// </summary>
-        /// <value>
-        /// The attribute defaults.
-        /// </value>
-        public override System.Collections.Generic.Dictionary<string, string> AttributeValueDefaults
-        {
-            get
-            {
-                var defaults = base.AttributeValueDefaults;
-                defaults["Order"] = "1";
-                return defaults;
-            }
-        }
 
         /// <summary>
         /// Gets the badge label

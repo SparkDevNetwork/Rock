@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Extension;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -31,7 +31,6 @@ namespace Rock.Reporting
     /// </summary>
     public abstract class DataFilterComponent : Component
     {
-
         #region Properties
 
         /// <summary>
@@ -49,7 +48,7 @@ namespace Rock.Reporting
         /// <value>
         /// The section.
         /// </value>
-        public virtual string Section 
+        public virtual string Section
         {
             get { return "Additional Filters"; }
         }
@@ -93,7 +92,7 @@ namespace Rock.Reporting
         /// </value>
         public virtual string GetClientFormatSelection( Type entityType )
         {
-            return string.Format( "'{0} ' + $('select', $content).find(':selected').text() + ' \\'' + $('input', $content).val() + '\\''", GetTitle(entityType) );
+            return string.Format( "'{0} ' + $('select', $content).find(':selected').text() + ' \\'' + $('input', $content).val() + '\\''", GetTitle( entityType ) );
         }
 
         /// <summary>
@@ -110,15 +109,15 @@ namespace Rock.Reporting
             string[] options = selection.Split( '|' );
             if ( options.Length > 0 )
             {
-                comparisonType= options[0].ConvertToEnum<ComparisonType>(ComparisonType.StartsWith); 
-                
+                comparisonType = options[0].ConvertToEnum<ComparisonType>( ComparisonType.StartsWith );
             }
+
             if ( options.Length > 1 )
             {
                 value = options[1];
             }
 
-            return string.Format( "{0} {1} '{2}'", GetTitle(entityType), comparisonType.ConvertToString(), value );
+            return string.Format( "{0} {1} '{2}'", GetTitle( entityType ), comparisonType.ConvertToString(), value );
         }
 
         /// <summary>
@@ -147,10 +146,11 @@ namespace Rock.Reporting
         /// <param name="controls">The controls.</param>
         public virtual void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
-            writer.Write( this.GetTitle(entityType) + " " );
-            controls[0].RenderControl( writer );
-            writer.Write( " " );
-            controls[1].RenderControl( writer );
+            foreach ( var control in controls )
+            {
+                control.RenderControl( writer );
+                writer.WriteLine();
+            }
         }
 
         /// <summary>
@@ -190,7 +190,7 @@ namespace Rock.Reporting
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public abstract Expression GetExpression( Type entityType, object serviceInstance, Expression parameterExpression, string selection );
+        public abstract Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection );
 
         #endregion
 
@@ -287,6 +287,7 @@ namespace Rock.Reporting
                     ddl.Items.Add( new ListItem( comparisonType.ConvertToString(), comparisonType.ConvertToInt().ToString() ) );
                 }
             }
+
             return ddl;
         }
 
@@ -350,7 +351,5 @@ namespace Rock.Reporting
         }
 
         #endregion
-
     }
-
 }

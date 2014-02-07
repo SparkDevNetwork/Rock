@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Core
             if ( campusId == 0 )
             {
                 campus = new Campus();
-                campusService.Add( campus, CurrentPersonId );
+                campusService.Add( campus, CurrentPersonAlias );
             }
             else
             {
@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Core
 
             RockTransactionScope.WrapTransaction( () =>
             {
-                campusService.Save( campus, CurrentPersonId );
+                campusService.Save( campus, CurrentPersonAlias );
             } );
 
             NavigateToParentPage();

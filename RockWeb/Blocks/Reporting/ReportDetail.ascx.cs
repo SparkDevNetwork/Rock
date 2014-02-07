@@ -211,7 +211,7 @@ namespace RockWeb.Blocks.Reporting
                     for ( int i = 0; i < gReport.Columns.Count; i++ )
                     {
                         var boundField = gReport.Columns[i] as BoundField;
-                        
+
                         // AttributeFields are named in format "Attribute_{attributeId}_{columnIndex}". We need the attributeId portion
                         if ( boundField != null && boundField.DataField.StartsWith( "Attribute_" ) )
                         {
@@ -285,8 +285,8 @@ namespace RockWeb.Blocks.Reporting
 
                     RockTransactionScope.WrapTransaction( () =>
                     {
-                        reportService.Delete( report, CurrentPersonId );
-                        reportService.Save( report, CurrentPersonId );
+                        reportService.Delete( report, CurrentPersonAlias );
+                        reportService.Save( report, CurrentPersonAlias );
                     } );
 
                     // reload page, selecting the deleted data view's parent
@@ -350,8 +350,8 @@ namespace RockWeb.Blocks.Reporting
                     foreach ( var reportField in report.ReportFields.ToList() )
                     {
                         var field = reportFieldService.Get( reportField.Guid );
-                        reportFieldService.Delete( field, this.CurrentPersonId );
-                        reportFieldService.Save( field, this.CurrentPersonId );
+                        reportFieldService.Delete( field, this.CurrentPersonAlias );
+                        reportFieldService.Save( field, this.CurrentPersonAlias );
                     }
 
                     report.ReportFields.Clear();
@@ -402,10 +402,10 @@ namespace RockWeb.Blocks.Reporting
 
                     if ( report.Id.Equals( 0 ) )
                     {
-                        service.Add( report, CurrentPersonId );
+                        service.Add( report, CurrentPersonAlias );
                     }
 
-                    service.Save( report, CurrentPersonId );
+                    service.Save( report, CurrentPersonAlias );
                 } );
             }
 
@@ -536,7 +536,7 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 // Add DataSelect MEF Components that apply to this EntityType
-                foreach ( var component in DataSelectContainer.GetComponentsBySelectedEntityTypeName( entityType.FullName ).OrderBy( c => c.Order ) )
+                foreach ( var component in DataSelectContainer.GetComponentsBySelectedEntityTypeName( entityType.FullName ).OrderBy( c => c.Order ).ThenBy( c => c.GetTitle( entityType ) ) )
                 {
                     var selectEntityType = EntityTypeCache.Read( component.TypeName );
                     var listItem = new ListItem();
@@ -698,7 +698,7 @@ namespace RockWeb.Blocks.Reporting
             SetEditMode( false );
             hfReportId.SetValue( report.Id );
             lReadOnlyTitle.Text = report.Name.FormatAsHtmlTitle();
-            lblMainDetails.Text = report.Description;
+            lReportDescription.Text = report.Description;
 
             BindGrid( report );
         }
@@ -732,9 +732,26 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 Type entityType = EntityTypeCache.Read( report.EntityTypeId.Value ).GetEntityType();
+
+                bool isPersonDataSet = report.EntityTypeId == EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+
+                if ( isPersonDataSet )
+                {
+                    gReport.PersonIdField = "Id";
+                }
+                else
+                {
+                    gReport.PersonIdField = null;
+                }
+
+                if ( report.EntityTypeId.HasValue )
+                {
+                    gReport.RowItemText = EntityTypeCache.Read( report.EntityTypeId.Value ).FriendlyName;
+                }
+
                 List<EntityField> entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType );
 
-                var selectedEntityFields = new Dictionary<int,EntityField>();
+                var selectedEntityFields = new Dictionary<int, EntityField>();
                 var selectedAttributes = new Dictionary<int, AttributeCache>();
                 var selectedComponents = new Dictionary<int, ReportField>();
 
@@ -814,24 +831,35 @@ namespace RockWeb.Blocks.Reporting
                             DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
                             if ( selectComponent != null )
                             {
-                                var boundField = Grid.GetGridField( selectComponent.ColumnFieldType );
-                                boundField.DataField = string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, columnIndex );
-                                boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? selectComponent.ColumnHeaderText : reportField.ColumnHeaderText;
-                                boundField.SortExpression = null;
-                                gReport.Columns.Add( boundField );
+                                DataControlField columnField = selectComponent.GetGridField( entityType, reportField.Selection );
+
+                                if ( columnField is BoundField )
+                                {
+                                    ( columnField as BoundField ).DataField = string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, columnIndex );
+                                }
+
+                                columnField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? selectComponent.ColumnHeaderText : reportField.ColumnHeaderText;
+                                columnField.SortExpression = null;
+                                gReport.Columns.Add( columnField );
                             }
                         }
                     }
                 }
 
-                gReport.DataSource = report.GetDataSource( new RockContext(), entityType, selectedEntityFields, selectedAttributes, selectedComponents, gReport.SortProperty, out errors );
+                try
+                {
+                    gReport.DataSource = report.GetDataSource( new RockContext(), entityType, selectedEntityFields, selectedAttributes, selectedComponents, gReport.SortProperty, out errors );
+                    gReport.DataBind();
+                }
+                catch ( Exception ex )
+                {
+                    errors.Add( ex.Message );
+                }
 
                 if ( errors.Any() )
                 {
                     nbEditModeMessage.Text = "INFO: There was a problem with one or more of the report's data components...<br/><br/> " + errors.AsDelimited( "<br/>" );
                 }
-
-                gReport.DataBind();
             }
         }
 
@@ -847,16 +875,17 @@ namespace RockWeb.Blocks.Reporting
         private void AddFieldPanelWidget( Guid reportFieldGuid, ReportFieldType reportFieldType, string fieldSelection, bool showExpanded, bool setReportFieldValues = false, ReportField reportField = null )
         {
             int entityTypeId = ddlEntityType.SelectedValueAsInt() ?? 0;
-            if (entityTypeId == 0)
+            if ( entityTypeId == 0 )
             {
                 return;
             }
-            
+
             PanelWidget panelWidget = new PanelWidget();
             panelWidget.ID = string.Format( "reportFieldWidget_{0}", reportFieldGuid.ToString( "N" ) );
 
-            string fieldTitle = null;
+            string defaultColumnHeaderText = null;
             DataSelectComponent dataSelectComponent = null;
+            bool fieldDefined = false;
             switch ( reportFieldType )
             {
                 case ReportFieldType.Property:
@@ -864,7 +893,8 @@ namespace RockWeb.Blocks.Reporting
                     var entityField = EntityHelper.GetEntityFields( entityType ).FirstOrDefault( a => a.Name == fieldSelection );
                     if ( entityField != null )
                     {
-                        fieldTitle = entityField.Title;
+                        defaultColumnHeaderText = entityField.Title;
+                        fieldDefined = true;
                     }
 
                     break;
@@ -873,7 +903,8 @@ namespace RockWeb.Blocks.Reporting
                     var attribute = AttributeCache.Read( fieldSelection.AsInteger() ?? 0 );
                     if ( attribute != null )
                     {
-                        fieldTitle = attribute.Name;
+                        defaultColumnHeaderText = attribute.Name;
+                        fieldDefined = true;
                     }
 
                     break;
@@ -883,16 +914,27 @@ namespace RockWeb.Blocks.Reporting
                     dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );
                     if ( dataSelectComponent != null )
                     {
-                        fieldTitle = dataSelectComponent.GetTitle( null );
+                        defaultColumnHeaderText = dataSelectComponent.ColumnHeaderText;
+                        fieldDefined = true;
                     }
 
                     break;
             }
 
-            if ( fieldTitle == null )
+            if ( !fieldDefined )
             {
                 // return if we can't determine field
                 return;
+            }
+
+            string fieldTitle;
+            if ( setReportFieldValues )
+            {
+                fieldTitle = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? defaultColumnHeaderText : reportField.ColumnHeaderText;
+            }
+            else
+            {
+                fieldTitle = defaultColumnHeaderText;
             }
 
             panelWidget.Title = fieldTitle;
@@ -925,9 +967,10 @@ namespace RockWeb.Blocks.Reporting
             RockTextBox columnHeaderTextTextBox = new RockTextBox();
             columnHeaderTextTextBox.ID = panelWidget.ID + "_columnHeaderTextTextBox";
             columnHeaderTextTextBox.Label = "Column Label";
+            columnHeaderTextTextBox.CssClass = "js-column-header-textbox";
             if ( setReportFieldValues )
             {
-                columnHeaderTextTextBox.Text = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? fieldTitle : reportField.ColumnHeaderText;
+                columnHeaderTextTextBox.Text = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? defaultColumnHeaderText : reportField.ColumnHeaderText;
             }
 
             panelWidget.Controls.Add( columnHeaderTextTextBox );
@@ -941,7 +984,7 @@ namespace RockWeb.Blocks.Reporting
 
                 if ( setReportFieldValues )
                 {
-                    dataSelectComponent.SetSelection( dataSelectControls, reportField.Selection );
+                    dataSelectComponent.SetSelection( dataSelectControls, reportField.Selection ?? string.Empty );
                 }
             }
 

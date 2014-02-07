@@ -563,7 +563,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                             groupMember.GroupId = family.Group.Id;
                             Rock.Data.RockTransactionScope.WrapTransaction( () =>
                             {
-                                groupMemberService.Save( groupMember, CurrentPersonId );
+                                groupMemberService.Save( groupMember, CurrentPersonAlias );
                             } );
 
                             checkInPerson.FamilyMember = true;
@@ -824,8 +824,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
             PersonService ps = new PersonService();
             Rock.Data.RockTransactionScope.WrapTransaction( () =>
             {
-                ps.Add( person, CurrentPersonId );
-                ps.Save( person, CurrentPersonId );
+                ps.Add( person, CurrentPersonAlias );
+                ps.Save( person, CurrentPersonAlias );
             } );
 
             if ( !string.IsNullOrWhiteSpace( ability ) )
@@ -833,7 +833,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( abilityGroup == "Grade" )
                 {
                     person.Grade = (int)ability.ConvertToEnum<GradeLevel>();
-                    ps.Save( person, CurrentPersonId );
+                    ps.Save( person, CurrentPersonAlias );
                 }
                 else if ( abilityGroup == "Ability" )
                 {
@@ -842,7 +842,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     {
                         p.LoadAttributes();
                         p.SetAttributeValue( "AbilityLevel", ability );
-                        Rock.Attribute.Helper.SaveAttributeValues( p, CurrentPersonId );
+                        Rock.Attribute.Helper.SaveAttributeValues( p, CurrentPersonAlias );
                     }
                 }
             }
@@ -866,8 +866,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
             Rock.Data.RockTransactionScope.WrapTransaction( () =>
             {
                 var gs = new GroupService();
-                gs.Add( familyGroup, CurrentPersonId );
-                gs.Save( familyGroup, CurrentPersonId );
+                gs.Add( familyGroup, CurrentPersonAlias );
+                gs.Save( familyGroup, CurrentPersonAlias );
             } );
 
             return familyGroup;
@@ -897,8 +897,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             Rock.Data.RockTransactionScope.WrapTransaction( () =>
             {
-                groupMemberService.Add( groupMember, CurrentPersonId );
-                groupMemberService.Save( groupMember, CurrentPersonId );
+                groupMemberService.Add( groupMember, CurrentPersonAlias );
+                groupMemberService.Save( groupMember, CurrentPersonAlias );
             } );
 
             return groupMember;
@@ -939,13 +939,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         group.Members.Add( groupMember );
 
                         var groupService = new GroupService();
-                        groupService.Add( group, CurrentPersonId );
-                        groupService.Save( group, CurrentPersonId );
+                        groupService.Add( group, CurrentPersonAlias );
+                        groupService.Save( group, CurrentPersonAlias );
                     }
                 }
 
                 // add the visitor to this group with CanCheckIn
-                Person.CreateCheckinRelationship( familyMember.Person.Id, personId, CurrentPersonId );
+                Person.CreateCheckinRelationship( familyMember.Person.Id, personId, CurrentPersonAlias );
             }
         }
                

@@ -181,7 +181,7 @@ $('.rock-panel-widget a.panel-widget-reorder').click(function (event) {
             _lbDelete.ID = this.ID + "_lbDelete";
             _lbDelete.CssClass = "btn btn-xs btn-danger";
             _lbDelete.Click += lbDelete_Click;
-            _lbDelete.Controls.Add( new LiteralControl { Text = "<i class='icon-remove'></i>" } );
+            _lbDelete.Controls.Add(new LiteralControl { Text = "<i class='fa fa fa-times'></i>" });
 
             Controls.Add( _lbDelete );
         }

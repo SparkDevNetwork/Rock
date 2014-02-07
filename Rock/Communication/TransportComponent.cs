@@ -33,8 +33,8 @@ namespace Rock.Communication
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        /// <param name="CurrentPersonId">The current person id.</param>
-        public abstract void Send( Rock.Model.Communication communication, int? CurrentPersonId );
+        /// <param name="CurrentPersonAlias">The current person alias.</param>
+        public abstract void Send( Rock.Model.Communication communication, PersonAlias CurrentPersonAlias );
 
         /// <summary>
         /// Merges the values.

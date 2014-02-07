@@ -47,10 +47,11 @@
 
         <asp:PlaceHolder ID="phList" runat="server">
             <div class="security-rights">
+                <h4>Item Permissions</h4>
                 <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="role/user">
                     <Columns>
                         <Rock:ReorderField />
-                        <asp:BoundField DataField="DisplayName" HeaderText="Name" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
+                        <asp:BoundField DataField="DisplayName" HeaderText="Role / User" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
                         <asp:TemplateField>
                             <HeaderTemplate>Allow or Deny</HeaderTemplate>
                             <HeaderStyle HorizontalAlign="Left" />
@@ -74,9 +75,10 @@
             </asp:panel>
 
             <div class="security-inherited">
+                <h4>Inherited Permissions</h4>
                 <Rock:Grid ID="rGridParentRules" runat="server" AllowPaging="false" RowItemText="Inherited Security Rule">
                     <Columns>
-                        <asp:BoundField DataField="DisplayName" HeaderText="Inherited Security" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
+                        <asp:BoundField DataField="DisplayName" HeaderText="Role / User" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
                         <asp:TemplateField>
                             <HeaderTemplate>Allow or Deny</HeaderTemplate>
                             <HeaderStyle HorizontalAlign="Left" />
@@ -116,14 +118,7 @@
         
             <fieldset>
                 <legend>Select User to Add</legend>
-                <Rock:RockTextBox ID="tbUser" runat="server" Label="User" />
-                <dl>
-                    <dt></dt>
-                    <dd>
-                        <asp:LinkButton ID="lbUserSearch" runat="server" Text="Search" onclick="lbUserSearch_Click" CssClass="btn btn-default btn-sm"></asp:LinkButton>
-                        <asp:CheckBoxList ID="cbUsers" runat="server" CssClass="inputs-list" RepeatDirection="Vertical"></asp:CheckBoxList>
-                    </dd>
-                </dl>
+                <Rock:PersonPicker ID="ppUser" runat="server" Label="User" />
             </fieldset>
 
             <div class="actions">

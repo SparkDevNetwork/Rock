@@ -498,7 +498,7 @@ achieve our mission.  We are so grateful for your commitment.
                         if ( refresh )
                         {
                             string errorMessages = string.Empty;
-                            service.UpdateStatus( scheduledTransaction, CurrentPersonId, out errorMessages );
+                            service.UpdateStatus( scheduledTransaction, CurrentPersonAlias, out errorMessages );
                         }
 
                         return scheduledTransaction;
@@ -544,8 +544,8 @@ achieve our mission.  We are so grateful for your commitment.
                     f.IsActive &&
                     f.PublicName != null &&
                     f.PublicName.Trim() != "" &&
-                    ( f.StartDate == null || f.StartDate <= DateTime.Today ) &&
-                    ( f.EndDate == null || f.EndDate >= DateTime.Today ) )
+                    ( f.StartDate == null || f.StartDate <= RockDateTime.Today ) &&
+                    ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) )
                 .OrderBy( f => f.Order ) )
             {
                 var accountItem = new AccountItem( account.Id, account.Order, account.Name, account.CampusId );
@@ -610,7 +610,7 @@ achieve our mission.  We are so grateful for your commitment.
                     txtCardName.Visible = !Gateway.SplitNameOnCard;
                     txtCardName.Text = scheduledTransaction.AuthorizedPerson.FullName;
 
-                    var address = new PersonService().GetFirstLocation( scheduledTransaction.AuthorizedPerson,
+                    var address = new PersonService().GetFirstLocation( scheduledTransaction.AuthorizedPerson.Id,
                         DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id );
                     if ( address != null )
                     {
@@ -665,7 +665,7 @@ achieve our mission.  We are so grateful for your commitment.
         {
             rblSavedCC.Items.Clear();
              
-            if ( TargetPersonId.HasValue && TargetPersonId == CurrentPersonId )
+            if ( TargetPersonId.HasValue && CurrentPerson != null && TargetPersonId == CurrentPerson.Id )
             {
                 // Get the saved accounts for the target person
                 var savedAccounts = new FinancialPersonSavedAccountService()
@@ -767,7 +767,7 @@ achieve our mission.  We are so grateful for your commitment.
             DateTime when = DateTime.MinValue;
 
             // Make sure a repeating payment starts in the future
-            if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > DateTime.Today )
+            if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > RockDateTime.Today )
             {
                 when = dtpStartDate.SelectedDate.Value;
             }
@@ -830,7 +830,7 @@ achieve our mission.  We are so grateful for your commitment.
                         errorMessages.Add( "Make sure to enter a valid credit card number" );
                     }
 
-                    var currentMonth = DateTime.Today;
+                    var currentMonth = RockDateTime.Today;
                     currentMonth = new DateTime( currentMonth.Year, currentMonth.Month, 1 );
                     if ( !mypExpiration.SelectedDate.HasValue || mypExpiration.SelectedDate.Value.CompareTo( currentMonth ) < 0 )
                     {
@@ -955,7 +955,7 @@ achieve our mission.  We are so grateful for your commitment.
 
                     // Get the payment schedule
                     scheduledTransaction.TransactionFrequencyValueId = btnFrequency.SelectedValueAsId().Value;
-                    if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > DateTime.Today )
+                    if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > RockDateTime.Today )
                     {
                         scheduledTransaction.StartDate = dtpStartDate.SelectedDate.Value;
                     }
@@ -987,7 +987,7 @@ achieve our mission.  We are so grateful for your commitment.
                         foreach ( var deletedAccount in deletedAccounts )
                         {
                             scheduledTransaction.ScheduledTransactionDetails.Remove( deletedAccount );
-                            transactionDetailService.Delete( deletedAccount, CurrentPersonId );
+                            transactionDetailService.Delete( deletedAccount, CurrentPersonAlias );
                         }
 
                         foreach ( var account in SelectedAccounts )
@@ -1003,7 +1003,7 @@ achieve our mission.  We are so grateful for your commitment.
                             detail.Amount = account.Amount;
                         }
 
-                        transactionService.Save( scheduledTransaction, CurrentPersonId );
+                        transactionService.Save( scheduledTransaction, CurrentPersonAlias );
 
                         ScheduleId = scheduledTransaction.GatewayScheduleId;
                         TransactionCode = scheduledTransaction.TransactionCode;
@@ -1087,7 +1087,7 @@ achieve our mission.  We are so grateful for your commitment.
                     addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
                 }
 
-                var address = personService.GetFirstLocation( scheduledTransaction.AuthorizedPerson, DefinedValueCache.Read( addressTypeGuid ).Id );
+                var address = personService.GetFirstLocation( scheduledTransaction.AuthorizedPerson.Id, DefinedValueCache.Read( addressTypeGuid ).Id );
                 if ( address != null )
                 {
                     paymentInfo.Street = address.Street1;

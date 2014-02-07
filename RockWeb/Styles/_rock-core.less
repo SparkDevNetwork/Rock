@@ -12,6 +12,7 @@
 
 // 1. Imports
 //--------------------------------
+@import "./FontAwesome/variables.less";
 
 @import "_components.less";
 @import "_page-admin.less";
@@ -135,6 +136,10 @@ small
         color: @accent-text-color;
         border-color: darken(@accent-color, 10%)
     }
+
+    .panel-body {
+        border-radius: 0 0 4px 4px;
+    }
 }
 
 .panel-widget {
@@ -146,6 +151,12 @@ small
             margin-top: 0;
             margin-bottom: 0;
             float: left;
+        }
+
+        .actions {
+            a {
+                margin-left: 4px;
+            }
         }
     }
 }
@@ -161,7 +172,15 @@ small
 }
 
 .panel-persondetails {
-    .panel-variant(@accent-color ; @accent-text-color; @accent-color; @accent-color;);
+    .panel-variant(darken(@accent-light-color, 10%) ; @accent-light-text-color; @accent-light-color; @accent-light-color;);
+
+    .panel-heading {
+        .actions {
+            a {
+                margin-left: 4px;
+            }
+        }
+    }
 
     .panel-body {
         background-color: @body-bg;

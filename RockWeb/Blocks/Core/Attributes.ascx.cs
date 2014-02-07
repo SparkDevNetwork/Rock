@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.Core
     [TextField( "Entity Qualifier Value", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "", "Applies To", 2 )]
     [BooleanField( "Allow Setting of Values", "Should UI be available for setting values of the specified Entity ID?", false, "Advanced", 0 )]
     [IntegerField( "Entity Id", "The entity id that values apply to", false, 0, "Advanced", 1 )]
+    [BooleanField( "Enable Show In Grid", "Should the 'Show In Grid' option be displayed when editing attributes?", false, "Advanced", 2 )]
 
     public partial class Attributes : RockBlock
     {
@@ -75,6 +76,17 @@ namespace RockWeb.Blocks.Core
             if (!bool.TryParse( GetAttributeValue( "ConfigureType" ), out _configuredType))
             {
                 _configuredType = true;
+            }
+
+
+            bool displayShowInGrid = true;
+            if (bool.TryParse(GetAttributeValue("DisplayShowInGrid"), out displayShowInGrid) && displayShowInGrid)
+            {
+                edtAttribute.ShowInGridVisible = true;
+            }
+            else
+            {
+                edtAttribute.ShowInGridVisible = false;
             }
 
             Guid entityTypeGuid = Guid.Empty;
@@ -308,8 +320,8 @@ namespace RockWeb.Blocks.Core
             {
                 Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
 
-                attributeService.Delete( attribute, CurrentPersonId );
-                attributeService.Save( attribute, CurrentPersonId );
+                attributeService.Delete( attribute, CurrentPersonAlias );
+                attributeService.Save( attribute, CurrentPersonAlias );
             }
 
             BindGrid();
@@ -415,13 +427,13 @@ namespace RockWeb.Blocks.Core
 
             if ( _configuredType )
             {
-                attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtAttribute, 
-                    _entityTypeId, _entityQualifierColumn, _entityQualifierValue, CurrentPersonId );
+                attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtAttribute,
+                    _entityTypeId, _entityQualifierColumn, _entityQualifierValue, CurrentPersonAlias );
             }
             else
             {
                 attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtAttribute,
-                    ddlAttrEntityType.SelectedValueAsInt(), tbAttrQualifierField.Text, tbAttrQualifierValue.Text, CurrentPersonId );
+                    ddlAttrEntityType.SelectedValueAsInt(), tbAttrQualifierField.Text, tbAttrQualifierValue.Text, CurrentPersonAlias );
             }
 
             // Attribute will be null if it was not valid
@@ -473,13 +485,13 @@ namespace RockWeb.Blocks.Core
                         attributeValue = new Rock.Model.AttributeValue();
                         attributeValue.AttributeId = attributeId;
                         attributeValue.EntityId = _entityId;
-                        attributeValueService.Add( attributeValue, CurrentPersonId );
+                        attributeValueService.Add( attributeValue, CurrentPersonAlias );
                     }
 
                     var fieldType = Rock.Web.Cache.FieldTypeCache.Read( attribute.FieldType.Id );
                     attributeValue.Value = fieldType.Field.GetEditValue( attribute.GetControl( fsEditControl.Controls[0] ), attribute.QualifierValues );
 
-                    attributeValueService.Save( attributeValue, CurrentPersonId );
+                    attributeValueService.Save( attributeValue, CurrentPersonAlias );
 
                     Rock.Web.Cache.AttributeCache.Flush( attributeId );
                     if ( !_entityTypeId.HasValue && _entityQualifierColumn == string.Empty && _entityQualifierValue == string.Empty && !_entityId.HasValue )

@@ -30,16 +30,24 @@ using System.ComponentModel;
 
 namespace RockWeb.Blocks.Cms
 {
+    /// <summary>
+    /// Adds an editable HTML fragment to the page.
+    /// </summary>
     [DisplayName( "HTML Content" )]
     [Category( "CMS" )]
     [Description( "Adds an editable HTML fragment to the page." )]
+
     [AdditionalActions( new string[] { "Approve" } )]
+
     [BooleanField( "Use Code Editor", "Use the code editor instead of the WYSIWYG editor", false, "", 0 )]
-    [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 0, "", 3 )]
-    [TextField( "Context Parameter", "Query string parameter to use for 'personalizing' content based on unique values.", false, "", "", 4 )]
-    [TextField( "Context Name", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "", "", 5 )]
-    [BooleanField( "Require Approval", "Require that content be approved?", false, "", 6 )]
-    [BooleanField( "Support Versions", "Support content versioning?", false, "", 7 )]
+    [TextField("Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 1 )]
+    [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 2 )]
+    [BooleanField( "User Specific Folders", "Should the root folders be specific to current user?", false, "", 3 )]
+    [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 0, "", 4 )]
+    [TextField( "Context Parameter", "Query string parameter to use for 'personalizing' content based on unique values.", false, "", "", 5 )]
+    [TextField( "Context Name", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "", "", 6 )]
+    [BooleanField( "Require Approval", "Require that content be approved?", false, "", 7 )]
+    [BooleanField( "Support Versions", "Support content versioning?", false, "", 8 )]
     public partial class HtmlContentDetail : RockBlock
     {
         #region Base Control Methods
@@ -140,6 +148,22 @@ namespace RockWeb.Blocks.Cms
             htmlEditor.MergeFields.Clear();
             htmlEditor.MergeFields.Add( "GlobalAttribute" );
 
+            string documentRoot = GetAttributeValue("DocumentRootFolder");
+            string imageRoot = GetAttributeValue("ImageRootFolder");
+
+            if ( CurrentUser != null )
+            {
+                bool userSpecificFolders = false;
+                if ( bool.TryParse( GetAttributeValue( "UserSpecificFolders" ), out userSpecificFolders ) && userSpecificFolders )
+                {
+                    documentRoot = System.Web.VirtualPathUtility.Combine( documentRoot, CurrentUser.Id.ToString() );
+                    imageRoot = System.Web.VirtualPathUtility.Combine( imageRoot, CurrentUser.Id.ToString() );
+                }
+            }
+
+            htmlEditor.DocumentFolderRoot = documentRoot;
+            htmlEditor.ImageFolderRoot = imageRoot;
+
             bool supportsVersioning = GetAttributeValue( "SupportVersions" ).AsBoolean();
             bool requireApproval = GetAttributeValue( "RequireApproval" ).AsBoolean();
 
@@ -212,7 +236,7 @@ namespace RockWeb.Blocks.Cms
                     htmlContent.Version = 1;
                 }
 
-                htmlContentService.Add( htmlContent, CurrentPersonId );
+                htmlContentService.Add( htmlContent, CurrentPersonAlias );
             }
 
             htmlContent.StartDateTime = drpDateRange.LowerValue;
@@ -234,7 +258,7 @@ namespace RockWeb.Blocks.Cms
 
             htmlContent.Content = newContent;
 
-            if ( htmlContentService.Save( htmlContent, CurrentPersonId ) )
+            if ( htmlContentService.Save( htmlContent, CurrentPersonAlias ) )
             {
                 // flush cache content 
                 this.FlushCacheItem( entityValue );

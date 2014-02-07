@@ -160,7 +160,7 @@ Rock.controls.tagList.initialize({{
 }});",
                     this.ClientID,
                     EntityTypeId,
-                    rockPage.CurrentPersonId,
+                    rockPage.CurrentPerson != null ? rockPage.CurrentPerson.Id.ToString() : "",
                     EntityGuid.ToString(),
                     string.IsNullOrWhiteSpace( EntityQualifierColumn ) ? string.Empty : EntityQualifierColumn,
                     string.IsNullOrWhiteSpace( EntityQualifierValue ) ? string.Empty : EntityQualifierValue,
@@ -204,9 +204,15 @@ Rock.controls.tagList.initialize({{
         /// <summary>
         /// Saves the tag values that user entered for the entity (
         /// </summary>
-        /// <param name="currentPersonId">The current person identifier.</param>
-        public void SaveTagValues(int? currentPersonId)
+        /// <param name="personAlias">The person alias.</param>
+        public void SaveTagValues(PersonAlias personAlias)
         {
+            int? currentPersonId = null;
+            if (personAlias != null)
+            {
+                currentPersonId = personAlias.PersonId;
+            }
+
             if ( EntityGuid != Guid.Empty )
             {
                 var tagService = new TagService();
@@ -238,8 +244,8 @@ Rock.controls.tagList.initialize({{
                         tag.EntityTypeQualifierValue = EntityQualifierValue;
                         tag.OwnerId = currentPersonId.Value;
                         tag.Name = tagName;
-                        tagService.Add( tag, currentPersonId );
-                        tagService.Save( tag, currentPersonId );
+                        tagService.Add( tag, personAlias );
+                        tagService.Save( tag, personAlias );
                     }
 
                     if ( tag != null )
@@ -254,8 +260,8 @@ Rock.controls.tagList.initialize({{
                 {
                     if ( !names.Contains( taggedItem.Tag.Name, StringComparer.OrdinalIgnoreCase ) )
                     {
-                        taggedItemService.Delete( taggedItem, currentPersonId );
-                        taggedItemService.Save( taggedItem, currentPersonId );
+                        taggedItemService.Delete( taggedItem, personAlias );
+                        taggedItemService.Save( taggedItem, personAlias );
                     }
                 }
 
@@ -268,8 +274,8 @@ Rock.controls.tagList.initialize({{
                         var taggedItem = new TaggedItem();
                         taggedItem.TagId = tag.Id;
                         taggedItem.EntityGuid = EntityGuid;
-                        taggedItemService.Add( taggedItem, currentPersonId );
-                        taggedItemService.Save( taggedItem, currentPersonId );
+                        taggedItemService.Add( taggedItem, personAlias );
+                        taggedItemService.Save( taggedItem, personAlias );
                     }
                 }
             }

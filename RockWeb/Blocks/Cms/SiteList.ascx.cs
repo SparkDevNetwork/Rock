@@ -47,7 +47,6 @@ namespace RockWeb.Blocks.Cms
             base.OnInit( e );
 
             gSites.DataKeyNames = new string[] { "id" };
-            gSites.Actions.ShowAdd = true;
             gSites.Actions.AddClick += gSites_Add;
             gSites.GridRebind += gSites_GridRebind;
 
@@ -105,6 +104,8 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSites_Delete( object sender, RowEventArgs e )
         {
+            bool canDelete = false;
+
             RockTransactionScope.WrapTransaction( () =>
             {
                 SiteService siteService = new SiteService();
@@ -112,20 +113,24 @@ namespace RockWeb.Blocks.Cms
                 if ( site != null )
                 {
                     string errorMessage;
-                    if ( !siteService.CanDelete( site, out errorMessage ) )
+                    canDelete = siteService.CanDelete( site, out errorMessage, includeSecondLvl: true );
+                    if ( ! canDelete )
                     {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Alert );
+                        return; // returns out of RockTransactionScope
                     }
-                    
-                    siteService.Delete( site, CurrentPersonId );
-                    siteService.Save( site, CurrentPersonId );
+
+                    siteService.Delete( site, CurrentPersonAlias );
+                    siteService.Save( site, CurrentPersonAlias );
 
                     SiteCache.Flush( site.Id );
                 }
             } );
 
-            BindGrid();
+            if ( canDelete )
+            {
+                BindGrid();
+            }
         }
 
         /// <summary>

@@ -123,7 +123,7 @@ namespace Rock.Data
         /// <summary>
         /// Saves any changes made in the current context
         /// </summary>
-        /// <param name="PersonId">The person id.</param>
+        /// <param name="personAlias">The person alias.</param>
         /// <param name="audits">The audits.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>

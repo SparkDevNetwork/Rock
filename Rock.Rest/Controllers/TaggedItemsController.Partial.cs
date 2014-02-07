@@ -47,99 +47,91 @@ namespace Rock.Rest.Controllers
                 } );
         }
 
-        [Authenticate]
+        [Authenticate, Secured]
         public HttpResponseMessage Post( int entityTypeId, int ownerId, Guid entityGuid, string name )
         {
             return Post( entityTypeId, ownerId, entityGuid, name, string.Empty, string.Empty );
         }
 
-        [Authenticate]
+        [Authenticate, Secured]
         public HttpResponseMessage Post( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier )
         {
             return Post( entityTypeId, ownerId, entityGuid, name, entityQualifier, string.Empty );
         }
 
-        [Authenticate]
+        [Authenticate, Secured]
         public HttpResponseMessage Post( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier, string entityQualifierValue )
         {
-            var user = CurrentUser();
-            if ( user != null )
+            var personAlias = GetPersonAlias();
+
+            using ( new Rock.Data.UnitOfWorkScope() )
             {
-                using ( new Rock.Data.UnitOfWorkScope() )
+                var tagService = new TagService();
+                var taggedItemService = new TaggedItemService();
+
+                var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name );
+                if ( tag == null )
                 {
-                    var tagService = new TagService();
-                    var taggedItemService = new TaggedItemService();
-
-                    var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name );
-                    if ( tag == null )
-                    {
-                        tag = new Tag();
-                        tag.EntityTypeId = entityTypeId;
-                        tag.EntityTypeQualifierColumn = entityQualifier;
-                        tag.EntityTypeQualifierValue = entityQualifierValue;
-                        tag.OwnerId = ownerId;
-                        tag.Name = name;
-                        tagService.Add( tag, user.PersonId );
-                        tagService.Save( tag, user.PersonId );
-                    }
-
-                    var taggedItem = taggedItemService.Get( tag.Id, entityGuid );
-                    if ( taggedItem == null )
-                    {
-                        taggedItem = new TaggedItem();
-                        taggedItem.TagId = tag.Id;
-                        taggedItem.EntityGuid = entityGuid;
-                        taggedItemService.Add( taggedItem, user.PersonId );
-                        taggedItemService.Save( taggedItem, user.PersonId );
-                    }
+                    tag = new Tag();
+                    tag.EntityTypeId = entityTypeId;
+                    tag.EntityTypeQualifierColumn = entityQualifier;
+                    tag.EntityTypeQualifierValue = entityQualifierValue;
+                    tag.OwnerId = ownerId;
+                    tag.Name = name;
+                    tagService.Add( tag, personAlias );
+                    tagService.Save( tag, personAlias );
                 }
 
-                return ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
+                var taggedItem = taggedItemService.Get( tag.Id, entityGuid );
+                if ( taggedItem == null )
+                {
+                    taggedItem = new TaggedItem();
+                    taggedItem.TagId = tag.Id;
+                    taggedItem.EntityGuid = entityGuid;
+                    taggedItemService.Add( taggedItem, personAlias );
+                    taggedItemService.Save( taggedItem, personAlias );
+                }
             }
 
-            throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            return ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
         }
 
-        [Authenticate]
+        [Authenticate, Secured]
         public void Delete( int entityTypeId, int ownerId, Guid entityGuid, string name )
         {
             Delete( entityTypeId, ownerId, entityGuid, name, string.Empty, string.Empty );
         }
 
-        [Authenticate]
+        [Authenticate, Secured]
         public void Delete( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier )
         {
             Delete( entityTypeId, ownerId, entityGuid, name, entityQualifier, string.Empty );
         }
 
-        [Authenticate]
+        [Authenticate, Secured]
         public void Delete( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier, string entityQualifierValue )
         {
-            var user = CurrentUser();
-            if ( user != null )
+            var personAlias = GetPersonAlias();
+
+            using ( new Rock.Data.UnitOfWorkScope() )
             {
-                using ( new Rock.Data.UnitOfWorkScope() )
-                {
-                    var tagService = new TagService();
-                    var taggedItemService = new TaggedItemService();
+                var tagService = new TagService();
+                var taggedItemService = new TaggedItemService();
 
-                    if ( name.Contains( '^' ) )
-                        name = name.Split( '^' )[0];
+                if ( name.Contains( '^' ) )
+                    name = name.Split( '^' )[0];
 
-                    var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name );
-                    if ( tag == null )
-                        throw new HttpResponseException( HttpStatusCode.NotFound );
+                var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name );
+                if ( tag == null )
+                    throw new HttpResponseException( HttpStatusCode.NotFound );
 
-                    var taggedItem = taggedItemService.Get( tag.Id, entityGuid );
-                    if ( taggedItem == null )
-                        throw new HttpResponseException( HttpStatusCode.NotFound );
+                var taggedItem = taggedItemService.Get( tag.Id, entityGuid );
+                if ( taggedItem == null )
+                    throw new HttpResponseException( HttpStatusCode.NotFound );
 
-                    taggedItemService.Delete( taggedItem, user.PersonId );
-                    taggedItemService.Save( taggedItem, user.PersonId );
-                }
+                taggedItemService.Delete( taggedItem, personAlias );
+                taggedItemService.Save( taggedItem, personAlias );
             }
-            else
-                throw new HttpResponseException( HttpStatusCode.Unauthorized );
         }
 
     }

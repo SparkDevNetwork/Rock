@@ -21,6 +21,7 @@
     18. Code Editor - Styles for the code editor control
     19. Update Panel Status - Styles for the wait screen on an update panel
     20. Group List - styles a group of people in a ul -> li format
+    21. Rock List - styles for the Rock list component
 */
 
 // 1. Pickers
@@ -163,7 +164,7 @@
     font-weight: @banner-font-weight;
     font-size: @banner-font-size;
     padding: @banner-padding;
-    margin: 0 0 12px;
+    margin: 0 0 @spacing-md-px;
     .clearfix;
 
     h1 {
@@ -176,14 +177,14 @@
         }
 
         i {
-            margin-right: 12px;
+            margin-right: @spacing-md-px;
         }
     }
 
     .label {
         float: right;
-        margin-top: 16px;
-        margin-left: 6px;
+        margin-top: @spacing-md-px;
+        margin-left: @spacing-md-px;
     }
 }
 
@@ -192,12 +193,12 @@
 ul.rocktree,
 ul.rocktree ul {
 	list-style-type: none;
-	margin: 10px 0px;
+	margin-bottom: @spacing-lg-px;
 	padding: 0px;
 }
 
 ul.rocktree ul {
-	margin: 0px 0px 0px 20px;
+	margin: 0px 0px 0px @spacing-md-px;
 }
 
 .rocktree {
@@ -252,17 +253,17 @@ ul.rocktree ul {
     }
 
     .rocktree-leaf {
-        padding-left: 14px;
+        padding-left: @spacing-md-px;
     }
 }
 
 // treeview wrapper
 .treeview {
     
-    margin-bottom: 12px;
+    margin-bottom: @spacing-md-px;
 
     .treeview-actions {
-        margin-bottom: 8px;
+        margin-bottom: @spacing-sm-px;
 
         .btn {
             margin-bottom: 4px;
@@ -287,13 +288,13 @@ ul.rocktree ul {
 
     li {
         
-        padding-left: 16px;
+        padding-left: @spacing-md-px;
         
         i.fa-circle {
             font-size: 9px;
             color: #d0cfcf;
-            margin-right: 6px;
-            margin-left: -16px;
+            margin-right: @spacing-sm-px;
+            margin-left: -@spacing-md-px;
         }
 
         .actions {
@@ -361,7 +362,7 @@ ul.rocktree ul {
             border-radius: @border-radius-base;
             border: 1px solid #bbb;
             float: left;
-            margin: 0 2% 12px 2%;
+            margin: 0 2% @spacing-md-px 2%;
             width: 20%;
             overflow: hidden;
             color: @pagelist-text-color;
@@ -371,7 +372,7 @@ ul.rocktree ul {
                 display: block;
                 color: inherit;
                 height: 80px;
-                padding: 12px;
+                padding: @spacing-md-px;
             }
         }
     }
@@ -401,7 +402,6 @@ div.tagsinput
     width:100%; 
     overflow-y: auto;
     float: left;
-    margin-left: 12px;
 }
 
 .taglist {
@@ -411,7 +411,7 @@ div.tagsinput
         line-height: 18px;
         position: relative;
         font-size: 13px;
-        margin-bottom: 6px;
+        margin-bottom: @spacing-sm-px;
         margin-left: 20px;
         padding: 1px 10px 0 12px;
         background: @tag-bg;
@@ -1056,7 +1056,7 @@ div.tagsinput div
 .imageupload-group {
 
     .clearfix();
-    margin-bottom: 15px;
+    margin-bottom: @spacing-md-px;
 
     .imageupload-thumbnail {
 
@@ -1110,7 +1110,7 @@ div.tagsinput div
 
 .fileupload-group {
     .clearfix();
-    margin-bottom: 15px;
+    margin-bottom: @spacing-md-px;
 
     .fileupload-thumbnail {
 
@@ -1285,8 +1285,8 @@ ul.groupmembers {
 
     li.member {
         float: left;
-        margin-right: 12px;
-        margin-bottom: 12px;
+        margin-right: @spacing-md-px;
+        margin-bottom: @spacing-md-px;
         min-width: 150px;
 
 
@@ -1324,4 +1324,84 @@ ul.groupmembers {
         }
     }
 }
-    
+   
+// 21. Rock List
+// -------------------------
+
+ul.rocklist {
+    list-style-type: none;
+    padding: 0;
+    list-style-type: none;
+
+    .rocklist-item {
+        white-space: nowrap;
+        padding: 6px;
+        margin: 0 12px 12px 0;
+        border-radius: @border-radius-base;
+        width: 140px;
+        float: left;
+        position: relative;
+        text-align: center;
+
+        img {
+
+        }
+
+        .actions {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+        }
+
+        i {
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .file-name {
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            display: block;
+        }
+        
+        &:hover {
+            background-color: @accent-semibold-color;
+            color: @accent-semibold-text-color;
+        }
+
+        &.selected {
+            background-color: @accent-bold-color;
+            color: @accent-bold-text-color;
+        }
+    }
+}
+
+
+/*.rocklist span, .rocklist a {
+    margin: 1px;
+    display: inline-block;
+}
+
+.rocklist .rocklist-name:hover, 
+.rocklist span:hover, 
+.rocklist span:hover a {
+    background: #8498ab;
+    color: #ecf0f3;
+}
+
+.rocklist .selected, 
+.rocklist .selected a {
+    background: #a4b4c4;
+    color: #fff;
+}
+
+.rocklist .rocklist-name {
+    padding: 2px 6px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.rocklist .rocklist-leaf {
+    padding-left: 15px;
+}*/

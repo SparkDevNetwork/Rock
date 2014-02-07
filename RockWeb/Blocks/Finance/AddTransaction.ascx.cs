@@ -290,7 +290,7 @@ achieve our mission.  We are so grateful for your commitment.
                             btnFrequency.Items.Insert( 0, new ListItem( oneTimeFrequency.Name, oneTimeFrequency.Id.ToString() ) );
                         }
                         btnFrequency.SelectedValue = oneTimeFrequency.Id.ToString();
-                        dtpStartDate.SelectedDate = DateTime.Today;
+                        dtpStartDate.SelectedDate = RockDateTime.Today;
                     };
 
                 }
@@ -466,7 +466,7 @@ achieve our mission.  We are so grateful for your commitment.
                                 addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
                             }
 
-                            var address = personService.GetFirstLocation( person, DefinedValueCache.Read( addressTypeGuid ).Id );
+                            var address = personService.GetFirstLocation( person.Id, DefinedValueCache.Read( addressTypeGuid ).Id );
                             if ( address != null )
                             {
                                 txtStreet.Text = address.Street1;
@@ -688,7 +688,7 @@ achieve our mission.  We are so grateful for your commitment.
                             var userLoginService = new Rock.Model.UserLoginService();
                             var user = userLoginService.Create( authorizedPerson, Rock.Model.AuthenticationServiceType.Internal, 
                                 EntityTypeCache.Read(Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid()).Id,
-                                txtUserName.Text, txtPassword.Text, false, CurrentPersonId );
+                                txtUserName.Text, txtPassword.Text, false );
 
                             var mergeObjects = new Dictionary<string, object>();
                             mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
@@ -727,8 +727,8 @@ achieve our mission.  We are so grateful for your commitment.
                             savedAccount.CreditCardTypeValueId = CreditCardTypeValueId;
 
                             var savedAccountService = new FinancialPersonSavedAccountService();
-                            savedAccountService.Add( savedAccount, CurrentPersonId );
-                            savedAccountService.Save( savedAccount, CurrentPersonId );
+                            savedAccountService.Add( savedAccount, CurrentPersonAlias );
+                            savedAccountService.Save( savedAccount, CurrentPersonAlias );
 
                             cbSaveAccount.Visible = false;
                             txtSaveAccount.Visible = false;
@@ -788,8 +788,8 @@ achieve our mission.  We are so grateful for your commitment.
                     f.IsActive &&
                     f.PublicName != null &&
                     f.PublicName.Trim() != "" &&
-                    ( f.StartDate == null || f.StartDate <= DateTime.Today ) &&
-                    ( f.EndDate == null || f.EndDate >= DateTime.Today ) )
+                    ( f.StartDate == null || f.StartDate <= RockDateTime.Today ) &&
+                    ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) )
                 .OrderBy( f => f.Order ) )
             {
                 var accountItem = new AccountItem( account.Id, account.Order, account.Name, account.CampusId );
@@ -886,38 +886,14 @@ achieve our mission.  We are so grateful for your commitment.
                                 person.PhoneNumbers.Add( phone );
                             }
 
-                            // Create Family Role
-                            var groupMember = new GroupMember();
-                            groupMember.Person = person;
-                            groupMember.GroupRole = new GroupTypeRoleService().Get(new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) );
-
                             // Create Family
-                            var group = new Group();
-                            group.Members.Add( groupMember );
-                            group.Name = person.LastName + " Family";
-                            group.GroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
-
-                            var groupLocation = new GroupLocation();
-                            var location = new LocationService().Get(
-                                txtStreet.Text, string.Empty, txtCity.Text, ddlState.SelectedValue, txtZip.Text );
-                            if ( location != null )
-                            {
-                                Guid addressTypeGuid = Guid.Empty;
-                                if ( !Guid.TryParse( GetAttributeValue( "AddressType" ), out addressTypeGuid ) )
-                                {
-                                    addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
-                                }
-
-                                groupLocation = new GroupLocation();
-                                groupLocation.Location = location;
-                                groupLocation.GroupLocationTypeValueId = DefinedValueCache.Read( addressTypeGuid ).Id;
-
-                                group.GroupLocations.Add( groupLocation );
-                            }
-
                             var groupService = new GroupService();
-                            groupService.Add( group, CurrentPersonId );
-                            groupService.Save( group, CurrentPersonId );
+                            var familyGroup = groupService.SaveNewFamily( person, null, CurrentPersonAlias );
+                            if (familyGroup != null)
+                            {
+                                groupService.AddNewFamilyAddress(familyGroup, GetAttributeValue( "AddressType" ),
+                                    txtStreet.Text, string.Empty, txtCity.Text, ddlState.SelectedValue, txtZip.Text, CurrentPersonAlias );
+                            }
                         }
 
                         ViewState["PersonId"] = person != null ? person.Id : 0;
@@ -1015,7 +991,7 @@ achieve our mission.  We are so grateful for your commitment.
             if ( schedule != null )
             {
                 // Make sure a repeating payment starts in the future
-                if ( schedule.StartDate <= DateTime.Today )
+                if ( schedule.StartDate <= RockDateTime.Today )
                 {
                     errorMessages.Add( "When scheduling a repeating payment, make sure the First Gift date is in the future (after today)" );
                 }
@@ -1088,7 +1064,7 @@ achieve our mission.  We are so grateful for your commitment.
                         errorMessages.Add( "Make sure to enter a valid credit card number" );
                     }
 
-                    var currentMonth = DateTime.Today;
+                    var currentMonth = RockDateTime.Today;
                     currentMonth = new DateTime(currentMonth.Year, currentMonth.Month, 1);
                     if ( !mypExpiration.SelectedDate.HasValue || mypExpiration.SelectedDate.Value.CompareTo(currentMonth) < 0)
                     {
@@ -1261,7 +1237,7 @@ achieve our mission.  We are so grateful for your commitment.
             {
                 // If a one-time gift was selected for today's date, then treat as a onetime immediate transaction (not scheduled)
                 int oneTimeFrequencyId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
-                if ( btnFrequency.SelectedValue == oneTimeFrequencyId.ToString() && dtpStartDate.SelectedDate == DateTime.Today )
+                if ( btnFrequency.SelectedValue == oneTimeFrequencyId.ToString() && dtpStartDate.SelectedDate == RockDateTime.Today )
                 {
                     // one-time immediate payment
                     return null;
@@ -1269,7 +1245,7 @@ achieve our mission.  We are so grateful for your commitment.
 
                 var schedule = new PaymentSchedule();
                 schedule.TransactionFrequencyValue = DefinedValueCache.Read( btnFrequency.SelectedValueAsId().Value );
-                if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > DateTime.Today )
+                if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > RockDateTime.Today )
                 {
                     schedule.StartDate = dtpStartDate.SelectedDate.Value;
                 }
@@ -1349,8 +1325,8 @@ achieve our mission.  We are so grateful for your commitment.
                         }
 
                         var transactionService = new FinancialScheduledTransactionService();
-                        transactionService.Add( scheduledTransaction, CurrentPersonId );
-                        transactionService.Save( scheduledTransaction, CurrentPersonId );
+                        transactionService.Add( scheduledTransaction, CurrentPersonAlias );
+                        transactionService.Save( scheduledTransaction, CurrentPersonAlias );
 
                         ScheduleId = scheduledTransaction.GatewayScheduleId;
                         TransactionCode = scheduledTransaction.TransactionCode;
@@ -1419,19 +1395,19 @@ achieve our mission.  We are so grateful for your commitment.
                                     batch.BatchStartDateTime.Value.AddDays( -1 );
                                 }
                                 batch.BatchEndDateTime = batch.BatchStartDateTime.Value.AddDays( 1 ).AddMilliseconds( -1 );
-                                batchService.Add( batch, CurrentPersonId );
-                                batchService.Save( batch, CurrentPersonId );
+                                batchService.Add( batch, CurrentPersonAlias );
+                                batchService.Save( batch, CurrentPersonAlias );
 
                                 batch = batchService.Get( batch.Id );
                             }
 
                             batch.ControlAmount += transaction.Amount;
-                            batchService.Save( batch, CurrentPersonId );
+                            batchService.Save( batch, CurrentPersonAlias );
 
                             var transactionService = new FinancialTransactionService();
                             transaction.BatchId = batch.Id;
-                            transactionService.Add( transaction, CurrentPersonId );
-                            transactionService.Save( transaction, CurrentPersonId );
+                            transactionService.Add( transaction, CurrentPersonAlias );
+                            transactionService.Save( transaction, CurrentPersonAlias );
                         }
 
                         TransactionCode = transaction.TransactionCode;

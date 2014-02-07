@@ -1,4 +1,4 @@
-create function [dbo].[ufnPersonGroupToPersonName] 
+alter function [dbo].[ufnPersonGroupToPersonName] 
 ( 
 @personId int, -- NULL means generate person names from Group Members. NOT-NULL means just get FullName from Person
 @groupId int
@@ -18,20 +18,31 @@ begin
     if (@personId is not null) 
     begin
         -- just getting the Person Names portion of the address for an individual person
-        select @personNames = [FullName] from [Person] where [Id] = @personId;
+        select @personNames = ISNULL([p].[NickName],'') + ' ' + ISNULL([p].[LastName],'') + ' ' + ISNULL([dv].[Name], '')
+        from [Person] [p]
+        left outer join [DefinedValue] [dv]
+        on [dv].[Id] = [p].[SuffixValueId]
+        where [p].[Id] = @personId;
     end
     else
     begin
         -- populate a table variable with the data we'll need for the different cases
         insert into @groupMemberTable 
         select 
-            [p].[LastName], [p].[FirstName], [p].[FullName], [gr].[Guid]
+            [p].[LastName], 
+            [p].[FirstName], 
+            ISNULL([p].[NickName],'') + ' ' + ISNULL([p].[LastName],'') + ' ' + ISNULL([dv].[Name], '') as [FullName], 
+            [gr].[Guid]
         from 
             [GroupMember] [gm] 
         join 
             [Person] [p] 
         on 
             [p].[Id] = [gm].[PersonId] 
+        left outer join 
+            [DefinedValue] [dv]
+        on
+            [dv].[Id] = [p].[SuffixValueId]
         join
             [GroupTypeRole] [gr]
         on 

@@ -22,6 +22,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -217,12 +218,12 @@ namespace Rock.Reporting.DataFilter
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
         /// <exception cref="System.Exception">Filter issue(s):  + errorMessages.AsDelimited( ;  )</exception>
-        public override Expression GetExpression( Type entityType, object serviceInstance, Expression parameterExpression, string selection )
+        public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
             int dvId = int.MinValue;
             if ( int.TryParse( selection, out dvId ) )
             {
-                var dataView = new DataViewService().Get( dvId );
+                var dataView = new DataViewService( serviceInstance.RockContext ).Get( dvId );
                 if ( dataView != null && dataView.DataViewFilter != null )
                 {
                     // Verify that there is not a child filter that uses this view (would result in stack-overflow error)
@@ -231,7 +232,7 @@ namespace Rock.Reporting.DataFilter
                         // TODO: Should probably verify security again on the selected dataview and it's filters,
                         // as that could be a moving target.
                         var errorMessages = new List<string>();
-                        Expression expression = dataView.GetExpression( serviceInstance, (ParameterExpression)parameterExpression, out errorMessages );
+                        Expression expression = dataView.GetExpression( serviceInstance, parameterExpression, out errorMessages );
                         if ( errorMessages.Any() )
                         {
                             throw new System.Exception( "Filter issue(s): " + errorMessages.AsDelimited( "; " ) );

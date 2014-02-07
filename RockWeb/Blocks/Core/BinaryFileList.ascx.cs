@@ -143,8 +143,8 @@ namespace RockWeb.Blocks.Core
                         return;
                     }
 
-                    binaryFileService.Delete( binaryFile, CurrentPersonId );
-                    binaryFileService.Save( binaryFile, CurrentPersonId );
+                    binaryFileService.Delete( binaryFile, CurrentPersonAlias );
+                    binaryFileService.Save( binaryFile, CurrentPersonAlias );
                 }
             } );
 

@@ -29,7 +29,7 @@
 
 </head>
 
-<body>
+<body class="rock-blank">
     <form id="form1" runat="server">
         <ajaxToolkit:ToolkitScriptManager ID="sManager" runat="server" />
 
@@ -52,11 +52,7 @@
         <main class="container">
         
             <!-- Start Content Area -->
-            <div class="row">
-                <div class="col-md-12">
-                    <Rock:Zone Name="Main" runat="server" />
-                </div>
-            </div>
+            <Rock:Zone Name="Main" runat="server" />
 
         </main>
     </form>

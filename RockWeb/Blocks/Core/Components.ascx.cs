@@ -164,7 +164,7 @@ namespace RockWeb.Blocks.Core
                     Component component = item.Value.Value;
                     if (  component.Attributes.ContainsKey("Order") )
                     {
-                        Rock.Attribute.Helper.SaveAttributeValue( component, component.Attributes["Order"], order.ToString(), CurrentPersonId );
+                        Rock.Attribute.Helper.SaveAttributeValue( component, component.Attributes["Order"], order.ToString(), CurrentPersonAlias );
                     }
                     order++;
                 }
@@ -237,7 +237,7 @@ namespace RockWeb.Blocks.Core
             Rock.Attribute.IHasAttributes component = _container.Dictionary[serviceId].Value;
 
             Rock.Attribute.Helper.GetEditValues( phProperties, component );
-            Rock.Attribute.Helper.SaveAttributeValues( component, CurrentPersonId );
+            Rock.Attribute.Helper.SaveAttributeValues( component, CurrentPersonAlias );
 
             BindGrid();
 

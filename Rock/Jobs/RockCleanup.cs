@@ -149,7 +149,8 @@ namespace Rock.Jobs
             foreach ( string filePath in Directory.GetFiles( directoryPath ) )
             {
                 //if the file creation date is older than the expiration date
-                if ( File.GetCreationTime( filePath ) < expirationDate )
+                DateTime adjustedFileDateTime = RockDateTime.ConvertLocalDateTimeToRockDateTime(File.GetCreationTime( filePath ));
+                if ( adjustedFileDateTime < expirationDate )
                 {
                     //delete the file
                     DeleteFile( filePath, false );

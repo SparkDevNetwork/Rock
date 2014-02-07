@@ -1,0 +1,48 @@
+﻿using System.Collections.Generic;
+// Copyright 2013 by the Spark Development Network
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System.ComponentModel;
+using System.ComponentModel.Composition;
+using System.Web.UI;
+using Rock.Attribute;
+using Rock.Model;
+using Rock.Web.UI.Controls;
+
+namespace Rock.PersonProfile.Badge
+{
+    /// <summary>
+    /// Liquid Badge
+    /// </summary>
+    [Description( "Liquid Badge" )]
+    [Export( typeof( BadgeComponent ) )]
+    [ExportMetadata("ComponentName", "Liquid Badge")]
+
+    [CodeEditorField( "Display Text", "The text (or html) to display as a badge",CodeEditorMode.Liquid, CodeEditorTheme.Rock, 100 )]
+    public class Liquid : BadgeComponent
+    {
+        public override void Render( PersonBadge badge, System.Web.UI.HtmlTextWriter writer )
+        {
+            string displayText = GetAttributeValue( badge, "DisplayText" );
+            if ( Person != null )
+            {
+                Dictionary<string, object> mergeValues = new Dictionary<string, object>();
+                mergeValues.Add( "Person", Person );
+                displayText = displayText.ResolveMergeFields( mergeValues );
+            }
+            writer.Write( displayText );
+        }
+    }
+}

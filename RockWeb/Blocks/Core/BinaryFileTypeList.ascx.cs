@@ -114,8 +114,8 @@ namespace RockWeb.Blocks.Administration
                         return;
                     }
 
-                    binaryFileTypeService.Delete( binaryFileType, CurrentPersonId );
-                    binaryFileTypeService.Save( binaryFileType, CurrentPersonId );
+                    binaryFileTypeService.Delete( binaryFileType, CurrentPersonAlias );
+                    binaryFileTypeService.Save( binaryFileType, CurrentPersonAlias );
                 }
             } );
 

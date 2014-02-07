@@ -86,27 +86,42 @@ namespace RockWeb.Blocks.Security
             int viewerId = int.Parse( PageParameter( "viewerId" ) );
             bool viewedBy = Convert.ToBoolean(PageParameter( "viewedBy" ));
             var personViewedService = new PersonViewedService();
-            var personViewedList = personViewedService.Queryable().Where( p => p.ViewerPersonId == viewerId && p.TargetPersonId == targetId );
+            var personViewedList = personViewedService.Queryable()
+                .Where( p => p.ViewerPersonId == viewerId && p.TargetPersonId == targetId )
+                .Select( p => new
+                {
+                    Id = p.TargetPersonId,
+                    Source = p.Source,
+                    TargetPerson = p.TargetPerson,
+                    ViewerPerson = p.ViewerPerson,
+                    ViewDateTime = p.ViewDateTime,
+                    IpAddress = p.IpAddress
+                } ).ToList();
+
             if ( viewedBy )
             {
-                gridTitle.InnerText = personViewedList.Select( p => p.TargetPerson.FirstName + " " + p.TargetPerson.LastName ).FirstOrDefault() + " Viewed By " + personViewedList.Select( p => p.ViewerPerson.FirstName + " " + p.ViewerPerson.LastName ).FirstOrDefault();
+                gridTitle.InnerText = string.Format( "{0} Viewed By {1}", 
+                    personViewedList.Select( p => p.TargetPerson.FullName ).FirstOrDefault(), 
+                    personViewedList.Select( p => p.ViewerPerson.FullName ).FirstOrDefault() );
             }
             else
             {
-                gridTitle.InnerText = personViewedList.Select( p => p.ViewerPerson.FirstName + " " + p.ViewerPerson.LastName ).FirstOrDefault() + " Viewed " + personViewedList.Select( p => p.TargetPerson.FirstName + " " + p.TargetPerson.LastName ).FirstOrDefault();
+                gridTitle.InnerText = string.Format( "{0} Viewed {1}", 
+                    personViewedList.Select( p => p.ViewerPerson.FullName ).FirstOrDefault(), 
+                    personViewedList.Select( p => p.TargetPerson.FullName ).FirstOrDefault() );
             }
 
             SortProperty sortProperty = gViewDetails.SortProperty;
             if ( sortProperty != null )
             {
-                personViewedList = personViewedList.Sort( sortProperty );
+                personViewedList = personViewedList.AsQueryable().Sort( sortProperty ).ToList();
             }
             else
             {
-                personViewedList = personViewedList.OrderByDescending( p => p.ViewDateTime );
+                personViewedList = personViewedList.OrderByDescending( p => p.ViewDateTime ).ToList();
             }
 
-            gViewDetails.DataSource = personViewedList.ToList();
+            gViewDetails.DataSource = personViewedList;
             gViewDetails.DataBind();
         }        
 

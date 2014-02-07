@@ -31,21 +31,6 @@ namespace Rock.PersonProfile.Badge
     [ExportMetadata( "ComponentName", "Baptized" )]
     public class Baptized : IconBadge
     {
-        /// <summary>
-        /// Gets the attribute value defaults.
-        /// </summary>
-        /// <value>
-        /// The attribute defaults.
-        /// </value>
-        public override System.Collections.Generic.Dictionary<string, string> AttributeValueDefaults
-        {
-            get
-            {
-                var defaults = base.AttributeValueDefaults;
-                defaults["Order"] = "8";
-                return defaults;
-            }
-        }
 
         /// <summary>
         /// Gets the tool tip text.

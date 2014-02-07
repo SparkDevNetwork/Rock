@@ -19,6 +19,11 @@ using System.ComponentModel.Composition;
 using System.IO;
 
 using Rock.Model;
+using Rock.Data;
+using System.Collections.Generic;
+using System.Data;
+using System;
+using System.Diagnostics;
 
 namespace Rock.PersonProfile.Badge
 {
@@ -30,42 +35,57 @@ namespace Rock.PersonProfile.Badge
     [Description( "Family Attendance Badge" )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Family Attendance" )]
-    public class FamilyAttendance : IconBadge
+    public class FamilyAttendance : BadgeComponent
     {
+
+        private int _minBarHeight = 2;
+        
         /// <summary>
-        /// Gets the attribute value defaults.
+        /// Renders the specified writer.
         /// </summary>
-        /// <value>
-        /// The attribute defaults.
-        /// </value>
-        public override System.Collections.Generic.Dictionary<string, string> AttributeValueDefaults
+        /// <param name="badge">The badge.</param>
+        /// <param name="writer">The writer.</param>
+        public override void Render( PersonBadge badge, System.Web.UI.HtmlTextWriter writer )
         {
-            get
-            {
-                var defaults = base.AttributeValueDefaults;
-                defaults["Order"] = "7";
-                return defaults;
-            }
+            writer.Write("<div class='badge badge-attendance' data-original-title='Family attendance for the last 24 months. Each bar is a month.'>");
+
+            writer.Write("</div>");
+
+            writer.Write(String.Format(@"
+                <script>
+                    $( document ).ready(function() {{
+                        
+                        var monthNames = [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ];
+                        
+                        
+                        $.ajax({{
+                                type: 'GET',
+                                url: Rock.settings.get('baseUrl') + 'api/PersonBadges/FamilyAttendance/{0}' ,
+                                statusCode: {{
+                                    200: function (data, status, xhr) {{
+                                            var chartHtml = '<ul class=\'badge-attendance-chart list-unstyled\'>';
+                                            $.each(data, function() {{
+                                                var barHeight = (this.AttendanceCount / this.SundaysInMonth) * 100;
+                                                if (barHeight < {1}) {{
+                                                    barHeight = {1};
+                                                }}
+                                
+                                                chartHtml += '<li title=\'' + monthNames[this.Month -1] + ' ' + this.Year +'\'><span style=\'height: ' + barHeight + '%\'></span></li>';                
+                                            }});
+                                            chartHtml += '</ul>';
+                                            
+                                            $('.badge-attendance').html(chartHtml);
+
+                                        }}
+                                }},
+                        }});
+                    }});
+                </script>
+                
+            ", Person.Id.ToString(), _minBarHeight));
+
         }
 
-        /// <summary>
-        /// Gets the tool tip text.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        public override string GetToolTipText( Person person )
-        {
-            return "Family Attendance Summary for the last 12 months";
-        }
 
-        /// <summary>
-        /// Gets the icon path.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        public override string GetIconPath( Person person )
-        {
-            return Path.Combine( System.Web.VirtualPathUtility.ToAbsolute( "~" ), "Assets/Mockup/attendence-bars.jpg" );
-        }
     }
 }

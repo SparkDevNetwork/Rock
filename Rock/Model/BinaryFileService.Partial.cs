@@ -70,9 +70,9 @@ namespace Rock.Model
         /// Saves the specified <see cref="Rock.Model.BinaryFile"/>.
         /// </summary>
         /// <param name="item">A <see cref="Rock.Model.BinaryFile"/> to save.</param>
-        /// <param name="personId">A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who is saving the BinaryFile..</param>
+        /// <param name="personAlias">A <see cref="Rock.Model.PersonAlias"/> representing the <see cref="Rock.Model.Person"/> who is saving the BinaryFile..</param>
         /// <returns></returns>
-        public override bool Save( BinaryFile item, int? personId )
+        public override bool Save( BinaryFile item, PersonAlias personAlias )
         {
             Rock.Storage.ProviderComponent storageProvider = DetermineBinaryFileStorageProvider( item );
 
@@ -107,16 +107,16 @@ namespace Rock.Model
                 storageProvider.SaveFile( item, HttpContext.Current );
             }
 
-            return base.Save( item, personId );
+            return base.Save( item, personAlias );
         }
 
         /// <summary>
         /// Deletes the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="personId">The person identifier.</param>
+        /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
-        public override bool Delete( BinaryFile item, int? personId )
+        public override bool Delete( BinaryFile item, PersonAlias personAlias )
         {
             // if we can determine the StorageProvider, use the provider to remove the file from the provider's external storage medium
             Rock.Storage.ProviderComponent storageProvider = DetermineBinaryFileStorageProvider( item );
@@ -127,7 +127,7 @@ namespace Rock.Model
             }
 
             // delete the record from the database
-            return base.Delete( item, personId );
+            return base.Delete( item, personAlias );
         }
 
         /// <summary>
@@ -224,12 +224,13 @@ namespace Rock.Model
                 // Columns must be read in Sequential Order (see stored procedure spBinaryFileGet)
                 reader.Read();
                 binaryFile.Id = reader["Id"] as int? ?? 0;
-                binaryFile.IsTemporary = ( reader["IsTemporary"] as int? ) == 1;
-                binaryFile.IsSystem = ( reader["IsSystem"] as int? ) == 1;
+                binaryFile.IsTemporary = ( (bool)reader["IsTemporary"] );
+                binaryFile.IsSystem = (bool)reader["IsSystem"];
                 binaryFile.BinaryFileTypeId = reader["BinaryFileTypeId"] as int?;
                 binaryFile.Url = reader["Url"] as string;
                 binaryFile.FileName = reader["FileName"] as string;
                 binaryFile.MimeType = reader["MimeType"] as string;
+                binaryFile.ModifiedDateTime = reader["ModifiedDateTime"] as DateTime?;
                 binaryFile.Description = reader["Description"] as string;
                 int? storageEntityTypeId = reader["StorageEntityTypeId"] as int?;
                 binaryFile.SetStorageEntityTypeId( storageEntityTypeId );

@@ -229,7 +229,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _lbMerge );
             _lbMerge.ID = "lbMerge";
             _lbMerge.CssClass = "btn-merge btn btn-default btn-sm";
-            _lbMerge.ToolTip = "Communicate";
+            _lbMerge.ToolTip = "Merge Person Records";
             _lbMerge.Click += lbMerge_Click;
             _lbMerge.CausesValidation = false;
             _lbMerge.PreRender += lb_PreRender;

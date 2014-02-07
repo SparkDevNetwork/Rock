@@ -295,6 +295,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether root folder should be specific to user.  If true
+        /// a folder name equal to the the current user's login will be added to the root path.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [user specific root]; otherwise, <c>false</c>.
+        /// </value>
+        public bool UserSpecificRoot
+        {
+            get
+            {
+                return ViewState["UserSpecificRoot"] as bool? ?? false;
+            }
+            set
+            {
+                ViewState["UserSpecificRoot"] = value;
+            }
+        }
+        /// <summary>
         /// Gets or sets the image file filter.
         /// </summary>
         /// <value>
@@ -305,12 +323,12 @@ namespace Rock.Web.UI.Controls
             get
             {
                 string result = ViewState["ImageFileFilter"] as string;
-                if (string.IsNullOrWhiteSpace(result))
+                if ( string.IsNullOrWhiteSpace( result ) )
                 {
                     // default to common ones that are supported by most browsers
                     result = "*.png;*.jpg;*.gif;*.svg;*.bmp";
                 }
-                
+
                 return result;
             }
 
@@ -427,28 +445,48 @@ var toolbar_RockCustomConfigFull =
         ['rockmergefield', '-', 'rockimagebrowser', 'rockdocumentbrowser']
 	];	
 
+
+// In IE, the CKEditor doesn't accept keyboard input when loading again within the same page instance.  Destroy fixes it, but destroy throws an exception in Chrome
+if (CKEDITOR.instances.{0}) {{
+    try
+    {{
+        CKEDITOR.instances.{0}.destroy();
+    }}
+    catch (ex)
+    {{
+        // ignore error
+    }}
+}}
+  
 CKEDITOR.replace('{0}', {{ 
-  allowedContent: true,
-  toolbar: toolbar_RockCustomConfig{1},
-  removeButtons: '',
-  height: '{2}',
-  baseFloatZIndex: 200000,  // set zindex to be 200000 so it will be on top of our modals (100000)
-  extraPlugins: '{5}',
-  resize_maxWidth: '{3}',
-  rockFileBrowserOptions: {{ 
+    allowedContent: true,
+    toolbar: toolbar_RockCustomConfig{1},
+    removeButtons: '',
+    height: '{2}',
+    baseFloatZIndex: 200000,  // set zindex to be 200000 so it will be on top of our modals (100000)
+    extraPlugins: '{5}',
+    resize_maxWidth: '{3}',
+    rockFileBrowserOptions: {{ 
     documentFolderRoot: '{6}', 
     imageFolderRoot: '{7}',
     imageFileFilter: '{8}'
-  }},
-  rockMergeFieldOptions: {{ mergeFields: '{9}' }},
-  on : {{
-       change: function (e) {{
-         // update the underlying TextElement on every little change to ensure that Posting and Validation works consistently (doing it OnSubmit or OnBlur misses some cases)
-         e.editor.updateElement();  
-         {4}
-       }}
-  }}
-}} );
+    }},
+    rockMergeFieldOptions: {{ mergeFields: '{9}' }},
+    on : {{
+        change: function (e) {{
+            // update the underlying TextElement on every little change (when in WYSIWIG mode) to ensure that Posting and Validation works consistently (doing it OnSubmit or OnBlur misses some cases)
+            e.editor.updateElement();  
+            {4}
+        }},
+        instanceReady: function (e) {{
+            // update the underlying TextElement when there is a change event in SOURCE mode
+            $('#cke_{0}').on( 'change', '.cke_source', function(e, data) {{
+                CKEDITOR.instances.{0}.updateElement();
+            }});
+        }}
+    }}
+}}
+);
             ";
 
             string customOnChangeScript = null;
@@ -469,11 +507,11 @@ CKEDITOR.replace('{0}', {{
             enabledPlugins.Add( "rockfilebrowser" );
 
             string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(),
-                this.Height, this.ResizeMaxWidth ?? 0, customOnChangeScript, enabledPlugins.AsDelimited( "," ), 
-                Rock.Security.Encryption.EncryptString(this.DocumentFolderRoot), // encrypt the folders so the folder can only be configured on the server
-                Rock.Security.Encryption.EncryptString(this.ImageFolderRoot),
+                this.Height, this.ResizeMaxWidth ?? 0, customOnChangeScript, enabledPlugins.AsDelimited( "," ),
+                Rock.Security.Encryption.EncryptString( this.DocumentFolderRoot ), // encrypt the folders so the folder can only be configured on the server
+                Rock.Security.Encryption.EncryptString( this.ImageFolderRoot ),
                 this.ImageFileFilter,
-                this.MergeFields.AsDelimited(",") );
+                this.MergeFields.AsDelimited( "," ) );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckeditorInitScript, true );
 

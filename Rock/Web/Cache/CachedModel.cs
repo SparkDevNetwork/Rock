@@ -164,10 +164,21 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personId">The current person id.</param>
-        public virtual void MakePrivate( string action, Person person, int? personId )
+        /// <param name="currentPersonAlias">The current person id.</param>
+        public virtual void MakePrivate( string action, Person person, PersonAlias currentPersonAlias )
         {
-            Security.Authorization.MakePrivate( this, action, person, personId );
+            Security.Authorization.MakePrivate( this, action, person, currentPersonAlias );
+        }
+
+        /// <summary>
+        /// If action on the current entity is private, removes security that made it private.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="currentPersonAlias">The current person alias.</param>
+        public virtual void MakeUnPrivate( string action, Person person, PersonAlias currentPersonAlias )
+        {
+            Security.Authorization.MakeUnPrivate( this, action, person, currentPersonAlias );
         }
 
         #endregion
@@ -235,8 +246,8 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Saves the attribute values.
         /// </summary>
-        /// <param name="personId">The person id.</param>
-        public virtual void SaveAttributeValues( int? personId )
+        /// <param name="personAlias">The person alias.</param>
+        public virtual void SaveAttributeValues( PersonAlias personAlias )
         {
             var service = new Rock.Data.Service<T>();
             var model = service.Get( this.Id );
@@ -248,7 +259,7 @@ namespace Rock.Web.Cache
                 {
                     if ( this.AttributeValues.ContainsKey( attribute.Key ) )
                     {
-                        Rock.Attribute.Helper.SaveAttributeValues( model, attribute.Value, this.AttributeValues[attribute.Key], personId );
+                        Rock.Attribute.Helper.SaveAttributeValues( model, attribute.Value, this.AttributeValues[attribute.Key], personAlias );
                     }
                 }
             }
@@ -288,7 +299,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Sets the value of an attribute key in memory. Once values have been set, use the <see cref="SaveAttributeValues(int?)" /> method to save all values to database 
+        /// Sets the value of an attribute key in memory. Once values have been set, use the <see cref="SaveAttributeValues(PersonAlias)" /> method to save all values to database 
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>

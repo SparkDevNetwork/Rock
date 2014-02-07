@@ -155,7 +155,7 @@ namespace RockWeb.Blocks.Reporting
                     page.PageTitle = tbName.Text;
                     page.BrowserTitle = tbName.Text;
                     page.Description = tbDesc.Text;
-                    service.Save( page, CurrentPersonId );
+                    service.Save( page, CurrentPersonAlias );
 
                     Rock.Web.Cache.PageCache.Flush( page.Id );
                     pageCache = PageCache.Read( RockPage.PageId );
@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.Reporting
             SetAttributeValue( "FormattedOutput", ceFormattedOutput.Text );
             SetAttributeValue( "PersonReport", cbPersonReport.Checked.ToString());
             SetAttributeValue( "MergeFields", tbMergeFields.Text );
-            SaveAttributeValues( CurrentPersonId );
+            SaveAttributeValues( CurrentPersonAlias );
 
             BindGrid();
         }
@@ -299,9 +299,9 @@ namespace RockWeb.Blocks.Reporting
                         }
 
                         // If current person id, use the value of the current person id
-                        else if (queryParamName.ToLower() == "currentpersonid" && CurrentPersonId.HasValue)
+                        else if (queryParamName.ToLower() == "currentpersonid" && CurrentPerson != null)
                         {
-                            queryParamValue = CurrentPersonId.Value.ToString();
+                            queryParamValue = CurrentPerson.Id.ToString();
                         }
 
                         parameters.Add(queryParamName, queryParamValue);

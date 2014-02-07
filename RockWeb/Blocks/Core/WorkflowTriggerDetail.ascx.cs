@@ -227,7 +227,7 @@ namespace RockWeb.Blocks.Core
             if ( WorkflowTriggerId == 0 )
             {
                 WorkflowTrigger = new WorkflowTrigger();
-                WorkflowTriggerService.Add( WorkflowTrigger, CurrentPersonId );
+                WorkflowTriggerService.Add( WorkflowTrigger, CurrentPersonAlias );
             }
             else
             {
@@ -255,7 +255,7 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            WorkflowTriggerService.Save( WorkflowTrigger, CurrentPersonId );
+            WorkflowTriggerService.Save( WorkflowTrigger, CurrentPersonAlias );
 
             Rock.Workflow.TriggerCache.Refresh();
 

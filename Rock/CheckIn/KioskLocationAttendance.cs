@@ -136,7 +136,7 @@ namespace Rock.CheckIn
                         locationAttendance.Groups = new List<KioskGroupAttendance>();
 
                         var attendanceService = new AttendanceService();
-                        foreach ( var attendance in attendanceService.GetByDateAndLocation( DateTime.Today, location.Id ) )
+                        foreach ( var attendance in attendanceService.GetByDateAndLocation( RockDateTime.Today, location.Id ) )
                         {
                             AddAttendanceRecord( locationAttendance, attendance );
                         }

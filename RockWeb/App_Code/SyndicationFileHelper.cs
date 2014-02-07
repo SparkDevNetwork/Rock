@@ -81,7 +81,7 @@ public class SyndicationFeedHelper
         }
         else
         {
-            SyndicationFeed feed = null;
+            XDocument feed = null;
 
             HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create( feedUrl );
 
@@ -90,16 +90,8 @@ public class SyndicationFeedHelper
                 if ( resp.StatusCode == HttpStatusCode.OK )
                 {
                     XmlReader feedReader = XmlReader.Create( resp.GetResponseStream() );
+                    feed = XDocument.Load( feedReader );
 
-                    if ( new Rss20FeedFormatter().CanRead( feedReader ) || new Atom10FeedFormatter().CanRead( feedReader ) )
-                    {
-                        feed = SyndicationFeed.Load( feedReader );
-                    }
-                    else
-                    {
-                        message.Add( "Unable to read feed.", "Returned feed was not in ATOM or RSS format and could not be read." );
-                        isError = true;
-                    }
                     feedReader.Close();
 
                 }
@@ -112,8 +104,112 @@ public class SyndicationFeedHelper
 
             if ( feed != null )
             {
-                feedDictionary = BuildFeedDictionary( feed, detailPage );
 
+                string detailPageBaseUrl = string.Empty;
+                int detailPageID = 0;
+
+                if(!String.IsNullOrEmpty(detailPage))
+                {
+                    detailPageID = new Rock.Model.PageService().Get(new Guid(detailPage)).Id;
+
+                    detailPageBaseUrl = new PageReference( detailPageID ).BuildUrl();
+                }
+
+                if ( detailPageID > 0 )
+                {
+                    detailPageBaseUrl = new PageReference( detailPageID ).BuildUrl();
+                }
+
+                Dictionary<string, XNamespace> namespaces = feed.Root.Attributes()
+                    .Where( a => a.IsNamespaceDeclaration )
+                    .GroupBy( a => a.Name.Namespace == XNamespace.None ? String.Empty : a.Name.LocalName,
+                                a => XNamespace.Get( a.Value ) )
+                    .ToDictionary( g => g.Key, g => g.First() );
+
+
+                feedDictionary = BuildElementDictionary( feed.Elements().First(), namespaces );
+
+                if ( feedDictionary.Count == 1  &&  feedDictionary.First().Value.GetType() == typeof(Dictionary<string,object>) )
+                {
+                    feedDictionary = (Dictionary<string, object>)feedDictionary.First().Value;
+                }
+
+                if ( feedDictionary.ContainsKey("lastBuildDate") )
+                {
+                    feedDictionary["lastBuildDate"] = DateTimeOffset.Parse( feedDictionary["lastBuildDate"].ToString() ).LocalDateTime;
+                }
+
+                if ( feedDictionary.ContainsKey("updated") )
+                {
+                    feedDictionary["updated"] = DateTimeOffset.Parse( feedDictionary["updated"].ToString() ).LocalDateTime;
+                }
+
+                List<Dictionary<string, object>> articles = (List<Dictionary<string, object>>)feedDictionary.Where( x => x.Key == "item" || x.Key == "entry" ).FirstOrDefault().Value;
+
+                foreach ( var article in articles )
+                {
+
+                    string idEntry = String.Empty;
+                    string idEntryHashed = string.Empty;
+                    if ( article.ContainsKey( "id" ) )
+                    {
+                        idEntry = article["id"].ToString();
+                    }
+
+                    if ( article.ContainsKey( "guid" ) )
+                    {
+                        if ( article["guid"].GetType() == typeof( Dictionary<string, object> ) )
+                        {
+                            idEntry = ( (Dictionary<string, object>)article["guid"] )["value"].ToString();
+                        }
+                        else
+                        {
+                            idEntry = article["guid"].ToString();
+                        }
+                    }
+
+                    if ( !String.IsNullOrWhiteSpace( idEntry ) )
+                    {
+                        System.Security.Cryptography.HashAlgorithm hashAlgorithm = System.Security.Cryptography.SHA1.Create();
+                        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                        foreach ( byte b in hashAlgorithm.ComputeHash( System.Text.Encoding.UTF8.GetBytes( idEntry ) ) )
+                        {
+                            sb.Append( b.ToString( "X2" ) );
+                        }
+
+                        idEntryHashed = sb.ToString();
+
+                        Dictionary<string, string> queryString = new Dictionary<string, string>();
+                        queryString.Add( "feedItemId", idEntryHashed );
+
+                        if(detailPageID > 0)
+                        {
+                            article.Add( "detailPageUrl", new PageReference( detailPageID, 0, queryString ).BuildUrl() );
+                        }
+
+                        article.Add( "articleHash", idEntryHashed );
+                    }
+
+                    if ( article.ContainsKey("pubDate") )
+                    {
+                        article["pubDate"] = DateTimeOffset.Parse( article["pubDate"].ToString() ).LocalDateTime;
+                    }
+
+                    if ( article.ContainsKey("updated") )
+                    {
+                        article["updated"] = DateTimeOffset.Parse( article["updated"].ToString() ).LocalDateTime;
+                    }
+                
+                }
+
+                if(!String.IsNullOrEmpty(detailPageBaseUrl))
+                {
+                    feedDictionary.Add( "DetailPageBaseUrl", detailPageBaseUrl );
+                }
+            }
+
+            if ( feedDictionary != null )
+            {
                 feedCache.Set( GetFeedCacheKey( feedUrl ), feedDictionary, DateTimeOffset.Now.AddMinutes( cacheDuration ) );
             }
 
@@ -122,217 +218,113 @@ public class SyndicationFeedHelper
         return feedDictionary;
     }
 
+
     #endregion
 
     #region Private Methods
 
-    /// <summary>
-    /// Builds the feed dictionary object
-    /// </summary>
-    /// <param name="feed">A <see cref="System.ServiceModel.Syndication.SyndicationFeed"/> containing the content of the feed.</param>
-    /// <param name="detailPage">A <see cref="System.String"/> containing the Guid of the detail page.</param>
-    /// <returns>A <see cref="System.Collections.Generic.Dictionary{string,object}"/> representing the feed.</returns>
-    private static Dictionary<string, object> BuildFeedDictionary( SyndicationFeed feed, string detailPage )
+    private static Dictionary<string,object> BuildElementDictionary( XElement feedElement, Dictionary<string, XNamespace> namespaces )
     {
-        Dictionary<string, object> feedDictionary = new Dictionary<string, object>();
+        Dictionary<string, object> elementDictionary = new Dictionary<string, object>();
 
-        if ( feed == null )
+        if ( feedElement != null)
         {
-            return feedDictionary;
+            if ( feedElement.HasElements )
+            {
+                var elementTypes = feedElement.Elements()
+                    .GroupBy( g => g.Name )
+                    .Select( eg => new
+                        {
+                            elementName = eg.Key,
+                            count = eg.Count()
+                        }
+                    );
+
+                foreach ( var elementType in elementTypes )
+                {
+                    string updatedName = elementType.elementName.ToString();
+                    var elementNamespace = namespaces.Where( n => elementType.elementName.ToString().Contains( n.Value.ToString() ) );
+
+                    if(elementNamespace.Count() > 0)
+                    {
+                        if ( !String.IsNullOrWhiteSpace( elementNamespace.First().Key ) )
+                        {
+                            updatedName = updatedName.Replace( "{" + elementNamespace.First().Value.ToString() + "}", elementNamespace.First().Key + "_" );
+                        }
+                        else
+                        {
+                            updatedName = updatedName.Replace( "{" + elementNamespace.First().Value.ToString() + "}", String.Empty );
+                        }
+                        
+                    }
+
+                    if ( elementType.count == 1 )
+                    {
+                        XElement element = feedElement.Elements( elementType.elementName ).FirstOrDefault();
+                        if ( element.HasElements )
+                        {
+                            elementDictionary.Add( updatedName, BuildElementDictionary( element, namespaces ) );
+                        }
+                        else if ( element.HasAttributes )
+                        {
+
+                            Dictionary<string, object> itemDictionary = new Dictionary<string, object>();
+                            foreach ( var item in element.Attributes() )
+                            {
+                                itemDictionary.Add( item.Name.ToString(), item.Value );
+                            }
+                            itemDictionary.Add( "value", element.Value );
+
+                            elementDictionary.Add( updatedName, itemDictionary );
+                        }
+
+                        else
+                        {
+                            elementDictionary.Add( updatedName, element.Value );
+                        }
+                    }
+                    else
+                    {
+                        List<Dictionary<string, object>> elementList = new List<Dictionary<string, object>>();
+                        foreach ( var element in feedElement.Elements( elementType.elementName ) )
+                        {
+                            elementList.Add( BuildElementDictionary( element, namespaces ) );
+                        }
+                        elementDictionary.Add( updatedName, elementList );
+                    }
+                }
+            }
+            else
+            {
+                string updatedName = feedElement.Name.ToString();
+                var elementNamespace = namespaces.Where( n => updatedName.Contains( n.Value.ToString() ) );
+
+                if ( elementNamespace.Count() > 0 )
+                {
+                    if ( !String.IsNullOrWhiteSpace( elementNamespace.First().Key ) )
+                    {
+                        updatedName = updatedName.Replace( "{" + elementNamespace.First().Value.ToString() + "}", elementNamespace.First().Key + "_" );
+                    }
+                    else
+                    {
+                        updatedName = updatedName.Replace( "{" + elementNamespace.First().Value.ToString() + "}", String.Empty );
+                    }
+                }
+                elementDictionary.Add( updatedName.ToString(), feedElement.Value );
+            }
         }
 
-        feedDictionary.Add( "AttributeExtensions", feed.AttributeExtensions.ToDictionary( a => a.Key.ToString(), a => a.Value ) );
-
-        List<Dictionary<string, object>> authors = new List<Dictionary<string, object>>();
-        foreach ( var a in feed.Authors )
-        {
-            authors.Add( BuildSyndicationPerson( a ) );
-        }
-        feedDictionary.Add( "Authors", authors );
-
-        feedDictionary.Add( "BaseUri", feed.BaseUri == null ? null : feed.BaseUri.ToString() );
-
-        List<Dictionary<string, object>> categories = new List<Dictionary<string, object>>();
-        foreach ( var c in feed.Categories )
-        {
-            categories.Add( BuildSyndicationCategory( c ) );
-        }
-        feedDictionary.Add( "Categories", categories );
-
-        List<Dictionary<string, object>> contributors = new List<Dictionary<string, object>>();
-        foreach ( var c in feed.Contributors )
-        {
-            contributors.Add( BuildSyndicationPerson( c ) );
-        }
-        feedDictionary.Add( "Contributors", contributors );
-
-        feedDictionary.Add( "Copyright", feed.Copyright == null ? null : feed.Copyright.Text );
-        feedDictionary.Add( "Description", feed.Description == null ? null : feed.Description.Text );
-        feedDictionary.Add( "ElemenentExtensions", feed.ElementExtensions );
-        feedDictionary.Add( "Generator", feed.Generator );
-        feedDictionary.Add( "Id", feed.Id );
-        feedDictionary.Add( "ImageUrl", feed.ImageUrl == null ? null : feed.ImageUrl.ToString() );
-
-        List<Dictionary<string, object>> feedItems = new List<Dictionary<string, object>>();
-        foreach ( var i in feed.Items.OrderByDescending( i => i.PublishDate ) )
-        {
-            feedItems.Add( BuildSyndicationItem( i, detailPage ) );
-        }
-        feedDictionary.Add( "Items", feedItems );
-
-        feedDictionary.Add( "Language", feed.Language );
-        feedDictionary.Add( "LastUpdatedTime", feed.LastUpdatedTime.ToLocalTime().DateTime );
-
-        List<Dictionary<string, object>> links = new List<Dictionary<string, object>>();
-        foreach ( var l in feed.Links )
-        {
-            links.Add( BuildSyndicationLink( l ) );
-        }
-        feedDictionary.Add( "Links", links );
-        feedDictionary.Add( "Title", feed.Title == null ? null : feed.Title.Text );
-
-        return feedDictionary;
+        return elementDictionary;
     }
 
-    /// <summary>
-    /// Builds a dictionary that contains Syndication Category.
-    /// </summary>
-    /// <param name="c">A <see cref="System.ServiceModel.Syndication.SyndicationCategory"/> representing a category from a syndicated feed.</param>
-    /// <returns>A <see cref="System.Collections.Generic.Dictionary{string,object}"/> containing the content of the category.</returns>
-    private static Dictionary<string, object> BuildSyndicationCategory( SyndicationCategory c )
+    private static string BuildDetailPageLink( int detailPageId, string hashedId )
     {
-        Dictionary<string, object> category = new Dictionary<string, object>();
+        Dictionary<string, string> queryString = new Dictionary<string, string>();
+        queryString.Add( "feedItemId", hashedId );
 
-        if ( c != null )
-        {
-            category.Add( "AttributeExtensions", c.AttributeExtensions.ToDictionary( a => a.Key.ToString(), a => a.Value ) );
-            category.Add( "ElementExtensions", c.ElementExtensions );
-            category.Add( "Label", c.Label );
-            category.Add( "Name", c.Name );
-            category.Add( "Scheme", c.Scheme );
-        }
-
-        return category;
+        return new PageReference( detailPageId, 0, queryString ).BuildUrl();
     }
 
-    /// <summary>
-    /// Builds a dictionary containing the content of the provided <see cref="System.ServiceModel.Syndication.SyndicationItem"/>
-    /// </summary>
-    /// <param name="i">The <see cref="System.ServiceModel.Syndicawtion.SyndicationItem"/> to be converted to a dictionary.</param>
-    /// <param name="detailPage">A <see cref="System.String"/> representing the Guid of the detail page.</param>
-    /// <returns>A <see cref="System.Collections.Generic.Dictionary{string,object}"/> representing the provided syndication item.</returns>
-    private static Dictionary<string, object> BuildSyndicationItem( SyndicationItem i, string detailPage )
-    {
-        Dictionary<string, object> itemDictionary = new Dictionary<string, object>();
-
-        if ( i != null )
-        {
-            itemDictionary.Add( "AttributeExtensions", i.AttributeExtensions.ToDictionary( a => a.Key.ToString(), a => a.Value ) );
-
-            string detailPageUrl = string.Empty;
-
-            if ( !String.IsNullOrWhiteSpace( detailPage ) )
-            {
-                Rock.Model.Page page = new Rock.Model.PageService().Get( new Guid( detailPage ) );
-                Dictionary<string, string> queryString = new Dictionary<string, string>();
-                queryString.Add( "feedItemId", System.Web.HttpUtility.UrlEncode( i.Id ) );
-                detailPageUrl = new PageReference( page.Id, 0, queryString ).BuildUrl();
-            }
-
-            List<Dictionary<string, object>> authors = new List<Dictionary<string, object>>();
-            foreach ( var a in i.Authors )
-            {
-                authors.Add( BuildSyndicationPerson( a ) );
-            }
-            itemDictionary.Add( "Authors", authors );
-
-            itemDictionary.Add( "BaseUri", i.BaseUri == null ? null : i.BaseUri.ToString() );
-
-            List<Dictionary<string, object>> categories = new List<Dictionary<string, object>>();
-            foreach ( var c in i.Categories )
-            {
-                categories.Add( BuildSyndicationCategory( c ) );
-            }
-            itemDictionary.Add( "Categories", categories );
-            itemDictionary.Add( "Content", i.Content == null ? null : System.Web.HttpUtility.HtmlDecode( ( (TextSyndicationContent)i.Content ).Text ) );
-
-            List<Dictionary<string, object>> contributors = new List<Dictionary<string, object>>();
-            foreach ( var c in i.Contributors )
-            {
-                contributors.Add( BuildSyndicationPerson( c ) );
-            }
-            itemDictionary.Add( "Contributors", contributors );
-
-            itemDictionary.Add( "Copyright", i.Copyright == null ? null : i.Copyright.Text );
-            itemDictionary.Add( "DetailPageUrl", detailPageUrl );
-
-            itemDictionary.Add( "ElementExtensions", i.ElementExtensions );
-            itemDictionary.Add( "Id", i.Id );
-            itemDictionary.Add( "LastUpdatedTime", i.LastUpdatedTime.ToLocalTime().DateTime );
-
-            List<Dictionary<string, object>> link = new List<Dictionary<string, object>>();
-            foreach ( var l in i.Links )
-            {
-                link.Add( BuildSyndicationLink( l ) );
-            }
-            itemDictionary.Add( "Links", link );
-
-            itemDictionary.Add( "PublishDate", i.PublishDate.ToLocalTime().DateTime );
-            itemDictionary.Add( "Summary", i.Summary == null ? null : i.Summary.Text );
-            itemDictionary.Add( "Title", i.Title == null ? null : i.Title.Text );
-        }
-
-
-        return itemDictionary;
-
-    }
-
-
-    /// <summary>
-    /// Builds a dictionary based on a provided <see cref="System.ServiceModel.Syndication.SyndicationLink"/>
-    /// </summary>
-    /// <param name="l">The <see cref="System.ServiceModel.Syndication.SyndicationLink"/> to be converted to a dictionary.</param>
-    /// <returns>A <see cref="System.Collections.Generic.Dictionary{string,object}"/> representation of the provided syndication link. </returns>
-    private static Dictionary<string, object> BuildSyndicationLink( SyndicationLink l )
-    {
-        Dictionary<string, object> linkDictionary = new Dictionary<string, object>();
-
-        if ( l != null )
-        {
-            linkDictionary.Add( "AttributeExtensions", l.AttributeExtensions.ToDictionary( a => a.Key.ToString(), a => a.Value ) );
-            linkDictionary.Add( "BaseUri", l.BaseUri == null ? null : l.BaseUri.ToString() );
-            linkDictionary.Add( "ElementExtensions", l.ElementExtensions );
-            linkDictionary.Add( "Length", l.Length );
-            linkDictionary.Add( "MediaType", l.MediaType );
-            linkDictionary.Add( "RelationshipType", l.RelationshipType );
-            linkDictionary.Add( "Title", l.Title );
-            linkDictionary.Add( "Uri", l.Uri == null ? null : l.Uri.ToString() );
-        }
-
-        return linkDictionary;
-    }
-
-    /// <summary>
-    /// Builds a dictionary based on a provided <see cref="System.ServiceModel.Syndication.SyndicationPerson"/>
-    /// </summary>
-    /// <param name="a">The <see cref="System.ServiceModel.Syndication.SyndicationPerson"/> to be converted to a dictionary.</param>
-    /// <returns>A <see cref="System.Collections.Generic.Dictionary{string,object}"/> representation of the provided syndication person.</returns>
-    private static Dictionary<string, object> BuildSyndicationPerson( SyndicationPerson a )
-    {
-        Dictionary<string, object> personDictionary = new Dictionary<string, object>();
-
-        if ( a != null )
-        {
-            personDictionary.Add( "AttributeExtensions", a.AttributeExtensions.ToDictionary( ae => ae.Key.ToString(), ae => ae.Value ) );
-            personDictionary.Add( "ElementExtensions", a.ElementExtensions );
-            personDictionary.Add( "Email", a.Email );
-            personDictionary.Add( "Name", a.Name );
-            personDictionary.Add( "Uri", a.Uri == null ? null : a.Uri.ToString() );
-
-        }
-
-        return personDictionary;
-    }
 
     private static string GetFeedCacheKey( string feedUrl )
     {

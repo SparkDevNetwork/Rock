@@ -22,6 +22,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Web;
 using Rock.Model;
 using Rock.Workflow;
 
@@ -31,8 +32,17 @@ namespace Rock.Data
     /// Generic POCO service class
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class Service<T> where T : Rock.Data.Entity<T>, new()
+    public class Service<T> : IService where T : Rock.Data.Entity<T>, new()
     {
+
+        #region Fields
+
+        private IRepository<T> _repository;
+
+        #endregion
+
+        #region Properties
+
         /// <summary>
         /// Gets or sets the save messages.
         /// </summary>
@@ -41,13 +51,31 @@ namespace Rock.Data
         /// </value>
         public virtual List<string> ErrorMessages { get; set; }
 
-        private IRepository<T> _repository;
         /// <summary>
         /// Gets the Repository.
         /// </summary>
         public IRepository<T> Repository
         {
             get { return _repository; }
+        }
+
+        /// <summary>
+        /// Gets the rock context.
+        /// </summary>
+        /// <value>
+        /// The rock context.
+        /// </value>
+        public RockContext RockContext
+        {
+            get
+            {
+                if (this.Repository is EFRepository<T>)
+                {
+                    return ( this.Repository as EFRepository<T> ).Context as RockContext;
+                }
+
+                return null;
+            }
         }
 
         /// <summary>
@@ -63,6 +91,10 @@ namespace Rock.Data
                 return Expression.Parameter( typeof( T ), "p" );
             }
         }
+
+        #endregion
+
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Service&lt;T&gt;"/> class.
@@ -91,24 +123,11 @@ namespace Rock.Data
         {
         }
 
-        /// <summary>
-        /// Gets the rock context.
-        /// </summary>
-        /// <value>
-        /// The rock context.
-        /// </value>
-        public RockContext RockContext
-        {
-            get
-            {
-                if (this.Repository is EFRepository<T>)
-                {
-                    return ( this.Repository as EFRepository<T> ).Context as RockContext;
-                }
+        #endregion
 
-                return null;
-            }
-        }
+        #region Methods
+
+        #region Queryable
 
         /// <summary>
         /// Gets an <see cref="IQueryable{T}"/> list of all models
@@ -128,6 +147,10 @@ namespace Rock.Data
         {
             return _repository.AsQueryable( includes );
         }
+
+        #endregion
+
+        #region Get Methods
 
         /// <summary>
         /// Gets the model with the id value
@@ -180,20 +203,6 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Transforms the specified source.
-        /// </summary>
-        /// <param name="source">The source.</param>
-        /// <param name="transformation">The transformation.</param>
-        /// <param name="sortProperty">The sort property.</param>
-        /// <returns></returns>
-        public IQueryable<T> Transform( IQueryable<T> source, Rock.Reporting.DataTransformComponent<T> transformation, Rock.Web.UI.Controls.SortProperty sortProperty = null )
-        {
-            var paramExpression = Expression.Parameter( source.ElementType, "p" );
-            var whereExpression = transformation.GetExpression( source, paramExpression );
-            return Get( paramExpression, whereExpression, sortProperty );
-        }
-
-        /// <summary>
         /// Gets the list.
         /// </summary>
         /// <param name="parameterExpression">The parameter expression.</param>
@@ -217,18 +226,6 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Anies the specified parameter expression.
-        /// </summary>
-        /// <param name="parameterExpression">The parameter expression.</param>
-        /// <param name="whereExpression">The where expression.</param>
-        /// <returns></returns>
-        public bool Any( ParameterExpression parameterExpression, Expression whereExpression )
-        {
-            var lambda = Expression.Lambda<Func<T, bool>>( whereExpression, parameterExpression );
-            return this.Queryable().Any( lambda );
-        }
-
-        /// <summary>
         /// Trys to get the model with the id value
         /// </summary>
         /// <returns></returns>
@@ -247,7 +244,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="ids">The ids.</param>
         /// <returns></returns>
-        public virtual IEnumerable<T> GetByIds( List<int> ids)
+        public virtual IEnumerable<T> GetByIds( List<int> ids )
         {
             return this.Queryable().Where( t => ids.Contains( t.Id ) ).ToList();
         }
@@ -315,71 +312,36 @@ namespace Rock.Data
             }
         }
 
-        /*
-        /// <summary>
-        /// Gets the current model from the page instance context.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        //public T GetCurrent( Rock.Web.Cache.RockPage pageInstance )
-        //{
-        //    string key = typeof( T ).FullName;
+        #endregion
 
-        //    if ( pageInstance.Context.ContainsKey( key ) )
-        //    {
-        //        var keyModel = pageInstance.Context[key];
-        //        if ( keyModel.Model == null )
-        //        {
-        //            keyModel.Model = GetByPublicKey( keyModel.Key );
-        //            if ( keyModel.Model is Rock.Attribute.IHasAttributes )
-        //                Rock.Attribute.Helper.LoadAttributes( keyModel.Model as Rock.Attribute.IHasAttributes );
-        //        }
-
-        //        return keyModel.Model as T;
-        //    }
-
-        //    return null;
-        //}
-         */
+        #region Add
 
         /// <summary>
-        /// All the audits made to the entity.
+        /// Attaches the specified item.
         /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <returns></returns>
-        public virtual IQueryable<Audit> Audits( T entity )
+        /// <param name="item">The item.</param>
+        public virtual void Attach( T item )
         {
-            return _repository.Audits( entity );
-        }
-
-        /// <summary>
-        /// All the audits made to the entity.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="entityId">The entity id.</param>
-        /// <returns></returns>
-        public virtual IQueryable<Audit> Audits( int entityTypeId, int entityId )
-        {
-            return _repository.Audits( entityTypeId, entityId );
+            _repository.Attach( item );
         }
 
         /// <summary>
         /// Adds the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public virtual bool Add( T item, int? personId )
+        public virtual bool Add( T item )
         {
-            PersonAlias personAlias = null;
-            if ( personId.HasValue )
-            {
-                personAlias = new PersonAliasService().Queryable().FirstOrDefault( a => a.AliasPersonId == personId.Value );
-            }
-            return AddUsingAlias( item, personAlias );
+            return Add( item, GetPersonAlias(null) );
         }
 
-        public virtual bool AddUsingAlias( T item, PersonAlias personAlias )
+        /// <summary>
+        /// Adds the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="personAlias">The person alias. (CurrentPersonAlias if used in RockBlock)</param>
+        /// <returns></returns>
+        public virtual bool Add( T item, PersonAlias personAlias )
         {
             bool cancel = false;
             item.RaiseAddingEvent( out cancel, personAlias );
@@ -394,31 +356,159 @@ namespace Rock.Data
             }
         }
 
+        #endregion
+
+        #region Save
+
         /// <summary>
-        /// Attaches the specified item.
+        /// Saves the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
-        public virtual void Attach( T item )
+        /// <returns></returns>
+        public virtual bool Save( T item )
         {
-            _repository.Attach( item );
+            return Save( item, GetPersonAlias( null ) );
         }
 
         /// <summary>
-        /// Copies the Values from a Source Entity into a Target Entity
+        /// Saves the specified itemsing alias.
         /// </summary>
-        /// <param name="sourceItem">The source item.</param>
-        /// <param name="targetItem">The target item.</param>
-        public virtual void SetValues( T sourceItem, T targetItem )
+        /// <param name="item">The item.</param>
+        /// <param name="personAlias">The person alias (if called from a RockBlock, use CurrentPersonAlias property).</param>
+        /// <returns></returns>
+        public virtual bool Save(T item, PersonAlias personAlias)
         {
-            _repository.SetValues( sourceItem, targetItem );
+            int? personAliasId = null;
+            if ( personAlias != null )
+            {
+                personAliasId = personAlias.Id;
+            } 
+
+            ErrorMessages = new List<string>();
+
+            if ( !TriggerWorkflows( item, WorkflowTriggerType.PreSave, personAlias ) )
+            {
+                return false;
+            }
+
+            if ( item != null && item.Guid == Guid.Empty )
+                item.Guid = Guid.NewGuid();
+
+            List<Audit> audits;
+            List<string> errorMessages;
+
+            if ( _repository.Save( personAlias, out audits, out errorMessages ) )
+            {
+                if ( audits != null && audits.Count > 0 )
+                {
+                    var transaction = new Rock.Transactions.AuditTransaction();
+                    transaction.Audits = audits;
+                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                }
+
+                TriggerWorkflows( item, WorkflowTriggerType.PostSave, personAlias );
+
+                return true;
+            }
+            else
+            {
+                ErrorMessages = errorMessages;
+                return false;
+            }
         }
+
+        #endregion
+
+        #region Reorder
+
+        /// <summary>
+        /// Reorders the specified items.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="oldIndex">The old index.</param>
+        /// <param name="newIndex">The new index.</param>
+        /// <param name="personAlias">The person alias.</param>
+        public virtual void Reorder( List<T> items, int oldIndex, int newIndex, PersonAlias personAlias )
+        {
+            T movedItem = items[oldIndex];
+            items.RemoveAt( oldIndex );
+            if ( newIndex >= items.Count )
+                items.Add( movedItem );
+            else
+                items.Insert( newIndex, movedItem );
+
+            int order = 0;
+            foreach ( T item in items )
+            {
+                IOrdered orderedItem = item as IOrdered;
+                if ( orderedItem != null )
+                {
+                    if ( orderedItem.Order != order )
+                    {
+                        orderedItem.Order = order;
+                        Save( item, personAlias );
+                    }
+                }
+                order++;
+            }
+        }
+
+        #endregion
+
+        #region Delete
+
+        /// <summary>
+        /// Deletes the specified item.  Will try to determine current person 
+        /// alias from HttpContext.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns></returns>
+        public virtual bool Delete (T item )
+        {
+            return Delete( item, GetPersonAlias( null ) );
+        }
+
+        /// <summary>
+        /// Deletes the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="personAlias">The person alias.</param>
+        /// <returns></returns>
+        public virtual bool Delete(T item, PersonAlias personAlias)
+        {
+            ErrorMessages = new List<string>();
+
+            if ( !TriggerWorkflows( item, WorkflowTriggerType.PreDelete, personAlias ) )
+            {
+                return false;
+            }
+
+            bool cancel = false;
+            item.RaiseDeletingEvent( out cancel, personAlias );
+            if ( !cancel )
+            {
+                _repository.Delete( item );
+
+                TriggerWorkflows( item, WorkflowTriggerType.PostDelete, personAlias );
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        #endregion
+
+        #region Workflows
 
         /// <summary>
         /// Triggers the workflows.
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <param name="triggerType">Type of the trigger.</param>
-        /// <param name="personId">The person id.</param>
+        /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
         private bool TriggerWorkflows( IEntity entity, WorkflowTriggerType triggerType, PersonAlias personAlias )
         {
@@ -466,8 +556,8 @@ namespace Rock.Data
                                 if ( workflowType.IsPersisted )
                                 {
                                     var workflowService = new Rock.Model.WorkflowService();
-                                    workflowService.AddUsingAlias( workflow, personAlias );
-                                    workflowService.SaveUsingAlias( workflow, personAlias );
+                                    workflowService.Add( workflow, personAlias );
+                                    workflowService.Save( workflow, personAlias );
                                 }
                             }
                         }
@@ -485,156 +575,34 @@ namespace Rock.Data
             return true;
         }
 
+        #endregion 
+
+        #region Audits
+
         /// <summary>
-        /// Deletes the specified item.
+        /// All the audits made to the entity.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="personId">The person id.</param>
+        /// <param name="entity">The entity.</param>
         /// <returns></returns>
-        public virtual bool Delete( T item, int? personId )
+        public virtual IQueryable<Audit> Audits( T entity )
         {
-            PersonAlias personAlias = null;
-            if ( personId.HasValue )
-            {
-                personAlias = new PersonAliasService().Queryable().FirstOrDefault( a => a.AliasPersonId == personId.Value );
-            }
-            return DeleteUsingAlias( item, personAlias );
-        }
-        
-        public virtual bool DeleteUsingAlias(T item, PersonAlias personAlias)
-        {
-            ErrorMessages = new List<string>();
-
-            if ( !TriggerWorkflows( item, WorkflowTriggerType.PreDelete, personAlias ) )
-            {
-                return false;
-            }
-
-            bool cancel = false;
-            item.RaiseDeletingEvent( out cancel, personAlias );
-            if ( !cancel )
-            {
-                _repository.Delete( item );
-
-                TriggerWorkflows( item, WorkflowTriggerType.PostDelete, personAlias );
-
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return _repository.Audits( entity );
         }
 
         /// <summary>
-        /// Saves the specified item.
+        /// All the audits made to the entity.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="personId">The person id.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
+        /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        public virtual bool Save( T item, int? personId)
+        public virtual IQueryable<Audit> Audits( int entityTypeId, int entityId )
         {
-            PersonAlias personAlias = null;
-            if ( personId.HasValue )
-            {
-                personAlias = new PersonAliasService().Queryable().FirstOrDefault( a => a.AliasPersonId == personId.Value );
-            }
-            return SaveUsingAlias( item, personAlias );
+            return _repository.Audits( entityTypeId, entityId );
         }
 
-        public virtual bool SaveUsingAlias(T item, PersonAlias personAlias)
-        {
-            // TODO: Make this method the public 'Save' method and remove the previous save
-            int? personAliasId = null;
-            if ( personAlias != null )
-            {
-                personAliasId = personAlias.Id;
-            } 
+        #endregion
 
-            ErrorMessages = new List<string>();
-
-            if ( !TriggerWorkflows( item, WorkflowTriggerType.PreSave, personAlias ) )
-            {
-                return false;
-            }
-
-            if ( item != null && item.Guid == Guid.Empty )
-                item.Guid = Guid.NewGuid();
-
-            // Update the created by and modified by fields
-            IModel model = item as IModel;
-            if (model != null)
-            {
-                if ( model.Id <= 0 )
-                {
-                    if ( !model.CreatedDateTime.HasValue )
-                    {
-                        model.CreatedDateTime = RockDateTime.Now;
-                    }
-                    if ( !model.CreatedByPersonAliasId.HasValue )
-                    {
-                        model.CreatedByPersonAliasId = personAliasId;
-                    }
-                }
-
-                model.ModifiedByPersonAliasId = personAliasId;
-                model.ModifiedDateTime = RockDateTime.Now;
-            }
-
-            List<Audit> audits;
-            List<string> errorMessages;
-
-            if ( _repository.Save( personAlias, out audits, out errorMessages ) )
-            {
-                if ( audits != null && audits.Count > 0 )
-                {
-                    var transaction = new Rock.Transactions.AuditTransaction();
-                    transaction.Audits = audits;
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
-                }
-
-                TriggerWorkflows( item, WorkflowTriggerType.PostSave, personAlias );
-
-                return true;
-            }
-            else
-            {
-                ErrorMessages = errorMessages;
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Reorders the specified items.
-        /// </summary>
-        /// <param name="items">The items.</param>
-        /// <param name="oldIndex">The old index.</param>
-        /// <param name="newIndex">The new index.</param>
-        /// <param name="personId">The person id.</param>
-        public virtual void Reorder( List<T> items, int oldIndex, int newIndex, int? personId )
-        {
-            T movedItem = items[oldIndex];
-            items.RemoveAt( oldIndex );
-            if ( newIndex >= items.Count )
-                items.Add( movedItem );
-            else
-                items.Insert( newIndex, movedItem );
-
-            int order = 0;
-            foreach ( T item in items )
-            {
-                IOrdered orderedItem = item as IOrdered;
-                if ( orderedItem != null )
-                {
-                    if ( orderedItem.Order != order )
-                    {
-                        orderedItem.Order = order;
-                        Save( item, personId );
-                    }
-                }
-                order++;
-            }
-        }
+        #region Other
 
         /// <summary>
         /// Creates a raw sql query that will return entities
@@ -648,6 +616,78 @@ namespace Rock.Data
             return _repository.ExecuteQuery( query, parameters );
         }
 
+        /// <summary>
+        /// Anies the specified parameter expression.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <returns></returns>
+        public bool Any( ParameterExpression parameterExpression, Expression whereExpression )
+        {
+            var lambda = Expression.Lambda<Func<T, bool>>( whereExpression, parameterExpression );
+            return this.Queryable().Any( lambda );
+        }
+
+        /// <summary>
+        /// Transforms the specified source.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="transformation">The transformation.</param>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <returns></returns>
+        public IQueryable<T> Transform( IQueryable<T> source, Rock.Reporting.DataTransformComponent<T> transformation, Rock.Web.UI.Controls.SortProperty sortProperty = null )
+        {
+            var paramExpression = Expression.Parameter( source.ElementType, "p" );
+            var whereExpression = transformation.GetExpression( this, source, paramExpression );
+            return Get( paramExpression, whereExpression, sortProperty );
+        }
+
+        /// <summary>
+        /// Copies the Values from a Source Entity into a Target Entity
+        /// </summary>
+        /// <param name="sourceItem">The source item.</param>
+        /// <param name="targetItem">The target item.</param>
+        public virtual void SetValues( T sourceItem, T targetItem )
+        {
+            _repository.SetValues( sourceItem, targetItem );
+        }
+
+        private PersonAlias GetPersonAlias( int? personId )
+        {
+            PersonAlias personAlias = null;
+            var currentPerson = GetCurrentPerson();
+
+            if ( currentPerson != null && (!personId.HasValue || currentPerson.Id == personId.Value))
+            {
+                personAlias = currentPerson.PrimaryAlias;
+            }
+
+            if (personAlias == null && personId.HasValue)
+            {
+                personAlias = new PersonAliasService().Queryable().FirstOrDefault( a => a.AliasPersonId == personId.Value );
+            }
+
+            return personAlias;
+        }
+
+        private Person GetCurrentPerson()
+        {
+            HttpContext context = HttpContext.Current;
+            if ( context != null && context.Items.Contains( "CurrentPerson" ) )
+            {
+                var currentPerson = context.Items["CurrentPerson"] as Person;
+                if ( currentPerson != null )
+                {
+                    return currentPerson;
+                }
+            }
+            return null;
+        }
+
+        #endregion
+
+        #endregion
+
     }
 
     /// <summary>
@@ -655,7 +695,15 @@ namespace Rock.Data
     /// </summary>
     public class Service
     {
+
+        #region Fields
+
         private EFRepository _repository;
+
+        #endregion
+
+        #region Properties
+
         /// <summary>
         /// Gets the Repository.
         /// </summary>
@@ -663,6 +711,10 @@ namespace Rock.Data
         {
             get { return _repository; }
         }
+
+        #endregion
+
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Service&lt;T&gt;"/> class.
@@ -680,6 +732,10 @@ namespace Rock.Data
         {
             _repository = repository;
         }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Creates a raw SQL query that will return elements of the given type.  The
@@ -758,6 +814,8 @@ namespace Rock.Data
         {
             return _repository.ExecuteCommand( query, parameters );
         }
+
+        #endregion
 
     }
 

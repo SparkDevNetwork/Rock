@@ -21,7 +21,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -256,7 +256,7 @@ namespace Rock.Reporting.DataTransform.Person
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( Type entityType, object serviceInstance, Expression parameterExpression, string selection )
+        public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
             string[] options = selection.Split( '|' );
             if ( options.Length != 4 )

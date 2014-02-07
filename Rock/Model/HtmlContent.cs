@@ -70,8 +70,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the HTML content that will appear as part of the block.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
+        [DataMember]
         public string Content { get; set; }
         
         /// <summary>

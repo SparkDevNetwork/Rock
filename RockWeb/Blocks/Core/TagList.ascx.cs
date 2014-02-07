@@ -134,8 +134,8 @@ namespace RockWeb.Blocks.Core
                     return;
                 }
 
-                tagService.Delete( tag, CurrentPersonId );
-                tagService.Save( tag, CurrentPersonId );
+                tagService.Delete( tag, CurrentPersonAlias );
+                tagService.Save( tag, CurrentPersonAlias );
             }
 
             BindGrid();
@@ -153,7 +153,7 @@ namespace RockWeb.Blocks.Core
                 var tags = GetTags();
                 if ( tags != null )
                 {
-                    new TagService().Reorder( tags.ToList(), e.OldIndex, e.NewIndex, CurrentPersonId );
+                    new TagService().Reorder( tags.ToList(), e.OldIndex, e.NewIndex, CurrentPersonAlias );
                 }
 
                 BindGrid();
@@ -177,7 +177,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rblScope_SelectedIndexChanged( object sender, EventArgs e )
         {
-            if ( rblScope.SelectedValue == "Private" && CurrentPerson != null )
+            if ( rblScope.SelectedValue == "Personal" && CurrentPerson != null )
             {
                 ppOwner.SetValue( CurrentPerson );
                 ppOwner.Visible = _canConfigure;
@@ -234,7 +234,7 @@ namespace RockWeb.Blocks.Core
             rFilter.SaveUserPreference( "EntityType", ddlEntityType.SelectedValue );
             rFilter.SaveUserPreference( "Scope", rblScope.SelectedValue );
 
-            if (rblScope.SelectedValue == "Private" && !ppOwner.PersonId.HasValue && CurrentPerson != null )
+            if (rblScope.SelectedValue == "Personal" && !ppOwner.PersonId.HasValue && CurrentPerson != null )
             {
                 ppOwner.SetValue( CurrentPerson );
             }
@@ -261,11 +261,11 @@ namespace RockWeb.Blocks.Core
 
             if (string.IsNullOrWhiteSpace(rFilter.GetUserPreference("Scope")))
             {
-                rFilter.SaveUserPreference("Scope", "Private");
+                rFilter.SaveUserPreference("Scope", "Personal");
             }
             rblScope.SelectedValue = rFilter.GetUserPreference( "Scope" );
 
-            if ( rblScope.SelectedValue == "Private" )
+            if ( rblScope.SelectedValue == "Personal" )
             {
                 Person owner = CurrentPerson;
                 if ( _canConfigure && !string.IsNullOrWhiteSpace( rFilter.GetUserPreference( "Owner" ) ) )
@@ -320,7 +320,7 @@ namespace RockWeb.Blocks.Core
                     EntityTypeName = t.EntityType.FriendlyName,
                     EntityTypeQualifierColumn = t.EntityTypeQualifierColumn,
                     EntityTypeQualifierValue = t.EntityTypeQualifierValue,
-                    Owner = t.OwnerId.HasValue ? t.Owner.LastName + ", " + t.Owner.NickName : "Public"
+                    Owner = t.OwnerId.HasValue ? t.Owner.LastName + ", " + t.Owner.NickName : "Organization"
                 } ).ToList();
 
                 rGrid.DataBind();
@@ -339,7 +339,7 @@ namespace RockWeb.Blocks.Core
                 var queryable = new Rock.Model.TagService().Queryable().
                     Where( t => t.EntityTypeId == entityTypeId.Value );
 
-                if ( rFilter.GetUserPreference( "Scope" ) == "Public" )
+                if ( rFilter.GetUserPreference( "Scope" ) == "Organization" )
                 {
                     // Only allow sorting of public tags if authorized to Administer
                     rGrid.Columns[0].Visible = _canConfigure;

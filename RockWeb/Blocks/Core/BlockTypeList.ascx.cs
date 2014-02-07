@@ -73,7 +73,7 @@ namespace RockWeb.Blocks.Core
                 ddlCategoryFilter.SetValue( gfSettings.GetUserPreference( "Category" ) );
                 cbExcludeSystem.Checked = !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Exclude System" ) );
 
-                new BlockTypeService().RegisterBlockTypes( Request.MapPath( "~" ), Page, CurrentPersonId );
+                new BlockTypeService().RegisterBlockTypes( Request.MapPath( "~" ), Page, CurrentPersonAlias );
 
                 BindGrid();
             }
@@ -139,8 +139,8 @@ namespace RockWeb.Blocks.Core
                         return;
                     }
 
-                    blockTypeService.Delete( blockType, CurrentPersonId );
-                    blockTypeService.Save( blockType, CurrentPersonId );
+                    blockTypeService.Delete( blockType, CurrentPersonAlias );
+                    blockTypeService.Save( blockType, CurrentPersonAlias );
                     Rock.Web.Cache.BlockTypeCache.Flush( blockType.Id );
                 }
             } );
@@ -186,7 +186,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnRefreshAll_Click( object sender, EventArgs e )
         {
-            new BlockTypeService().RegisterBlockTypes( Request.MapPath( "~" ), Page, CurrentPersonId, true );
+            new BlockTypeService().RegisterBlockTypes( Request.MapPath( "~" ), Page, CurrentPersonAlias, true );
             BindGrid();
         }
         

@@ -245,10 +245,11 @@ namespace Rock.Data
         /// Saves the entity and returns a list of any entity changes that
         /// need to be logged
         /// </summary>
-        /// <param name="PersonId">The id of the person making the change</param>
+        /// <param name="personAlias">The person alias.</param>
         /// <param name="audits">The audits.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
+        /// <exception cref="System.Exception"></exception>
         public bool Save( PersonAlias personAlias, out List<Audit> audits, out List<string> errorMessages )
         {
             int? personAliasId = null;
@@ -260,16 +261,17 @@ namespace Rock.Data
             audits = new List<Audit>();
             errorMessages = new List<string>();
 
-            Context.ChangeTracker.DetectChanges();
 
             var addedEntities = new List<ContextItem>();
             var deletedEntities = new List<ContextItem>();
             var modifiedEntities = new List<ContextItem>();
 
+            Context.ChangeTracker.DetectChanges();
             var contextAdapter = ( (IObjectContextAdapter)Context );
 
-            foreach ( ObjectStateEntry entry in contextAdapter.ObjectContext.ObjectStateManager.GetObjectStateEntries(
-                EntityState.Added | EntityState.Deleted | EntityState.Modified | EntityState.Unchanged ) )
+            foreach ( var entry in Context.ChangeTracker.Entries() )
+            //foreach ( ObjectStateEntry entry in contextAdapter.ObjectContext.ObjectStateManager.GetObjectStateEntries(
+            //    EntityState.Added | EntityState.Deleted | EntityState.Modified | EntityState.Unchanged ) )
             {
                 var rockEntity = entry.Entity as Entity<T>;
 

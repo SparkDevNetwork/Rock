@@ -18,7 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
+using Rock.Data;
+using Rock.Model;
 using Rock.Extension;
+using Rock.Web.Cache;
 
 namespace Rock.PersonProfile
 {
@@ -45,6 +48,18 @@ namespace Rock.PersonProfile
         private BadgeContainer()
         {
             Refresh();
+
+            // Create any attributes that need to be created
+            int personBadgeEntityTypeId = EntityTypeCache.Read( typeof( PersonBadge ) ).Id;
+            using ( new Rock.Data.UnitOfWorkScope() )
+            {
+                foreach ( var badge in this.Components )
+                {
+                    Type badgeType = badge.Value.Value.GetType();
+                    int badgeComponentEntityTypeId = EntityTypeCache.Read( badgeType ).Id;
+                    Rock.Attribute.Helper.UpdateAttributes( badgeType, personBadgeEntityTypeId, "EntityTypeId", badgeComponentEntityTypeId.ToString(), null );
+                }
+            }
         }
 
         /// <summary>

@@ -203,7 +203,7 @@ namespace RockWeb.Blocks.Cms
             if ( marketingCampaignId == 0 )
             {
                 marketingCampaign = new MarketingCampaign();
-                marketingCampaignService.Add( marketingCampaign, CurrentPersonId );
+                marketingCampaignService.Add( marketingCampaign, CurrentPersonAlias );
             }
             else
             {
@@ -256,8 +256,8 @@ namespace RockWeb.Blocks.Cms
                 deletedAudiences.ToList().ForEach( a =>
                 {
                     var aud = marketingCampaignAudienceService.Get( a.Guid );
-                    marketingCampaignAudienceService.Delete( aud, CurrentPersonId );
-                    marketingCampaignAudienceService.Save( aud, CurrentPersonId );
+                    marketingCampaignAudienceService.Delete( aud, CurrentPersonAlias );
+                    marketingCampaignAudienceService.Save( aud, CurrentPersonAlias );
                 } );
 
                 // add or update the Audiences that are assigned in the UI
@@ -291,8 +291,8 @@ namespace RockWeb.Blocks.Cms
                 deletedCampuses.ToList().ForEach( a =>
                 {
                     var c = marketingCampaignCampusService.Get( a.Guid );
-                    marketingCampaignCampusService.Delete( c, CurrentPersonId );
-                    marketingCampaignCampusService.Save( c, CurrentPersonId );
+                    marketingCampaignCampusService.Delete( c, CurrentPersonAlias );
+                    marketingCampaignCampusService.Save( c, CurrentPersonAlias );
                 } );
 
                 // add or update the Campuses that are assigned in the UI
@@ -308,7 +308,7 @@ namespace RockWeb.Blocks.Cms
                     marketingCampaignCampus.CampusId = campusId;
                 }
 
-                marketingCampaignService.Save( marketingCampaign, CurrentPersonId );
+                marketingCampaignService.Save( marketingCampaign, CurrentPersonAlias );
             } );
 
 

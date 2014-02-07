@@ -373,3 +373,9 @@ img.file-browser-image {
     float: left;
     margin: 0 12px 0 4px;
 }
+
+/* DT- Merge*/
+div.person-merge-confirm p.updated
+{
+    color:red;
+}
