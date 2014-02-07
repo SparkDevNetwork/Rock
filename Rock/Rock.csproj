@@ -232,6 +232,7 @@
     <Compile Include="Model\RestControllerService.Partial.cs" />
     <Compile Include="Net\RestParameters\ContributionStatementOptions.cs" />
     <Compile Include="PersonProfile\Badge\Baptized.cs" />
+    <Compile Include="PersonProfile\Badge\Liquid.cs" />
     <Compile Include="PersonProfile\Badge\NextSteps.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -297,7 +298,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="PersonProfile\IconBadge.cs" />
-    <Compile Include="PersonProfile\TextBadge.cs" />
+    <Compile Include="PersonProfile\HighlightLabelBadge.cs" />
     <Compile Include="Search\Group\Name.cs" />
     <Compile Include="SystemGuid\Category.cs" />
     <Compile Include="SystemGuid\EntityType.cs" />

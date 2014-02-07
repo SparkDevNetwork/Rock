@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Administration
             gPersonBadge.Actions.ShowAdd = canAddEditDelete;
             gPersonBadge.IsDeleteEnabled = canAddEditDelete;
 
-            SecurityField securityField = gPersonBadge.Columns[4] as SecurityField;
+            SecurityField securityField = gPersonBadge.Columns[3] as SecurityField;
             securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.PersonBadge ) ).Id;
         }
 

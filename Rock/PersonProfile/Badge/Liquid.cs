@@ -1,4 +1,4 @@
-﻿// <copyright>
+﻿using System.Collections.Generic;
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,48 +14,35 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.Composition;
 using System.Web.UI;
-
-using Rock.Extension;
+using Rock.Attribute;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace Rock.PersonProfile
+namespace Rock.PersonProfile.Badge
 {
     /// <summary>
-    /// Base class for person profile icon badges
+    /// Liquid Badge
     /// </summary>
-    public abstract class TextBadge : BadgeComponent
-    {
-        /// <summary>
-        /// Gets the badge label
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        public virtual HighlightLabel GetLabel( Person person )
-        {
-            return new HighlightLabel();
-        }
+    [Description( "Liquid Badge" )]
+    [Export( typeof( BadgeComponent ) )]
+    [ExportMetadata("ComponentName", "Liquid Badge")]
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
+    [CodeEditorField( "Display Text", "The text (or html) to display as a badge",CodeEditorMode.Liquid, CodeEditorTheme.Rock, 100 )]
+    public class Liquid : BadgeComponent
+    {
         public override void Render( PersonBadge badge, System.Web.UI.HtmlTextWriter writer )
         {
+            string displayText = GetAttributeValue( badge, "DisplayText" );
             if ( Person != null )
             {
-                var label = GetLabel( Person );
-                if ( label != null )
-                {
-                    label.RenderControl( writer );
-                }
+                Dictionary<string, object> mergeValues = new Dictionary<string, object>();
+                mergeValues.Add( "Person", Person );
+                displayText = displayText.ResolveMergeFields( mergeValues );
             }
+            writer.Write( displayText );
         }
     }
-
 }

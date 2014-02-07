@@ -2,9 +2,7 @@
 
 <asp:UpdatePanel ID="upPersonBadge" runat="server">
     <ContentTemplate>
-        <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="panel panel-default">
-
-            <asp:HiddenField ID="hfPersonBadgeId" runat="server" />
+        <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-default">
 
             <div class="panel-body">
                 
@@ -29,7 +27,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:ComponentPicker ID="compBadgeType" runat="server"  ContainerType="Rock.PersonProfile.BadgeContainer, Rock" Label="Badge Type" />
+                        <Rock:ComponentPicker ID="compBadgeType" runat="server" ContainerType="Rock.PersonProfile.BadgeContainer, Rock" Label="Badge Type" Required="true" OnSelectedIndexChanged="compBadgeType_SelectedIndexChanged" AutoPostBack="true"/>
                     </div>
                     <div class="col-md-6">
                         <div class="attributes">
