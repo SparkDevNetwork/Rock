@@ -488,6 +488,10 @@
     <Compile Include="Migrations\201402072059288_DataSelectPageBlock.Designer.cs">
       <DependentUpon>201402072059288_DataSelectPageBlock.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402072145089_AdminPageUpdates.cs" />
+    <Compile Include="Migrations\201402072145089_AdminPageUpdates.Designer.cs">
+      <DependentUpon>201402072145089_AdminPageUpdates.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -833,6 +837,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402072059288_DataSelectPageBlock.resx">
       <DependentUpon>201402072059288_DataSelectPageBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402072145089_AdminPageUpdates.resx">
+      <DependentUpon>201402072145089_AdminPageUpdates.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
