@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -506,9 +507,9 @@ $(document).ready(function() {
 
             DescriptionList descriptionListFilters = new DescriptionList();
 
-            if (dataView.DataViewFilter != null && dataView.EntityTypeId.HasValue)
+            if ( dataView.DataViewFilter != null && dataView.EntityTypeId.HasValue )
             {
-                descriptionListFilters.Add("Filter", dataView.DataViewFilter.ToString(EntityTypeCache.Read(dataView.EntityTypeId.Value).GetEntityType()));
+                descriptionListFilters.Add( "Filter", dataView.DataViewFilter.ToString( EntityTypeCache.Read( dataView.EntityTypeId.Value ).GetEntityType() ) );
             }
             lFilters.Text = descriptionListFilters.Html;
 
@@ -565,7 +566,7 @@ $(document).ready(function() {
         /// <param name="filter">The filter.</param>
         private void ShowPreview( DataView dataView )
         {
-            if ( BindGrid( gPreview, dataView ) )
+            if ( BindGrid( gPreview, dataView, 15 ) )
             {
                 modalPreview.Show();
             }
@@ -581,15 +582,52 @@ $(document).ready(function() {
             pnlViewDetails.Visible = !editable;
         }
 
-        private bool BindGrid( Grid grid, DataView dataView )
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
+        /// <param name="grid">The grid.</param>
+        /// <param name="dataView">The data view.</param>
+        /// <returns></returns>
+        private bool BindGrid( Grid grid, DataView dataView, int? fetchRowCount = null )
         {
-            var errors = new List<string>();
-            grid.DataSource = dataView.BindGrid( grid, out errors, true );
+            var errorMessages = new List<string>();
+            grid.DataSource=null;
+
+            if ( dataView.EntityTypeId.HasValue )
+            {
+                var cachedEntityType = EntityTypeCache.Read( dataView.EntityTypeId.Value );
+                if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
+                {
+                    Type entityType = cachedEntityType.GetEntityType();
+
+                    if ( entityType != null )
+                    {
+                        grid.CreatePreviewColumns( entityType );
+
+                        using ( new Rock.Data.UnitOfWorkScope() )
+                        {
+                            var qry = dataView.GetQuery( out errorMessages );
+                            if ( grid.SortProperty != null )
+                            {
+                                qry = qry.Sort( grid.SortProperty );
+                            }
+
+                            if ( fetchRowCount.HasValue)
+                            {
+                                qry = qry.Take( fetchRowCount.Value );
+                            }
+
+                            grid.DataSource = qry.AsNoTracking().ToList();
+                        };
+                    }
+                }
+            }
+            
             if ( grid.DataSource != null )
             {
-                if ( errors.Any() )
+                if ( errorMessages.Any() )
                 {
-                    nbEditModeMessage.Text = "INFO: There was a problem with one or more of the filters for this data view...<br/><br/> " + errors.AsDelimited( "<br/>" );
+                    nbEditModeMessage.Text = "INFO: There was a problem with one or more of the filters for this data view...<br/><br/> " + errorMessages.AsDelimited( "<br/>" );
                 }
 
                 if ( dataView.EntityTypeId.HasValue )

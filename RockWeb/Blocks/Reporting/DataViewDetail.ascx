@@ -83,9 +83,9 @@
 
             </div>
 
-            <Rock:ModalDialog ID="modalPreview" runat="server" Title="Preview" ValidationGroup="Preview" >
+            <Rock:ModalDialog ID="modalPreview" runat="server" Title="Preview (top 15 rows )" ValidationGroup="Preview" >
                 <Content>
-                    <Rock:Grid ID="gPreview" runat="server" AllowSorting="true" EmptyDataText="No Results" ShowActionRow="false" />
+                    <Rock:Grid ID="gPreview" runat="server" AllowSorting="true" EmptyDataText="No Results" ShowActionRow="false" DisplayType="Light" />
                 </Content>
             </Rock:ModalDialog>
 
