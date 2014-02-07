@@ -31,7 +31,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the name of the Campus that the Person belongs to" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Campus" )]
-    public class CampusSelect : DataSelectComponent<Rock.Model.Person>
+    public class CampusSelect : DataSelectComponent
     {
         #region Properties
 

@@ -146,10 +146,11 @@ namespace Rock.Reporting
         /// <param name="controls">The controls.</param>
         public virtual void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
-            writer.Write( this.GetTitle( entityType ) + " " );
-            controls[0].RenderControl( writer );
-            writer.Write( " " );
-            controls[1].RenderControl( writer );
+            foreach ( var control in controls )
+            {
+                control.RenderControl( writer );
+                writer.WriteLine();
+            }
         }
 
         /// <summary>

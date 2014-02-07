@@ -152,8 +152,7 @@ function() {
         /// <param name="controls">The controls.</param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
-            controls[0].RenderControl( writer );
-            controls[1].RenderControl( writer );
+            base.RenderControls( entityType, filterControl, writer, controls );
         }
 
         /// <summary>

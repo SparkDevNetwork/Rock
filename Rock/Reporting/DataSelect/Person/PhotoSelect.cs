@@ -36,7 +36,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the Photo of the Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Photo" )]
-    public class PhotoSelect : DataSelectComponent<Rock.Model.Person>
+    public class PhotoSelect : DataSelectComponent
     {
         #region Properties
 
