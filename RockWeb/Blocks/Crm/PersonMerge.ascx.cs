@@ -52,7 +52,6 @@ namespace RockWeb.Blocks.Crm
 
         #region Properties
 
-        private List<int> SelectedPersonIds { get; set; }
         private MergeData MergeData { get; set; }
 
         #endregion
@@ -66,7 +65,6 @@ namespace RockWeb.Blocks.Crm
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
-            SelectedPersonIds = ViewState["SelectedPersonIds"] as List<int>;
             MergeData = ViewState["MergeData"] as MergeData;
         }
 
@@ -78,20 +76,10 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnInit( e );
 
-            gPeople.DataKeyNames = new string[] { "Id" };
-            gPeople.AllowPaging = false;
-            gPeople.ShowActionRow = false;
-            gPeople.ShowConfirmDeleteDialog = false;
-
             gValues.DataKeyNames = new string[] { "Key" };
             gValues.AllowPaging = false;
             gValues.ShowActionRow = false;
             gValues.RowDataBound += gValues_RowDataBound;
-
-            if ( !Page.IsPostBack )
-            {
-                SelectedPersonIds = PageParameter( "People" ).SplitDelimitedValues().Select( p => p.AsInteger().Value ).ToList();
-            }
 
             string script = @"
     $(""input[name$='PrimaryPerson']"").change( function (event) {
@@ -121,24 +109,37 @@ namespace RockWeb.Blocks.Crm
 
             if ( !Page.IsPostBack )
             {
-                BindPeople();
+                string peopleIds = PageParameter( "People" );
+                if ( !string.IsNullOrWhiteSpace( peopleIds ) )
+                {
+                    var selectedPersonIds = peopleIds.SplitDelimitedValues().Select( p => p.AsInteger().Value ).ToList();
+
+                    // Get the people selected
+                    var people = new PersonService().Queryable( "CreatedByPersonAlias.Person" )
+                        .Where( p => selectedPersonIds.Contains( p.Id ) )
+                        .ToList();
+
+                    // Create the data structure used to build grid
+                    MergeData = new MergeData( people, headingKeys );
+                    BuildColumns();
+                    BindGrid();
+                }
             }
             else
             {
-                if ( pnlSelectValues.Visible )
+                // Save the primary header radio button's selection
+                foreach ( var col in gValues.Columns.OfType<PersonMergeField>() )
                 {
-                    // Save the primary header radio button's selection
-                    foreach ( var col in gValues.Columns.OfType<PersonMergeField>() )
+                    col.OnDelete += personCol_OnDelete;
+
+                    var colIndex = gValues.Columns.IndexOf( col ).ToString();
+                    var rb = gValues.HeaderRow.FindControl( "rbSelectPrimary_" + colIndex ) as RadioButton;
+                    if ( rb != null )
                     {
-                        var colIndex = gValues.Columns.IndexOf( col ).ToString();
-                        var rb = gValues.HeaderRow.FindControl( "rbSelectPrimary_" + colIndex ) as RadioButton;
-                        if ( rb != null )
+                        string value = Page.Request.Form[rb.UniqueID.Replace( rb.ID, rb.GroupName )];
+                        if ( value == rb.ClientID )
                         {
-                            string value = Page.Request.Form[rb.UniqueID.Replace( rb.ID, rb.GroupName )];
-                            if ( value == rb.ClientID )
-                            {
-                                MergeData.PrimaryPersonId = col.PersonId;
-                            }
+                            MergeData.PrimaryPersonId = col.PersonId;
                         }
                     }
                 }
@@ -153,7 +154,6 @@ namespace RockWeb.Blocks.Crm
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState["SelectedPersonIds"] = SelectedPersonIds ?? new List<int>();
             ViewState["MergeData"] = MergeData ?? new MergeData();
             return base.SaveViewState();
         }
@@ -161,8 +161,6 @@ namespace RockWeb.Blocks.Crm
         #endregion
 
         #region Events
-
-        #region Select People Events
 
         /// <summary>
         /// Handles the SelectPerson event of the ppAdd control.
@@ -172,69 +170,58 @@ namespace RockWeb.Blocks.Crm
         protected void ppAdd_SelectPerson( object sender, EventArgs e )
         {
             int? personId = ppAdd.PersonId;
-            if ( personId.HasValue && !SelectedPersonIds.Contains( personId.Value ) )
+            if ( personId.HasValue && ( MergeData == null || !MergeData.People.Any( p => p.Id == personId.Value ) ) )
             {
-                SelectedPersonIds.Add( personId.Value );
+                var selectedPersonIds = MergeData != null ? MergeData.People.Select( p => p.Id).ToList() : new List<int>();
+                selectedPersonIds.Add(personId.Value);
+
+                // Get the people selected
+                var people = new PersonService().Queryable( "CreatedByPersonAlias.Person" )
+                    .Where( p => selectedPersonIds.Contains( p.Id ) )
+                    .ToList();
+
+                // Rebuild mergdata, columns, and grid
+                MergeData = new MergeData( people, headingKeys );
+                BuildColumns();
+                BindGrid();
             }
 
             ppAdd.SetValue( null );
 
-            BindPeople();
         }
 
         /// <summary>
-        /// Handles the Delete event of the gPeople control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gPeople_Delete( object sender, RowEventArgs e )
-        {
-            SelectedPersonIds.Remove( (int)e.RowKeyValue );
-
-            BindPeople();
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbSelectPeople control.
+        /// Handles the OnDelete event of the personCol control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbSelectPeople_Click( object sender, EventArgs e )
+        protected void personCol_OnDelete( object sender, EventArgs e )
         {
-            if ( SelectedPersonIds.Count > 1 )
+            var personMergeField = sender as PersonMergeField;
+            if (personMergeField != null)
             {
+                var selectedPersonIds = MergeData.People
+                    .Where( p => p.Id != personMergeField.PersonId )
+                    .Select( p => p.Id).ToList();
+
                 // Get the people selected
                 var people = new PersonService().Queryable( "CreatedByPersonAlias.Person" )
-                    .Where( p => SelectedPersonIds.Contains( p.Id ) )
+                    .Where( p => selectedPersonIds.Contains( p.Id ) )
                     .ToList();
 
-                // Create the data structure used to build grid
+                // Rebuild mergdata, columns, and grid
                 MergeData = new MergeData( people, headingKeys );
-
-                BuildValuesColumns();
-
-                BindValues();
-
-                pnlSelectPeople.Visible = false;
-                pnlSelectValues.Visible = true;
-                pnlConfirm.Visible = false;
-            }
-            else
-            {
-                nbPeople.Visible = true;
+                BuildColumns();
+                BindGrid();
             }
         }
-
-        #endregion
-
-        #region Select Values Events
 
         /// <summary>
         /// Handles the RowDataBound event of the gValues control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        void gValues_RowDataBound( object sender, GridViewRowEventArgs e )
+        protected void gValues_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
@@ -246,91 +233,18 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
-        /// Handles the Click event of the lbSelectValuesBack control.
+        /// Handles the Click event of the lbMerge control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbSelectValuesBack_Click( object sender, EventArgs e )
+        protected void lbMerge_Click( object sender, EventArgs e )
         {
-            pnlSelectPeople.Visible = true;
-            pnlSelectValues.Visible = false;
-            pnlConfirm.Visible = false;
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbSelectValues control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbSelectValues_Click( object sender, EventArgs e )
-        {
-            GetValuesSelection();
-
-            var tbl = new DataTable();
-
-            tbl.Columns.Add( "Property" );
-            tbl.Columns.Add( "CurrentValue" );
-            tbl.Columns.Add( "NewValue" );
-            tbl.Columns.Add( "ValueUpdated", typeof( bool ) );
-
-            foreach ( var personProperty in MergeData.Properties )
+            if ( MergeData.People.Count < 2 )
             {
-                var primaryValue = personProperty.Values
-                    .Where( p => p.PersonId == MergeData.PrimaryPersonId )
-                    .FirstOrDefault();
-
-                var selectedValue = personProperty.Values
-                    .Where( p => p.Selected)
-                    .FirstOrDefault();
-
-                string oldValue = primaryValue != null ? primaryValue.FormattedValue : string.Empty;
-                string newValue = selectedValue != null ? selectedValue.FormattedValue : string.Empty;
-
-                if ( !string.IsNullOrWhiteSpace( oldValue ) || !string.IsNullOrWhiteSpace( newValue ) )
-                {
-                    var rowValues = new List<object>();
-                    rowValues.Add( personProperty.Label );
-                    rowValues.Add( oldValue );
-                    rowValues.Add( newValue );
-                    rowValues.Add( ( primaryValue != null ? primaryValue.Value : string.Empty ) !=
-                        ( selectedValue != null ? selectedValue.FormattedValue : string.Empty ) );
-                    tbl.Rows.Add( rowValues.ToArray() );
-                }
+                nbPeople.Visible = true;
+                return;
             }
 
-            gConfirm.DataSource = tbl;
-            gConfirm.DataBind();
-
-            pnlSelectPeople.Visible = false;
-            pnlSelectValues.Visible = false;
-            pnlConfirm.Visible = true;
-        }
-
-        #endregion
-
-        #region Confirm Events
-
-        /// <summary>
-        /// Handles the Click event of the lbConfirmBack control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbConfirmBack_Click( object sender, EventArgs e )
-        {
-            BindValues();
-
-            pnlSelectPeople.Visible = false;
-            pnlSelectValues.Visible = true;
-            pnlConfirm.Visible = false;
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbConfirm control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbConfirm_Click( object sender, EventArgs e )
-        {
             var oldPhotos = new List<int>();
 
             RockTransactionScope.WrapTransaction( () =>
@@ -422,31 +336,12 @@ namespace RockWeb.Blocks.Crm
 
         #endregion
 
-        #endregion
-
         #region Methods
-
-        #region People Grid Methods
-
-        private void BindPeople()
-        {
-            var people = new PersonService()
-                .Queryable( "CreatedByPersonAlias.Person,ModifiedByPersonAlias.Person" )
-                .Where( p => SelectedPersonIds.Contains( p.Id ) )
-                .ToList();
-
-            gPeople.DataSource = people;
-            gPeople.DataBind();
-        }
-
-        #endregion
-
-        #region Values Panel Methods
 
         /// <summary>
         /// Builds the values columns.
         /// </summary>
-        private void BuildValuesColumns()
+        private void BuildColumns()
         {
             gValues.Columns.Clear();
 
@@ -475,6 +370,7 @@ namespace RockWeb.Blocks.Crm
                     personCol.DataTextField = string.Format( "property_{0}", person.Id );
                     personCol.DataSelectedField = string.Format( "property_{0}_selected", person.Id );
                     personCol.DataVisibleField = string.Format( "property_{0}_visible", person.Id );
+                    personCol.OnDelete += personCol_OnDelete;
                     gValues.Columns.Add( personCol );
                 }
             }
@@ -487,7 +383,6 @@ namespace RockWeb.Blocks.Crm
         /// <returns></returns>
         private string GetValuesColumnHeader( int personId )
         {
-
             Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 
             var groupMemberService = new GroupMemberService();
@@ -536,41 +431,20 @@ namespace RockWeb.Blocks.Crm
         /// <summary>
         /// Binds the values.
         /// </summary>
-        private void BindValues()
+        private void BindGrid()
         {
-            foreach ( var col in gValues.Columns.OfType<PersonMergeField>() )
+            if ( MergeData != null && MergeData.People != null && MergeData.People.Any() )
             {
-                col.IsPrimaryPerson = col.PersonId == MergeData.PrimaryPersonId;
-            }
+                foreach ( var col in gValues.Columns.OfType<PersonMergeField>() )
+                {
+                    col.IsPrimaryPerson = col.PersonId == MergeData.PrimaryPersonId;
+                }
 
-            DataTable dt = MergeData.GetDataTable( headingKeys );
-            gValues.DataSource = dt;
-            gValues.DataBind();
-        }
-
-        /// <summary>
-        /// Gets the values selection.
-        /// </summary>
-        private void GetValuesSelection()
-        {
-            foreach ( var column in gValues.Columns.OfType<PersonMergeField>() )
-            {
-                // Get person id from the datafield that has format 'property_{0}' with {0} being the person id
-                int personId = int.Parse( column.DataTextField.Substring( 9 ) );
-
-                // Set the correct person's value as selected
-                MergeData.Properties
-                    .Where( p => column.SelectedKeys.Contains( p.Key ))
-                    .SelectMany( v => v.Values )
-                    .Where( v => v.PersonId == personId )
-                    .ToList()
-                    .ForEach( v => v.Selected = true );
+                DataTable dt = MergeData.GetDataTable( headingKeys );
+                gValues.DataSource = dt;
+                gValues.DataBind();
             }
         }
-
-        #endregion
-
-        #region Confirmation Panel Methods
 
         private string GetSelectedValue( string key, string value, List<string> changes )
         {
@@ -696,8 +570,6 @@ namespace RockWeb.Blocks.Crm
 
         #endregion
 
-        #endregion
-
     }
 
     #region MergeData Class
@@ -744,7 +616,8 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         public MergeData()
         {
-
+            People = new List<MergePerson>();
+            Properties = new List<PersonProperty>();
         }
 
         /// <summary>
