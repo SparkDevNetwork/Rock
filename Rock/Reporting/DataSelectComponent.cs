@@ -116,31 +116,6 @@ namespace Rock.Reporting
         public abstract string GetTitle( Type entityType );
 
         /// <summary>
-        /// Formats the selection on the client-side.  When the widget is collapsed by the user, the Filterfield control
-        /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before
-        /// referencing this property.
-        /// </summary>
-        /// <returns></returns>
-        /// <value>
-        /// The client format script.
-        /// </value>
-        public virtual string GetClientFormatSelection()
-        {
-            return this.GetTitle( null );
-        }
-
-        /// <summary>
-        /// Formats the selection.
-        /// </summary>
-        /// <param name="selection">The selection.</param>
-        /// <returns></returns>
-        public virtual string FormatSelection( string selection )
-        {
-            return this.GetTitle( null );
-        }
-
-        /// <summary>
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
