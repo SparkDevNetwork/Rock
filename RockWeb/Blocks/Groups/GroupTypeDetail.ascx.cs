@@ -824,7 +824,7 @@ namespace RockWeb.Blocks.Groups
             cblLocationSelectionModes.Items.Add( new ListItem( "Named", "2" ) );
             cblLocationSelectionModes.Items.Add( new ListItem( "Address", "1" ) );
             cblLocationSelectionModes.Items.Add( new ListItem( "Point", "4" ) );
-            cblLocationSelectionModes.Items.Add( new ListItem( "Polygon", "8" ) );
+            cblLocationSelectionModes.Items.Add( new ListItem( "Geo-fence", "8" ) );
             cblLocationSelectionModes.Items.Add( new ListItem( "Group Member Address", "16" ) );
 
             gtpInheritedGroupType.GroupTypes = new GroupTypeService().Queryable()
