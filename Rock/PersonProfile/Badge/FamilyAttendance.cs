@@ -40,11 +40,11 @@ namespace Rock.PersonProfile.Badge
     
     
     [IntegerField("Months To Display", "The number of months to show on the chart (default 24.)", false, 24)]
+    [IntegerField("Minimum Bar Height", "The minimum height of a bar (in pixels). Useful for showing hint of bar when attendance was 0. (default 2.)", false, 2)]
+    [BooleanField("Annimate Bars", "Determine whether bars should annimate when displayed.", true)]
     public class FamilyAttendance : BadgeComponent
     {
 
-        private int _minBarHeight = 2;
-        
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
@@ -52,7 +52,15 @@ namespace Rock.PersonProfile.Badge
         /// <param name="writer">The writer.</param>
         public override void Render( PersonBadge badge, System.Web.UI.HtmlTextWriter writer )
         {
-            writer.Write("<div class='badge badge-attendance' data-original-title='Family attendance for the last 24 months. Each bar is a month.'>");
+            int minBarHeight = Int32.Parse(GetAttributeValue(badge, "MinimumBarHeight"));
+            string annimateClass = string.Empty;
+
+            if (GetAttributeValue(badge, "AnnimateBars") == null || GetAttributeValue(badge, "AnnimateBars").AsBoolean())
+            {
+                annimateClass = " annimate";
+            }
+
+            writer.Write(String.Format("<div class='badge badge-attendance{0}' data-original-title='Family attendance for the last 24 months. Each bar is a month.'>", annimateClass));
 
             writer.Write("</div>");
 
@@ -87,7 +95,7 @@ namespace Rock.PersonProfile.Badge
                     }});
                 </script>
                 
-            ", Person.Id.ToString(), GetAttributeValue(badge, "MonthsToDisplay"), _minBarHeight ));
+            ", Person.Id.ToString(), GetAttributeValue(badge, "MonthsToDisplay"), minBarHeight ));
 
         }
 
