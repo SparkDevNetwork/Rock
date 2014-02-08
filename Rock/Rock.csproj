@@ -232,6 +232,7 @@
     <Compile Include="Model\RestControllerService.Partial.cs" />
     <Compile Include="Net\RestParameters\ContributionStatementOptions.cs" />
     <Compile Include="PersonProfile\Badge\Baptized.cs" />
+    <Compile Include="PersonProfile\Badge\FamilyWeeksAttendedInDuration.cs" />
     <Compile Include="PersonProfile\Badge\Liquid.cs" />
     <Compile Include="PersonProfile\Badge\NextSteps.cs">
       <SubType>Code</SubType>
