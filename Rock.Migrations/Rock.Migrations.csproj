@@ -496,6 +496,10 @@
     <Compile Include="Migrations\201402072154281_MoveBadges.Designer.cs">
       <DependentUpon>201402072154281_MoveBadges.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402082033457_MovePersonBadgeBlocks.cs" />
+    <Compile Include="Migrations\201402082033457_MovePersonBadgeBlocks.Designer.cs">
+      <DependentUpon>201402082033457_MovePersonBadgeBlocks.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -847,6 +851,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402072154281_MoveBadges.resx">
       <DependentUpon>201402072154281_MoveBadges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402082033457_MovePersonBadgeBlocks.resx">
+      <DependentUpon>201402082033457_MovePersonBadgeBlocks.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

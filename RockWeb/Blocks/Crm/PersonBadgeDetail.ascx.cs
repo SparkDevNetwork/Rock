@@ -28,10 +28,10 @@ using Rock.Web.UI;
 using Rock.PersonProfile;
 using Rock.Web.Cache;
 
-namespace RockWeb.Blocks.Administration
+namespace RockWeb.Blocks.Crm
 {
     [DisplayName( "Person Badge Detail" )]
-    [Category( "Administration" )]
+    [Category( "CRM" )]
     [Description( "Shows the details of a particular person badge." )]
 
     public partial class PersonBadgeDetail : RockBlock
