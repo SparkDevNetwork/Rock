@@ -47,6 +47,47 @@ namespace Rock.Rest.Controllers
                     controller = "PersonBadges",
                     action = "GetFamilyAttendance"
                 } );
+
+            routes.MapHttpRoute(
+                name: "GetWeeksAttendedInDuration",
+                routeTemplate: "api/PersonBadges/WeeksAttendedInDuration/{personId}/{weekCount}",
+                defaults: new
+                {
+                    controller = "PersonBadges",
+                    action = "GetWeeksAttendedInDuration"
+                });
+        }
+
+        /// <summary>
+        /// Gets the attendance summary data for the 24 month attenance badge 
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        public int GetWeeksAttendedInDuration(int personId, int weekCount)
+        {
+            int attendanceCount = -1;
+
+            Service service = new Service();
+
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            parameters.Add("PersonId", personId);
+            parameters.Add("WeekDuration", weekCount);
+
+            var results = service.GetDataSet("spCheckin_WeeksAttendedInDuration", System.Data.CommandType.StoredProcedure, parameters);
+
+            if (results.Tables.Count > 0)
+            {
+                
+                if ( results.Tables[0].Rows.Count > 0) {
+                    DataRow row = results.Tables[0].Rows[0];
+                    attendanceCount = Int32.Parse(row[0].ToString());
+                }
+                
+            }
+
+            return attendanceCount;
         }
 
         /// <summary>

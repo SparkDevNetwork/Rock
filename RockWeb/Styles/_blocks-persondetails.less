@@ -81,7 +81,7 @@
 .personprofilebar-badge
 {
     background-color: @accent-color;
-    min-height: 50px;
+    min-height: 67px;
     border-bottom: 1px solid darken(@accent-color, @const-border-darken-amt);
 
     .badge-group {
@@ -94,30 +94,67 @@
     }
 }
 
-ul.badge-attendance-chart { //http://codepen.io/Victa/pen/xDqbf
-    display: table;
-    table-layout: fixed;
-    width: 100%;
-    height: 37px;
-    margin: 0 auto;
+.badge-attendance {
+    ul.badge-attendance-chart { //http://codepen.io/Victa/pen/xDqbf
+        display: table;
+        table-layout: fixed;
+        width: 100%;
+        height: 40px;
+        margin: 0 auto;
 
-    li {
-        position: relative;
-        display: table-cell;
-        vertical-align: bottom;
-        height: 37px;
+        li {
+            position: relative;
+            display: table-cell;
+            vertical-align: bottom;
+            height: 40px;
         
-        span {
-            margin: 0 1px;
-            display: block;
-            background: @accent-bold-color;
-            position: absolute;
-            bottom: 0;
-            width: 90%;
+            span {
+                margin: 0 1px;
+                display: block;
+                background: @accent-bold-color;
+                position: absolute;
+                bottom: 0;
+                width: 90%;
+            }
+        }
+    }
+
+    &.annimate {
+        ul.badge-attendance-chart li span {
             -webkit-animation: bar-grow 1s ease-in-out;
             -moz-animation: bar-grow 1s ease-in-out;
             -o-animation: bar-grow 1s ease-in-out;
             animation: bar-grow 1s ease-in-out;
+        }
+    }
+}
+
+.badge-weeksattendanceduration {
+    .weeks-metric {
+
+        position: relative;
+        color: #686576;
+
+        &:before {
+            font-family: FontAwesome;
+            content: @fa-var-square;
+            color: @brand-warning;
+            font-size: 45px;
+        }
+
+        .weeks-attended {
+            position: absolute;
+            top: 7px;
+            left: 3px;
+            font-weight: @font-weight-bold;
+            font-size: 18px;
+        }
+        .week-duration {
+            position: absolute;
+            bottom: 10px;
+            right: 4px;
+            font-weight: @font-weight-semibold;
+            font-size: 11px;
         }
     }
 }
