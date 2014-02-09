@@ -82,6 +82,7 @@ namespace RockWeb.Blocks.Administration
             if ( !Page.IsPostBack )
             {
                 BindTimeZones();
+                BindOtherAppSettings();
                 BindMaxFileSize();
             }
         }
@@ -116,6 +117,7 @@ namespace RockWeb.Blocks.Administration
 
             Configuration rockWebConfig = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration( "~" );
             rockWebConfig.AppSettings.Settings["OrgTimeZone"].Value = ddTimeZone.SelectedValue;
+            rockWebConfig.AppSettings.Settings["RunJobsInIISContext"].Value = cbRunJobsInIISContext.Checked.ToString();
 
             var section = (System.Web.Configuration.SystemWebSectionGroup)rockWebConfig.GetSectionGroup("system.web");
             section.HttpRuntime.MaxRequestLength = int.Parse( numbMaxSize.Text ) * 1024;
@@ -151,6 +153,18 @@ namespace RockWeb.Blocks.Administration
             }
             string orgTimeZoneSetting = ConfigurationManager.AppSettings["OrgTimeZone"];
             ddTimeZone.SelectedValue = orgTimeZoneSetting;
+        }
+
+        /// <summary>
+        /// Bind the other settings that are in the appSettings section of the web.config.
+        /// </summary>
+        private void BindOtherAppSettings()
+        {
+            string runJobsInIISContext = ConfigurationManager.AppSettings["RunJobsInIISContext"];
+            if ( !string.IsNullOrEmpty( runJobsInIISContext ) )
+            {
+                cbRunJobsInIISContext.Checked = bool.Parse( runJobsInIISContext );
+            }
         }
 
         /// <summary>
