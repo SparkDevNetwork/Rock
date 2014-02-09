@@ -238,13 +238,13 @@ namespace RockWeb.Blocks.Finance
                     switch ( status.ToUpper() )
                     {
                         case "CLOSED":
-                            e.Row.Cells[8].Text = "<span class='label label-success'>Closed</span>";
+                            e.Row.Cells[7].Text = "<span class='label label-success'>Closed</span>";
                             break;
                         case "OPEN":
-                            e.Row.Cells[8].Text = "<span class='label label-warning'>Open</span>";
+                            e.Row.Cells[7].Text = "<span class='label label-warning'>Open</span>";
                             break;
                         case "PENDING":
-                            e.Row.Cells[8].Text = "<span class='label label-default'>Pending</span>";
+                            e.Row.Cells[7].Text = "<span class='label label-default'>Pending</span>";
                             break;
                     }
                 }
