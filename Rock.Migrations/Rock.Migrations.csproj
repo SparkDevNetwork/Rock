@@ -508,6 +508,10 @@
     <Compile Include="Migrations\201402090638461_RemoveLegacyBadges.Designer.cs">
       <DependentUpon>201402090638461_RemoveLegacyBadges.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402090717132_MoveDataSelectPage.cs" />
+    <Compile Include="Migrations\201402090717132_MoveDataSelectPage.Designer.cs">
+      <DependentUpon>201402090717132_MoveDataSelectPage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -868,6 +872,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402090638461_RemoveLegacyBadges.resx">
       <DependentUpon>201402090638461_RemoveLegacyBadges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402090717132_MoveDataSelectPage.resx">
+      <DependentUpon>201402090717132_MoveDataSelectPage.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
