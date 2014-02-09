@@ -512,6 +512,10 @@
     <Compile Include="Migrations\201402090717132_MoveDataSelectPage.Designer.cs">
       <DependentUpon>201402090717132_MoveDataSelectPage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402091749178_AddMergeProc.cs" />
+    <Compile Include="Migrations\201402091749178_AddMergeProc.Designer.cs">
+      <DependentUpon>201402091749178_AddMergeProc.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -875,6 +879,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402090717132_MoveDataSelectPage.resx">
       <DependentUpon>201402090717132_MoveDataSelectPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402091749178_AddMergeProc.resx">
+      <DependentUpon>201402091749178_AddMergeProc.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
