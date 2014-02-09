@@ -681,7 +681,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         // SAVE FAMILY
                         _family = familyService.Get( _family.Id );
 
-                        History.EvaluateChange( familyChanges, "Name", _family.Name, tbFamilyName.Text );
+                        History.EvaluateChange( familyChanges, "Family Name", _family.Name, tbFamilyName.Text );
                         _family.Name = tbFamilyName.Text;
 
                         int? campusId = cpCampus.SelectedValueAsInt();
@@ -761,7 +761,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 groupMember.GroupId = _family.Id;
                                 if ( role != null )
                                 {
-                                    History.EvaluateChange( memberChanges, string.Format( "Role", _family.Name ), string.Empty, role.Name );
+                                    History.EvaluateChange( memberChanges, "Role", string.Empty, role.Name );
                                     groupMember.GroupRoleId = role.Id;
                                 }
 
@@ -779,18 +779,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     m.PersonId == familyMember.Id &&
                                     m.Group.GroupTypeId == familyGroupTypeId &&
                                     m.GroupId == _family.Id ).FirstOrDefault();
+
                                 if ( groupMember != null )
                                 {
-
                                     if ( familyMember.Removed )
                                     {
                                         var newFamilyChanges = new List<string>();
-                                        newFamilyChanges.Add( "Created" );
 
                                         // Family member was removed and should be created in their own new family
                                         var newFamily = new Group();
                                         newFamily.Name = familyMember.LastName + " Family";
-                                        History.EvaluateChange( newFamilyChanges, "Name", string.Empty, newFamily.Name );
+                                        History.EvaluateChange( newFamilyChanges, "Family", string.Empty, newFamily.Name );
 
                                         newFamily.GroupTypeId = familyGroupTypeId;
 
@@ -802,9 +801,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                                         familyService.Add( newFamily, CurrentPersonAlias );
                                         familyService.Save( newFamily, CurrentPersonAlias );
-
-                                        historyService.SaveChanges( typeof( Group ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                                            newFamily.Id, newFamilyChanges, CurrentPersonAlias );
 
                                         // If person's previous giving group was this family, set it to their new family id
                                         if ( groupMember.Person.GivingGroup != null && groupMember.Person.GivingGroupId == _family.Id )
@@ -818,12 +814,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                                         var newMemberChanges = new List<string>();
                                         History.EvaluateChange( newMemberChanges, "Role", string.Empty, groupMember.GroupRole.Name );
-                                        historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                                            groupMember.Person.Id, newMemberChanges, CurrentPersonAlias );
 
-                                        History.EvaluateChange( memberChanges, "Role", groupMember.GroupRole.Name, string.Empty );
+                                        historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                                            groupMember.Person.Id, newFamilyChanges, newFamily.Name, typeof( Group ), newFamily.Id, CurrentPersonAlias );
 
                                         newFamilies.Add( newFamily );
+
+                                        History.EvaluateChange( memberChanges, "Role", groupMember.GroupRole.Name, string.Empty );
                                     }
                                     else
                                     {
@@ -874,9 +871,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     var oldMemberChanges = new List<string>();
                                     History.EvaluateChange( oldMemberChanges, "Role", fm.GroupRole.Name, string.Empty );
 
-                                    historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                                        fm.Person.Id, oldMemberChanges, fm.Group.Name, typeof( Group ), fm.Group.Id, CurrentPersonAlias );
-
                                     familyMemberService.Delete( fm, CurrentPersonAlias );
                                     familyMemberService.Save( fm, CurrentPersonAlias );
 
@@ -888,14 +882,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                                     if ( f != null )
                                     {
-                                        var oldFamilyChanges = new List<string>();
-                                        oldFamilyChanges.Add( "Deleted" );
-                                        historyService.SaveChanges( typeof( Group ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                                            f.Id, oldFamilyChanges, CurrentPersonAlias );
-
+                                        History.EvaluateChange( oldMemberChanges, "Family", f.Name, string.Empty );
                                         familyService.Delete( f, CurrentPersonAlias );
                                         familyService.Save( f, CurrentPersonAlias );
                                     }
+
+                                    historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                                        fm.Person.Id, oldMemberChanges, fm.Group.Name, typeof( Group ), fm.Group.Id, CurrentPersonAlias );
                                 }
                             }
 
@@ -984,8 +977,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             }
                         }
 
-                        historyService.SaveChanges( typeof( Group ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                            _family.Id, familyChanges, CurrentPersonAlias );
+                        foreach ( var fm in _family.Members )
+                        {
+                            historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                                fm.PersonId, familyChanges, _family.Name, typeof( Group ), _family.Id, CurrentPersonAlias );
+                        }
 
                         _family = familyService.Get( _family.Id );
                         if ( _family.Members.Any( m => m.PersonId == Person.Id ) )
