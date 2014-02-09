@@ -204,9 +204,6 @@ namespace RockWeb.Blocks.Finance
                 var startDate = Convert.ToDateTime( e.Row.DataItem.GetPropertyValue( "BatchStartDateTime" ) ).ToShortDateString();
                 e.Row.Cells[1].Text = startDate;
 
-                var controlAmount = string.Format( "{0:C}", e.Row.DataItem.GetPropertyValue( "ControlAmount" ) );
-                e.Row.Cells[3].Text = controlAmount;
-
                 Literal transactionTotal = e.Row.FindControl( "TransactionTotal" ) as Literal;
                 if ( transactionTotal != null )
                 {
