@@ -144,6 +144,60 @@
     }
 }
 
+.badge-ingroupoftype {
+    width: 45px;
+}
+
+.badge-attendingduration {
+    position: relative;
+    color: #686576;
+
+    .duration-metric {
+        &:before {
+            font-family: FontAwesome;
+            content: @fa-var-circle;
+            color: #d0db25;
+            font-size: 45px;
+        }
+
+        &.duration-months:before {
+            color: #49b039;
+        }
+
+        &.duration-years:before {
+            color: #3971b0;
+        }
+
+        &.duration-new:before {
+            color: #db2525;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            position: absolute;
+            left: 11px;
+            top: 14px;
+            font-weight: @font-weight-bold;
+            color: #fff;
+            line-height: 12px;
+            width: 30px;
+            text-align: center;
+        }
+
+        .metric-unit {
+            font-size: 11px;
+            font-weight: normal;
+            display: block;
+        }
+
+        &.duration-new .metric-value {
+            font-size: 14px;
+            font-weight: @font-weight-semibold;
+            top: 18px;
+        }
+    }
+}
+
 .badge-weeksattendanceduration {
     .weeks-metric {
 
@@ -162,7 +216,11 @@
             top: 7px;
             left: 3px;
             font-weight: @font-weight-bold;
-            font-size: 18px;
+            font-size: 20px;
+            letter-spacing: -2px;
+            display: block;
+            width: 18px;
+            text-align: center;
         }
         .week-duration {
             position: absolute;

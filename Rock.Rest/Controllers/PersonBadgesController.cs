@@ -56,6 +56,68 @@ namespace Rock.Rest.Controllers
                     controller = "PersonBadges",
                     action = "GetWeeksAttendedInDuration"
                 });
+
+            routes.MapHttpRoute(
+                name: "GetInGroupOfType",
+                routeTemplate: "api/PersonBadges/InGroupOfType/{personId}/{groupTypeId}",
+                defaults: new
+                {
+                    controller = "PersonBadges",
+                    action = "GetInGroupOfType"
+                });
+        }
+
+        /// <summary>
+        /// Gets the attendance summary data for the 24 month attenance badge 
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        public GroupOfTypeResult GetInGroupOfType(int personId, Guid groupTypeId)
+        {
+            GroupOfTypeResult result = new GroupOfTypeResult();
+            result.PersonId = personId;
+            result.PersonInGroup = false;
+            result.GroupList = new List<GroupSummary>();
+
+            // get person info
+            Person person = new PersonService().Get(personId);
+
+            if (person != null)
+            {
+                result.NickName = person.NickName;
+                result.LastName = person.LastName;
+            }
+
+            // get group type info
+            GroupType groupType = new GroupTypeService().Get(groupTypeId);
+
+            if (groupType != null)
+            {
+                result.GroupTypeName = groupType.Name;
+                result.GroupTypeIconCss = groupType.IconCssClass;
+                result.GroupTypeId = groupType.Id;
+            }
+
+            // determine if person is in this type of group
+            GroupMemberService groupMemberService = new GroupMemberService();
+            IQueryable<GroupMember> groupMembershipsQuery = groupMemberService.Queryable("Person,GroupRole,Group")
+                                        .Where(t => t.Group.GroupType.Guid == groupTypeId)
+                                        .OrderBy(g => g.GroupRole.Order);
+
+            foreach (GroupMember member in groupMembershipsQuery)
+            {
+                result.PersonInGroup = true;
+                GroupSummary group = new GroupSummary();
+                group.GroupName = member.Group.Name;
+                group.GroupId = member.Group.Id;
+                group.RoleName = member.GroupRole.Name;
+
+                result.GroupList.Add(group);
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -127,7 +189,107 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// 
+        /// Result set for group of type badge
+        /// </summary>
+        public class GroupOfTypeResult
+        {
+            /// <summary>
+            /// Gets or sets the group type id of the group.
+            /// </summary>
+            /// <value>
+            /// The group type id.
+            /// </value>
+            public int GroupTypeId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the group type name.
+            /// </summary>
+            /// <value>
+            /// The group type name.
+            /// </value>
+            public string GroupTypeName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the group type icon css.
+            /// </summary>
+            /// <value>
+            /// The group type icon css.
+            /// </value>
+            public string GroupTypeIconCss { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person id of the individual.
+            /// </summary>
+            /// <value>
+            /// The person id.
+            /// </value>
+            public int PersonId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person nick name of the individual.
+            /// </summary>
+            /// <value>
+            /// The nick name.
+            /// </value>
+            public string NickName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person last name of the individual.
+            /// </summary>
+            /// <value>
+            /// The last name.
+            /// </value>
+            public string LastName { get; set; }
+
+            /// <summary>
+            /// Gets or sets whether the given person is in a group of this type.
+            /// </summary>
+            /// <value>
+            /// Whether the person is in a group of this type.
+            /// </value>
+            public bool PersonInGroup { get; set; }
+
+            /// <summary>
+            /// Gets or sets a list of groups the person is in.
+            /// </summary>
+            /// <value>List of groups that the person is in.</value>
+            public List<GroupSummary> GroupList { get; set; }
+
+        }
+
+        /// <summary>
+        /// Summary of a group for use in the group of type result
+        /// </summary>
+        public class GroupSummary
+        {
+            /// <summary>
+            /// Gets or sets the group id of the group.
+            /// </summary>
+            /// <value>
+            /// The group type id.
+            /// </value>
+            public int GroupId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the group name.
+            /// </summary>
+            /// <value>
+            /// The group type name.
+            /// </value>
+            public string GroupName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the group member role name.
+            /// </summary>
+            /// <value>
+            /// The group member role name.
+            /// </value>
+            public string RoleName { get; set; }
+        }
+
+
+        /// <summary>
+        /// Monthly attendance summary structure
         /// </summary>
         public class MonthlyAttendanceSummary
         {
