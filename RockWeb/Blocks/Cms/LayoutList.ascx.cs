@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Cms
     [LinkedPage("Detail Page")]
     public partial class LayoutList : RockBlock, ISecondaryBlock
     {
-        #region Control Methods
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -51,9 +51,12 @@ namespace RockWeb.Blocks.Cms
 
             gLayouts.DataKeyNames = new string[] { "Id" };
             gLayouts.Actions.AddClick += gLayouts_AddClick;
-            gLayouts.Actions.ShowAdd = true;
-            gLayouts.IsDeleteEnabled = true;
             gLayouts.GridRebind += gLayouts_GridRebind;
+
+            // Block Security and special attributes (RockPage takes care of "View")
+            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            gLayouts.Actions.ShowAdd = canAddEditDelete;
+            gLayouts.IsDeleteEnabled = canAddEditDelete;
 
             SecurityField securityField = gLayouts.Columns[4] as SecurityField;
             securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Layout ) ).Id;
@@ -84,6 +87,8 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
         protected void DeleteLayout_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
+            bool canDelete = false;
+
             RockTransactionScope.WrapTransaction( () =>
             {
                 LayoutService layoutService = new LayoutService();
@@ -91,22 +96,26 @@ namespace RockWeb.Blocks.Cms
                 if ( layout != null )
                 {
                     string errorMessage;
-                    if ( !layoutService.CanDelete( layout, out errorMessage ) )
+                    canDelete = layoutService.CanDelete( layout, out errorMessage );
+                    if ( ! canDelete )
                     {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Alert );
+                        return; // returns out of RockTransactionScope
                     }
 
                     int siteId = layout.SiteId;
 
-                    layoutService.Delete( layout, CurrentPersonId );
-                    layoutService.Save( layout, CurrentPersonId );
+                    layoutService.Delete( layout, CurrentPersonAlias );
+                    layoutService.Save( layout, CurrentPersonAlias );
 
                     LayoutCache.Flush( e.RowKeyId );
                 }
             } );
 
-            BindLayoutsGrid();
+            if ( canDelete )
+            {
+                BindLayoutsGrid();
+            }
         }
 
         /// <summary>
@@ -162,7 +171,7 @@ namespace RockWeb.Blocks.Cms
             LayoutService layoutService = new LayoutService();
 
             // Add any missing layouts
-            layoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ), CurrentPersonId );
+            layoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ), CurrentPersonAlias );
 
             var qry = layoutService.Queryable().Where( a => a.SiteId.Equals( siteId ) );
 

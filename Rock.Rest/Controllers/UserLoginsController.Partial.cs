@@ -19,6 +19,7 @@ using System.Net;
 using System.Web.Http;
 
 using Rock.Model;
+using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
 {
@@ -44,6 +45,7 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="username"></param>
         /// <returns></returns>
+        [Authenticate, Secured]
         [HttpGet]
         public bool Available( string username )
         {

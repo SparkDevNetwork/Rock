@@ -34,6 +34,9 @@ namespace Rock.Model
     [DataContract]
     public partial class ExceptionLog : Model<ExceptionLog>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the Id of the parent/outer ExceptionLog entity (if it exists). ExceptionLog entities are hierarchical.
         /// </summary>
@@ -55,15 +58,6 @@ namespace Rock.Model
 
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Site"/> that the exception occurred on.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.Site"/> that the exception occurred on. If this did not occur on a site, this value will be null.
-        /// </value>
-        [DataMember]
-        public virtual Rock.Model.Site Site { get; set; }
-
-        /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Page"/> that the exception occurred on.
         /// </summary>
         /// <value>
@@ -72,47 +66,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? PageId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Page"/> that the exception occurred on.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.Page"/> that the exception occurred on. If this exception was not thrown on a <see cref="Rock.Model.Page"/>
-        /// this value will be null.
-        /// </value>
-        [DataMember]
-        public virtual Rock.Model.Page Page { get; set; }
-
-        /// <summary>
-        /// Gets or sets the date/time stamp of when the exception occurred. This property is required.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.DateTime"/> representing the time-stamp of when the exception occurred.
-        /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public DateTime ExceptionDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> who created the exception. This is usually the Id of the person who was logged in
-        /// when the exception occurred.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> that created the exception. If it was created by the 
-        /// anonymous user or when it was created by a process, this value will be null.
-        /// </value>
-        [DataMember]
-        public int? CreatedByPersonId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> entity of the person who created the exception.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.Person"/> who created the exception. If the exception was created by the anonymous user or by a process
-        /// this value will be null
-        /// </value>
-        [DataMember]
-        public virtual Rock.Model.Person CreatedByPerson { get; set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if this exception has a child/inner exception. 
@@ -219,6 +172,33 @@ namespace Rock.Model
         [DataMember]
         public string Cookies { get; set; }
 
+        #endregion
+
+        #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.Site"/> that the exception occurred on.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.Site"/> that the exception occurred on. If this did not occur on a site, this value will be null.
+        /// </value>
+        [DataMember]
+        public virtual Rock.Model.Site Site { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.Page"/> that the exception occurred on.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.Page"/> that the exception occurred on. If this exception was not thrown on a <see cref="Rock.Model.Page"/>
+        /// this value will be null.
+        /// </value>
+        [DataMember]
+        public virtual Rock.Model.Page Page { get; set; }
+
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Returns a <see cref="System.String" /> containing the Exception's description that represents this instance.
         /// </summary>
@@ -229,8 +209,13 @@ namespace Rock.Model
         {
             return this.Description;
         }
+
+        #endregion
+
     }
 
+    #region Entity Configuration
+    
     /// <summary>
     /// Exception Log Configuration class.
     /// </summary>
@@ -241,9 +226,10 @@ namespace Rock.Model
         /// </summary>
         public ExceptionLogConfiguration()
         {
-            this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete( true );
             this.HasOptional( s => s.Site ).WithMany().HasForeignKey( s => s.SiteId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.Page ).WithMany().HasForeignKey( p => p.PageId ).WillCascadeOnDelete( true );
         }
     }
+
+    #endregion
 }

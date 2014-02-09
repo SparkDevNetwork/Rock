@@ -73,8 +73,8 @@ namespace Rock.Model
             // or past the expire date
             var content = Queryable().
                 Where( c => c.IsApproved &&
-                    ( c.StartDateTime ?? (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue ) <= DateTime.Now &&
-                    ( c.ExpireDateTime ?? (DateTime)System.Data.SqlTypes.SqlDateTime.MaxValue ) >= DateTime.Now );
+                    ( c.StartDateTime ?? (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue ) <= RockDateTime.Now &&
+                    ( c.ExpireDateTime ?? (DateTime)System.Data.SqlTypes.SqlDateTime.MaxValue ) >= RockDateTime.Now );
 
             // If an entity value is specified, then return content specific to that context, 
             // otherewise return content for the current block instance
@@ -95,7 +95,7 @@ namespace Rock.Model
         /// <returns>An enumerable collection of <see cref="Rock.Model.HtmlContent"/> for all versions of the specified <see cref="Rock.Model.Block"/> and/or EntityContext. </returns>
         public IEnumerable<HtmlContent> GetContent( int blockId, string entityValue )
         {
-            var content = Queryable();
+            var content = Queryable("ModifiedByPersonAlias.Person");
 
             // If an entity value is specified, then return content specific to that context, 
             // otherwise return content for the current block instance

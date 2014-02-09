@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.Crm
             gPeople.DataKeyNames = new string[] { "id" };
             gPeople.Actions.ShowAdd = false;
             gPeople.GridRebind += gPeople_GridRebind;
+            gPeople.PersonIdField = "Id";
         }
 
         protected override void OnLoad( EventArgs e )

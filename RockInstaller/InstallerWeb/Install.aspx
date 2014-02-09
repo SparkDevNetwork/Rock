@@ -91,7 +91,7 @@
             {
                 outputMessages += "<li><i class='fa fa-check-circle pass'></i> " + checkResults + "</li>";
     		} else {
-                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockchms.com/installer/help/dotnet-version.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#IncorrectDotNETVersion' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
     			environmentClean = false;
     		}
 		    
@@ -100,7 +100,7 @@
             {
                 outputMessages += "<li><i class='fa fa-check-circle pass'></i> " + checkResults + "</li>";
     		} else {
-                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockchms.com/installer/help/filesystem-permissions.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#WebServerPermissions' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
     			environmentClean = false;
     		}
     		
@@ -109,7 +109,7 @@
             {
                 outputMessages += "<li><i class='fa fa-check-circle pass'></i> " + checkResults + "</li>";
     		} else {
-                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockchms.com/installer/help/iis-version.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#CheckIISVersion' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
     			environmentClean = false;
     		}
 		    
@@ -127,7 +127,7 @@
             {
     			
     		} else {
-                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockchms.com/installer/help/rock-installed.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#IsRockInstalledAlready' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
     			environmentClean = false;
     		}
 
@@ -278,8 +278,14 @@
 		     <ProgressTemplate>
 		         
                 <div class="updateprogress-status">
-                    <i class="fa fa-refresh fa-spin fa-4x" ></i><br />
-                    This could take a few minutes...
+                    <p>This could take a few minutes...</p>
+                    <div class="spinner">
+                        <div class="rect1"></div>
+                        <div class="rect2"></div>
+                        <div class="rect3"></div>
+                        <div class="rect4"></div>
+                        <div class="rect5"></div>
+                    </div>
                 </div>      
 		            
 		        <div class="updateprogress-bg"></div>

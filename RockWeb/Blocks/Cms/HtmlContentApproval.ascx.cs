@@ -156,10 +156,10 @@ namespace RockWeb.Blocks.Cms
                     {
                         htmlContent.IsApproved = true;
                         htmlContent.ApprovedByPersonId = CurrentPersonId;
-                        htmlContent.ApprovedDateTime = DateTime.Now;
+                        htmlContent.ApprovedDateTime = RockDateTime.Now;
                     }
 
-                    htmlContentService.Save( htmlContent, CurrentPersonId );
+                    htmlContentService.Save( htmlContent, CurrentPersonAlias );
                 }
 
                 BindGrid();

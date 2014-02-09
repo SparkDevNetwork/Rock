@@ -94,7 +94,7 @@ namespace RockWeb.Blocks.Core
                 definedType = new DefinedType();
                 definedType.IsSystem = false;
                 definedType.Order = 0;
-                typeService.Add( definedType, CurrentPersonId );
+                typeService.Add( definedType, CurrentPersonAlias );
             }
             else
             {
@@ -115,7 +115,7 @@ namespace RockWeb.Blocks.Core
 
             RockTransactionScope.WrapTransaction( () =>
             {
-                typeService.Save( definedType, CurrentPersonId );
+                typeService.Save( definedType, CurrentPersonAlias );
 
                 // get it back to make sure we have a good Id
                 definedType = typeService.Get( definedType.Guid );
@@ -358,8 +358,8 @@ namespace RockWeb.Blocks.Core
                 }
 
                 AttributeCache.Flush( attribute.Id );
-                attributeService.Delete( attribute, CurrentPersonId );
-                attributeService.Save( attribute, CurrentPersonId );
+                attributeService.Delete( attribute, CurrentPersonAlias );
+                attributeService.Save( attribute, CurrentPersonAlias );
             }
 
             BindDefinedTypeAttributesGrid();            
@@ -383,7 +383,7 @@ namespace RockWeb.Blocks.Core
         protected void btnSaveDefinedTypeAttribute_Click( object sender, EventArgs e )
         {
             var attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtDefinedTypeAttributes, EntityTypeCache.Read( typeof( DefinedValue ) ).Id,
-                "DefinedTypeId", hfDefinedTypeId.Value, CurrentPersonId );
+                "DefinedTypeId", hfDefinedTypeId.Value, CurrentPersonAlias );
 
             // Attribute will be null if it was not valid
             if (attribute == null)

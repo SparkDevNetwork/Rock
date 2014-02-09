@@ -70,24 +70,18 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="location"></param>
         /// <returns></returns>
+        [Authenticate, Secured]
         [HttpPut]
-        [Authenticate]
         public Location Geocode( Location location )
         {
-            var user = CurrentUser();
-            if ( user != null )
+            if ( location != null )
             {
-                if ( location != null )
-                {
-                    var locationService = new LocationService();
-                    locationService.Geocode( location, user.PersonId );
-                    return location;
-                }
-
-                throw new HttpResponseException( HttpStatusCode.BadRequest );
+                var locationService = new LocationService();
+                locationService.Geocode( location, GetPersonAlias() );
+                return location;
             }
 
-            throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            throw new HttpResponseException( HttpStatusCode.BadRequest );
         }
 
         /// <summary>
@@ -95,24 +89,18 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="location"></param>
         /// <returns></returns>
+        [Authenticate, Secured]
         [HttpPut]
-        [Authenticate]
         public Location Standardize( Location location )
         {
-            var user = CurrentUser();
-            if ( user != null )
+            if ( location != null )
             {
-                if ( location != null )
-                {
-                    var locationService = new LocationService();
-                    locationService.Standardize( location, user.PersonId );
-                    return location;
-                }
-
-                throw new HttpResponseException( HttpStatusCode.BadRequest );
+                var locationService = new LocationService();
+                locationService.Standardize( location, GetPersonAlias() );
+                return location;
             }
 
-            throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            throw new HttpResponseException( HttpStatusCode.BadRequest );
         }
 
         /// <summary>
@@ -122,65 +110,57 @@ namespace Rock.Rest.Controllers
         /// <param name="rootLocationId">The root location unique identifier.</param>
         /// <returns></returns>
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
-        [Authenticate]
-        public IQueryable<TreeViewItem> GetChildren( int id, int rootLocationId)
+        [Authenticate, Secured]
+        public IQueryable<TreeViewItem> GetChildren( int id, int rootLocationId )
         {
-            var user = CurrentUser();
-            if ( user != null )
+            IQueryable<Location> qry;
+            if ( id == 0 )
             {
-                IQueryable<Location> qry;
-                if ( id == 0 )
+                qry = Get().Where( a => a.ParentLocationId == null );
+                if ( rootLocationId != 0 )
                 {
-                    qry = Get().Where( a => a.ParentLocationId == null );
-                    if ( rootLocationId != 0 )
-                    {
-                        qry = qry.Where( a => a.Id == rootLocationId );
-                    }
+                    qry = qry.Where( a => a.Id == rootLocationId );
                 }
-                else
-                {
-                    qry = Get().Where( a => a.ParentLocationId == id );
-                }
-
-                // limit to only Named Locations (don't show home addresses, etc)
-                qry = qry.Where( a => a.IsNamedLocation );
-
-                List<Location> locationList = new List<Location>();
-                List<TreeViewItem> locationNameList = new List<TreeViewItem>();
-
-                foreach ( var location in qry )
-                {
-                    if ( location.IsAuthorized( "View", user.Person ) )
-                    {
-                        locationList.Add( location );
-                        var treeViewItem = new TreeViewItem();
-                        treeViewItem.Id = location.Id.ToString();
-                        treeViewItem.Name = System.Web.HttpUtility.HtmlEncode( location.Name );
-                        locationNameList.Add( treeViewItem );
-                    }
-                }
-
-                // try to quickly figure out which items have Children
-                List<int> resultIds = locationList.Select( a => a.Id ).ToList();
-
-                var qryHasChildren = from x in Get().Select( a => a.ParentLocationId )
-                                     where resultIds.Contains( x.Value )
-                                     select x.Value;
-
-                var qryHasChildrenList = qryHasChildren.ToList();
-
-                foreach ( var item in locationNameList )
-                {
-                    int locationId = int.Parse( item.Id );
-                    item.HasChildren = qryHasChildrenList.Any( a => a == locationId );
-                }
-
-                return locationNameList.AsQueryable();
             }
             else
             {
-                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                qry = Get().Where( a => a.ParentLocationId == id );
             }
+
+            // limit to only Named Locations (don't show home addresses, etc)
+            qry = qry.Where( a => a.IsNamedLocation );
+
+            List<Location> locationList = new List<Location>();
+            List<TreeViewItem> locationNameList = new List<TreeViewItem>();
+
+            foreach ( var location in qry )
+            {
+                if ( location.IsAuthorized( "View", GetPerson() ) )
+                {
+                    locationList.Add( location );
+                    var treeViewItem = new TreeViewItem();
+                    treeViewItem.Id = location.Id.ToString();
+                    treeViewItem.Name = System.Web.HttpUtility.HtmlEncode( location.Name );
+                    locationNameList.Add( treeViewItem );
+                }
+            }
+
+            // try to quickly figure out which items have Children
+            List<int> resultIds = locationList.Select( a => a.Id ).ToList();
+
+            var qryHasChildren = from x in Get().Select( a => a.ParentLocationId )
+                                    where resultIds.Contains( x.Value )
+                                    select x.Value;
+
+            var qryHasChildrenList = qryHasChildren.ToList();
+
+            foreach ( var item in locationNameList )
+            {
+                int locationId = int.Parse( item.Id );
+                item.HasChildren = qryHasChildrenList.Any( a => a == locationId );
+            }
+
+            return locationNameList.AsQueryable();
         }
     }
 }

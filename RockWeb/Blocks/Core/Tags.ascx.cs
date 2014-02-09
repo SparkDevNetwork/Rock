@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Core
         $('#person-tags').tagsInput({{
             'autocomplete_url': function( request, response ) {{
                 $.ajax({{
-                    url: Rock.settings.get('baseUrl') + 'api/tags/availablenames/{0}/{1}/{2}{3}{4}',
+                    url: Rock.settings.get('baseUrl') + 'api/tags/availablenames/{0}/{1}/' + request.term + '/{2}{3}{4}',
                     dataType: 'json',
                     success: function(data, status, xhr){{ 
                         response($.map(data, function (item) {{

@@ -154,12 +154,12 @@ namespace RockWeb.Blocks.Core
                 {
                     foreach ( var value in definedValues )
                     {
-                        definedValueService.Delete( value, CurrentPersonId );
-                        definedValueService.Save( value, CurrentPersonId );
+                        definedValueService.Delete( value, CurrentPersonAlias );
+                        definedValueService.Save( value, CurrentPersonAlias );
                     }
 
-                    definedTypeService.Delete( type, CurrentPersonId );
-                    definedTypeService.Save( type, CurrentPersonId );
+                    definedTypeService.Delete( type, CurrentPersonAlias );
+                    definedTypeService.Save( type, CurrentPersonAlias );
                 } );
             }
 
@@ -186,7 +186,7 @@ namespace RockWeb.Blocks.Core
         private void BindFilter()
         {
             ddlCategoryFilter.Items.Clear();
-            ddlCategoryFilter.Items.Add( Rock.Constants.All.Text );
+            ddlCategoryFilter.Items.Add( new ListItem( Rock.Constants.All.Text, string.Empty ) );
 
             var items = new DefinedTypeService().Queryable()
                 .Where( a => a.Category != string.Empty)

@@ -293,13 +293,13 @@ namespace RockWeb.Blocks.Groups
                         Rock.Security.Role.Flush( group.Id );
                         foreach ( var auth in authService.Queryable().Where( a => a.GroupId.Equals( group.Id ) ).ToList() )
                         {
-                            authService.Delete( auth, CurrentPersonId );
-                            authService.Save( auth, CurrentPersonId );
+                            authService.Delete( auth, CurrentPersonAlias );
+                            authService.Save( auth, CurrentPersonAlias );
                         }
-                    } 
-                    
-                    groupService.Delete( group, CurrentPersonId );
-                    groupService.Save( group, CurrentPersonId );
+                    }
+
+                    groupService.Delete( group, CurrentPersonAlias );
+                    groupService.Save( group, CurrentPersonAlias );
 
                     if ( isSecurityRoleGroup )
                     {
@@ -359,7 +359,7 @@ namespace RockWeb.Blocks.Groups
                     foreach( var groupLocation in group.GroupLocations.Where( l => !selectedLocations.Contains( l.Guid)).ToList() )
                     {
                         group.GroupLocations.Remove( groupLocation );
-                        groupLocationService.Delete( groupLocation, CurrentPersonId );
+                        groupLocationService.Delete( groupLocation, CurrentPersonAlias );
                     }
                 }
 
@@ -413,11 +413,11 @@ namespace RockWeb.Blocks.Groups
                 {
                     if ( group.Id.Equals( 0 ) )
                     {
-                        groupService.Add( group, CurrentPersonId );
+                        groupService.Add( group, CurrentPersonAlias );
                     }
 
-                    groupService.Save( group, CurrentPersonId );
-                    Rock.Attribute.Helper.SaveAttributeValues( group, CurrentPersonId );
+                    groupService.Save( group, CurrentPersonAlias );
+                    Rock.Attribute.Helper.SaveAttributeValues( group, CurrentPersonAlias );
 
                     /* Take care of Group Member Attributes */
                     var entityTypeId = EntityTypeCache.Read( typeof( GroupMember ) ).Id;
@@ -433,15 +433,15 @@ namespace RockWeb.Blocks.Groups
                     {
                         Rock.Web.Cache.AttributeCache.Flush( attr.Id );
 
-                        attributeService.Delete( attr, CurrentPersonId );
-                        attributeService.Save( attr, CurrentPersonId );
+                        attributeService.Delete( attr, CurrentPersonAlias );
+                        attributeService.Save( attr, CurrentPersonAlias );
                     }
 
                     // Update the Attributes that were assigned in the UI
                     foreach ( var attributeState in GroupMemberAttributesState )
                     {
                         Rock.Attribute.Helper.SaveAttributeEdits( attributeState, attributeService, attributeQualifierService, categoryService,
-                            entityTypeId, qualifierColumn, qualifierValue, CurrentPersonId );
+                            entityTypeId, qualifierColumn, qualifierValue, CurrentPersonAlias );
                     }
                 } );
 
@@ -1192,7 +1192,7 @@ namespace RockWeb.Blocks.Groups
 
                                     foreach ( GroupMember member in new GroupMemberService().GetByGroupId( groupId ) )
                                     {
-                                        foreach ( Group family in personService.GetFamilies( member.Person ) )
+                                        foreach ( Group family in personService.GetFamilies( member.PersonId ) )
                                         {
                                             foreach ( GroupLocation familyGroupLocation in family.GroupLocations
                                                 .Where( l => l.IsMappedLocation && !l.GroupLocationTypeValue.Guid.Equals( previousLocationType ) ) )

@@ -16,7 +16,7 @@
             <Columns>
                 <asp:BoundField DataField="FileName" HeaderText="File Name" SortExpression="FileName" />
                 <asp:BoundField DataField="MimeType" HeaderText="Mime Type" SortExpression="MimeType" />
-                <Rock:DateTimeField DataField="LastModifiedDateTime" HeaderText="Last Modified" SortExpression="LastModifiedDateTime" />
+                <Rock:DateTimeField DataField="ModifiedDateTime" HeaderText="Last Modified" SortExpression="ModifiedDateTime" />
                 <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                 <Rock:DeleteField OnClick="gBinaryFile_Delete" />
             </Columns>

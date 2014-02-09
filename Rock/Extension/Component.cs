@@ -17,8 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Web.UI;
+using Rock.Web.Cache;
 
 namespace Rock.Extension
 {
@@ -205,6 +207,17 @@ namespace Rock.Extension
         }
 
         /// <summary>
+        /// Gets the type of the entity.
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        public EntityTypeCache EntityType
+        {
+            get { return EntityTypeCache.Read( this.GetType() ); }
+        }
+
+        /// <summary>
         /// Gets the Entity Type ID for this entity.
         /// </summary>
         /// <value>
@@ -215,7 +228,7 @@ namespace Rock.Extension
             get
             {
                 // Read should never return null since it will create entity type if it doesn't exist
-                return Rock.Web.Cache.EntityTypeCache.Read( this.GetType() ).Id;
+                return EntityType.Id;
             }
         }
 
@@ -230,7 +243,7 @@ namespace Rock.Extension
             get
             {
                 // Read should never return null since it will create entity type if it doesn't exist
-                return Rock.Web.Cache.EntityTypeCache.Read( this.GetType() ).Guid;
+                return EntityType.Guid;
             }
         }
 
@@ -303,10 +316,21 @@ namespace Rock.Extension
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personId">The current person id.</param>
-        public void MakePrivate( string action, Model.Person person, int? personId )
+        /// <param name="currentPersonAlias">The current person alias.</param>
+        public void MakePrivate( string action, Model.Person person, Rock.Model.PersonAlias currentPersonAlias )
         {
-            Security.Authorization.MakePrivate( this, action, person, personId );
+            Security.Authorization.MakePrivate( this, action, person, currentPersonAlias );
+        }
+
+        /// <summary>
+        /// If action on the current entity is private, removes security that made it private.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="currentPersonAlias">The current person alias.</param>
+        public void MakeUnPrivate( string action, Model.Person person, Rock.Model.PersonAlias currentPersonAlias )
+        {
+            Security.Authorization.MakeUnPrivate( this, action, person, currentPersonAlias );
         }
     }
 }

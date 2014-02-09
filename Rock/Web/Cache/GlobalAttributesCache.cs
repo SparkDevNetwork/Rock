@@ -94,9 +94,9 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        /// <param name="currentPersonId">The current person id.</param>
+        /// <param name="currentPersonAlias">The current person alias.</param>
         /// <param name="saveValue">if set to <c>true</c> [save value].</param>
-        public void SetValue( string key, string value, int? currentPersonId, bool saveValue )
+        public void SetValue( string key, string value, PersonAlias currentPersonAlias, bool saveValue )
         {
             if ( saveValue )
             {
@@ -118,14 +118,14 @@ namespace Rock.Web.Cache
                             attribute.EntityTypeQualifierValue = string.Empty;
                             attribute.Key = key;
                             attribute.Name = key.SplitCase();
-                            attributeService.Add(attribute, currentPersonId);
-                            attributeService.Save(attribute, currentPersonId);
+                            attributeService.Add( attribute, currentPersonAlias );
+                            attributeService.Save( attribute, currentPersonAlias );
 
                             Attributes.Add( AttributeCache.Read( attribute.Id ) );
                         }
 
                         attributeValue = new AttributeValue();
-                        attributeValueService.Add( attributeValue, currentPersonId );
+                        attributeValueService.Add( attributeValue, currentPersonAlias );
                         attributeValue.IsSystem = false;
                         attributeValue.AttributeId = attribute.Id;
 
@@ -136,7 +136,7 @@ namespace Rock.Web.Cache
                     }
 
                     attributeValue.Value = value;
-                    attributeValueService.Save( attributeValue, currentPersonId );
+                    attributeValueService.Save( attributeValue, currentPersonAlias );
                 }
             }
 

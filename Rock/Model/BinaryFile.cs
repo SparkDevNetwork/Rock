@@ -97,15 +97,6 @@ namespace Rock.Model
         public string MimeType { get; set; }
 
         /// <summary>
-        /// Gets or sets the date and time when the file was last modified.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.DateTime"/> representing the date and time that the file was last modified.
-        /// </value>
-        [DataMember]
-        public DateTime? LastModifiedDateTime { get; set; }
-
-        /// <summary>
         /// Gets or sets a user defined description of the file.
         /// </summary>
         /// <value>

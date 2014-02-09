@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock;
 using Rock.Data;
 
 namespace Rock.Model
@@ -76,9 +77,9 @@ namespace Rock.Model
         /// Saves the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="personId">The person identifier.</param>
+        /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
-        public override bool Save( Person item, int? personId )
+        public override bool Save( Person item, PersonAlias personAlias )
         {
             // Set the nickname if a value was not entered
             if ( string.IsNullOrWhiteSpace( item.NickName ) )
@@ -97,7 +98,7 @@ namespace Rock.Model
                 }
             }
 
-            return base.Save( item, personId );
+            return base.Save( item, personAlias );
         }
 
         #region Get People
@@ -116,6 +117,25 @@ namespace Rock.Model
             return Repository.Find( t => 
                 ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value) &&
                 ( t.Email == email || ( email == null && t.Email == null ) )
+            );
+        }
+
+        /// <summary>
+        /// Gets an enumerable collection of <see cref="Rock.Model.Person"/> entities that have a matching email address, firstname and lastname.
+        /// </summary>
+        /// <param name="firstName">A <see cref="System.String"/> representing the first name to search by.</param>
+        /// <param name="lastName">A <see cref="System.String"/> representing the last name to search by.</param>
+        /// <param name="email">A <see cref="System.String"/> representing the email address to search by.</param>
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in the search results, if
+        /// <c>true</c> then they will be included, otherwise <c>false</c>. Default value is false.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
+        /// </returns>
+        public IEnumerable<Person> GetByMatch( string firstName, string lastName, string email, bool includeDeceased = false )
+        {
+            return Repository.Find( t =>
+                ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value ) &&
+                ( t.Email == email && t.FirstName == firstName && t.LastName == lastName )
             );
         }
 
@@ -300,14 +320,14 @@ namespace Rock.Model
         /// <summary>
         /// Gets the families.
         /// </summary>
-        /// <param name="person">The person.</param>
+        /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
-        public IQueryable<Group> GetFamilies( Person person )
+        public IQueryable<Group> GetFamilies(int personId)
         {
             Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 
             return new GroupMemberService().Queryable()
-                .Where( m => m.PersonId == person.Id && m.Group.GroupType.Guid == familyGuid )
+                .Where( m => m.PersonId == personId && m.Group.GroupType.Guid == familyGuid )
                 .Select( m => m.Group )
                 .Distinct();
         }
@@ -315,31 +335,82 @@ namespace Rock.Model
         /// <summary>
         /// Returns a collection of <see cref="Rock.Model.Person" /> entities containing the family members of the provided person.
         /// </summary>
-        /// <param name="person">A <see cref="Rock.Model.Person" /> representing the person to get the family members for.</param>
+        /// <param name="personId">The person identifier.</param>
         /// <param name="includeSelf">if set to <c>true</c> [include self].</param>
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Person" /> entities containing the family members of the provided person.
         /// </returns>
-        public IQueryable<GroupMember> GetFamilyMembers( Person person, bool includeSelf = false )
+        public IQueryable<GroupMember> GetFamilyMembers( int personId, bool includeSelf = false )
         {
             Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 
-            return new GroupMemberService().Queryable()
-                .Where( m => m.PersonId == person.Id && m.Group.GroupType.Guid == familyGuid)
+            return new GroupMemberService().Queryable( "Person" )
+                .Where( m => m.PersonId == personId && m.Group.GroupType.Guid == familyGuid )
                 .SelectMany( m => m.Group.Members)
-                .Where( fm => includeSelf || fm.PersonId != person.Id)
+                .Where( fm => includeSelf || fm.PersonId != personId )
                 .Distinct();
+        }
+
+        /// <summary>
+        /// Returns a collection of <see cref="Rock.Model.Person" /> entities containing the family members of the provided person.
+        /// </summary>
+        /// <param name="family">The family.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="includeSelf">if set to <c>true</c> [include self].</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.Person" /> entities containing the family members of the provided person.
+        /// </returns>
+        public IQueryable<GroupMember> GetFamilyMembers( Group family, int personId, bool includeSelf = false )
+        {
+            return new GroupMemberService().Queryable( "Person" )
+                .Where( m => m.GroupId == family.Id )
+                .Where( m => includeSelf || m.PersonId != personId )
+                .OrderBy( m => m.GroupRole.Order)
+                .ThenBy( m => m.Person.BirthDate ?? DateTime.MinValue)
+                .ThenByDescending( m => m.Person.Gender )
+                .Distinct();
+        }
+
+        /// <summary>
+        /// Gets the family names.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="includeMemberNames">if set to <c>true</c> [include member names].</param>
+        /// <param name="includeSelf">if set to <c>true</c> [include self].</param>
+        /// <returns></returns>
+        public List<string> GetFamilyNames( int personId, bool includeMemberNames = true, bool includeSelf = true)
+        {
+            var familyNames = new List<string>();
+
+            foreach(var family in GetFamilies(personId))
+            {
+                string familyName = family.Name;
+
+                if ( includeMemberNames )
+                {
+                    var nickNames = GetFamilyMembers( family, personId, includeSelf )
+                        .Select( m => m.Person.NickName ).ToList();
+                    if ( nickNames.Any() )
+                    {
+                        familyName = string.Format( "{0} ({1})", familyName, nickNames.AsDelimited( ", " ) );
+                    }
+                }
+
+                familyNames.Add( familyName );
+            }
+
+            return familyNames;
         }
 
         /// <summary>
         /// Gets the first location.
         /// </summary>
-        /// <param name="person">The person.</param>
+        /// <param name="personId">The person identifier.</param>
         /// <param name="locationTypeValueId">The location type value id.</param>
         /// <returns></returns>
-        public Location GetFirstLocation( Person person, int locationTypeValueId )
+        public Location GetFirstLocation( int personId, int locationTypeValueId )
         {
-            return GetFamilies( person )
+            return GetFamilies( personId )
                 .SelectMany( g => g.GroupLocations )
                 .Where( gl => gl.GroupLocationTypeValueId == locationTypeValueId )
                 .Select( gl => gl.Location )
@@ -367,49 +438,82 @@ namespace Rock.Model
         /// Returns a <see cref="Rock.Model.Person"/> by their PersonId
         /// </summary>
         /// <param name="id">The <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> to search for.</param>
-        /// <param name="followMerges">A <see cref="System.Boolean"/> flag indicating that the provided PersonId should be checked against the <see cref="Rock.Model.PersonMerged"/> list.
-        /// When <c>true</c> the <see cref="Rock.Model.PersonMerged"/> log will be checked for the PersonId, otherwise <c>false</c>.</param>
+        /// <param name="followMerges">A <see cref="System.Boolean"/> flag indicating that the provided PersonId should be checked against the <see cref="Rock.Model.PersonAlias"/> list.
+        /// When <c>true</c> the <see cref="Rock.Model.PersonAlias"/> log will be checked for the PersonId, otherwise <c>false</c>.</param>
         /// <returns>The <see cref="Rock.Model.Person"/> associated with the provided Id, otherwise null.</returns>
         public Person Get( int id, bool followMerges )
         {
-            if ( followMerges )
+            var person = Get( id );
+            if (person != null)
             {
-                id = new PersonMergedService().Current( id );
+                return person;
             }
-            return Get( id );
+
+            if (followMerges )
+            {
+                var personAlias = new PersonAliasService().GetByAliasId( id );
+                if (personAlias != null)
+                {
+                    return personAlias.Person;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
         /// Returns a <see cref="Rock.Model.Person"/> by their Guid.
         /// </summary>
         /// <param name="guid">A <see cref="System.Guid"/> representing the <see cref="Rock.Model.Person">Person's</see> Guid identifier.</param>
-        /// <param name="followMerges">A <see cref="System.Boolean"/> flag indicating that the provided Guid should be checked against the <see cref="Rock.Model.PersonMerged"/> list.
-        /// When <c>true</c> the <see cref="Rock.Model.PersonMerged"/> log will be checked for the Guid, otherwise <c>false</c>.</param>
+        /// <param name="followMerges">A <see cref="System.Boolean"/> flag indicating that the provided Guid should be checked against the <see cref="Rock.Model.PersonAlias"/> list.
+        /// When <c>true</c> the <see cref="Rock.Model.PersonAlias"/> log will be checked for the Guid, otherwise <c>false</c>.</param>
         /// <returns>The <see cref="Rock.Model.Person"/> associated with the provided Guid, otherwise null.</returns>
         public Person Get( Guid guid, bool followMerges )
         {
-            if ( followMerges )
+            var person = Get( guid );
+            if (person != null)
             {
-                guid = new PersonMergedService().Current( guid );
+                return person;
             }
-            return Get( guid );
+
+            if (followMerges )
+            {
+                var personAlias = new PersonAliasService().GetByAliasGuid( guid );
+                if (personAlias != null)
+                {
+                    return personAlias.Person;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
-        /// Returns a <see cref="Rock.Model.Person"/> by their encrypted key value.
+        /// Returns a <see cref="Rock.Model.Person" /> by their encrypted key value.
         /// </summary>
-        /// <param name="encryptedKey">A <see cref="System.String"/> containing an encrypted key value.</param>
-        /// <param name="followMergeTrail">A <see cref="System.Boolean"/> flag indicating that the provided Guid should be checked against the <see cref="Rock.Model.PersonMerged"/> list.
-        /// When <c>true</c> the <see cref="Rock.Model.PersonMerged"/> log will be checked for the Guid, otherwise <c>false</c>.</param>
+        /// <param name="encryptedKey">A <see cref="System.String" /> containing an encrypted key value.</param>
+        /// <param name="followMerges">if set to <c>true</c> [follow merges].</param>
         /// <returns>
-        /// The <see cref="Rock.Model.Person"/> associated with the provided Key, otherwise null.
+        /// The <see cref="Rock.Model.Person" /> associated with the provided Key, otherwise null.
         /// </returns>
-        public Person GetByEncryptedKey( string encryptedKey, bool followMergeTrail )
+        public Person GetByEncryptedKey( string encryptedKey, bool followMerges )
         {
-            if ( followMergeTrail )
-                encryptedKey = new PersonMergedService().Current( encryptedKey );
+            var person = GetByEncryptedKey( encryptedKey );
+            if (person != null)
+            {
+                return person;
+            }
 
-            return GetByEncryptedKey( encryptedKey );
+            if ( followMerges )
+            {
+                var personAlias = new PersonAliasService().GetByAliasEncryptedKey(encryptedKey);
+                if (personAlias != null)
+                {
+                    return personAlias.Person;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -433,7 +537,7 @@ namespace Rock.Model
                 return null;
             }
 
-            return GetFamilyMembers(person)
+            return GetFamilyMembers(person.Id)
                 .Where( m => m.GroupRole.Guid == adultGuid)
                 .Where( m => m.Person.Gender != person.Gender )
                 .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId)
@@ -451,8 +555,8 @@ namespace Rock.Model
         /// <param name="person">The <see cref="Rock.Model.Person"/> who the preference value belongs to.</param>
         /// <param name="key">A <see cref="System.String"/> representing the key (name) of the preference setting. </param>
         /// <param name="values">A list of <see cref="System.String"/> values representing the value of the preference setting.</param>
-        /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> saving the setting.</param>
-        public void SaveUserPreference(Person person, string key, List<string> values, int? personId)
+        /// <param name="personAlias">The person alias.</param>
+        public void SaveUserPreference( Person person, string key, List<string> values, PersonAlias personAlias )
         {
             int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
 
@@ -478,8 +582,8 @@ namespace Rock.Model
                 attribute.FieldTypeId = fieldType.Id;
                 attribute.Order = 0;
 
-                attributeService.Add( attribute, personId );
-                attributeService.Save( attribute, personId );
+                attributeService.Add( attribute, personAlias );
+                attributeService.Save( attribute, personAlias );
             }
 
             var attributeValueService = new Model.AttributeValueService();
@@ -488,8 +592,8 @@ namespace Rock.Model
             var attributeValues = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, person.Id ).ToList();
             foreach ( var attributeValue in attributeValues )
             {
-                attributeValueService.Delete( attributeValue, personId );
-                attributeValueService.Save( attributeValue, personId );
+                attributeValueService.Delete( attributeValue, personAlias );
+                attributeValueService.Save( attributeValue, personAlias );
             }
 
             // Save new values
@@ -499,8 +603,8 @@ namespace Rock.Model
                 attributeValue.AttributeId = attribute.Id;
                 attributeValue.EntityId = person.Id;
                 attributeValue.Value = value;
-                attributeValueService.Add( attributeValue, personId );
-                attributeValueService.Save( attributeValue, personId );
+                attributeValueService.Add( attributeValue, personAlias );
+                attributeValueService.Save( attributeValue, personAlias );
             }
         }
 

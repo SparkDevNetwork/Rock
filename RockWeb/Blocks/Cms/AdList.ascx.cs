@@ -83,7 +83,7 @@ namespace RockWeb.Blocks.Cms
             var qry = marketingCampaignAdService.Queryable();
 
             // limit to date range
-            DateTime currentDateTime = DateTime.Now.Date;
+            DateTime currentDateTime = RockDateTime.Now.Date;
             qry = qry.Where( a => ( a.StartDate <= currentDateTime ) && ( currentDateTime <= a.EndDate ) );
 
             // limit to approved

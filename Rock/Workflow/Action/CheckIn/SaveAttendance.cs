@@ -48,7 +48,7 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
             {
-                DateTime startDateTime = DateTime.Now;
+                DateTime startDateTime = RockDateTime.Now;
 
                 int securityCodeLength = 3;
                 if ( !int.TryParse( GetAttributeValue( action, "SecurityCodeLength" ), out securityCodeLength ) )
@@ -83,8 +83,8 @@ namespace Rock.Workflow.Action.CheckIn
                                             groupMember.GroupId = group.Group.Id;
                                             groupMember.PersonId = person.Person.Id;
                                             groupMember.GroupRoleId = groupType.GroupType.DefaultGroupRoleId.Value;
-                                            groupMemberService.Add( groupMember, null );
-                                            groupMemberService.Save( groupMember, null );
+                                            groupMemberService.Add( groupMember );
+                                            groupMemberService.Save( groupMember );
                                         }
 
                                         foreach ( var schedule in location.Schedules.Where( s => s.Selected ) )
@@ -100,14 +100,14 @@ namespace Rock.Workflow.Action.CheckIn
                                                 attendance.PersonId = person.Person.Id;
                                                 attendance.DeviceId = checkInState.Kiosk.Device.Id;
                                                 attendance.SearchTypeValueId = checkInState.CheckIn.SearchType.Id;
-                                                attendanceService.Add( attendance, null );
+                                                attendanceService.Add( attendance );
                                             }
 
                                             attendance.AttendanceCodeId = attendanceCode.Id;
                                             attendance.StartDateTime = startDateTime;
                                             attendance.EndDateTime = null;
                                             attendance.DidAttend = true;
-                                            attendanceService.Save( attendance, null );
+                                            attendanceService.Save( attendance );
 
                                             KioskLocationAttendance.AddAttendance( attendance );
                                         }

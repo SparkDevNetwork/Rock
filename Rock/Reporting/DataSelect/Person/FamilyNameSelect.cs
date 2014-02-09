@@ -15,18 +15,13 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.UI.Controls;
-using Rock;
 
 namespace Rock.Reporting.DataSelect.Person
 {
@@ -36,9 +31,8 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the name of the Family that the Person belongs to" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person Family Name" )]
-    public class FamilyNameSelect : DataSelectComponent<Rock.Model.Person>
+    public class FamilyNameSelect : DataSelectComponent
     {
-
         #region Properties
 
         /// <summary>
@@ -56,6 +50,19 @@ namespace Rock.Reporting.DataSelect.Person
             }
         }
 
+        /// <summary>
+        /// Gets the section that this will appear in in the Field Selector
+        /// </summary>
+        /// <value>
+        /// The section.
+        /// </value>
+        public override string Section
+        {
+            get
+            {
+                return base.Section;
+            }
+        }
 
         /// <summary>
         /// The PropertyName of the property in the anonymous class returned by the SelectExpression
@@ -107,7 +114,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         /// <value>
         /// The title.
-        ///   </value>
+        /// </value>
         public override string GetTitle( Type entityType )
         {
             return "Family Name";
@@ -120,7 +127,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="entityIdProperty">The entity identifier property.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( RockContext context, Expression entityIdProperty, string selection )
+        public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
             // groupmembers
             var groupMembers = context.Set<GroupMember>();
@@ -141,7 +148,7 @@ namespace Rock.Reporting.DataSelect.Person
             MemberExpression groupTypeGuidProperty = Expression.Property( groupTypeProperty, "Guid" );
 
             // family group type guid
-            Expression groupTypeConstant = Expression.Constant(Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid());
+            Expression groupTypeConstant = Expression.Constant( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
 
             // m.PersonId == p.Id
             Expression personCompare = Expression.Equal( memberPersonIdProperty, entityIdProperty );
@@ -159,19 +166,19 @@ namespace Rock.Reporting.DataSelect.Person
             };
 
             // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid)
-            Expression whereExpression = Expression.Call(typeof(Queryable), "Where", new Type[] { typeof(GroupMember)}, compare);
+            Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( GroupMember ) }, compare );
 
             // m.Group.Name
-            MemberExpression groupName = Expression.Property(groupProperty, "Name");
+            MemberExpression groupName = Expression.Property( groupProperty, "Name" );
 
             // m => m.Group.Name
-            Expression groupNameLambda = Expression.Lambda(groupName, new ParameterExpression[] { groupMemberParameter });
+            Expression groupNameLambda = Expression.Lambda( groupName, new ParameterExpression[] { groupMemberParameter } );
 
             // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid).Select( m => m.Group.Name);
             Expression selectName = Expression.Call( typeof( Queryable ), "Select", new Type[] { typeof( GroupMember ), typeof( string ) }, whereExpression, groupNameLambda );
 
             // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid).Select( m => m.Group.Name).FirstOrDefault();
-            Expression firstOrDefault = Expression.Call(typeof(Queryable), "FirstOrDefault", new Type[] { typeof(string)}, selectName);
+            Expression firstOrDefault = Expression.Call( typeof( Queryable ), "FirstOrDefault", new Type[] { typeof( string ) }, selectName );
 
             return firstOrDefault;
         }
@@ -187,33 +194,6 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         /// <summary>
-        /// Formats the selection.
-        /// </summary>
-        /// <param name="selection">The selection.</param>
-        /// <returns></returns>
-        public override string FormatSelection( string selection )
-        {
-            // TODO: 
-            return base.FormatSelection( selection );
-        }
-
-        /// <summary>
-        /// Formats the selection on the client-side.  When the widget is collapsed by the user, the Filterfield control
-        /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before
-        /// referencing this property.
-        /// </summary>
-        /// <returns></returns>
-        /// <value>
-        /// The client format script.
-        ///   </value>
-        public override string GetClientFormatSelection()
-        {
-            // TODO: 
-            return base.GetClientFormatSelection();
-        }
-
-        /// <summary>
         /// Renders the controls.
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
@@ -221,7 +201,6 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="controls">The controls.</param>
         public override void RenderControls( System.Web.UI.Control parentControl, System.Web.UI.HtmlTextWriter writer, System.Web.UI.Control[] controls )
         {
-            // TODO: 
             base.RenderControls( parentControl, writer, controls );
         }
 
@@ -246,6 +225,5 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         #endregion
-
     }
 }

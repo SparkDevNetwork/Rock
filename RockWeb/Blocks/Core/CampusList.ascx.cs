@@ -113,8 +113,8 @@ namespace RockWeb.Blocks.Core
                         return;
                     }
 
-                    campusService.Delete( campus, CurrentPersonId );
-                    campusService.Save( campus, CurrentPersonId );
+                    campusService.Delete( campus, CurrentPersonAlias );
+                    campusService.Save( campus, CurrentPersonAlias );
                 }
             } );
 

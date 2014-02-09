@@ -154,7 +154,7 @@ namespace RockWeb.Blocks.Cms
             if ( pageRouteId == 0 )
             {
                 pageRoute = new PageRoute();
-                pageRouteService.Add( pageRoute, CurrentPersonId );
+                pageRouteService.Add( pageRoute, CurrentPersonAlias );
             }
             else
             {
@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
 
-            pageRouteService.Save( pageRoute, CurrentPersonId );
+            pageRouteService.Save( pageRoute, CurrentPersonAlias );
 
             // new or updated route
             var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( a => a.RouteId() == pageRoute.Id );

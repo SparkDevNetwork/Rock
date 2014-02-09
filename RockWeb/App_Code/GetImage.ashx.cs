@@ -71,14 +71,28 @@ namespace RockWeb
         private void ProcessContentFileRequest( HttpContext context )
         {
             string relativeFilePath = context.Request.QueryString["fileName"];
+            string rootFolderParam = context.Request.QueryString["rootFolder"];
 
             if ( string.IsNullOrWhiteSpace( relativeFilePath ) )
             {
                 throw new Exception( "fileName must be specified" );
             }
 
-            const string RootContentFolder = "~/Content";
-            string physicalRootFolder = context.Request.MapPath( RootContentFolder );
+            string rootFolder = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( rootFolderParam ) )
+            {
+                // if a rootFolder was specified in the URL, decrypt it (it is encrypted to help prevent direct access to filesystem)
+                rootFolder = Rock.Security.Encryption.DecryptString( rootFolderParam );
+            }
+
+            if ( string.IsNullOrWhiteSpace( rootFolder ) )
+            {
+                // set to default rootFolder if not specified in the params
+                rootFolder = "~/Content";
+            }
+
+            string physicalRootFolder = context.Request.MapPath( rootFolder );
             string physicalContentFileName = Path.Combine( physicalRootFolder, relativeFilePath.TrimStart( new char[] { '/', '\\' } ) );
             byte[] fileContents = File.ReadAllBytes( physicalContentFileName );
 
@@ -129,11 +143,11 @@ namespace RockWeb
             }
 
             //// get just the binaryFileMetaData (not the file content) just in case we can get the filecontent faster from the cache
-            //// a null LastModifiedDateTime shouldn't happen, but just in case, set it to DateTime.MaxValue so we error on the side of not getting it from the cache
+            //// a null ModifiedDateTime shouldn't happen, but just in case, set it to DateTime.MaxValue so we error on the side of not getting it from the cache
             var binaryFileMetaData = binaryFileQuery.Select( a => new
             {
                 BinaryFileType_AllowCaching = a.BinaryFileType.AllowCaching,
-                LastModifiedDateTime = a.LastModifiedDateTime ?? DateTime.MaxValue,
+                ModifiedDateTime = a.ModifiedDateTime ?? DateTime.MaxValue,
                 a.MimeType,
                 a.FileName
             } ).FirstOrDefault();
@@ -151,9 +165,11 @@ namespace RockWeb
             string physCachedFilePath = context.Request.MapPath( string.Format( "~/App_Data/Cache/{0}", cacheName ) );
             if ( binaryFileMetaData.BinaryFileType_AllowCaching && File.Exists( physCachedFilePath ) )
             {
-                // Has the file been modified since the last cached datetime?
-                DateTime cachedFileDateTime = File.GetCreationTime( physCachedFilePath );
-                if ( binaryFileMetaData.LastModifiedDateTime < cachedFileDateTime )
+                //// Compare the File's Creation DateTime (which comes from the OS's clock), adjust it for the Rock OrgTimeZone, then compare to BinaryFile's ModifiedDateTime (which is already in OrgTimeZone).
+                //// If the BinaryFile record in the database is less recent than the last time this was cached, it is safe to use the Cached version.
+                //// NOTE: A BinaryFile record is typically just added and never modified (a modify is just creating a new BinaryFile record and deleting the old one), so the cached version will probably always be the correct choice.
+                DateTime cachedFileDateTime = RockDateTime.ConvertLocalDateTimeToRockDateTime(File.GetCreationTime( physCachedFilePath ));
+                if ( binaryFileMetaData.ModifiedDateTime < cachedFileDateTime )
                 {
                     // NOTE: the cached file has already been resized (the size is part of the cached file's filename), so we don't need to resize it again
                     fileContent = FetchFromCache( physCachedFilePath );

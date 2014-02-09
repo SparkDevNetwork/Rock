@@ -369,11 +369,11 @@ namespace RockWeb.Blocks.Cms
                 {
                     if ( marketingCampaignAd.Id.Equals( 0 ) )
                     {
-                        marketingCampaignAdService.Add( marketingCampaignAd, CurrentPersonId );
+                        marketingCampaignAdService.Add( marketingCampaignAd, CurrentPersonAlias );
                     }
 
-                    marketingCampaignAdService.Save( marketingCampaignAd, CurrentPersonId );
-                    Rock.Attribute.Helper.SaveAttributeValues( marketingCampaignAd, CurrentPersonId );
+                    marketingCampaignAdService.Save( marketingCampaignAd, CurrentPersonAlias );
+                    Rock.Attribute.Helper.SaveAttributeValues( marketingCampaignAd, CurrentPersonAlias );
                 } );
 
             Dictionary<string, string> qryString = new Dictionary<string, string>();

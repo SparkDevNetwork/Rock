@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -146,12 +147,218 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Adds the person to a new family record
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="personAlias">The person alias.</param>
+        /// <returns></returns>
+        public Group SaveNewFamily( Person person, int? campusId, PersonAlias personAlias )
+        {
+            var groupMember = new GroupMember();
+            groupMember.Person = person;
+
+            var adultRole = new GroupTypeRoleService(this.RockContext).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() );
+            if (adultRole != null)
+            {
+                groupMember.GroupRoleId = adultRole.Id;
+            }
+
+            var groupMembers = new List<GroupMember>();
+            groupMembers.Add( groupMember );
+
+            return SaveNewFamily( groupMembers, campusId, personAlias );
+        }
+
+        /// <summary>
+        /// Saves the new family.
+        /// </summary>
+        /// <param name="familyMembers">The family members.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="personAlias">The person alias.</param>
+        /// <returns></returns>
+        public Group SaveNewFamily( List<GroupMember> familyMembers, int? campusId, PersonAlias personAlias )
+        {
+            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+
+            var familyChanges = new List<string>();
+            var familyMemberChanges = new Dictionary<Guid, List<string>>();
+            var familyDemographicChanges = new Dictionary<Guid, List<string>>();
+
+            if ( familyGroupType != null )
+            {
+                var familyGroup = new Group();
+
+                familyChanges.Add( "Created" );
+
+                familyGroup.GroupTypeId = familyGroupType.Id;
+
+                familyGroup.Name = familyMembers.FirstOrDefault().Person.LastName + " Family";
+                History.EvaluateChange( familyChanges, "Name", string.Empty, familyGroup.Name );
+
+                if ( campusId.HasValue )
+                {
+                    History.EvaluateChange( familyChanges, "Campus", string.Empty, CampusCache.Read( campusId.Value ).Name );
+                }
+                familyGroup.CampusId = campusId;
+
+                int? childRoleId = null;
+                var childRole = new GroupTypeRoleService( this.RockContext ).Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) );
+                if ( childRole != null )
+                {
+                    childRoleId = childRole.Id;
+                }
+
+                foreach ( var familyMember in familyMembers )
+                {
+                    var person = familyMember.Person;
+                    if ( person != null )
+                    {
+                        familyGroup.Members.Add( familyMember );
+
+                        var demographicChanges = new List<string>();
+                        demographicChanges.Add( "Created" );
+
+                        History.EvaluateChange( demographicChanges, "Record Type", string.Empty, person.RecordTypeValueId.HasValue ? DefinedValueCache.GetName( person.RecordTypeValueId.Value ) : string.Empty );
+                        History.EvaluateChange( demographicChanges, "Record Status", string.Empty, person.RecordStatusValueId.HasValue ? DefinedValueCache.GetName( person.RecordStatusValueId.Value ) : string.Empty );
+                        History.EvaluateChange( demographicChanges, "Record Status Reason", string.Empty, person.RecordStatusReasonValueId.HasValue ? DefinedValueCache.GetName( person.RecordStatusReasonValueId.Value ) : string.Empty );
+                        History.EvaluateChange( demographicChanges, "Connection Status", string.Empty, person.ConnectionStatusValueId.HasValue ? DefinedValueCache.GetName( person.ConnectionStatusValueId ) : string.Empty );
+                        History.EvaluateChange( demographicChanges, "Deceased", false.ToString(), ( person.IsDeceased ?? false ).ToString() );
+                        History.EvaluateChange( demographicChanges, "Title", string.Empty, person.TitleValueId.HasValue ? DefinedValueCache.GetName( person.TitleValueId ) : string.Empty );
+                        History.EvaluateChange( demographicChanges, "First Name", string.Empty, person.FirstName );
+                        History.EvaluateChange( demographicChanges, "Nick Name", string.Empty, person.NickName );
+                        History.EvaluateChange( demographicChanges, "Middle Name", string.Empty, person.MiddleName );
+                        History.EvaluateChange( demographicChanges, "Last Name", string.Empty, person.LastName );
+                        History.EvaluateChange( demographicChanges, "Suffix", string.Empty, person.SuffixValueId.HasValue ? DefinedValueCache.GetName( person.SuffixValueId ) : string.Empty );
+                        History.EvaluateChange( demographicChanges, "Birth Date", null, person.BirthDate );
+                        History.EvaluateChange( demographicChanges, "Gender", null, person.Gender );
+                        History.EvaluateChange( demographicChanges, "Marital Status", string.Empty, person.MaritalStatusValueId.HasValue ? DefinedValueCache.GetName( person.MaritalStatusValueId ) : string.Empty );
+                        History.EvaluateChange( demographicChanges, "Anniversary Date", null, person.AnniversaryDate );
+                        History.EvaluateChange( demographicChanges, "Graduation Date", null, person.GraduationDate );
+                        History.EvaluateChange( demographicChanges, "Email", string.Empty, person.Email );
+                        History.EvaluateChange( demographicChanges, "Email Active", false.ToString(), ( person.IsEmailActive ?? false ).ToString() );
+                        History.EvaluateChange( demographicChanges, "Email Note", string.Empty, person.EmailNote );
+                        History.EvaluateChange( demographicChanges, "Do Not Email", false.ToString(), person.DoNotEmail.ToString() );
+                        History.EvaluateChange( demographicChanges, "System Note", string.Empty, person.SystemNote );
+
+                        familyDemographicChanges.Add( person.Guid, demographicChanges );
+
+                        var memberChanges = new List<string>();
+                        string roleName = familyGroupType.Roles[familyMember.GroupRoleId] ?? string.Empty;
+                        History.EvaluateChange( memberChanges, "Role", string.Empty, roleName );
+                        familyMemberChanges.Add( person.Guid, memberChanges );
+                    }
+                }
+
+                Add( familyGroup, personAlias );
+                Save( familyGroup, personAlias );
+
+                var historyService = new HistoryService( this.RockContext );
+
+                historyService.SaveChanges( typeof( Group ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                    familyGroup.Id, familyChanges, personAlias );
+
+                var personService = new PersonService( this.RockContext );
+
+                foreach ( var groupMember in familyMembers )
+                {
+                    var person = personService.Get( groupMember.PersonId );
+                    if ( person != null )
+                    {
+                        bool updateRequired = false;
+                        if ( !person.Aliases.Any( a => a.AliasPersonId == person.Id ) )
+                        {
+                            person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
+                            updateRequired = true;
+                        }
+                        var changes = familyDemographicChanges[person.Guid];
+                        if ( groupMember.GroupRoleId != childRoleId )
+                        {
+                            person.GivingGroupId = familyGroup.Id;
+                            updateRequired = true;
+                            History.EvaluateChange( changes, "Giving Group", string.Empty, familyGroup.Name );
+                        }
+
+                        if ( updateRequired )
+                        {
+                            personService.Save( person, personAlias );
+                        }
+
+                        historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                            person.Id, changes, personAlias );
+
+                        historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                            person.Id, familyMemberChanges[person.Guid], familyGroup.Name, typeof( Group ), familyGroup.Id, personAlias );
+                    }
+                }
+
+                return familyGroup;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Adds the new family address.
+        /// </summary>
+        /// <param name="family">The family.</param>
+        /// <param name="locationTypeGuid">The location type unique identifier.</param>
+        /// <param name="street1">The street1.</param>
+        /// <param name="street2">The street2.</param>
+        /// <param name="city">The city.</param>
+        /// <param name="state">The state.</param>
+        /// <param name="zip">The zip.</param>
+        /// <param name="personAlias">The person alias.</param>
+        public void AddNewFamilyAddress( Group family, string locationTypeGuid, string street1, string street2, string city, string state, string zip, PersonAlias personAlias )
+        {
+            if ( !String.IsNullOrWhiteSpace( street1 ) ||
+                 !String.IsNullOrWhiteSpace( street2 ) ||
+                 !String.IsNullOrWhiteSpace( city ) ||
+                 !String.IsNullOrWhiteSpace( zip ) )
+            {
+                string addressChangeField = "Location";
+
+                var groupLocation = new GroupLocation();
+
+                // Get new or existing location and associate it with group
+                var location = new LocationService( this.RockContext ).Get( street1, street2, city, state, zip );
+                groupLocation.Location = location;
+                groupLocation.IsMailingLocation = true;
+                groupLocation.IsMappedLocation = true;
+
+                Guid guid = Guid.Empty;
+                if ( Guid.TryParse( locationTypeGuid, out guid ) )
+                {
+                    var locationType = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                    if ( locationType != null )
+                    {
+                        addressChangeField = locationType.Name;
+                        groupLocation.GroupLocationTypeValueId = locationType.Id;
+                    }
+                }
+
+                family.GroupLocations.Add( groupLocation );
+
+                var familyChanges = new List<string>();
+                History.EvaluateChange( familyChanges, addressChangeField, string.Empty, groupLocation.Location.ToString() );
+                History.EvaluateChange( familyChanges, addressChangeField + " Is Mailing", string.Empty, groupLocation.IsMailingLocation.ToString() );
+                History.EvaluateChange( familyChanges, addressChangeField + " Is Map Location", string.Empty, groupLocation.IsMappedLocation.ToString() );
+
+                Save( family, personAlias );
+
+                var historyService = new HistoryService(this.RockContext);
+                historyService.SaveChanges( typeof( Group ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                    family.Id, familyChanges, personAlias );
+            }
+        }
+
+        /// <summary>
         /// Deletes a specified group. Returns a boolean flag indicating if the deletion was successful.
         /// </summary>
         /// <param name="item">The <see cref="Rock.Model.Group"/> to delete.</param>
-        /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> performing the delete.</param>
+        /// <param name="personAlias">The person alias.</param>
         /// <returns>A <see cref="System.Boolean"/> that indicates if the <see cref="Rock.Model.Group"/> was deleted successfully.</returns>
-        public override bool Delete( Group item, int? personId )
+        public override bool Delete( Group item, PersonAlias personAlias )
         {
             string message;
             if ( !CanDelete( item, out message ) )
@@ -159,7 +366,7 @@ namespace Rock.Model
                 return false;
             }
 
-            return base.Delete( item, personId );
+            return base.Delete( item, personAlias );
         }
     }
 }

@@ -255,7 +255,7 @@ namespace Rock.Model
                         return false;
                     }
 
-                    var occurrences = calEvent.GetOccurrences( DateTime.Now.Date );
+                    var occurrences = calEvent.GetOccurrences( RockDateTime.Now.Date );
                     return occurrences.Count > 0;
                 }
 

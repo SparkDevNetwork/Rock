@@ -26,7 +26,7 @@
                                             <a href='<%# FormatPersonLink(Eval("PersonId").ToString()) %>'>
                                                 <asp:Image ID="imgPerson" runat="server" />
                                                 <div>
-                                                    <h4><%# Eval("Person.FirstName") %></h4>
+                                                    <h4><%# Eval("Person.NickName") %></h4>
                                                     <small class="age"><%# Eval("Person.Age")  %></small>
                                                 </div>
                                             </a>
@@ -40,7 +40,7 @@
 
                         <div class="col-md-4 addresses clearfix">
 
-                            <ul>
+                            <ul class="list-unstyled">
 
                                 <asp:Repeater ID="rptrAddresses" runat="server">
                                     <ItemTemplate>

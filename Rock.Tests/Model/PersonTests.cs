@@ -42,7 +42,7 @@ namespace Rock.Tests.Model
             {
                 InitGlobalAttributesCache();
                 var Person = new Person();
-                Person.GraduationDate = DateTime.Now; // the "year" the person graduates.
+                Person.GraduationDate = RockDateTime.Now; // the "year" the person graduates.
 
                 Assert.True( 13 == Person.Grade );
             }
@@ -54,11 +54,11 @@ namespace Rock.Tests.Model
             {
                 InitGlobalAttributesCache();
 
-                DateTime tomorrow = DateTime.Now.AddDays( 1 );
+                DateTime tomorrow = RockDateTime.Now.AddDays( 1 );
                 SetGradeTransitionDateGlobalAttribute( tomorrow.Month, tomorrow.Day );
 
                 var Person = new Person();
-                Person.GraduationDate = DateTime.Now; // the "year" the person graduates.
+                Person.GraduationDate = RockDateTime.Now; // the "year" the person graduates.
 
                 Assert.True( 12 == Person.Grade );
             }
@@ -72,7 +72,7 @@ namespace Rock.Tests.Model
                 var Person = new Person();
                 Person.Grade = 12;
                 
-                Assert.True( Person.GraduationDate.Value.Year == DateTime.Now.AddYears(1).Year );
+                Assert.True( Person.GraduationDate.Value.Year == RockDateTime.Now.AddYears(1).Year );
             }
 
             [Test]
@@ -82,13 +82,13 @@ namespace Rock.Tests.Model
             {
                 InitGlobalAttributesCache();
 
-                DateTime tomorrow = DateTime.Now.AddDays( 1 );
+                DateTime tomorrow = RockDateTime.Now.AddDays( 1 );
                 SetGradeTransitionDateGlobalAttribute( tomorrow.Month, tomorrow.Day );
 
                 var Person = new Person();
                 Person.Grade = 12;
 
-                Assert.True( Person.GraduationDate.Value.Year == DateTime.Now.Year );
+                Assert.True( Person.GraduationDate.Value.Year == RockDateTime.Now.Year );
             }
 
             [Test]
@@ -98,7 +98,7 @@ namespace Rock.Tests.Model
             {
                 InitGlobalAttributesCache();
 
-                DateTime lastMonth = DateTime.Now.AddMonths( -1 ).AddDays( -DateTime.Now.Day+1 );
+                DateTime lastMonth = RockDateTime.Now.AddMonths( -1 ).AddDays( -RockDateTime.Now.Day+1 );
                 SetGradeTransitionDateGlobalAttribute( lastMonth.Month, lastMonth.Day );
 
                 var Person = new Person();
@@ -111,15 +111,15 @@ namespace Rock.Tests.Model
 
             private static void InitGlobalAttributesCache()
             {
-                DateTime today = DateTime.Now;
+                DateTime today = RockDateTime.Now;
                 GlobalAttributesCache globalAttributes = GlobalAttributesCache.Read();
-                globalAttributes.SetValue( "GradeTransitionDate", string.Format( "{0}/{1}", today.Month, today.Day ), -1, false );
+                globalAttributes.SetValue( "GradeTransitionDate", string.Format( "{0}/{1}", today.Month, today.Day ), null, false );
             }
 
             private static void SetGradeTransitionDateGlobalAttribute( int month, int day )
             {
                 GlobalAttributesCache globalAttributes = GlobalAttributesCache.Read();
-                globalAttributes.SetValue( "GradeTransitionDate", string.Format( "{0}/{1}", month, day ), -1, false );
+                globalAttributes.SetValue( "GradeTransitionDate", string.Format( "{0}/{1}", month, day ), null, false );
             }
 
 

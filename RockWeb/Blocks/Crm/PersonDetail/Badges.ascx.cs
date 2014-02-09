@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Handles displaying badges for a person." )]
 
-    [ComponentsField( "Rock.PersonProfile.BadgeContainer, Rock", "Badges" )]
+    [PersonBadgesField( "Badges" )]
     public partial class Badges : Rock.Web.UI.PersonBlock
     {
         /// <summary>
@@ -45,9 +45,26 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
-            if ( Person != null )
+            if ( !Page.IsPostBack && Person != null )
             {
-                blBadges.ComponentGuids = GetAttributeValue( "Badges" );
+                string badgeList = GetAttributeValue( "Badges" );
+                if ( !string.IsNullOrWhiteSpace( badgeList ) )
+                {
+                    var personBadgeService = new PersonBadgeService();
+                    foreach ( string badgeGuid in badgeList.SplitDelimitedValues() )
+                    {
+                        Guid guid = badgeGuid.AsGuid();
+                        if ( guid != Guid.Empty )
+                        {
+                            var personBadge = personBadgeService.Get( guid );
+                            if ( personBadge != null )
+                            {
+                                personBadge.LoadAttributes();
+                                blBadges.PersonBadges.Add( personBadge );
+                            }
+                        }
+                    }
+                }
             }
         }
     }

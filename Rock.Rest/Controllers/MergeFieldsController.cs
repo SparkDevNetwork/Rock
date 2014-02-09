@@ -50,6 +50,7 @@ namespace Rock.Rest.Controllers
                 } );
         }
 
+        [Authenticate, Secured]
         public virtual string Get( string id )
         {
             var idParts = id.SplitDelimitedValues().ToList();
@@ -104,6 +105,7 @@ namespace Rock.Rest.Controllers
             return string.Empty;
         }
 
+        [Authenticate, Secured]
         public IQueryable<TreeViewItem> GetChildren( string id, string additionalFields )
         {
             List<TreeViewItem> items = new List<TreeViewItem>();

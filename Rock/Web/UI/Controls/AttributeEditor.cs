@@ -256,6 +256,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether Show in Grid option is displayed
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if Show in Grid option is visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowInGridVisible
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbShowInGrid.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbShowInGrid.Visible = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [show in grid].
         /// </summary>
         /// <value>

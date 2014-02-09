@@ -167,6 +167,10 @@ namespace RockWeb.Blocks.Cms
                 {
                     throw ex;
                 }
+                else
+                {
+                    messages.Add( "exception", "An exception has occurred." );
+                }
             }
 
             if ( messages.Count > 0 )

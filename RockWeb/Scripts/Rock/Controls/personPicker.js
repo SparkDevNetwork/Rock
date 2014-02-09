@@ -29,6 +29,8 @@
                         response($.map(data, function (item) {
                             return item;
                         }));
+
+                        exports.personPickers[controlId].updateScrollbar();
                     });
 
                     // Is this needed? If an error is thrown on the server, we should see an exception in the log now...
@@ -41,6 +43,7 @@
                 minLength: 3,
                 html: true,
                 appendTo: '#personPickerItems_' + controlId,
+                pickerControlId: controlId,
                 messages: {
                     noResults: function () {},
                     results: function () {}
@@ -50,6 +53,7 @@
             $('#' + controlId + ' a.picker-label').click(function (e) {
                 e.preventDefault();
                 $('#' + controlId).find('.picker-menu').first().toggle();
+                exports.personPickers[controlId].updateScrollbar();
             });
 
             $('.picker-select').on('click', '.picker-select-item', function () {
@@ -65,7 +69,9 @@
                     }
                 });
 
-                $(this).find('.picker-select-item-details:hidden').slideDown();
+                $(this).find('.picker-select-item-details:hidden').slideDown(function () {
+                    exports.personPickers[controlId].updateScrollbar();
+                });
             });
 
             $('#' + controlId).hover(
@@ -118,6 +124,13 @@
                 $(this).closest('.picker-menu').slideUp();
             });
         };
+
+        PersonPicker.prototype.updateScrollbar = function () {
+            var $modalcontainer = $('#modal-scroll-container');
+            if ($modalcontainer.length) {
+                $modalcontainer.tinyscrollbar_update('relative');
+            }
+        }
 
         PersonPicker.prototype.initialize = function () {
             $.extend($.ui.autocomplete.prototype, {

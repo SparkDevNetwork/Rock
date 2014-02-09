@@ -116,8 +116,8 @@ namespace RockWeb.Blocks.Cms
                         return;
                     }
 
-                    pageRouteService.Delete( pageRoute, CurrentPersonId );
-                    pageRouteService.Save( pageRoute, CurrentPersonId );
+                    pageRouteService.Delete( pageRoute, CurrentPersonAlias );
+                    pageRouteService.Save( pageRoute, CurrentPersonAlias );
 
                     RemovePageRoute( pageRoute );
                 }

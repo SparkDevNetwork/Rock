@@ -1,14 +1,20 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RestControllerList.ascx.cs" Inherits="RockWeb.Blocks.Administration.RestControllerList" %>
 
-<asp:UpdatePanel ID="upList" runat="server">
+<asp:UpdatePanel ID="upnlList" runat="server">
     <ContentTemplate>
-        <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-        <Rock:Grid ID="gItems" runat="server" AllowSorting="true" OnRowSelected="gItems_RowSelected">
+        
+        <Rock:Grid ID="gControllers" runat="server" AllowSorting="true" OnRowSelected="gControllers_RowSelected">
             <Columns>
-                <asp:BoundField DataField="ControllerName" HeaderText="Controller Name" SortExpression="ControllerName" />
-                <asp:BoundField DataField="ControllerType" HeaderText="Controller Type" SortExpression="ControllerType" />
+                <asp:BoundField DataField="Name" HeaderText="Controller Name" SortExpression="Name" />
+                <asp:BoundField DataField="ClassName" HeaderText="Controller Type" SortExpression="ClassName" />
                 <asp:BoundField DataField="Actions" HeaderText="Actions" SortExpression="Actions" />
+                <Rock:SecurityField TitleField="Name" />
             </Columns>
         </Rock:Grid>
+        
+        <div class="actions">
+            <asp:LinkButton id="btnRefreshAll" runat="server" Text="Requery REST Data" CssClass="btn btn-link" CausesValidation="false" OnClick="btnRefreshAll_Click"/>
+        </div>
+
     </ContentTemplate>
 </asp:UpdatePanel>

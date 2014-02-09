@@ -79,15 +79,6 @@ namespace Rock.Model
         public string IdParameter { get; set; }
 
         /// <summary>
-        /// Gets or sets the date and time that the PageContext was created.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.DateTime"/> containing the date and time that the PageContext was created.
-        /// </value>
-        [DataMember]
-        public DateTime? CreatedDateTime { get; set; }
-        
-        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Page"/> that this PageContext is used on.
         /// </summary>
         /// <value>

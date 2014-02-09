@@ -106,6 +106,10 @@ namespace Rock.Model
             target.IsSystem = source.IsSystem;
             target.SiteId = source.SiteId;
             target.Domain = source.Domain;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

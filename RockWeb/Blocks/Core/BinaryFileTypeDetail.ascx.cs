@@ -238,7 +238,7 @@ namespace RockWeb.Blocks.Core
                 if ( binaryFileTypeId == 0 )
                 {
                     binaryFileType = new BinaryFileType();
-                    binaryFileTypeService.Add( binaryFileType, CurrentPersonId );
+                    binaryFileTypeService.Add( binaryFileType, CurrentPersonAlias );
                 }
                 else
                 {
@@ -272,7 +272,7 @@ namespace RockWeb.Blocks.Core
 
                 RockTransactionScope.WrapTransaction( () =>
                     {
-                        binaryFileTypeService.Save( binaryFileType, CurrentPersonId );
+                        binaryFileTypeService.Save( binaryFileType, CurrentPersonAlias );
 
                         // get it back to make sure we have a good Id for it for the Attributes
                         binaryFileType = binaryFileTypeService.Get( binaryFileType.Guid );
@@ -286,19 +286,19 @@ namespace RockWeb.Blocks.Core
                         foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
                         {
                             Rock.Web.Cache.AttributeCache.Flush( attr.Id );
-                            attributeService.Delete( attr, CurrentPersonId );
-                            attributeService.Save( attr, CurrentPersonId );
+                            attributeService.Delete( attr, CurrentPersonAlias );
+                            attributeService.Save( attr, CurrentPersonAlias );
                         }
 
                         // add/update the BinaryFileAttributes that are assigned in the UI
                         foreach ( var attributeState in BinaryFileAttributesState )
                         {
                             Rock.Attribute.Helper.SaveAttributeEdits( attributeState, attributeService, attributeQualifierService, categoryService,
-                                entityTypeId, "BinaryFileTypeId", binaryFileType.Id.ToString(), CurrentPersonId );
+                                entityTypeId, "BinaryFileTypeId", binaryFileType.Id.ToString(), CurrentPersonAlias );
                         }
 
                         // SaveAttributeValues for the BinaryFileType
-                        Rock.Attribute.Helper.SaveAttributeValues( binaryFileType, CurrentPersonId );
+                        Rock.Attribute.Helper.SaveAttributeValues( binaryFileType, CurrentPersonAlias );
 
                     } );
             }

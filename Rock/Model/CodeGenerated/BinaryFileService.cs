@@ -121,8 +121,11 @@ namespace Rock.Model
             target.Url = source.Url;
             target.FileName = source.FileName;
             target.MimeType = source.MimeType;
-            target.LastModifiedDateTime = source.LastModifiedDateTime;
             target.Description = source.Description;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 
