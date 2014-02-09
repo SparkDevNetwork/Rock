@@ -56,7 +56,6 @@ BEGIN
 END
 GO
 
-
 CREATE PROCEDURE [dbo].[_com_rocksoliddemochurch_spCreateSampleData]
 AS
 /**********************************************************************
@@ -145,7 +144,7 @@ BEGIN TRY
 			DELETE [AttendanceCode] WHERE [Id] NOT IN (SELECT [AttendanceCodeId] FROM [Attendance])
         END
         
-        INSERT INTO [Group] (IsSystem, GroupTypeId, Name, CampusId IsSecurityRole, IsActive, Guid, [Order])
+        INSERT INTO [Group] (IsSystem, GroupTypeId, Name, CampusId, IsSecurityRole, IsActive, Guid, [Order])
         VALUES (0, @FamilyGroupType, 'Decker Family', @mainCampus, 0, 1, '53A02527-C2A7-4F36-8585-71A85B8E4601', 0)
         SET @groupId = SCOPE_IDENTITY()
 
