@@ -52,7 +52,13 @@ namespace Rock.PersonProfile.Badge
         /// <param name="writer">The writer.</param>
         public override void Render( PersonBadge badge, System.Web.UI.HtmlTextWriter writer )
         {
-            int minBarHeight = Int32.Parse(GetAttributeValue(badge, "MinimumBarHeight"));
+            int minBarHeight = 2;
+
+            if (GetAttributeValue(badge, "MinimumBarHeight") != null)
+            {
+                Int32.Parse(GetAttributeValue(badge, "MinimumBarHeight"));
+            }
+            
             string annimateClass = string.Empty;
 
             if (GetAttributeValue(badge, "AnnimateBars") == null || GetAttributeValue(badge, "AnnimateBars").AsBoolean())
