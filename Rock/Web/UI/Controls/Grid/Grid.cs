@@ -213,20 +213,6 @@ namespace Rock.Web.UI.Controls
                     this.AllowPaging = false;
                     this.AllowSorting = false;
                     this.Actions.ShowExcelExport = false;
-
-                    this.RemoveCssClass( "table-bordered" );
-                    this.RemoveCssClass( "table-striped" );
-                    this.RemoveCssClass( "table-hover" );
-                    this.AddCssClass( "table-condensed" );
-                    this.AddCssClass( "table-light" );
-                }
-                else
-                {
-                    this.RemoveCssClass( "table-condensed" );
-                    this.RemoveCssClass( "table-light" );
-                    this.AddCssClass( "table-bordered" );
-                    this.AddCssClass( "table-striped" );
-                    this.AddCssClass( "table-hover" );
                 }
             }
         }
@@ -427,7 +413,6 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public Grid()
         {
-            base.CssClass = "grid-table table";
             base.AutoGenerateColumns = false;
             base.RowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
             base.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
@@ -586,6 +571,30 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        public override void RenderControl( HtmlTextWriter writer )
+        {
+            this.AddCssClass( "grid-table" );
+            this.AddCssClass( "table" );
+
+            if ( DisplayType == GridDisplayType.Light )
+            {
+                this.RemoveCssClass( "table-bordered" );
+                this.RemoveCssClass( "table-striped" );
+                this.RemoveCssClass( "table-hover" );
+                this.AddCssClass( "table-condensed" );
+                this.AddCssClass( "table-light" );
+            }
+            else
+            {
+                this.RemoveCssClass( "table-condensed" );
+                this.RemoveCssClass( "table-light" );
+                this.AddCssClass( "table-bordered" );
+                this.AddCssClass( "table-striped" );
+                this.AddCssClass( "table-hover" );
+            }
+
+            base.RenderControl( writer );
+        }
         /// <summary>
         /// TODO: Added this override to prevent the default behavior of rending a grid with a table inside
         /// and div element.  The div may be needed for paging when grid is not used in an update panel
