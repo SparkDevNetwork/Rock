@@ -122,27 +122,25 @@
         };
 
         TagList.prototype.initialize = function () {
-            var autoCompleteUrl = Rock.settings.get('baseUrl') + 'api/tags/availablenames';
-            autoCompleteUrl += '/' + this.entityTypeId;
-            autoCompleteUrl += '/' + this.currentPersonId;
-            autoCompleteUrl += '/' + this.entityGuid;
 
+            var autoCompleteUrlPrefix = Rock.settings.get('baseUrl') + 'api/tags/availablenames';
+            autoCompleteUrlPrefix += '/' + this.entityTypeId;
+            autoCompleteUrlPrefix += '/' + this.currentPersonId;
+
+            var autoCompleteUrlSuffix = '/' + this.entityGuid;
             if (this.entityQualifierColumn) {
-                autoCompleteUrl += '/' + this.entityQualifierColumn;    
+                autoCompleteUrlSuffix += '/' + this.entityQualifierColumn;
             }
-            
             if (this.entityQualifierValue) {
-                autoCompleteUrl += '/' + this.entityQualifierValue;
+                autoCompleteUrlSuffix += '/' + this.entityQualifierValue;
             }
-
-            
 
             $('ul.ui-autocomplete').css({ 'width': '300px' });
 
             $('#' + this.controlId).tagsInput({
                 autocomplete_url: function (request, response) {
                     $.ajax({
-                        url: autoCompleteUrl,
+                        url: autoCompleteUrlPrefix + '/' + request.term + autoCompleteUrlSuffix,
                         dataType: 'json',
                         success: function (data, status, xhr) {
                             response($.map(data, function (item) {

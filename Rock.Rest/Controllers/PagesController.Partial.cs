@@ -18,7 +18,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Web.Http;
+
 using Rock.Model;
+using Rock.Rest.Filters;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
@@ -49,7 +51,8 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        public IQueryable<TreeViewItem> GetChildren( int id)
+        [Authenticate, Secured]
+        public IQueryable<TreeViewItem> GetChildren( int id )
         {
             IQueryable<Page> qry;
             if ( id == 0 )

@@ -20,6 +20,8 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Reporting.DataTransform.Person
 {
@@ -60,42 +62,37 @@ namespace Rock.Reporting.DataTransform.Person
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="whereExpression">The where expression.</param>
         /// <returns></returns>
-        public override Expression GetExpression( object serviceInstance, Expression parameterExpression, Expression whereExpression )
+        public override Expression GetExpression( IService serviceInstance, ParameterExpression parameterExpression, Expression whereExpression )
         {
-            MethodInfo getIdsMethod = serviceInstance.GetType().GetMethod( "GetIds", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
-            if ( getIdsMethod != null )
-            {
-                IQueryable<int> idQuery = (IQueryable<int>)getIdsMethod.Invoke( serviceInstance, new object[] { parameterExpression, whereExpression } );
-
-                return BuildExpression( idQuery, parameterExpression );
-            }
-
-            return null;
+            IQueryable<int> idQuery = serviceInstance.GetIds( parameterExpression, whereExpression );
+            return BuildExpression( serviceInstance, idQuery, parameterExpression );
         }
 
         /// <summary>
         /// Gets the expression.
         /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
         /// <param name="personQueryable">The person queryable.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <returns></returns>
-        public override Expression GetExpression( IQueryable<Rock.Model.Person> personQueryable, Expression parameterExpression )
+        public override Expression GetExpression( IService serviceInstance, IQueryable<Rock.Model.Person> personQueryable, ParameterExpression parameterExpression )
         {
-            return BuildExpression( personQueryable.Select( p => p.Id ), parameterExpression );
+            return BuildExpression( serviceInstance, personQueryable.Select( p => p.Id ), parameterExpression );
         }
 
         /// <summary>
         /// Builds the expression.
         /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
         /// <param name="idQuery">The id query.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <returns></returns>
-        private Expression BuildExpression( IQueryable<int> idQuery, Expression parameterExpression )
+        private Expression BuildExpression( IService serviceInstance, IQueryable<int> idQuery, ParameterExpression parameterExpression )
         {
             Guid adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
             Guid childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
 
-            var qry = new Rock.Data.Service<Rock.Model.Person>().Queryable()
+            var qry = new PersonService( serviceInstance.RockContext ).Queryable()
                 .Where( p => p.Members.Where( a => a.GroupRole.Guid == adultGuid )
                     .Any( a => a.Group.Members
                     .Any( c => c.GroupRole.Guid == childGuid && idQuery.Contains( c.PersonId ) ) ) );

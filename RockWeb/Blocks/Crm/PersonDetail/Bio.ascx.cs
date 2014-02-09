@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -36,7 +37,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Person biographic/demographic information and picture (Person detail page)." )]
 
-    [ComponentsField( "Rock.PersonProfile.BadgeContainer, Rock", "Badges" )]
+    [PersonBadgesField("Badges")]
     public partial class Bio : PersonBlock
     {
         /// <summary>
@@ -97,7 +98,40 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 taglPersonTags.EntityGuid = Person.Guid;
                 taglPersonTags.GetTagValues( CurrentPersonId );
 
-                blStatus.ComponentGuids = GetAttributeValue( "Badges" );
+                if (!Page.IsPostBack)
+                {
+                    string badgeList = GetAttributeValue( "Badges" );
+                    if (!string.IsNullOrWhiteSpace(badgeList))
+                    {
+                        var personBadgeService = new PersonBadgeService();
+                        foreach ( string badgeGuid in badgeList.SplitDelimitedValues() ) 
+                        {
+                            Guid guid = badgeGuid.AsGuid();
+                            if (guid != Guid.Empty)
+                            {
+                                var personBadge = personBadgeService.Get( guid );
+                                if (personBadge != null)
+                                {
+                                    personBadge.LoadAttributes();
+                                    blStatus.PersonBadges.Add( personBadge );
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Every person should have an alias record with same id.  If it's missing, create it
+                if ( !Person.Aliases.Any( a => a.AliasPersonId == Person.Id ) )
+                {
+                    var personService = new PersonService();
+                    var person = personService.Get( Person.Id );
+                    if ( person != null )
+                    {
+                        person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
+                        personService.Save( person, CurrentPersonAlias );
+                        Person = person;
+                    }
+                }
             }
         }
 

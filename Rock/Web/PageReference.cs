@@ -446,7 +446,7 @@ namespace Rock.Web
                                     }
                                     catch (Exception ex)
                                     {
-                                        ExceptionLogService.LogException(ex, HttpContext.Current, currentPage.Id, currentPage.Layout.SiteId, null);
+                                        ExceptionLogService.LogException(ex, HttpContext.Current, currentPage.Id, currentPage.Layout.SiteId);
                                     }
                                 }
 

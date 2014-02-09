@@ -46,7 +46,7 @@ namespace Rock.Rest.Controllers
                 } );
         }
 
-        [Authenticate]
+        [Authenticate, Secured]
         public IQueryable<TreeViewItem> GetChildren( int id )
         {
             IQueryable<FinancialAccount> qry;

@@ -108,7 +108,7 @@ namespace Rock.Model
             target.Title = source.Title;
             target.AuditType = source.AuditType;
             target.DateTime = source.DateTime;
-            target.PersonId = source.PersonId;
+            target.PersonAliasId = source.PersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

@@ -47,17 +47,6 @@ namespace Rock.Workflow
         }
 
         /// <summary>
-        /// Gets the type of the entity.
-        /// </summary>
-        /// <value>
-        /// The type of the entity.
-        /// </value>
-        public EntityTypeCache EntityType 
-        {
-            get { return EntityTypeCache.Read( this.GetType() ); }
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ActionComponent" /> class.
         /// </summary>
         public ActionComponent()

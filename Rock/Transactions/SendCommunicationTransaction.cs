@@ -32,12 +32,12 @@ namespace Rock.Transactions
         public int CommunicationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the person id.
+        /// Gets or sets the person alias.
         /// </summary>
         /// <value>
-        /// The person id.
+        /// The person alias.
         /// </value>
-        public int? PersonId { get; set; }
+        public PersonAlias PersonAlias { get; set; }
 
         /// <summary>
         /// Execute method to write transaction to the database.
@@ -54,7 +54,7 @@ namespace Rock.Transactions
                     var transport = channel.Transport;
                     if ( transport != null )
                     {
-                        transport.Send( communication, PersonId );
+                        transport.Send( communication, PersonAlias );
                     }
                 }
             }

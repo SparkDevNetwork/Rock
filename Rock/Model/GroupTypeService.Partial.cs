@@ -60,10 +60,9 @@ namespace Rock.Model
         /// Verifies if the specified <see cref="Rock.Model.GroupType"/> can be deleted, and if so deletes it.
         /// </summary>
         /// <param name="item">The <see cref="Rock.Model.GroupType"/> to delete.</param>
-        /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who is attempting to delete the
-        /// <see cref="Rock.Model.GroupType"/>.</param>
+        /// <param name="personAlias">The person alias.</param>
         /// <returns>A <see cref="System.Boolean"/> value that is <c>true</c> if the <see cref="Rock.Model.GroupType"/> was able to be successfully deleted, otherwise <c>false</c>.</returns>
-        public override bool Delete( GroupType item, int? personId )
+        public override bool Delete( GroupType item, PersonAlias personAlias )
         {
             string message;
             if ( !CanDelete( item, out message ) )
@@ -72,9 +71,9 @@ namespace Rock.Model
             }
 
             item.ChildGroupTypes.Clear();
-            this.Save( item, personId );
+            this.Save( item, personAlias );
 
-            return base.Delete( item, personId );
+            return base.Delete( item, personAlias );
         }
 
     }

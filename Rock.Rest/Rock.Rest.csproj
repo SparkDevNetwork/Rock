@@ -76,6 +76,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiController.cs" />
+    <Compile Include="Controllers\PersonBadgesController.cs" />
     <Compile Include="Controllers\AuthController.cs" />
     <Compile Include="Controllers\CategoriesController.Partial.cs" />
     <Compile Include="Controllers\CodeGenerated\AttendanceCodesController.cs" />
@@ -100,8 +101,13 @@
     <Compile Include="Controllers\CodeGenerated\LayoutsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NotesController.cs" />
     <Compile Include="Controllers\CodeGenerated\NoteTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PersonAliasController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PersonBadgesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PrayerRequestsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ReportFieldsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ReportsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\RestActionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\RestControllersController.cs" />
     <Compile Include="Controllers\FileBrowserController.cs" />
     <Compile Include="Controllers\MergeFieldsController.cs" />
     <Compile Include="Controllers\FinancialAccountsController.Partial.cs" />
@@ -147,7 +153,6 @@
     <Compile Include="Controllers\CodeGenerated\PageRoutesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PagesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PeopleController.cs" />
-    <Compile Include="Controllers\CodeGenerated\PersonMergedsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonViewedsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PhoneNumbersController.cs" />
     <Compile Include="Controllers\CodeGenerated\ServiceJobsController.cs" />
@@ -173,6 +178,7 @@
     <Compile Include="Controllers\TagsController.Partial.cs" />
     <Compile Include="Controllers\UserLoginsController.Partial.cs" />
     <Compile Include="Filters\AuthenticateAttribute.cs" />
+    <Compile Include="Filters\SecuredAttribute.cs" />
     <Compile Include="Filters\RequireHttpsAttribute.cs" />
     <Compile Include="Filters\ValidateAttribute.cs" />
     <Compile Include="IHasCustomRoutes.cs" />

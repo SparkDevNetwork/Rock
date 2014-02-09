@@ -183,14 +183,14 @@ namespace RockWeb.Blocks.Core
                     block.PreHtml = cePreHtml.Text;
                     block.PostHtml = cePostHtml.Text;
                     block.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );
-                    blockService.Save( block, CurrentPersonId );
+                    blockService.Save( block, CurrentPersonAlias );
 
                     Rock.Attribute.Helper.GetEditValues( phAttributes, _block );
                     if ( phAdvancedAttributes.Controls.Count > 0 )
                     {
                         Rock.Attribute.Helper.GetEditValues( phAdvancedAttributes, _block );
                     }
-                    _block.SaveAttributeValues( CurrentPersonId );
+                    _block.SaveAttributeValues( CurrentPersonAlias );
 
                     Rock.Web.Cache.BlockCache.Flush( _block.Id );
                 }

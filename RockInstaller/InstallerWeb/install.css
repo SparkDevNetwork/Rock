@@ -141,24 +141,69 @@ h4 {
 
 /* update status styles */
 .updateprogress-status {
-    padding-top: 50px;
     position:fixed;
-    top: 35%;
+    padding: 50px;
+    color: #4a4a4a;
     left: 40%;
+    top: 30%;
+    opacity: 1;
     z-index: 10000;
     background-color: #a8a6a6;
-    color: #fff;
-    width: 200px;
-    height: 200px;
-    -moz-box-shadow:    rgba(0,0,0, 0.5) 18px 18px 80px 0px;
-    -webkit-box-shadow: rgba(0,0,0, 0.5) 18px 18px 80px 0px;
-    box-shadow: rgba(0,0,0, 0.5) 18px 18px 80px 0px;
     border-radius: 4px;
     text-align: center;
 }
 
-.updateprogress-status i {
-    margin-bottom: 12px;
+.spinner {
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    font-size: 10px;
+    margin: 0 auto;
+}
+
+.spinner > div {
+    background-color: #4a4a4a;
+    height: 100%;
+    width: 6px;
+    display: inline-block;
+  
+    -webkit-animation: stretchdelay 1.2s infinite ease-in-out;
+    animation: stretchdelay 1.2s infinite ease-in-out;
+}
+
+.spinner .rect2 {
+    -webkit-animation-delay: -1.1s;
+    animation-delay: -1.1s;
+}
+
+.spinner .rect3 {
+    -webkit-animation-delay: -1.0s;
+    animation-delay: -1.0s;
+}
+
+.spinner .rect4 {
+    -webkit-animation-delay: -0.9s;
+    animation-delay: -0.9s;
+}
+
+.spinner .rect5 {
+    -webkit-animation-delay: -0.8s;
+    animation-delay: -0.8s;
+}
+
+@-webkit-keyframes stretchdelay {
+    0%, 40%, 100% { -webkit-transform: scaleY(0.4) }  
+    20% { -webkit-transform: scaleY(1.0) }
+}
+
+@keyframes stretchdelay {
+    0%, 40%, 100% { 
+    transform: scaleY(0.4);
+    -webkit-transform: scaleY(0.4);
+    }  20% { 
+    transform: scaleY(1.0);
+    -webkit-transform: scaleY(1.0);
+    }
 }
 
 .updateprogress-bg {

@@ -120,15 +120,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     {
                         if ( IsKnownRelationships )
                         {
-                            var inverseGroupMember = service.GetInverseRelationship( groupMember, false, CurrentPersonId );
+                            var inverseGroupMember = service.GetInverseRelationship( groupMember, false, CurrentPersonAlias );
                             if ( inverseGroupMember != null )
                             {
-                                service.Delete( inverseGroupMember, CurrentPersonId );
+                                service.Delete( inverseGroupMember, CurrentPersonAlias );
                             }
                         }
 
-                        service.Delete( groupMember, CurrentPersonId );
-                        service.Save( groupMember, CurrentPersonId );
+                        service.Delete( groupMember, CurrentPersonAlias );
+                        service.Save( groupMember, CurrentPersonAlias );
 
                         BindData();
                     }
@@ -172,17 +172,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     groupMember.GroupId = group.Id;
                                     groupMember.PersonId = personId;
                                     groupMember.GroupRoleId = roleId.Value;
-                                    memberService.Add( groupMember, CurrentPersonId );
+                                    memberService.Add( groupMember, CurrentPersonAlias );
                                 }
 
-                                memberService.Save( groupMember, CurrentPersonId );
+                                memberService.Save( groupMember, CurrentPersonAlias );
                                 if ( IsKnownRelationships )
                                 {
                                     var inverseGroupMember = memberService.GetInverseRelationship(
-                                        groupMember, bool.Parse( GetAttributeValue( "CreateGroup" ) ), CurrentPersonId );
+                                        groupMember, bool.Parse( GetAttributeValue( "CreateGroup" ) ), CurrentPersonAlias );
                                     if ( inverseGroupMember != null )
                                     {
-                                        memberService.Save( inverseGroupMember, CurrentPersonId );
+                                        memberService.Save( inverseGroupMember, CurrentPersonAlias );
                                     }
                                 }
                             }
@@ -229,8 +229,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 group.Members.Add( groupMember );
 
                                 var groupService = new GroupService();
-                                groupService.Add( group, CurrentPersonId );
-                                groupService.Save( group, CurrentPersonId );
+                                groupService.Add( group, CurrentPersonAlias );
+                                groupService.Save( group, CurrentPersonAlias );
 
                                 group = groupService.Get( group.Id );
                             }

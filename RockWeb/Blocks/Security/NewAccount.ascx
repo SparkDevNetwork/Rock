@@ -166,6 +166,10 @@
             <asp:Literal ID="lSuccessCaption" runat="server" />
         </div>
 
+        <div class="actions">
+            <asp:Button ID="btnContinue" runat="server" Text="Continue" CssClass="btn btn-primary" OnClick="btnContinue_Click" Visible="false" />
+        <div class="actions">
+
     </asp:PlaceHolder>
 
 </ContentTemplate>

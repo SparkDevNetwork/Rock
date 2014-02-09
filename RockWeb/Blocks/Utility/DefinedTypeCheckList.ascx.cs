@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Utility
 $('.checklist-item .checklist-desc-toggle').on('click', function (e) {
     e.preventDefault();
     $(this).parent('header').siblings('.panel-body').slideToggle();
-    $(this).find('i').toggleClass('fa-chevron-up fa-chevron-down');
+    $(this).parent().find('i').toggleClass('fa-chevron-up fa-chevron-down');
 });
 ";
             ScriptManager.RegisterStartupScript(this.Page, this.Page.GetType(), "DefinedValueChecklistScript", script, true);
@@ -92,39 +92,27 @@ $('.checklist-item .checklist-desc-toggle').on('click', function (e) {
                         if ( value != null )
                         {
                             Helper.LoadAttributes( value );
-                            value.SetAttributeValue( attributeKey, cbValue.Checked.ToString() );
-                            Helper.SaveAttributeValues( value, CurrentPersonId );
-                            DefinedValueCache.Flush( value.Id );
+                            if ( value.GetAttributeValue( attributeKey ) != cbValue.Checked.ToString() )
+                            {
+                                value.SetAttributeValue( attributeKey, cbValue.Checked.ToString() );
+                                Helper.SaveAttributeValues( value, CurrentPersonAlias );
+                                DefinedValueCache.Flush( value.Id );
+                            }
                         }
                     }
                 }
             }
 
+            bool wasVisible = this.Visible;
+
             ShowList();
 
-            if (Page.IsPostBack && pnlContent.Visible == false)
+            if ( Page.IsPostBack && wasVisible && this.Visible == false )
             {
-                // If last item was just checked (postback and visible == false), 
-                // do a redirect back to the same page.  This is needed to hide 
-                // the pre/post content which is outside of this controls update panel.
+                // If last item was just checked do a redirect back to the same page.  
+                // This is needed to hide the control since content is inside an update 
+                // panel
                 Response.Redirect( CurrentPageReference.BuildUrl(), false );
-            }
-
-        }
-
-        /// <summary>
-        /// When a control renders it's content to the page, this method will also check to see if
-        /// the block instance of this control has been configured for output caching, and if so,
-        /// the contents will also be rendered to a string variable that will gets cached in the
-        /// default MemoryCache for use next time by the Rock.Web.UI.RockPage.OnInit() method when rendering the
-        /// control content.
-        /// </summary>
-        /// <param name="writer"></param>
-        protected override void Render( HtmlTextWriter writer )
-        {
-            if ( pnlContent.Visible )
-            {
-                base.Render( writer );
             }
         }
 
@@ -140,7 +128,7 @@ $('.checklist-item .checklist-desc-toggle').on('click', function (e) {
 
         private void ShowList()
         {
-            pnlContent.Visible = true;
+            this.Visible = true;
 
             // Should selected items be displayed
             bool hideCheckedItems = false;
@@ -196,7 +184,7 @@ $('.checklist-item .checklist-desc-toggle').on('click', function (e) {
                     }
                     else
                     {
-                        pnlContent.Visible = false;
+                        this.Visible = false;
                     }
                 }
             }

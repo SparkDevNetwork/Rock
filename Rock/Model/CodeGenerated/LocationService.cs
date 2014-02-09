@@ -134,7 +134,6 @@ namespace Rock.Model
             target.State = source.State;
             target.Country = source.Country;
             target.Zip = source.Zip;
-            target.FullAddress = source.FullAddress;
             target.AssessorParcelId = source.AssessorParcelId;
             target.StandardizeAttemptedDateTime = source.StandardizeAttemptedDateTime;
             target.StandardizeAttemptedServiceType = source.StandardizeAttemptedServiceType;
@@ -145,6 +144,10 @@ namespace Rock.Model
             target.GeocodeAttemptedResult = source.GeocodeAttemptedResult;
             target.GeocodedDateTime = source.GeocodedDateTime;
             target.PrinterDeviceId = source.PrinterDeviceId;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

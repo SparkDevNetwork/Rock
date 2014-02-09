@@ -418,7 +418,7 @@ namespace RockWeb.Blocks.Groups
                 if ( groupTypeId == 0 )
                 {
                     groupType = new GroupType();
-                    groupTypeService.Add( groupType, CurrentPersonId );
+                    groupTypeService.Add( groupType, CurrentPersonAlias );
                 }
                 else
                 {
@@ -429,7 +429,7 @@ namespace RockWeb.Blocks.Groups
                     foreach ( var role in groupType.Roles.Where( r => !selectedRoleGuids.Contains( r.Guid ) ).ToList() )
                     {
                         groupType.Roles.Remove( role );
-                        groupTypeRoleService.Delete( role, CurrentPersonId );
+                        groupTypeRoleService.Delete( role, CurrentPersonAlias );
                     }
                 }
 
@@ -506,7 +506,7 @@ namespace RockWeb.Blocks.Groups
 
                 RockTransactionScope.WrapTransaction( () =>
                     {
-                        groupTypeService.Save( groupType, CurrentPersonId );
+                        groupTypeService.Save( groupType, CurrentPersonAlias );
 
                         /* Save Attributes */
                         string qualifierValue = groupType.Id.ToString();
@@ -521,7 +521,7 @@ namespace RockWeb.Blocks.Groups
                         {
                             groupType.DefaultGroupRole = groupType.Roles.FirstOrDefault();
                         }
-                        groupTypeService.Save( groupType, CurrentPersonId );
+                        groupTypeService.Save( groupType, CurrentPersonAlias );
 
                         // Reload the roles and apply their attribute values
                         foreach ( var role in groupTypeRoleService.GetByGroupTypeId( groupType.Id ) )
@@ -534,7 +534,7 @@ namespace RockWeb.Blocks.Groups
                                 {
                                     role.SetAttributeValue( attributeValue.Key, roleState.GetAttributeValue( attributeValue.Key ) );
                                 }
-                                Helper.SaveAttributeValues( role, CurrentPersonId );
+                                Helper.SaveAttributeValues( role, CurrentPersonAlias );
                             }
                         }
 
@@ -824,7 +824,7 @@ namespace RockWeb.Blocks.Groups
             cblLocationSelectionModes.Items.Add( new ListItem( "Named", "2" ) );
             cblLocationSelectionModes.Items.Add( new ListItem( "Address", "1" ) );
             cblLocationSelectionModes.Items.Add( new ListItem( "Point", "4" ) );
-            cblLocationSelectionModes.Items.Add( new ListItem( "Polygon", "8" ) );
+            cblLocationSelectionModes.Items.Add( new ListItem( "Geo-fence", "8" ) );
             cblLocationSelectionModes.Items.Add( new ListItem( "Group Member Address", "16" ) );
 
             gtpInheritedGroupType.GroupTypes = new GroupTypeService().Queryable()
@@ -1044,15 +1044,15 @@ namespace RockWeb.Blocks.Groups
             {
                 Rock.Web.Cache.AttributeCache.Flush( attr.Id );
 
-                attributeService.Delete( attr, CurrentPersonId );
-                attributeService.Save( attr, CurrentPersonId );
+                attributeService.Delete( attr, CurrentPersonAlias );
+                attributeService.Save( attr, CurrentPersonAlias );
             }
 
             // Update the Attributes that were assigned in the UI
             foreach ( var attributeState in viewStateAttributes )
             {
                 Helper.SaveAttributeEdits( attributeState, attributeService, qualifierService, categoryService,
-                    entityTypeId, qualifierColumn, qualifierValue, CurrentPersonId );
+                    entityTypeId, qualifierColumn, qualifierValue, CurrentPersonAlias );
             }
         }
 

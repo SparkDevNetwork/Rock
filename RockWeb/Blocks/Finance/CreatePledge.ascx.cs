@@ -132,8 +132,8 @@ namespace RockWeb.Blocks.Finance
                             if ( !pledge.IsValid )
                                 continue;
 
-                            pledgeService.Add( pledge, person.Id );
-                            pledgeService.Save( pledge, person.Id );
+                            pledgeService.Add( pledge, CurrentPersonAlias );
+                            pledgeService.Save( pledge, CurrentPersonAlias );
                         }
 
                         ShowReceipt( pledges.Select( p => p.Id ) );
@@ -161,8 +161,8 @@ namespace RockWeb.Blocks.Finance
                             continue;
 
                         var pledgeService = new FinancialPledgeService();
-                        pledgeService.Add( pledge, CurrentPersonId );
-                        pledgeService.Save( pledge, CurrentPersonId );
+                        pledgeService.Add( pledge, CurrentPersonAlias );
+                        pledgeService.Save( pledge, CurrentPersonAlias );
                     }
 
                     Session.Remove( "CachedPledges" );
@@ -298,8 +298,17 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                person = personService.GetByEmail( tbEmail.Text )
-                    .FirstOrDefault( p => p.FirstName == tbFirstName.Text && p.LastName == tbLastName.Text );
+                var people = personService.GetByMatch( tbFirstName.Text, tbLastName.Text, tbEmail.Text );
+                if ( people.Count() == 1 )
+                {
+                    person = people.FirstOrDefault();
+                }
+                else
+                {
+                    // TODO multiple matches, identify the correct person otherwise we're creating duplicates
+                    // here.
+                    person = null;
+                }
             }
 
             if ( person == null )
@@ -313,8 +322,7 @@ namespace RockWeb.Blocks.Finance
                     ConnectionStatusValueId = definedValue.Id,
                 };
 
-                personService.Add( person, CurrentPersonId );
-                personService.Save( person, CurrentPersonId );
+                new GroupService().SaveNewFamily( person, null, CurrentPersonAlias );
             }
 
             return person;

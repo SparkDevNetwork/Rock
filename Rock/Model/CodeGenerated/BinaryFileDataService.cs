@@ -104,6 +104,10 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this BinaryFileData target, BinaryFileData source )
         {
             target.Content = source.Content;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

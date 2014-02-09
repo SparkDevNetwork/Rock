@@ -119,7 +119,7 @@
                                 <asp:CheckBox ID="cbMailing" runat="server" Checked='<%# Eval("IsMailing") %>' />
                             </EditItemTemplate>
                         </asp:TemplateField>
-                        <asp:TemplateField HeaderText="Location" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
+                        <asp:TemplateField HeaderText="Map Location" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
                             <ItemTemplate>
                                 <%# ((bool)Eval("IsLocation")) ? "<i class=\"fa fa-check\"></i>" : "" %>
                             </ItemTemplate>
@@ -216,6 +216,7 @@
                     Sys.Application.add_load(function () {
                         
                         $find('<%=modalAddPerson.ClientID%>').add_shown(function () {
+                            enableRequiredField('<%=acPerson.ClientID%>_rfv', true)
                             enableRequiredField('<%=tbNewPersonFirstName.ClientID%>_rfv', false);
                             enableRequiredField('<%=tbNewPersonLastName.ClientID%>_rfv', false);
                         });
@@ -224,10 +225,12 @@
                             var tabHref = $(e.target).attr("href");
                             if (tabHref == '#<%=divExistingPerson.ClientID%>') {
                                 $('#<%=hfActiveTab.ClientID%>').val('Existing');
+                                enableRequiredField('<%=acPerson.ClientID%>_rfv', true)
                                 enableRequiredField('<%=tbNewPersonFirstName.ClientID%>_rfv', false);
                                 enableRequiredField('<%=tbNewPersonLastName.ClientID%>_rfv', false);
                             } else {
                                 $('#<%=hfActiveTab.ClientID%>').val('New');
+                                enableRequiredField('<%=acPerson.ClientID%>_rfv', false)
                                 enableRequiredField('<%=tbNewPersonFirstName.ClientID%>_rfv', true);
                                 enableRequiredField('<%=tbNewPersonLastName.ClientID%>_rfv', true);
                             }

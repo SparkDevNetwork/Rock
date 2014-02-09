@@ -176,11 +176,11 @@ namespace Rock.Model
                 Type genericServiceType = typeof( Rock.Data.Service<> );
                 Type modelServiceType = genericServiceType.MakeGenericType( modelType );
 
-                object serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { context } );
+                IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { context } ) as IService;
 
                 if ( serviceInstance != null )
                 {
-                    ParameterExpression paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
+                    ParameterExpression paramExpression = serviceInstance.ParameterExpression;
                     MemberExpression idExpression = Expression.Property( paramExpression, "Id" );
 
                     // Get AttributeValue queryable and parameter
@@ -233,7 +233,7 @@ namespace Rock.Model
                         DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.Value.DataSelectComponentEntityType.Name );
                         if ( selectComponent != null )
                         {
-                            bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ) ), selectComponent.GetExpression( context, idExpression, reportField.Value.Selection ) ) );
+                            bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ) ), selectComponent.GetExpression( context, idExpression, reportField.Value.Selection ?? string.Empty ) ) );
                         }
                     }
 

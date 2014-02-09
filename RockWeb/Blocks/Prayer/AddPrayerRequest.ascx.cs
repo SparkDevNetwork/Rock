@@ -158,15 +158,15 @@ namespace RockWeb.Blocks.Prayer
             PrayerRequest prayerRequest = new PrayerRequest { Id = 0, IsActive = true, IsApproved = isAutoApproved, AllowComments = defaultAllowComments };
 
             PrayerRequestService prayerRequestService = new PrayerRequestService();
-            prayerRequestService.Add( prayerRequest, CurrentPersonId );
-            prayerRequest.EnteredDateTime = DateTime.Now;
+            prayerRequestService.Add( prayerRequest, CurrentPersonAlias );
+            prayerRequest.EnteredDateTime = RockDateTime.Now;
 
             if ( isAutoApproved )
             {
                 prayerRequest.ApprovedByPersonId = CurrentPersonId;
-                prayerRequest.ApprovedOnDateTime = DateTime.Now;
+                prayerRequest.ApprovedOnDateTime = RockDateTime.Now;
                 var expireDays = Convert.ToDouble( GetAttributeValue( "ExpireDays" ) );
-                prayerRequest.ExpirationDate = DateTime.Now.AddDays( expireDays );
+                prayerRequest.ExpirationDate = RockDateTime.Now.AddDays( expireDays );
             }
 
             // Now record all the bits...
@@ -179,7 +179,6 @@ namespace RockWeb.Blocks.Prayer
             }
             prayerRequest.CategoryId = categoryId;
             prayerRequest.RequestedByPersonId = CurrentPersonId;
-
             prayerRequest.FirstName = Sanitizer.GetSafeHtmlFragment( dtbFirstName.Text.Trim() );
             prayerRequest.LastName = Sanitizer.GetSafeHtmlFragment( dtbLastName.Text.Trim() );
             prayerRequest.Email = dtbEmail.Text.Trim();
@@ -219,7 +218,7 @@ namespace RockWeb.Blocks.Prayer
                 return;
             }
 
-            prayerRequestService.Save( prayerRequest, CurrentPersonId );
+            prayerRequestService.Save( prayerRequest, CurrentPersonAlias );
 
             bool isNavigateToParent = GetAttributeValue( "NavigateToParentOnSave" ).AsBoolean();
 

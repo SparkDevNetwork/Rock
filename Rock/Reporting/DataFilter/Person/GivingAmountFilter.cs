@@ -21,6 +21,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -164,9 +165,7 @@ function() {
         /// <param name="controls">The controls.</param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
-            controls[0].RenderControl( writer );
-            controls[1].RenderControl( writer );
-            controls[2].RenderControl( writer );
+            base.RenderControls( entityType, filterControl, writer, controls );
         }
 
         /// <summary>
@@ -222,7 +221,7 @@ function() {
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( Type entityType, object serviceInstance, Expression parameterExpression, string selection )
+        public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length != 4 )
@@ -235,9 +234,7 @@ function() {
             DateTime startDate = selectionValues[2].AsDateTime() ?? DateTime.MinValue;
             DateTime endDate = selectionValues[3].AsDateTime() ?? DateTime.MaxValue;
 
-            Rock.Data.RockContext context = serviceInstance.GetPropertyValue( "RockContext" ) as Rock.Data.RockContext;
-
-            var financialTransactionQry = new FinancialTransactionService( context ).Queryable()
+            var financialTransactionQry = new FinancialTransactionService( serviceInstance.RockContext ).Queryable()
                 .Where( xx => xx.TransactionDateTime >= startDate && xx.TransactionDateTime < endDate )
                 .GroupBy( xx => xx.AuthorizedPersonId ).Select( xx =>
                     new
@@ -257,7 +254,7 @@ function() {
 
             var innerQry = financialTransactionQry.Select( xx => xx.PersonId ?? 0 ).AsQueryable();
 
-            var qry = new PersonService( context ).Queryable()
+            var qry = new PersonService( serviceInstance.RockContext ).Queryable()
                 .Where( p => innerQry.Any( xx => xx == p.Id ) );
 
             Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );

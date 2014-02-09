@@ -157,7 +157,7 @@ namespace Rock.Communication
                 var mergeObjects = recipient.Value;
 
                 // Combine the global merge values with the recipient specific merge values
-                configValues.ToList().ForEach( g => mergeObjects.Add( g.Key, g.Value ) );
+                configValues.ToList().ForEach( g => mergeObjects[ g.Key ] = g.Value );
 
                 // Resolve any merge codes in the subject and body
                 string subject = Subject.ResolveMergeFields( mergeObjects );

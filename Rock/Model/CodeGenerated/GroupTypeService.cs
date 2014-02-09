@@ -136,6 +136,10 @@ namespace Rock.Model
             target.InheritedGroupTypeId = source.InheritedGroupTypeId;
             target.LocationSelectionMode = source.LocationSelectionMode;
             target.GroupTypePurposeValueId = source.GroupTypePurposeValueId;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

@@ -97,7 +97,7 @@ namespace RockWeb.Blocks.Administration
                 {
                     metric = new Metric();
                     metric.IsSystem = false;
-                    metricService.Add( metric, CurrentPersonId );
+                    metricService.Add( metric, CurrentPersonAlias );
                 }
                 else
                 {
@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.Administration
                     return;
                 }
 
-                metricService.Save( metric, CurrentPersonId );
+                metricService.Save( metric, CurrentPersonAlias );
                 hfMetricId.SetValue( metric.Id );
             }
 

@@ -134,7 +134,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     System.Web.UI.WebControls.Image imgPerson = e.Item.FindControl( "imgPerson" ) as System.Web.UI.WebControls.Image;
                     if ( imgPerson != null )
                     {
-                        imgPerson.ImageUrl = fm.PhotoUrl; 
+                        imgPerson.ImageUrl = fm.PhotoUrl;
+                    }
+                    
+                    if (fm.PhotoUrl.Contains("no-photo"))
+                    {
+                        imgPerson.CssClass = "no-photo";
                     }
 
                 }
@@ -229,15 +234,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 switch ( e.CommandName )
                 {
                     case "geocode":
-                        service.Geocode( location, CurrentPersonId );
+                        service.Geocode( location, CurrentPersonAlias );
                         break;
 
                     case "standardize":
-                        service.Standardize( location, CurrentPersonId );
+                        service.Standardize( location, CurrentPersonAlias );
                         break;
                 }
 
-                service.Save( location, CurrentPersonId );
+                service.Save( location, CurrentPersonAlias );
             }
 
             BindFamilies();
@@ -277,8 +282,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         family.Members.Add( groupMember );
 
                         var groupService = new GroupService();
-                        groupService.Add( family, CurrentPersonId );
-                        groupService.Save( family, CurrentPersonId );
+                        groupService.Add( family, CurrentPersonAlias );
+                        groupService.Save( family, CurrentPersonAlias );
 
                         families.Add( groupService.Get( family.Id ) );
                     }

@@ -31,6 +31,9 @@ namespace Rock.Model
     [DataContract]
     public partial class TaggedItem : Model<TaggedItem>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets a flag indicating if this TaggedItem is part of the Rock core system/framework.
         /// </summary>
@@ -59,7 +62,20 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public Guid EntityGuid { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the quantity.  Used if tagging the same entity multiple times is supported.
+        /// </summary>
+        /// <value>
+        /// The quantity.
+        /// </value>
+        [DataMember]
+        public int Quantity { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
+
         /// <summary>
         /// Gets or sets the Tag that this TaggedItem belongs to.
         /// </summary>
@@ -68,6 +84,10 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Tag Tag { get; set; }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Gets the parent security authority for this TagItem
@@ -90,7 +110,12 @@ namespace Rock.Model
         {
             return this.Tag != null ? this.Tag.Name : string.Empty;
         }
+
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Attribute Value Configuration class.
@@ -105,4 +130,7 @@ namespace Rock.Model
             this.HasRequired( p => p.Tag ).WithMany( p => p.TaggedItems ).HasForeignKey( p => p.TagId ).WillCascadeOnDelete(true);
         }
     }
+
+    #endregion
+
 }

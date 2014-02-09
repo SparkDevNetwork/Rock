@@ -262,8 +262,30 @@ namespace RockWeb.Blocks.Security
                 loginUrl = ResolveRockUrl( "~/Login" );
             }
 
+            string returnUrl = Request.QueryString["returnurl"];
+            if ( !string.IsNullOrWhiteSpace( returnUrl ) && !loginUrl.Contains("returnurl"))
+            {
+                string delimiter = "?";
+                if (loginUrl.Contains('?'))
+                {
+                    delimiter = "&";
+                }
+
+                loginUrl += delimiter + "returnurl=" + returnUrl;
+            }
+
             Response.Redirect( loginUrl, false );
             Context.ApplicationInstance.CompleteRequest();
+        }
+
+        protected void btnContinue_Click( object sender, EventArgs e )
+        {
+            string returnUrl = Request.QueryString["returnurl"];
+            if ( !string.IsNullOrWhiteSpace( returnUrl ) )
+            {
+                Response.Redirect( Server.UrlDecode( returnUrl ), false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
         }
 
         #endregion
@@ -439,24 +461,34 @@ namespace RockWeb.Blocks.Security
 
                 if ( person != null )
                 {
-                    string url = LinkedPageUrl( "ConfirmationPage" );
-                    if ( string.IsNullOrWhiteSpace( url ) )
+                    try 
                     {
-                        url = ResolveRockUrl( "~/ConfirmAccount" );
+                        string url = LinkedPageUrl( "ConfirmationPage" );
+                        if ( string.IsNullOrWhiteSpace( url ) )
+                        {
+                            url = ResolveRockUrl( "~/ConfirmAccount" );
+                        }
+                        var mergeObjects = new Dictionary<string, object>();
+                        mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
+
+                        var personDictionary = person.ToDictionary();
+                        mergeObjects.Add( "Person", personDictionary );
+
+                        mergeObjects.Add( "User", user.ToDictionary() );
+
+                        var recipients = new Dictionary<string, Dictionary<string, object>>();
+                        recipients.Add( person.Email, mergeObjects );
+
+                        Email email = new Email( GetAttributeValue( "AccountCreatedTemplate" ) );
+                        email.Send( recipients );
                     }
-                    var mergeObjects = new Dictionary<string, object>();
-                    mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
+                    catch(SystemException ex)
+                    {
+                        ExceptionLogService.LogException(ex, Context, RockPage.PageId, RockPage.Site.Id, CurrentPersonAlias);
+                    }
 
-                    var personDictionary = person.ToDictionary();
-                    mergeObjects.Add( "Person", personDictionary );
-
-                    mergeObjects.Add( "User", user.ToDictionary() );
-
-                    var recipients = new Dictionary<string, Dictionary<string, object>>();
-                    recipients.Add( person.Email, mergeObjects );
-
-                    Email email = new Email( GetAttributeValue( "AccountCreatedTemplate" ) );
-                    email.Send( recipients );
+                    string returnUrl = Request.QueryString["returnurl"];
+                    btnContinue.Visible = !string.IsNullOrWhiteSpace( returnUrl );
 
                     lSuccessCaption.Text = GetAttributeValue( "SuccessCaption" );
                     if ( lSuccessCaption.Text.Contains( "{0}" ) )
@@ -509,9 +541,7 @@ namespace RockWeb.Blocks.Security
                 }
             }
 
-            personService.Add(person, CurrentPersonId);
-            personService.Save(person, CurrentPersonId);
-
+            new GroupService().SaveNewFamily( person, null, null );
             return person;
         }
 
@@ -520,7 +550,7 @@ namespace RockWeb.Blocks.Security
             var userLoginService = new Rock.Model.UserLoginService();
             return userLoginService.Create( person, Rock.Model.AuthenticationServiceType.Internal, 
                 EntityTypeCache.Read(Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid()).Id, 
-                tbUserName.Text, Password, confirmed, CurrentPersonId );
+                tbUserName.Text, Password, confirmed );
         }
 
         #endregion

@@ -18,6 +18,7 @@ using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Model;
+using Rock;
 
 namespace Rock.Web.UI.Controls
 {
@@ -39,6 +40,7 @@ namespace Rock.Web.UI.Controls
         private LocationAddressPicker _addressPicker;
         private GeoPicker _pointPicker;
         private GeoPicker _polygonPicker;
+        private HiddenField _hfCurrentPickerMode;
 
         #endregion
 
@@ -80,8 +82,9 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                var pickerMode = ViewState["CurrentPickerMode"] as LocationPickerMode?;
-                if ( !pickerMode.HasValue )
+                LocationPickerMode pickerMode = _hfCurrentPickerMode.Value.ConvertToEnum<LocationPickerMode>(LocationPickerMode.Named );
+
+                if ( string.IsNullOrWhiteSpace( _hfCurrentPickerMode.Value ) )
                 {
                     if ( ( this.AllowedPickerModes & LocationPickerMode.Address ) == LocationPickerMode.Address )
                     {
@@ -100,15 +103,15 @@ namespace Rock.Web.UI.Controls
                         pickerMode = LocationPickerMode.Named;
                     }
 
-                    CurrentPickerMode = pickerMode.Value;
+                    CurrentPickerMode = pickerMode;
                 }
 
-                return pickerMode.Value;
+                return pickerMode;
             }
 
             set
             {
-                ViewState["CurrentPickerMode"] = value;
+                _hfCurrentPickerMode.Value = value.ConvertToString( false );
             }
         }
 
@@ -266,26 +269,28 @@ namespace Rock.Web.UI.Controls
 
             int modesEnabled = 0;
 
+            var currentPickerMode = this.CurrentPickerMode;
+
             _radNamed.Visible = nameEnabled;
-            _radNamed.Checked = this.CurrentPickerMode == LocationPickerMode.Named;
+            _radNamed.Checked = currentPickerMode == LocationPickerMode.Named;
             modesEnabled = nameEnabled ? modesEnabled + 1 : modesEnabled;
 
             _radAddress.Visible = addressEnabled;
-            _radAddress.Checked = this.CurrentPickerMode == LocationPickerMode.Address;
+            _radAddress.Checked = currentPickerMode == LocationPickerMode.Address;
             modesEnabled = addressEnabled ? modesEnabled + 1 : modesEnabled;
 
             _radPoint.Visible = pointEnabled;
-            _radPoint.Checked = this.CurrentPickerMode == LocationPickerMode.Point;
+            _radPoint.Checked = currentPickerMode == LocationPickerMode.Point;
             modesEnabled = pointEnabled ? modesEnabled + 1 : modesEnabled;
 
             _radPolygon.Visible = polygonEnabled;
-            _radPolygon.Checked = this.CurrentPickerMode == LocationPickerMode.Polygon;
+            _radPolygon.Checked = currentPickerMode == LocationPickerMode.Polygon;
             modesEnabled = polygonEnabled ? modesEnabled + 1 : modesEnabled;
 
-            _namedPicker.Visible = nameEnabled && this.CurrentPickerMode == LocationPickerMode.Named;
-            _addressPicker.Visible = addressEnabled && this.CurrentPickerMode == LocationPickerMode.Address;
-            _pointPicker.Visible = pointEnabled && this.CurrentPickerMode == LocationPickerMode.Point;
-            _polygonPicker.Visible = polygonEnabled && this.CurrentPickerMode == LocationPickerMode.Polygon;
+            _namedPicker.Visible = nameEnabled && currentPickerMode == LocationPickerMode.Named;
+            _addressPicker.Visible = addressEnabled && currentPickerMode == LocationPickerMode.Address;
+            _pointPicker.Visible = pointEnabled && currentPickerMode == LocationPickerMode.Point;
+            _polygonPicker.Visible = polygonEnabled && currentPickerMode == LocationPickerMode.Polygon;
 
             _pnlModeSelection.Visible = modesEnabled > 1;
 
@@ -322,7 +327,7 @@ namespace Rock.Web.UI.Controls
             _pnlModeSelection.Controls.Add( _radPoint );
 
             _radPolygon = new RadioButton { ID = "radPolygon" };
-            _radPolygon.Text = "Polygon";
+            _radPolygon.Text = "Geo-fence";
             _radPolygon.GroupName = "radiogroup-location-mode_" + this.ClientID;
             _pnlModeSelection.Controls.Add( _radPolygon ); 
             
@@ -346,6 +351,9 @@ namespace Rock.Web.UI.Controls
             _polygonPicker.DrawingMode = GeoPicker.ManagerDrawingMode.Polygon;
             _polygonPicker.SelectGeography += _polygonPicker_SelectGeography;
 
+            _hfCurrentPickerMode = new HiddenField();
+            _hfCurrentPickerMode.ID = this.ID + "_hfCurrentPickerMode";
+
             _namedPicker.ModePanel = _pnlModeSelection;
             _pointPicker.ModePanel = _pnlModeSelection;
             _polygonPicker.ModePanel = _pnlModeSelection;
@@ -355,6 +363,7 @@ namespace Rock.Web.UI.Controls
             _pickersPanel.Controls.Add( _addressPicker );
             _pickersPanel.Controls.Add( _pointPicker );
             _pickersPanel.Controls.Add( _polygonPicker );
+            _pickersPanel.Controls.Add( _hfCurrentPickerMode );
         }
 
         /// <summary>

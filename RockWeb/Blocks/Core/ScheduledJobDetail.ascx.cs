@@ -99,7 +99,7 @@ namespace RockWeb.Blocks.Administration
             if ( jobId == 0 )
             {
                 job = new ServiceJob();
-                jobService.Add( job, CurrentPersonId );
+                jobService.Add( job, CurrentPersonAlias );
             }
             else
             {
@@ -122,10 +122,10 @@ namespace RockWeb.Blocks.Administration
 
             RockTransactionScope.WrapTransaction( () =>
                 {
-                    jobService.Save( job, CurrentPersonId );
+                    jobService.Save( job, CurrentPersonAlias );
                     job.LoadAttributes();
                     Rock.Attribute.Helper.GetEditValues( phAttributes, job );
-                    Rock.Attribute.Helper.SaveAttributeValues( job, CurrentPersonId );
+                    Rock.Attribute.Helper.SaveAttributeValues( job, CurrentPersonAlias );
                 } );
 
             NavigateToParentPage();

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -54,12 +55,18 @@ namespace Rock.Search.Person
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
-            var service = new LocationService();
+            Guid groupTypefamilyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            Guid homeAddressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
+            var homeAddressTypeValueId = Rock.Web.Cache.DefinedValueCache.Read( homeAddressTypeGuid ).Id;
 
-            return service.Queryable().
-                Where( a => a.Street1.Contains( searchterm ) ).
-                OrderBy( a => a.Street1 ).
-                Select( a => a.Street1 + " " + a.City ).Distinct();
+            var service = new GroupMemberService();
+            return service.Queryable()
+                .Where( m => m.Group.GroupType.Guid == groupTypefamilyGuid )
+                .SelectMany( g => g.Group.GroupLocations )
+                .Where( gl => gl.GroupLocationTypeValueId == homeAddressTypeValueId && 
+                    gl.Location.Street1.Contains(searchterm) )
+                .Select( gl => gl.Location.Street1)
+                .Distinct();
         }
     }
 }

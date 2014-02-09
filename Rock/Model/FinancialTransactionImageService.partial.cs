@@ -30,9 +30,9 @@ namespace Rock.Model
         /// Saves the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="personId">The person identifier.</param>
+        /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
-        public override bool Save( FinancialTransactionImage item, int? personId )
+        public override bool Save( FinancialTransactionImage item, PersonAlias personAlias )
         {
             // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
             BinaryFileService binaryFileService = new BinaryFileService( this.RockContext );
@@ -42,7 +42,7 @@ namespace Rock.Model
                 binaryFile.IsTemporary = false;
             }
 
-            return base.Save( item, personId );
+            return base.Save( item, personAlias );
         }
     }
 }

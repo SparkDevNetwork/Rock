@@ -106,8 +106,6 @@ namespace Rock.Model
             target.ParentId = source.ParentId;
             target.SiteId = source.SiteId;
             target.PageId = source.PageId;
-            target.ExceptionDateTime = source.ExceptionDateTime;
-            target.CreatedByPersonId = source.CreatedByPersonId;
             target.HasInnerException = source.HasInnerException;
             target.StatusCode = source.StatusCode;
             target.ExceptionType = source.ExceptionType;
@@ -119,6 +117,10 @@ namespace Rock.Model
             target.QueryString = source.QueryString;
             target.Form = source.Form;
             target.Cookies = source.Cookies;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 
