@@ -701,8 +701,7 @@ achieve our mission.  We are so grateful for your commitment.
                             var recipients = new Dictionary<string, Dictionary<string, object>>();
                             recipients.Add( authorizedPerson.Email, mergeObjects );
 
-                            var email = new Rock.Communication.Email( GetAttributeValue( "ConfirmAccountTemplate" ) );
-                            email.Send( recipients );
+                            Rock.Communication.Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients );
                         }
 
                         var paymentInfo = GetPaymentInfo();
