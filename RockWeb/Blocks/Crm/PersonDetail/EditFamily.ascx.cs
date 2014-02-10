@@ -127,7 +127,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             cpCampus.Campuses = campusi;
             cpCampus.Visible = campusi.Any();
 
-            ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
+            ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ), true );
             ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
 
             lvMembers.DataKeyNames = new string[] { "Index" };
@@ -222,6 +222,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
 
                     cpCampus.SelectedCampusId = _family.CampusId;
+
+                    // If all family members have the same record status, display that value
+                    if (_family.Members.Select( m => m.Person.RecordStatusValueId).Distinct().Count() == 1)
+                    {
+                        ddlRecordStatus.SetValue( _family.Members.Select( m => m.Person.RecordStatusValueId ).FirstOrDefault() );
+                    }
+
+                    // If all family members have the same inactive reason, set that value
+                    if ( _family.Members.Select( m => m.Person.RecordStatusReasonValueId ).Distinct().Count() == 1 )
+                    {
+                        ddlReason.SetValue( _family.Members.Select( m => m.Person.RecordStatusReasonValueId ).FirstOrDefault() );
+                    }
 
                     FamilyMembers = new List<FamilyMember>();
                     foreach ( var familyMember in _family.Members )
@@ -756,11 +768,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     groupMember.Person = personService.Get( familyMember.Id );
                                 }
 
-                                History.EvaluateChange( demographicChanges, "Record Status", DefinedValueCache.GetName( groupMember.Person.RecordStatusValueId ), DefinedValueCache.GetName( recordStatusValueID ) );
-                                groupMember.Person.RecordStatusValueId = recordStatusValueID;
+                                if ( recordStatusValueID > 0 )
+                                {
+                                    History.EvaluateChange( demographicChanges, "Record Status", DefinedValueCache.GetName( groupMember.Person.RecordStatusValueId ), DefinedValueCache.GetName( recordStatusValueID ) );
+                                    groupMember.Person.RecordStatusValueId = recordStatusValueID;
 
-                                History.EvaluateChange( demographicChanges, "Record Status Reason", DefinedValueCache.GetName( groupMember.Person.RecordStatusReasonValueId ), DefinedValueCache.GetName( reasonValueId ) );
-                                groupMember.Person.RecordStatusReasonValueId = reasonValueId;
+                                    History.EvaluateChange( demographicChanges, "Record Status Reason", DefinedValueCache.GetName( groupMember.Person.RecordStatusReasonValueId ), DefinedValueCache.GetName( reasonValueId ) );
+                                    groupMember.Person.RecordStatusReasonValueId = reasonValueId;
+                                }
 
                                 groupMember.GroupId = _family.Id;
                                 if ( role != null )
@@ -836,11 +851,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                                 groupMember.GroupRole != null ? groupMember.GroupRole.Name : string.Empty, role.Name );
                                             groupMember.GroupRoleId = role.Id;
 
-                                            History.EvaluateChange( demographicChanges, "Record Status", DefinedValueCache.GetName( groupMember.Person.RecordStatusValueId ), DefinedValueCache.GetName( recordStatusValueID ) );
-                                            groupMember.Person.RecordStatusValueId = recordStatusValueID;
+                                            if ( recordStatusValueID > 0 )
+                                            {
+                                                History.EvaluateChange( demographicChanges, "Record Status", DefinedValueCache.GetName( groupMember.Person.RecordStatusValueId ), DefinedValueCache.GetName( recordStatusValueID ) );
+                                                groupMember.Person.RecordStatusValueId = recordStatusValueID;
 
-                                            History.EvaluateChange( demographicChanges, "Record Status Reason", DefinedValueCache.GetName( groupMember.Person.RecordStatusReasonValueId ), DefinedValueCache.GetName( reasonValueId ) );
-                                            groupMember.Person.RecordStatusReasonValueId = reasonValueId;
+                                                History.EvaluateChange( demographicChanges, "Record Status Reason", DefinedValueCache.GetName( groupMember.Person.RecordStatusReasonValueId ), DefinedValueCache.GetName( reasonValueId ) );
+                                                groupMember.Person.RecordStatusReasonValueId = reasonValueId;
+                                            }
 
                                             familyMemberService.Save( groupMember, CurrentPersonAlias );
                                         }
