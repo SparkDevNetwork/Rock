@@ -10,13 +10,13 @@
                     <asp:BoundField DataField="Name" HeaderText="Entity Type" SortExpression="Name" />
                     <asp:BoundField DataField="FriendlyName" HeaderText="Friendly Name" SortExpression="FriendlyName" />
                     <Rock:BoolField DataField="IsCommon" HeaderText="Common" SortExpression="IsCommon" />
-                    <asp:TemplateField>
+                    <Rock:TemplateFieldUnselected>
                         <HeaderStyle CssClass="span1" />
                         <ItemStyle HorizontalAlign="Center"/>
                         <ItemTemplate>
                             <a id="aSecure" runat="server" class="btn btn-security btn-sm" height="500px"><i class="fa fa-lock"></i></a>
                         </ItemTemplate>
-                    </asp:TemplateField>
+                    </Rock:TemplateFieldUnselected>
                 </Columns>
             </Rock:Grid>
         </asp:Panel>
