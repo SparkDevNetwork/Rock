@@ -67,7 +67,7 @@ small
 //--------------------------------
 
 .nav-pills {
-    margin: 10px 0;
+    //margin: 10px 0; -- commented out JME 2/10/2014 to see impact
 }
 
 .control-label {
@@ -128,6 +128,12 @@ small
 .panel {
     legend {
         border-color: @accent-color;
+    }
+
+    .panel-title {
+        small {
+            color: #e0e0e0;
+        }
     }
 
     // adjust the background color of pickers on a panel
