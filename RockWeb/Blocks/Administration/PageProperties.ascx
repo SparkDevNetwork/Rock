@@ -54,20 +54,20 @@
 
              <asp:Panel ID="pnlDisplaySettings" runat="server" Visible="false" >
                 <fieldset>
-                    <legend>Page</legend>
+                    <h4>Page</h4>
                     <Rock:RockCheckBox ID="cbPageTitle" runat="server" Text="Show Title on Page" Help="If supported by the layout, should the title be displayed when viewing this page?"/>
                     <Rock:RockCheckBox ID="cbPageBreadCrumb" runat="server" Text="Show Breadcrumbs on Page" Help="If supported by the layout, should breadcrumbs (the navigation history) be displayed when viewing this page?"/>
                     <Rock:RockCheckBox ID="cbPageIcon" runat="server" Text="Show Icon on Page" Help="If supported by the layout, should the page icon be displayed when viewing this page?"/>
                     <Rock:RockCheckBox ID="cbPageDescription" runat="server" Text="Show Description on Page" Help="If supported by the layout, should the page description be displayed when viewing this page?"/>
                 </fieldset>
                 <fieldset>
-                    <legend>Menu</legend>
+                    <h4>Menu</h4>
                     <Rock:DataDropDownList ID="ddlMenuWhen" runat="server" Label="Display When" SourceTypeName="Rock.Model.Page, Rock" PropertyName="DisplayInNavWhen"/>
                     <Rock:RockCheckBox ID="cbMenuDescription" runat="server" Text="Show Description" Help="If supported by the menu, should this page's description be included with its title in the menu?"/>
                     <Rock:RockCheckBox ID="cbMenuChildPages" runat="server" Text="Show Child Pages" Help="Should the child pages be displayed in the menu?"/>
                 </fieldset>
                 <fieldset>
-                    <legend>Breadcrumbs</legend>
+                    <h4>Breadcrumbs</h4>
                     <Rock:RockCheckBox ID="cbBreadCrumbName" runat="server" Text="Show Name in Breadcrumb" Help="Should this page's name be displayed in the breadcrumb trail when viewing this page or a child page?"/>
                     <Rock:RockCheckBox ID="cbBreadCrumbIcon" runat="server" Text="Show Icon in Breadcrumb" Help="Should this page's icon be displayed in the breadcrumb trail when viewing this page or a child page?"/>
                 </fieldset>
@@ -88,7 +88,7 @@
                         </fieldset>
                         <asp:PlaceHolder ID="phContextPanel" runat="server">
                             <fieldset>
-                                <legend>Context Parameters</legend>
+                                <h4>Context Parameters</h4>
                                 <p>There are one or more blocks on this page that can load content based on a 'context' parameter.  
                                 Please enter the route parameter name or query string parameter name that will contain the id for 
                                 each of the objects below.</p>
@@ -110,7 +110,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <fieldset>
-                            <legend>Import Pages</legend>
+                            <h4>Import Pages</h4>
                             <asp:Panel runat="server" ID="pnlImportSuccess" CssClass="row" Visible="False">
                                 <div class="col-md-12 alert alert-success">
                                     <p><i class="fa fa-bolt"></i> <strong>Sweet!</strong> Your package was imported successfully.</p>
@@ -144,18 +144,23 @@
                                     </div>
                                 </FooterTemplate>
                             </asp:Repeater>
-                            <asp:FileUpload runat="server" ID="fuImport" CssClass="input-small" />
-                            <asp:LinkButton runat="server" ID="lbImport" CssClass="btn btn-default btn-sm" OnClick="lbImport_Click">
-                                <i class="fa fa-arrow-up"></i> Import
-                            </asp:LinkButton>
+                            
+                            <p>
+                                <asp:FileUpload runat="server" ID="fuImport" CssClass="input-small" />
+                            </p>
+
+                            <p>
+                                <asp:LinkButton runat="server" ID="lbImport" CssClass="btn btn-default btn-sm" OnClick="lbImport_Click">
+                                    <i class="fa fa-arrow-up"></i> Import
+                                </asp:LinkButton>
+                            </p>
                         </fieldset>
                     </div>
                     <div class="col-md-6">
                         <fieldset>
-                            <legend>Export Pages</legend>
+                            <h4>Export Pages</h4>
                             <label class="checkbox">
-                                <asp:CheckBox runat="server" ID="cbExportChildren" />
-                                Export child pages?
+                                <Rock:RockCheckBox runat="server" ID="cbExportChildren" Text="Export child pages?" />
                             </label>
                             <asp:LinkButton runat="server" ID="lbExport" OnClick="lbExport_Click" CssClass="btn btn-default btn-sm">
                                 <i class="fa fa-download"></i> Export

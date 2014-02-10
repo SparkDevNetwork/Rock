@@ -62,7 +62,7 @@ namespace Rock.Jobs
             string query = dataMap.GetString( "SQLQuery" );
             try
             {
-                int rows = new Service().ExecuteCommand( query, new object[] { } );
+                int rows = new Service().ExecuteCommand( query );
             }
             catch ( System.Exception ex )
             {

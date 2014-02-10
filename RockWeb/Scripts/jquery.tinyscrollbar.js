@@ -80,9 +80,9 @@
             oViewport[options.axis] = oViewport.obj[0]['offset' + sSize];
 
             // set overflow to 'scroll' temporarily to get crossbrowser safe scrollHieght
-            oContent.obj[0].style.overflow = 'scroll';
+            //oContent.obj[0].style.overflow = 'scroll';
             oContent[options.axis] = oContent.obj[0]['scroll' + sSize] + 10;
-            oContent.obj[0].style.overflow = '';
+            //oContent.obj[0].style.overflow = '';
 
             oContent.ratio = oViewport[options.axis] / oContent[options.axis];
                 

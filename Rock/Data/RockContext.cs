@@ -18,7 +18,9 @@ using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
+using System.Linq;
 using System.Reflection;
+using System.Web;
 using Rock.Model;
 
 namespace Rock.Data
@@ -495,6 +497,14 @@ namespace Rock.Data
         public DbSet<PersonAlias> PersonAliases { get; set; }
 
         /// <summary>
+        /// Gets or sets the person badge types.
+        /// </summary>
+        /// <value>
+        /// The person badge types.
+        /// </value>
+        public DbSet<PersonBadge> PersonBadges { get; set; }
+
+        /// <summary>
         /// Gets or sets the Person Vieweds.
         /// </summary>
         /// <value>
@@ -533,6 +543,22 @@ namespace Rock.Data
         /// The report fields.
         /// </value>
         public DbSet<ReportField> ReportFields { get; set; }
+
+        /// <summary>
+        /// Gets or sets the REST Actions.
+        /// </summary>
+        /// <value>
+        /// The reports.
+        /// </value>
+        public DbSet<RestAction> RestActions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the REST Controllers.
+        /// </summary>
+        /// <value>
+        /// The reports.
+        /// </value>
+        public DbSet<RestController> RestControllers { get; set; }
 
         /// <summary>
         /// Gets or sets the schedules.
@@ -675,6 +701,58 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Saves all changes made in this context to the underlying database.
+        /// </summary>
+        /// <returns>
+        /// The number of objects written to the underlying database.
+        /// </returns>
+        public override int SaveChanges()
+        {
+            // Try to get the current person alias
+            int? personAliasId = null;
+            if ( HttpContext.Current != null && HttpContext.Current.Items.Contains("CurrentPerson"))
+            {
+                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
+                if ( currentPerson != null && currentPerson.PrimaryAlias != null )
+                {
+                    personAliasId = currentPerson.PrimaryAlias.Id;
+                }
+            }
+
+            var changeSet = this.ChangeTracker.Entries().Where( e => e.Entity is IModel );
+            if (changeSet != null)
+            {
+                foreach(var entry in changeSet
+                    .Where( c => c.State == EntityState.Added)
+                    .Select( a => a.Entity as IModel))
+                {
+                    if ( !entry.CreatedDateTime.HasValue )
+                    {
+                        entry.CreatedDateTime = RockDateTime.Now;
+                    }
+                    if ( !entry.CreatedByPersonAliasId.HasValue )
+                    {
+                        entry.CreatedByPersonAliasId = personAliasId;
+                    }
+
+                    entry.ModifiedDateTime = RockDateTime.Now;
+                    entry.ModifiedByPersonAliasId = personAliasId;
+                }
+
+                foreach ( var entry in changeSet
+                    .Where( c => c.State == EntityState.Modified )
+                    .Select( a => a.Entity as IModel ) )
+                {
+                    entry.ModifiedDateTime = RockDateTime.Now;
+                    entry.ModifiedByPersonAliasId = personAliasId;
+                }
+            }
+
+            return base.SaveChanges();
+
+        }
+
+        /// <summary>
         /// Gets the name of the entity from table.
         /// </summary>
         /// <param name="tableName">Name of the table.</param>
@@ -768,10 +846,13 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new PageRouteConfiguration() );
             modelBuilder.Configurations.Add( new PersonConfiguration() );
             modelBuilder.Configurations.Add( new PersonAliasConfiguration() );
+            modelBuilder.Configurations.Add( new PersonBadgeConfiguration() );
             modelBuilder.Configurations.Add( new PersonViewedConfiguration() );
             modelBuilder.Configurations.Add( new PhoneNumberConfiguration() );
             modelBuilder.Configurations.Add( new PrayerRequestConfiguration() );
             modelBuilder.Configurations.Add( new ReportConfiguration() );
+            modelBuilder.Configurations.Add( new RestActionConfiguration() );
+            modelBuilder.Configurations.Add( new RestControllerConfiguration() );
             modelBuilder.Configurations.Add( new ScheduleConfiguration() );
             modelBuilder.Configurations.Add( new ServiceJobConfiguration() );
             modelBuilder.Configurations.Add( new ServiceLogConfiguration() );

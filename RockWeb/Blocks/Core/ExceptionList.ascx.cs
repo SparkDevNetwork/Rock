@@ -505,7 +505,7 @@ namespace RockWeb.Blocks.Administraton
         private void ClearExceptionLog()
         {
             Service service = new Service();
-            service.ExecuteCommand( "TRUNCATE TABLE ExceptionLog", new object[] { } );
+            service.ExecuteCommand( "TRUNCATE TABLE ExceptionLog" );
         }
 
         /// <summary>

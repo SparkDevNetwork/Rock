@@ -29,6 +29,18 @@ namespace Rock.Web.UI.Controls
     public class SelectField : TemplateField, INotRowSelectedField
     {
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SelectField" /> class.
+        /// </summary>
+        public SelectField()
+            : base()
+        {
+            this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+            this.HeaderStyle.CssClass = "grid-select-field";
+            this.ItemStyle.CssClass = "grid-select-field";
+
+        }
+
         #region Properties
 
         /// <summary>
@@ -275,6 +287,7 @@ namespace Rock.Web.UI.Controls
             if ( cb != null )
             {
                 GridViewRow gridViewRow = cb.NamingContainer as GridViewRow;
+
                 if ( gridViewRow.DataItem != null )
                 {
                     if ( !string.IsNullOrWhiteSpace( DataTextField ) )
@@ -321,6 +334,9 @@ namespace Rock.Web.UI.Controls
 
     #region Enumerations
 
+    /// <summary>
+    /// 
+    /// </summary>
     public enum SelectionMode
     {
         /// <summary>

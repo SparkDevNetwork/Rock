@@ -142,9 +142,19 @@ namespace Rock.Web.UI.Controls
             var rockPage = this.Page as RockPage;
             if ( rockPage != null )
             {
+                writer.AddAttribute( "class", "taglist " + this.CssClass );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
                 writer.AddAttribute( "class", "tag-wrap" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                string cssTemp = this.CssClass;
+                this.CssClass = string.Empty;
                 base.RenderControl( writer );
+                this.CssClass = cssTemp;
+
+                writer.RenderEndTag();
+
                 writer.RenderEndTag();
 
                 var script = string.Format( @"

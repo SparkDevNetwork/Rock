@@ -375,7 +375,7 @@ img.file-browser-image {
 }
 
 /* DT- Merge*/
-tr.merge-section-header > td
+div.person-merge-confirm p.updated
 {
-    background-color:#d9e1e8 
+    color:red;
 }

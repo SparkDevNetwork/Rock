@@ -327,7 +327,7 @@ namespace Rock.Web.UI.Controls
             _pnlModeSelection.Controls.Add( _radPoint );
 
             _radPolygon = new RadioButton { ID = "radPolygon" };
-            _radPolygon.Text = "Polygon";
+            _radPolygon.Text = "Geo-fence";
             _radPolygon.GroupName = "radiogroup-location-mode_" + this.ClientID;
             _pnlModeSelection.Controls.Add( _radPolygon ); 
             

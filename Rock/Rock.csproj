@@ -135,6 +135,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RockWeb\Bin\System.Web.Http.dll</HintPath>
     </Reference>
+    <Reference Include="System.Web.Http.WebHost, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="Twilio.Api">
@@ -147,6 +148,7 @@
     </Compile>
     <Compile Include="Attribute\AccountsFieldAttribute.cs" />
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
+    <Compile Include="Attribute\PersonBadgesAttribute.cs" />
     <Compile Include="Attribute\CampusFieldAttribute.cs" />
     <Compile Include="Attribute\BinaryFileTypeFieldAttribute.cs" />
     <Compile Include="Attribute\ComponentFieldAttribute.cs" />
@@ -187,6 +189,7 @@
     <Compile Include="Data\IModel.cs" />
     <Compile Include="Data\IService.cs" />
     <Compile Include="Data\LinqRuntimeTypeBuilder.cs" />
+    <Compile Include="Field\Types\PersonBadgesFieldType.cs" />
     <Compile Include="Field\Types\GroupLocationTypeFieldType.cs" />
     <Compile Include="Field\Types\CodeEditorFieldType.cs" />
     <Compile Include="Field\Types\TimeFieldType.cs" />
@@ -205,12 +208,18 @@
     </Compile>
     <Compile Include="Jobs\RunSQL.cs" />
     <Compile Include="Model\AuditDetail.cs" />
+    <Compile Include="Model\CodeGenerated\PersonBadgeService.cs" />
+    <Compile Include="Model\PersonBadge.cs" />
     <Compile Include="Model\CodeGenerated\AuditDetailService.cs" />
     <Compile Include="Model\CodeGenerated\HistoryService.cs" />
     <Compile Include="Model\CodeGenerated\LayoutService.cs" />
     <Compile Include="Model\CodeGenerated\PersonAliasService.cs" />
     <Compile Include="Model\CodeGenerated\ReportFieldService.cs" />
+    <Compile Include="Model\CodeGenerated\RestActionService.cs" />
+    <Compile Include="Model\CodeGenerated\RestControllerService.cs" />
     <Compile Include="Model\DbGeographyConverter.cs" />
+    <Compile Include="Model\RestAction.cs" />
+    <Compile Include="Model\RestController.cs" />
     <Compile Include="Model\FinancialTransactionImageService.partial.cs" />
     <Compile Include="Model\FinancialScheduledTransactionService.Partial.cs" />
     <Compile Include="Model\HistoryService.Partial.cs" />
@@ -220,16 +229,22 @@
     <Compile Include="Model\History.cs" />
     <Compile Include="Model\PersonAlias.cs" />
     <Compile Include="Model\ReportField.cs" />
+    <Compile Include="Model\RestControllerService.Partial.cs" />
     <Compile Include="Net\RestParameters\ContributionStatementOptions.cs" />
-    <Compile Include="PersonProfile\Badge\Baptized.cs" />
-    <Compile Include="PersonProfile\Badge\NextSteps.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="PersonProfile\Badge\Campus.cs" />
+    <Compile Include="PersonProfile\Badge\AttendingDuration.cs" />
+    <Compile Include="PersonProfile\Badge\InGroupOfType.cs" />
+    <Compile Include="PersonProfile\Badge\FamilyWeeksAttendedInDuration.cs" />
+    <Compile Include="PersonProfile\Badge\Liquid.cs" />
     <Compile Include="Reporting\DataSelectComponent.cs" />
     <Compile Include="Reporting\DataFilter\Person\GivingAmountFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\DistanceFromFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupFilter.cs" />
+    <Compile Include="Reporting\DataSelect\LiquidSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\InGroupGroupTypeSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\PhotoSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\GradeSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\DistanceFromSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\AddressSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\CampusSelect.cs" />
@@ -271,19 +286,8 @@
     <Compile Include="PersonProfile\BadgeComponent.cs" />
     <Compile Include="PersonProfile\BadgeContainer.cs" />
     <Compile Include="PersonProfile\Badge\FamilyAttendance.cs" />
-    <Compile Include="PersonProfile\Badge\eraAttendance.cs" />
-    <Compile Include="PersonProfile\Badge\DiscScore.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="PersonProfile\Badge\eRA.cs" />
-    <Compile Include="PersonProfile\Badge\RecordStatus.cs" />
-    <Compile Include="PersonProfile\Badge\Campus.cs" />
-    <Compile Include="PersonProfile\Badge\ConnectionStatus.cs" />
-    <Compile Include="PersonProfile\Badge\Serving.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="PersonProfile\IconBadge.cs" />
-    <Compile Include="PersonProfile\TextBadge.cs" />
+    <Compile Include="PersonProfile\HighlightLabelBadge.cs" />
     <Compile Include="Search\Group\Name.cs" />
     <Compile Include="SystemGuid\Category.cs" />
     <Compile Include="SystemGuid\EntityType.cs" />
@@ -488,8 +492,10 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\Grid\LiquidField.cs" />
     <Compile Include="Web\UI\Controls\Grid\ListDelimitedField.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonMergeField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\TemplateFieldUnselected.cs" />
     <Compile Include="Web\UI\Controls\Grid\SelectField.cs" />
     <Compile Include="Web\UI\Controls\Grid\RockBoundField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LinkButtonField.cs" />

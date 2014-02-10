@@ -32,6 +32,7 @@ namespace Rock.Web.UI.Controls
         private HiddenField _hfVisible;
         private LinkButton _lbFilter;
         private Dictionary<string, string> _userPreferences;
+        private bool _isDirty = false;
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -202,7 +203,11 @@ Sys.Application.add_load(function () {
 
                 writer.RenderEndTag();
 
-                SaveUserPreferences();
+                if ( _isDirty )
+                {
+                    SaveUserPreferences();
+                    _isDirty = false;
+                }
             }
         }
 
@@ -281,10 +286,15 @@ Sys.Application.add_load(function () {
         {
             if ( _userPreferences.ContainsKey( key ) )
             {
-                _userPreferences[key] = value;
+                if ( _userPreferences[key] != value )
+                {
+                    _isDirty = true;
+                    _userPreferences[key] = value;
+                }
             }
             else
             {
+                _isDirty = true;
                 _userPreferences.Add( key, value );
             }
         }

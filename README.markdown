@@ -1,15 +1,16 @@
-[Rock](http://rockchms.org/) - Rock is a People/Groups/Relationships & Church Management System
+[Rock RMS](http://rockrms.com/) 
 ===============================================================================
 The [Spark Development Network](http://www.sparkdevelopmentnetwork.com/) is developing a first-class,
-open source Church Management System (ChMS) / Application Framework called *Rock*.  It's an ASP.NET 4.5 C# web application that
-uses Entity Framework 6.0, jQuery, Bootstrap, and a whole bunch of other openly available libraries.  We're
-planning a beta release for January 2014.
+open source Relationship Management System (RMS) / Application Framework called *Rock*. While Rock specializes in serving the unique needs of churches it's useful in a wide range of service industries.  It's an ASP.NET 4.5 C# web application that
+uses Entity Framework 6.0, jQuery, Bootstrap 3, and many other open source libraries.  We're
+planning a beta release for early 2014.
 
 Our main developer starting point site is [the wiki](https://github.com/SparkDevNetwork/Rock/wiki).
 
 ## Learn More
 
-Sign up for the newsletter over on the [Spark Development Network](http://www.sparkdevelopmentnetwork.com/)
-home page and [read previous newsletters](http://sparkdevnetwork.github.com/Rock/newsletter/index.html).
+Jump over or our [product website](http://www.rockrms.com/) to find out more. Keep up to date by:
 
-You can also read [our press release](http://www.sparkdevnetwork.org/files/SparkAnnouncement.pdf) if you're into that sort of thing.
+* [Following us on Twitter](http://www.twitter.com/therockrms)
+* [Liking us on Facebook](http://www.facebook.com/therockrms)
+* [Subscribing to our newsletter](http://www.rockrms.com/Rock/Subscribe)

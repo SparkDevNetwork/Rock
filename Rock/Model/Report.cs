@@ -233,7 +233,7 @@ namespace Rock.Model
                         DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.Value.DataSelectComponentEntityType.Name );
                         if ( selectComponent != null )
                         {
-                            bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ) ), selectComponent.GetExpression( context, idExpression, reportField.Value.Selection ) ) );
+                            bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ) ), selectComponent.GetExpression( context, idExpression, reportField.Value.Selection ?? string.Empty ) ) );
                         }
                     }
 

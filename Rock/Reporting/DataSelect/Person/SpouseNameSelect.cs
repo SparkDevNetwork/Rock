@@ -32,7 +32,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the name of the Person's Spouse" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Spouse's Name" )]
-    public class SpouseNameSelect : DataSelectComponent<Rock.Model.Person>
+    public class SpouseNameSelect : DataSelectComponent
     {
         #region Properties
 
@@ -48,6 +48,20 @@ namespace Rock.Reporting.DataSelect.Person
             get
             {
                 return typeof( Rock.Model.Person ).FullName;
+            }
+        }
+
+        /// <summary>
+        /// Gets the section that this will appear in in the Field Selector
+        /// </summary>
+        /// <value>
+        /// The section.
+        /// </value>
+        public override string Section
+        {
+            get
+            {
+                return base.Section;
             }
         }
 
@@ -151,31 +165,6 @@ namespace Rock.Reporting.DataSelect.Person
         public override System.Web.UI.Control[] CreateChildControls( System.Web.UI.Control parentControl )
         {
             return new System.Web.UI.Control[] { };
-        }
-
-        /// <summary>
-        /// Formats the selection.
-        /// </summary>
-        /// <param name="selection">The selection.</param>
-        /// <returns></returns>
-        public override string FormatSelection( string selection )
-        {
-            return base.FormatSelection( selection );
-        }
-
-        /// <summary>
-        /// Formats the selection on the client-side.  When the widget is collapsed by the user, the Filterfield control
-        /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before
-        /// referencing this property.
-        /// </summary>
-        /// <returns></returns>
-        /// <value>
-        /// The client format script.
-        /// </value>
-        public override string GetClientFormatSelection()
-        {
-            return base.GetClientFormatSelection();
         }
 
         /// <summary>

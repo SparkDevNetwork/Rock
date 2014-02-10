@@ -7,6 +7,208 @@ IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[_com_
 DROP PROCEDURE [dbo].[_com_rocksoliddemochurch_spCreateSampleData]
 GO
 
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[_com_rocksoliddemochurch_spCreateSampleDataPerson]') AND type in (N'P', N'PC'))
+DROP PROCEDURE [dbo].[_com_rocksoliddemochurch_spCreateSampleDataPerson]
+GO
+
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[_com_rocksoliddemochurch_spCreateSampleDataAttendance]') AND type in (N'P', N'PC'))
+DROP PROCEDURE [dbo]._com_rocksoliddemochurch_spCreateSampleDataAttendance
+GO
+
+CREATE PROCEDURE [dbo].[_com_rocksoliddemochurch_spCreateSampleDataPerson]
+	@FirstName varchar(50)
+	,@NickName varchar(50)
+	,@LastName varchar(50)
+	,@BirthDate datetime
+	,@Age int
+	,@Gender int
+	,@Email varchar(75)
+	,@EmailIsActive int
+	,@EmailDoNotEmail int
+	,@Guid uniqueidentifier
+	,@RecordType int
+	,@RecordStatus int
+	,@MaritalStatus int
+	,@FamilyId int
+	,@FamilyRole int
+	,@PhotoId int
+	,@ConnectionStatus int
+	,@HomePhone varchar(20)
+	,@MobilePhone varchar(20)
+	,@WorkPhone varchar(20)
+AS
+BEGIN
+		DECLARE @PersonId int
+		DECLARE @MobilePhoneTypeId INT = (SELECT Id FROM [DefinedValue] WHERE Guid = '407E7E45-7B2E-4FCD-9605-ECB1339F2453')
+
+		-- person record
+		INSERT INTO [Person] ([IsSystem],[FirstName],[NickName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId], [MaritalStatusValueId],[GivingGroupId], [PhotoId], [ConnectionStatusValueId])
+        VALUES (0, @FirstName, @NickName, @LastName, DATEPart("day", @BirthDate), DATEPart("month", @BirthDate), DATEPart("year", getdate()) - @Age, @Gender, @Email, @EmailIsActive, @EmailDoNotEmail, @Guid, @RecordType, @RecordStatus, @MaritalStatus, @FamilyId, @PhotoId, @ConnectionStatus)
+        SET @personId = SCOPE_IDENTITY()
+        
+		-- family member
+		INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid, GroupMemberStatus)
+        VALUES (0, @FamilyId, @PersonId, @FamilyRole, NEWID(), 0)
+        
+        -- mobile phone
+		IF (@MobilePhone IS NOT NULL)
+		BEGIN
+			INSERT INTO [PhoneNumber] (IsSystem, PersonId, Number, IsMessagingEnabled, IsUnlisted, Guid, NumberTypeValueId)
+			VALUES (0, @PersonId, @MobilePhone, 1, 0, NEWID(), @MobilePhoneTypeId)
+		END
+
+END
+GO
+
+CREATE PROCEDURE [dbo]._com_rocksoliddemochurch_spCreateSampleDataAttendance
+	@familyGroupId int
+	,@numbWeeks int
+	,@percentAttendance int
+	,@percentAttendedRegularService int
+	,@regularScheduleId int
+	,@alternateSchedueId int
+AS
+BEGIN
+
+    DECLARE
+		@aPreviousSunday DATETIME = (SELECT DATEADD(DAY , 1-DATEPART(WEEKDAY,GETDATE()),GETDATE()) )
+    DECLARE
+		@shiftedDate DATETIME
+		,@weekendDate DATETIME = @aPreviousSunday
+		,@scheduleId INT
+		,@tempPersonId INT
+		,@tempClassGroupId INT
+		,@tempLocationId INT
+		,@tempId INT
+		,@randInt INT
+		,@i INT
+		,@serviceTime VARCHAR(10)
+		,@code VARCHAR(10)
+		,@ChildRoleId INT = 4
+	
+	-- Set up 
+	DECLARE @Schedules TABLE
+	(
+	  Id int,
+	  DowName varchar(12)
+	  ,ServiceTime varchar(12)
+	)
+	INSERT INTO @Schedules VALUES
+		( 1, 'Saturday', '4:30pm' ), (2,'Saturday', '6:00pm'), (3, 'Sunday', '9:00am'),
+		( 4, 'Sunday', '10:30am' ), (5, 'Sunday', '12:00pm')
+
+	DECLARE @GroupLocations TABLE
+	(
+	  ClassGroupId int,
+	  LocationId int,
+	  Name varchar(50),
+	  MinAge decimal,
+	  MaxAge decimal
+	)
+	INSERT INTO @GroupLocations VALUES
+	( 25, 4, 'Nursery - Bunnies Room',          0.0,  3.0),
+	( 26, 5, 'Crawlers/Walkers - Kittens Room', 0.0,  3.99 ),
+	( 27, 6, 'Preschool - Puppies Room',        0.0,  5.99 ),
+	( 28, 7, 'Grades K-1 - Bears Room',         4.75, 8.75 ),
+	( 29, 8, 'Grades 2-3 - Bobcats Room',       6.0, 10.99 ),
+	( 30, 9, 'Grades 4-6 - Outpost Room',       8.0, 13.99 ),
+	( 31, 10, 'Grades 7-8 - Warehouse',        12.0, 15.0  ),
+	( 32, 11, 'Grades 9-12 - Garage',          13.0, 19.0  )
+
+	DECLARE @FamilyMembers TABLE (
+		PersonId int,
+		ClassGroupId int,
+		LocationId int,
+		AddStatus bit
+	)
+	-- put each family member into this temp table along with
+	-- an appropriate class and location for their age. 
+	INSERT INTO @FamilyMembers (PersonId, ClassGroupId, LocationId, AddStatus)
+		SELECT 
+			GM.PersonId
+			, GL.ClassGroupId
+			, GL.LocationId
+			,0
+		FROM GroupMember GM
+		INNER JOIN Person P ON P.Id = GM.PersonId 
+		INNER JOIN @GroupLocations GL ON GL.ClassGroupId =
+			(
+				SELECT TOP 1 ClassGroupId FROM @GroupLocations GL2 WHERE (DATEPART(year, GetDate()) - P.BirthYear BETWEEN GL2.MinAge AND GL2.MaxAge ) ORDER BY GL2.MaxAge DESC 
+			)
+		WHERE GroupId = @familyGroupId AND GM.GroupRoleId = @ChildRoleId 
+	
+	SET @i = 0;
+	WHILE ( @i <= @numbWeeks )
+	BEGIN
+		SET @i = @i + 1;
+		
+		-- move to the previous weekend
+		SET @weekendDate = (SELECT DATEADD(WEEK , -1, @weekendDate) )
+		
+		-- Randomize to determine if they attended this particular week
+		SET @randInt = ( select RAND() * 100 + 1 )
+		IF ( @randInt <= @percentAttendance )
+		BEGIN
+			-- Ok, they attended this weekend...
+			
+			-- let's randomize to determine which service they attended
+			SET @randInt = ( select RAND() * 100 + 1 )
+			SET @scheduleId = CASE
+				WHEN @randInt <= @percentAttendedRegularService THEN @regularScheduleId 
+				ELSE @alternateSchedueId END
+				
+			SET @serviceTime = (SELECT ServiceTime FROM @Schedules WHERE Id = @scheduleId)
+			SET @weekendDate = DATEADD(day, DATEDIFF(day, 0, @weekendDate), @serviceTime )
+			
+			-- let's get a random number of minutes to shift the check-in time a bit
+			SET @randInt = ( select RAND() * -15 + 1 )
+			-- Randomize whether they're early or late to service.
+			SET @randInt = 
+				CASE
+				WHEN ( select RAND() * 1 + 1 ) <= 1 THEN -@randInt 
+				ELSE @randInt END
+			-- add the random time to the datetime
+			SET @weekendDate = DATEADD(MINUTE, @randInt, @weekendDate );
+			
+			-- Now go through each family member and add their attendance
+			-- record
+			WHILE (( SELECT COUNT(PersonId) FROM @FamilyMembers WHERE AddStatus = 0 ) > 0 ) 
+			BEGIN
+
+				-- Get one person and their ClassGroup and Location ids				
+				SELECT TOP 1
+					@tempPersonId = PersonId,
+					@tempClassGroupId = ClassGroupId,
+					@tempLocationId = LocationId
+				  FROM @FamilyMembers WHERE AddStatus=0 ORDER BY PersonId
+				  
+				-- add an attendance code
+				SET @code = LEFT( NEWID(), 5);
+				INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
+				VALUES (@weekendDate, @code, NEWID())
+				SET @tempId = SCOPE_IDENTITY()
+			
+				-- add their attendance record
+				INSERT INTO [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
+				VALUES (@tempLocationId, @scheduleId, @tempClassGroupId, @tempPersonId, 2, 39, @tempId, NULL, @weekendDate, NULL, 1, NULL, NEWID())
+				
+				-- Mark their AddStatus record as true in order to eventually get out of the loop
+				UPDATE @FamilyMembers SET AddStatus=1  WHERE PersonId = @tempPersonId
+			
+			END -- each family member
+			
+			-- reset the family member table for the next week
+			UPDATE @FamilyMembers SET AddStatus=0
+				
+		END -- they attended this particular week
+		
+	END  -- each weekend
+
+END -- attendance procedure
+GO
+
+
+
 CREATE PROCEDURE [dbo].[_com_rocksoliddemochurch_spCreateSampleData]
 AS
 /**********************************************************************
@@ -24,7 +226,12 @@ BEGIN TRY
     @female INT = 2,
     @personRecordType INT = (SELECT Id FROM [DefinedValue] WHERE Guid = '36CF10D6-C695-413D-8E7C-4546EFEF385E'),
     @activeRecordStatus INT = (SELECT Id FROM [DefinedValue] WHERE Guid = '618F906C-C33D-4FA3-8AEF-E58CB7B63F1E'),
+	@memberConnectionStatus INT = (SELECT Id FROM [DefinedValue] WHERE Guid = '41540783-D9EF-4C70-8F1D-C9E83D91ED5F'),
+	@attendeeConnectionStatus INT = (SELECT Id FROM [DefinedValue] WHERE Guid = '39F491C5-D6AC-4A9B-8AC0-C431CB17D588'),
+	@visitorConnectionStatus INT = (SELECT Id FROM [DefinedValue] WHERE Guid = 'B91BA046-BC1E-400C-B85D-638C1F4E0CE2'),
+	@participantConnectionStatus INT = (SELECT Id FROM [DefinedValue] WHERE Guid = '1E3DE7EE-4DAF-4718-B39F-3D843CCACABE'),
     @primaryPhone INT = (SELECT Id FROM [DefinedValue] WHERE Guid = '407E7E45-7B2E-4FCD-9605-ECB1339F2453'),
+	@mainCampus INT = (SELECT Id FROM [Campus] WHERE Guid = '76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8'),
     @personId INT,
     @firstName NVARCHAR(50),
     @lastName NVARCHAR(50),
@@ -90,8 +297,8 @@ BEGIN TRY
 			DELETE [AttendanceCode] WHERE [Id] NOT IN (SELECT [AttendanceCodeId] FROM [Attendance])
         END
         
-        INSERT INTO [Group] (IsSystem, GroupTypeId, Name, IsSecurityRole, IsActive, Guid, [Order])
-        VALUES (0, @FamilyGroupType, 'Decker Family', 0, 1, '53A02527-C2A7-4F36-8585-71A85B8E4601', 0)
+        INSERT INTO [Group] (IsSystem, GroupTypeId, Name, CampusId, IsSecurityRole, IsActive, Guid, [Order])
+        VALUES (0, @FamilyGroupType, 'Decker Family', @mainCampus, 0, 1, '53A02527-C2A7-4F36-8585-71A85B8E4601', 0)
         SET @groupId = SCOPE_IDENTITY()
 
             -- Decker home address
@@ -134,16 +341,8 @@ E160CCD24A861A891274839674C332D57BFB4DB2DE1682BAB3B98F549D0D307398E9D9566D4B22D2
         INSERT INTO [BinaryFileData] ([Id], [Guid], [Content])
         VALUES(@photoId, @tempGuid, CONVERT(varbinary(max), @tempVarcharString, 1))
         
-        -- Ted
-        INSERT INTO [Person] ([IsSystem],[FirstName],[NickName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId], [MaritalStatusValueId],[GivingGroupId], [PhotoId])
-        VALUES (0, 'Ted', 'Ted', 'Decker', 27, @lastMonth, @todayYear - 38, @male, 'ted@rocksoliddemochurch.com', 1, 0, '8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4', @personRecordType, @activeRecordStatus, @married, @groupId, @photoId)
-        SET @personId = SCOPE_IDENTITY()
-        INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid, GroupMemberStatus)
-        VALUES (0, @groupId, @personId, @adultRole, NEWID(), 0)
-        
-        -- Ted's phone
-        INSERT INTO [PhoneNumber] (IsSystem, PersonId, Number, IsMessagingEnabled, IsUnlisted, Guid, NumberTypeValueId)
-        VALUES (0, @personId, '6235553322', 1, 0, NEWID(), @PrimaryPhone)
+		-- ted
+		EXEC _com_rocksoliddemochurch_spCreateSampleDataPerson 'Theodore', 'Ted', 'Decker', '2/10/1973', 38, @male, 'ted@rocksoliddemochurch.com', 1, 0, '8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4', @personRecordType, @activeRecordStatus, @married, @groupId, @adultRole, @photoId, @memberConnectionStatus, '6235553322', '6235553322', '602555-2911'
 
         -- Cindy's photo
         SET @tempGuid = NEWID()
@@ -154,12 +353,9 @@ E160CCD24A861A891274839674C332D57BFB4DB2DE1682BAB3B98F549D0D307398E9D9566D4B22D2
 B06D7563F8B779019FBD79D4D324396E66E72A5B8EB8875484B0564E13804E0F97A551EB6FB2EB3C953800FF002621AABC1B0EDF99575CDD615C74EB51EDAC9663407509C1C72A24F23D071D28F6FEB4AFB3984F3EA200D9B777F9528A6480FD8EE7E052529532A474C0E4F19F3A63B905123B1F627B8EBAEBC8424E54E1213E2F21D0558D358AEB55FCC4DBFC4FE63DF5F5BDE9175716E242B079E7A7CCD035CBE1E16F7D7B52CA12A52CA8F2E2BAFDB8A3ED6D35A9085BC0B850A190128C1CFCA945A9E4455BCA8AEC8528A923C2127241F5AF9D69D198E0CFA651ED02035CB574A8369B9DDDD4A81727B263B6BF32144AB1F34E7E5C5362C173B7EA5D3AD4E86E87197DAE079A4F983EFE5497D7B1177B4FC0C646C546DAE21B27194AB827E60FF235A7D985CFF77E4AAD1DE2B8E5408E33D091EBCD686DD3A3D01D7DC20E8675B4A9F6FC7FB8C56F4D590C85BA63A233CAE56A6D00073DD43CEB5AD90E0421DE33B9D58E127604A41F90FEB5EE23F1A6B60E00247041E95610D9427092368F2A4C5E47B8CB12AA171D4C3D63294D5AD30D1F9DF50DFEC9CE4D05499C98BABD0E170A14521493EA0F391EBD7047A74E9469A81B0BDEE9E56391BA975ADDA4FC44298804C57D0A6FBC1D5A7124E52AFA1F9E3047147D328738FB896A3D00113A63B2EBB312821BEF12A594E3F3E47DBAFDE863F6A1B2C31A25FB83898D35F4AD1F88DB4D80C9CE3957E6C9CF4E0564F60305BB1330B51DC67CCDF242830C23C40A3D483E5E74D4ED0340E9CED3EC2B45AAE8AB75C523724A090DAD5FF91BF4F71CFCEBDA5D1B51A8166EE332B35E8570C54EDFB9C17256CB2E14AA3020F439AB5628512E53DA43A5B8ED64A96B70F012393F3F614F9D45FB366AA816B70A6DF0EF2F77B90B86EF8F663A6D56D3D7D33507EE4DB747418EC5FB47CBF8B08CAE5496949610A3D12938DA4FD6B45AAF1054AFD00927EA676CB02B9C8E208CA62EF2E2B36CB6DA44561F5A63416BB8DA76020959CF4073CABCEAD6A6D362D4C30D5C16855B6D8A5BAFAD607E3AB1F91233CE493C7B516DCB5522DAA8929A5A581B31DE019CA33C8EBF9B8A565FE5EA6D78EC9EEE0CC94CB2E15369650708054002401E23FEFE954BA65BEFB031015477F72AEC2ACD9107AE33E34FB6DC1306198F1D0D20807A9215EDC0EB46F6DD41051D92FF00872E4A3E282386B19279F4A9FB3CD03A9E2B572170D1E2521E69286113DC0CA01CE4923A9E2B58E89D70B5A91160E9AB6B29E3085779FE55A04B2B036E7AFCC97961808D8F89B6DDADEC7C34F42A4C84EF6D3C82A1CF4F21D3A75A5EDF6C8AF8C5F7FE053C92842B3F94FF000FF7EF413A16CBAEE7DDE135A69B7E74D8EEF7A90D24A929C919DE4F0075EA475A776BCB4CC82D40176111ABD3E12A5428CE779DD90339DF8C019E73FD6B33A8F0F6D3B0F2CE73371A6D5AB1DA62962D84DC6F89529C0C770CA9131D5746835CAD47DC0207CEBE908B46A5B149BCE9E80EB06CD871B5A9437498CA385A88C71823701CF9D65F685AA2445D1D7788C3650FDC67880E388E8842101C7539F525481F7A8FF678D4F1ED77376CF7046E626365B4700E3383B707A82474F5E3CEAC2AA5853BCF70BFDCA9B760FF008C33D2D39696DB512483E468AD5352A4641C7159D7ED3ADDB1C4DC6D677DB5E39091D1A27CBD87A7A74AA85C284F1C1F9D555B482D99642D571B849EECBEF1B291EB59DA6749C9BF5F90D4793223473854C08C14B891D010411BBD3CC75AB485296707A75E453174B45559ED488E84E25C8FC6795E6807A27E78C5129CA9F4C5AE738C4BE9B6A588D1E1B69DADC6414369EA4027A67E58FB55C829956F75B90D1521693E129E0D5DB6C43B438E0E48E055F719CAC6002474A68391C45DB5E557CBEC434D337654FB7B4E380EE00858239CD68CE91183084494254D3E4A76AC0208F707A8A1ED2A16D2FB840E17F9BDBD6A6D5327FE25A69046D40238F535EC7333EE80D8401C40DD55D92E8CBA99B71B1DAA2B5712092CA94531DE50E808E88C9F303E94ABB6EAE956B433A75FB15D2D2B8DB9B5B698DB1A4AC754F1C79F5F3FAD3B9B92E34A596DC29EB9C1A5F76CB1AE2DAAD5A92D36EFF10538F261DC982BDB94ED3DDBA09E0608DA4E3F4D4D4639FE623A8A027A9441C91A854E361B4C490A046372CE2B2255D25292436D29BFFE89CD4971D516381962E17187124846E2D25614527D33EB4B7BBF6B0EACBF160595C5389CA52E38BE33EB4CE980B8FA1498B649F913B25C165D19A6CC5B3C28D05B0921A65A40014AFD47CCFCCD29A525DB94F957296A2E3AEF014AEBEC288353CE9332594C82378182849E11ED5476252D348C7BD2001ECF73434FE9AE3E4C44F6DFA29E1085DE1073E1DB73749612A3B7711B43B8F5C6124FA629471DB5C6790EB64A16839041C106BB364C4624B2E4779A438DAD252A4A870411820D736769FA3DCD2D7D506D2A5417895475E33C79A4FB8FF434FD17646C3080F398CBECC752A6F7A7836F61C94DFE149655D1C49E8AC7F7823E55AD7AB2066309B042DC8D9C2D2E72A68FB9F31EFF007A45E91BFBFA76F4C5C63789293875B2785A4F507E9FE55D49A61FB7DEACECDC6DAE25E8F25BDDB55D479290A1EBE4695D4D5B4E636B794E60BE85B4A675E42D69DCCC71DEAC1E8A3FC23E59E7E94C9810774853AE0CE4EE513E75534AD99AB2B72832F64BEEEE1B9392118C04FBE39E6B712404E0639A020C083BF5049C89236900E53C6054F1D3B95B8E07155D1C909FA9A954B01384F5C54BA889399A11A7FC22F732B1BC023355653FDE36A5A959503BB359807724A4742735FA1C057B49EA39AE2B1DC3326114722580E04C72B3D54702A9EA0862F1A7E55916FB91CCE8EA6BBD6CE14D13F9563E4706A243CA0D36857548391F5AF4DBC55278192451D4E206D40D9138C35269B541D45320CD4168C578B6E3654495AD2705473EA7355DF5C6646DDC918F7A61FED7F6891075042D4B05C52189ED777200E81E4719FAA71F6AE7D0FBEFBE96CBEA254A03AD6974CCBE5A91295AA287199FFFD9' 
         INSERT INTO [BinaryFileData] ([Id], [Guid], [Content])
         VALUES(@photoId, @tempGuid, CONVERT(varbinary(max), @tempVarcharString, 1))
-                
-        INSERT INTO [Person] ([IsSystem],[FirstName],[NickName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId], [MaritalStatusValueId],[GivingGroupId], [PhotoId])
-        VALUES (0, 'Cindy', 'Cindy', 'Decker', 8, @lastMonth, @todayYear - 37, @female, 'cindy@rocksoliddemochurch.com', 1, 0, 'B71494DB-D809-451A-A950-28898D0FD92C', @personRecordType, @activeRecordStatus, @married, @groupId, @photoId)
-        SET @personId = SCOPE_IDENTITY()
-        INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid, GroupMemberStatus)
-        VALUES (0, @groupId, @personId, @adultRole, NEWID(), 0)
+        
+		-- cindy
+		EXEC _com_rocksoliddemochurch_spCreateSampleDataPerson  'Cynthia', 'Cindy', 'Decker', '3/10/1973', 37, @female, 'cindy@rocksoliddemochurch.com', 1, 0, 'B71494DB-D809-451A-A950-28898D0FD92C', @personRecordType, @activeRecordStatus, @married, @groupId, @adultRole, @photoId, @memberConnectionStatus, '6235553323', '6235553323', null
 
         -- Noah's photo
         SET @tempGuid = NEWID()
@@ -172,11 +368,8 @@ F77CFFFE1DB5192421D90782975FE1E56C403DE763E4828B112C5843858F8018E371220AC4007910
         INSERT INTO [BinaryFileData] ([Id], [Guid], [Content])
         VALUES(@photoId, @tempGuid, CONVERT(varbinary(max), @tempVarcharString, 1))
         
-        INSERT INTO [Person] ([IsSystem],[FirstName],[NickName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId],[PhotoId])
-        VALUES (0, 'Noah', 'Noah', 'Decker', 26, @lastMonth, @todayYear - 10, @male, 'noah@rocksoliddemochurch.com', 1, 0, '32AAB9E4-970D-4551-A17E-385E66113BD5', @personRecordType, @activeRecordStatus, @photoId)
-        SET @personId = SCOPE_IDENTITY()
-        INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid, GroupMemberStatus)
-        VALUES (0, @groupId, @personId, @childRole, NEWID(), 0)
+        -- noah
+		EXEC _com_rocksoliddemochurch_spCreateSampleDataPerson 'Noah', 'Noah', 'Decker', '3/10/1973', 10, @male, '', 1, 0, '32AAB9E4-970D-4551-A17E-385E66113BD5', @personRecordType, @activeRecordStatus, @single, @groupId, @childRole, @photoId, @attendeeConnectionStatus, null, null, null
         
         -- Alexis photo
         SET @tempGuid = NEWID()
@@ -189,730 +382,17 @@ F77CFFFE1DB5192421D90782975FE1E56C403DE763E4828B112C5843858F8018E371220AC4007910
         INSERT INTO [BinaryFileData] ([Id], [Guid], [Content])
         VALUES(@photoId, @tempGuid, CONVERT(varbinary(max), @tempVarcharString, 1))
 
-        INSERT INTO [Person] ([IsSystem],[FirstName],[NickName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId],[PhotoId])
-        VALUES (0, 'Alexis', 'Alexis', 'Decker', 2, @lastMonth, @todayYear - 7, @female, 'alexis@rocksoliddemochurch.com', 1, 0, '27919690-3CCE-4FA6-95C4-CD21419EB51F', @personRecordType, @activeRecordStatus, @photoId)
-        SET @personId = SCOPE_IDENTITY()
-        INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid, GroupMemberStatus)
-        VALUES (0, @groupId, @personId, @childRole, NEWID(), 0)
+		-- alexis
+		EXEC _com_rocksoliddemochurch_spCreateSampleDataPerson  'Alexis', 'Alex', 'Decker', '2/10/1973', 7, @female, '', 1, 0, '27919690-3CCE-4FA6-95C4-CD21419EB51F', @personRecordType, @activeRecordStatus, @single, @groupId, @childRole, @photoId, @attendeeConnectionStatus, null, null, null
 
 		---
 		-- Attendance Data for Decker family
+		--    52 weeks
+		--    80% attendance rate
+		--    88% attend 9am (schedule 3) and remaining attend 10:30 (schedule 4)
 		---
-        DECLARE
-           @TedId INT = (SELECT [Id] FROM [Person] WHERE [Guid] = '8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4'),
-           @CindyId INT = (SELECT [Id] FROM [Person] WHERE [Guid] = 'B71494DB-D809-451A-A950-28898D0FD92C'),
-           @NoahId INT = (SELECT [Id] FROM [Person] WHERE [Guid] = '32AAB9E4-970D-4551-A17E-385E66113BD5'),
-           @AlexisId INT = (SELECT [Id] FROM [Person] WHERE [Guid] = '27919690-3CCE-4FA6-95C4-CD21419EB51F')
-
-        DECLARE
-           @aPreviousSunday DATETIME = (SELECT DATEADD(DAY , 1-DATEPART(WEEKDAY,GETDATE()),GETDATE()) )
-        DECLARE
-           @shiftedDate DATETIME,
-           -- Number of weeks to shift the data by (relative to the previous Sunday from when this is executed)
-           @shiftWeeks INT = (SELECT DATEDIFF ( week , '12/31/2013' , @aPreviousSunday ))
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '12/22/2013 9:13:26 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, '77XJZ', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '12/22/2013 9:13:26 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, '6BKF5', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '12/15/2013 9:00:23 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'BZ01W', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '12/15/2013 9:00:23 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'BPD1Z', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '12/8/2013 9:00:30 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'TK3MJ', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '12/8/2013 9:00:30 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'GVBYB', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '11/24/2013 8:50:42 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'F26XY', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '11/24/2013 8:50:42 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'YTV27', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '11/17/2013 9:02:51 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'H7RYD', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '11/17/2013 9:02:51 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'V45DV', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '11/10/2013 8:50:59 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'CZ75Q', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '11/10/2013 8:50:59 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, '0893J', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '10/20/2013 9:02:56 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'W68DD', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '10/20/2013 9:02:56 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'Z50YH', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '10/13/2013 8:59:15 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'ZQ361', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '10/13/2013 8:59:15 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'TTD9V', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '9/29/2013 8:54:11 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'GHJ6T', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '9/29/2013 8:54:11 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, '5NJW1', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '9/22/2013 9:03:21 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'C2KM3', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '9/22/2013 9:03:21 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, '1NQTW', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '8/18/2013 8:52:27 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, '6TPZ2', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '8/18/2013 8:52:27 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'ZWQ81', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '8/11/2013 9:00:25 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, '5DJTM', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '8/11/2013 9:00:25 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'DBKJT', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '7/28/2013 8:57:46 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, '21R5P', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '7/28/2013 8:57:46 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, '6PDNB', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '7/21/2013 8:53:40 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, '3WZ12', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '7/21/2013 8:53:40 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, '7XPMB', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '7/14/2013 8:55:36 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'J79W3', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '7/14/2013 8:55:36 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, '2ZKM4', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '7/7/2013 9:01:43 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, '2J83K', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '7/7/2013 9:01:43 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'PV148', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '6/30/2013 9:13:22 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'QRX9R', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '6/30/2013 9:13:22 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, '26RB8', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '6/23/2013 9:01:29 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'K5C05', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '6/23/2013 9:01:29 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, '4ZDCW', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '6/16/2013 9:01:30 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'DCD5W', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '6/16/2013 9:01:30 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'K65J1', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '6/2/2013 8:56:19 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'HBBGN', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '6/2/2013 8:56:19 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'BR972', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '5/26/2013 8:55:19 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'PB5PZ', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '5/26/2013 8:55:19 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'QN957', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '5/19/2013 8:49:24 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'YNCW9', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '5/19/2013 8:49:24 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'N6BW8', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '5/12/2013 9:01:05 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'FP3GV', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '5/12/2013 9:01:05 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'WTH5M', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '5/5/2013 8:54:13 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'GFYXQ', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '5/5/2013 8:54:13 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'BQX1W', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '4/28/2013 8:54:20 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'V7XXM', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '4/28/2013 8:54:20 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'K5VFR', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '4/21/2013 8:59:23 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'V36WN', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '4/21/2013 8:59:23 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'Z6QPJ', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '4/7/2013 8:59:33 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'ZJ2DC', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '4/7/2013 8:59:33 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'F171D', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '3/31/2013 8:49:38 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, '9HMMD', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '3/31/2013 8:49:38 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'BC806', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '3/24/2013 8:48:06 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'WP6JX', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '3/24/2013 8:48:06 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'M660H', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '3/17/2013 8:49:34 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'C3PYM', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '3/17/2013 8:49:34 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'JQH7R', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '3/10/2013 10:20:42 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'X69K0', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 4, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '3/10/2013 10:20:42 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'YQNJ8', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 4, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '2/24/2013 9:00:06 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'VFKMN', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '2/24/2013 9:00:06 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'T67VV', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '2/17/2013 8:57:22 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'TTJ64', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '2/17/2013 8:57:22 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'GN4H3', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '2/10/2013 9:01:42 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'WRQJT', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '2/10/2013 9:01:42 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'M03G1', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '2/3/2013 9:00:38 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'PT1R6', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '2/3/2013 9:00:38 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'B632M', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '1/27/2013 8:51:40 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, '7TGJM', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '1/27/2013 8:51:40 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'GQDFN', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '1/13/2013 8:54:39 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'MWW3P', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '1/13/2013 8:54:39 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, '1R2D1', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '1/6/2013 8:58:44 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, '0F85V', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '1/6/2013 8:58:44 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'B51WF', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Noah
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '12/30/2012 8:51:17 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'PQZVN', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (9, 3, 30, @NoahId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
-        -- attendance data for Alexis
-        SET @shiftedDate = (SELECT DATEADD (week , @shiftWeeks , '12/30/2012 8:51:17 AM' ))
-        INSERT [AttendanceCode] ([IssueDateTime], [Code], [Guid])
-        VALUES (@shiftedDate, 'JVJ3V', NEWID())
-        SET @tempId = SCOPE_IDENTITY()
-      
-        INSERT [Attendance] ([LocationId], [ScheduleId], [GroupId], [PersonId], [DeviceId], [SearchTypeValueId], [AttendanceCodeId], [QualifierValueId], [StartDateTime], [EndDateTime], [DidAttend], [Note], [Guid])
-        VALUES (7, 3, 28, @AlexisId, 2, 39, @tempId, NULL, @shiftedDate, NULL, 1, NULL, NEWID())
-
+        EXEC _com_rocksoliddemochurch_spCreateSampleDataAttendance @groupId, 52, 80, 88, 3, 4
+	
 
     COMMIT TRAN -- transaction success!
 END TRY

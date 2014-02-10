@@ -224,12 +224,13 @@ namespace Rock.Model
                 // Columns must be read in Sequential Order (see stored procedure spBinaryFileGet)
                 reader.Read();
                 binaryFile.Id = reader["Id"] as int? ?? 0;
-                binaryFile.IsTemporary = ( reader["IsTemporary"] as int? ) == 1;
-                binaryFile.IsSystem = ( reader["IsSystem"] as int? ) == 1;
+                binaryFile.IsTemporary = ( (bool)reader["IsTemporary"] );
+                binaryFile.IsSystem = (bool)reader["IsSystem"];
                 binaryFile.BinaryFileTypeId = reader["BinaryFileTypeId"] as int?;
                 binaryFile.Url = reader["Url"] as string;
                 binaryFile.FileName = reader["FileName"] as string;
                 binaryFile.MimeType = reader["MimeType"] as string;
+                binaryFile.ModifiedDateTime = reader["ModifiedDateTime"] as DateTime?;
                 binaryFile.Description = reader["Description"] as string;
                 int? storageEntityTypeId = reader["StorageEntityTypeId"] as int?;
                 binaryFile.SetStorageEntityTypeId( storageEntityTypeId );

@@ -70,6 +70,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [MergeField]
         public string Name { get; set; }
 
         /// <summary>

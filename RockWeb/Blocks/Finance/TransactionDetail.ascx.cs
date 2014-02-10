@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Finance
     [Description( "Displays the details of the given transaction for editing." )]
     public partial class TransactionDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
-        # region Fields
+        #region Fields
         private string contextTypeName = string.Empty;
 
         #endregion
@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( transaction != null )
             {
-                lTitle.Text = ("Edit Transaction").FormatAsHtmlTitle();
+                lTitle.Text = "Edit Transaction".FormatAsHtmlTitle();
 
                 hfIdTransValue.Value = transaction.Id.ToString();
                 tbAmount.Text = transaction.Amount.ToString();
@@ -97,15 +97,26 @@ namespace RockWeb.Blocks.Finance
                         ddlPaymentGateway.SetValue( gatewayEntity.Guid.ToString() );
                     }
                 }
+
                 ddlSourceType.SetValue( transaction.SourceTypeValueId );
                 ddlTransactionType.SetValue( transaction.TransactionTypeValueId );
                 tbSummary.Text = transaction.Summary;
                 tbTransactionCode.Text = transaction.TransactionCode;
                 dtTransactionDateTime.SelectedDateTime = transaction.TransactionDateTime;
+                if ( transaction.AuthorizedPersonId != null )
+                {
+                    ppAuthorizedPerson.PersonId = transaction.AuthorizedPersonId;
+                    ppAuthorizedPerson.PersonName = transaction.AuthorizedPerson.FullName;
+                }
             }
             else
             {
-                lTitle.Text = ("Add Transaction").FormatAsHtmlTitle();
+                lTitle.Text = "Add Transaction".FormatAsHtmlTitle();
+            }
+
+            if ( ddlCurrencyType != null && ddlCurrencyType.SelectedItem.ToString() != "Credit Card" )
+            { 
+                ddlCreditCardType.Visible = false;
             }
         }
 
@@ -120,7 +131,7 @@ namespace RockWeb.Blocks.Finance
             {
                 var financialTransactionService = new Rock.Model.FinancialTransactionService();
                 Rock.Model.FinancialTransaction financialTransaction = null;
-                int financialTransactionId = !string.IsNullOrEmpty( hfIdTransValue.Value ) ? Int32.Parse( hfIdTransValue.Value ) : 0;
+                int financialTransactionId = !string.IsNullOrEmpty( hfIdTransValue.Value ) ? int.Parse( hfIdTransValue.Value ) : 0;
 
                 // null if not associated with a batch
                 int? batchId = hfBatchId.Value.AsInteger();
@@ -136,22 +147,30 @@ namespace RockWeb.Blocks.Finance
                     financialTransaction = financialTransactionService.Get( financialTransactionId );
                 }
 
-                financialTransaction.AuthorizedPersonId = CurrentPerson.Id;
+                if ( ppAuthorizedPerson.PersonId != null )
+                {
+                    financialTransaction.AuthorizedPersonId = ppAuthorizedPerson.PersonId;
+                }
+                else
+                {
+                    financialTransaction.AuthorizedPersonId = null;
+                }
 
-                decimal Amount = 0M;
-                decimal.TryParse( tbAmount.Text.Replace( "$", string.Empty ), out Amount );
-                financialTransaction.Amount = Amount;
+                decimal amount = 0M;
+                decimal.TryParse( tbAmount.Text.Replace( "$", string.Empty ), out amount );
+                financialTransaction.Amount = amount;
 
-                if ( ddlCreditCardType.SelectedValue != Rock.Constants.All.IdValue )
+                if ( ddlCurrencyType.SelectedItem.ToString() == "Credit Card" )
                 {
                     financialTransaction.CreditCardTypeValueId = int.Parse( ddlCreditCardType.SelectedValue );
                 }
-                if ( ddlCurrencyType.SelectedValue != Rock.Constants.All.IdValue )
+                else
                 {
-                    financialTransaction.CurrencyTypeValueId = int.Parse( ddlCurrencyType.SelectedValue );
+                    financialTransaction.CreditCardTypeValueId = null;
                 }
 
-                if ( !string.IsNullOrEmpty( ddlPaymentGateway.SelectedValue ) && ddlPaymentGateway.SelectedValue != Rock.Constants.All.IdValue )
+                financialTransaction.CurrencyTypeValueId = int.Parse( ddlCurrencyType.SelectedValue );
+                if ( !string.IsNullOrEmpty( ddlPaymentGateway.SelectedValue ) )
                 {
                     var gatewayEntity = Rock.Web.Cache.EntityTypeCache.Read( new Guid( ddlPaymentGateway.SelectedValue ) );
                     if ( gatewayEntity != null )
@@ -159,14 +178,9 @@ namespace RockWeb.Blocks.Finance
                         financialTransaction.GatewayEntityTypeId = gatewayEntity.Id;
                     }
                 }
-                if ( ddlSourceType.SelectedValue != Rock.Constants.All.IdValue )
-                {
-                    financialTransaction.SourceTypeValueId = int.Parse( ddlSourceType.SelectedValue );
-                }
-                if ( ddlTransactionType.SelectedValue != Rock.Constants.All.IdValue )
-                {
-                    financialTransaction.TransactionTypeValueId = int.Parse( ddlTransactionType.SelectedValue );
-                }
+
+                financialTransaction.SourceTypeValueId = int.Parse( ddlSourceType.SelectedValue );
+                financialTransaction.TransactionTypeValueId = int.Parse( ddlTransactionType.SelectedValue );
 
                 financialTransaction.Summary = tbSummary.Text;
                 financialTransaction.TransactionCode = tbTransactionCode.Text;
@@ -187,7 +201,6 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
-
         /// <summary>
         /// Handles the Click event of the btnCancelFinancialTransaction control.
         /// </summary>
@@ -204,8 +217,25 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 NavigateToParentPage();
+            }   
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlCurrencyType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlCurrencyType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            // We don't want to show the Credit Card Type drop down if the type of currency isn't Credit Card.
+            if ( ddlCurrencyType.SelectedItem.ToString() == "Credit Card" )
+            {
+                ddlCreditCardType.Visible = true;
             }
-            
+            else
+            {
+                ddlCreditCardType.Visible = false;
+            }
         }
 
         #endregion
@@ -230,7 +260,6 @@ namespace RockWeb.Blocks.Finance
                 {
                     ShowTransactionEditValue( 0, batchId );
                 }
-                
             }
             catch ( Exception exp )
             {
@@ -256,11 +285,9 @@ namespace RockWeb.Blocks.Finance
         /// <param name="ListControl">The list control.</param>
         /// <param name="definedTypeGuid">The defined type GUID.</param>
         /// <param name="userPreferenceKey">The user preference key.</param>
-        private void BindDefinedTypeDropdown( ListControl ListControl, Guid definedTypeGuid, string userPreferenceKey )
+        private void BindDefinedTypeDropdown( ListControl listControl, Guid definedTypeGuid, string userPreferenceKey )
         {
-            ListControl.BindToDefinedType( DefinedTypeCache.Read( definedTypeGuid ) );
-            //ListControl.Items.Insert( 0, new ListItem( All.Text, All.Id.ToString() ) );
-
+            listControl.BindToDefinedType( DefinedTypeCache.Read( definedTypeGuid ) );
         }
 
         /// <summary>

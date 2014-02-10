@@ -60,7 +60,6 @@ namespace Rock.Rest.Controllers
         /// <example>
         ///   <![CDATA[ <img src='api/FileBrowser/GetFileThumbnail?relativeFilePath=External+Site%5cMarketing%5cFunnyCat.gif&width=100&height=100 ]]>
         /// </example>
-        [Authenticate]
         [HttpGet]
         public HttpResponseMessage GetFileThumbnail( string relativeFilePath, int? width = 100, int? height = 100 )
         {

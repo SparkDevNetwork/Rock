@@ -27,20 +27,6 @@ namespace Rock.Storage
     public abstract class ProviderComponent : Component
     {
         /// <summary>
-        /// Gets a value indicating whether this instance is active.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
-        /// </value>
-        public override bool IsActive
-        {
-            get
-            {
-                return GetAttributeValue( "Active" ).AsBoolean();
-            }
-        }
-
-        /// <summary>
         /// Saves the file to the external storage medium associated with the provider.
         /// </summary>
         /// <param name="file">The file.</param>
@@ -68,17 +54,6 @@ namespace Rock.Storage
         /// <param name="file">The file.</param>
         /// <returns></returns>
         public abstract string GenerateUrl( BinaryFile file);
-
-        /// <summary>
-        /// Gets the type of the entity.
-        /// </summary>
-        /// <value>
-        /// The type of the entity.
-        /// </value>
-        public EntityTypeCache EntityType
-        {
-            get { return EntityTypeCache.Read( this.GetType() ); }
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderComponent"/> class.

@@ -40,6 +40,7 @@ namespace Rock.Rest
         }
 
         // GET api/<controller>
+        [Authenticate, Secured]
         [Queryable( AllowedQueryOptions = AllowedQueryOptions.All )]
         public virtual IQueryable<T> Get()
         {
@@ -48,6 +49,7 @@ namespace Rock.Rest
         }
 
         // GET api/<controller>/5
+        [Authenticate, Secured]
         public virtual T Get( int id )
         {
             T model;
@@ -57,77 +59,59 @@ namespace Rock.Rest
         }
 
         // POST api/<controller> (insert)
-        [Authenticate]
+        [Authenticate, Secured]
         public virtual HttpResponseMessage Post( [FromBody]T value )
         {
-            var user = CurrentUser();
-            if ( user != null )
-            {
-                _service.Add( value );
+            var personAlias = GetPersonAlias();
+            _service.Add( value, personAlias );
 
-                if ( !value.IsValid )
-                    return ControllerContext.Request.CreateErrorResponse(
-                        HttpStatusCode.BadRequest,
-                        String.Join( ",", value.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
+            if ( !value.IsValid )
+                return ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest,
+                    String.Join( ",", value.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
 
-                _service.Save( value, user.Person.PrimaryAlias );
+            _service.Save( value, personAlias );
 
-                var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
-                // TODO set response.Headers.Location as per REST POST convention
-                //response.Headers.Location = new Uri( Request.RequestUri, "/api/pages/" + page.Id.ToString() );
-                return response;
-            }
-
-            throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
+            // TODO set response.Headers.Location as per REST POST convention
+            //response.Headers.Location = new Uri( Request.RequestUri, "/api/pages/" + page.Id.ToString() );
+            return response;
         }
 
         // PUT api/<controller>/5  (update)
-        [Authenticate]
+        [Authenticate, Secured]
         public virtual void Put( int id, [FromBody]T value )
         {
-            var user = CurrentUser();
-            if ( user != null )
+            T targetModel;
+
+            if ( !_service.TryGet( id, out targetModel ) )
             {
-                T targetModel;
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
 
-                if ( !_service.TryGet( id, out targetModel ) )
-                {
-                    throw new HttpResponseException( HttpStatusCode.NotFound );
-                }
+            _service.SetValues( value, targetModel );
 
-                _service.SetValues( value, targetModel );
-
-                if ( targetModel.IsValid )
-                {
-                    _service.Save( targetModel, user.Person.PrimaryAlias );
-                }
-                else
-                {
-                    throw new HttpResponseException( HttpStatusCode.BadRequest );
-                }
+            if ( targetModel.IsValid )
+            {
+                _service.Save( targetModel, GetPersonAlias() );
             }
             else
             {
-                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
             }
         }
 
         // DELETE api/<controller>/5
-        [Authenticate]
+        [Authenticate, Secured]
         public virtual void Delete( int id )
         {
-            var user = CurrentUser();
-            if ( user != null )
-            {
-                T model;
-                if ( !_service.TryGet( id, out model ) )
-                    throw new HttpResponseException( HttpStatusCode.NotFound );
+            T model;
+            if ( !_service.TryGet( id, out model ) )
+                throw new HttpResponseException( HttpStatusCode.NotFound );
 
-                _service.Delete( model, user.Person.PrimaryAlias );
-                _service.Save( model, user.Person.PrimaryAlias );
-            }
-            else
-                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            var personAlias = GetPersonAlias();
+            _service.Delete( model, personAlias );
+            _service.Save( model, personAlias );
         }
 
 
@@ -136,7 +120,7 @@ namespace Rock.Rest
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        [Authenticate]
+        [Authenticate, Secured]
         [ActionName( "DataView" )]
         public IQueryable<T> GetDataView( int id )
         {
@@ -157,7 +141,11 @@ namespace Rock.Rest
             return null;
         }
 
-        protected virtual Rock.Model.UserLogin CurrentUser()
+        /// <summary>
+        /// Gets the peron alias.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual Rock.Model.Person GetPerson()
         {
             var principal = ControllerContext.Request.GetUserPrincipal();
             if ( principal != null && principal.Identity != null )
@@ -166,7 +154,19 @@ namespace Rock.Rest
                 var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
 
                 if ( userLogin != null )
-                    return userLogin;
+                {
+                    return userLogin.Person;
+                }
+            }
+
+            return null;
+        }
+        protected virtual Rock.Model.PersonAlias GetPersonAlias()
+        {
+            var person = GetPerson();
+            if (person != null)
+            {
+                return person.PrimaryAlias;
             }
 
             return null;

@@ -33,9 +33,7 @@
             <div class="row">
                 <div class="col-md-4">
                     <div class="summary">
-                        <div class="taglist clearfix">
-                            <Rock:TagList ID="taglPersonTags" runat="server"/>
-                        </div>
+                        <Rock:TagList ID="taglPersonTags" runat="server" CssClass="clearfix" />
                         <div class="demographics">
                             <asp:Literal ID="lAge" runat="server" />
                             <asp:Literal ID="lGender" runat="server" /><br />

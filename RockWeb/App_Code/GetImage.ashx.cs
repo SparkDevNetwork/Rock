@@ -143,11 +143,11 @@ namespace RockWeb
             }
 
             //// get just the binaryFileMetaData (not the file content) just in case we can get the filecontent faster from the cache
-            //// a null LastModifiedDateTime shouldn't happen, but just in case, set it to DateTime.MaxValue so we error on the side of not getting it from the cache
+            //// a null ModifiedDateTime shouldn't happen, but just in case, set it to DateTime.MaxValue so we error on the side of not getting it from the cache
             var binaryFileMetaData = binaryFileQuery.Select( a => new
             {
                 BinaryFileType_AllowCaching = a.BinaryFileType.AllowCaching,
-                LastModifiedDateTime = a.ModifiedDateTime ?? DateTime.MaxValue,
+                ModifiedDateTime = a.ModifiedDateTime ?? DateTime.MaxValue,
                 a.MimeType,
                 a.FileName
             } ).FirstOrDefault();
@@ -165,9 +165,11 @@ namespace RockWeb
             string physCachedFilePath = context.Request.MapPath( string.Format( "~/App_Data/Cache/{0}", cacheName ) );
             if ( binaryFileMetaData.BinaryFileType_AllowCaching && File.Exists( physCachedFilePath ) )
             {
-                // Has the file been modified since the last cached datetime?
-                DateTime cachedFileDateTime = File.GetCreationTime( physCachedFilePath );
-                if ( binaryFileMetaData.LastModifiedDateTime < cachedFileDateTime )
+                //// Compare the File's Creation DateTime (which comes from the OS's clock), adjust it for the Rock OrgTimeZone, then compare to BinaryFile's ModifiedDateTime (which is already in OrgTimeZone).
+                //// If the BinaryFile record in the database is less recent than the last time this was cached, it is safe to use the Cached version.
+                //// NOTE: A BinaryFile record is typically just added and never modified (a modify is just creating a new BinaryFile record and deleting the old one), so the cached version will probably always be the correct choice.
+                DateTime cachedFileDateTime = RockDateTime.ConvertLocalDateTimeToRockDateTime(File.GetCreationTime( physCachedFilePath ));
+                if ( binaryFileMetaData.ModifiedDateTime < cachedFileDateTime )
                 {
                     // NOTE: the cached file has already been resized (the size is part of the cached file's filename), so we don't need to resize it again
                     fileContent = FetchFromCache( physCachedFilePath );

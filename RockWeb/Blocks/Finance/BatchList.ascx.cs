@@ -204,9 +204,6 @@ namespace RockWeb.Blocks.Finance
                 var startDate = Convert.ToDateTime( e.Row.DataItem.GetPropertyValue( "BatchStartDateTime" ) ).ToShortDateString();
                 e.Row.Cells[1].Text = startDate;
 
-                var controlAmount = string.Format( "{0:C}", e.Row.DataItem.GetPropertyValue( "ControlAmount" ) );
-                e.Row.Cells[3].Text = controlAmount;
-
                 Literal transactionTotal = e.Row.FindControl( "TransactionTotal" ) as Literal;
                 if ( transactionTotal != null )
                 {
@@ -214,13 +211,17 @@ namespace RockWeb.Blocks.Finance
                     var totalSum = data.Sum( d => d.Amount );
                     transactionTotal.Text = string.Format( "{0:C}", totalSum );
 
-                    Literal variance = e.Row.FindControl( "Variance" ) as Literal;
+                    Label variance = e.Row.FindControl("lblVariance") as Label;
                     if ( variance != null )
                     {
                         if ( batch.ControlAmount > 0 )
                         {
                             var varianceAmount = Convert.ToDecimal( batch.ControlAmount ) - totalSum;
                             variance.Text = string.Format( "{0:C}", varianceAmount );
+                            if ( varianceAmount != 0 )
+                            {
+                                variance.AddCssClass( "text-danger" );
+                            }
                         }
                     }
                 }
@@ -237,14 +238,30 @@ namespace RockWeb.Blocks.Finance
                     switch ( status.ToUpper() )
                     {
                         case "CLOSED":
-                            e.Row.Cells[8].Text = "<span class='label label-success'>Closed</span>";
+                            e.Row.Cells[7].Text = "<span class='label label-success'>Closed</span>";
                             break;
                         case "OPEN":
-                            e.Row.Cells[8].Text = "<span class='label label-warning'>Open</span>";
+                            e.Row.Cells[7].Text = "<span class='label label-warning'>Open</span>";
                             break;
                         case "PENDING":
-                            e.Row.Cells[8].Text = "<span class='label label-default'>Pending</span>";
+                            e.Row.Cells[7].Text = "<span class='label label-default'>Pending</span>";
                             break;
+                    }
+                }
+
+                // Get any warnings for this row and display them in the Warnings column
+                Label warnings = e.Row.FindControl( "lblWarnings" ) as Label;
+                var warningList = GetWarnings( batch );
+                if ( warningList != null )
+                {
+                    foreach (var warning in warningList)
+                    {
+                        switch (warning.ToUpper())
+                        {
+                            case "UNTIED":
+                                warnings.Text += "<span class='label label-danger'>Untied Transactions</span>";
+                                break;
+                        }
                     }
                 }
             }
@@ -253,6 +270,26 @@ namespace RockWeb.Blocks.Finance
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Gets the warnings.
+        /// </summary>
+        /// <returns></returns>
+        private List<string> GetWarnings( FinancialBatch batch )
+        {
+            var warningList = new List<string>();
+            if ( batch.Status == BatchStatus.Open )
+            {
+                var transactionService = new FinancialTransactionService();
+                var transactionList = transactionService.Queryable().Where( trans => trans.BatchId == batch.Id && trans.AuthorizedPersonId == null ).ToList();
+                if ( transactionList.Count > 0 )
+                {
+                    warningList.Add( "UNTIED" );
+                }
+            }
+
+            return warningList;
+        }
 
         /// <summary>
         /// Binds the filter.
