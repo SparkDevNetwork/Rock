@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -195,13 +196,28 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnNewAccount_Click( object sender, EventArgs e )
         {
+            string returnUrl = Request.QueryString["returnurl"];
+
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "NewAccountPage" ) ) )
             {
-                NavigateToLinkedPage( "NewAccountPage" );
+                var parms = new Dictionary<string, string>();
+                
+                if ( !string.IsNullOrWhiteSpace( returnUrl ) )
+                {
+                    parms.Add( "returnurl", returnUrl );
+                }
+
+                NavigateToLinkedPage( "NewAccountPage", parms );
             }
             else
             {
-                Response.Redirect( "~/NewAccount", false );
+                string url = "~/NewAccount";
+
+                if ( !string.IsNullOrWhiteSpace( returnUrl ) )
+                {
+                    url += "?returnurl=" + returnUrl;
+                } 
+                Response.Redirect( url, false );
                 Context.ApplicationInstance.CompleteRequest();
             }
         }

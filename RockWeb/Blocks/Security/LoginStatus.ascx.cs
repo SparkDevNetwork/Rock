@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Security
             if ( currentPerson != null )
             {
                 phHello.Visible = true;
-                lHello.Text = string.Format( "<span>Hello {0}</span>", currentPerson.FirstName );
+                lHello.Text = string.Format( "<span>Hello {0}</span>", currentPerson.NickName );
 
                 var currentUser = CurrentUser;
                 phMyAccount.Visible = currentUser != null && currentUser.IsAuthenticated;

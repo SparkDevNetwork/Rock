@@ -216,6 +216,12 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void rGridTransactions_Edit( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
+            if ( _batch != null && _batch.Status == BatchStatus.Closed )
+            {
+                BindGrid();
+                return;
+            }
+
             ShowDetailForm( (int)e.RowKeyValue );
         }
 
@@ -262,7 +268,7 @@ namespace RockWeb.Blocks.Finance
 
             BindDefinedTypeDropdown( ddlTransactionType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE ), "Transaction Type" );
             BindDefinedTypeDropdown( ddlCurrencyType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE ), "Currency Type" );
-            BindDefinedTypeDropdown( ddlCreditCardType,new Guid(  Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ), "Credit Card Type" );
+            BindDefinedTypeDropdown( ddlCreditCardType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ), "Credit Card Type" );
             BindDefinedTypeDropdown( ddlSourceType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE ), "Source Type" );
         }
 
@@ -272,14 +278,14 @@ namespace RockWeb.Blocks.Finance
         /// <param name="ListControl">The list control.</param>
         /// <param name="definedTypeGuid">The defined type GUID.</param>
         /// <param name="userPreferenceKey">The user preference key.</param>
-        private void BindDefinedTypeDropdown( ListControl ListControl, Guid definedTypeGuid, string userPreferenceKey )
+        private void BindDefinedTypeDropdown( ListControl listControl, Guid definedTypeGuid, string userPreferenceKey )
         {
-            ListControl.BindToDefinedType( DefinedTypeCache.Read( definedTypeGuid ) );
-            ListControl.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+            listControl.BindToDefinedType( DefinedTypeCache.Read( definedTypeGuid ) );
+            listControl.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
 
             if ( !string.IsNullOrWhiteSpace( rFilter.GetUserPreference( userPreferenceKey ) ) )
             {
-                ListControl.SelectedValue = rFilter.GetUserPreference( userPreferenceKey );
+                listControl.SelectedValue = rFilter.GetUserPreference( userPreferenceKey );
             }
         }
 
@@ -295,6 +301,13 @@ namespace RockWeb.Blocks.Finance
             {
                 // If transactions are for a batch, the filter is hidden so only check the batch id
                 queryable = queryable.Where( t => t.BatchId.HasValue && t.BatchId.Value == _batch.Id );
+
+                // If the batch is closed, do not allow any editing of the transactions
+                if ( _batch.Status == BatchStatus.Closed )
+                {
+                    rGridTransactions.Actions.ShowAdd = false;
+                    rGridTransactions.IsDeleteEnabled = false;
+                }
             }
             else if ( !string.IsNullOrWhiteSpace( PageParameter( "financialBatchId" ) ) && _batch == null )
             {
@@ -316,6 +329,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     queryable = queryable.Where( t => t.TransactionDateTime >= drp.LowerValue.Value );
                 }
+
                 if ( drp.UpperValue.HasValue )
                 {
                     DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
@@ -329,6 +343,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     queryable = queryable.Where( t => t.Amount >= nre.LowerValue.Value );
                 }
+
                 if ( nre.UpperValue.HasValue )
                 {
                     queryable = queryable.Where( t => t.Amount <= nre.UpperValue.Value );

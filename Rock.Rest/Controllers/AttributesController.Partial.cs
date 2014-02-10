@@ -19,6 +19,7 @@ using System.Net;
 using System.Web.Http;
 
 using Rock.Model;
+using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
 {
@@ -47,6 +48,7 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Flushes an attributes from cache.
         /// </summary>
+        [Authenticate, Secured]
         [HttpPut]
         public void Flush( int id )
         {
@@ -56,6 +58,7 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Flushes all global attributes from cache.
         /// </summary>
+        [Authenticate, Secured]
         [HttpPut]
         public void Flush()
         {

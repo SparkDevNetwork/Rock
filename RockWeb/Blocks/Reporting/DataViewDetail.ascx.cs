@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -355,18 +356,14 @@ $(document).ready(function() {
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
-
             nbEditModeMessage.Text = string.Empty;
-            if ( !dataView.IsAuthorized( "Edit", CurrentPerson ) )
-            {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( DataView.FriendlyTypeName );
-            }
 
-            if ( dataView.DataViewFilter != null && !dataView.DataViewFilter.IsAuthorized( "View", CurrentPerson ) )
+            string authorizationMessage = string.Empty;
+
+            if ( !this.IsAuthorizedForAllDataViewComponents( "Edit", dataView, out authorizationMessage ) )
             {
                 readOnly = true;
-                nbEditModeMessage.Text = "INFO: This Data View contains a filter that you do not have access to view.";
+                nbEditModeMessage.Text = authorizationMessage;
             }
 
             if ( dataView.IsSystem )
@@ -399,6 +396,47 @@ $(document).ready(function() {
                     ShowEditDetails( dataView );
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether [is authorized for all data view components] [the specified data view].
+        /// </summary>
+        /// <param name="dataViewAction">The data view action.</param>
+        /// <param name="dataView">The data view.</param>
+        /// <param name="authorizationMessage">The authorization message.</param>
+        /// <returns></returns>
+        private bool IsAuthorizedForAllDataViewComponents( string dataViewAction, DataView dataView, out string authorizationMessage )
+        {
+            bool isAuthorized = true;
+            authorizationMessage = string.Empty;
+
+            if ( !dataView.IsAuthorized( dataViewAction, CurrentPerson ) )
+            {
+                isAuthorized = false;
+                authorizationMessage = EditModeMessage.ReadOnlyEditActionNotAllowed( DataView.FriendlyTypeName );
+            }
+
+            if ( dataView.DataViewFilter != null && !dataView.DataViewFilter.IsAuthorized( "View", CurrentPerson ) )
+            {
+                isAuthorized = false;
+                authorizationMessage = "INFO: This Data View contains a filter that you do not have access to view.";
+            }
+
+            if ( dataView.TransformEntityTypeId != null )
+            {
+                string dataTransformationComponentTypeName = EntityTypeCache.Read( dataView.TransformEntityTypeId ?? 0 ).GetEntityType().FullName;
+                var dataTransformationComponent = Rock.Reporting.DataTransformContainer.GetComponent( dataTransformationComponentTypeName );
+                if ( dataTransformationComponent != null )
+                {
+                    if ( !dataTransformationComponent.IsAuthorized( "View", this.CurrentPerson ) )
+                    {
+                        isAuthorized = false;
+                        authorizationMessage = "INFO: The Data View for this report contains a data transformation that you do not have access to view.";
+                    }
+                }
+            }
+
+            return isAuthorized;
         }
 
         /// <summary>
@@ -469,38 +507,51 @@ $(document).ready(function() {
 
             DescriptionList descriptionListFilters = new DescriptionList();
 
-            if (dataView.DataViewFilter != null && dataView.EntityTypeId.HasValue)
+            if ( dataView.DataViewFilter != null && dataView.EntityTypeId.HasValue )
             {
-                descriptionListFilters.Add("Filter", dataView.DataViewFilter.ToString(EntityTypeCache.Read(dataView.EntityTypeId.Value).GetEntityType()));
+                descriptionListFilters.Add( "Filter", dataView.DataViewFilter.ToString( EntityTypeCache.Read( dataView.EntityTypeId.Value ).GetEntityType() ) );
             }
             lFilters.Text = descriptionListFilters.Html;
 
             ShowReport( dataView );
         }
 
+        /// <summary>
+        /// Shows the report.
+        /// </summary>
+        /// <param name="dataView">The data view.</param>
         private void ShowReport( DataView dataView )
         {
             if ( dataView.EntityTypeId.HasValue && dataView.DataViewFilter != null && dataView.DataViewFilter.IsAuthorized( "View", CurrentPerson ) )
             {
+                string authorizationMessage = string.Empty;
 
-                bool isPersonDataSet = dataView.EntityTypeId == EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
-
-                if ( isPersonDataSet )
+                if ( this.IsAuthorizedForAllDataViewComponents( "View", dataView, out authorizationMessage ) )
                 {
-                    gReport.PersonIdField = "Id";
+                    bool isPersonDataSet = dataView.EntityTypeId == EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+
+                    if ( isPersonDataSet )
+                    {
+                        gReport.PersonIdField = "Id";
+                    }
+                    else
+                    {
+                        gReport.PersonIdField = null;
+                    }
+
+                    if ( dataView.EntityTypeId.HasValue )
+                    {
+                        gReport.RowItemText = EntityTypeCache.Read( dataView.EntityTypeId.Value ).FriendlyName;
+                    }
+
+                    gReport.Visible = true;
+                    BindGrid( gReport, dataView );
                 }
                 else
                 {
-                    gReport.PersonIdField = null;
+                    nbEditModeMessage.Text = authorizationMessage;
+                    gReport.Visible = false;
                 }
-
-                if ( dataView.EntityTypeId.HasValue )
-                {
-                    gReport.RowItemText = EntityTypeCache.Read( dataView.EntityTypeId.Value ).FriendlyName;
-                }
-
-                gReport.Visible = true;
-                BindGrid( gReport, dataView );
             }
             else
             {
@@ -515,7 +566,7 @@ $(document).ready(function() {
         /// <param name="filter">The filter.</param>
         private void ShowPreview( DataView dataView )
         {
-            if ( BindGrid( gPreview, dataView ) )
+            if ( BindGrid( gPreview, dataView, 15 ) )
             {
                 modalPreview.Show();
             }
@@ -531,15 +582,52 @@ $(document).ready(function() {
             pnlViewDetails.Visible = !editable;
         }
 
-        private bool BindGrid( Grid grid, DataView dataView )
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
+        /// <param name="grid">The grid.</param>
+        /// <param name="dataView">The data view.</param>
+        /// <returns></returns>
+        private bool BindGrid( Grid grid, DataView dataView, int? fetchRowCount = null )
         {
-            var errors = new List<string>();
-            grid.DataSource = dataView.BindGrid( grid, out errors, true );
+            var errorMessages = new List<string>();
+            grid.DataSource=null;
+
+            if ( dataView.EntityTypeId.HasValue )
+            {
+                var cachedEntityType = EntityTypeCache.Read( dataView.EntityTypeId.Value );
+                if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
+                {
+                    Type entityType = cachedEntityType.GetEntityType();
+
+                    if ( entityType != null )
+                    {
+                        grid.CreatePreviewColumns( entityType );
+
+                        using ( new Rock.Data.UnitOfWorkScope() )
+                        {
+                            var qry = dataView.GetQuery( out errorMessages );
+                            if ( grid.SortProperty != null )
+                            {
+                                qry = qry.Sort( grid.SortProperty );
+                            }
+
+                            if ( fetchRowCount.HasValue)
+                            {
+                                qry = qry.Take( fetchRowCount.Value );
+                            }
+
+                            grid.DataSource = qry.AsNoTracking().ToList();
+                        };
+                    }
+                }
+            }
+            
             if ( grid.DataSource != null )
             {
-                if ( errors.Any() )
+                if ( errorMessages.Any() )
                 {
-                    nbEditModeMessage.Text = "INFO: There was a problem with one or more of the filters for this data view...<br/><br/> " + errors.AsDelimited( "<br/>" );
+                    nbEditModeMessage.Text = "INFO: There was a problem with one or more of the filters for this data view...<br/><br/> " + errorMessages.AsDelimited( "<br/>" );
                 }
 
                 if ( dataView.EntityTypeId.HasValue )

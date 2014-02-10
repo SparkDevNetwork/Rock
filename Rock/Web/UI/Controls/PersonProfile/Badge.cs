@@ -16,6 +16,8 @@
 //
 using System.Web.UI;
 
+using Rock;
+using Rock.Model;
 using Rock.PersonProfile;
 
 namespace Rock.Web.UI.Controls
@@ -31,10 +33,37 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The name of the badge entity type.
         /// </value>
-        public string BadgeEntityTypeName
+        public PersonBadge PersonBadge { get; set; }
+
+        /// <summary>
+        /// Restores view-state information from a previous page request that was saved by the <see cref="M:System.Web.UI.Control.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
         {
-            get { return ViewState["BadgeEntityName"] as string; }
-            set { ViewState["BadgeEntityName"] = value; }
+            base.LoadViewState( savedState );
+
+            string json = ViewState["PersonBadge"] as string;
+            if ( !string.IsNullOrWhiteSpace( json ) )
+            {
+                PersonBadge = PersonBadge.FromJson( json );
+            }
+        }
+
+        /// <summary>
+        /// Saves any server control view-state changes that have occurred since the time the page was posted back to the server.
+        /// </summary>
+        /// <returns>
+        /// Returns the server control's current view state. If there is no view state associated with the control, this method returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            if (PersonBadge != null)
+            {
+                ViewState["PersonBadge"] = PersonBadge.ToJson();
+            }
+
+            return base.SaveViewState();
         }
 
         /// <summary>
@@ -79,9 +108,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the server control content.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            if ( !string.IsNullOrWhiteSpace( BadgeEntityTypeName ) )
-            {
-                var badgeComponent = BadgeContainer.GetComponent( BadgeEntityTypeName );
+            if (PersonBadge != null)
+            { 
+                var badgeComponent = PersonBadge.BadgeComponent;
                 if ( badgeComponent != null )
                 {
                     var personBlock = ParentPersonBlock;
@@ -89,7 +118,7 @@ namespace Rock.Web.UI.Controls
                     {
                         badgeComponent.ParentPersonBlock = personBlock;
                         badgeComponent.Person = personBlock.Person;
-                        badgeComponent.Render( writer );
+                        badgeComponent.Render( PersonBadge, writer );
                     }
                 }
             }

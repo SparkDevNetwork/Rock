@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
@@ -43,22 +44,65 @@ namespace Rock.Web.UI.Controls
             set { ViewState["PersonId"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the name of the person.
+        /// </summary>
+        /// <value>
+        /// The name of the person.
+        /// </value>
         public string PersonName
         {
             get { return ViewState["PersonName"] as string; }
             set { ViewState["PersonName"] = value; }
         }
 
-        public DateTime? DateCreated
+        /// <summary>
+        /// Gets or sets the family names.
+        /// </summary>
+        /// <value>
+        /// The family names.
+        /// </value>
+        public string HeaderContent
         {
-            get { return ViewState["DateCreated"] as DateTime?; }
-            set { ViewState["DateCreated"] = value; }
+            get 
+            {
+                var headerContent = ViewState["HeaderContent"] as string;
+                if (headerContent == null)
+                {
+                    headerContent = string.Empty;
+                    HeaderContent = headerContent;
+                }
+                return headerContent;
+            }
+
+            set 
+            {
+                ViewState["HeaderContent"] = value; 
+            }
         }
 
-        public string CreatedBy
+        /// <summary>
+        /// Gets or sets the modified date time.
+        /// </summary>
+        /// <value>
+        /// The modified date time.
+        /// </value>
+        public DateTime? ModifiedDateTime
         {
-            get { return ViewState["CreatedBy"] as string; }
-            set { ViewState["CreatedBy"] = value; }
+            get { return ViewState["ModifiedDateTime"] as DateTime?; }
+            set { ViewState["ModifiedDateTime"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the modified by.
+        /// </summary>
+        /// <value>
+        /// The modified by.
+        /// </value>
+        public string ModifiedBy
+        {
+            get { return ViewState["ModifiedBy"] as string; }
+            set { ViewState["ModifiedBy"] = value; }
         }
 
         /// <summary>
@@ -72,6 +116,14 @@ namespace Rock.Web.UI.Controls
             get { return ViewState["IsPrimaryPerson"] as bool? ?? false; }
             set { ViewState["IsPrimaryPerson"] = value; }
         }
+
+        /// <summary>
+        /// Gets the parent grid.
+        /// </summary>
+        /// <value>
+        /// The parent grid.
+        /// </value>
+        public Grid ParentGrid { get; internal set; }
 
         #endregion
 
@@ -87,12 +139,45 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         public override bool Initialize( bool sortingEnabled, Control control )
         {
-            this.HeaderTemplate = new PersonMergeFieldHeaderTemplate();
+            PersonMergeFieldHeaderTemplate headerTemplate = new PersonMergeFieldHeaderTemplate();
+            headerTemplate.LinkButtonClick += HeaderTemplate_LinkButtonClick;
+            this.HeaderTemplate = headerTemplate;
+            this.ParentGrid = control as Grid;
             return base.Initialize( sortingEnabled, control );
         }
 
         #endregion
 
+        #region Events
+
+        /// <summary>
+        /// Handles the LinkButtonClick event of the HeaderTemplate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void HeaderTemplate_LinkButtonClick( object sender, EventArgs e )
+        {
+            Delete( e );
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:Click"/> event.
+        /// </summary>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        internal virtual void Delete( EventArgs e )
+        {
+            if ( OnDelete != null )
+            {
+                OnDelete( this, e );
+            }
+        }
+        
+        /// <summary>
+        /// Occurs when [delete].
+        /// </summary>
+        public event EventHandler OnDelete;
+
+        #endregion
     }
 
     /// <summary>
@@ -100,14 +185,6 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class PersonMergeFieldHeaderTemplate : ITemplate
     {
-        /// <summary>
-        /// Gets the header text.
-        /// </summary>
-        /// <value>
-        /// The header text.
-        /// </value>
-        public string HeaderText { get; private set; }
-
         /// <summary>
         /// When implemented by a class, defines the <see cref="T:System.Web.UI.Control" /> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
         /// </summary>
@@ -120,8 +197,6 @@ namespace Rock.Web.UI.Controls
                 var mergeField = cell.ContainingField as PersonMergeField;
                 if ( mergeField != null )
                 {
-                    HeaderText = mergeField.HeaderText;
-
                     var rb = new RadioButton();
                     rb.Text = mergeField.PersonName;
                     rb.ID = "rbSelectPrimary_" + mergeField.ColumnIndex.ToString();
@@ -129,16 +204,53 @@ namespace Rock.Web.UI.Controls
                     rb.GroupName = "PrimaryPerson";
                     cell.Controls.Add( rb );
 
-                    string created = (mergeField.DateCreated.HasValue ? mergeField.DateCreated.ToElapsedString() + " " : "") +
-                        (!string.IsNullOrWhiteSpace(mergeField.CreatedBy) ? "by " + mergeField.CreatedBy : "");
+                    var lbDelete = new LinkButton();
+                    lbDelete.CausesValidation = false;
+                    lbDelete.CssClass = "btn btn-danger btn-xs pull-right";
+                    lbDelete.ToolTip = "Remove Person";
+                    cell.Controls.Add( lbDelete );
 
+                    HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
+                    buttonIcon.Attributes.Add( "class", "fa fa-times" );
+                    lbDelete.Controls.Add( buttonIcon );
+
+                    lbDelete.Click += lbDelete_Click;
+
+                    // make sure delete button is registered for async postback (needed just in case the grid was created at runtime)
+                    var sm = ScriptManager.GetCurrent( mergeField.ParentGrid.Page );
+                    sm.RegisterAsyncPostBackControl( lbDelete );
+
+                    HtmlGenericContainer headerSummary = new HtmlGenericContainer("div", "merge-header-summary");
+                    headerSummary.Controls.Add(new LiteralControl(mergeField.HeaderContent));
+
+                    string created = (mergeField.ModifiedDateTime.HasValue ? mergeField.ModifiedDateTime.ToElapsedString() + " " : "") +
+                        (!string.IsNullOrWhiteSpace(mergeField.ModifiedBy) ? "by " + mergeField.ModifiedBy : "");
                     if ( created != string.Empty )
                     {
-                        cell.Controls.Add( new LiteralControl( string.Format( "<br/><span>Created {0}</span>", created ) ) );
+                        headerSummary.Controls.Add(new LiteralControl(string.Format("<small>Last Modifed {0}</small>", created)));
                     }
+
+                    cell.Controls.Add(headerSummary);
                 }
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void lbDelete_Click( object sender, EventArgs e )
+        {
+            if ( LinkButtonClick != null )
+            {
+                LinkButtonClick( sender, e );
+            }
+        }
+
+        /// <summary>
+        /// Occurs when [link button click].
+        /// </summary>
+        internal event EventHandler LinkButtonClick;
     }
 }

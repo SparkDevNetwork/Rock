@@ -394,26 +394,6 @@ namespace Rock.Data
             if ( item != null && item.Guid == Guid.Empty )
                 item.Guid = Guid.NewGuid();
 
-            // Update the created by and modified by fields
-            IModel model = item as IModel;
-            if (model != null)
-            {
-                if ( model.Id <= 0 )
-                {
-                    if ( !model.CreatedDateTime.HasValue )
-                    {
-                        model.CreatedDateTime = RockDateTime.Now;
-                    }
-                    if ( !model.CreatedByPersonAliasId.HasValue )
-                    {
-                        model.CreatedByPersonAliasId = personAliasId;
-                    }
-                }
-
-                model.ModifiedByPersonAliasId = personAliasId;
-                model.ModifiedDateTime = RockDateTime.Now;
-            }
-
             List<Audit> audits;
             List<string> errorMessages;
 
@@ -824,15 +804,28 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Executes the SQL command.
+        /// Executes the query, and returns number of rows affected
         /// </summary>
         /// <param name="query">The query.</param>
         /// <param name="parameters">The parameters.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        public int ExecuteCommand( string query, params object[] parameters )
+        public int ExecuteCommand( string query, CommandType commandType = CommandType.Text, Dictionary<string, object> parameters = null )
         {
-            return _repository.ExecuteCommand( query, parameters );
+            return _repository.ExecuteCommand( query, commandType, parameters );
+        }
+
+        /// <summary>
+        /// Executes the query, and returns the first column of the first row in the
+        //  result set returned by the query. Additional columns or rows are ignored.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public object ExecuteScaler( string query, CommandType commandType = CommandType.Text, Dictionary<string, object> parameters = null )
+        {
+            return _repository.ExecuteScaler( query, commandType, parameters );
         }
 
         #endregion

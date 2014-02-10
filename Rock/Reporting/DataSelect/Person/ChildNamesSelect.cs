@@ -15,17 +15,14 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
-
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock;
-using System.Data.Entity.SqlServer;
-using System.Collections.Generic;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Person
 {
@@ -35,7 +32,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the names of the Person's Children" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Children's Names" )]
-    public class ChildNamesSelect : DataSelectComponent<Rock.Model.Person>
+    public class ChildNamesSelect : DataSelectComponent
     {
         #region Properties
 
@@ -51,6 +48,20 @@ namespace Rock.Reporting.DataSelect.Person
             get
             {
                 return typeof( Rock.Model.Person ).FullName;
+            }
+        }
+
+        /// <summary>
+        /// Gets the section that this will appear in in the Field Selector
+        /// </summary>
+        /// <value>
+        /// The section.
+        /// </value>
+        public override string Section
+        {
+            get
+            {
+                return base.Section;
             }
         }
 
@@ -76,7 +87,18 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override Type ColumnFieldType
         {
-            get { return typeof( IEnumerable<object> ); }
+            get { return typeof( IEnumerable<Rock.Model.Person> ); }
+        }
+
+        /// <summary>
+        /// Gets the grid field.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public override System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
+        {
+            return new ListDelimitedField();
         }
 
         /// <summary>
@@ -148,31 +170,6 @@ namespace Rock.Reporting.DataSelect.Person
         public override System.Web.UI.Control[] CreateChildControls( System.Web.UI.Control parentControl )
         {
             return new System.Web.UI.Control[] { };
-        }
-
-        /// <summary>
-        /// Formats the selection.
-        /// </summary>
-        /// <param name="selection">The selection.</param>
-        /// <returns></returns>
-        public override string FormatSelection( string selection )
-        {
-            return base.FormatSelection( selection );
-        }
-
-        /// <summary>
-        /// Formats the selection on the client-side.  When the widget is collapsed by the user, the Filterfield control
-        /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before
-        /// referencing this property.
-        /// </summary>
-        /// <returns></returns>
-        /// <value>
-        /// The client format script.
-        /// </value>
-        public override string GetClientFormatSelection()
-        {
-            return base.GetClientFormatSelection();
         }
 
         /// <summary>

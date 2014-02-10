@@ -95,8 +95,21 @@ namespace Rock.Web.UI.Adapters
 
                 writer.Write( cb.Text );
 
-                writer.RenderEndTag();
-                writer.RenderEndTag();
+                writer.RenderEndTag();      // Label
+
+                var rockCb = cb as Rock.Web.UI.Controls.RockCheckBox;
+                if (rockCb != null)
+                {
+                    bool renderLabel = ( !string.IsNullOrEmpty( rockCb.Label ) );
+                    bool renderHelp = ( rockCb.HelpBlock != null && !string.IsNullOrWhiteSpace( rockCb.Help ) );
+
+                    if (!renderLabel && renderHelp)
+                    {
+                        rockCb.HelpBlock.RenderControl( writer );
+                    }
+                }
+
+                writer.RenderEndTag();      // Div
 
                 if ( Page != null && Page.ClientScript != null )
                 {

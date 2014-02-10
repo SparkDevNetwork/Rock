@@ -71,6 +71,7 @@ namespace Rock.Reporting.DataTransform.Person
         /// <summary>
         /// Gets the expression.
         /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
         /// <param name="personQueryable">The person queryable.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <returns></returns>
@@ -82,6 +83,7 @@ namespace Rock.Reporting.DataTransform.Person
         /// <summary>
         /// Builds the expression.
         /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
         /// <param name="idQuery">The id query.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <returns></returns>

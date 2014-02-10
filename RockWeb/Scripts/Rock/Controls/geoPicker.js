@@ -114,7 +114,7 @@
                 if (type == "polygon") {
                     shape.setEditable(true);
                     var coordinates = new Array();
-                    var vertices = shape.getPath();
+                    var vertices = shape.getPaths().getAt(0);
                     // Iterate over the vertices of the shape's path
                     for (var i = 0; i < vertices.length; i++) {
                         var xy = vertices.getAt(i);
@@ -126,6 +126,10 @@
                     if (vertices.getAt(0).toUrlValue() != coordinates[coordinates.length - 1]) {
                         obj.path = coordinates.join('|') + '|' + vertices.getAt(0).toUrlValue();
                     }
+                    else {
+                        obj.path = coordinates.join('|');
+                    }
+                    //console.log(obj.path);
                 }
                 else if (type == "marker") {
                     obj.path = shape.getPosition().toUrlValue();
@@ -268,12 +272,6 @@
                     obj.toAddress(pathArray[0], $label);
 
                     if (coords.length > 0) {
-                        // Add the starting vertex as the last vertex to the path
-                        //var latLng = coords[0].split(',');
-                        //var lat = parseFloat(latLng[0]);
-                        //var lng = parseFloat(latLng[1]);
-                        //pathArray.push(new google.maps.LatLng(lat, lng));
-
                         var polygon;
 
                         if (obj.drawingMode == "Polygon") {
@@ -301,6 +299,18 @@
 
                             // add listener for adding new points.
                             google.maps.event.addListener(polygon.getPath(), 'insert_at', function (e) {
+                                obj.setSelection(polygon, google.maps.drawing.OverlayType.POLYGON);
+                            });
+
+                            //google.maps.event.addListener(polygon, 'mouseout', function (e) {
+                            //    obj.setSelection(polygon, google.maps.drawing.OverlayType.POLYGON);
+                            //});
+
+                            // Add an event listener to implement right-click to delete node
+                            google.maps.event.addListener(polygon, 'rightclick', function (ev) {
+                                if (ev.vertex != null) {
+                                    polygon.getPath().removeAt(ev.vertex);
+                                }
                                 obj.setSelection(polygon, google.maps.drawing.OverlayType.POLYGON);
                             });
 

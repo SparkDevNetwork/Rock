@@ -15,14 +15,13 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Principal;
+using System.ServiceModel.Channels;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
-using System.ServiceModel.Channels;
-using System.Security.Principal;
 
 using Rock.Model;
 
@@ -67,7 +66,6 @@ namespace Rock.Rest.Filters
                     return;
                 }
             }
-            actionContext.Response = actionContext.Request.CreateErrorResponse( HttpStatusCode.Unauthorized, "The Rock API requires that requests include either an Authorization-Token, and ApiKey querystring parameter, or are made by a logged-in user" ); 
         }
     }
 }

@@ -35,7 +35,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Selects Last Contribution Date for a Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person Last Contribution" )]
-    public class LastContributionSelect : DataSelectComponent<Rock.Model.Person>
+    public class LastContributionSelect : DataSelectComponent
     {
 
         #region Properties
@@ -51,6 +51,20 @@ namespace Rock.Reporting.DataSelect.Person
             get
             {
                 return typeof( Rock.Model.Person ).FullName;
+            }
+        }
+
+        /// <summary>
+        /// Gets the section that this will appear in in the Field Selector
+        /// </summary>
+        /// <value>
+        /// The section.
+        /// </value>
+        public override string Section
+        {
+            get
+            {
+                return base.Section;
             }
         }
 
@@ -192,33 +206,6 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         /// <summary>
-        /// Formats the selection.
-        /// </summary>
-        /// <param name="selection">The selection.</param>
-        /// <returns></returns>
-        public override string FormatSelection( string selection )
-        {
-            // TODO: 
-            return base.FormatSelection( selection );
-        }
-
-        /// <summary>
-        /// Formats the selection on the client-side.  When the widget is collapsed by the user, the Filterfield control
-        /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before
-        /// referencing this property.
-        /// </summary>
-        /// <returns></returns>
-        /// <value>
-        /// The client format script.
-        ///   </value>
-        public override string GetClientFormatSelection()
-        {
-            // TODO: 
-            return base.GetClientFormatSelection();
-        }
-
-        /// <summary>
         /// Renders the controls.
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
@@ -242,7 +229,7 @@ namespace Rock.Reporting.DataSelect.Person
                 AccountPicker accountPicker = controls[0] as AccountPicker;
                 if ( accountPicker != null )
                 {
-                    return accountPicker.SelectedValueAsId().ToString();
+                    return accountPicker.SelectedValues.ToList().AsDelimited( "," );
                 }
             }
 
@@ -261,8 +248,18 @@ namespace Rock.Reporting.DataSelect.Person
                 AccountPicker accountPicker = controls[0] as AccountPicker;
                 if ( accountPicker != null )
                 {
-                    var account = new FinancialAccountService().Get( selection.AsInteger() ?? 0 );
-                    accountPicker.SetValue( account );
+                    string[] selectionAccountIdValues = selection.Split( ',' );
+                    var accountList = new List<FinancialAccount>();
+                    foreach (string accountId in selectionAccountIdValues)
+                    {
+                        var account = new FinancialAccountService().Get( accountId.AsInteger() ?? 0 );
+                        if (account != null)
+                        {
+                            accountList.Add(account);
+                        }
+                    }
+                    
+                    accountPicker.SetValues( accountList );
                 }
             }
         }

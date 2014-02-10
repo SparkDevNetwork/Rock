@@ -39,20 +39,6 @@ namespace Rock.Communication
         public abstract ChannelControl Control { get; }
 
         /// <summary>
-        /// Gets the type of the entity.
-        /// </summary>
-        /// <value>
-        /// The type of the entity.
-        /// </value>
-        public EntityTypeCache EntityType
-        {
-            get
-            {
-                return EntityTypeCache.Read( this.GetType() );
-            }
-        }
-
-        /// <summary>
         /// Gets the transport.
         /// </summary>
         /// <value>

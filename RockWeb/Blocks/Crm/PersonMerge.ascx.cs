@@ -19,10 +19,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -36,12 +39,13 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Merges two or more person records into one." )]
 
+    [LinkedPage( "Person Detail Page" )]
     public partial class PersonMerge : Rock.Web.UI.RockBlock
     {
 
         #region Fields
 
-        List<string> headingKeys = new List<string> {
+        private List<string> headingKeys = new List<string> {
             "PhoneNumbers", 
             "PersonAttributes"
         };
@@ -50,44 +54,34 @@ namespace RockWeb.Blocks.Crm
 
         #region Properties
 
-        /// <summary>
-        /// Gets or sets the people.
-        /// </summary>
-        /// <value>
-        /// The people.
-        /// </value>
         private MergeData MergeData { get; set; }
 
         #endregion
 
         #region Base Control Methods
 
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
             MergeData = ViewState["MergeData"] as MergeData;
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
 
-            gMerge.DataKeyNames = new string[] { "Key" };
-            gMerge.AllowPaging = false;
-            gMerge.ShowActionRow = false;
-            gMerge.RowDataBound += gMerge_RowDataBound;
-
-            if ( !Page.IsPostBack )
-            {
-                var personIDs = PageParameter( "People" ).SplitDelimitedValues().Select( p => p.AsInteger().Value ).ToList();
-                var people = new PersonService().Queryable( "CreatedByPersonAlias.Person" ).Where( p => personIDs.Contains( p.Id ) ).ToList();
-
-                // Create the data structure used to build grid
-                MergeData = new MergeData(people);
-                MergeData.AddMissingValues( headingKeys );
-                MergeData.RemoveEqualValues( headingKeys );
-                MergeData.SetPrimary( people.OrderBy( p => p.CreatedDateTime ).Select( p => p.Id ).FirstOrDefault() );
-            }
+            gValues.DataKeyNames = new string[] { "Key" };
+            gValues.AllowPaging = false;
+            gValues.ShowActionRow = false;
+            gValues.RowDataBound += gValues_RowDataBound;
 
             string script = @"
     $(""input[name$='PrimaryPerson']"").change( function (event) {
@@ -95,32 +89,53 @@ namespace RockWeb.Blocks.Crm
         var colId = rbId.substring(rbId.lastIndexOf('_')+1);
         $(this).closest('table').find(""input[id$='cbSelect_"" + colId + ""']"").each(function(index) {
             var textNode = this.nextSibling;
-            if (textNode && textNode.nodeType == 3) {
+            if ( !$(this).is(':last-child') || (textNode && textNode.nodeType == 3)) {
                 $(this).prop('checked', true);
             }
         });
     });
 ";
-            ScriptManager.RegisterStartupScript( gMerge, gMerge.GetType(), "primary-person-click", script, true );
+            ScriptManager.RegisterStartupScript( gValues, gValues.GetType(), "primary-person-click", script, true );
 
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
 
+            nbPeople.Visible = false;
+
             if ( !Page.IsPostBack )
             {
-                BuildColumns();
-                BindData();
+                string peopleIds = PageParameter( "People" );
+                if ( !string.IsNullOrWhiteSpace( peopleIds ) )
+                {
+                    var selectedPersonIds = peopleIds.SplitDelimitedValues().Select( p => p.AsInteger().Value ).ToList();
+
+                    // Get the people selected
+                    var people = new PersonService().Queryable( "CreatedByPersonAlias.Person" )
+                        .Where( p => selectedPersonIds.Contains( p.Id ) )
+                        .ToList();
+
+                    // Create the data structure used to build grid
+                    MergeData = new MergeData( people, headingKeys );
+                    BuildColumns();
+                    BindGrid();
+                }
             }
             else
             {
                 // Save the primary header radio button's selection
-                foreach ( var col in gMerge.Columns.OfType<PersonMergeField>() )
+                foreach ( var col in gValues.Columns.OfType<PersonMergeField>() )
                 {
-                    var colIndex = gMerge.Columns.IndexOf( col ).ToString();
-                    var rb = gMerge.HeaderRow.FindControl( "rbSelectPrimary_" + colIndex ) as RadioButton;
+                    col.OnDelete += personCol_OnDelete;
+
+                    var colIndex = gValues.Columns.IndexOf( col ).ToString();
+                    var rb = gValues.HeaderRow.FindControl( "rbSelectPrimary_" + colIndex ) as RadioButton;
                     if ( rb != null )
                     {
                         string value = Page.Request.Form[rb.UniqueID.Replace( rb.ID, rb.GroupName )];
@@ -133,9 +148,15 @@ namespace RockWeb.Blocks.Crm
             }
         }
 
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
         protected override object SaveViewState()
         {
-            ViewState["MergeData"] = MergeData;
+            ViewState["MergeData"] = MergeData ?? new MergeData();
             return base.SaveViewState();
         }
 
@@ -143,106 +164,552 @@ namespace RockWeb.Blocks.Crm
 
         #region Events
 
-        void gMerge_RowDataBound( object sender, GridViewRowEventArgs e )
+        /// <summary>
+        /// Handles the SelectPerson event of the ppAdd control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ppAdd_SelectPerson( object sender, EventArgs e )
+        {
+            int? personId = ppAdd.PersonId;
+            if ( personId.HasValue && ( MergeData == null || !MergeData.People.Any( p => p.Id == personId.Value ) ) )
+            {
+                var selectedPersonIds = MergeData != null ? MergeData.People.Select( p => p.Id ).ToList() : new List<int>();
+                selectedPersonIds.Add( personId.Value );
+
+                // Get the people selected
+                var people = new PersonService().Queryable( "CreatedByPersonAlias.Person" )
+                    .Where( p => selectedPersonIds.Contains( p.Id ) )
+                    .ToList();
+
+                // Rebuild mergdata, columns, and grid
+                MergeData = new MergeData( people, headingKeys );
+                BuildColumns();
+                BindGrid();
+            }
+
+            ppAdd.SetValue( null );
+
+        }
+
+        /// <summary>
+        /// Handles the OnDelete event of the personCol control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void personCol_OnDelete( object sender, EventArgs e )
+        {
+            var personMergeField = sender as PersonMergeField;
+            if ( personMergeField != null )
+            {
+                var selectedPersonIds = MergeData.People
+                    .Where( p => p.Id != personMergeField.PersonId )
+                    .Select( p => p.Id ).ToList();
+
+                // Get the people selected
+                var people = new PersonService().Queryable( "CreatedByPersonAlias.Person" )
+                    .Where( p => selectedPersonIds.Contains( p.Id ) )
+                    .ToList();
+
+                // Rebuild mergdata, columns, and grid
+                MergeData = new MergeData( people, headingKeys );
+                BuildColumns();
+                BindGrid();
+            }
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gValues control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gValues_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                if ( headingKeys.Contains( gMerge.DataKeys[e.Row.RowIndex].Value.ToString() ) )
+                if ( headingKeys.Contains( gValues.DataKeys[e.Row.RowIndex].Value.ToString() ) )
                 {
                     e.Row.AddCssClass( "grid-section-header" );
                 }
             }
         }
 
-        protected void lbGo_Click( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the Click event of the lbMerge control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbMerge_Click( object sender, EventArgs e )
         {
-            GetSelection();
-            var temp = MergeData.GetSelectedPeople();
-            BindData();
+            if ( MergeData.People.Count < 2 )
+            {
+                nbPeople.Visible = true;
+                return;
+            }
+
+            GetValuesSelection();
+
+            int? primaryPersonId = null;
+
+            var oldPhotos = new List<int>();
+
+            RockTransactionScope.WrapTransaction( () =>
+            {
+                using ( new Rock.Data.UnitOfWorkScope() )
+                {
+                    var personService = new PersonService();
+                    var familyService = new GroupService();
+                    var familyMemberService = new GroupMemberService();
+                    var binaryFileService = new BinaryFileService();
+                    var phoneNumberService = new PhoneNumberService();
+                    var historyService = new HistoryService();
+
+                    Person primaryPerson = personService.Get( MergeData.PrimaryPersonId ?? 0 );
+                    if ( primaryPerson != null )
+                    {
+                        primaryPersonId = primaryPerson.Id;
+
+                        var changes = new List<string>();
+
+                        foreach ( var p in MergeData.People.Where( p => p.Id != primaryPerson.Id ) )
+                        {
+                            changes.Add( string.Format( "Merged <span class='field-value'>{0} [ID: {1}]</span> with this record.", p.FullName, p.Id ) );
+                        }
+
+                        // Photo Id
+                        int? newPhotoId = MergeData.GetSelectedValue( MergeData.GetProperty( "Photo" ) ).Value.AsInteger( false );
+                        if ( !primaryPerson.PhotoId.Equals( newPhotoId ) )
+                        {
+                            changes.Add( "Modified the photo." );
+                            primaryPerson.PhotoId = newPhotoId;
+                        }
+
+                        primaryPerson.TitleValueId = GetNewIntValue( "Title", changes );
+                        primaryPerson.FirstName = GetNewStringValue( "FirstName", changes );
+                        primaryPerson.NickName = GetNewStringValue( "NickName", changes );
+                        primaryPerson.MiddleName = GetNewStringValue( "MiddleName", changes );
+                        primaryPerson.LastName = GetNewStringValue( "LastName", changes );
+                        primaryPerson.SuffixValueId = GetNewIntValue( "Suffix", changes );
+                        primaryPerson.RecordTypeValueId = GetNewIntValue( "RecordType", changes );
+                        primaryPerson.RecordStatusValueId = GetNewIntValue( "RecordStatus", changes );
+                        primaryPerson.RecordStatusReasonValueId = GetNewIntValue( "RecordStatusReason", changes );
+                        primaryPerson.ConnectionStatusValueId = GetNewIntValue( "ConnectionStatus", changes );
+                        primaryPerson.IsDeceased = GetNewBoolValue( "Deceased", changes );
+                        primaryPerson.Gender = (Gender)GetNewEnumValue( "Gender", typeof(Gender), changes );
+                        primaryPerson.MaritalStatusValueId = GetNewIntValue( "MaritalStatus", changes );
+                        primaryPerson.BirthDate = GetNewDateTimeValue( "BirthDate", changes );
+                        primaryPerson.AnniversaryDate = GetNewDateTimeValue( "AnniversaryDate", changes );
+                        primaryPerson.GraduationDate = GetNewDateTimeValue( "GraduationDate", changes );
+                        primaryPerson.Email = GetNewStringValue( "Email", changes );
+                        primaryPerson.IsEmailActive = GetNewBoolValue( "EmailActive", changes );
+                        primaryPerson.EmailNote = GetNewStringValue( "EmailNote", changes );
+                        primaryPerson.DoNotEmail = GetNewBoolValue( "DoNotEmail", changes ) ?? false;
+                        primaryPerson.SystemNote = GetNewStringValue( "SystemNote", changes );
+
+                        // Update phone numbers
+                        var phoneTypes = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues;
+                        foreach ( var phoneType in phoneTypes )
+                        {
+                            var phoneNumber = primaryPerson.PhoneNumbers.Where( p => p.NumberTypeValueId == phoneType.Id ).FirstOrDefault();
+                            string oldValue = phoneNumber != null ? phoneNumber.Number : string.Empty;
+
+                            string key = "phone_" + phoneType.Id.ToString();
+                            string newValue = GetNewStringValue( key, changes );
+
+                            if ( !oldValue.Equals( newValue, StringComparison.OrdinalIgnoreCase ) )
+                            {
+                                // New phone doesn't match old
+
+                                if ( !string.IsNullOrWhiteSpace( newValue ) )
+                                {
+                                    // New value exists
+                                    if ( phoneNumber == null )
+                                    {
+                                        // Old value didn't exist... create new phone record
+                                        phoneNumber = new PhoneNumber { NumberTypeValueId = phoneType.Id };
+                                        primaryPerson.PhoneNumbers.Add( phoneNumber );
+                                    }
+
+                                    // Update phone number
+                                    phoneNumber.Number = newValue;
+                                }
+                                else
+                                {
+                                    // New value doesn't exist
+                                    if ( phoneNumber != null )
+                                    {
+                                        // old value existed.. delete it
+                                        primaryPerson.PhoneNumbers.Remove( phoneNumber );
+                                        phoneNumberService.Delete( phoneNumber, CurrentPersonAlias );
+                                        phoneNumberService.Save( phoneNumber, CurrentPersonAlias );
+                                    }
+                                }
+                            }
+                        }
+
+                        // Save the new record
+                        personService.Save( primaryPerson, CurrentPersonAlias );
+
+                        // Update the attributes
+                        primaryPerson.LoadAttributes();
+                        foreach ( var property in MergeData.Properties.Where( p => p.Key.StartsWith( "attr_" ) ) )
+                        {
+                            string attributeKey = property.Key.Substring( 5 );
+                            string oldValue = primaryPerson.GetAttributeValue( attributeKey ) ?? string.Empty;
+                            string newValue = GetNewStringValue( property.Key, changes ) ?? string.Empty;
+
+                            if ( !oldValue.Equals( newValue ) )
+                            {
+                                var attribute = primaryPerson.Attributes[attributeKey];
+                                Rock.Attribute.Helper.SaveAttributeValue( primaryPerson, attribute, newValue, CurrentPersonAlias );
+                            }
+                        }
+
+                        historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                            primaryPerson.Id, changes, CurrentPersonAlias );
+
+                        // Delete the unselected photos
+                        string photoKeeper = primaryPerson.PhotoId.HasValue ? primaryPerson.PhotoId.Value.ToString() : string.Empty;
+                        foreach ( var photoValue in MergeData.Properties
+                            .Where( p => p.Key == "Photo" )
+                            .SelectMany( p => p.Values )
+                            .Where( v => v.Value != "" && v.Value != photoKeeper )
+                            .Select( v => v.Value ) )
+                        {
+                            int photoId = 0;
+                            if ( int.TryParse( photoValue, out photoId ) )
+                            {
+                                var photo = binaryFileService.Get( photoId );
+                                if ( photo != null )
+                                {
+                                    //binaryFileService.Delete( photo, CurrentPersonAlias );
+                                    binaryFileService.Save( photo, CurrentPersonAlias );
+                                }
+                            }
+                        }
+
+                        // Delete merged person's family records and any families that would be empty after merge
+                        foreach ( var p in MergeData.People.Where( p => p.Id != primaryPersonId.Value ) )
+                        {
+                            // Delete the merged person's phone numbers (we've already updated the primary persons values)
+                            foreach ( var phoneNumber in phoneNumberService.GetByPersonId(p.Id))
+                            {
+                                phoneNumberService.Delete( phoneNumber, CurrentPersonAlias );
+                                phoneNumberService.Save( phoneNumber, CurrentPersonAlias );
+                            }
+
+                            foreach ( var family in personService.GetFamilies( p.Id ) )
+                            {
+                                var fm = family.Members.Where( m => m.PersonId == p.Id ).FirstOrDefault();
+                                if ( fm != null )
+                                {
+                                    family.Members.Remove( fm );
+                                    familyMemberService.Delete( fm, CurrentPersonAlias );
+
+                                    if ( !family.Members.Any() )
+                                    {
+                                        familyService.Delete( family, CurrentPersonAlias );
+
+                                        var oldFamilyChanges = new List<string>();
+                                        History.EvaluateChange( oldFamilyChanges, "Family", family.Name, string.Empty );
+                                        historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                                            primaryPersonId.Value, oldFamilyChanges, family.Name, typeof( Group ), family.Id, CurrentPersonAlias );
+                                    }
+
+                                    familyService.Save( family, CurrentPersonAlias );
+                                }
+                            }
+                        }
+
+                    }
+                }
+
+            } );
+
+            Service service = new Service();
+            foreach ( var p in MergeData.People.Where( p => p.Id != primaryPersonId.Value ) )
+            {
+                // Run merge proc to merge all associated data
+                var parms = new Dictionary<string, object>();
+                parms.Add( "OldId", p.Id );
+                parms.Add( "NewId", primaryPersonId.Value );
+                service.ExecuteCommand( "spCrm_PersonMerge", CommandType.StoredProcedure, parms );
+            }
+
+            NavigateToLinkedPage( "PersonDetailPage", "PersonId", primaryPersonId.Value );
         }
 
         #endregion
 
         #region Methods
 
-        private void AddMergeData(Person person)
-        {
-
-        }
-
+        /// <summary>
+        /// Builds the values columns.
+        /// </summary>
         private void BuildColumns()
         {
-            gMerge.Columns.Clear();
+            gValues.Columns.Clear();
 
             if ( MergeData != null && MergeData.People != null && MergeData.People.Any() )
             {
                 var keyCol = new BoundField();
                 keyCol.DataField = "Key";
                 keyCol.Visible = false;
-                gMerge.Columns.Add( keyCol );
+                gValues.Columns.Add( keyCol );
 
                 var labelCol = new BoundField();
                 labelCol.DataField = "Label";
-                labelCol.HeaderText = "Value";
-                gMerge.Columns.Add( labelCol );
+                gValues.Columns.Add( labelCol );
 
+                var personService = new PersonService();
                 foreach ( var person in MergeData.People )
                 {
                     var personCol = new PersonMergeField();
                     personCol.SelectionMode = SelectionMode.Single;
                     personCol.PersonId = person.Id;
                     personCol.PersonName = person.FullName;
-                    personCol.DateCreated = person.DateCreated;
-                    personCol.CreatedBy = person.CreatedBy;
+                    personCol.HeaderContent = GetValuesColumnHeader( person.Id );
+                    personCol.ModifiedDateTime = person.ModifiedDateTime;
+                    personCol.ModifiedBy = person.ModifiedBy;
+                    personCol.HeaderStyle.CssClass = "merge-personselect";
                     personCol.DataTextField = string.Format( "property_{0}", person.Id );
                     personCol.DataSelectedField = string.Format( "property_{0}_selected", person.Id );
                     personCol.DataVisibleField = string.Format( "property_{0}_visible", person.Id );
-                    gMerge.Columns.Add( personCol );
+                    personCol.OnDelete += personCol_OnDelete;
+                    gValues.Columns.Add( personCol );
                 }
             }
         }
 
-        private void BindData()
+        /// <summary>
+        /// Gets the values column header.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        private string GetValuesColumnHeader( int personId )
         {
-            foreach ( var col in gMerge.Columns.OfType<PersonMergeField>() )
+            Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+
+            var groupMemberService = new GroupMemberService();
+            var families = groupMemberService.Queryable()
+                .Where( m => m.PersonId == personId && m.Group.GroupType.Guid == familyGuid )
+                .Select( m => m.Group )
+                .Distinct();
+
+            StringBuilder sbHeaderData = new StringBuilder();
+
+            foreach ( var family in families )
             {
-                col.IsPrimaryPerson = col.PersonId == MergeData.PrimaryPersonId;
+                sbHeaderData.Append( "<div class='merge-heading-family'>" );
+
+                var nickNames = groupMemberService.Queryable( "Person" )
+                    .Where( m => m.GroupId == family.Id )
+                    .OrderBy( m => m.GroupRole.Order )
+                    .ThenBy( m => m.Person.BirthDate ?? DateTime.MinValue )
+                    .ThenByDescending( m => m.Person.Gender )
+                    .Select( m => m.Person.NickName )
+                    .ToList();
+                if ( nickNames.Any() )
+                {
+                    sbHeaderData.AppendFormat( "{0} ({1})", family.Name, nickNames.AsDelimited( ", " ) );
+                }
+                else
+                {
+                    sbHeaderData.Append( family.Name );
+                }
+
+                bool showType = family.GroupLocations.Count() > 1;
+                foreach ( var loc in family.GroupLocations )
+                {
+                    sbHeaderData.AppendFormat( " <span class='merge-heading-location'>{0}{1}</span>",
+                        loc.Location.ToStringSafe(),
+                        ( showType ? " (" + loc.GroupLocationTypeValue.Name + ")" : "" ) );
+                }
+
+                sbHeaderData.Append( "</div>" );
             }
 
-            DataTable dt = MergeData.GetDataTable(headingKeys);
-            gMerge.DataSource = dt;
-            gMerge.DataBind();
+            return sbHeaderData.ToString();
+
         }
 
-        private void GetSelection()
+        /// <summary>
+        /// Binds the values.
+        /// </summary>
+        private void BindGrid()
         {
-            foreach ( var column in gMerge.Columns.OfType<PersonMergeField>() )
+            if ( MergeData != null && MergeData.People != null && MergeData.People.Any() )
+            {
+                foreach ( var col in gValues.Columns.OfType<PersonMergeField>() )
+                {
+                    col.IsPrimaryPerson = col.PersonId == MergeData.PrimaryPersonId;
+                }
+
+                DataTable dt = MergeData.GetDataTable( headingKeys );
+                gValues.DataSource = dt;
+                gValues.DataBind();
+            }
+        }
+
+        /// <summary>
+        /// Gets the values selection.
+        /// </summary>
+        private void GetValuesSelection()
+        {
+            foreach ( var column in gValues.Columns.OfType<PersonMergeField>() )
             {
                 // Get person id from the datafield that has format 'property_{0}' with {0} being the person id
                 int personId = int.Parse( column.DataTextField.Substring( 9 ) );
 
-                foreach ( var personProperty in MergeData.Properties )
+                // Set the correct person's value as selected
+                foreach( var property in MergeData.Properties.Where( p => column.SelectedKeys.Contains( p.Key ) ))
                 {
-                    foreach ( var personPropertyValue in personProperty.Values.Where( v => v.PersonId == personId ) )
+                    foreach( var personValue in property.Values)
                     {
-                        personPropertyValue.Selected = column.SelectedKeys.Contains( personProperty.Key );
+                        personValue.Selected = personValue.PersonId == personId;
                     }
                 }
             }
+        }
+
+        private string GetNewStringValue( string key, List<string> changes )
+        {
+            var ppValue = GetNewValue( key, changes );
+            return ppValue != null ? ppValue.Value : string.Empty;
+        }
+
+        private int? GetNewIntValue( string key, List<string> changes )
+        {
+            var ppValue = GetNewValue( key, changes );
+            if ( ppValue != null )
+            {
+                int newValue = int.MinValue;
+                if ( int.TryParse( ppValue.Value, out newValue ) )
+                {
+                    return newValue;
+                }
+            }
+
+            return null;
+        }
+
+        private bool? GetNewBoolValue( string key, List<string> changes )
+        {
+            var ppValue = GetNewValue( key, changes );
+            if (ppValue != null)
+            {
+                bool newValue = false;
+                if (bool.TryParse(ppValue.Value, out newValue))
+                {
+                    return newValue;
+                }
+            }
+            
+            return null;
+        }
+
+        private DateTime? GetNewDateTimeValue( string key, List<string> changes )
+        {
+            var ppValue = GetNewValue( key, changes );
+            if ( ppValue != null )
+            {
+                DateTime newValue = DateTime.MinValue;
+                if ( DateTime.TryParse( ppValue.Value, out newValue ) )
+                {
+                    return newValue;
+                }
+            }
+
+            return null;
+        }
+
+        private Enum GetNewEnumValue( string key, Type enumType, List<string> changes )
+        {
+            var ppValue = GetNewValue(key, changes);
+            if (ppValue != null)
+            {
+                return (Enum)Enum.Parse( enumType, ppValue.Value );
+            }
+
+            return null;
+        }
+
+        private PersonPropertyValue GetNewValue(string key, List<string> changes)
+        {
+            var property = MergeData.GetProperty( key );
+            var primaryPersonValue = property.Values.Where( v => v.PersonId == MergeData.PrimaryPersonId ).FirstOrDefault();
+            var selectedPersonValue = property.Values.Where( v => v.Selected ).FirstOrDefault();
+
+            string oldValue = primaryPersonValue != null ? primaryPersonValue.Value : string.Empty;
+            string newValue = selectedPersonValue != null ? selectedPersonValue.Value : string.Empty;
+
+            if (oldValue != newValue)
+            {
+                string oldFormattedValue = primaryPersonValue != null ? primaryPersonValue.FormattedValue : string.Empty;
+                string newFormattedValue = selectedPersonValue != null ? selectedPersonValue.FormattedValue : string.Empty;
+                History.EvaluateChange( changes, property.Label, oldFormattedValue, newFormattedValue );
+            }
+
+            return selectedPersonValue;
         }
 
         #endregion
 
     }
 
+    #region MergeData Class
+
+    /// <summary>
+    /// 
+    /// </summary>
     [Serializable]
     class MergeData
     {
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the people.
+        /// </summary>
+        /// <value>
+        /// The people.
+        /// </value>
         public List<MergePerson> People { get; set; }
+
+        /// <summary>
+        /// Gets or sets the properties.
+        /// </summary>
+        /// <value>
+        /// The properties.
+        /// </value>
         public List<PersonProperty> Properties { get; set; }
+
+        /// <summary>
+        /// Gets or sets the primary person identifier.
+        /// </summary>
+        /// <value>
+        /// The primary person identifier.
+        /// </value>
         public int? PrimaryPersonId { get; set; }
 
-        public MergeData( List<Person> people )
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MergeData"/> class.
+        /// </summary>
+        public MergeData()
+        {
+            People = new List<MergePerson>();
+            Properties = new List<PersonProperty>();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MergeData"/> class.
+        /// </summary>
+        /// <param name="people">The people.</param>
+        public MergeData( List<Person> people, List<string> headingKeys )
         {
             People = new List<MergePerson>();
             Properties = new List<PersonProperty>();
@@ -252,22 +719,23 @@ namespace RockWeb.Blocks.Crm
                 AddPerson( person );
             }
 
+            var phoneTypes = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues;
             foreach ( var person in people )
             {
                 AddProperty( "PhoneNumbers", "Phone Numbers", 0, string.Empty );
 
-                foreach ( var phoneType in person.PhoneNumbers )
+                foreach ( var phoneType in phoneTypes )
                 {
-                    string keyRoot = "phone_" + phoneType.NumberTypeValueId.ToString();
-
-                    int i = 1;
-                    string key = keyRoot;
-                    while ( Properties.Where( p => p.Key == key && p.Values.Any( v => v.PersonId == person.Id ) ).Any() )
+                    string key = "phone_" + phoneType.Id.ToString();
+                    var phoneNumber = person.PhoneNumbers.Where( p => p.NumberTypeValueId == phoneType.Id ).FirstOrDefault();
+                    if ( phoneNumber != null )
                     {
-                        key = string.Format( "{0}_{1}", keyRoot, i++ );
+                        AddProperty( key, phoneType.Name, person.Id, phoneNumber.Number, phoneNumber.NumberFormatted );
                     }
-
-                    AddProperty( key, phoneType.NumberTypeValue.Name, person.Id, phoneType.Number, phoneType.NumberFormatted );
+                    else
+                    {
+                        AddProperty( key, phoneType.Name, person.Id, string.Empty, string.Empty );
+                    }
                 }
             }
 
@@ -282,121 +750,60 @@ namespace RockWeb.Blocks.Crm
                     AddProperty( "attr_" + attribute.Key, attribute.Value.Name, person.Id, value, formattedValue );
                 }
             }
-        }
 
-        public void AddPerson( Person person )
-        {
-            People.Add( new MergePerson( person ) );
-
-            AddProperty( "Title", person.Id, person.TitleValue );
-            AddProperty( "FirstName", person.Id, person.FirstName );
-            AddProperty( "NickName", person.Id, person.NickName );
-            AddProperty( "MiddleName", person.Id, person.MiddleName );
-            AddProperty( "LastName", person.Id, person.LastName );
-            AddProperty( "Suffix", person.Id, person.SuffixValue );
-            AddProperty( "RecordType", person.Id, person.RecordTypeValue );
-            AddProperty( "RecordStatus", person.Id, person.RecordStatusValue );
-            AddProperty( "RecordStatusReason", person.Id, person.RecordStatusReasonValue );
-            AddProperty( "ConnectionStatus", person.Id, person.ConnectionStatusValue );
-            AddProperty( "Deceased", person.Id, person.IsDeceased );
-            AddProperty( "Gender", person.Id, person.Gender );
-            AddProperty( "MaritalStatus", person.Id, person.MaritalStatusValue );
-            AddProperty( "AnniversaryDate", person.Id, person.AnniversaryDate );
-            AddProperty( "GraduationDate", person.Id, person.GraduationDate );
-            AddProperty( "Email", person.Id, person.Email );
-            AddProperty( "IsEmailActive", person.Id, person.IsEmailActive );
-            AddProperty( "EmailNote", person.Id, person.EmailNote );
-            AddProperty( "DoNotEmail", person.Id, person.DoNotEmail );
-            AddProperty( "SystemNote", person.Id, person.SystemNote );
-        }
-
-
-        public void AddProperty( string key, int personId, string value, bool selected = false )
-        {
-            AddProperty( key, key.SplitCase(), personId, value, value, selected );
-        }
-
-        public void AddProperty( string key, string label, int personId, string value, bool selected = false )
-        {
-            AddProperty( key, label, personId, value, value, selected );
-        }
-
-        public void AddProperty( string key, string label, int personId, string value, string formattedValue, bool selected = false )
-        {
-            var property = GetProperty( key, label );
-            var propertyValue = property.Values.Where( v => v.PersonId == personId ).FirstOrDefault();
-            if ( propertyValue == null )
+            // Add missing values
+            foreach ( var property in Properties.Where( p => !headingKeys.Contains( p.Key ) ) )
             {
-                propertyValue = new PersonPropertyValue { PersonId = personId };
-                property.Values.Add( propertyValue );
-            }
-            propertyValue.Value = value ?? string.Empty;
-            propertyValue.FormattedValue = formattedValue ?? string.Empty;
-            propertyValue.Selected = selected;
-        }
-
-        public void AddProperty( string key, int personId, DefinedValue value, bool selected = false )
-        {
-            AddProperty( key, personId, value != null ? value.Name : "", selected );
-        }
-
-        public void AddProperty( string key, int personId, bool? value, bool selected = false )
-        {
-            AddProperty( key, personId, ( value ?? false ).ToString(), selected );
-        }
-
-        public void AddProperty( string key, int personId, DateTime? value, bool selected = false )
-        {
-            AddProperty( key, personId, value.HasValue ? value.Value.ToShortDateString() : string.Empty, selected );
-        }
-
-        public void AddProperty( string key, int personId, Enum value, bool selected = false )
-        {
-            AddProperty( key, personId, value.ConvertToString(), selected );
-        }
-
-        public void AddMissingValues( List<string> headingKeys )
-        {
-            foreach(var property in Properties.Where( p => !headingKeys.Contains( p.Key ) ))
-            {
-                foreach(var person in People.Where( p => !property.Values.Any( v => v.PersonId == p.Id)))
+                foreach ( var person in People.Where( p => !property.Values.Any( v => v.PersonId == p.Id ) ) )
                 {
                     property.Values.Add( new PersonPropertyValue() { PersonId = person.Id } );
                 }
             }
+
+            SetPrimary( people.OrderBy( p => p.CreatedDateTime ).Select( p => p.Id ).FirstOrDefault() );
+
         }
 
-        public void RemoveEqualValues( List<string> headingKeys )
-        {
-            Properties
-                .Where( p =>
-                    !headingKeys.Contains( p.Key ) &&
-                    p.Values.Select( v => v.Value ).Distinct().Count() == 1 )
-                .ToList()
-                .ForEach( p => Properties.Remove( p ) );
-        }
+        #endregion
 
+        #region Methods
+
+        #region Public Methods
+
+        /// <summary>
+        /// Sets the primary.
+        /// </summary>
+        /// <param name="primaryPersonId">The primary person identifier.</param>
         public void SetPrimary( int primaryPersonId )
         {
             PrimaryPersonId = primaryPersonId;
 
             foreach ( var personProperty in Properties )
             {
-                // Find primary person's non-blank value
-                var value = personProperty.Values.Where( v => v.PersonId == primaryPersonId && v.FormattedValue != null && v.FormattedValue != "" ).FirstOrDefault();
-                if ( value == null )
+                PersonPropertyValue value = null;
+
+                if ( personProperty.Values.Any( v => v.Value != null && v.Value != "" ) )
                 {
-                    // Find any other selected value
-                    value = personProperty.Values.Where( v => v.Selected ).FirstOrDefault();
+                    // Find primary person's non-blank value
+                    value = personProperty.Values.Where( v => v.PersonId == primaryPersonId && v.Value != null && v.Value != "" ).FirstOrDefault();
                     if ( value == null )
                     {
-                        // Find first non-blank value
-                        value = personProperty.Values.Where( v => v.FormattedValue != "" ).FirstOrDefault();
+                        // Find any other selected value
+                        value = personProperty.Values.Where( v => v.Selected ).FirstOrDefault();
                         if ( value == null )
                         {
-                            value = personProperty.Values.FirstOrDefault();
+                            // Find first non-blank value
+                            value = personProperty.Values.Where( v => v.Value != "" ).FirstOrDefault();
+                            if ( value == null )
+                            {
+                                value = personProperty.Values.FirstOrDefault();
+                            }
                         }
                     }
+                }
+                else
+                {
+                    value = personProperty.Values.Where( v => v.PersonId == primaryPersonId ).FirstOrDefault();
                 }
 
                 // Unselect all the values
@@ -409,23 +816,26 @@ namespace RockWeb.Blocks.Crm
             }
         }
 
-        public Dictionary<string, int> GetSelectedPeople()
+        /// <summary>
+        /// Gets the selected value.
+        /// </summary>
+        /// <param name="personProperty">The person property.</param>
+        /// <returns></returns>
+        public PersonPropertyValue GetSelectedValue(PersonProperty personProperty)
         {
-            var selection = new Dictionary<string, int>();
-
-            foreach ( var personProperty in Properties )
+            if ( personProperty != null )
             {
-                int personId = personProperty.Values.Where( v => v.Selected ).Select( v => v.PersonId ).FirstOrDefault();
-                if ( personId > 0 )
-                {
-                    selection.Add( personProperty.Key, personId );
-                }
+                return personProperty.Values.Where( v => v.Selected ).FirstOrDefault();
             }
-
-            return selection;
+            return null;
         }
 
-        public DataTable GetDataTable(List<string> headingKeys)
+        /// <summary>
+        /// Gets the data table.
+        /// </summary>
+        /// <param name="headingKeys">The heading keys.</param>
+        /// <returns></returns>
+        public DataTable GetDataTable( List<string> headingKeys )
         {
             var tbl = new DataTable();
 
@@ -439,67 +849,203 @@ namespace RockWeb.Blocks.Crm
                 tbl.Columns.Add( string.Format( "property_{0}_visible", person.Id ), typeof( bool ) );
             }
 
+            List<object> heading = null;
             foreach ( var personProperty in Properties )
             {
-                var rowValues = new List<object>();
-                rowValues.Add( personProperty.Key );
-                rowValues.Add( personProperty.Label );
-
-                foreach ( var person in People )
+                // If this is a heading property, or this is a property with more than one disctict value build the row data
+                if ( headingKeys.Contains( personProperty.Key ) ||
+                    personProperty.Values.Select( v => v.Value ).Distinct().Count() > 1 )
                 {
-                    var value = personProperty.Values.Where( v => v.PersonId == person.Id ).FirstOrDefault();
-                    string formattedValue = value != null ? value.FormattedValue : string.Empty;
-                    rowValues.Add( formattedValue );
-                    rowValues.Add( value != null ? value.Selected : false );
+                    var rowValues = new List<object>();
+                    rowValues.Add( personProperty.Key );
+                    rowValues.Add( personProperty.Label );
+
+                    foreach ( var person in People )
+                    {
+                        var value = personProperty.Values.Where( v => v.PersonId == person.Id ).FirstOrDefault();
+                        string formattedValue = value != null ? value.FormattedValue : string.Empty;
+                        rowValues.Add( formattedValue );
+                        rowValues.Add( value != null ? value.Selected : false );
+                        if ( headingKeys.Contains( personProperty.Key ) )
+                        {
+                            rowValues.Add( false );
+                        }
+                        else
+                        {
+                            rowValues.Add( true );
+                        }
+                    }
+
                     if ( headingKeys.Contains( personProperty.Key ) )
                     {
-                        rowValues.Add( false );
+                        heading = rowValues;
                     }
                     else
                     {
-                        rowValues.Add( true );
+                        if ( heading != null )
+                        {
+                            tbl.Rows.Add( heading.ToArray() );
+                            heading = null;
+                        }
+
+                        tbl.Rows.Add( rowValues.ToArray() );
                     }
                 }
-
-                tbl.Rows.Add( rowValues.ToArray() );
             }
 
             return tbl;
         }
 
-        private PersonProperty GetProperty( string key, string label )
+        #endregion
+
+        #region Private Methods
+
+        private void AddPerson( Person person )
+        {
+            People.Add( new MergePerson( person ) );
+
+            AddProperty( "Photo", "Photo", person.Id,
+                person.PhotoId.HasValue ? person.PhotoId.ToString() : string.Empty,
+                Person.GetPhotoImageTag( person, 65, 65, "merge-photo" ) );
+            AddProperty( "Title", person.Id, person.TitleValue );
+            AddProperty( "FirstName", person.Id, person.FirstName );
+            AddProperty( "NickName", person.Id, person.NickName );
+            AddProperty( "MiddleName", person.Id, person.MiddleName );
+            AddProperty( "LastName", person.Id, person.LastName );
+            AddProperty( "Suffix", person.Id, person.SuffixValue );
+            AddProperty( "RecordType", person.Id, person.RecordTypeValue );
+            AddProperty( "RecordStatus", person.Id, person.RecordStatusValue );
+            AddProperty( "RecordStatusReason", person.Id, person.RecordStatusReasonValue );
+            AddProperty( "ConnectionStatus", person.Id, person.ConnectionStatusValue );
+            AddProperty( "Deceased", person.Id, person.IsDeceased );
+            AddProperty( "Gender", person.Id, person.Gender );
+            AddProperty( "MaritalStatus", person.Id, person.MaritalStatusValue );
+            AddProperty( "BirthDate", person.Id, person.BirthDate );
+            AddProperty( "AnniversaryDate", person.Id, person.AnniversaryDate );
+            AddProperty( "GraduationDate", person.Id, person.GraduationDate );
+            AddProperty( "Email", person.Id, person.Email );
+            AddProperty( "EmailActive", person.Id, person.IsEmailActive );
+            AddProperty( "EmailNote", person.Id, person.EmailNote );
+            AddProperty( "DoNotEmail", person.Id, person.DoNotEmail );
+            AddProperty( "SystemNote", person.Id, person.SystemNote );
+        }
+
+        private void AddProperty( string key, int personId, string value, bool selected = false )
+        {
+            AddProperty( key, key.SplitCase(), personId, value, value, selected );
+        }
+
+        private void AddProperty( string key, string label, int personId, string value, bool selected = false )
+        {
+            AddProperty( key, label, personId, value, value, selected );
+        }
+
+        private void AddProperty( string key, string label, int personId, string value, string formattedValue, bool selected = false )
+        {
+            var property = GetProperty( key, true, label );
+            var propertyValue = property.Values.Where( v => v.PersonId == personId ).FirstOrDefault();
+            if ( propertyValue == null )
+            {
+                propertyValue = new PersonPropertyValue { PersonId = personId };
+                property.Values.Add( propertyValue );
+            }
+            propertyValue.Value = value ?? string.Empty;
+            propertyValue.FormattedValue = formattedValue ?? string.Empty;
+            propertyValue.Selected = selected;
+        }
+
+        private void AddProperty( string key, int personId, DefinedValue value, bool selected = false )
+        {
+            AddProperty( key, key.SplitCase(), personId, value, selected );
+        }
+
+        private void AddProperty( string key, string label, int personId, DefinedValue value, bool selected = false )
+        {
+            var property = GetProperty( key, true, label );
+            var propertyValue = property.Values.Where( v => v.PersonId == personId ).FirstOrDefault();
+            if ( propertyValue == null )
+            {
+                propertyValue = new PersonPropertyValue { PersonId = personId };
+                property.Values.Add( propertyValue );
+            }
+            propertyValue.Value = value != null ? value.Id.ToString() : string.Empty;
+            propertyValue.FormattedValue = value != null ? value.Name : string.Empty;
+            propertyValue.Selected = selected;
+        }
+
+        private void AddProperty( string key, int personId, bool? value, bool selected = false )
+        {
+            AddProperty( key, personId, ( value ?? false ).ToString(), selected );
+        }
+
+        private void AddProperty( string key, int personId, DateTime? value, bool selected = false )
+        {
+            AddProperty( key, personId, value.HasValue ? value.Value.ToShortDateString() : string.Empty, selected );
+        }
+
+        private void AddProperty( string key, int personId, Enum value, bool selected = false )
+        {
+            AddProperty( key, personId, value.ConvertToString(), selected );
+        }
+
+        public PersonProperty GetProperty( string key, bool createIfNotFound = false, string label = "")
         {
             var property = Properties.Where( p => p.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
-            if ( property == null )
+            if ( property == null && createIfNotFound )
             {
+                if (label == string.Empty)
+                {
+                    label = key.SplitCase();
+                }
+
                 property = new PersonProperty( key, label );
                 Properties.Add( property );
             }
+
             return property;
         }
+
+        #endregion
+
+        #endregion
+
     }
 
+    #endregion
+
+    #region MergePerson Class
+
+    /// <summary>
+    /// 
+    /// </summary>
     [Serializable]
     class MergePerson
     {
         public int Id { get; set; }
         public string FullName { get; set; }
-        public DateTime? DateCreated { get; set; }
-        public string CreatedBy { get; set; }
+        public DateTime? ModifiedDateTime { get; set; }
+        public string ModifiedBy { get; set; }
 
         public MergePerson( Person person )
         {
             Id = person.Id;
             FullName = person.FullName;
-            DateCreated = person.CreatedDateTime;
-            if ( person.CreatedByPersonAlias != null &&
-                person.CreatedByPersonAlias.Person != null )
+            ModifiedDateTime = person.ModifiedDateTime;
+            if ( person.ModifiedByPersonAlias != null &&
+                person.ModifiedByPersonAlias.Person != null )
             {
-                CreatedBy = person.CreatedByPersonAlias.Person.FullName;
+                ModifiedBy = person.ModifiedByPersonAlias.Person.FullName;
             }
         }
     }
 
+    #endregion
+
+    #region PersonProperty Class
+
+    /// <summary>
+    /// 
+    /// </summary>
     [Serializable]
     class PersonProperty
     {
@@ -527,6 +1073,10 @@ namespace RockWeb.Blocks.Crm
         }
     }
 
+    #endregion
+
+    #region PersonPropertyValue class
+
     [Serializable]
     class PersonPropertyValue
     {
@@ -535,5 +1085,7 @@ namespace RockWeb.Blocks.Crm
         public string Value { get; set; }
         public string FormattedValue { get; set; }
     }
+
+    #endregion
 
 }

@@ -163,6 +163,9 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        // Needed for rendering help block with no label value
+        private string TemporaryHelpValue = string.Empty;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RockCheckBox"/> class.
         /// </summary>
@@ -199,6 +202,17 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
+                bool renderLabel = ( !string.IsNullOrEmpty( Label ) );
+                bool renderHelp = ( HelpBlock != null && !string.IsNullOrWhiteSpace( Help ) );
+
+                // If rendering help text with no label, the CheckBoxAdapter will need to render the help, so it needs to be temporarily 
+                // blanked out so that the RockControlHelper does not render it
+                TemporaryHelpValue = Help;
+                if (!renderLabel && renderHelp)
+                {
+                    Help = string.Empty;
+                }
+
                 RockControlHelper.RenderControl( this, writer );
             }
         }
@@ -211,6 +225,7 @@ namespace Rock.Web.UI.Controls
         {
             if (Enabled)
             {
+                Help = TemporaryHelpValue;
                 base.RenderControl(writer);
             }
             else

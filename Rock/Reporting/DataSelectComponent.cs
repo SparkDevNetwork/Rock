@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Extension;
 
@@ -40,7 +41,7 @@ namespace Rock.Reporting
         public abstract string AppliesToEntityType { get; }
 
         /// <summary>
-        /// Gets the section.
+        /// Gets the section that this will appear in in the Field Selector
         /// </summary>
         /// <value>
         /// The section.
@@ -48,6 +49,22 @@ namespace Rock.Reporting
         public virtual string Section
         {
             get { return "Other"; }
+        }
+
+        /// <summary>
+        /// Gets the attribute value defaults.
+        /// </summary>
+        /// <value>
+        /// The attribute defaults.
+        /// </value>
+        public override Dictionary<string, string> AttributeValueDefaults
+        {
+            get
+            {
+                var defaults = new Dictionary<string, string>();
+                defaults.Add( "Active", "True" );
+                return defaults;
+            }
         }
 
         /// <summary>
@@ -74,25 +91,21 @@ namespace Rock.Reporting
         /// </value>
         public abstract string ColumnHeaderText { get; }
 
-        /// <summary>
-        /// Gets the attribute value defaults.
-        /// </summary>
-        /// <value>
-        /// The attribute defaults.
-        /// </value>
-        public override Dictionary<string, string> AttributeValueDefaults
-        {
-            get
-            {
-                var defaults = new Dictionary<string, string>();
-                defaults.Add( "Active", "True" );
-                return defaults;
-            }
-        }
-
         #endregion
 
-        #region Methods
+        #region Public Methods
+
+        /// <summary>
+        /// Gets the grid field.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public virtual System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
+        {
+            BoundField result = Rock.Web.UI.Controls.Grid.GetGridField( this.ColumnFieldType );
+            return result;
+        }
 
         /// <summary>
         /// Gets the title.
@@ -101,31 +114,6 @@ namespace Rock.Reporting
         /// The title.
         /// </value>
         public abstract string GetTitle( Type entityType );
-
-        /// <summary>
-        /// Formats the selection on the client-side.  When the widget is collapsed by the user, the Filterfield control
-        /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before
-        /// referencing this property.
-        /// </summary>
-        /// <returns></returns>
-        /// <value>
-        /// The client format script.
-        /// </value>
-        public virtual string GetClientFormatSelection()
-        {
-            return this.GetTitle( null );
-        }
-
-        /// <summary>
-        /// Formats the selection.
-        /// </summary>
-        /// <param name="selection">The selection.</param>
-        /// <returns></returns>
-        public virtual string FormatSelection( string selection )
-        {
-            return this.GetTitle( null );
-        }
 
         /// <summary>
         /// Creates the child controls.
@@ -169,7 +157,7 @@ namespace Rock.Reporting
         /// <param name="selection">The selection.</param>
         public virtual void SetSelection( Control[] controls, string selection )
         {
-            string[] selectionValues = selection.Split( '|' );
+            //
         }
 
         /// <summary>
@@ -182,14 +170,5 @@ namespace Rock.Reporting
         public abstract Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection );
 
         #endregion
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public abstract class DataSelectComponent<T> : DataSelectComponent
-    {
-        //
     }
 }

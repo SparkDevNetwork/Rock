@@ -22,6 +22,7 @@ using System.Web.UI;
 using Rock;
 using Rock.Constants;
 using Rock.Model;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
@@ -85,6 +86,28 @@ namespace RockWeb.Blocks.Core
                     pnlDetails.Visible = false;
                 }
             }
+        }
+
+        public override List<Rock.Web.UI.BreadCrumb> GetBreadCrumbs( Rock.Web.PageReference pageReference )
+        {
+            var breadCrumbs = new List<BreadCrumb>();
+            
+            string pageTitle = "New Tag";
+            
+            int? tagId = PageParameter( "tagId" ).AsInteger( false );
+            if (tagId.HasValue)
+            {
+                Tag tag = new TagService().Get( tagId.Value );
+                if (tag != null)
+                {
+                    pageTitle = tag.Name;
+                    breadCrumbs.Add( new BreadCrumb( tag.Name, pageReference ) );
+                }
+            }
+
+            RockPage.Title = pageTitle;
+
+            return breadCrumbs;
         }
 
         #endregion

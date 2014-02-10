@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( Person != null )
             {
-                new PersonService().GetFamilies( Person ).ToList().ForEach( f => families.Add( f.Id, f.Name ) );
+                new PersonService().GetFamilies( Person.Id ).ToList().ForEach( f => families.Add( f.Id, f.Name ) );
             }
 
             if ( !Page.IsPostBack )

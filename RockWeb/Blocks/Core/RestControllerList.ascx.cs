@@ -15,23 +15,33 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
-using System.Web.Http;
 using System.Web.UI;
+
+using Rock;
 using Rock.Attribute;
+using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    [DisplayName( "Rest Controller List" )]
+    /// <summary>
+    /// Lists all the Rest controllers.
+    /// </summary>
+    [DisplayName( "REST Controller List" )]
     [Category( "Core" )]
-    [Description( "Lists all the rest controllers." )]
+    [Description( "Lists all the REST controllers." )]
 
     [LinkedPage( "Detail Page" )]
     public partial class RestControllerList : RockBlock
     {
+
+        #region Base Control Methods
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -40,10 +50,13 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
-            gItems.DataKeyNames = new string[] { "ControllerType" };
-            gItems.GridRebind += gItems_GridRebind;
-            gItems.Actions.ShowAdd = false;
-            gItems.IsDeleteEnabled = false;
+            gControllers.DataKeyNames = new string[] { "Id" };
+            gControllers.GridRebind += gControllers_GridRebind;
+            gControllers.Actions.ShowAdd = false;
+            gControllers.IsDeleteEnabled = false;
+
+            SecurityField securityField = gControllers.Columns[3] as SecurityField;
+            securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RestController ) ).Id;
         }
 
         /// <summary>
@@ -54,54 +67,88 @@ namespace RockWeb.Blocks.Administration
         {
             if ( !Page.IsPostBack )
             {
+                var service = new RestControllerService();
+                if ( !service.Queryable().Any() )
+                {
+                    RefreshControllerList();
+                }
+
                 BindGrid();
             }
 
             base.OnLoad( e );
         }
 
+        #endregion
+
+        #region Events
+
         /// <summary>
-        /// Handles the GridRebind event of the gItems control.
+        /// Handles the GridRebind event of the gControllers control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void gItems_GridRebind( object sender, EventArgs e )
+        protected void gControllers_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
+
+       /// <summary>
+        /// Handles the RowSelected event of the gControllers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
+        protected void gControllers_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        {
+            var queryParams = new Dictionary<string, string>();
+            queryParams.Add( "controller", e.RowKeyValue.ToString() );
+            NavigateToLinkedPage( "DetailPage", queryParams );
+        }
+
+        protected void btnRefreshAll_Click( object sender, EventArgs e )
+        {
+            RefreshControllerList();
+        }
+        
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Binds the grid.
         /// </summary>
         private void BindGrid()
         {
-            var config = GlobalConfiguration.Configuration;
-            var explorer = config.Services.GetApiExplorer();
+            var service = new RestControllerService();
+            var sortProperty = gControllers.SortProperty;
 
-            var apiList = explorer.ApiDescriptions.OrderBy( a => a.RelativePath ).ThenBy( a => a.HttpMethod.Method ).ToList();
-            var controllerList = apiList
-                .GroupBy( a => a.ActionDescriptor.ControllerDescriptor.ControllerName )
-                .Select( s => new
-                {
-                    ControllerName = s.Key,
-                    ControllerType = s.Max( a => a.ActionDescriptor.ControllerDescriptor.ControllerType.FullName ),
-                    Actions = s.Count()
-                } ).ToList();
+            IQueryable<RestController> qry = null;
+            if (sortProperty != null)
+            {
+                qry = service.Queryable().Sort(sortProperty);
+            }
+            else
+            {
+                qry = service.Queryable().OrderBy( c => c.Name);
+            }
 
-            gItems.DataSource = controllerList;
-            gItems.DataBind();
+            gControllers.DataSource = qry.Select( c => new
+            {
+                c.Id,
+                c.Name,
+                c.ClassName,
+                Actions = c.Actions.Count()
+            } ).ToList();
+            gControllers.DataBind();
         }
 
-        /// <summary>
-        /// Handles the RowSelected event of the gItems control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
-        protected void gItems_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        private void RefreshControllerList()
         {
-            var queryParams = new Dictionary<string, string>();
-            queryParams.Add( "controllerType", e.RowKeyValue.ToString() );
-            NavigateToLinkedPage( "DetailPage", queryParams );
+            new RestControllerService().RegisterControllers( CurrentPersonAlias );
         }
-    }
+
+        #endregion
+
+
+}
 }

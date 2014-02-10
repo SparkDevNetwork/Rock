@@ -39,7 +39,20 @@ namespace RockWeb.Blocks.Crm
     [Description("Displays the details for a specific layout.")]
     public partial class LayoutDetail : RockBlock, IDetailBlock
     {
-        #region Control Methods
+
+        #region Fields
+
+        // used for private variables
+
+        #endregion
+
+        #region Properties
+
+        // used for public / protected properties
+
+        #endregion
+
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -105,9 +118,19 @@ namespace RockWeb.Blocks.Crm
 
         #endregion
 
-        #region Edit Events
+        #region Events
 
- 
+        /// <summary>
+        /// Handles the Click event of the btnEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnEdit_Click( object sender, EventArgs e )
+        {
+            var layout = new LayoutService().Get( int.Parse( hfLayoutId.Value ) );
+            ShowEditDetails( layout );
+        }
+
         /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
@@ -155,9 +178,9 @@ namespace RockWeb.Blocks.Crm
 
                 LayoutCache.Flush( layout.Id );
 
-                Dictionary<string, string> qryString = new Dictionary<string, string>();
-                qryString["siteId"] = hfSiteId.Value;
-                NavigateToParentPage( qryString );
+                Dictionary<string, string> qryParams = new Dictionary<string, string>();
+                qryParams["layoutId"] = layout.Id.ToString();
+                NavigateToPage( RockPage.Guid, qryParams );
             }
         }
 
@@ -178,18 +201,14 @@ namespace RockWeb.Blocks.Crm
             else
             {
                 // Cancelling on Edit
-                LayoutService layoutService = new LayoutService();
-                Layout layout = layoutService.Get( int.Parse( hfLayoutId.Value ) );
-
-                Dictionary<string, string> qryString = new Dictionary<string, string>();
-                qryString["siteId"] = layout.SiteId.ToString();
-                NavigateToParentPage( qryString );
+                Layout layout = new LayoutService().Get( int.Parse( hfLayoutId.Value ) );
+                ShowReadonlyDetails( layout );
             }
         }
 
         #endregion
 
-        #region Internal Methods
+        #region Methods
 
         /// <summary>
         /// Shows the detail.
@@ -238,6 +257,47 @@ namespace RockWeb.Blocks.Crm
             hfSiteId.Value = layout.SiteId.ToString();
             hfLayoutId.Value = layout.Id.ToString();
 
+            bool readOnly = false;
+
+            nbEditModeMessage.Text = string.Empty;
+            if ( !IsUserAuthorized( "Edit" ) )
+            {
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Rock.Model.Layout.FriendlyTypeName );
+            }
+
+            if ( layout.IsSystem )
+            {
+                nbEditModeMessage.Text = EditModeMessage.System( Rock.Model.Layout.FriendlyTypeName );
+            }
+
+            if ( readOnly )
+            {
+                btnEdit.Visible = false;
+                //btnDelete.Visible = false;
+                ShowReadonlyDetails( layout );
+            }
+            else
+            {
+                btnEdit.Visible = true;
+                //btnDelete.Visible = !layout.IsSystem;
+                if ( layout.Id > 0 )
+                {
+                    ShowReadonlyDetails( layout );
+                }
+                else
+                {
+                    ShowEditDetails( layout );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Shows the edit details.
+        /// </summary>
+        /// <param name="layout">The layout.</param>
+        private void ShowEditDetails( Rock.Model.Layout layout )
+        {
             if ( layout.Id.Equals( 0 ) )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( Rock.Model.Layout.FriendlyTypeName ).FormatAsHtmlTitle();
@@ -247,12 +307,43 @@ namespace RockWeb.Blocks.Crm
                 lReadOnlyTitle.Text = layout.Name.FormatAsHtmlTitle();
             }
 
+            SetEditMode( true );
+
             LoadDropDowns();
 
             tbLayoutName.Text = layout.Name;
             tbDescription.Text = layout.Description;
             ddlLayout.SetValue( layout.FileName );
+        }
 
+        /// <summary>
+        /// Shows the readonly details.
+        /// </summary>
+        /// <param name="layout">The layout.</param>
+        private void ShowReadonlyDetails( Rock.Model.Layout layout )
+        {
+            SetEditMode( false );
+
+            hfLayoutId.SetValue( layout.Id );
+            lReadOnlyTitle.Text = layout.Name.FormatAsHtmlTitle();
+
+            lLayoutDescription.Text = layout.Description;
+
+            DescriptionList descriptionList = new DescriptionList();
+            descriptionList.Add( "Layout File", layout.FileName );
+            lblMainDetails.Text = descriptionList.Html;
+        }
+
+        /// <summary>
+        /// Sets the edit mode.
+        /// </summary>
+        /// <param name="editable">if set to <c>true</c> [editable].</param>
+        private void SetEditMode( bool editable )
+        {
+            pnlEditDetails.Visible = editable;
+            fieldsetViewDetails.Visible = !editable;
+
+            this.HideSecondaryBlocks( editable );
         }
 
         /// <summary>
@@ -280,7 +371,6 @@ namespace RockWeb.Blocks.Crm
 
             ddlLayout.Required = true;
         }
-
 
         #endregion
     }
