@@ -516,6 +516,10 @@
     <Compile Include="Migrations\201402091749178_AddMergeProc.Designer.cs">
       <DependentUpon>201402091749178_AddMergeProc.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402100011204_NewBadgeSetup.cs" />
+    <Compile Include="Migrations\201402100011204_NewBadgeSetup.Designer.cs">
+      <DependentUpon>201402100011204_NewBadgeSetup.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -882,6 +886,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402091749178_AddMergeProc.resx">
       <DependentUpon>201402091749178_AddMergeProc.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402100011204_NewBadgeSetup.resx">
+      <DependentUpon>201402100011204_NewBadgeSetup.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
