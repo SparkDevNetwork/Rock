@@ -272,10 +272,10 @@ namespace Rock.Web.Cache
             // ends up being lower then the minimum allowed range.  For now, HostFileChangeMonitoring will
             // only be done in negative timezone offsets.  After we upgrade to .NET 4.5.1 we will need to 
             // see if bug has been fixed.
-            if (TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).Ticks <= 0)
-            {
+            //if (TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).Ticks <= 0)
+            //{
                 cacheItemPolicy.ChangeMonitors.Add( new HostFileChangeMonitor( filePaths ) );
-            }
+            //}
         }
 
         /// <summary>
