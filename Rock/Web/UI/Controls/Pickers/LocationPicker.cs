@@ -111,7 +111,7 @@ namespace Rock.Web.UI.Controls
 
             set
             {
-                _hfCurrentPickerMode.Value = value.ConvertToString( false );
+                _hfCurrentPickerMode.Value = modeValue;
             }
         }
 
