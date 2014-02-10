@@ -166,6 +166,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 </div>
 ";
 
+            // Save and Cancel should not confirm exit
+            btnSave.OnClientClick = string.Format( "javascript:$('#{0}').val('');return true;", confirmExit.ClientID );
+            btnCancel.OnClientClick = string.Format( "javascript:$('#{0}').val('');return true;", confirmExit.ClientID );
         }
 
         /// <summary>
