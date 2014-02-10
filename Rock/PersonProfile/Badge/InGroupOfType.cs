@@ -76,16 +76,17 @@ namespace Rock.PersonProfile.Badge
                                         200: function (data, status, xhr) {{
                                             var badgeHtml = '';
                                             var groupIcon = data.GroupTypeIconCss;
-                                            var labelText = data.NickName + ' is in a ' + data.GroupTypeName + '.';
-
+                                            
                                             if (groupIcon == '') {{
                                                 groupIcon = 'fa fa-times';
                                             }}
 
                                             if (data.PersonInGroup) {{
                                                 badgeHtml = '<i class=\'badge-icon ' + groupIcon + '\' style=\'color: {2}\'></i>';
+                                                var labelText = data.NickName + ' is in a ' + data.GroupTypeName + '.';
                                             }} else {{
                                                 badgeHtml = '<i class=\'badge-icon badge-disabled ' + groupIcon + '\' style=\'color: {2}\'></i>';
+                                                var labelText = data.NickName + ' is not in a ' + data.GroupTypeName + '.';
                                             }}
                                             $('.badge-ingroupoftype').html(badgeHtml);
                                             $('.badge-ingroupoftype').attr('data-original-title', labelText);
