@@ -468,3 +468,35 @@ body#splash #content-box {
 .no-person-outline {
     fill: #000000;
 }
+
+
+@media print {
+
+    html { width: 800px!important; }
+
+    .pagerheader {
+
+        // Hide nav elements, but not logo
+        .header-zone,
+        .smartsearch,
+        .pagenav,
+        .navbar-toggle {
+            .responsive-invisibility();
+        }
+
+        // Make logo all black (looks better, prints faster)
+        .navbar-brand {
+            height: 41px;
+            width: 110px;
+            display: block;
+            background: url('/Assets/Images/rock-logo-black.svg') no-repeat center center!important;
+            background-size: contain!important;
+            .brandbar-logo { display: none; }
+        }
+    }
+
+    // Displaying urls after links isn't very helpful for the admin dashboard
+    a[href]:after {
+        content: '' !important;
+    }
+}
