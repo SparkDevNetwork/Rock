@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -44,12 +45,11 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var service = new PersonService();
-                var person = service.Get( new Guid( value ) );
-                if ( person != null )
-                {
-                    formattedValue = person.FullName;
-                }
+                Guid guid = value.AsGuid();
+                formattedValue = new PersonAliasService().Queryable()
+                    .Where( a => a.Guid.Equals( guid ) )
+                    .Select( a => a.Person.NickName + " " + a.Person.LastName )
+                    .FirstOrDefault();
             }
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );
@@ -84,13 +84,38 @@ namespace Rock.Field.Types
                 Guid personGuid = Guid.Empty;
                 int? personId = ppPerson.PersonId;
 
-                var person = new PersonService().Get( personId ?? 0 );
-                if ( person != null )
+                if ( personId.HasValue )
                 {
-                    personGuid = person.Guid;
-                }
+                    using ( new UnitOfWorkScope() )
+                    {
+                        var personAliasService = new PersonAliasService();
+                        var personAlias = personAliasService.Queryable()
+                            .Where( a => a.AliasPersonId == personId )
+                            .FirstOrDefault();
+                        if ( personAlias != null )
+                        {
+                            result = personAlias.Guid.ToString();
+                        }
+                        else
+                        {
+                            // If the personId is valid, there should be a personAlias with the AliasPersonID equal 
+                            // to that personId.  If there isn't for some reason, create it now...
+                            var person = new PersonService().Get( personId.Value );
+                            if ( person != null )
+                            {
+                                personAlias = new PersonAlias();
+                                personAlias.Guid = Guid.NewGuid();
+                                personAlias.AliasPersonId = person.Id;
+                                personAlias.AliasPersonGuid = person.Guid;
+                                personAlias.PersonId = person.Id;
+                                result = personAlias.Guid.ToString();
 
-                result = personGuid.ToString();
+                                personAliasService.Add( personAlias );
+                                personAliasService.Save( personAlias );
+                            }
+                        }
+                    }
+                }
             }
 
             return result;
@@ -109,10 +134,13 @@ namespace Rock.Field.Types
                 PersonPicker ppPerson = control as PersonPicker;
                 if ( ppPerson != null )
                 {
-                    Guid personGuid = Guid.Empty;
-                    Guid.TryParse( value, out personGuid );
+                    Guid guid = Guid.Empty;
+                    Guid.TryParse( value, out guid );
 
-                    var person = new PersonService().Get( personGuid );
+                    var person = new PersonAliasService().Queryable()
+                        .Where( a => a.Guid.Equals(guid))
+                        .Select( a => a.Person)
+                        .FirstOrDefault();
                     ppPerson.SetValue( person );
                 }
             }
