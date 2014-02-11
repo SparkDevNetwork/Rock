@@ -15,19 +15,16 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
-using Rock.Attribute;
 using Rock.Constants;
-using Rock.Data;
 using Rock.Model;
-using Rock.Web.UI;
-using Rock.Web.UI.Controls;
+using Rock.Web;
 using Rock.Web.Cache;
-using System.Collections.Generic;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -37,11 +34,13 @@ namespace RockWeb.Blocks.Finance
     public partial class TransactionDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Fields
+
         private string contextTypeName = string.Empty;
 
-        #endregion
+        #endregion Fields
 
         #region Control Methods
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -59,73 +58,28 @@ namespace RockWeb.Blocks.Finance
         {
             if ( !Page.IsPostBack )
             {
-                BindDropdowns();
-                BindForm();
+                string itemId = PageParameter( "transactionId" );
+                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                {
+                    ShowDetail( "transactionId", int.Parse( itemId ) );
+                }
+                else
+                {
+                    pnlDetails.Visible = false;
+                }
             }
         }
 
-        #endregion
+        #endregion Control Methods
 
         #region Events
-
-        /// <summary>
-        /// Shows the edit value.
-        /// </summary>
-        /// <param name="transactionId">The transactionId id.</param>
-        /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        protected void ShowTransactionEditValue( int transactionId, string batchId )
-        {
-            hfIdTransValue.Value = transactionId.ToString();
-            hfBatchId.Value = batchId;
-
-            var transaction = new Rock.Model.FinancialTransactionService().Get( transactionId );
-
-            if ( transaction != null )
-            {
-                lTitle.Text = "Edit Transaction".FormatAsHtmlTitle();
-
-                hfIdTransValue.Value = transaction.Id.ToString();
-                tbAmount.Text = transaction.Amount.ToString();
-                hfBatchId.Value = transaction.BatchId.ToString();
-                ddlCreditCardType.SetValue( transaction.CreditCardTypeValueId );
-                ddlCurrencyType.SetValue( transaction.CurrencyTypeValueId );
-                if ( transaction.GatewayEntityTypeId.HasValue )
-                {
-                    var gatewayEntity = Rock.Web.Cache.EntityTypeCache.Read( transaction.GatewayEntityTypeId.Value );
-                    if ( gatewayEntity != null )
-                    {
-                        ddlPaymentGateway.SetValue( gatewayEntity.Guid.ToString() );
-                    }
-                }
-
-                ddlSourceType.SetValue( transaction.SourceTypeValueId );
-                ddlTransactionType.SetValue( transaction.TransactionTypeValueId );
-                tbSummary.Text = transaction.Summary;
-                tbTransactionCode.Text = transaction.TransactionCode;
-                dtTransactionDateTime.SelectedDateTime = transaction.TransactionDateTime;
-                if ( transaction.AuthorizedPersonId != null )
-                {
-                    ppAuthorizedPerson.PersonId = transaction.AuthorizedPersonId;
-                    ppAuthorizedPerson.PersonName = transaction.AuthorizedPerson.FullName;
-                }
-            }
-            else
-            {
-                lTitle.Text = "Add Transaction".FormatAsHtmlTitle();
-            }
-
-            if ( ddlCurrencyType != null && ddlCurrencyType.SelectedItem.ToString() != "Credit Card" )
-            { 
-                ddlCreditCardType.Visible = false;
-            }
-        }
 
         /// <summary>
         /// Handles the Click event of the btnSaveFinancialTransaction control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnSaveTransaction_Click( object sender, EventArgs e )
+        protected void lbSaveTransaction_Click( object sender, EventArgs e )
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
@@ -192,7 +146,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     Dictionary<string, string> qryString = new Dictionary<string, string>();
                     qryString["financialBatchid"] = hfBatchId.Value;
-                    NavigateToParentPage( qryString );                    
+                    NavigateToParentPage( qryString );
                 }
                 else
                 {
@@ -206,7 +160,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnCancelTransaction_Click( object sender, EventArgs e )
+        protected void lbCancelTransaction_Click( object sender, EventArgs e )
         {
             if ( !string.IsNullOrEmpty( hfBatchId.Value ) )
             {
@@ -217,7 +171,7 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 NavigateToParentPage();
-            }   
+            }
         }
 
         /// <summary>
@@ -238,7 +192,14 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
-        #endregion
+        protected void lbEdit_Click( object sender, EventArgs e )
+        {
+            BindDropdowns();
+            var transaction = new FinancialTransactionService().Get( hfIdTransValue.ValueAsInt() );
+            ShowEdit( transaction );
+        }
+
+        #endregion Events
 
         #region Internal Methods
 
@@ -247,25 +208,25 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected void BindForm()
         {
-            try
-            {
-                string batchId = PageParameter( "financialBatchId" );
-                string transactionId = PageParameter( "transactionId" );
+            //try
+            //{
+            //    string batchId = PageParameter( "financialBatchId" );
+            //    string transactionId = PageParameter( "transactionId" );
 
-                if ( !string.IsNullOrEmpty( transactionId ) )
-                {
-                    ShowTransactionEditValue( Convert.ToInt32( transactionId ), batchId );
-                }
-                else
-                {
-                    ShowTransactionEditValue( 0, batchId );
-                }
-            }
-            catch ( Exception exp )
-            {
-                Response.Write( "The access request was unclear. Please fix the following: " + exp.Message );
-                Response.End();
-            }
+            //    if ( !string.IsNullOrEmpty( transactionId ) )
+            //    {
+            //        ShowTransactionEditValue( Convert.ToInt32( transactionId ), batchId );
+            //    }
+            //    else
+            //    {
+            //        ShowTransactionEditValue( 0, batchId );
+            //    }
+            //}
+            //catch ( Exception exp )
+            //{
+            //    Response.Write( "The access request was unclear. Please fix the following: " + exp.Message );
+            //    Response.End();
+            //}
         }
 
         /// <summary>
@@ -291,6 +252,95 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Sets the edit mode.
+        /// </summary>
+        /// <param name="editable">if set to <c>true</c> [editable].</param>
+        private void SetEditMode( bool editable )
+        {
+            pnlEditDetails.Visible = editable;
+            valSummaryTop.Enabled = editable;
+            fieldsetViewSummary.Visible = !editable;
+        }
+
+        /// <summary>
+        /// Shows the edit values.
+        /// </summary>
+        /// <param name="transaction">The transaction.</param>
+        protected void ShowEdit( FinancialTransaction transaction )
+        {
+            if ( transaction != null )
+            {
+                lTitle.Text = "Edit Transaction".FormatAsHtmlTitle();
+                SetEditMode( true );
+                hfIdTransValue.Value = transaction.Id.ToString();
+                tbAmount.Text = transaction.Amount.ToString();
+                hfBatchId.Value = PageParameter( "financialBatchId" );
+                ddlCreditCardType.SetValue( transaction.CreditCardTypeValueId );
+                ddlCurrencyType.SetValue( transaction.CurrencyTypeValueId );
+                if ( transaction.GatewayEntityTypeId.HasValue )
+                {
+                    var gatewayEntity = Rock.Web.Cache.EntityTypeCache.Read( transaction.GatewayEntityTypeId.Value );
+                    if ( gatewayEntity != null )
+                    {
+                        ddlPaymentGateway.SetValue( gatewayEntity.Guid.ToString() );
+                    }
+                }
+
+                ddlSourceType.SetValue( transaction.SourceTypeValueId );
+                ddlTransactionType.SetValue( transaction.TransactionTypeValueId );
+                tbSummary.Text = transaction.Summary;
+                tbTransactionCode.Text = transaction.TransactionCode;
+                dtTransactionDateTime.SelectedDateTime = transaction.TransactionDateTime;
+                if ( transaction.AuthorizedPersonId != null )
+                {
+                    ppAuthorizedPerson.PersonId = transaction.AuthorizedPersonId;
+                    ppAuthorizedPerson.PersonName = transaction.AuthorizedPerson.FullName;
+                }
+            }
+            else
+            {
+                lTitle.Text = "Add Transaction".FormatAsHtmlTitle();
+            }
+
+            if ( ddlCurrencyType != null && ddlCurrencyType.SelectedItem.ToString() != "Credit Card" )
+            {
+                ddlCreditCardType.Visible = false;
+            }
+        }
+
+        /// <summary>
+        /// Shows the summary.
+        /// </summary>
+        /// <param name="transaction">The transaction.</param>
+        private void ShowSummary( FinancialTransaction transaction )
+        {
+            lTitle.Text = "View Transaction".FormatAsHtmlTitle();
+            SetEditMode( false );
+
+            string authorizedPerson = "";
+            if ( transaction.AuthorizedPerson != null )
+            {
+                authorizedPerson = transaction.AuthorizedPerson.FullName;
+            }
+
+            lDetailsLeft.Text = new DescriptionList()
+                .Add( "Amount", transaction.Amount )
+                .Add( "Transaction Date/Time", transaction.TransactionDateTime )
+                .Add( "Transaction Type", transaction.TransactionTypeValue )
+                .Add( "Credit Card Type", transaction.CreditCardTypeValue )
+                .Add( "Authorized Person", authorizedPerson )
+                .Html;
+
+            lDetailsRight.Text = new DescriptionList()
+                .Add( "Summary", transaction.Summary )
+                .Add( "Source Type", transaction.SourceTypeValue )
+                .Add( "Transaction Code", transaction.TransactionCode )
+                .Add( "Currency Type", transaction.CurrencyTypeValue )
+                .Add( "Payment Gateway", transaction.GatewayEntityType )
+                .Html;
+        }
+
+        /// <summary>
         /// Shows the detail.
         /// </summary>
         /// <param name="itemKey">The item key.</param>
@@ -301,6 +351,45 @@ namespace RockWeb.Blocks.Finance
             {
                 return;
             }
+
+            FinancialTransaction transaction = null;
+            if ( !itemKeyValue.Equals( 0 ) )
+            {
+                transaction = new FinancialTransactionService().Get( itemKeyValue );
+            }
+            else
+            {
+                transaction = new FinancialTransaction { Id = 0 };
+            }
+            hfIdTransValue.Value = transaction.Id.ToString();
+            hfBatchId.Value = PageParameter( "financialBatchId" );
+
+            bool readOnly = false;
+            if ( !IsUserAuthorized( "Edit" ) )
+            {
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialBatch.FriendlyTypeName );
+            }
+
+            if ( !readOnly )
+            {
+                lbEdit.Visible = true;
+                if ( transaction.Id > 0 )
+                {
+                    ShowSummary( transaction );
+                }
+                else
+                {
+                    ShowEdit( transaction );
+                }
+            }
+            else
+            {
+                lbEdit.Visible = false;
+                ShowSummary( transaction );
+            }
+
+            lbSave.Visible = !readOnly;
         }
 
         /// <summary>
@@ -314,6 +403,6 @@ namespace RockWeb.Blocks.Finance
             valSummaryTop.Visible = true;
         }
 
-        #endregion
-    }
+        #endregion Internal Methods
+}
 }
