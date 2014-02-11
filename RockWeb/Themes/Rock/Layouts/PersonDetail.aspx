@@ -40,13 +40,13 @@
 
     <div class="personprofile">
 
-        <div class="navbar navbar-static-top personprofilebar-bio">
+        <div class="personprofilebar-bio">
             <div class="container">
                 <Rock:Zone Name="Individual Detail" runat="server" />
             </div>
         </div>
 
-        <div class="navbar navbar-static-top personprofilebar-badge">
+        <div class="personprofilebar-badge">
             <div class="container">
                 <div class="row">
                     <div class="badge-group col-sm-4">
@@ -62,7 +62,7 @@
             </div>
         </div>
 
-        <div class="navbar navbar-static-top personprofilebar-family">
+        <div class="personprofilebar-family">
 			<div class="container">    
                 <Rock:Zone Name="Family Detail" runat="server" />
             </div>
