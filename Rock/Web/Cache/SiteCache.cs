@@ -88,24 +88,56 @@ namespace Rock.Web.Cache
                         HttpCookie cookie = request.Cookies[cookieName];
 
                         string theme = request["theme"];
-                        if ( !string.IsNullOrEmpty( theme ) )
+                        if ( theme != null )
                         {
-                            if ( cookie == null )
+                            if ( theme.Trim() != string.Empty )
                             {
-                                cookie = new HttpCookie( cookieName, theme );
+                                // Don't allow switching to an invalid theme
+                                if ( System.IO.Directory.Exists( httpContext.Server.MapPath( "~/Themes/" + theme ) ) )
+                                {
+                                    if ( cookie == null )
+                                    {
+                                        cookie = new HttpCookie( cookieName, theme );
+                                    }
+                                    else
+                                    {
+                                        cookie.Value = theme;
+                                    }
+                                    httpContext.Response.SetCookie( cookie );
+
+                                    return theme;
+                                }
                             }
                             else
                             {
-                                cookie.Value = theme;
+                                // if a blank theme was specified, remove any cookie (use default)
+                                if ( cookie != null )
+                                {
+                                    cookie.Expires = RockDateTime.Now.AddDays( -10 );
+                                    cookie.Value = null;
+                                    httpContext.Response.SetCookie( cookie );
+                                    return _theme;
+                                }
                             }
-                            httpContext.Response.Cookies.Set( cookie );
-
-                            return theme;
                         }
 
                         if ( cookie != null )
                         {
-                            return cookie.Value;
+                            theme = cookie.Value;
+                            
+                            // Don't allow switching to an invalid theme
+                            if ( System.IO.Directory.Exists( httpContext.Server.MapPath( "~/Themes/" + theme ) ) )
+                            {
+                                return cookie.Value;
+                            }
+                            else
+                            {
+                                // Delete the invalid cookie
+                                cookie.Expires = RockDateTime.Now.AddDays( -10 );
+                                cookie.Value = null;
+                                httpContext.Response.SetCookie(cookie);
+                            }
+
                         }
                     }
                 }
