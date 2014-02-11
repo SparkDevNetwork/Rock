@@ -149,18 +149,27 @@ function() {
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
+            int? selectedGroupTypeId = null;
+            if ( groupTypePicker != null )
+            {
+                selectedGroupTypeId = groupTypePicker.SelectedGroupTypeId;
+            }
+            
             groupTypePicker = new GroupTypePicker();
             groupTypePicker.ID = filterControl.ID + "_0";
             groupTypePicker.Label = "Group Type";
             groupTypePicker.GroupTypes = new GroupTypeService().Queryable().OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             groupTypePicker.SelectedIndexChanged += groupTypePicker_SelectedIndexChanged;
             groupTypePicker.AutoPostBack = true;
+            groupTypePicker.SelectedGroupTypeId = selectedGroupTypeId;
             filterControl.Controls.Add( groupTypePicker );
 
             cblRole = new RockCheckBoxList();
             cblRole.Label = "with Group Role(s)";
             cblRole.ID = filterControl.ID + "_1";
             filterControl.Controls.Add( cblRole );
+
+            PopulateGroupRolesCheckList( groupTypePicker.SelectedGroupTypeId ?? 0 );
 
             return new Control[2] { groupTypePicker, cblRole };
         }
@@ -173,11 +182,20 @@ function() {
         protected void groupTypePicker_SelectedIndexChanged( object sender, EventArgs e )
         {
             int groupTypeId = groupTypePicker.SelectedValueAsId() ?? 0;
+            PopulateGroupRolesCheckList( groupTypeId );
+        }
+
+        /// <summary>
+        /// Populates the group roles.
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        private void PopulateGroupRolesCheckList( int groupTypeId )
+        {
             var groupType = Rock.Web.Cache.GroupTypeCache.Read( groupTypeId );
             if ( groupType != null )
             {
                 cblRole.Items.Clear();
-                foreach ( var item in new GroupTypeRoleService().GetByGroupTypeId(groupType.Id ))
+                foreach ( var item in new GroupTypeRoleService().GetByGroupTypeId( groupType.Id ) )
                 {
                     cblRole.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
                 }

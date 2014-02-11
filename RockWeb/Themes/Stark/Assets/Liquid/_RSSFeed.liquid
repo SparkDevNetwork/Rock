@@ -1,20 +1,24 @@
 <h1>{{title}}</h1>
 {{description}}
 <div class="rss-articles">
-	{% for article in item -%}
-		<div class="rss-article">
-			<h2>{{article.title}}</h2>
+	{% if item != null and item.size > 0 -%}
+		{% for article in item -%}
+			<div class="rss-article">
+				<h2>{{article.title}}</h2>
 
-			<div class="rss-article-byline">
-					{{article.pubDate}}
-			</div> 
-			<br />
-			<div class="rss-article-summary">
-				{{article.description}}
+				<div class="rss-article-byline">
+						{{article.pubDate}}
+				</div> 
+				<br />
+				<div class="rss-article-summary">
+					{{article.description}}
+				</div>
+				<p>
+					<a href="{{article.detailPageUrl}}" class="btn btn-default">View Article <i class="fa fa-angle-double-right"></i></a>
+				</p>
 			</div>
-			<p>
-				<a href="{{article.detailPageUrl}}" class="btn btn-default">View Article <i class="fa fa-angle-double-right"></i></a>
-			</p>
-		</div>
-	{% endfor -%}
+		{% endfor -%}
+	{% else -%}
+		No articles found.
+	{% endif -%}
 </div>
