@@ -26,7 +26,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class LocationAddressPicker : Panel, IRockControl
+    public class LocationAddressPicker : Panel, IRockControl, INamingContainer
     {
         #region IRockControl implementation
 
