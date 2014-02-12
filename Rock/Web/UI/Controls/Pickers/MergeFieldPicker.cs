@@ -83,12 +83,12 @@ namespace Rock.Web.UI.Controls
         {
             if ( ! string.IsNullOrWhiteSpace(nodePath))
             {
-                var nodes = nodePath.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                var nodes = nodePath.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries).ToList();
                 
                 if ( nodes.Count > 0 )
                 {
                     ItemId = nodePath;
-                    ItemName = nodes[nodes.Count - 1];
+                    ItemName = nodes[nodes.Count -1];
                     
                     if ( nodes.Count > 1 )
                     {
@@ -119,7 +119,7 @@ namespace Rock.Web.UI.Controls
 
                 foreach ( string nodePath in nodePathsList )
                 {
-                    var nodes = nodePath.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                    var nodes = nodePath.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
 
                     if ( nodes.Count > 0 )
                     {
