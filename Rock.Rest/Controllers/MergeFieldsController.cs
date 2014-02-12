@@ -161,7 +161,7 @@ namespace Rock.Rest.Controllers
                         {
                             items.Add( new TreeViewItem
                             {
-                                Id = "GlobalAttribute," + attributeCache.Key,
+                                Id = "GlobalAttribute|" + attributeCache.Key,
                                 Name = attributeCache.Name,
                                 HasChildren = false
                             } );
@@ -211,7 +211,7 @@ namespace Rock.Rest.Controllers
                                 {
                                     var treeViewItem = new TreeViewItem
                                     {
-                                        Id = id + "," + propInfo.Name,
+                                        Id = id + "|" + propInfo.Name,
                                         Name = propInfo.Name.SplitCase()
                                     };
 
@@ -254,7 +254,7 @@ namespace Rock.Rest.Controllers
                                     {
                                         items.Add( new TreeViewItem
                                         {
-                                            Id = id + "," + attribute.Key,
+                                            Id = id + "|" + attribute.Key,
                                             Name = attribute.Name
                                         } );
                                     }
