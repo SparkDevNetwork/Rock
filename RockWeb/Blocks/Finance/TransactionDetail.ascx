@@ -70,6 +70,23 @@
                     <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-sm" CausesValidation="false" OnClick="lbEdit_Click" />
                 </div>
             </fieldset>
+
+            <br />
+            <div class="row col-md-12">
+                <Rock:Grid ID="gTransactionDetails" runat="server" EmptyDataText="No Transactions Details Found" OnRowSelected="gTransactionDetails_RowSelected" AllowSorting="true">
+                    <Columns>
+                        <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
+                        <asp:BoundField DataField="TransactionId" HeaderText="Transaction Id" SortExpression="TransactionId" />                
+                        <asp:BoundField DataField="AccountId" HeaderText="AccountId" SortExpression="AccountId" />
+                        <asp:BoundField DataField="Amount" HeaderText="Amount" SortExpression="Amount" />
+                        <asp:BoundField DataField="Summary" HeaderText="Summary" SortExpression="Summary" />
+                        <asp:BoundField DataField="EntityTypeId" HeaderText="Entity Type Id" SortExpression="EntityTypeId" />
+                        <asp:BoundField DataField="EntityId" HeaderText="Entity Id" SortExpression="EntityId" />
+                        <Rock:DeleteField OnClick="gTransactionDetails_Delete" Visible="false"/>
+                    </Columns>
+                </Rock:Grid>
+            </div>
+
         </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>
