@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
@@ -199,6 +200,15 @@ namespace RockWeb.Blocks.Finance
             ShowEdit( transaction );
         }
 
+        protected void gTransactionDetails_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        {
+
+        }
+        protected void gTransactionDetails_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        {
+
+        }
+
         #endregion Events
 
         #region Internal Methods
@@ -268,10 +278,9 @@ namespace RockWeb.Blocks.Finance
         /// <param name="transaction">The transaction.</param>
         protected void ShowEdit( FinancialTransaction transaction )
         {
-            if ( transaction != null )
+            if ( transaction != null && transaction.Id != 0 )
             {
                 lTitle.Text = "Edit Transaction".FormatAsHtmlTitle();
-                SetEditMode( true );
                 hfIdTransValue.Value = transaction.Id.ToString();
                 tbAmount.Text = transaction.Amount.ToString();
                 hfBatchId.Value = PageParameter( "financialBatchId" );
@@ -301,8 +310,9 @@ namespace RockWeb.Blocks.Finance
             {
                 lTitle.Text = "Add Transaction".FormatAsHtmlTitle();
             }
+            SetEditMode( true );
 
-            if ( ddlCurrencyType != null && ddlCurrencyType.SelectedItem.ToString() != "Credit Card" )
+            if ( ddlCurrencyType != null && ddlCurrencyType.SelectedItem != null && ddlCurrencyType.SelectedItem.ToString() != "Credit Card" )
             {
                 ddlCreditCardType.Visible = false;
             }
@@ -380,6 +390,7 @@ namespace RockWeb.Blocks.Finance
                 }
                 else
                 {
+                    BindDropdowns();
                     ShowEdit( transaction );
                 }
             }
@@ -390,6 +401,11 @@ namespace RockWeb.Blocks.Finance
             }
 
             lbSave.Visible = !readOnly;
+
+            // Load the TransactionDetails grid here
+            var financialTransactionDetails = new FinancialTransactionDetailService().Queryable().ToList();
+            gTransactionDetails.DataSource = financialTransactionDetails;
+            gTransactionDetails.DataBind();
         }
 
         /// <summary>
