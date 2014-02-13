@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Crm
                     var selectedPersonIds = peopleIds.SplitDelimitedValues().Select( p => p.AsInteger().Value ).ToList();
 
                     // Get the people selected
-                    var people = new PersonService().Queryable( "CreatedByPersonAlias.Person" )
+                    var people = new PersonService().Queryable( "CreatedByPersonAlias.Person,Users" )
                         .Where( p => selectedPersonIds.Contains( p.Id ) )
                         .ToList();
 
@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Crm
                 selectedPersonIds.Add( personId.Value );
 
                 // Get the people selected
-                var people = new PersonService().Queryable( "CreatedByPersonAlias.Person" )
+                var people = new PersonService().Queryable( "CreatedByPersonAlias.Person,Users" )
                     .Where( p => selectedPersonIds.Contains( p.Id ) )
                     .ToList();
 
@@ -207,7 +207,7 @@ namespace RockWeb.Blocks.Crm
                     .Select( p => p.Id ).ToList();
 
                 // Get the people selected
-                var people = new PersonService().Queryable( "CreatedByPersonAlias.Person" )
+                var people = new PersonService().Queryable( "CreatedByPersonAlias.Person,Users" )
                     .Where( p => selectedPersonIds.Contains( p.Id ) )
                     .ToList();
 
@@ -247,7 +247,7 @@ namespace RockWeb.Blocks.Crm
                 return;
             }
 
-            GetValuesSelection();
+            bool reconfirmRequired = ( MergeData.People.Select( p => p.Email ).Distinct().Count() > 1 && MergeData.People.Where( p => p.HasLogins ).Any() ); GetValuesSelection();
 
             int? primaryPersonId = null;
 
@@ -258,6 +258,7 @@ namespace RockWeb.Blocks.Crm
                 using ( new Rock.Data.UnitOfWorkScope() )
                 {
                     var personService = new PersonService();
+                    var userLoginService = new UserLoginService();
                     var familyService = new GroupService();
                     var familyMemberService = new GroupMemberService();
                     var binaryFileService = new BinaryFileService();
@@ -396,6 +397,15 @@ namespace RockWeb.Blocks.Crm
                             {
                                 phoneNumberService.Delete( phoneNumber, CurrentPersonAlias );
                                 phoneNumberService.Save( phoneNumber, CurrentPersonAlias );
+                            }
+
+                            if ( reconfirmRequired )
+                            {
+                                foreach ( var login in userLoginService.GetByPersonId( p.Id ) )
+                                {
+                                    login.IsConfirmed = false;
+                                    userLoginService.Save( login, CurrentPersonAlias );
+                                }
                             }
 
                             foreach ( var family in personService.GetFamilies( p.Id ) )
@@ -540,6 +550,9 @@ namespace RockWeb.Blocks.Crm
         {
             if ( MergeData != null && MergeData.People != null && MergeData.People.Any() )
             {
+                // If the people have different email addresses and any logins, display security alert box
+                nbSecurityNotice.Visible = ( MergeData.People.Select( p => p.Email ).Distinct().Count() > 1 && MergeData.People.Where( p => p.HasLogins ).Any() ) ;
+
                 foreach ( var col in gValues.Columns.OfType<PersonMergeField>() )
                 {
                     col.IsPrimaryPerson = col.PersonId == MergeData.PrimaryPersonId;
@@ -1025,12 +1038,17 @@ namespace RockWeb.Blocks.Crm
         public string FullName { get; set; }
         public DateTime? ModifiedDateTime { get; set; }
         public string ModifiedBy { get; set; }
+        public string Email { get; set; }
+        public bool HasLogins { get; set; }
 
         public MergePerson( Person person )
         {
             Id = person.Id;
             FullName = person.FullName;
             ModifiedDateTime = person.ModifiedDateTime;
+            Email = person.Email;
+            HasLogins = person.Users.Any();
+
             if ( person.ModifiedByPersonAlias != null &&
                 person.ModifiedByPersonAlias.Person != null )
             {
