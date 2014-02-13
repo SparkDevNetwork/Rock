@@ -651,8 +651,8 @@ namespace Rock.Web.UI
                         AddPopupControls();
                         if ( canAdministratePage )
                         {
-                            Page.Trace.Warn( "Adding adminstration options" );
-                            AddConfigElements();
+                            Page.Trace.Warn( "Adding zone config elements" );
+                            AddZoneConfigElements();
                         }
                     }
 
@@ -673,6 +673,8 @@ namespace Rock.Web.UI
                         AddGoogleAnalytics( _pageCache.Layout.Site.GoogleAnalyticsCode );
                     }
 
+                    bool canEditBlock = false;
+
                     // Load the blocks and insert them into page zones
                     Page.Trace.Warn( "Loading Blocks" );
                     foreach ( Rock.Web.Cache.BlockCache block in _pageCache.Blocks )
@@ -685,6 +687,11 @@ namespace Rock.Web.UI
                         bool canEdit = block.IsAuthorized( "Edit", CurrentPerson );
                         bool canView = block.IsAuthorized( "View", CurrentPerson );
 
+                        if ( canAdministrate || canEdit )
+                        {
+                            canEditBlock = true;
+                        }                        
+                        
                         // Make sure user has access to view block instance
                         if ( canAdministrate || canEdit || canView )
                         {
@@ -835,8 +842,11 @@ namespace Rock.Web.UI
                     } 
 
                     // Add the page admin footer if the user is authorized to edit the page
-                    if ( _pageCache.IncludeAdminFooter && canAdministratePage )
+                    if ( _pageCache.IncludeAdminFooter && (canAdministratePage || canEditBlock ) )
                     {
+                        // Add the page admin script
+                        AddScriptLink( Page, "~/Scripts/Bundles/RockAdmin" );
+
                         Page.Trace.Warn( "Adding admin footer to page" );
                         HtmlGenericControl adminFooter = new HtmlGenericControl( "div" );
                         adminFooter.ID = "cms-admin-footer";
@@ -860,69 +870,71 @@ namespace Rock.Web.UI
                         aBlockConfig.Controls.Add( iBlockConfig );
                         iBlockConfig.Attributes.Add( "class", "fa fa-th-large" );
 
-                        // RockPage Properties
-                        HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
-                        buttonBar.Controls.Add( aAttributes );
-                        aAttributes.ID = "aPageProperties";
-                        aAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                        aAttributes.Attributes.Add( "class", "btn properties" );
-                        aAttributes.Attributes.Add( "height", "500px" );
-                        aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", _pageCache.Id ) ) + "')" );
-                        aAttributes.Attributes.Add( "Title", "Page Properties" );
-                        HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
-                        aAttributes.Controls.Add( iAttributes );
-                        iAttributes.Attributes.Add( "class", "fa fa-cog" );
+                        if ( canAdministratePage )
+                        {
+                            // RockPage Properties
+                            HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
+                            buttonBar.Controls.Add( aAttributes );
+                            aAttributes.ID = "aPageProperties";
+                            aAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                            aAttributes.Attributes.Add( "class", "btn properties" );
+                            aAttributes.Attributes.Add( "height", "500px" );
+                            aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", _pageCache.Id ) ) + "')" );
+                            aAttributes.Attributes.Add( "Title", "Page Properties" );
+                            HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
+                            aAttributes.Controls.Add( iAttributes );
+                            iAttributes.Attributes.Add( "class", "fa fa-cog" );
 
-                        // Child Pages
-                        HtmlGenericControl aChildPages = new HtmlGenericControl( "a" );
-                        buttonBar.Controls.Add( aChildPages );
-                        aChildPages.ID = "aChildPages";
-                        aChildPages.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                        aChildPages.Attributes.Add( "class", "btn page-child-pages" );
-                        aChildPages.Attributes.Add( "height", "500px" );
-                        aChildPages.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/pages/{0}?t=Child Pages&pb=&sb=Done", _pageCache.Id ) ) + "')" );
-                        aChildPages.Attributes.Add( "Title", "Child Pages" );
-                        HtmlGenericControl iChildPages = new HtmlGenericControl( "i" );
-                        aChildPages.Controls.Add( iChildPages );
-                        iChildPages.Attributes.Add( "class", "fa fa-sitemap" );
+                            // Child Pages
+                            HtmlGenericControl aChildPages = new HtmlGenericControl( "a" );
+                            buttonBar.Controls.Add( aChildPages );
+                            aChildPages.ID = "aChildPages";
+                            aChildPages.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                            aChildPages.Attributes.Add( "class", "btn page-child-pages" );
+                            aChildPages.Attributes.Add( "height", "500px" );
+                            aChildPages.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/pages/{0}?t=Child Pages&pb=&sb=Done", _pageCache.Id ) ) + "')" );
+                            aChildPages.Attributes.Add( "Title", "Child Pages" );
+                            HtmlGenericControl iChildPages = new HtmlGenericControl( "i" );
+                            aChildPages.Controls.Add( iChildPages );
+                            iChildPages.Attributes.Add( "class", "fa fa-sitemap" );
 
-                        // RockPage Zones
-                        HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
-                        buttonBar.Controls.Add( aPageZones );
-                        aPageZones.Attributes.Add( "class", "btn page-zones" );
-                        aPageZones.Attributes.Add( "href", "javascript: Rock.admin.pageAdmin.showPageZones();" );
-                        aPageZones.Attributes.Add( "Title", "Page Zones" );
-                        HtmlGenericControl iPageZones = new HtmlGenericControl( "i" );
-                        aPageZones.Controls.Add( iPageZones );
-                        iPageZones.Attributes.Add( "class", "fa fa-columns" );
+                            // RockPage Zones
+                            HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
+                            buttonBar.Controls.Add( aPageZones );
+                            aPageZones.Attributes.Add( "class", "btn page-zones" );
+                            aPageZones.Attributes.Add( "href", "javascript: Rock.admin.pageAdmin.showPageZones();" );
+                            aPageZones.Attributes.Add( "Title", "Page Zones" );
+                            HtmlGenericControl iPageZones = new HtmlGenericControl( "i" );
+                            aPageZones.Controls.Add( iPageZones );
+                            iPageZones.Attributes.Add( "class", "fa fa-columns" );
 
-                        // RockPage Security
-                        HtmlGenericControl aPageSecurity = new HtmlGenericControl( "a" );
-                        buttonBar.Controls.Add( aPageSecurity );
-                        aPageSecurity.ID = "aPageSecurity";
-                        aPageSecurity.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                        aPageSecurity.Attributes.Add( "class", "btn page-security" );
-                        aPageSecurity.Attributes.Add( "height", "500px" );
-                        aPageSecurity.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Page Security&pb=&sb=Done",
-                            EntityTypeCache.Read( typeof( Rock.Model.Page ) ).Id, _pageCache.Id ) ) + "')" );
-                        aPageSecurity.Attributes.Add( "Title", "Page Security" );
-                        HtmlGenericControl iPageSecurity = new HtmlGenericControl( "i" );
-                        aPageSecurity.Controls.Add( iPageSecurity );
-                        iPageSecurity.Attributes.Add( "class", "fa fa-lock" );
+                            // RockPage Security
+                            HtmlGenericControl aPageSecurity = new HtmlGenericControl( "a" );
+                            buttonBar.Controls.Add( aPageSecurity );
+                            aPageSecurity.ID = "aPageSecurity";
+                            aPageSecurity.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                            aPageSecurity.Attributes.Add( "class", "btn page-security" );
+                            aPageSecurity.Attributes.Add( "height", "500px" );
+                            aPageSecurity.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Page Security&pb=&sb=Done",
+                                EntityTypeCache.Read( typeof( Rock.Model.Page ) ).Id, _pageCache.Id ) ) + "')" );
+                            aPageSecurity.Attributes.Add( "Title", "Page Security" );
+                            HtmlGenericControl iPageSecurity = new HtmlGenericControl( "i" );
+                            aPageSecurity.Controls.Add( iPageSecurity );
+                            iPageSecurity.Attributes.Add( "class", "fa fa-lock" );
 
-                        // System Info
-                        HtmlGenericControl aSystemInfo = new HtmlGenericControl( "a" );
-                        buttonBar.Controls.Add( aSystemInfo );
-                        aSystemInfo.ID = "aSystemInfo";
-                        aSystemInfo.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                        aSystemInfo.Attributes.Add( "class", "btn system-info" );
-                        aSystemInfo.Attributes.Add( "height", "500px" );
-                        aSystemInfo.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( "~/SystemInfo?t=System Information&pb=&sb=Done" ) + "')" );
-                        aSystemInfo.Attributes.Add( "Title", "Rock Information" );
-                        HtmlGenericControl iSystemInfo = new HtmlGenericControl( "i" );
-                        aSystemInfo.Controls.Add( iSystemInfo );
-                        iSystemInfo.Attributes.Add("class", "fa fa-info-circle");
-
+                            // System Info
+                            HtmlGenericControl aSystemInfo = new HtmlGenericControl( "a" );
+                            buttonBar.Controls.Add( aSystemInfo );
+                            aSystemInfo.ID = "aSystemInfo";
+                            aSystemInfo.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                            aSystemInfo.Attributes.Add( "class", "btn system-info" );
+                            aSystemInfo.Attributes.Add( "height", "500px" );
+                            aSystemInfo.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( "~/SystemInfo?t=System Information&pb=&sb=Done" ) + "')" );
+                            aSystemInfo.Attributes.Add( "Title", "Rock Information" );
+                            HtmlGenericControl iSystemInfo = new HtmlGenericControl( "i" );
+                            aSystemInfo.Controls.Add( iSystemInfo );
+                            iSystemInfo.Attributes.Add( "class", "fa fa-info-circle" );
+                        }
                     }
 
                     // Check to see if page output should be cached.  The RockRouteHandler
@@ -1349,11 +1361,8 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds the config elements.
         /// </summary>
-        private void AddConfigElements()
+        private void AddZoneConfigElements()
         {
-            // Add the page admin script
-            AddScriptLink( Page, "~/Scripts/Bundles/RockAdmin" );
-
             AddBlockMove();
 
             // Add Zone Wrappers
