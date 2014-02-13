@@ -214,32 +214,6 @@ namespace RockWeb.Blocks.Finance
         #region Internal Methods
 
         /// <summary>
-        /// Binds the form.
-        /// </summary>
-        protected void BindForm()
-        {
-            //try
-            //{
-            //    string batchId = PageParameter( "financialBatchId" );
-            //    string transactionId = PageParameter( "transactionId" );
-
-            //    if ( !string.IsNullOrEmpty( transactionId ) )
-            //    {
-            //        ShowTransactionEditValue( Convert.ToInt32( transactionId ), batchId );
-            //    }
-            //    else
-            //    {
-            //        ShowTransactionEditValue( 0, batchId );
-            //    }
-            //}
-            //catch ( Exception exp )
-            //{
-            //    Response.Write( "The access request was unclear. Please fix the following: " + exp.Message );
-            //    Response.End();
-            //}
-        }
-
-        /// <summary>
         /// Binds the dropdowns.
         /// </summary>
         protected void BindDropdowns()
