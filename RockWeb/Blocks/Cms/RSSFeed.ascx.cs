@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Cms
     [TextField("CSS File", "An optional CSS file to add to the page for styling. Example \"Styles/rss.css\" would point to the stylesheet in the current theme's styles folder.", false, "", "Layout")]
     [CodeEditorField("Template", "The liquid template to use for rendering. This template should be in the theme's \"Assets/Liquid\" folder and should have an underscore prepended to the filename.", 
         CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, true, @"{% include 'RSSFeed' %}", "Layout")]
+    [BooleanField("Enable Debug", "Flag indicating that the control should output the feed data that will be passed to Liquid for parsing.", false)]
     [LinkedPage("Detail Page")]
     public partial class RSSFeed : RockBlock
     {
@@ -116,6 +117,63 @@ namespace RockWeb.Blocks.Cms
             return template;
         }
 
+        private string LoadDebugData( Dictionary<string, object> feedDictionary )
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+
+            if ( feedDictionary != null && feedDictionary.Count > 0 )
+            {
+                sb.AppendLine( "<ul id=\"treeview\">" );
+                foreach ( var kvp in feedDictionary )
+                {
+                    sb.Append( FeedDebugNode( kvp ) );
+                }
+
+
+                sb.AppendLine( "</ul>" );
+            }
+            return sb.ToString();
+        }
+
+        private string FeedDebugNode( KeyValuePair<string, object> node )
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+
+            if ( node.Value.GetType() == typeof( Dictionary<string, object> ) )
+            {
+                sb.AppendFormat( "<li><span>{0}</span>", node.Key );
+
+                foreach ( var child in (Dictionary<string, object>)node.Value )
+                {
+                    sb.AppendLine( "<ul>" );
+                    sb.Append( FeedDebugNode( child ) );
+                    sb.AppendLine( "</ul>" );
+                }
+            }
+            else if ( node.Value.GetType() == typeof( List<Dictionary<string, object>> ) )
+            {
+                List<Dictionary<string, object>> nodeList = (List<Dictionary<string, object>>)node.Value;
+                sb.AppendFormat( "<li><span>{0}: ({1} items)</span>", node.Key, nodeList.Count );
+                foreach ( var listItem in nodeList )
+                {
+                    sb.AppendLine( "<ul>" );
+                    foreach ( var child in listItem )
+                    {
+                        sb.Append( FeedDebugNode( child ) );
+                    }
+                    sb.AppendLine( "</ul>" );
+                }
+            }
+            else
+            {
+                sb.AppendFormat( "<li><span>{0}: {1}</span>", node.Key, node.Value == null ? String.Empty : System.Web.HttpUtility.HtmlEncode( node.Value.ToString() ) );
+            }
+
+            sb.Append( "</li>" );
+
+            return sb.ToString();
+        }
+
         private void LoadFeed()
         {
 
@@ -131,8 +189,16 @@ namespace RockWeb.Blocks.Cms
 
                 if ( feedDictionary != null )
                 {
+                    string content = String.Empty;
+                    if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+                    {
+                        content = LoadDebugData( feedDictionary );
+                    }
+                    else
+                    {
+                        content = GetTemplate().Render( Hash.FromDictionary( feedDictionary ) );
+                    }
 
-                    string content = GetTemplate().Render( Hash.FromDictionary( feedDictionary ) );
 
                     if ( content.Contains( "No such template" ) )
                     {
