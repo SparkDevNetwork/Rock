@@ -15,6 +15,8 @@ IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[_com_
 DROP PROCEDURE [dbo]._com_rocksoliddemochurch_spCreateSampleDataAttendance
 GO
 
+-- exec _com_rocksoliddemochurch_spCreateSampleData
+
 CREATE PROCEDURE [dbo].[_com_rocksoliddemochurch_spCreateSampleDataPerson]
 	@FirstName varchar(50)
 	,@NickName varchar(50)
@@ -302,8 +304,8 @@ BEGIN TRY
         SET @groupId = SCOPE_IDENTITY()
 
             -- Decker home address
-            INSERT INTO [Location] (Street1, Street2, City, [State], Zip, IsActive, [Guid], IsNamedLocation)
-            VALUES ( '11624 N 31st Dr', '', 'Phoenix', 'AZ', '85029', 1, NEWID(), 0)
+            INSERT INTO [Location] (Street1, Street2, City, [State], Zip, IsActive, [Guid], [GeoPoint], [IsGeoPointLocked])
+            VALUES ( '11624 N 31st Dr', '', 'Phoenix', 'AZ', '85029', 1, NEWID(), geography::STPointFromText('POINT( -112.126518 33.593043  )' , 4326), 1)
             SET @locationId = SCOPE_IDENTITY()
 
             INSERT INTO [GroupLocation] (GroupId, LocationId, GroupLocationTypeValueId, [Guid], IsMailingLocation, IsMappedLocation)

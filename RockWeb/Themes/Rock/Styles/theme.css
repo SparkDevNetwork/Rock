@@ -32,6 +32,7 @@
     19. Update Panel Status - Styles for the wait screen on an update panel
     20. Group List - styles a group of people in a ul -> li format
     21. Rock List - styles for the Rock list component
+    22. TypeAhead - styles for type ahead support
 */
 .picker {
   position: relative;
@@ -1117,33 +1118,45 @@ ul.rocklist .rocklist-item.selected {
   background-color: #8498ab;
   color: #ecf0f3;
 }
-/*.rocklist span, .rocklist a {
-    margin: 1px;
-    display: inline-block;
+.twitter-typeahead .tt-query,
+.twitter-typeahead .tt-hint {
+  margin-bottom: 0;
 }
-
-.rocklist .rocklist-name:hover, 
-.rocklist span:hover, 
-.rocklist span:hover a {
-    background: #8498ab;
-    color: #ecf0f3;
+.tt-dropdown-menu {
+  min-width: 160px;
+  margin-top: 2px;
+  padding: 5px 0;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  *border-right-width: 2px;
+  *border-bottom-width: 2px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  -webkit-background-clip: padding-box;
+  -moz-background-clip: padding;
+  background-clip: padding-box;
 }
-
-.rocklist .selected, 
-.rocklist .selected a {
-    background: #a4b4c4;
-    color: #fff;
+.tt-suggestion {
+  display: block;
+  padding: 3px 20px;
 }
-
-.rocklist .rocklist-name {
-    padding: 2px 6px;
-    border-radius: 3px;
-    cursor: pointer;
+.tt-suggestion.tt-is-under-cursor {
+  color: #fff;
+  background-color: #a4b4c4;
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0088cc', endColorstr='#ff0077b3', GradientType=0);
 }
-
-.rocklist .rocklist-leaf {
-    padding-left: 15px;
-}*/
+.tt-suggestion.tt-is-under-cursor a {
+  color: #fff;
+}
+.tt-suggestion p {
+  margin: 0;
+}
 /*
     Used to manage styles related to the CMS admin UI for on page editing
     
@@ -1432,6 +1445,13 @@ td.grid-col-actions {
 .grid-select-field .radio input {
   float: none;
   margin: 0;
+}
+.table .color-field {
+  padding: 0;
+  width: 4px;
+}
+.table .color-field + th {
+  border-left-width: 0px;
 }
 .table > tbody > tr.grid-section-header > td {
   background-color: #e7ecf0;
@@ -1815,6 +1835,10 @@ dl dd {
 .panel-note article.personal > i {
   color: #adc0ca;
 }
+.panel-note article > img {
+  float: left;
+  margin: 0 12px 0 4px;
+}
 .panel-note .load-more {
   margin: 0 40%;
   min-width: 150px;
@@ -1859,6 +1883,10 @@ dl dd {
 }
 .panel-noteentry .panel-body .noteentry-control {
   overflow: hidden;
+}
+.panel-noteentry .panel-body img {
+  float: left;
+  margin: 0 12px 0 4px;
 }
 .panel-noteentry .options .checkbox {
   float: left;
@@ -1952,6 +1980,23 @@ dl dd {
     float: left;
   }
 }
+section.group-type-attribute-panel label {
+  padding-left: 46px;
+}
+table.inherited-attribute-grid tr td:first-child {
+  padding-left: 46px;
+  width: 141px;
+}
+table.attribute-grid tr th:first-child {
+  width: 31px;
+}
+table.attribute-grid tr th:nth-child(2) {
+  width: 100px;
+}
+table.inherited-attribute-grid tr td:nth-child(2),
+table.attribute-grid tr th:nth-child(3) {
+  width: 550px;
+}
 /*
     Used to manage styles for specific blocks.
 
@@ -2025,6 +2070,9 @@ dl dd {
 */
 .personprofile {
   margin-top: -15px;
+}
+.personprofile small {
+  color: #9e9e9e;
 }
 .personprofilebar-bio {
   background-color: #e7ecf0;
@@ -2807,6 +2855,10 @@ a.cke_dialog_ui_button_ok:active {
   height: 35px;
   padding-top: 9px;
 }
+.ck-files img.file-browser-image {
+  width: 50px;
+  height: 50px;
+}
 ::selection {
   background: #445c72;
   color: #bccad7;
@@ -2817,11 +2869,7 @@ a.cke_dialog_ui_button_ok:active {
 }
 small {
   font-family: 'OpenSansLight', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 13px;
   margin-top: 2px;
-}
-.nav-pills {
-  margin: 10px 0;
 }
 .control-label {
   font-weight: 600;
@@ -2873,6 +2921,9 @@ small {
 }
 .panel legend {
   border-color: #d9e1e8;
+}
+.panel .panel-title small {
+  color: #e0e0e0;
 }
 .panel .picker .picker-label {
   background-color: #d9e1e8;
@@ -3494,9 +3545,6 @@ a:hover {
 }
 a:hover i.fs {
   text-decoration: none;
-}
-small {
-  color: #9e9e9e;
 }
 .alert h4:before {
   content: '';
