@@ -302,8 +302,8 @@ BEGIN TRY
         SET @groupId = SCOPE_IDENTITY()
 
             -- Decker home address
-            INSERT INTO [Location] (Street1, Street2, City, [State], Zip, IsActive, [Guid], IsNamedLocation)
-            VALUES ( '11624 N 31st Dr', '', 'Phoenix', 'AZ', '85029', 1, NEWID(), 0)
+            INSERT INTO [Location] (Street1, Street2, City, [State], Zip, IsActive, [Guid])
+            VALUES ( '11624 N 31st Dr', '', 'Phoenix', 'AZ', '85029', 1, NEWID())
             SET @locationId = SCOPE_IDENTITY()
 
             INSERT INTO [GroupLocation] (GroupId, LocationId, GroupLocationTypeValueId, [Guid], IsMailingLocation, IsMappedLocation)
