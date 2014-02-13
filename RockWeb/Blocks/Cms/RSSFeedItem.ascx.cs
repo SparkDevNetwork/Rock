@@ -140,26 +140,31 @@ namespace RockWeb.Blocks.Cms
                     Dictionary<string, object> previousItem = null;
                     Dictionary<string, object> selectedItem = null;
                     Dictionary<string, object> nextItem = null;
-                    List<Dictionary<string, object>> items = ( (List<Dictionary<string, object>>)feedDictionary.Where(i => i.Key == "item" || i.Key == "entry").FirstOrDefault().Value );
-                    for ( int i = 0; i < items.Count; i++ )
+                    if( feedDictionary.ContainsKey( "item" ) || feedDictionary.ContainsKey( "entry" ) )
                     {
-                        if ( items[i]["articleHash"].ToString() == feedItemId )
+                        List<Dictionary<string, object>> items = ( (List<Dictionary<string, object>>)feedDictionary.Where( i => i.Key == "item" || i.Key == "entry" ).FirstOrDefault().Value );
+                        for ( int i = 0; i < items.Count; i++ )
                         {
-                            selectedItem = items[i];
-
-
-                            if ( i > 0 )
+                            if ( items[i]["articleHash"].ToString() == feedItemId )
                             {
-                                nextItem = items[i - 1];
-                            }
+                                selectedItem = items[i];
 
-                            if ( i < ( items.Count - 1 ) )
-                            {
-                                previousItem = items[i + 1];
+
+                                if ( i > 0 )
+                                {
+                                    nextItem = items[i - 1];
+                                }
+
+                                if ( i < ( items.Count - 1 ) )
+                                {
+                                    previousItem = items[i + 1];
+                                }
+                                break;
                             }
-                            break;
                         }
+
                     }
+
 
                     if ( selectedItem == null )
                     {
