@@ -25,9 +25,24 @@
             $('#' + options.controlId).fileupload({
                 url: wsUrl,
                 dataType: 'json',
-                dropZone: $('#' + options.controlId).closest('.fileupload-drop-zone'),
+                dropZone: $('#' + options.controlId).closest('.fileupload-dropzone'),
                 autoUpload: true,
                 submit: options.submitFunction,
+                start: function (e, data) {
+                    var $el = $('#' + options.controlId).closest('.fileupload-group');
+                    $el.find('.fileupload-dropzone').hide();
+                    $el.find('.js-upload-progress').css("height", $el.find('.fileupload-dropzone').css("height"));
+                    $el.find('.js-upload-progress').show();
+                },
+                progressall: function (e, data) {
+                    var $el = $('#' + options.controlId).closest('.fileupload-group');
+                    // implement this to show progress percentage
+                },
+                stop: function (e) {
+                    var $el = $('#' + options.controlId).closest('.fileupload-group');
+                    $el.find('.js-upload-progress').hide();
+                    $el.find('.fileupload-dropzone').show();
+                },
                 done: function (e, data) {
                     var $el = $('#' + options.aFileName);
                     $('#' + options.hfFileId).val(data.response().result.Id);
