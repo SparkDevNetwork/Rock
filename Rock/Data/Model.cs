@@ -252,7 +252,7 @@ namespace Rock.Data
             {
                 if (attribute.Value.IsAuthorized("View", null))
                 {
-                    dictionary.Add(attribute.Key, GetAttributeValue(attribute.Key));
+                    dictionary.Add( attribute.Key, attribute.Value.FieldType.Field.FormatValue( null, GetAttributeValue( attribute.Key ), attribute.Value.QualifierValues, false ) );
                 }
             }
 
