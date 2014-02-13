@@ -446,7 +446,7 @@ namespace RockWeb.Blocks.Security
             }
 
             tbUserName.Text = userLogin.UserName;
-            cbIsConfirmed.Checked = userLogin.IsConfirmed ?? false;
+            cbIsConfirmed.Checked = userLogin.IsConfirmed ?? true;
             cbIsLockedOut.Checked = userLogin.IsLockedOut ?? false;
             if ( userLogin.EntityType != null )
             {
