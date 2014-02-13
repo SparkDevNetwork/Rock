@@ -127,7 +127,6 @@ namespace Rock.Model
             target.LocationTypeValueId = source.LocationTypeValueId;
             target.GeoPoint = source.GeoPoint;
             target.GeoFence = source.GeoFence;
-            target.IsNamedLocation = source.IsNamedLocation;
             target.Street1 = source.Street1;
             target.Street2 = source.Street2;
             target.City = source.City;
@@ -143,6 +142,7 @@ namespace Rock.Model
             target.GeocodeAttemptedServiceType = source.GeocodeAttemptedServiceType;
             target.GeocodeAttemptedResult = source.GeocodeAttemptedResult;
             target.GeocodedDateTime = source.GeocodedDateTime;
+            target.IsGeoPointLocked = source.IsGeoPointLocked;
             target.PrinterDeviceId = source.PrinterDeviceId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

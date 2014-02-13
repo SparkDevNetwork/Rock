@@ -3,30 +3,6 @@
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
     
-    <!-- Page Header -->
-    <header>
-        
-        <!-- Brand Bar -->
-        <nav class="navbar navbar-inverse navbar-static-top">
-            <div class="container">
-			    <div class="navbar-header">
-                    <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <Rock:Zone Name="Header" runat="server" />
-			    </div>	
-                <div class="navbar-collapse collapse">   
-                    <!-- Main Navigation -->
-                    <Rock:Zone Name="Login" runat="server" />
-                    <Rock:Zone Name="Navigation" runat="server" />
-			    </div>	
-            </div>
-        </nav>
-
-    </header>
-		
 	<main class="container">
         
         <!-- Start Content Area -->
@@ -76,20 +52,6 @@
         <!-- End Content Area -->
 
 	</main>
-		
-	<footer>
-        <div class="container">
-		    
-            <hr />
 
-            <div class="row">
-			    <div class="col-md-12">
-				    <Rock:Zone Name="Footer" runat="server" />
-			    </div>
-		    </div>
-
-        </div>
-	</footer>
-        
 </asp:Content>
 

@@ -524,6 +524,10 @@
     <Compile Include="Migrations\201402101503040_FixTagPageTitles.Designer.cs">
       <DependentUpon>201402101503040_FixTagPageTitles.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402121927497_RemoveIsNamedLoc.cs" />
+    <Compile Include="Migrations\201402121927497_RemoveIsNamedLoc.Designer.cs">
+      <DependentUpon>201402121927497_RemoveIsNamedLoc.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -896,6 +900,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402101503040_FixTagPageTitles.resx">
       <DependentUpon>201402101503040_FixTagPageTitles.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402121927497_RemoveIsNamedLoc.resx">
+      <DependentUpon>201402121927497_RemoveIsNamedLoc.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
