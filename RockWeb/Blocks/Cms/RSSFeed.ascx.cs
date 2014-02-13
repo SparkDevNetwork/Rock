@@ -123,13 +123,11 @@ namespace RockWeb.Blocks.Cms
 
             if ( feedDictionary != null && feedDictionary.Count > 0 )
             {
-                sb.AppendLine( "<ul id=\"treeview\">" );
+                sb.AppendLine( "<ul id=\"debugFeed\">" );
                 foreach ( var kvp in feedDictionary )
                 {
                     sb.Append( FeedDebugNode( kvp ) );
                 }
-
-
                 sb.AppendLine( "</ul>" );
             }
             return sb.ToString();
@@ -153,9 +151,10 @@ namespace RockWeb.Blocks.Cms
             else if ( node.Value.GetType() == typeof( List<Dictionary<string, object>> ) )
             {
                 List<Dictionary<string, object>> nodeList = (List<Dictionary<string, object>>)node.Value;
-                sb.AppendFormat( "<li><span>{0}: ({1} items)</span>", node.Key, nodeList.Count );
+
                 foreach ( var listItem in nodeList )
                 {
+                    sb.AppendFormat( "<li><span>{0}</span>", node.Key );
                     sb.AppendLine( "<ul>" );
                     foreach ( var child in listItem )
                     {
