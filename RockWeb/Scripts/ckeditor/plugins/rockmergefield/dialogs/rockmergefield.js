@@ -4,6 +4,7 @@
         title: 'Select Merge Field',
         minWidth: 400,
         minHeight: 350,
+        resizable: CKEDITOR.DIALOG_RESIZE_NONE,
         editorId: editor.id,
         contents: [
             {
@@ -13,7 +14,7 @@
                 elements: [
                     {
                         type: 'html',
-                        html: "<iframe id='iframe-rockmergefield_" + editor.id + "' src='" + iframeUrl + "' style='width: 100%; height:350px;' /> \n"
+                        html: "<iframe id='iframe-rockmergefield_" + editor.id + "' src='" + iframeUrl + "' style='width: 100%; height:350px;' scrolling='no' /> \n"
                     }
                 ]
             }

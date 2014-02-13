@@ -26,7 +26,7 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:RockRadioButtonList runat=server></{0}:RockRadioButtonList>" )]
     public class RockRadioButtonList : RadioButtonList, IRockControl
     {
-        #region IRockControl implementation
+        #region IRockControl implementation (NOTE: uses a different Required property than other IRockControl controls)
 
         /// <summary>
         /// Gets or sets the label text.
@@ -87,7 +87,28 @@ namespace Rock.Web.UI.Controls
         public bool Required
         {
             get { return ViewState["Required"] as bool? ?? false; }
-            set { ViewState["Required"] = value; }
+
+            set
+            {
+                var li = this.Items.FindByValue( string.Empty );
+
+                if ( value )
+                {
+                    if ( li != null )
+                    {
+                        this.Items.Remove( li );
+                    }
+                }
+                else
+                {
+                    if ( li == null )
+                    {
+                        this.Items.Insert( 0, new ListItem( "None", string.Empty ) );
+                    }
+                }
+
+                ViewState["Required"] = value;
+            }
         }
 
         /// <summary>

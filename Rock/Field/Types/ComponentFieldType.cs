@@ -176,7 +176,7 @@ namespace Rock.Field.Types
             {
                 if ( control != null && control is ListControl )
                 {
-                    ( (ListControl)control ).SelectedValue = value;
+                    ( (ListControl)control ).SelectedValue = value.ToUpper();
                 }
             }
         }

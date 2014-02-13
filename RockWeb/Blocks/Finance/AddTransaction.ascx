@@ -88,7 +88,7 @@
                 
                 <div class="panel-body">   
                     <asp:PlaceHolder ID="phPills" runat="server" Visible="false">
-                        <ul class="nav nav-pills remove-margin">
+                        <ul class="nav nav-pills">
                             <li id="liCreditCard" runat="server"><a href='#<%=divCCPaymentInfo.ClientID%>' data-toggle="pill">Credit Card</a></li>
                             <li id="liACH" runat="server"><a href='#<%=divACHPaymentInfo.ClientID%>' data-toggle="pill">Bank Account</a></li>
                         </ul>

@@ -68,6 +68,8 @@ namespace Rock.Rest.Controllers
                     var formatString = "{0}";
 
                     // Traverse the Property path
+                    bool itemIsCollection = false;
+
                     int pathPointer = 1;
                     while ( idParts.Count > pathPointer )
                     {
@@ -90,12 +92,19 @@ namespace Rock.Rest.Controllers
                                 formatString = string.Format( formatString, forString );
 
                                 type = type.GetGenericArguments()[0];
+
+                                itemIsCollection = true;
                             }
+                            else
+                            {
+                                itemIsCollection = false;
+                            }
+
                         }
                         pathPointer++;
                     }
 
-                    string itemString = string.Format( "<< {0} >>", workingParts.AsDelimited( "." ) );
+                    string itemString = itemIsCollection ? "" : string.Format( "<< {0} >>", workingParts.AsDelimited( "." ) );
                     return string.Format( formatString, itemString ).Replace( "<", "{" ).Replace( ">", "}" );
                 }
 
@@ -152,7 +161,7 @@ namespace Rock.Rest.Controllers
                         {
                             items.Add( new TreeViewItem
                             {
-                                Id = "GlobalAttribute," + attributeCache.Key,
+                                Id = "GlobalAttribute|" + attributeCache.Key,
                                 Name = attributeCache.Name,
                                 HasChildren = false
                             } );
@@ -193,6 +202,8 @@ namespace Rock.Rest.Controllers
                                 pathPointer++;
                             }
 
+                            entityType = EntityTypeCache.Read( type );
+
                             // Add the tree view items
                             foreach ( var propInfo in type.GetProperties() )
                             {
@@ -200,7 +211,7 @@ namespace Rock.Rest.Controllers
                                 {
                                     var treeViewItem = new TreeViewItem
                                     {
-                                        Id = id + "," + propInfo.Name,
+                                        Id = id + "|" + propInfo.Name,
                                         Name = propInfo.Name.SplitCase()
                                     };
 
@@ -211,12 +222,22 @@ namespace Rock.Rest.Controllers
                                         propertyType.GetGenericArguments().Length == 1 )
                                     {
                                         treeViewItem.Name += " (Collection)";
-                                        treeViewItem.HasChildren = EntityTypeCache.Read( propertyType.GetGenericArguments()[0].FullName, false ) != null;
+                                        propertyType = propertyType.GetGenericArguments()[0];
                                     }
-                                    else
+
+                                    bool hasChildren = false;
+                                    if ( EntityTypeCache.Read( propertyType.FullName, false ) != null )
                                     {
-                                        treeViewItem.HasChildren = EntityTypeCache.Read( propertyType.FullName, false ) != null;
+                                        foreach ( var childPropInfo in propertyType.GetProperties() )
+                                        {
+                                            if ( childPropInfo.GetCustomAttributes( typeof( Rock.Data.MergeFieldAttribute ) ).Count() > 0 )
+                                            {
+                                                hasChildren = true;
+                                                break;
+                                            }
+                                        }
                                     }
+                                    treeViewItem.HasChildren = hasChildren;
 
                                     items.Add( treeViewItem );
                                 }
@@ -233,7 +254,7 @@ namespace Rock.Rest.Controllers
                                     {
                                         items.Add( new TreeViewItem
                                         {
-                                            Id = attribute.Key,
+                                            Id = id + "|" + attribute.Key,
                                             Name = attribute.Name
                                         } );
                                     }
