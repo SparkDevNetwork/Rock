@@ -1094,6 +1094,37 @@ namespace RockWeb.Blocks.Reporting
                 return;
             }
 
+            /*
+             
+if ( entityField.FieldKind == FieldKind.Property )
+{
+	listItem.Value = string.Format( "{0}|{1}", ReportFieldType.Property, entityField.Name );
+}
+else if ( entityField.FieldKind == FieldKind.Attribute )
+{
+	listItem.Value = string.Format( "{0}|{1}", ReportFieldType.Attribute, entityField.AttributeId );
+}
+
+listItem.Value = string.Format( "{0}|{1}", ReportFieldType.DataSelectComponent, component.TypeId );             
+             
+             */
+
+
+            RockDropDownList ddlFields = panelWidget.ControlsOfTypeRecursive<RockDropDownList>().FirstOrDefault( a => a.ID == panelWidget.ID + "_ddlFields" );
+            if (reportField.ReportFieldType == ReportFieldType.Attribute)
+            {
+                ddlFields.SelectedValue = string.Format( "{0}|{1}", reportField.ReportFieldType, reportField.Selection );
+            }
+            else if (reportField.ReportFieldType == ReportFieldType.Property)
+            {
+                ddlFields.SelectedValue = string.Format( "{0}|{1}", reportField.ReportFieldType, reportField.Selection );
+            }
+            else if (reportField.ReportFieldType == ReportFieldType.DataSelectComponent)
+            {
+                ddlFields.SelectedValue = string.Format( "{0}|{1}", reportField.ReportFieldType, dataSelectComponent.TypeId );
+            }
+            
+
             string fieldTitle = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? defaultColumnHeaderText : reportField.ColumnHeaderText;
             panelWidget.Title = fieldTitle;
 
