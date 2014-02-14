@@ -19,6 +19,10 @@
 
 .personprofile { // offset pageheader margin
     margin-top: -@spacing-md-px;
+
+    small { // lighten up small elements a bit 
+        color: lighten(@text-color, 30%);
+    }
 }
 
 // 2. Header
@@ -403,7 +407,7 @@ span.field-value {
 // -------------------------
 
 /* Small devices (tablets, 768px and up) */
-@media (min-width: @screen-sm-min) {
+@media (min-width: @screen-sm-min), print {
     
     // bio bar
     .personprofilebar-bio {

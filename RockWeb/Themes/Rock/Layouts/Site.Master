@@ -4,10 +4,15 @@
 
 <script runat="server">
 
-    protected override void OnLoad( EventArgs e )
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
     {
-        base.OnLoad( e );
-        phTitle.Visible = ShowPageTitle;
+        base.OnInit( e );
+        
+        //
     }    
     
 </script>
@@ -64,7 +69,7 @@
                     <div class="pull-right header-zone">
                         <Rock:Zone Name="Header" runat="server" />
                     </div>
-			
+
 				    <Rock:SearchField ID="searchField" CssClass="pull-right" runat="server" />
 
             </div>
@@ -78,25 +83,23 @@
                     </div>
                 </div>									
 	        </nav>
-		
+
             <!-- Page Title -->
-            <asp:PlaceHolder ID="phTitle" runat="server">
-	            <div class="navbar navbar-static-top pagetitle">
-		            <div class="container">
-                        <div class="row">
-				            <div class="col-md-6">
-					            <Rock:PageIcon ID="PageIcon" runat="server" /> <h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1> <Rock:Zone Name="Title Left" runat="server" />  
-				            </div>
-                            <div class="col-md-6">
-                                <Rock:Zone Name="Title Right" runat="server" />
-                            </div>
-			            </div>
-                    </div>
-	            </div>
-            </asp:PlaceHolder>
+	        <div class="navbar navbar-static-top pagetitle">
+		        <div class="container">
+                    <div class="row">
+				        <div class="col-md-6">
+					        <Rock:PageIcon ID="PageIcon" runat="server" /> <h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1> <Rock:Zone Name="Title Left" runat="server" />  
+				        </div>
+                        <div class="col-md-6">
+                            <Rock:Zone Name="Title Right" runat="server" />
+                        </div>
+			        </div>
+                </div>
+	        </div>
 
         </header>
-		
+
         <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
         
 	    <footer class="page-footer">
@@ -133,5 +136,3 @@
 </body>
 
 </html>
-
-        
