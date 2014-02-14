@@ -23,13 +23,12 @@
                         </ItemTemplate>
                     </asp:TemplateField>
                     <asp:BoundField DataField="Name" HeaderText="Title" SortExpression="Name" />
-                    <asp:BoundField DataField="ControlAmount" HeaderText="Control Amount" />
                     <asp:TemplateField HeaderText="Transaction Total">
                         <ItemTemplate>
                             <asp:Literal ID="TransactionTotal" runat="server" />
                         </ItemTemplate>
                     </asp:TemplateField>
-                    <asp:TemplateField HeaderText="Variance">
+                    <asp:TemplateField HeaderText="Var from Control">
                         <ItemTemplate>
                             <asp:Label ID="lblVariance" runat="server"></asp:Label>
                         </ItemTemplate>

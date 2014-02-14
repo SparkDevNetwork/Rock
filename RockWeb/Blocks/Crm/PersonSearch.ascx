@@ -1,5 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PersonSearch.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonSearch" %>
 
+<Rock:NotificationBox ID="nbNotice" runat="server" NotificationBoxType="Warning" Visible="false"></Rock:NotificationBox>
 <Rock:Grid ID="gPeople" runat="server" EmptyDataText="No People Found" AllowSorting="true" OnRowSelected="gPeople_RowSelected">
     <Columns>
         <Rock:SelectField />

@@ -144,62 +144,65 @@ public class SyndicationFeedHelper
                     feedDictionary["updated"] = DateTimeOffset.Parse( feedDictionary["updated"].ToString() ).LocalDateTime;
                 }
 
-                List<Dictionary<string, object>> articles = (List<Dictionary<string, object>>)feedDictionary.Where( x => x.Key == "item" || x.Key == "entry" ).FirstOrDefault().Value;
-
-                foreach ( var article in articles )
+                if ( feedDictionary.ContainsKey( "item" ) || feedDictionary.ContainsKey( "entry" ) )
                 {
+                    List<Dictionary<string, object>> articles = (List<Dictionary<string, object>>)feedDictionary.Where( x => x.Key == "item" || x.Key == "entry" ).FirstOrDefault().Value;
 
-                    string idEntry = String.Empty;
-                    string idEntryHashed = string.Empty;
-                    if ( article.ContainsKey( "id" ) )
+                    foreach ( var article in articles )
                     {
-                        idEntry = article["id"].ToString();
-                    }
 
-                    if ( article.ContainsKey( "guid" ) )
-                    {
-                        if ( article["guid"].GetType() == typeof( Dictionary<string, object> ) )
+                        string idEntry = String.Empty;
+                        string idEntryHashed = string.Empty;
+                        if ( article.ContainsKey( "id" ) )
                         {
-                            idEntry = ( (Dictionary<string, object>)article["guid"] )["value"].ToString();
-                        }
-                        else
-                        {
-                            idEntry = article["guid"].ToString();
-                        }
-                    }
-
-                    if ( !String.IsNullOrWhiteSpace( idEntry ) )
-                    {
-                        System.Security.Cryptography.HashAlgorithm hashAlgorithm = System.Security.Cryptography.SHA1.Create();
-                        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-                        foreach ( byte b in hashAlgorithm.ComputeHash( System.Text.Encoding.UTF8.GetBytes( idEntry ) ) )
-                        {
-                            sb.Append( b.ToString( "X2" ) );
+                            idEntry = article["id"].ToString();
                         }
 
-                        idEntryHashed = sb.ToString();
-
-                        Dictionary<string, string> queryString = new Dictionary<string, string>();
-                        queryString.Add( "feedItemId", idEntryHashed );
-
-                        if(detailPageID > 0)
+                        if ( article.ContainsKey( "guid" ) )
                         {
-                            article.Add( "detailPageUrl", new PageReference( detailPageID, 0, queryString ).BuildUrl() );
+                            if ( article["guid"].GetType() == typeof( Dictionary<string, object> ) )
+                            {
+                                idEntry = ( (Dictionary<string, object>)article["guid"] )["value"].ToString();
+                            }
+                            else
+                            {
+                                idEntry = article["guid"].ToString();
+                            }
                         }
 
-                        article.Add( "articleHash", idEntryHashed );
-                    }
+                        if ( !String.IsNullOrWhiteSpace( idEntry ) )
+                        {
+                            System.Security.Cryptography.HashAlgorithm hashAlgorithm = System.Security.Cryptography.SHA1.Create();
+                            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                            foreach ( byte b in hashAlgorithm.ComputeHash( System.Text.Encoding.UTF8.GetBytes( idEntry ) ) )
+                            {
+                                sb.Append( b.ToString( "X2" ) );
+                            }
 
-                    if ( article.ContainsKey("pubDate") )
-                    {
-                        article["pubDate"] = DateTimeOffset.Parse( article["pubDate"].ToString() ).LocalDateTime;
-                    }
+                            idEntryHashed = sb.ToString();
 
-                    if ( article.ContainsKey("updated") )
-                    {
-                        article["updated"] = DateTimeOffset.Parse( article["updated"].ToString() ).LocalDateTime;
+                            Dictionary<string, string> queryString = new Dictionary<string, string>();
+                            queryString.Add( "feedItemId", idEntryHashed );
+
+                            if ( detailPageID > 0 )
+                            {
+                                article.Add( "detailPageUrl", new PageReference( detailPageID, 0, queryString ).BuildUrl() );
+                            }
+
+                            article.Add( "articleHash", idEntryHashed );
+                        }
+
+                        if ( article.ContainsKey( "pubDate" ) )
+                        {
+                            article["pubDate"] = DateTimeOffset.Parse( article["pubDate"].ToString() ).LocalDateTime;
+                        }
+
+                        if ( article.ContainsKey( "updated" ) )
+                        {
+                            article["updated"] = DateTimeOffset.Parse( article["updated"].ToString() ).LocalDateTime;
+                        }
+
                     }
-                
                 }
 
                 if(!String.IsNullOrEmpty(detailPageBaseUrl))
@@ -258,7 +261,7 @@ public class SyndicationFeedHelper
                         
                     }
 
-                    if ( elementType.count == 1 )
+                    if ( elementType.count == 1  && elementType.elementName != "item" && elementType.elementName != "entry" )
                     {
                         XElement element = feedElement.Elements( elementType.elementName ).FirstOrDefault();
                         if ( element.HasElements )

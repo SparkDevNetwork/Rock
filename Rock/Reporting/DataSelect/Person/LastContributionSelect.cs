@@ -229,7 +229,7 @@ namespace Rock.Reporting.DataSelect.Person
                 AccountPicker accountPicker = controls[0] as AccountPicker;
                 if ( accountPicker != null )
                 {
-                    return accountPicker.SelectedValueAsId().ToString();
+                    return accountPicker.SelectedValues.ToList().AsDelimited( "," );
                 }
             }
 
@@ -248,8 +248,18 @@ namespace Rock.Reporting.DataSelect.Person
                 AccountPicker accountPicker = controls[0] as AccountPicker;
                 if ( accountPicker != null )
                 {
-                    var account = new FinancialAccountService().Get( selection.AsInteger() ?? 0 );
-                    accountPicker.SetValue( account );
+                    string[] selectionAccountIdValues = selection.Split( ',' );
+                    var accountList = new List<FinancialAccount>();
+                    foreach (string accountId in selectionAccountIdValues)
+                    {
+                        var account = new FinancialAccountService().Get( accountId.AsInteger() ?? 0 );
+                        if (account != null)
+                        {
+                            accountList.Add(account);
+                        }
+                    }
+                    
+                    accountPicker.SetValues( accountList );
                 }
             }
         }

@@ -99,7 +99,7 @@ namespace RockWeb.Blocks.Reporting
                     }
                     else
                     {
-                        int rows = new Service().ExecuteCommand( query, new object[] { } );
+                        int rows = new Service().ExecuteCommand( query );
                         if ( rows < 0 )
                         {
                             rows = 0;

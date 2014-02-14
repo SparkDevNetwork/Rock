@@ -18,7 +18,9 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
 
+using Rock.Attribute;
 using Rock.Model;
+using Rock.Web.UI.Controls;
 using Rock.Data;
 using System.Collections.Generic;
 using System.Data;
@@ -32,14 +34,17 @@ namespace Rock.PersonProfile.Badge
     /// <summary>
     /// FamilyAttendance Badge
     /// </summary>
-    [Description( "Family Attendance Badge" )]
+    [Description( "Shows a chart of the attendance history with each bar representing one month." )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Family Attendance" )]
+    
+    
+    [IntegerField("Months To Display", "The number of months to show on the chart (default 24.)", false, 24)]
+    [IntegerField("Minimum Bar Height", "The minimum height of a bar (in pixels). Useful for showing hint of bar when attendance was 0. (default 2.)", false, 2)]
+    [BooleanField("Annimate Bars", "Determine whether bars should annimate when displayed.", true)]
     public class FamilyAttendance : BadgeComponent
     {
 
-        private int _minBarHeight = 2;
-        
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
@@ -47,7 +52,21 @@ namespace Rock.PersonProfile.Badge
         /// <param name="writer">The writer.</param>
         public override void Render( PersonBadge badge, System.Web.UI.HtmlTextWriter writer )
         {
-            writer.Write("<div class='badge badge-attendance' data-original-title='Family attendance for the last 24 months. Each bar is a month.'>");
+            int minBarHeight = 2;
+
+            if (GetAttributeValue(badge, "MinimumBarHeight") != null)
+            {
+                Int32.Parse(GetAttributeValue(badge, "MinimumBarHeight"));
+            }
+            
+            string annimateClass = string.Empty;
+
+            if (GetAttributeValue(badge, "AnnimateBars") == null || GetAttributeValue(badge, "AnnimateBars").AsBoolean())
+            {
+                annimateClass = " annimate";
+            }
+
+            writer.Write(String.Format("<div class='badge badge-attendance{0}' data-original-title='Family attendance for the last 24 months. Each bar is a month.'>", annimateClass));
 
             writer.Write("</div>");
 
@@ -60,14 +79,14 @@ namespace Rock.PersonProfile.Badge
                         
                         $.ajax({{
                                 type: 'GET',
-                                url: Rock.settings.get('baseUrl') + 'api/PersonBadges/FamilyAttendance/{0}' ,
+                                url: Rock.settings.get('baseUrl') + 'api/PersonBadges/FamilyAttendance/{0}/{1}' ,
                                 statusCode: {{
                                     200: function (data, status, xhr) {{
                                             var chartHtml = '<ul class=\'badge-attendance-chart list-unstyled\'>';
                                             $.each(data, function() {{
                                                 var barHeight = (this.AttendanceCount / this.SundaysInMonth) * 100;
-                                                if (barHeight < {1}) {{
-                                                    barHeight = {1};
+                                                if (barHeight < {2}) {{
+                                                    barHeight = {2};
                                                 }}
                                 
                                                 chartHtml += '<li title=\'' + monthNames[this.Month -1] + ' ' + this.Year +'\'><span style=\'height: ' + barHeight + '%\'></span></li>';                
@@ -82,7 +101,7 @@ namespace Rock.PersonProfile.Badge
                     }});
                 </script>
                 
-            ", Person.Id.ToString(), _minBarHeight));
+            ", Person.Id.ToString(), GetAttributeValue(badge, "MonthsToDisplay"), minBarHeight ));
 
         }
 

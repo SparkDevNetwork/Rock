@@ -172,6 +172,8 @@
                     if (self.options.restParams) {
                         restUrl += self.options.restParams;
                     }
+
+                    self.clearError();
                     
                     return $.ajax({
                             url: restUrl,
@@ -184,6 +186,9 @@
                             } catch (e) {
                                 dfd.reject(e);
                             }
+                        })
+                        .fail(function (jqXHR, textStatus, errorThrown) {
+                            self.renderError(jqXHR.responseJSON ? jqXHR.responseJSON.ExceptionMessage : errorThrown);
                         });
                 };
 
@@ -349,14 +354,21 @@
 
             this.$el.trigger('rockTree:rendered');
         },
+
+        // clear the error message
+        clearError: function () {
+            this.$el.siblings('.js-rocktree-alert').remove();
+        },
         
         // Render Bootstrap alert displaying the error message.
         renderError: function (msg) {
-            var $warning = $('<div class="alert alert-warning"/>').append('<p/>');
-            $warning.find('p')
+            this.clearError();
+            this.discardLoading(this.$el);
+            var $warning = $('<div class="alert alert-warning alert-dismissable js-rocktree-alert"/>');
+            $warning.append('<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>')
                 .append('<strong><i class="fa fa-exclamation-triangle"></i> Uh oh! </strong>')
                 .append(msg);
-            this.$el.html($warning);
+            $warning.insertBefore(this.$el);
         },
         
         // Show loading spinner

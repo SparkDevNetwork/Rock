@@ -726,8 +726,15 @@ namespace Rock.Data
                     .Where( c => c.State == EntityState.Added)
                     .Select( a => a.Entity as IModel))
                 {
-                    entry.CreatedDateTime = RockDateTime.Now;
-                    entry.CreatedByPersonAliasId = personAliasId;
+                    if ( !entry.CreatedDateTime.HasValue )
+                    {
+                        entry.CreatedDateTime = RockDateTime.Now;
+                    }
+                    if ( !entry.CreatedByPersonAliasId.HasValue )
+                    {
+                        entry.CreatedByPersonAliasId = personAliasId;
+                    }
+
                     entry.ModifiedDateTime = RockDateTime.Now;
                     entry.ModifiedByPersonAliasId = personAliasId;
                 }

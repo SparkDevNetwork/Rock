@@ -16,8 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.SqlServer;
 using System.Linq;
-
 using Rock;
 using Rock.Data;
 
@@ -265,7 +265,7 @@ namespace Rock.Model
         /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be 
         /// included, otherwise <c>false</c>.</param>
         /// <returns>A queryable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.</returns>
-        public IQueryable<Person> GetByFullName( string fullName, bool includeDeceased = false )
+        public IQueryable<Person> GetByFullName( string fullName, bool includeDeceased = false, bool includeSoundsLike = false )
         {
             var names = fullName.SplitDelimitedValues();
 
@@ -290,11 +290,14 @@ namespace Rock.Model
             var qry = Queryable( includeDeceased );
             if ( !string.IsNullOrWhiteSpace( lastName ) )
             {
-                qry = qry.Where( p => p.LastName.StartsWith( lastName ) );
+                qry = qry.Where( p => p.LastName.StartsWith( lastName )
+                    || ( includeSoundsLike && SqlFunctions.SoundCode( p.LastName ) == SqlFunctions.SoundCode( lastName ) ) );
             }
             if ( !string.IsNullOrWhiteSpace( firstName ) )
             {
-                qry = qry.Where( p => p.FirstName.StartsWith( firstName ) || p.NickName.StartsWith( firstName ) );
+                qry = qry.Where( p => p.FirstName.StartsWith( firstName ) || p.NickName.StartsWith( firstName ) 
+                    || p.NickName.StartsWith( firstName ) 
+                    || ( includeSoundsLike && SqlFunctions.SoundCode( p.FirstName ) == SqlFunctions.SoundCode( firstName ) ) );
             }
 
             return qry;

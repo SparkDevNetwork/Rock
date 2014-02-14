@@ -28,10 +28,10 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.PersonProfile;
 
-namespace RockWeb.Blocks.Administration
+namespace RockWeb.Blocks.Crm
 {
     [DisplayName( "Person Badge List" )]
-    [Category( "Administration" )]
+    [Category( "CRM" )]
     [Description( "Shows a list of all person badges." )]
 
     [LinkedPage("Detail Page")]

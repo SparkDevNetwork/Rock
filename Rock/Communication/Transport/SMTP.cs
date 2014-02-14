@@ -27,6 +27,7 @@ using System.Threading.Tasks;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Communication.Transport
 {
@@ -92,27 +93,7 @@ namespace Rock.Communication.Transport
                 message.IsBodyHtml = true;
                 message.Priority = MailPriority.Normal;
 
-                // Create SMTP Client
-                SmtpClient smtpClient = new SmtpClient( GetAttributeValue( "Server" ) );
-
-                int port = int.MinValue;
-                if ( int.TryParse( GetAttributeValue( "Port" ), out port ) )
-                {
-                    smtpClient.Port = port;
-                }
-
-                smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
-
-                bool useSSL = false;
-                smtpClient.EnableSsl = bool.TryParse( GetAttributeValue( "UseSSL" ), out useSSL ) && useSSL;
-
-                string userName = GetAttributeValue( "UserName" );
-                string password = GetAttributeValue( "Password" );
-                if ( !string.IsNullOrEmpty( userName ) )
-                {
-                    smtpClient.UseDefaultCredentials = false;
-                    smtpClient.Credentials = new System.Net.NetworkCredential( userName, password );
-                }
+                var smtpClient = GetSmtpClient();
 
                 // Add Attachments
                 string attachmentIds = communication.GetChannelDataValue( "Attachments" );
@@ -183,6 +164,94 @@ namespace Rock.Communication.Transport
                     } );
                 }
             }
+        }
+
+        /// <summary>
+        /// Sends the specified template.
+        /// </summary>
+        /// <param name="template">The template.</param>
+        /// <param name="recipients">The recipients.</param>
+        public override void Send( EmailTemplate template, Dictionary<string, Dictionary<string, object>> recipients )
+        {
+            string from = template.From;
+            if (string.IsNullOrWhiteSpace(from))
+            {
+                var globalAttributes = GlobalAttributesCache.Read();
+                from = globalAttributes.GetValue( "OrganizationEmail" );
+            }
+
+            if ( !string.IsNullOrWhiteSpace( from ) )
+            {
+                MailMessage message = new MailMessage();
+                message.From = new MailAddress( from );
+
+                if ( !string.IsNullOrWhiteSpace( template.Cc ) )
+                {
+                    foreach ( string ccRecipient in template.Cc.SplitDelimitedValues() )
+                    {
+                        message.CC.Add( new MailAddress( ccRecipient ) );
+                    }
+                }
+
+                if ( !string.IsNullOrWhiteSpace( template.Bcc ) )
+                {
+                    foreach ( string ccRecipient in template.Bcc.SplitDelimitedValues() )
+                    {
+                        message.CC.Add( new MailAddress( ccRecipient ) );
+                    }
+                }
+
+                message.IsBodyHtml = true;
+                message.Priority = MailPriority.Normal;
+
+                var smtpClient = GetSmtpClient();
+
+                var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+
+                foreach ( KeyValuePair<string, Dictionary<string, object>> recipient in recipients )
+                {
+                    var mergeObjects = recipient.Value;
+                    globalConfigValues.ToList().ForEach( g => mergeObjects[g.Key] = g.Value );
+
+                    List<string> sendTo = SplitRecipient( template.To );
+                    sendTo.Add( recipient.Key );
+                    foreach ( string to in sendTo )
+                    {
+                        message.To.Clear();
+                        message.To.Add( to );
+                        message.Subject = template.Subject.ResolveMergeFields( mergeObjects );
+                        message.Body = template.Body.ResolveMergeFields( mergeObjects );
+                        smtpClient.Send( message );
+                    }
+                }
+            }
+        }
+
+        private SmtpClient GetSmtpClient()
+        {
+            // Create SMTP Client
+            SmtpClient smtpClient = new SmtpClient( GetAttributeValue( "Server" ) );
+
+            int port = int.MinValue;
+            if ( int.TryParse( GetAttributeValue( "Port" ), out port ) )
+            {
+                smtpClient.Port = port;
+            }
+
+            smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
+
+            bool useSSL = false;
+            smtpClient.EnableSsl = bool.TryParse( GetAttributeValue( "UseSSL" ), out useSSL ) && useSSL;
+
+            string userName = GetAttributeValue( "UserName" );
+            string password = GetAttributeValue( "Password" );
+            if ( !string.IsNullOrEmpty( userName ) )
+            {
+                smtpClient.UseDefaultCredentials = false;
+                smtpClient.Credentials = new System.Net.NetworkCredential( userName, password );
+            }
+
+            return smtpClient;
         }
 
         private List<string> SplitRecipient( string recipients )

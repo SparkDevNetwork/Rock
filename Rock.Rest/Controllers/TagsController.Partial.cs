@@ -37,7 +37,7 @@ namespace Rock.Rest.Controllers
         {
             routes.MapHttpRoute(
                 name: "TagNamesAvail",
-                routeTemplate: "api/tags/availablenames/{entityTypeId}/{ownerid}/{entityguid}/{entityqualifier}/{entityqualifiervalue}",
+                routeTemplate: "api/tags/availablenames/{entityTypeId}/{ownerid}/{name}/{entityguid}/{entityqualifier}/{entityqualifiervalue}",
                 defaults: new
                 {
                     controller = "tags",
@@ -86,25 +86,27 @@ namespace Rock.Rest.Controllers
 
         [Authenticate, Secured]
         [HttpGet]
-        public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid )
+        public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid, string name )
         {
-            return AvailableNames( entityTypeId, ownerId, entityGuid, string.Empty, string.Empty );
+            return AvailableNames( entityTypeId, ownerId, entityGuid, name, string.Empty, string.Empty );
         }
 
         [Authenticate, Secured]
         [HttpGet]
-        public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid, string entityQualifier )
+        public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier )
         {
-            return AvailableNames( entityTypeId, ownerId, entityGuid, entityQualifier, string.Empty );
+            return AvailableNames( entityTypeId, ownerId, entityGuid, name, entityQualifier, string.Empty );
         }
 
         [Authenticate, Secured]
         [HttpGet]
-        public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid, string entityQualifier, string entityQualifierValue )
+        public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier, string entityQualifierValue )
         {
             var service = new TagService();
             return service.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId )
-                .Where( t => t.TaggedItems.Select( i => i.EntityGuid ).Contains( entityGuid ) == false )
+                .Where( t => 
+                    t.Name.StartsWith(name) && 
+                    !t.TaggedItems.Any( i => i.EntityGuid == entityGuid ))
                 .OrderBy( t => t.Name );
         }
 

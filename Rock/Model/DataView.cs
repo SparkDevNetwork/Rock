@@ -174,48 +174,6 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
-        /// Binds the grid.
-        /// </summary>
-        /// <param name="grid">The grid.</param>
-        /// <param name="errorMessages">The error messages.</param>
-        /// <param name="createColumns">if set to <c>true</c> [create columns].</param>
-        /// <returns></returns>
-        public List<IEntity> BindGrid( Grid grid, out List<string> errorMessages, bool createColumns = false )
-        {
-            errorMessages = new List<string>();
-
-            if ( EntityTypeId.HasValue )
-            {
-                var cachedEntityType = EntityTypeCache.Read( EntityTypeId.Value );
-                if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
-                {
-                    Type entityType = cachedEntityType.GetEntityType();
-
-                    if ( entityType != null )
-                    {
-                        if ( createColumns )
-                        {
-                            grid.CreatePreviewColumns( entityType );
-                        }
-
-                        using ( new Rock.Data.UnitOfWorkScope() )
-                        {
-                            var qry = this.GetQuery( out errorMessages );
-                            if ( grid.SortProperty != null )
-                            {
-                                qry = qry.Sort( grid.SortProperty );
-                            }
-
-                            return qry.AsNoTracking().ToList();
-                        };
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Gets the query.
         /// </summary>
         /// <param name="errorMessages">The error messages.</param>

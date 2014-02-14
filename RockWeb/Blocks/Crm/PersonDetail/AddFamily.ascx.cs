@@ -253,6 +253,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         familyMemberRow.Gender = familyMember.Person.Gender;
                         familyMemberRow.BirthDate = familyMember.Person.BirthDate;
                         familyMemberRow.ConnectionStatusValueId = familyMember.Person.ConnectionStatusValueId;
+                        familyMemberRow.Grade = familyMember.Person.Grade;
                     }
                 }
 
@@ -306,7 +307,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMember.Person.Gender = row.Gender;
                 groupMember.Person.BirthDate = row.BirthDate;
                 groupMember.Person.ConnectionStatusValueId = row.ConnectionStatusValueId;
-                //groupMember.Person.GraduationDate = 
+                groupMember.Person.Grade = row.Grade;
 
                 groupMember.Person.Attributes = new Dictionary<string, AttributeCache>();
                 groupMember.Person.AttributeValues = new Dictionary<string, List<AttributeValue>>();

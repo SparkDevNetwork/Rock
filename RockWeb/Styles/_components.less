@@ -22,6 +22,7 @@
     19. Update Panel Status - Styles for the wait screen on an update panel
     20. Group List - styles a group of people in a ul -> li format
     21. Rock List - styles for the Rock list component
+    22. TypeAhead - styles for type ahead support
 */
 
 // 1. Pickers
@@ -1293,6 +1294,10 @@ ul.groupmembers {
         img {
             border: 3px solid @accent-bold-color;
             width: 60px;
+
+            &.no-photo {
+                height: 60px;
+            }
         }
 
         h4 {
@@ -1378,30 +1383,50 @@ ul.rocklist {
 }
 
 
-/*.rocklist span, .rocklist a {
-    margin: 1px;
-    display: inline-block;
+// 22. TypeAhead Support
+// -------------------------
+
+.twitter-typeahead .tt-query,
+.twitter-typeahead .tt-hint {
+  margin-bottom: 0;
 }
 
-.rocklist .rocklist-name:hover, 
-.rocklist span:hover, 
-.rocklist span:hover a {
-    background: #8498ab;
-    color: #ecf0f3;
+.tt-dropdown-menu {
+  min-width: 160px;
+  margin-top: 2px;
+  padding: 5px 0;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border: 1px solid rgba(0,0,0,.2);
+  *border-right-width: 2px;
+  *border-bottom-width: 2px;
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+  -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+     -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+          box-shadow: 0 5px 10px rgba(0,0,0,.2);
+  -webkit-background-clip: padding-box;
+     -moz-background-clip: padding;
+          background-clip: padding-box;
 }
 
-.rocklist .selected, 
-.rocklist .selected a {
-    background: #a4b4c4;
-    color: #fff;
+.tt-suggestion {
+  display: block;
+  padding: 3px 20px;
 }
 
-.rocklist .rocklist-name {
-    padding: 2px 6px;
-    border-radius: 3px;
-    cursor: pointer;
+.tt-suggestion.tt-is-under-cursor {
+  color: #fff;
+  background-color: #a4b4c4;
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0088cc', endColorstr='#ff0077b3', GradientType=0)
 }
 
-.rocklist .rocklist-leaf {
-    padding-left: 15px;
-}*/
+.tt-suggestion.tt-is-under-cursor a {
+  color: #fff;
+}
+
+.tt-suggestion p {
+  margin: 0;
+}

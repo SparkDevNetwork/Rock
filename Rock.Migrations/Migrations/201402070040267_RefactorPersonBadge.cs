@@ -69,7 +69,7 @@ namespace Rock.Migrations
 
             UpdateFieldType( "Person Badges", "", "Rock", "Rock.Field.Types.PersonBadgesFieldType", "3F1AE891-7DC8-46D2-865D-11543B34FB60" );
 
-            Sql( @"
+            Sql(@"
     -- Update person badge list to use new block type
     DECLARE @BlockTypeId int
     SET @BlockTypeId = (SELECT [Id] FROM [BlockType] WHERE [Guid] = 'D8CCD577-2200-44C5-9073-FD16F174D364') 
@@ -96,11 +96,11 @@ namespace Rock.Migrations
 
     INSERT INTO [PersonBadge] ([Name],[Description],[EntityTypeId],[Order],[Guid])
     VALUES
-	    ('Connection Status', 'Connection Status Badge', @ConnectionStatusBadge, 0, '43B4800D-B995-459E-82FC-5FD575F9E348'),
-	    ('Campus', 'Campus Badge', @CampusBadge, 1, 'B21DCD49-AC35-4B2B-9857-75213209B643'),
-	    ('Record Status', 'Record Status Badge', @RecordStatusBadge, 1, 'A999125F-E2B8-48AD-AA25-DF94147E65C2'),
-	    ('16 Week Attendance', '16 Week Attendance Badge', @16WeekAttendanceBadge, 1, '452CF317-D3A1-49B5-84B1-4206DDADC653'),
-	    ('Family Attendance', 'Family Attendance Badge', @FamilyAttendanceBadge, 1, '3F7D648D-D6BA-4F03-931C-AFBDFA24BBD8'),
+	    ('Connection Status', 'Displays the connection status of the individual.', @ConnectionStatusBadge, 0, '43B4800D-B995-459E-82FC-5FD575F9E348'),
+	    ('Campus', 'Shows the campus of the individual.', @CampusBadge, 1, 'B21DCD49-AC35-4B2B-9857-75213209B643'),
+	    ('Record Status', 'Displays the record status of individual.', @RecordStatusBadge, 1, 'A999125F-E2B8-48AD-AA25-DF94147E65C2'),
+	    ('16 Week Attendance', 'Displays the number of times a family has checked-in in the last given number of weeks.', @16WeekAttendanceBadge, 1, '452CF317-D3A1-49B5-84B1-4206DDADC653'),
+	    ('Family Attendance', 'Shows a chart of the attendance history with each bar representing one month.', @FamilyAttendanceBadge, 1, '3F7D648D-D6BA-4F03-931C-AFBDFA24BBD8'),
 	    ('Baptized', 'Baptized Badge', @BaptizedBadge, 1,'44E4D9CD-8143-4333-8C66-89DF95B9F580')
 
     -- Update the Bio and BadgeList attributes to be a Person Badge field type
@@ -129,7 +129,7 @@ namespace Rock.Migrations
     UPDATE [AttributeValue] SET
     VALUE = '44E4D9CD-8143-4333-8C66-89DF95B9F580'
     WHERE [Guid] = 'AC977001-8059-43A1-AB35-55F37DA40695'
-" );
+");
 
         }
         
