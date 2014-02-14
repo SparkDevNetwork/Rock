@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Cms
     [CodeEditorField("Template", "The liquid template to use for rendering. This template should be in the theme's \"Assets/Liquid\" folder and should have a underscore prepended to the filename.", 
         CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, true, @"{% include 'RSSFeedItem' %}", "Layout")]
     [BooleanField( "Enable Debug", "Flag indicating that the control should output the feed data that will be passed to Liquid for parsing.", false )]
+    [BooleanField( "Include RSS Link", "Flag indicating that an RSS link should be included in the page header.", true, "Feed" )]
     public partial class RSSFeedItem : RockBlock
     {
         #region Private Properties
@@ -69,9 +70,8 @@ namespace RockWeb.Blocks.Cms
             {
                 RockPage.AddCSSLink( ResolveRockUrl( cssFile ) );
             }
+
         }
-
-
 
         protected override void OnLoad( EventArgs e )
         {
@@ -199,6 +199,17 @@ namespace RockWeb.Blocks.Cms
 
                 if ( feedDictionary != null && feedDictionary.Count > 0 )
                 {
+
+
+                    if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "RSSFeedUrl" ) ) && GetAttributeValue( "IncludeRSSLink" ).AsBoolean() )
+                    {
+                        string rssLink = string.Format( "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"{0}\" href=\"{1}\" />", 
+                            feedDictionary.ContainsKey("title") ? feedDictionary["title"].ToString(): "RSS",
+                            GetAttributeValue( "RSSFeedUrl" ) );
+
+                        Page.Header.Controls.Add( new LiteralControl( rssLink ) );
+                    }
+
                     Dictionary<string, object> previousItem = null;
                     Dictionary<string, object> selectedItem = null;
                     Dictionary<string, object> nextItem = null;

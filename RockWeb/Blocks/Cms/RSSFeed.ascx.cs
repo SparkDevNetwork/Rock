@@ -70,12 +70,6 @@ namespace RockWeb.Blocks.Cms
                 RockPage.AddCSSLink( ResolveRockUrl( GetAttributeValue( "CSSFile" ) ) );
             }
 
-            if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "RSSFeedUrl" ) ) && GetAttributeValue( "IncludeRSSLink" ).AsBoolean() )
-            {
-                string rssLink = string.Format( "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS\" href=\"{0}\" />", GetAttributeValue( "RSSFeedUrl" ) );
-
-                Page.Header.Controls.Add( new LiteralControl( rssLink ) );
-            }
         }
 
         protected override void OnLoad( EventArgs e )
@@ -201,6 +195,15 @@ namespace RockWeb.Blocks.Cms
 
                 if ( feedDictionary != null )
                 {
+                    if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "RSSFeedUrl" ) ) && GetAttributeValue( "IncludeRSSLink" ).AsBoolean() )
+                    {
+                        string rssLink = string.Format( "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"{0}\" href=\"{1}\" />", 
+                            feedDictionary.ContainsKey("title") ? feedDictionary["title"].ToString() : "RSS",
+                            GetAttributeValue( "RSSFeedUrl" ) );
+
+                        Page.Header.Controls.Add( new LiteralControl( rssLink ) );
+                    }
+
                     string content = String.Empty;
                     if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
                     {
