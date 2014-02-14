@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Login.ascx.cs" Inherits="RockWeb.Blocks.Security.Login" %>
 
-    <asp:PlaceHolder ID="phLogin" runat="server">
+    <asp:Panel ID="pnlLogin" runat="server">
 
         <fieldset>
 
@@ -30,22 +30,23 @@
             <asp:Button ID="btnHelp" runat="server" Text="Forgot Account" CssClass="btn btn-action" OnClick="btnHelp_Click" CausesValidation="false" />
         </div>
 
-    </asp:PlaceHolder>
+    </asp:Panel>
 
-    <asp:PlaceHolder ID="phLockedOut" runat="server" Visible="false">
+    
+    <asp:Panel ID="pnlLockedOut" runat="server" Visible="false">
 
         <div class="alert alert-danger">
             <asp:Literal ID="lLockedOutCaption" runat="server" />
         </div>
 
-    </asp:PlaceHolder>
+    </asp:Panel>
 
-    <asp:PlaceHolder ID="phConfirmation" runat="server" Visible="false">
+    <asp:Panel ID="pnlConfirmation" runat="server" Visible="false">
 
         <div class="alert alert-warning">
             <asp:Literal ID="lConfirmCaption" runat="server" />
         </div>
 
-    </asp:PlaceHolder>
+    </asp:Panel>
    
 
