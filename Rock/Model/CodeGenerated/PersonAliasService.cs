@@ -284,6 +284,10 @@ namespace Rock.Model
             
             // ignoring Person,ModifiedByPersonAliasId 
             
+            // ignoring PersonBadge,CreatedByPersonAliasId 
+            
+            // ignoring PersonBadge,ModifiedByPersonAliasId 
+            
             // ignoring PhoneNumber,CreatedByPersonAliasId 
             
             // ignoring PhoneNumber,ModifiedByPersonAliasId 

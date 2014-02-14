@@ -110,15 +110,6 @@ namespace Rock.Model
         public DbGeography GeoFence { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is a named location.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Boolean"/> that is <c>true</c> if this instance is a named location; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool IsNamedLocation { get; set; }
-
-        /// <summary>
         /// Gets or sets the first line of the Location's Street/Mailing Address.
         /// </summary>
         /// <value>
@@ -280,6 +271,15 @@ namespace Rock.Model
         public DateTime? GeocodedDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets flag indicating if geopoint is locked (shouldn't be geocoded again)
+        /// </summary>
+        /// <value>
+        /// is geo point locked.
+        /// </value>
+        [DataMember]
+        public bool? IsGeoPointLocked { get; set; }
+
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Device"/> Id of the printer (if any) associated with the location.
         /// </summary>
         /// <value>
@@ -299,6 +299,31 @@ namespace Rock.Model
         /// A Location object representing the parent location of the current location. If this Location does not have a parent Location, this value will be null.
         /// </value>
         public virtual Location ParentLocation { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is a named location.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this instance is a named location; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public virtual bool IsNamedLocation 
+        { 
+            get
+            {
+                return !string.IsNullOrWhiteSpace( Name );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the location type value.
+        /// </summary>
+        /// <value>
+        /// The location type value.
+        /// </value>
+        [MergeField]
+        [DataMember]
+        public virtual DefinedValue LocationTypeValue { get; set; }
 
         /// <summary>
         /// Gets or sets a collection of child Locations associated that inherit for this location. This property will only return the immediate descendants of this locations.
@@ -481,6 +506,7 @@ namespace Rock.Model
         {
             this.HasOptional( l => l.ParentLocation ).WithMany( l => l.ChildLocations ).HasForeignKey( l => l.ParentLocationId ).WillCascadeOnDelete( false );
             this.HasOptional( l => l.PrinterDevice ).WithMany().HasForeignKey( l => l.PrinterDeviceId ).WillCascadeOnDelete( false );
+            this.HasOptional( l => l.LocationTypeValue ).WithMany().HasForeignKey( l => l.LocationTypeValueId ).WillCascadeOnDelete( false );
         }
     }
 

@@ -18,7 +18,6 @@ using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Model;
-using Rock;
 
 namespace Rock.Web.UI.Controls
 {
@@ -57,12 +56,12 @@ namespace Rock.Web.UI.Controls
             get
             {
                 var allowedPickerModes = ViewState["AllowedPickerModes"] as LocationPickerMode?;
-                if ( !allowedPickerModes.HasValue)
+                if ( !allowedPickerModes.HasValue )
                 {
                     allowedPickerModes = LocationPickerMode.All;
                     AllowedPickerModes = allowedPickerModes.Value;
                 }
-                
+
                 return allowedPickerModes.Value;
             }
 
@@ -71,7 +70,7 @@ namespace Rock.Web.UI.Controls
                 ViewState["AllowedPickerModes"] = value;
             }
         }
-        
+
         /// <summary>
         /// Gets or sets the current picker mode.
         /// </summary>
@@ -82,7 +81,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                LocationPickerMode pickerMode = _hfCurrentPickerMode.Value.ConvertToEnum<LocationPickerMode>(LocationPickerMode.Named );
+                LocationPickerMode pickerMode = _hfCurrentPickerMode.Value.ConvertToEnum<LocationPickerMode>( LocationPickerMode.Named );
 
                 if ( string.IsNullOrWhiteSpace( _hfCurrentPickerMode.Value ) )
                 {
@@ -134,7 +133,7 @@ namespace Rock.Web.UI.Controls
                         }
                     case LocationPickerMode.Point:
                         {
-                            if (_pointPicker.SelectedValue != null)
+                            if ( _pointPicker.SelectedValue != null )
                             {
                                 return new LocationService().GetByGeoPoint( _pointPicker.SelectedValue );
                             }
@@ -215,12 +214,12 @@ namespace Rock.Web.UI.Controls
                     return LocationPickerMode.Address;
                 }
 
-                if (location.GeoPoint != null)
+                if ( location.GeoPoint != null )
                 {
                     return LocationPickerMode.Point;
                 }
 
-                if (location.GeoFence != null)
+                if ( location.GeoFence != null )
                 {
                     return LocationPickerMode.Polygon;
                 }
@@ -245,10 +244,12 @@ namespace Rock.Web.UI.Controls
             EnsureChildControls();
 
             // set the "onclick" attributes manually so that we can consistently handle the postbacks even though they are coming from any of the 3 pickers
-            _radNamed.Attributes["onclick"] = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "NamedMode" ) );
-            _radAddress.Attributes["onclick"] = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "AddressMode" ) );
-            _radPoint.Attributes["onclick"] = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "PointMode" ) );
-            _radPolygon.Attributes["onclick"] = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "PolygonMode" ) );
+            string postBackScriptFormat = "$('#{2}').val('{1}');  __doPostBack('{0}','{1}');";
+
+            _radNamed.Attributes["onclick"] = string.Format( postBackScriptFormat, this.UniqueID, "Named", _hfCurrentPickerMode.ClientID );
+            _radAddress.Attributes["onclick"] = string.Format( postBackScriptFormat, this.UniqueID, "Address", _hfCurrentPickerMode.ClientID );
+            _radPoint.Attributes["onclick"] = string.Format( postBackScriptFormat, this.UniqueID, "Point", _hfCurrentPickerMode.ClientID );
+            _radPolygon.Attributes["onclick"] = string.Format( postBackScriptFormat, this.UniqueID, "Polygon", _hfCurrentPickerMode.ClientID );
 
             if ( Page.IsPostBack )
             {
@@ -262,7 +263,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnPreRender( EventArgs e )
         {
-            var nameEnabled = (this.AllowedPickerModes & LocationPickerMode.Named) == LocationPickerMode.Named;
+            var nameEnabled = ( this.AllowedPickerModes & LocationPickerMode.Named ) == LocationPickerMode.Named;
             var addressEnabled = ( this.AllowedPickerModes & LocationPickerMode.Address ) == LocationPickerMode.Address;
             var pointEnabled = ( this.AllowedPickerModes & LocationPickerMode.Point ) == LocationPickerMode.Point;
             var polygonEnabled = ( this.AllowedPickerModes & LocationPickerMode.Polygon ) == LocationPickerMode.Polygon;
@@ -311,6 +312,10 @@ namespace Rock.Web.UI.Controls
             _pnlModeSelection.CssClass = "picker-mode-options";
             _pnlModeSelection.ViewStateMode = ViewStateMode.Enabled;
 
+            _hfCurrentPickerMode = new HiddenField();
+            _hfCurrentPickerMode.ID = this.ID + "_hfCurrentPickerMode";
+            this.Controls.Add( _hfCurrentPickerMode );
+
             _radNamed = new RadioButton { ID = "radNamed" };
             _radNamed.Text = "Location";
             _radNamed.GroupName = "radiogroup-location-mode_" + this.ClientID;
@@ -320,7 +325,7 @@ namespace Rock.Web.UI.Controls
             _radAddress.Text = "Address";
             _radAddress.GroupName = "radiogroup-location-mode_" + this.ClientID;
             _pnlModeSelection.Controls.Add( _radAddress );
-            
+
             _radPoint = new RadioButton { ID = "radPoint" };
             _radPoint.Text = "Point";
             _radPoint.GroupName = "radiogroup-location-mode_" + this.ClientID;
@@ -329,8 +334,8 @@ namespace Rock.Web.UI.Controls
             _radPolygon = new RadioButton { ID = "radPolygon" };
             _radPolygon.Text = "Geo-fence";
             _radPolygon.GroupName = "radiogroup-location-mode_" + this.ClientID;
-            _pnlModeSelection.Controls.Add( _radPolygon ); 
-            
+            _pnlModeSelection.Controls.Add( _radPolygon );
+
             _pickersPanel = new Panel { ID = "pickersPanel" };
             _pickersPanel.ViewStateMode = ViewStateMode.Disabled;
             this.Controls.Add( _pickersPanel );
@@ -351,9 +356,6 @@ namespace Rock.Web.UI.Controls
             _polygonPicker.DrawingMode = GeoPicker.ManagerDrawingMode.Polygon;
             _polygonPicker.SelectGeography += _polygonPicker_SelectGeography;
 
-            _hfCurrentPickerMode = new HiddenField();
-            _hfCurrentPickerMode.ID = this.ID + "_hfCurrentPickerMode";
-
             _namedPicker.ModePanel = _pnlModeSelection;
             _pointPicker.ModePanel = _pnlModeSelection;
             _polygonPicker.ModePanel = _pnlModeSelection;
@@ -363,7 +365,7 @@ namespace Rock.Web.UI.Controls
             _pickersPanel.Controls.Add( _addressPicker );
             _pickersPanel.Controls.Add( _pointPicker );
             _pickersPanel.Controls.Add( _polygonPicker );
-            _pickersPanel.Controls.Add( _hfCurrentPickerMode );
+
         }
 
         /// <summary>
@@ -402,10 +404,10 @@ namespace Rock.Web.UI.Controls
                 return;
             }
 
-            _radNamed.Checked = eventArgument == "NamedMode";
-            _radAddress.Checked = eventArgument == "AddressMode";
-            _radPoint.Checked = eventArgument == "PointMode";
-            _radPolygon.Checked = eventArgument == "PolygonMode";
+            _radNamed.Checked = eventArgument == "Named";
+            _radAddress.Checked = eventArgument == "Address";
+            _radPoint.Checked = eventArgument == "Point";
+            _radPolygon.Checked = eventArgument == "Polygon";
 
             _namedPicker.Visible = _radNamed.Checked;
             _namedPicker.ShowDropDown = _radNamed.Checked;
@@ -431,7 +433,7 @@ namespace Rock.Web.UI.Controls
             {
                 this.CurrentPickerMode = LocationPickerMode.Point;
             }
-            else if (_radPolygon.Checked)
+            else if ( _radPolygon.Checked )
             {
                 this.CurrentPickerMode = LocationPickerMode.Polygon;
             }
@@ -665,7 +667,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         Named = 2,
 
-            /// <summary>
+        /// <summary>
         /// A Geographic point (Latitude/Longitude)
         /// </summary>
         Point = 4,

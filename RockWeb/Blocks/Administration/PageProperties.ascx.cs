@@ -328,7 +328,7 @@ namespace RockWeb.Blocks.Administration
                     foreach ( string route in tbPageRoute.Text.SplitDelimitedValues() )
                     {
                         var pageRoute = new PageRoute();
-                        pageRoute.Route = route;
+                        pageRoute.Route = route.TrimStart( new char[] { '/' } );
                         pageRoute.Guid = Guid.NewGuid();
                         page.PageRoutes.Add( pageRoute );
                     }
@@ -461,7 +461,7 @@ namespace RockWeb.Blocks.Administration
             foreach ( string route in tbPageRoute.Text.SplitDelimitedValues() )
             {
                 var pageRoute = new PageRoute();
-                pageRoute.Route = route;
+                pageRoute.Route = route.TrimStart( new char[] { '/' } );
                 pageRoute.Guid = Guid.NewGuid();
                 if ( !pageRoute.IsValid )
                 {

@@ -96,7 +96,7 @@
 
     <asp:PlaceHolder ID="phDuplicates" runat="server" Visible="false">
 
-        <div class="alert warning">
+        <div class="alert alert-warning">
             <asp:Literal ID="lFoundDuplicateCaption" runat="server" />
         </div>
 
@@ -132,7 +132,7 @@
 
         <asp:HiddenField ID="hfSendPersonId" runat="server" />
 
-        <div class="alert warning">
+        <div class="alert alert-warning">
             <asp:Literal ID="lExistingAccountCaption" runat="server"/>
         </div>
 
@@ -154,7 +154,7 @@
 
     <asp:PlaceHolder ID="phConfirmation" runat="server" Visible="false">
 
-        <div class="alert warning">
+        <div class="alert alert-warning">
             <asp:Literal ID="lConfirmCaption" runat="server" />
         </div>
 
@@ -162,9 +162,13 @@
 
     <asp:PlaceHolder ID="phSuccess" runat="server" Visible="false">
 
-        <div class="alert alert-success success">
+        <div class="alert alert-success">
             <asp:Literal ID="lSuccessCaption" runat="server" />
         </div>
+
+        <div class="actions">
+            <asp:Button ID="btnContinue" runat="server" Text="Continue" CssClass="btn btn-primary" OnClick="btnContinue_Click" Visible="false" />
+        <div class="actions">
 
     </asp:PlaceHolder>
 

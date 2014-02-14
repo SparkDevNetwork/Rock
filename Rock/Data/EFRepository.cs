@@ -722,15 +722,42 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Executes a SQL command.
+        /// Executes the query, and returns number of rows affected
         /// </summary>
         /// <param name="command">The command.</param>
         /// <param name="parameters">The parameters.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        public int ExecuteCommand( string command, params object[] parameters )
+        public int ExecuteCommand( string query, CommandType commandType, Dictionary<string, object> parameters )
         {
-            return _context.Database.ExecuteSqlCommand( command, parameters );
+            var sqlCommand = GetCommand( query, commandType, parameters );
+            if ( sqlCommand != null )
+            {
+                sqlCommand.Connection.Open();
+                return sqlCommand.ExecuteNonQuery();
+            }
+            
+            return 0;
+        }
+
+        /// <summary>
+        /// Executes the query, and returns the first column of the first row in the
+        //  result set returned by the query. Additional columns or rows are ignored.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public object ExecuteScaler(string query, CommandType commandType, Dictionary<string, object> parameters)
+        {
+            var sqlCommand = GetCommand( query, commandType, parameters );
+            if ( sqlCommand != null )
+            {
+                sqlCommand.Connection.Open();
+                return sqlCommand.ExecuteScalar();
+            }
+
+            return null;
         }
 
         /// <summary>

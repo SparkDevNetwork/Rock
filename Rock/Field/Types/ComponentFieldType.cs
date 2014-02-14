@@ -46,11 +46,10 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                int entityTypeId = int.MinValue;
-                if ( int.TryParse( value, out entityTypeId ) )
+                Guid entityTypeGuid = value.AsGuid();
+                if ( entityTypeGuid != Guid.Empty )
                 {
-
-                    var entityType = EntityTypeCache.Read( entityTypeId );
+                    var entityType = EntityTypeCache.Read( entityTypeGuid );
                     if ( entityType != null )
                     {
                         formattedValue = entityType.FriendlyName;
@@ -177,7 +176,7 @@ namespace Rock.Field.Types
             {
                 if ( control != null && control is ListControl )
                 {
-                    ( (ListControl)control ).SelectedValue = value;
+                    ( (ListControl)control ).SelectedValue = value.ToUpper();
                 }
             }
         }

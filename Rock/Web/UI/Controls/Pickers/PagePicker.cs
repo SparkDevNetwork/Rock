@@ -347,7 +347,7 @@ namespace Rock.Web.UI.Controls
             _hfPageRouteId.ID = string.Format( "hfPageRouteId_{0}", this.ID );
 
             _btnShowPageRoutePicker = new HyperLink();
-            _btnShowPageRoutePicker.CssClass = "btn btn-xs";
+            _btnShowPageRoutePicker.CssClass = "btn btn-xs btn-link";
             _btnShowPageRoutePicker.ID = string.Format( "btnShowPageRoutePicker_{0}", this.ID );
             _btnShowPageRoutePicker.Text = "Pick Route";
             _btnShowPageRoutePicker.Style[HtmlTextWriterStyle.Display] = "none";
@@ -410,17 +410,18 @@ namespace Rock.Web.UI.Controls
                     
                     _btnShowPageRoutePicker.RenderControl( writer );
 
+                    writer.Write("<div class='picker'>");
                     writer.Write( string.Format( @"<div id='page-route-picker_{0}' class='picker-menu picker dropdown-menu'>", this.ClientID ) );
+                    
 
                     _rblSelectPageRoute.RenderControl( writer );
-
-                    writer.Write( @"<hr />" );
 
                     writer.Write( @"<div class='picker-actions'>" );
 
                     _btnSelectPageRoute.RenderControl( writer );
                     writer.WriteLine();
                     _btnCancelPageRoute.RenderControl( writer );
+                    writer.Write("</div>");
                     writer.Write( @"</div>" );
                     writer.Write( @"</div>" );
                 }

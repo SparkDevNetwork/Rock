@@ -41,7 +41,6 @@ namespace Rock.Web.UI.Controls
 
         #region Constants
 
-        private const int ALL_ITEMS_SIZE = 1000000;
         private const string DEFAULT_EMPTY_DATA_TEXT = "No Results Found";
         private const string PAGE_SIZE_KEY = "grid-page-size-preference";
 
@@ -213,20 +212,6 @@ namespace Rock.Web.UI.Controls
                     this.AllowPaging = false;
                     this.AllowSorting = false;
                     this.Actions.ShowExcelExport = false;
-
-                    this.RemoveCssClass( "table-bordered" );
-                    this.RemoveCssClass( "table-striped" );
-                    this.RemoveCssClass( "table-hover" );
-                    this.AddCssClass( "table-condensed" );
-                    this.AddCssClass( "table-light" );
-                }
-                else
-                {
-                    this.RemoveCssClass( "table-condensed" );
-                    this.RemoveCssClass( "table-light" );
-                    this.AddCssClass( "table-bordered" );
-                    this.AddCssClass( "table-striped" );
-                    this.AddCssClass( "table-hover" );
                 }
             }
         }
@@ -427,7 +412,6 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public Grid()
         {
-            base.CssClass = "grid-table table";
             base.AutoGenerateColumns = false;
             base.RowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
             base.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
@@ -442,7 +426,7 @@ namespace Rock.Web.UI.Controls
 
             base.AllowPaging = true;
 
-            base.PageSize = 25;
+            base.PageSize = 50;
             base.PageIndex = 0;
 
             _gridActions = new GridActions( this );
@@ -475,11 +459,13 @@ namespace Rock.Web.UI.Controls
             var rockPage = this.Page as RockPage;
             if ( rockPage != null )
             {
-                int pageSize = 25;
-                if ( !int.TryParse( rockPage.GetUserPreference( PAGE_SIZE_KEY ), out pageSize ) )
+                int pageSize = 50;
+                int.TryParse( rockPage.GetUserPreference( PAGE_SIZE_KEY ), out pageSize );
+                if (pageSize != 50 || pageSize != 500 || pageSize != 5000)
                 {
-                    pageSize = 25;
+                    pageSize = 50;
                 }
+
                 base.PageSize = pageSize;
             }
 
@@ -586,6 +572,30 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        public override void RenderControl( HtmlTextWriter writer )
+        {
+            this.AddCssClass( "grid-table" );
+            this.AddCssClass( "table" );
+
+            if ( DisplayType == GridDisplayType.Light )
+            {
+                this.RemoveCssClass( "table-bordered" );
+                this.RemoveCssClass( "table-striped" );
+                this.RemoveCssClass( "table-hover" );
+                this.AddCssClass( "table-condensed" );
+                this.AddCssClass( "table-light" );
+            }
+            else
+            {
+                this.RemoveCssClass( "table-condensed" );
+                this.RemoveCssClass( "table-light" );
+                this.AddCssClass( "table-bordered" );
+                this.AddCssClass( "table-striped" );
+                this.AddCssClass( "table-hover" );
+            }
+
+            base.RenderControl( writer );
+        }
         /// <summary>
         /// TODO: Added this override to prevent the default behavior of rending a grid with a table inside
         /// and div element.  The div may be needed for paging when grid is not used in an update panel
@@ -1761,8 +1771,6 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     internal class PagerTemplate : ITemplate, IDisposable
     {
-        const int ALL_ITEMS_SIZE = 1000000;
-
         //Literal lStatus;
         private bool IsDisposed;
         HtmlGenericControl NavigationPanel;
@@ -1772,8 +1780,8 @@ namespace Rock.Web.UI.Controls
 
         Literal itemCountDisplay;
 
-        HtmlGenericContainer[] ItemLinkListItem = new HtmlGenericContainer[4];
-        LinkButton[] ItemLink = new LinkButton[4];
+        HtmlGenericContainer[] ItemLinkListItem = new HtmlGenericContainer[3];
+        LinkButton[] ItemLink = new LinkButton[3];
 
         public PagerTemplate()
         {
@@ -1801,10 +1809,9 @@ namespace Rock.Web.UI.Controls
                 ItemLink[i].Click += new EventHandler( lbItems_Click );
             }
 
-            ItemLink[0].Text = "25";
-            ItemLink[1].Text = "100";
-            ItemLink[2].Text = "1,000";
-            ItemLink[3].Text = "All";
+            ItemLink[0].Text = "50";
+            ItemLink[1].Text = "500";
+            ItemLink[2].Text = "5,000";
 
             // itemCount
             HtmlGenericControl divItemCount = new HtmlGenericControl( "div" );
@@ -1919,7 +1926,7 @@ namespace Rock.Web.UI.Controls
             // Set page size controls
             if ( ItemLinkListItem[0] != null )
             {
-                string pageSizeValue = pageSize == ALL_ITEMS_SIZE ? "All" : pageSize.ToString( "N0" );
+                string pageSizeValue = pageSize.ToString( "N0" );
                 for ( int i = 0; i < ItemLinkListItem.Length; i++ )
                 {
                     ItemLinkListItem[i].Attributes["class"] = ItemLink[i].Text == pageSizeValue ? "active" : "";
@@ -1959,18 +1966,18 @@ namespace Rock.Web.UI.Controls
             LinkButton lbItems = sender as LinkButton;
             if ( lbItems != null && ItemsPerPageClick != null )
             {
-                int itemsPerPage = ALL_ITEMS_SIZE;
+                int itemsPerPage = 50;
 
                 switch ( lbItems.Text )
                 {
-                    case "25":
-                        itemsPerPage = 25;
+                    case "50":
+                        itemsPerPage = 50;
                         break;
-                    case "100":
-                        itemsPerPage = 100;
+                    case "500":
+                        itemsPerPage = 500;
                         break;
-                    case "1,000":
-                        itemsPerPage = 1000;
+                    case "5,000":
+                        itemsPerPage = 5000;
                         break;
                 }
 

@@ -121,5 +121,15 @@ namespace Rock.Communication.Transport
             }
         }
 
+        /// <summary>
+        /// Sends the specified template.
+        /// </summary>
+        /// <param name="template">The template.</param>
+        /// <param name="recipients">The recipients.</param>
+        public override void Send( EmailTemplate template, Dictionary<string, Dictionary<string, object>> recipients )
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

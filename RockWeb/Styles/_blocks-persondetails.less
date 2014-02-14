@@ -19,6 +19,10 @@
 
 .personprofile { // offset pageheader margin
     margin-top: -@spacing-md-px;
+
+    small { // lighten up small elements a bit 
+        color: lighten(@text-color, 30%);
+    }
 }
 
 // 2. Header
@@ -81,7 +85,7 @@
 .personprofilebar-badge
 {
     background-color: @accent-color;
-    min-height: 50px;
+    min-height: 67px;
     border-bottom: 1px solid darken(@accent-color, @const-border-darken-amt);
 
     .badge-group {
@@ -94,30 +98,140 @@
     }
 }
 
-ul.badge-attendance-chart { //http://codepen.io/Victa/pen/xDqbf
-    display: table;
-    table-layout: fixed;
-    width: 100%;
-    height: 37px;
-    margin: 0 auto;
+.badge-baptism {
+    color: #23a5c5;
+}
 
-    li {
-        position: relative;
-        display: table-cell;
-        vertical-align: bottom;
-        height: 37px;
+.badge-icon {
+
+    font-size: 45px;
+
+    &.badge-disabled {
+        opacity: 0.3;
+    }
+}
+
+
+
+.badge-attendance {
+    ul.badge-attendance-chart { //http://codepen.io/Victa/pen/xDqbf
+        display: table;
+        table-layout: fixed;
+        width: 100%;
+        height: 40px;
+        margin: 0 auto;
+
+        li {
+            position: relative;
+            display: table-cell;
+            vertical-align: bottom;
+            height: 40px;
         
-        span {
-            margin: 0 1px;
-            display: block;
-            background: @accent-bold-color;
-            position: absolute;
-            bottom: 0;
-            width: 90%;
+            span {
+                margin: 0 1px;
+                display: block;
+                background: @accent-bold-color;
+                position: absolute;
+                bottom: 0;
+                width: 90%;
+            }
+        }
+    }
+
+    &.annimate {
+        ul.badge-attendance-chart li span {
             -webkit-animation: bar-grow 1s ease-in-out;
             -moz-animation: bar-grow 1s ease-in-out;
             -o-animation: bar-grow 1s ease-in-out;
             animation: bar-grow 1s ease-in-out;
+        }
+    }
+}
+
+.badge-ingroupoftype {
+    width: 45px;
+}
+
+.badge-attendingduration {
+    position: relative;
+    color: #686576;
+
+    .duration-metric {
+        &:before {
+            font-family: FontAwesome;
+            content: @fa-var-circle;
+            color: #d0db25;
+            font-size: 45px;
+        }
+
+        &.duration-months:before {
+            color: #49b039;
+        }
+
+        &.duration-years:before {
+            color: #3971b0;
+        }
+
+        &.duration-new:before {
+            color: #db2525;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            position: absolute;
+            left: 11px;
+            top: 14px;
+            font-weight: @font-weight-bold;
+            color: #fff;
+            line-height: 12px;
+            width: 30px;
+            text-align: center;
+        }
+
+        .metric-unit {
+            font-size: 11px;
+            font-weight: normal;
+            display: block;
+        }
+
+        &.duration-new .metric-value {
+            font-size: 14px;
+            font-weight: @font-weight-semibold;
+            top: 18px;
+        }
+    }
+}
+
+.badge-weeksattendanceduration {
+    .weeks-metric {
+
+        position: relative;
+        color: #686576;
+
+        &:before {
+            font-family: FontAwesome;
+            content: @fa-var-square;
+            color: @brand-warning;
+            font-size: 45px;
+        }
+
+        .weeks-attended {
+            position: absolute;
+            top: 7px;
+            left: 3px;
+            font-weight: @font-weight-bold;
+            font-size: 20px;
+            letter-spacing: -2px;
+            display: block;
+            width: 18px;
+            text-align: center;
+        }
+        .week-duration {
+            position: absolute;
+            bottom: 10px;
+            right: 4px;
+            font-weight: @font-weight-semibold;
+            font-size: 11px;
         }
     }
 }
@@ -293,7 +407,7 @@ span.field-value {
 // -------------------------
 
 /* Small devices (tablets, 768px and up) */
-@media (min-width: @screen-sm-min) {
+@media (min-width: @screen-sm-min), print {
     
     // bio bar
     .personprofilebar-bio {

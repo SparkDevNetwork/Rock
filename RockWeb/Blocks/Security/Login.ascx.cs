@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -22,6 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Communication;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
@@ -35,8 +37,12 @@ namespace RockWeb.Blocks.Security
     [Category( "Security" )]
     [Description( "Prompts user for login credentials." )]
 
-    [LinkedPage( "New Account Page", "Page to navigate to when user selects 'Create New Account' (if blank will use 'NewAccountPage' page route)" )]
-    [LinkedPage( "Help Page", "Page to navigate to when user selects 'Help' option (if blank will use 'ForgotUserName' page route)" )]
+    [LinkedPage( "New Account Page", "Page to navigate to when user selects 'Create New Account' (if blank will use 'NewAccountPage' page route)", true, "", "", 0 )]
+    [LinkedPage( "Help Page", "Page to navigate to when user selects 'Help' option (if blank will use 'ForgotUserName' page route)", true, "", "", 1 )]
+    [TextField( "Confirm Caption", "", false, "Thank-you for logging in, however, we need to confirm the email associated with this account belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.", "", 2 )]
+    [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", true, "", "", 3 )]
+    [EmailTemplateField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.EmailTemplate.SECURITY_CONFIRM_ACCOUNT, "", 4 )]
+    [TextField( "Locked Out Caption", "", false, "Sorry, your account has temporarily been locked.  Please contact our office get it reactivated.", "", 5 )]
     public partial class Login : Rock.Web.UI.RockBlock
     {
 
@@ -118,8 +124,6 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnLogin_Click( object sender, EventArgs e )
         {
-            bool valid = false;
-
             if ( Page.IsValid )
             {
                 var userLoginService = new UserLoginService();
@@ -133,29 +137,48 @@ namespace RockWeb.Blocks.Security
                     {
                         if ( component.Authenticate( userLogin, tbPassword.Text ) )
                         {
-                            valid = true;
-                            string returnUrl = Request.QueryString["returnurl"];
-                            LoginUser( tbUserName.Text, returnUrl, cbRememberMe.Checked );
+                            if ( userLogin.IsLockedOut ?? false )
+                            {
+                                phLogin.Visible = false;
+                                lLockedOutCaption.Text = GetAttributeValue( "LockedOutCaption" );
+                                phLockedOut.Visible = true;
+                            }
+                            else
+                            {
+                                if ( userLogin.IsConfirmed ?? true )
+                                {
+                                    string returnUrl = Request.QueryString["returnurl"];
+                                    LoginUser( tbUserName.Text, returnUrl, cbRememberMe.Checked );
+                                }
+                                else
+                                {
+                                    SendConfirmation( userLogin );
+                                    lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" );
+                                    phLogin.Visible = false;
+                                    phConfirmation.Visible = true;
+
+                                }
+                            }
+
+                            return;
+
                         }
                     }
                 }
             }
 
-            if ( !valid )
-            {
-                string helpUrl = string.Empty;
+            string helpUrl = string.Empty;
 
-                if (!string.IsNullOrWhiteSpace(GetAttributeValue("HelpPage")))
-                {
-                    helpUrl = LinkedPageUrl("HelpPage");
-                }
-                else
-                {
-                    helpUrl = ResolveRockUrl("~/ForgotUserName");
-                }
-                
-                DisplayError( String.Format("Sorry, we couldn't find an account matching that username/password. Can we help you <a href='{0}'>recover your accout information</a>?", helpUrl) );
+            if (!string.IsNullOrWhiteSpace(GetAttributeValue("HelpPage")))
+            {
+                helpUrl = LinkedPageUrl("HelpPage");
             }
+            else
+            {
+                helpUrl = ResolveRockUrl("~/ForgotUserName");
+            }
+                
+            DisplayError( String.Format("Sorry, we couldn't find an account matching that username/password. Can we help you <a href='{0}'>recover your accout information</a>?", helpUrl) );
         }
 
         /// <summary>
@@ -195,13 +218,28 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnNewAccount_Click( object sender, EventArgs e )
         {
+            string returnUrl = Request.QueryString["returnurl"];
+
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "NewAccountPage" ) ) )
             {
-                NavigateToLinkedPage( "NewAccountPage" );
+                var parms = new Dictionary<string, string>();
+                
+                if ( !string.IsNullOrWhiteSpace( returnUrl ) )
+                {
+                    parms.Add( "returnurl", returnUrl );
+                }
+
+                NavigateToLinkedPage( "NewAccountPage", parms );
             }
             else
             {
-                Response.Redirect( "~/NewAccount", false );
+                string url = "~/NewAccount";
+
+                if ( !string.IsNullOrWhiteSpace( returnUrl ) )
+                {
+                    url += "?returnurl=" + returnUrl;
+                } 
+                Response.Redirect( url, false );
                 Context.ApplicationInstance.CompleteRequest();
             }
         }
@@ -260,6 +298,27 @@ namespace RockWeb.Blocks.Security
             {
                 RockPage.Layout.Site.RedirectToDefaultPage();
             }
+        }
+
+        private void SendConfirmation(UserLogin userLogin)
+        {
+            string url = LinkedPageUrl( "ConfirmationPage" );
+            if ( string.IsNullOrWhiteSpace( url ) )
+            {
+                url = ResolveRockUrl( "~/ConfirmAccount" );
+            }
+            var mergeObjects = new Dictionary<string, object>();
+            mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
+
+            var personDictionary = userLogin.Person.ToDictionary();
+            mergeObjects.Add( "Person", personDictionary );
+
+            mergeObjects.Add( "User", userLogin.ToDictionary() );
+
+            var recipients = new Dictionary<string, Dictionary<string, object>>();
+            recipients.Add( userLogin.Person.Email, mergeObjects );
+
+            Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients );
         }
 
         #endregion

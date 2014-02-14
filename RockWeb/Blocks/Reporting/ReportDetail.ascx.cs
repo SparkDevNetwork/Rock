@@ -538,12 +538,15 @@ namespace RockWeb.Blocks.Reporting
                 // Add DataSelect MEF Components that apply to this EntityType
                 foreach ( var component in DataSelectContainer.GetComponentsBySelectedEntityTypeName( entityType.FullName ).OrderBy( c => c.Order ).ThenBy( c => c.GetTitle( entityType ) ) )
                 {
-                    var selectEntityType = EntityTypeCache.Read( component.TypeName );
-                    var listItem = new ListItem();
-                    listItem.Text = component.GetTitle( selectEntityType.GetEntityType() );
-                    listItem.Value = string.Format( "{0}|{1}", ReportFieldType.DataSelectComponent, component.TypeId );
-                    listItem.Attributes["optiongroup"] = component.Section;
-                    ddlFields.Items.Add( listItem );
+                    if ( component.IsAuthorized( "View", this.RockPage.CurrentPerson ) )
+                    {
+                        var selectEntityType = EntityTypeCache.Read( component.TypeName );
+                        var listItem = new ListItem();
+                        listItem.Text = component.GetTitle( selectEntityType.GetEntityType() );
+                        listItem.Value = string.Format( "{0}|{1}", ReportFieldType.DataSelectComponent, component.TypeId );
+                        listItem.Attributes["optiongroup"] = component.Section;
+                        ddlFields.Items.Add( listItem );
+                    }
                 }
 
                 ddlFields.Items.Insert( 0, new ListItem( string.Empty, "0" ) );
@@ -606,10 +609,13 @@ namespace RockWeb.Blocks.Reporting
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !report.IsAuthorized( "Edit", CurrentPerson ) )
+            
+            string authorizationMessage;
+            
+            if (!this.IsAuthorizedForAllReportComponents( "Edit", report, out authorizationMessage ))
             {
+                nbEditModeMessage.Text = authorizationMessage;
                 readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Report.FriendlyTypeName );
             }
 
             if ( report.IsSystem )
@@ -642,6 +648,79 @@ namespace RockWeb.Blocks.Reporting
                     ShowEditDetails( report );
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether [is authorized for all report components] [the specified report].
+        /// </summary>
+        /// <param name="reportAction">The report action.</param>
+        /// <param name="report">The report.</param>
+        /// <param name="authorizationMessage">The authorization message.</param>
+        /// <returns></returns>
+        private bool IsAuthorizedForAllReportComponents( string reportAction, Report report, out string authorizationMessage )
+        {
+            bool isAuthorized = true;
+            authorizationMessage = string.Empty;
+
+            if ( !report.IsAuthorized( reportAction, CurrentPerson ) )
+            {
+                isAuthorized = false;
+                authorizationMessage = EditModeMessage.ReadOnlyEditActionNotAllowed( Report.FriendlyTypeName );
+            }
+
+            if ( report.ReportFields != null )
+            {
+                foreach ( var reportField in report.ReportFields )
+                {
+                    if ( reportField.ReportFieldType == ReportFieldType.DataSelectComponent )
+                    {
+                        string dataSelectComponentTypeName = EntityTypeCache.Read( reportField.DataSelectComponentEntityTypeId ?? 0 ).GetEntityType().FullName;
+                        var dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );
+                        if ( dataSelectComponent != null )
+                        {
+                            if ( !dataSelectComponent.IsAuthorized( "View", this.CurrentPerson ) )
+                            {
+                                isAuthorized = false;
+                                authorizationMessage = "INFO: This Reports contains a data selection component that you do not have access to view.";
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if ( report.DataView != null )
+            {
+                if ( !report.DataView.IsAuthorized( "View", this.CurrentPerson ) )
+                {
+                    isAuthorized = false;
+                    authorizationMessage = "INFO: This Reports uses a data view that you do not have access to view.";
+                }
+                else
+                {
+                    if ( report.DataView.DataViewFilter != null && !report.DataView.DataViewFilter.IsAuthorized( "View", CurrentPerson ) )
+                    {
+                        isAuthorized = false;
+                        authorizationMessage = "INFO: The Data View for this report contains a filter that you do not have access to view.";
+                    }
+
+                    if ( report.DataView.TransformEntityTypeId != null )
+                    {
+                        string dataTransformationComponentTypeName = EntityTypeCache.Read( report.DataView.TransformEntityTypeId ?? 0 ).GetEntityType().FullName;
+                        var dataTransformationComponent = Rock.Reporting.DataTransformContainer.GetComponent( dataTransformationComponentTypeName );
+                        if ( dataTransformationComponent != null )
+                        {
+                            if ( !dataTransformationComponent.IsAuthorized( "View", this.CurrentPerson ) )
+                            {
+                                isAuthorized = false;
+                                authorizationMessage = "INFO: The Data View for this report contains a data transformation that you do not have access to view.";
+                            }
+                        }
+                    }
+                }
+            }
+
+            return isAuthorized;
         }
 
         /// <summary>
@@ -728,6 +807,13 @@ namespace RockWeb.Blocks.Reporting
 
                 if ( !report.EntityTypeId.HasValue )
                 {
+                    return;
+                }
+
+                string authorizationMessage;
+                if (!this.IsAuthorizedForAllReportComponents( "View", report, out authorizationMessage ))
+                {
+                    nbEditModeMessage.Text = authorizationMessage;
                     return;
                 }
 

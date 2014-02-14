@@ -81,7 +81,7 @@ namespace RockWeb.Blocks.Cms
             List<Control> configControls = new List<Control>();
 
             // add edit icon to config controls if user has edit permission
-            if ( canConfig || canEdit )
+            if ( canEdit )
             {
                 LinkButton lbEdit = new LinkButton();
                 lbEdit.CssClass = "edit";

@@ -110,12 +110,10 @@ namespace RockWeb.Blocks.Groups
                                     // If person has not registered or confirmed their registration
                                     if ( member == null || member.GroupMemberStatus != GroupMemberStatus.Active )
                                     {
-                                        Email email = null;
-
-                                        Guid guid = Guid.Empty;
-                                        if ( Guid.TryParse( GetAttributeValue( "ConfirmationEmail" ), out guid ) )
+                                        Guid confirmationEmailTemplateGuid = Guid.Empty;
+                                        if ( !Guid.TryParse( GetAttributeValue( "ConfirmationEmail" ), out confirmationEmailTemplateGuid ) )
                                         {
-                                            email = new Email( guid );
+                                            confirmationEmailTemplateGuid = Guid.Empty;
                                         }
 
                                         if ( member == null )
@@ -126,7 +124,7 @@ namespace RockWeb.Blocks.Groups
                                             member.GroupRoleId = group.GroupType.DefaultGroupRoleId.Value;
 
                                             // If a confirmation email is configured, set status to Pending otherwise set it to active
-                                            member.GroupMemberStatus = email != null ? GroupMemberStatus.Pending : GroupMemberStatus.Active;
+                                            member.GroupMemberStatus = confirmationEmailTemplateGuid != Guid.Empty ? GroupMemberStatus.Pending : GroupMemberStatus.Active;
 
                                             groupMemberService.Add( member, CurrentPersonAlias );
                                             groupMemberService.Save( member, CurrentPersonAlias );
@@ -134,7 +132,7 @@ namespace RockWeb.Blocks.Groups
                                         }
 
                                         // Send the confirmation
-                                        if ( email != null )
+                                        if ( confirmationEmailTemplateGuid != Guid.Empty )
                                         {
                                             var mergeObjects = new Dictionary<string, object>();
                                             mergeObjects.Add( "Member", member );
@@ -146,7 +144,7 @@ namespace RockWeb.Blocks.Groups
 
                                             var recipients = new Dictionary<string, Dictionary<string, object>>();
                                             recipients.Add( person.Email, mergeObjects );
-                                            email.Send( recipients );
+                                            Email.Send( confirmationEmailTemplateGuid, recipients );
                                         }
 
                                         ShowSuccess( GetAttributeValue( "SuccessMessage" ) );

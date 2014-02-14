@@ -483,6 +483,68 @@ namespace Rock.Migrations
 
         #region Attribute Methods
 
+        public void UpdateBlockTypeAttribute( string blockTypeGuid, string fieldTypeGuid, string name, string key, string category, string description, int order, string defaultValue, string guid )
+        {
+            if ( !string.IsNullOrWhiteSpace( category ) )
+            {
+                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself. Sorry!" );
+            }
+
+            Sql( string.Format( @"
+                
+                DECLARE @BlockTypeId int
+                SET @BlockTypeId = (SELECT [Id] FROM [BlockType] WHERE [Guid] = '{0}')
+
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
+
+                DECLARE @EntityTypeId int                
+                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Block')
+
+                IF EXISTS (
+                    SELECT [Id] 
+                    FROM [Attribute] 
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'BlockTypeId'
+                    AND [EntityTypeQualifierValue] = CAST(@BlockTypeId as varchar)
+                    AND [Key] = '{2}' )
+                BEGIN
+                    UPDATE [Attribute] SET
+                        [Name] = '{3}',
+                        [Description] = '{4}',
+                        [Order] = {5},
+                        [DefaultValue] = '{6}',
+                        [Guid] = '{7}'
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'BlockTypeId'
+                    AND [EntityTypeQualifierValue] = CAST(@BlockTypeId as varchar)
+                    AND [Key] = '{2}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [Attribute] (
+                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                        [Key],[Name],[Description],
+                        [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                        [Guid])
+                    VALUES(
+                        1,@FieldTypeId, @EntityTypeId,'BlockTypeId',CAST(@BlockTypeId as varchar),
+                        '{2}','{3}','{4}',
+                        {5},0,'{6}',0,0,
+                        '{7}')  
+                END
+",
+                    blockTypeGuid,
+                    fieldTypeGuid,
+                    key ?? name.Replace( " ", string.Empty ),
+                    name,
+                    description.Replace( "'", "''" ),
+                    order,
+                    defaultValue.Replace( "'", "''" ),
+                    guid )
+            );
+        }
+
         /// <summary>
         /// Adds the block attribute.
         /// </summary>
