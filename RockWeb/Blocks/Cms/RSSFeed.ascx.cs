@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Cms
     [CodeEditorField("Template", "The liquid template to use for rendering. This template should be in the theme's \"Assets/Liquid\" folder and should have an underscore prepended to the filename.", 
         CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, true, @"{% include 'RSSFeed' %}", "Layout")]
     [BooleanField("Enable Debug", "Flag indicating that the control should output the feed data that will be passed to Liquid for parsing.", false)]
+    [BooleanField("Include RSS Link", "Flag indicating that an RSS link should be included in the page header.", true, "Feed")]
     [LinkedPage("Detail Page")]
     public partial class RSSFeed : RockBlock
     {
@@ -62,7 +63,19 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
             BlockUpdated += RSSFeed_BlockUpdated;
-            AddConfigurationUpdateTrigger( upContent );    
+            AddConfigurationUpdateTrigger( upContent );
+
+            if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "CSSFile" ) ) )
+            {
+                RockPage.AddCSSLink( ResolveRockUrl( GetAttributeValue( "CSSFile" ) ) );
+            }
+
+            if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "RSSFeedUrl" ) ) && GetAttributeValue( "IncludeRSSLink" ).AsBoolean() )
+            {
+                string rssLink = string.Format( "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS\" href=\"{0}\" />", GetAttributeValue( "RSSFeedUrl" ) );
+
+                Page.Header.Controls.Add( new LiteralControl( rssLink ) );
+            }
         }
 
         protected override void OnLoad( EventArgs e )
