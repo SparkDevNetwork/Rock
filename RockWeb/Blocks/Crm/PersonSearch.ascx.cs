@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 using System.Text.RegularExpressions;
+using System.Data.Entity.SqlServer;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -145,6 +146,20 @@ namespace RockWeb.Blocks.Crm
                 {
                     Response.Redirect( string.Format( "~/Person/{0}", personList[0].Id ), false );
                     Context.ApplicationInstance.CompleteRequest();
+                }
+                else if ( personList.Count == 0 && type.ToLower() == "name" )
+                {
+                    // If no one was found and it was a search by name, try
+                    // the soundex function
+                    personList = new PersonService().GetByFullName( term, true, includeSoundsLike:true ).ToList();
+                    if ( personList.Count > 0 )
+                    {
+                        string altNames = string.Join( ", ", personList.Select( p => p.FullName ).Distinct() );
+                        nbNotice.Text = string.Format( "Did you mean: {0}", altNames );
+                        nbNotice.Visible = true;
+                        gPeople.DataSource = personList;
+                        gPeople.DataBind();
+                    }
                 }
                 else
                 {
