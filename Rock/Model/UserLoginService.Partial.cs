@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-
+using System.Web.Security;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -311,11 +311,19 @@ namespace Rock.Model
 
                     if ( user != null && userIsOnline )
                     {
-                        // Save last activity date
-                        var transaction = new Rock.Transactions.UserLastActivityTransaction();
-                        transaction.UserId = user.Id;
-                        transaction.LastActivityDate = RockDateTime.Now;
-                        Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                        if ( (user.IsConfirmed ?? true) && !(user.IsLockedOut ?? false) )
+                        {
+                            // Save last activity date
+                            var transaction = new Rock.Transactions.UserLastActivityTransaction();
+                            transaction.UserId = user.Id;
+                            transaction.LastActivityDate = RockDateTime.Now;
+                            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                        }
+                        else
+                        {
+                            FormsAuthentication.SignOut();
+                            return null;
+                        }
                     }
 
                     return user;

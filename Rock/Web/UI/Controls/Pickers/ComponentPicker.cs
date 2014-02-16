@@ -72,7 +72,7 @@ namespace Rock.Web.UI.Controls
                                         var entityType = EntityTypeCache.Read( component.Value.Value.GetType() );
                                         if ( entityType != null )
                                         {
-                                            this.Items.Add( new ListItem( component.Value.Key, entityType.Guid.ToString() ) );
+                                            this.Items.Add( new ListItem( component.Value.Key, entityType.Guid.ToString().ToUpper() ) );
                                         }
                                     }
                                 }

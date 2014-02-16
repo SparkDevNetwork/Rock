@@ -813,7 +813,7 @@ namespace Rock.Web.UI
         {
             List<Control> configControls = new List<Control>();
 
-            if ( canConfig || canEdit )
+            if ( canConfig )
             {
                 // Icon to display block properties
                 HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
@@ -828,10 +828,7 @@ namespace Rock.Web.UI
                 HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
                 aAttributes.Controls.Add( iAttributes );
                 iAttributes.Attributes.Add( "class", "fa fa-cog" );
-            }
 
-            if ( canConfig )
-            {
                 // Security
                 HtmlGenericControl aSecureBlock = new HtmlGenericControl( "a" );
                 aSecureBlock.ID = "aSecureBlock";
@@ -846,17 +843,21 @@ namespace Rock.Web.UI
                 aSecureBlock.Controls.Add( iSecureBlock );
                 iSecureBlock.Attributes.Add( "class", "fa fa-lock" );
 
-                // Move
-                HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );
-                aMoveBlock.Attributes.Add( "class", "block-move block-move" );
-                aMoveBlock.Attributes.Add( "href", _blockCache.Id.ToString() );
-                aMoveBlock.Attributes.Add( "zone", _blockCache.Zone );
-                aMoveBlock.Attributes.Add( "zoneloc", _blockCache.BlockLocation.ToString() );
-                aMoveBlock.Attributes.Add( "title", "Move Block" );
-                configControls.Add( aMoveBlock );
-                HtmlGenericControl iMoveBlock = new HtmlGenericControl( "i" );
-                aMoveBlock.Controls.Add( iMoveBlock );
-                iMoveBlock.Attributes.Add( "class", "fa fa-external-link" );
+                var pageCache = PageCache.Read( RockPage.PageId );
+                if ( pageCache.IsAuthorized( "Administrate", CurrentPerson ) )
+                {
+                    // Move
+                    HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );
+                    aMoveBlock.Attributes.Add( "class", "block-move block-move" );
+                    aMoveBlock.Attributes.Add( "href", _blockCache.Id.ToString() );
+                    aMoveBlock.Attributes.Add( "zone", _blockCache.Zone );
+                    aMoveBlock.Attributes.Add( "zoneloc", _blockCache.BlockLocation.ToString() );
+                    aMoveBlock.Attributes.Add( "title", "Move Block" );
+                    configControls.Add( aMoveBlock );
+                    HtmlGenericControl iMoveBlock = new HtmlGenericControl( "i" );
+                    aMoveBlock.Controls.Add( iMoveBlock );
+                    iMoveBlock.Attributes.Add( "class", "fa fa-external-link" );
+                }
 
                 // Delete
                 HtmlGenericControl aDeleteBlock = new HtmlGenericControl( "a" );

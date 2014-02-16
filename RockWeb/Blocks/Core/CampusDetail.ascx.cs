@@ -105,6 +105,8 @@ namespace RockWeb.Blocks.Core
                 campusService.Save( campus, CurrentPersonAlias );
             } );
 
+            Rock.Web.Cache.CampusCache.Flush( campus.Id );
+
             NavigateToParentPage();
         }
 

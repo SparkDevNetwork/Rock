@@ -592,9 +592,11 @@ namespace Rock.Web.UI.Controls
             }
             foreach ( var control in _phDefaultValue.Controls )
             {
-                if ( control is IRockControl )
+                var rockControl = control as IRockControl;
+                if ( rockControl != null )
                 {
-                    ( (IRockControl)control ).ValidationGroup = validationGroup;
+                    rockControl.Required = false;
+                    rockControl.ValidationGroup = validationGroup;
                 }
             }
             _btnSave.ValidationGroup = validationGroup;

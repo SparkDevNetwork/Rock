@@ -27,6 +27,19 @@ namespace Rock.Web.UI
     public class RockMasterPage : MasterPage
     {
         private PageCache _pageCache = null;
+        private bool _showTitle = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show page title].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show page title]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowPageTitle
+        {
+            get { return _showTitle; }
+            set { _showTitle = value; }
+        }
 
         /// <summary>
         /// Sets the page.

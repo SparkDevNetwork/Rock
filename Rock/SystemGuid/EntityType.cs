@@ -34,6 +34,6 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Gets the guid for the email communication channel
         /// </summary>
-        public const string COMMUNICATION_CHANNEL_EMAIL = "C07461E3-C1F1-4A2D-9A89-5E4835FBB1AC";
+        public const string COMMUNICATION_CHANNEL_EMAIL = "5A653EBE-6803-44B4-85D2-FB7B8146D55D";
     }
 }

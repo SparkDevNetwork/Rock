@@ -229,7 +229,7 @@ namespace RockWeb.Blocks.Finance
         /// Handles the Delete event of the rGridTransactions control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
         protected void rGridTransactions_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
             var financialTransactionService = new Rock.Model.FinancialTransactionService();

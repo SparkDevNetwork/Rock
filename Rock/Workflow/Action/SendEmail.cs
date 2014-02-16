@@ -21,9 +21,7 @@ using System.ComponentModel.Composition;
 
 using Rock.Attribute;
 using Rock.Communication;
-using Rock.Data;
 using Rock.Model;
-using Rock.Web.UI;
 
 namespace Rock.Workflow.Action
 {
@@ -59,8 +57,7 @@ namespace Rock.Workflow.Action
 
             recipients.Add( recipientEmail, mergeObjects );
 
-            Email email = new Email( new System.Guid( GetAttributeValue( action, "EmailTemplate" ) ) );
-            email.Send( recipients );
+            Email.Send( GetAttributeValue( action, "EmailTemplate" ).AsGuid(), recipients );
 
             action.AddLogEntry( string.Format( "Email sent to '{0}'", recipientEmail ) );
             

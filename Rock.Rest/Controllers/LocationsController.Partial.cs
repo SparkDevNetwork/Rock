@@ -128,7 +128,7 @@ namespace Rock.Rest.Controllers
             }
 
             // limit to only Named Locations (don't show home addresses, etc)
-            qry = qry.Where( a => a.IsNamedLocation );
+            qry = qry.Where( a => a.Name != null && a.Name != string.Empty );
 
             List<Location> locationList = new List<Location>();
             List<TreeViewItem> locationNameList = new List<TreeViewItem>();

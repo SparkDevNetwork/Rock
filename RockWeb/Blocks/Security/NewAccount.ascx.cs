@@ -405,8 +405,7 @@ namespace RockWeb.Blocks.Security
                     var recipients = new Dictionary<string, Dictionary<string, object>>();
                     recipients.Add( person.Email, mergeObjects );
 
-                    Email email = new Email( GetAttributeValue( "ForgotUsernameTemplate" ) );
-                    email.Send( recipients );
+                    Email.Send( GetAttributeValue( "ForgotUsernameTemplate" ).AsGuid(), recipients );
                 }
                 else
                     ShowErrorMessage( "Invalid Person" );
@@ -440,8 +439,7 @@ namespace RockWeb.Blocks.Security
                 var recipients = new Dictionary<string, Dictionary<string, object>>();
                 recipients.Add( person.Email, mergeObjects );
 
-                Email email = new Email( GetAttributeValue( "ConfirmAccountTemplate" ) );
-                email.Send( recipients );
+                Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients );
 
                 ShowPanel( 4 );
             }
@@ -479,8 +477,7 @@ namespace RockWeb.Blocks.Security
                         var recipients = new Dictionary<string, Dictionary<string, object>>();
                         recipients.Add( person.Email, mergeObjects );
 
-                        Email email = new Email( GetAttributeValue( "AccountCreatedTemplate" ) );
-                        email.Send( recipients );
+                        Email.Send( GetAttributeValue( "AccountCreatedTemplate" ).AsGuid(), recipients );
                     }
                     catch(SystemException ex)
                     {

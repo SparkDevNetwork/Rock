@@ -204,9 +204,6 @@ namespace RockWeb.Blocks.Finance
                 var startDate = Convert.ToDateTime( e.Row.DataItem.GetPropertyValue( "BatchStartDateTime" ) ).ToShortDateString();
                 e.Row.Cells[1].Text = startDate;
 
-                var controlAmount = string.Format( "{0:C}", e.Row.DataItem.GetPropertyValue( "ControlAmount" ) );
-                e.Row.Cells[3].Text = controlAmount;
-
                 Literal transactionTotal = e.Row.FindControl( "TransactionTotal" ) as Literal;
                 if ( transactionTotal != null )
                 {
@@ -241,13 +238,13 @@ namespace RockWeb.Blocks.Finance
                     switch ( status.ToUpper() )
                     {
                         case "CLOSED":
-                            e.Row.Cells[8].Text = "<span class='label label-success'>Closed</span>";
+                            e.Row.Cells[7].Text = "<span class='label label-success'>Closed</span>";
                             break;
                         case "OPEN":
-                            e.Row.Cells[8].Text = "<span class='label label-warning'>Open</span>";
+                            e.Row.Cells[7].Text = "<span class='label label-warning'>Open</span>";
                             break;
                         case "PENDING":
-                            e.Row.Cells[8].Text = "<span class='label label-default'>Pending</span>";
+                            e.Row.Cells[7].Text = "<span class='label label-default'>Pending</span>";
                             break;
                     }
                 }
