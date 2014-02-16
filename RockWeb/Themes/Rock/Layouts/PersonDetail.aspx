@@ -1,52 +1,29 @@
-﻿<%@ Page ValidateRequest="false" Language="C#" MasterPageFile="Site.Master" Trace="false"
+﻿<%@ Page ValidateRequest="false" Language="C#" MasterPageFile="Site.Master" 
     AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
+
+<%@ MasterType TypeName="Rock.Web.UI.RockMasterPage" %>
+
+<script runat="server">
+
+    protected override void OnLoad( EventArgs e )
+    {
+        base.OnLoad( e );
+        Master.ShowPageTitle = false;
+    }
+    
+</script>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
 
-    <!-- Page Header -->
-    <header class="pagerheader">
-        <div class="container">
-            
-                <!-- Brand Bar -->
-			    <div class="navbar-header">
-                    <asp:HyperLink ID="hlHome" runat="server" CssClass="navbar-brand" NavigateUrl="~" ToolTip="Rock">
-                        <asp:Image ID="imgLogo" runat="server" AlternateText="Rock" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="brandbar-logo" />
-                    </asp:HyperLink>
-                    
-                    <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".pagenav">
-                        <i class="fa fa-bars fa-2x"></i>
-                    </button>
-			    </div>	
-
-                <div class="pull-right header-zone">
-                    <Rock:Zone Name="Header" runat="server" />
-                </div>
-			
-				<Rock:SearchField ID="searchField" runat="server" />
-
-        </div>
-
-
-        <!-- Main Navigation -->
-	    <nav class="pagenav navbar-collapse collapse">
-            <div class="container">
-                <div class="">
-                    <Rock:Zone Name="Navigation" runat="server" />
-                </div>
-            </div>									
-	    </nav>
-
-    </header>
-
     <div class="personprofile">
 
-        <div class="navbar navbar-static-top personprofilebar-bio">
+        <div class="personprofilebar-bio">
             <div class="container">
                 <Rock:Zone Name="Individual Detail" runat="server" />
             </div>
         </div>
 
-        <div class="navbar navbar-static-top personprofilebar-badge">
+        <div class="personprofilebar-badge">
             <div class="container">
                 <div class="row">
                     <div class="badge-group col-sm-4">
@@ -62,7 +39,7 @@
             </div>
         </div>
 
-        <div class="navbar navbar-static-top personprofilebar-family">
+        <div class="personprofilebar-family">
 			<div class="container">    
                 <Rock:Zone Name="Family Detail" runat="server" />
             </div>
@@ -116,15 +93,4 @@
 
 	</div>
 
-    <footer class="page-footer">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-12">
-                    <Rock:Zone Name="Footer" runat="server" />
-                </div>
-            </div>
-        </div>
-    </footer>
-
 </asp:Content>
-

@@ -45,7 +45,7 @@
                 
                         <div class="panel-body">   
                             <asp:PlaceHolder ID="phPills" runat="server" >
-                                <ul class="nav nav-pills remove-margin">
+                                <ul class="nav nav-pills">
                                     <li id="liNone" runat="server"><a href='#<%=divNonePaymentInfo.ClientID%>' data-toggle="pill">No Change</a></li>
                                     <li id="liCreditCard" runat="server"><a href='#<%=divCCPaymentInfo.ClientID%>' data-toggle="pill">New Credit Card</a></li>
                                     <li id="liACH" runat="server"><a href='#<%=divACHPaymentInfo.ClientID%>' data-toggle="pill">New Bank Account</a></li>

@@ -27,6 +27,20 @@
                 dropZone: $('#' + options.controlId).closest('.imageupload-dropzone'),
                 autoUpload: true,
                 submit: options.submitFunction,
+                start: function (e, data) {
+                    var $el = $('#' + options.controlId).closest('.imageupload-group');
+                    $el.find('.imageupload-dropzone').hide();
+                    $el.find('.js-upload-progress').show();
+                },
+                progressall: function (e, data) {
+                    var $el = $('#' + options.controlId).closest('.imageupload-group');
+                    // implement this to show progress percentage
+                },
+                stop: function (e) {
+                    var $el = $('#' + options.controlId).closest('.imageupload-group');
+                    $el.find('.js-upload-progress').hide();
+                    $el.find('.imageupload-dropzone').show();
+                },
                 done: function (e, data) {
                     var $el = $('#' + options.imgThumbnail);
                     $('#' + options.hfFileId).val(data.response().result.Id);

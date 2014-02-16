@@ -63,6 +63,16 @@ namespace RockWeb.Blocks.Core
 
         #endregion
 
+        #region Properties
+
+        protected int? LastAttributeEdited
+        {
+            get { return ViewState["LastAttributeValueEdited"] as int?; }
+            set { ViewState["LastAttributeValueEdited"] = value; }
+        }
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -133,12 +143,6 @@ namespace RockWeb.Blocks.Core
                 modalDetails.SaveClick += modalDetails_SaveClick;
                 modalDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValues.ClientID );
 
-                string editAttributeId = Request.Form[hfIdValues.UniqueID];
-                if ( Page.IsPostBack && editAttributeId != null && editAttributeId.Trim() != string.Empty )
-                {
-                    ShowEditValue( int.Parse( editAttributeId ), false );
-                }
-
                 if ( !_configuredType )
                 {
                     var entityTypeList = new EntityTypeService().GetEntities().ToList();
@@ -171,6 +175,11 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
+                if ( LastAttributeEdited.HasValue )
+                {
+                    ShowEditValue( LastAttributeEdited.Value, false );
+                }
+
                 if ( !string.IsNullOrWhiteSpace( hfIdValues.Value ) )
                 {
                     modalDetails.Show();
@@ -684,6 +693,7 @@ namespace RockWeb.Blocks.Core
                 SetValidationGroup( fsEditControl.Controls, modalDetails.ValidationGroup );
 
                 hfIdValues.Value = attribute.Id.ToString();
+                LastAttributeEdited = attribute.Id;
                 modalDetails.Show();
             }
         }

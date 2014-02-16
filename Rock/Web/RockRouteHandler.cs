@@ -135,11 +135,11 @@ namespace Rock.Web
                 theme = "Rock";
                 
                 // If not using the default layout, verify that Layout exists in the default theme directory
-                if ( layout != "Default" &&
+                if ( layout != "FullWidth" &&
                     !File.Exists( requestContext.HttpContext.Server.MapPath( string.Format( "~/Themes/Rock/Layouts/{0}.aspx", layout ) ) ) )
                 {
                     // If selected layout doesn't exist in the default theme, switch to the Default layout
-                    layout = "Default";
+                    layout = "FullWidth";
                 }
 
                 // Build the path to the aspx file to

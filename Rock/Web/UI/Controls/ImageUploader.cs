@@ -429,6 +429,11 @@ namespace Rock.Web.UI.Controls
 
             writer.RenderEndTag();
 
+            writer.Write( @"
+                <div class='js-upload-progress pull-left' style='display:none'>
+                    <i class='fa fa-spinner fa-3x fa-spin'></i>                    
+                </div>" );
+            
             writer.AddAttribute( "class", "imageupload-dropzone" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 

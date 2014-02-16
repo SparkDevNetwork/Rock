@@ -400,11 +400,7 @@ namespace RockWeb
                                     recipients.Add( emailAddress, mergeObjects );
                                 }
 
-                                if ( recipients.Count > 0 )
-                                {
-                                    Email email = new Email( Rock.SystemGuid.EmailTemplate.CONFIG_EXCEPTION_NOTIFICATION );
-                                    email.Send( recipients );
-                                }
+                                Email.Send( Rock.SystemGuid.EmailTemplate.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients );
                             }
                         }
 
