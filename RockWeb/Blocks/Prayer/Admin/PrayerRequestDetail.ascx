@@ -72,8 +72,8 @@
                 </div>
 
                 <div class="actions">
-                    <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="lbEdit_Click" />
-                    <asp:LinkButton ID="lbCancelView" runat="server" Text="Back" CssClass="btn btn-mini" CausesValidation="false" OnClick="lbCancel_Click" />
+                    <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-xs" OnClick="lbEdit_Click" />
+                    <asp:LinkButton ID="lbCancelView" runat="server" Text="Back" CssClass="btn btn-xs" CausesValidation="false" OnClick="lbCancel_Click" />
                 </div>
 
             </fieldset>

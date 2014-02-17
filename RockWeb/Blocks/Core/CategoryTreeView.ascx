@@ -14,7 +14,7 @@
             <div class="treeview-actions">
                
                 <div class="btn-group">
-                    <button type="button" class="btn btn-action btn-mini dropdown-toggle" data-toggle="dropdown">
+                    <button type="button" class="btn btn-action btn-xs dropdown-toggle" data-toggle="dropdown">
                         <i class="fa fa-plus-circle"></i> Add Category <span class="fa fa-caret-down"></span>
                     </button>
                     <ul class="dropdown-menu" role="menu">
@@ -23,7 +23,7 @@
                     </ul>
                 </div>
         
-                <asp:LinkButton ID="lbAddItem" runat="server" CssClass="add btn btn-mini btn-action" ToolTip="Add Group" CausesValidation="false" OnClick="lbAddItem_Click">
+                <asp:LinkButton ID="lbAddItem" runat="server" CssClass="add btn btn-xs btn-action" ToolTip="Add Group" CausesValidation="false" OnClick="lbAddItem_Click">
                         <i class="fa fa-plus-circle"></i> <asp:Literal ID="lAddItem" runat="server" Text="Add Group" />
                 </asp:LinkButton>
 

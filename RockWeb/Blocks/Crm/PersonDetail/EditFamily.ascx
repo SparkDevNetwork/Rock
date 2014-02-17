@@ -49,8 +49,8 @@
                                 </a>
                                 <asp:RadioButtonList ID="rblRole" runat="server" DataValueField="Id" DataTextField="Name" />
                                 
-                                <asp:LinkButton ID="lbNewFamily" runat="server" CssClass="btn btn-action btn-mini" CommandName="Move"><i class="fa fa-external-link"></i> Move to New Family</asp:LinkButton>
-                                <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-mini" CommandName="Remove"><i class="fa fa-times"></i> Remove from Family</asp:LinkButton>
+                                <asp:LinkButton ID="lbNewFamily" runat="server" CssClass="btn btn-action btn-xs" CommandName="Move"><i class="fa fa-external-link"></i> Move to New Family</asp:LinkButton>
+                                <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-xs" CommandName="Remove"><i class="fa fa-times"></i> Remove from Family</asp:LinkButton>
                             </li>
                         </ItemTemplate>
                     </asp:ListView>
