@@ -685,28 +685,24 @@ namespace Rock.Data
         /// <returns></returns>
         public IDataReader GetDataReader( string query, CommandType commandType, Dictionary<string, object> parameters )
         {
-            using ( SqlConnection con = new SqlConnection(GetConnectionString()) )
+            SqlConnection con = new SqlConnection( GetConnectionString() );
+            con.Open();
+
+            SqlCommand sqlCommand = new SqlCommand( query, con );
+            sqlCommand.CommandType = commandType;
+
+            if ( parameters != null )
             {
-                con.Open();
-
-                using ( SqlCommand sqlCommand = new SqlCommand( query, con ) )
+                foreach ( var parameter in parameters )
                 {
-                    sqlCommand.CommandType = commandType;
-
-                    if ( parameters != null )
-                    {
-                        foreach ( var parameter in parameters )
-                        {
-                            SqlParameter sqlParam = new SqlParameter();
-                            sqlParam.ParameterName = parameter.Key.StartsWith( "@" ) ? parameter.Key : "@" + parameter.Key;
-                            sqlParam.Value = parameter.Value;
-                            sqlCommand.Parameters.Add( sqlParam );
-                        }
-                    }
-
-                    return sqlCommand.ExecuteReader();
+                    SqlParameter sqlParam = new SqlParameter();
+                    sqlParam.ParameterName = parameter.Key.StartsWith( "@" ) ? parameter.Key : "@" + parameter.Key;
+                    sqlParam.Value = parameter.Value;
+                    sqlCommand.Parameters.Add( sqlParam );
                 }
             }
+
+            return sqlCommand.ExecuteReader( CommandBehavior.CloseConnection );
         }
 
         /// <summary>

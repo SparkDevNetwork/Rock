@@ -95,7 +95,11 @@ namespace Rock.Security.Authentication
         {
             HMACSHA1 hash = new HMACSHA1();
             hash.Key = encryptionKey;
-            return Convert.ToBase64String( hash.ComputeHash( Encoding.Unicode.GetBytes( password ) ) );
+
+            HMACSHA1 uniqueHash = new HMACSHA1();
+            uniqueHash.Key = HexToByte( user.Guid.ToString().Replace( "-", "" ) );
+
+            return Convert.ToBase64String( uniqueHash.ComputeHash( hash.ComputeHash( Encoding.Unicode.GetBytes( password ) ) ) );
         }
 
         private static byte[] HexToByte( string hexString )

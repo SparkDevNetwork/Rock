@@ -536,6 +536,10 @@
     <Compile Include="Migrations\201402161608415_AddMembershipDate.Designer.cs">
       <DependentUpon>201402161608415_AddMembershipDate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402171545526_UniquePasswordHash.cs" />
+    <Compile Include="Migrations\201402171545526_UniquePasswordHash.Designer.cs">
+      <DependentUpon>201402171545526_UniquePasswordHash.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -917,6 +921,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402161608415_AddMembershipDate.resx">
       <DependentUpon>201402161608415_AddMembershipDate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402171545526_UniquePasswordHash.resx">
+      <DependentUpon>201402171545526_UniquePasswordHash.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
