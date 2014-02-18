@@ -121,6 +121,11 @@
                 $('.panel-widget .panel-heading').on('click', function (e, data) {
                     if ($(this).find('.fa-chevron-down').length) {
                         var title = $(this).closest('section').find('.js-column-header-textbox').val();
+                        
+                        // set hidden value of title
+                        $(this).find('.js-header-title-hidden').val(title);
+
+                        // set displayed text of title
                         $(this).find('.js-header-title').text(title);
                     }
                 })
