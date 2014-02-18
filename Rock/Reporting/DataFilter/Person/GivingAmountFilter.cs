@@ -240,7 +240,7 @@ function() {
                     new
                     {
                         PersonId = xx.Key,
-                        TotalAmount = xx.Sum( ss => ss.Amount )
+                        TotalAmount = xx.Sum( ss => ss.TotalAmount )
                     } );
 
             if ( comparisonType == ComparisonType.LessThan )

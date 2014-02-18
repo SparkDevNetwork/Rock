@@ -19,8 +19,8 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:DataTextBox ID="tbAmount" runat="server" PrependText="$" CssClass="input-width-md" Label="Amount" TabIndex="1"
-                            SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="Amount" />
+<%--                        <Rock:DataTextBox ID="tbAmount" runat="server" PrependText="$" CssClass="input-width-md" Label="Amount" TabIndex="1"
+                            SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="Amount" />--%>
                     </div>
                 </div>
 
@@ -78,8 +78,7 @@
                     <Rock:Grid ID="gTransactionDetails" runat="server" EmptyDataText="No Transactions Details Found" OnRowSelected="gTransactionDetails_RowSelected" AllowSorting="true">
                         <Columns>
                             <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
-                            <asp:BoundField DataField="TransactionId" HeaderText="Transaction Id" SortExpression="TransactionId" />                
-                            <asp:BoundField DataField="AccountId" HeaderText="AccountId" SortExpression="AccountId" />
+                            <asp:BoundField DataField="Account" HeaderText="Account" SortExpression="Account" />
                             <asp:BoundField DataField="Amount" HeaderText="Amount" SortExpression="Amount" />
                             <asp:BoundField DataField="Summary" HeaderText="Summary" SortExpression="Summary" />
                             <Rock:DeleteField OnClick="gTransactionDetails_Delete" Visible="false"/>
