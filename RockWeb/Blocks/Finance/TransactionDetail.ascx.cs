@@ -49,6 +49,10 @@ namespace RockWeb.Blocks.Finance
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            gTransactionDetails.Actions.AddClick += gTransactionDetails_Add;
+            mdDetails.SaveClick += mdDetails_SaveClick;
+            mdDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
+
         }
 
         /// <summary>
@@ -206,6 +210,16 @@ namespace RockWeb.Blocks.Finance
 
         protected void gTransactionDetails_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
+        }
+
+        void gTransactionDetails_Add( object sender, EventArgs e )
+        {
+            mdDetails.Show();
+        }
+
+        void mdDetails_SaveClick( object sender, EventArgs e )
+        {
+            mdDetails.Hide();
         }
 
         #endregion Events
