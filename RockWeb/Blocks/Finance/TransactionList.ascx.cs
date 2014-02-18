@@ -339,12 +339,12 @@ namespace RockWeb.Blocks.Finance
                 nre.DelimitedValues = gfTransactions.GetUserPreference( "Amount Range" );
                 if ( nre.LowerValue.HasValue )
                 {
-                    queryable = queryable.Where( t => t.Amount >= nre.LowerValue.Value );
+                    queryable = queryable.Where( t => t.TotalAmount >= nre.LowerValue.Value );
                 }
 
                 if ( nre.UpperValue.HasValue )
                 {
-                    queryable = queryable.Where( t => t.Amount <= nre.UpperValue.Value );
+                    queryable = queryable.Where( t => t.TotalAmount <= nre.UpperValue.Value );
                 }
 
                 // Transaction Code
@@ -414,14 +414,14 @@ namespace RockWeb.Blocks.Finance
             {
                 Dictionary<string, string> qryParams = new Dictionary<string, string>();
                 qryParams.Add( "financialBatchId", _batch.Id.ToString() );
-                qryParams.Add( "transactionid", id.ToString() );
+                qryParams.Add( "transactionId", id.ToString() );
                 NavigateToLinkedPage( "DetailPage", qryParams );
             }
             else if ( _person != null )
             {
                 Dictionary<string, string> qryParams = new Dictionary<string, string>();
                 qryParams.Add( "personId", _person.Id.ToString() );
-                qryParams.Add( "transactionid", id.ToString() );
+                qryParams.Add( "transactionId", id.ToString() );
                 NavigateToLinkedPage( "DetailPage", qryParams );
             }
             else

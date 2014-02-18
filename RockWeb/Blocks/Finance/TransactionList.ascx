@@ -23,7 +23,7 @@
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
                 <asp:BoundField DataField="TransactionDateTime" HeaderText="Date" SortExpression="TransactionDateTime" />                
-                <asp:BoundField DataField="Amount" HeaderText="Amount" DataFormatString="{0:C}" SortExpression="Amount" />
+                <asp:BoundField DataField="TotalAmount" HeaderText="Amount" DataFormatString="{0:C}" SortExpression="TotalAmount" />
                 <Rock:DefinedValueField DataField="TransactionTypeValueId" HeaderText="Transaction Type" SortExpression="TransactionTypeValue.Name" />
                 <Rock:DefinedValueField DataField="CurrencyTypeValueId" HeaderText="Currency Type" SortExpression="CurrencyTypeValue.Name" />
                 <Rock:DefinedValueField DataField="CreditCardTypeValueId" HeaderText="Credit Card Type" SortExpression="CreditCardTypeValue.Name" />

@@ -207,8 +207,8 @@ namespace RockWeb.Blocks.Finance
                 Literal transactionTotal = e.Row.FindControl( "TransactionTotal" ) as Literal;
                 if ( transactionTotal != null )
                 {
-                    var data = batch.Transactions.Where( d => d.Amount > 0 );
-                    var totalSum = data.Sum( d => d.Amount );
+                    var data = batch.Transactions.Where( d => d.TotalAmount > 0 );
+                    var totalSum = data.Sum( d => d.TotalAmount );
                     transactionTotal.Text = string.Format( "{0:C}", totalSum );
 
                     Label variance = e.Row.FindControl("lblVariance") as Label;
