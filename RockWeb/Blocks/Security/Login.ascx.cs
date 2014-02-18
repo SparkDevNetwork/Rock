@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -27,6 +28,7 @@ using Rock.Communication;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Security
 {
@@ -39,10 +41,14 @@ namespace RockWeb.Blocks.Security
 
     [LinkedPage( "New Account Page", "Page to navigate to when user selects 'Create New Account' (if blank will use 'NewAccountPage' page route)", true, "", "", 0 )]
     [LinkedPage( "Help Page", "Page to navigate to when user selects 'Help' option (if blank will use 'ForgotUserName' page route)", true, "", "", 1 )]
-    [TextField( "Confirm Caption", "", false, "Thank-you for logging in, however, we need to confirm the email associated with this account belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.", "", 2 )]
+    [CodeEditorField( "Confirm Caption", "The text (HTML) to display when a user's account needs to be confirmed.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, @"
+Thank-you for logging in, however, we need to confirm the email associated with this account belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.
+", "", 2 )]
     [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", true, "", "", 3 )]
     [EmailTemplateField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.EmailTemplate.SECURITY_CONFIRM_ACCOUNT, "", 4 )]
-    [TextField( "Locked Out Caption", "", false, "Sorry, your account has temporarily been locked.  Please contact our office get it reactivated.", "", 5 )]
+    [CodeEditorField( "Locked Out Caption", "The text (HTML) to display when a user's account has been locked.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, @"
+Sorry, your account has been locked.  Please contact our office at {{ GlobalAttribute.OrganizationPhone }} or email {{ GlobalAttribute.OrganizationEmail }} to resolve this.  Thank-you. 
+", "", 5 )]
     public partial class Login : Rock.Web.UI.RockBlock
     {
 
@@ -137,29 +143,33 @@ namespace RockWeb.Blocks.Security
                     {
                         if ( component.Authenticate( userLogin, tbPassword.Text ) )
                         {
-                            if ( userLogin.IsLockedOut ?? false )
+                            if ( ( userLogin.IsConfirmed ?? true ) && !(userLogin.IsLockedOut ?? false ) )
                             {
-                                pnlLogin.Visible = false;
-                                lLockedOutCaption.Text = GetAttributeValue( "LockedOutCaption" );
-                                pnlLockedOut.Visible = true;
+                                string returnUrl = Request.QueryString["returnurl"];
+                                LoginUser( tbUserName.Text, returnUrl, cbRememberMe.Checked );
                             }
                             else
-                            {
-                                if ( userLogin.IsConfirmed ?? true )
+                            { 
+                                var globalMergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields(null);
+
+                                if ( userLogin.IsLockedOut ?? false )
                                 {
-                                    string returnUrl = Request.QueryString["returnurl"];
-                                    LoginUser( tbUserName.Text, returnUrl, cbRememberMe.Checked );
+                                    lLockedOutCaption.Text = GetAttributeValue( "LockedOutCaption" ).ResolveMergeFields( globalMergeFields );
+
+                                    pnlLogin.Visible = false;
+                                    pnlLockedOut.Visible = true;
                                 }
                                 else
                                 {
                                     SendConfirmation( userLogin );
-                                    lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" );
+
+                                    lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" ).ResolveMergeFields( globalMergeFields );
+
                                     pnlLogin.Visible = false;
                                     pnlConfirmation.Visible = true;
 
                                 }
                             }
-
                             return;
 
                         }
