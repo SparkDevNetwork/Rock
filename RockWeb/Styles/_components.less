@@ -492,13 +492,21 @@ div.tagsinput input
     outline: 0px; 
     box-shadow: none;
     margin: -2px 0 0 10px;
+    border-radius: @border-radius-base;
+    padding: 2px;
+
+    &:hover,
+    &:focus {
+        background-color: rgba(0,0,0,.05);
+    }
+
+    div { 
+        display:block; 
+        float: left; 
+    }
 }
 
-div.tagsinput div 
-{ 
-    display:block; 
-    float: left; 
-}
+div.tagsinput 
 
 .tags_clear 
 { 
@@ -513,46 +521,47 @@ div.tagsinput div
     color: #90111A !important;
 }
 
-.tag-wrap .ui-autocomplete 
-{
-    position: absolute; 
-    left: 0px; 
-    top: 4px; 
-    width: 250px;
-    z-index: 90;
-    list-style: none;
-    padding: 12px;
-    background-color: #7c7c7c; /* todo */
-    color: #fff;
-    border: 1px solid #515151; /* todo */
-    width: 300px;
-    border-radius: 4px;
-    opacity: .9;
-    z-index: 9999 !important;
-}
+.tag-wrap {
 
-.ui-autocomplete li 
-{
-    margin-bottom: 4px;   
-}
+    .ui-autocomplete {
+        position: absolute;
+        left: 0px;
+        top: 4px;
+        z-index: 90;
+        list-style: none;
+        padding: 12px;
+        background-color: @accent-light-color;
+        border: 1px solid darken(@accent-light-color, 10%);
+        min-width: 200px;
+        border-radius: 0 0 @border-radius-base @border-radius-base;
+        z-index: 9999 !important;
+        -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+        -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+        box-shadow: 0 5px 10px rgba(0,0,0,.2);
 
-.ui-autocomplete li:last-child 
-{
-    margin-bottom: 0;   
-}
+        li {
+            margin-bottom: 4px; 
+            
+            &:last-child {
+                margin-bottom: 0; 
+            }
+            
+            a {
+                color:@accent-light-text-color;
+                text-decoration: none;
+                cursor: pointer;
+                padding: 4px;
+                display: block;
 
-.ui-autocomplete a
-{
-    color: #fff; /* todo */
-    text-decoration: none;
-    cursor: pointer;
-    padding: 4px;
-}
+                &:hover {
+                    background: darken(@accent-light-color, 5%);
+                    border-radius: 4px;
+                }
+            }  
+        }
 
-.ui-autocomplete a:hover
-{
-    background: #bbb; /* todo */
-    border-radius: 4px;
+
+    }
 }
 
 .tag-letterlist {
@@ -1392,17 +1401,13 @@ ul.rocklist {
 }
 
 .tt-dropdown-menu {
-  min-width: 160px;
+  min-width: 200px;
   margin-top: 2px;
-  padding: 5px 0;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border: 1px solid rgba(0,0,0,.2);
-  *border-right-width: 2px;
-  *border-bottom-width: 2px;
-  -webkit-border-radius: 4px;
-     -moz-border-radius: 4px;
-          border-radius: 4px;
+  padding: 12px;
+  background-color: @accent-light-color;
+  border: 1px solid darken(@accent-light-color, 10%);
+  border-radius: 0 0 @border-radius-base @border-radius-base;
+  color: @accent-light-text-color;
   -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
      -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
           box-shadow: 0 5px 10px rgba(0,0,0,.2);
@@ -1413,18 +1418,25 @@ ul.rocklist {
 
 .tt-suggestion {
   display: block;
-  padding: 3px 20px;
+
+  p {
+      padding: 4px;
+      border-radius: @border-radius-base;
+
+      &:hover {
+          background-color: darken(@accent-light-color, 5%);
+      }
+  }
 }
 
 .tt-suggestion.tt-is-under-cursor {
-  color: #fff;
-  background-color: #a4b4c4;
+  color: @accent-light-text-color;
   background-repeat: repeat-x;
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0088cc', endColorstr='#ff0077b3', GradientType=0)
 }
 
 .tt-suggestion.tt-is-under-cursor a {
-  color: #fff;
+  color: @accent-light-text-color;
 }
 
 .tt-suggestion p {

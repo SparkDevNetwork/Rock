@@ -49,6 +49,10 @@ namespace RockWeb.Blocks.Finance
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            gTransactionDetails.Actions.AddClick += gTransactionDetails_Add;
+            mdDetails.SaveClick += mdDetails_SaveClick;
+            mdDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
+
         }
 
         /// <summary>
@@ -202,11 +206,20 @@ namespace RockWeb.Blocks.Finance
 
         protected void gTransactionDetails_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-
         }
+
         protected void gTransactionDetails_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
+        }
 
+        void gTransactionDetails_Add( object sender, EventArgs e )
+        {
+            mdDetails.Show();
+        }
+
+        void mdDetails_SaveClick( object sender, EventArgs e )
+        {
+            mdDetails.Hide();
         }
 
         #endregion Events
@@ -284,6 +297,7 @@ namespace RockWeb.Blocks.Finance
             {
                 lTitle.Text = "Add Transaction".FormatAsHtmlTitle();
             }
+
             SetEditMode( true );
 
             if ( ddlCurrencyType != null && ddlCurrencyType.SelectedItem != null && ddlCurrencyType.SelectedItem.ToString() != "Credit Card" )
@@ -301,7 +315,7 @@ namespace RockWeb.Blocks.Finance
             lTitle.Text = "View Transaction".FormatAsHtmlTitle();
             SetEditMode( false );
 
-            string authorizedPerson = "";
+            string authorizedPerson = string.Empty;
             if ( transaction.AuthorizedPerson != null )
             {
                 authorizedPerson = transaction.AuthorizedPerson.FullName;
@@ -345,6 +359,7 @@ namespace RockWeb.Blocks.Finance
             {
                 transaction = new FinancialTransaction { Id = 0 };
             }
+
             hfIdTransValue.Value = transaction.Id.ToString();
             hfBatchId.Value = PageParameter( "financialBatchId" );
 
@@ -376,10 +391,19 @@ namespace RockWeb.Blocks.Finance
 
             lbSave.Visible = !readOnly;
 
-            // Load the TransactionDetails grid here
-            var financialTransactionDetails = new FinancialTransactionDetailService().Queryable().ToList();
-            gTransactionDetails.DataSource = financialTransactionDetails;
-            gTransactionDetails.DataBind();
+            // Load the TransactionDetails grid here if this transaction already exists.
+            if ( transaction.Id != 0 )
+            {
+                var financialTransactionDetails = new FinancialTransactionDetailService().Queryable().ToList();
+                gTransactionDetails.DataSource = financialTransactionDetails;
+                gTransactionDetails.DataBind();
+                gTransactionDetails.Actions.ShowAdd = true;
+                pnlTransactionDetails.Visible = true;
+            }
+            else
+            {
+                pnlTransactionDetails.Visible = false;
+            }
         }
 
         /// <summary>
@@ -394,5 +418,5 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion Internal Methods
-}
+    }
 }

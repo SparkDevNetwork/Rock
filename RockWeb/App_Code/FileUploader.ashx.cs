@@ -57,6 +57,8 @@ namespace RockWeb
                 HttpFileCollection hfc = context.Request.Files;
                 HttpPostedFile uploadedFile = hfc.AllKeys.Select( fk => hfc[fk] ).FirstOrDefault();
 
+                System.Threading.Thread.Sleep( 3000 );
+
                 // No file or no data?  No good.
                 if ( uploadedFile == null || uploadedFile.ContentLength == 0 )
                 {

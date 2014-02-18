@@ -129,27 +129,19 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         public int GetWeeksAttendedInDuration(int personId, int weekCount)
         {
-            int attendanceCount = -1;
-
             Service service = new Service();
 
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             parameters.Add("PersonId", personId);
             parameters.Add("WeekDuration", weekCount);
 
-            var results = service.GetDataSet("spCheckin_WeeksAttendedInDuration", System.Data.CommandType.StoredProcedure, parameters);
-
-            if (results.Tables.Count > 0)
+            var result = service.ExecuteScaler("spCheckin_WeeksAttendedInDuration", System.Data.CommandType.StoredProcedure, parameters);
+            if (result != null)
             {
-                
-                if ( results.Tables[0].Rows.Count > 0) {
-                    DataRow row = results.Tables[0].Rows[0];
-                    attendanceCount = Int32.Parse(row[0].ToString());
-                }
-                
+                return (int)result;
             }
 
-            return attendanceCount;
+            return -1;
         }
 
         /// <summary>
@@ -169,11 +161,11 @@ namespace Rock.Rest.Controllers
             parameters.Add("PersonId", personId);
             parameters.Add("MonthCount", monthCount);
 
-            var results = service.GetDataSet("spCheckin_BadgeAttendance", System.Data.CommandType.StoredProcedure, parameters);
+            var table = service.GetDataTable("spCheckin_BadgeAttendance", System.Data.CommandType.StoredProcedure, parameters);
 
-            if (results.Tables.Count > 0)
+            if (table != null)
             {
-                foreach (DataRow row in results.Tables[0].Rows)
+                foreach (DataRow row in table.Rows)
                 {
                     MonthlyAttendanceSummary item = new MonthlyAttendanceSummary();
                     item.AttendanceCount = Int32.Parse(row["AttendanceCount"].ToString());
