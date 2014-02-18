@@ -339,32 +339,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the blocked file types.
-        /// </summary>
-        /// <value>
-        /// The blocked file types.
-        /// </value>
-        public string BlockedFileTypes
-        {
-            get
-            {
-                string result = ViewState["BlockedFileTypes"] as string;
-                if ( string.IsNullOrWhiteSpace( result ) )
-                {
-                    // default to the ones we normally don't want to be uploaded
-                    result = "*.aspx;*.ashx;*.ascx;*.cs;*.vb;*.php;*.dll;*.exe";
-                }
-
-                return result;
-            }
-
-            set
-            {
-                ViewState["BlockedFileTypes"] = value;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the merge fields to make available.  This should include either a list of
         /// entity type names (full name), or other non-object string values
         /// </summary>
@@ -495,10 +469,9 @@ CKEDITOR.replace('{0}', {{
     rockFileBrowserOptions: {{ 
     documentFolderRoot: '{6}', 
     imageFolderRoot: '{7}',
-    imageFileFilter: '{8}',
-    blockedFileTypes: '{9}'
+    imageFileFilter: '{8}'
     }},
-    rockMergeFieldOptions: {{ mergeFields: '{10}' }},
+    rockMergeFieldOptions: {{ mergeFields: '{9}' }},
     on : {{
         change: function (e) {{
             // update the underlying TextElement on every little change (when in WYSIWIG mode) to ensure that Posting and Validation works consistently (doing it OnSubmit or OnBlur misses some cases)
@@ -535,10 +508,9 @@ CKEDITOR.replace('{0}', {{
 
             string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(),
                 this.Height, this.ResizeMaxWidth ?? 0, customOnChangeScript, enabledPlugins.AsDelimited( "," ),
-                Rock.Security.Encryption.EncryptString( this.DocumentFolderRoot ), // encrypt the folders and blockedfiletypes so the folder can only be configured on the server
+                Rock.Security.Encryption.EncryptString( this.DocumentFolderRoot ), // encrypt the folders so the folder can only be configured on the server
                 Rock.Security.Encryption.EncryptString( this.ImageFolderRoot ),
                 this.ImageFileFilter,
-                Rock.Security.Encryption.EncryptString( this.BlockedFileTypes ),
                 this.MergeFields.AsDelimited( "," ) );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckeditorInitScript, true );

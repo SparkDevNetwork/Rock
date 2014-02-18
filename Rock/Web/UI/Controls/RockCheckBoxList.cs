@@ -63,9 +63,9 @@ namespace Rock.Web.UI.Controls
         ]
         public string Help
         {
-            get
-            {
-                return HelpBlock != null ? HelpBlock.Text : string.Empty;
+            get 
+            { 
+                return HelpBlock != null ? HelpBlock.Text : string.Empty; 
             }
             set
             {
@@ -103,7 +103,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
+                return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty; 
             }
             set
             {
@@ -193,19 +193,14 @@ namespace Rock.Web.UI.Controls
         {
             base.OnLoad( e );
 
-            // Hack to get the selected items on postback. do we still need this???
-            /*
+            // Hack to get the selected items on postback.  
             if ( Page.IsPostBack )
             {
                 for ( int i = 0; i < this.Items.Count; i++ )
                 {
-                    if ( this.Page.Request.Form[string.Format( "{0}${1}", this.UniqueID, i )] != null )
-                    {
-                        this.Items[i].Selected = true;
-                    }
+                    this.Items[i].Selected = this.Page.Request.Form[string.Format( "{0}${1}", this.UniqueID, i )] != null;
                 }
             }
-             */ 
         }
 
         /// <summary>
