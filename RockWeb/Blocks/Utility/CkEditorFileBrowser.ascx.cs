@@ -48,71 +48,20 @@ namespace RockWeb.Blocks.Utility
 
             fuprFileUpload.RootFolder = GetRootFolderPath();
 
-            string fileFilter = PageParameter( "fileFilter" );
-            if ( string.IsNullOrWhiteSpace( fileFilter ) )
-            {
-                fileFilter = "*.*";
-            }
-            
-            List<string> whiteListFilters = fileFilter.Split( new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-
-            string blockedFileTypes = PageParameter( "blockedFileTypes" );
-            if ( !string.IsNullOrWhiteSpace( blockedFileTypes ) )
-            {
-                blockedFileTypes = Rock.Security.Encryption.DecryptString( blockedFileTypes );
-            }
-
-            List<string> blackListFilters = blockedFileTypes.Split( new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-
-            //TODO
-            
-
             string submitScriptFormat = @"
+    // include the selected folder in the post to ~/ImageUploader.ashx    
     var selectedFolderPath = $('#{0}').val();
-    if (selectedFolderPath) {{
-        
-        debugger
-        // client script to help prevent unwanted file uploads (however, server ultimately needs to prevent it)
-        var fileExtension = data.files[0].name.split('.').pop();
-        var fileTypeWhiteList = [{1}];
-        var fileTypeBlackList = [{2}];
-        if (fileTypeWhiteList) {{
-            if ($.inArray(fileExtension, fileTypeWhiteList) == false) {{
-                // file not OK
-                return false;
-            }}
-        }}
-        
-        if (fileTypeBlackList && fileTypeBlackList.length > 0) {{
-            if ($.inArray(fileExtension, fileTypeBlackList)) {{
-                // file not OK
-                return false;
-            }}
-        }}
-        
-        // include the selected folder in the post to ~/ImageUploader.ashx or ~/FileUploader.ashx
-        data.formData = {{ folderPath: selectedFolderPath }};
-    }}
-    else {{
-        // no directory selected
-        return false;
-    }}
+    data.formData = {{ folderPath: selectedFolderPath }};
 ";
 
             // setup javascript for when a file is submitted
-            fuprFileUpload.SubmitFunctionClientScript = string.Format( submitScriptFormat, hfSelectedFolder.ClientID, string.Empty, string.Empty );
+            fuprFileUpload.SubmitFunctionClientScript = string.Format( submitScriptFormat, hfSelectedFolder.ClientID );
 
             string doneScriptFormat = @"
+    // reselect the node to refresh the list of files    
     var selectedFolderPath = $('#{0}').val();
     var foldersTree = $('.js-folder-treeview .treeview').data('rockTree');
-    if (selectedFolderPath) {{
-        // reselect the node to refresh the list of files
-        foldersTree.$el.trigger('rockTree:selected', selectedFolderPath);
-    }}
-    else {{
-        // no directory selected
-        return false;
-    }}
+    foldersTree.$el.trigger('rockTree:selected', selectedFolderPath);
 ";
 
             // setup javascript for when a file is done uploading
@@ -178,8 +127,8 @@ namespace RockWeb.Blocks.Utility
                 {
                     Directory.CreateDirectory( physicalRootFolder );
                 }
-                catch 
-                { 
+                catch
+                {
                     // intentionally ignore the exception (we will show the Warning below)
                 }
             }
@@ -322,7 +271,7 @@ namespace RockWeb.Blocks.Utility
                 string imageUrl = this.ResolveUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + HttpUtility.UrlEncode( imagePath ) + "&width=100&height=100" );
                 string nameHtml = string.Format(
                     nameHtmlFormat,
-                    HttpUtility.HtmlEncode(relativeFilePath),
+                    HttpUtility.HtmlEncode( relativeFilePath ),
                     imageUrl,
                     fileName );
 
@@ -362,7 +311,7 @@ namespace RockWeb.Blocks.Utility
         {
             string rootFolder = GetRootFolderPath();
             string imageUrl = rootFolder.TrimEnd( '\\', '/' ) + '/' + relativeFilePath.TrimStart( '\\', '/' ).Replace( '\\', '/' );
-            string result =  string.Format( "{0},{1}", imageUrl.TrimStart( '~', '/', '\\' ), Path.GetFileName( relativeFilePath ) );
+            string result = string.Format( "{0},{1}", imageUrl.TrimStart( '~', '/', '\\' ), Path.GetFileName( relativeFilePath ) );
             return result;
         }
 
@@ -376,14 +325,14 @@ namespace RockWeb.Blocks.Utility
         protected void lbCreateFolder_Click( object sender, EventArgs e )
         {
             // truncate dir name if it's really long
-            if (hfSelectedFolder.Value.Length > 20)
+            if ( hfSelectedFolder.Value.Length > 20 )
             {
                 int startingPoint = hfSelectedFolder.Value.Length - 19;
-                tbNewFolderName.PrependText = "..." + hfSelectedFolder.Value.Substring(startingPoint).TrimEnd('\\') + "\\";
+                tbNewFolderName.PrependText = "..." + hfSelectedFolder.Value.Substring( startingPoint ).TrimEnd( '\\' ) + "\\";
             }
             else
             {
-                tbNewFolderName.PrependText = hfSelectedFolder.Value.TrimEnd('\\') + "\\";
+                tbNewFolderName.PrependText = hfSelectedFolder.Value.TrimEnd( '\\' ) + "\\";
             }
 
             tbNewFolderName.Text = string.Empty;
