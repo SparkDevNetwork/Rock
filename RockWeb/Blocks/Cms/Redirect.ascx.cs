@@ -28,12 +28,26 @@ namespace RockWeb.Blocks.Cms
     {
         protected override void OnInit( EventArgs e )
         {
-            if ( !string.IsNullOrEmpty( GetAttributeValue( "Url" ) ) )
+            string url = GetAttributeValue( "Url" );
+
+            if ( !string.IsNullOrEmpty(url) )
             {
-                Response.Redirect( GetAttributeValue( "Url" ), false );
-                Context.ApplicationInstance.CompleteRequest();
-                return;
+                if ( IsUserAuthorized( "Administrate" ) )
+                {
+                    lRedirect.Text = string.Format( "If you did not have Administrate permissions on this block, you would have been redirected to here: <a href='{0}'>{0}</a>.", Page.ResolveUrl(url) );
+                }
+                else
+                {
+                    Response.Redirect( GetAttributeValue( "Url" ), false );
+                    Context.ApplicationInstance.CompleteRequest();
+                    return;
+                }
             }
+            else
+            {
+                lRedirect.Text = "Missing Url value for redirect!";
+            }
+
             base.OnInit( e );
         }
     }

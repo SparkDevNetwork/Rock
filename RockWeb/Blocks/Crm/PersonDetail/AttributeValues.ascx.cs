@@ -15,8 +15,8 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Web.UI;
@@ -41,7 +41,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [AttributeCategoryField( "Category", "The Attribute Category to display attributes from", false, "Rock.Model.Person" )]
     public partial class AttributeValues : PersonBlock
     {
-
         /// <summary>
         /// Gets or sets a value indicating whether [edit mode].
         /// </summary>
@@ -62,10 +61,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </value>
         protected List<int> AttributeList
         {
-            get 
-            { 
+            get
+            {
                 List<int> attributeList = ViewState["AttributeList"] as List<int>;
-                if (attributeList == null)
+                if ( attributeList == null )
                 {
                     attributeList = new List<int>();
                     ViewState["AttributeList"] = attributeList;
@@ -79,11 +78,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnLoad(EventArgs e)
+        protected override void OnLoad( EventArgs e )
         {
- 	        base.OnLoad(e);
+            base.OnLoad( e );
 
-            if (!Page.IsPostBack)
+            if ( !Page.IsPostBack )
             {
                 string categoryGuid = GetAttributeValue( "Category" );
                 Guid guid = Guid.Empty;
@@ -92,7 +91,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     var category = CategoryCache.Read( guid );
                     if ( category != null )
                     {
-                        if (!string.IsNullOrWhiteSpace(category.IconCssClass))
+                        if ( !string.IsNullOrWhiteSpace( category.IconCssClass ) )
                         {
                             lCategoryName.Text = string.Format( "<i class='{0}'></i> {1}", category.IconCssClass, category.Name );
                         }
@@ -101,14 +100,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             lCategoryName.Text = category.Name;
                         }
 
-                        foreach ( var attribute in new AttributeService().GetByCategoryId( category.Id ) )
+                        var orderedAttributeList = new AttributeService().GetByCategoryId( category.Id )
+                            .OrderBy( a => a.Order ).ThenBy( a => a.Name );
+                        foreach ( var attribute in orderedAttributeList )
                         {
                             if ( attribute.IsAuthorized( "View", CurrentPerson ) )
                             {
                                 AttributeList.Add( attribute.Id );
                             }
                         }
-
                     }
                 }
 
@@ -162,9 +162,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             if ( Page.IsValid )
             {
-                int personEntityTypeId = EntityTypeCache.Read(typeof(Person)).Id;
+                int personEntityTypeId = EntityTypeCache.Read( typeof( Person ) ).Id;
 
-                using (new Rock.Data.UnitOfWorkScope())
+                using ( new Rock.Data.UnitOfWorkScope() )
                 {
                     Rock.Data.RockTransactionScope.WrapTransaction( () =>
                     {

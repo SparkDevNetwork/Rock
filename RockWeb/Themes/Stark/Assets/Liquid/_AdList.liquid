@@ -1,7 +1,7 @@
 ﻿<div class="row ad-list">
   
     {% for Ad in Ads -%}
-      <div class="col-md-4 ad">
+      <div class="col-md-4 col-sm-6 ad">
           <a href="{{ Ad.DetailPageUrl }}">
             {% for Attribute in Ad.Attributes -%}
               {% if Attribute.Key == 'PromotionImage' -%}

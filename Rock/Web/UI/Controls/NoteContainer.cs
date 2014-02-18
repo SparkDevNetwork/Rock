@@ -392,7 +392,7 @@ namespace Rock.Web.UI.Controls
             _lbShowMore = new LinkButton();
             _lbShowMore.ID = "lbShowMore";
             _lbShowMore.Click += _lbShowMore_Click;
-            _lbShowMore.AddCssClass( "load-more btn btn-mini btn-action" );
+            _lbShowMore.AddCssClass( "load-more btn btn-xs btn-action" );
             Controls.Add( _lbShowMore );
 
             var iDownPre = new HtmlGenericControl( "i" );
