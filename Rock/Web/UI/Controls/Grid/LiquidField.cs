@@ -162,7 +162,12 @@ namespace Rock.Web.UI.Controls
                 if ( gridField != null )
                 {
                     var mergeFieldName = gridField.HeaderText.Replace( " ", string.Empty ).RemoveSpecialCharacters();
-                    this.DataItemPropertiesDictionary.Add( mergeFieldName, itemPropInfo );
+
+                    // NOTE: since we are using the HeaderText as the mergeFieldName, and that might not be unique, just add the first one if there are duplicates
+                    if ( !this.DataItemPropertiesDictionary.ContainsKey( mergeFieldName ) )
+                    {
+                        this.DataItemPropertiesDictionary.Add( mergeFieldName, itemPropInfo );
+                    }
                 }
                 else
                 {
