@@ -20,6 +20,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -39,11 +40,10 @@ namespace Rock.Model
     /// An abstracted base class for FinancialTransaction so that we can have child classes like <see cref="FinancialTransactionRefund"/>.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class FinancialTransactionBase<T> : Model<T> where T: Model<T>, Rock.Security.ISecured, new()
+    public abstract class FinancialTransactionBase<T> : Model<T> where T : Model<T>, Rock.Security.ISecured, new()
     {
-
         #region Entity Properties
-       
+
         /// <summary>
         /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who authorized the transaction. In the event of a gift this would be
         /// the giver; in the event of a purchase this would be the purchaser.
@@ -82,15 +82,6 @@ namespace Rock.Model
         public DateTime? TransactionDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the amount of the transaction.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Decimal" /> representing the amount of the transaction.
-        /// </value>
-        [DataMember]
-        public decimal Amount { get; set; }
-
-        /// <summary>
         /// Gets or sets the transaction code for the transaction.
         /// </summary>
         /// <value>
@@ -104,11 +95,10 @@ namespace Rock.Model
         /// Gets or sets a summary of the transaction.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing a summary of the transaction. 
+        /// A <see cref="System.String"/> representing a summary of the transaction.
         /// </value>
         [DataMember]
         public string Summary { get; set; }
-
 
         /// <summary>
         /// Gets or sets the DefinedValueId of the TransactionType <see cref="Rock.Model.DefinedValue"/> indicating
@@ -133,7 +123,7 @@ namespace Rock.Model
         public int? CurrencyTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the DefinedValueId of the credit card type <see cref="Rock.Model.DefinedValue"/> indicating the credit card brand/type that was used 
+        /// Gets or sets the DefinedValueId of the credit card type <see cref="Rock.Model.DefinedValue"/> indicating the credit card brand/type that was used
         /// to make this transaction. This value will be null for transactions that were not made by credit card.
         /// </summary>
         /// <value>
@@ -170,12 +160,12 @@ namespace Rock.Model
         /// this transaction. If this was an ad-hoc/on demand transaction, this property will be null.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the ScheduledTransactionId of the <see cref="Rock.Model.FinancialScheduledTransaction"/> 
+        /// A <see cref="System.Int32"/> representing the ScheduledTransactionId of the <see cref="Rock.Model.FinancialScheduledTransaction"/>
         /// </value>
         [DataMember]
         public int? ScheduledTransactionId { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
         #region Virtual Properties
 
@@ -188,7 +178,7 @@ namespace Rock.Model
         public virtual Person AuthorizedPerson { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.FinancialBatch"/> that contains the transaction. 
+        /// Gets or sets the <see cref="Rock.Model.FinancialBatch"/> that contains the transaction.
         /// </summary>
         /// <value>
         /// A <see cref="Rock.Model.FinancialBatch"/> that contains the transaction.
@@ -205,7 +195,6 @@ namespace Rock.Model
         [DataMember]
         public virtual EntityType GatewayEntityType { get; set; }
 
-
         /// <summary>
         /// Gets or sets the transaction type <see cref="Rock.Model.DefinedValue"/> indicating the type of transaction that occurred.
         /// </summary>
@@ -216,7 +205,7 @@ namespace Rock.Model
         public virtual DefinedValue TransactionTypeValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the currency type <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for this 
+        /// Gets or sets the currency type <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for this
         /// transaction.
         /// </summary>
         /// <value>
@@ -271,15 +260,16 @@ namespace Rock.Model
         /// A collection containing the <see cref="Rock.Model.FinancialTransactionDetail" /> line items for this transaction.
         /// </value>
         [DataMember]
-        public virtual ICollection<FinancialTransactionDetail> TransactionDetails 
+        public virtual ICollection<FinancialTransactionDetail> TransactionDetails
         {
             get { return _transactionDetails ?? ( _transactionDetails = new Collection<FinancialTransactionDetail>() ); }
             set { _transactionDetails = value; }
         }
+
         private ICollection<FinancialTransactionDetail> _transactionDetails;
 
         /// <summary>
-        /// Gets or sets a collection containing any <see cref="Rock.Model.FinancialTransactionImage">images</see> associated with this transaction. An example of this 
+        /// Gets or sets a collection containing any <see cref="Rock.Model.FinancialTransactionImage">images</see> associated with this transaction. An example of this
         /// would be a scanned image of a check.
         /// </summary>
         /// <value>
@@ -291,9 +281,21 @@ namespace Rock.Model
             get { return _images ?? ( _images = new Collection<FinancialTransactionImage>() ); }
             set { _images = value; }
         }
+
         private ICollection<FinancialTransactionImage> _images;
 
-        #endregion
+        /// <summary>
+        /// Gets the total amount.
+        /// </summary>
+        /// <value>
+        /// The total amount.
+        /// </value>
+        public decimal TotalAmount
+        {
+            get { return TransactionDetails.Sum( d => d.Amount ); }
+        }
+
+        #endregion Virtual Properties
 
         #region Public Methods
 
@@ -305,17 +307,15 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.Amount.ToString();
+            return this.TotalAmount.ToString();
         }
 
-        #endregion
-
+        #endregion Public Methods
     }
-
 
     /// <summary>
     /// Special Class to use when uploading a FinancialTransaction from a Scanned Check thru the Rest API.
-    /// The Rest Client can't be given access to the DataEncryptionKey, so they'll upload it (using SSL) 
+    /// The Rest Client can't be given access to the DataEncryptionKey, so they'll upload it (using SSL)
     /// with the plain text CheckMicr and the Rock server will encrypt prior to saving to database
     /// </summary>
     [DataContract]
@@ -333,7 +333,6 @@ namespace Rock.Model
     }
 
     #region Entity Configuration
-
 
     /// <summary>
     /// Transaction Configuration class.
@@ -357,6 +356,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
+    #endregion Entity Configuration
 }
