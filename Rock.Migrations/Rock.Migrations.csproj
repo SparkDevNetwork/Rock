@@ -548,6 +548,10 @@
     <Compile Include="Migrations\201402171809249_RenameLocationPage.Designer.cs">
       <DependentUpon>201402171809249_RenameLocationPage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402181246471_MyAccount.cs" />
+    <Compile Include="Migrations\201402181246471_MyAccount.Designer.cs">
+      <DependentUpon>201402181246471_MyAccount.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -938,6 +942,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402171809249_RenameLocationPage.resx">
       <DependentUpon>201402171809249_RenameLocationPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402181246471_MyAccount.resx">
+      <DependentUpon>201402181246471_MyAccount.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
