@@ -221,6 +221,10 @@ namespace RockWeb.Blocks.Finance
         {
             var transactionDetailsId = (int)e.RowKeyValue;
             hfIdValue.Value = transactionDetailsId.ToString();
+            var ftd = new FinancialTransactionDetailService().Get( transactionDetailsId );
+            ddlTransactionAccount.SelectedValue = ftd.AccountId.ToString();
+            tbTransactionAmount.Text = ftd.Amount.ToString();
+            tbTransactionSummary.Text = ftd.Summary;
             mdDetails.Show();
         }
 
@@ -231,6 +235,23 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gTransactionDetails_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
+            var ftdService = new FinancialTransactionDetailService();
+            var ftd = ftdService.Get( (int)e.RowKeyValue );
+            if ( ftd != null )
+            {
+                string errorMessage;
+                if ( !ftdService.CanDelete( ftd, out errorMessage ) )
+                {
+                    maGridWarning.Show( errorMessage, Rock.Web.UI.Controls.ModalAlertType.Information );
+                    return;
+                }
+                ftdService.Delete( ftd, CurrentPersonAlias );
+                ftdService.Save( ftd, CurrentPersonAlias );
+            }
+            var transactionId = PageParameter( "transactionId" );
+            FinancialTransaction transaction = new FinancialTransaction();
+            transaction = new FinancialTransactionService().Get( int.Parse( transactionId ) );
+            BindTransactionDetailGrid( transaction );
         }
 
         /// <summary>
@@ -242,14 +263,9 @@ namespace RockWeb.Blocks.Finance
         {
             var transactionDetailsId = 0;
             hfIdValue.Value = transactionDetailsId.ToString();
-            var accountList = new FinancialAccountService().Queryable().ToList();
-            foreach( var account in accountList )
-            {
-                ListItem acc = new ListItem();
-                acc.Text = account.Name;
-                acc.Value = account.Id.ToString();
-                ddlTransactionAccount.Items.Add( acc );
-            }
+            ddlTransactionAccount.SelectedIndex = 0;
+            tbTransactionAmount.Text = "";
+            tbTransactionSummary.Text = "";
             mdDetails.Show();
         }
 
@@ -274,27 +290,33 @@ namespace RockWeb.Blocks.Finance
         void mdDetails_SaveClick( object sender, EventArgs e )
         {
             var transactionId = PageParameter( "transactionId" );
-            var ftdService = new FinancialTransactionDetailService();
-            FinancialTransactionDetail ftd = null;
-            var transactionDetailId = int.Parse( hfIdValue.Value );
-            if ( transactionDetailId > 0 )
+            if ( !string.IsNullOrWhiteSpace( tbTransactionAmount.Text ) )
             {
-                ftd = ftdService.Get( transactionDetailId );
-            }
-            else
-            {
-                ftd = new FinancialTransactionDetail { Id = 0 };
-            }
+                var ftdService = new FinancialTransactionDetailService();
+                FinancialTransactionDetail ftd = null;
+                var transactionDetailId = int.Parse( hfIdValue.Value );
+                if ( transactionDetailId > 0 )
+                {
+                    ftd = ftdService.Get( transactionDetailId );
+                }
+                else
+                {
+                    ftd = new FinancialTransactionDetail { Id = 0 };
+                }
 
-            ftd.TransactionId = int.Parse( transactionId );
-            ftd.AccountId = int.Parse( ddlTransactionAccount.SelectedValue );
-            ftd.Amount = decimal.Parse( tbTransactionAmount.Text );
-            ftd.Summary = tbTransactionSummary.Text;
-            RockTransactionScope.WrapTransaction( () =>
-            {
-                ftdService.Add( ftd );
-                ftdService.Save( ftd, CurrentPersonAlias );
-            } );
+                ftd.TransactionId = int.Parse( transactionId );
+                ftd.AccountId = int.Parse( ddlTransactionAccount.SelectedValue );
+                ftd.Amount = decimal.Parse( tbTransactionAmount.Text );
+                ftd.Summary = tbTransactionSummary.Text;
+                RockTransactionScope.WrapTransaction( () =>
+                {
+                    if ( transactionDetailId == 0 )
+                    {
+                        ftdService.Add( ftd );
+                    }
+                    ftdService.Save( ftd, CurrentPersonAlias );
+                } );
+            }
 
             mdDetails.Hide();
             FinancialTransaction transaction = new FinancialTransaction();
@@ -305,6 +327,18 @@ namespace RockWeb.Blocks.Finance
         #endregion Events
 
         #region Internal Methods
+
+        private void LoadAccountDropDown()
+        {
+            var accountList = new FinancialAccountService().Queryable().ToList();
+            foreach ( var account in accountList )
+            {
+                ListItem acc = new ListItem();
+                acc.Text = account.Name;
+                acc.Value = account.Id.ToString();
+                ddlTransactionAccount.Items.Add( acc );
+            }
+        }
 
         /// <summary>
         /// Binds the dropdowns.
@@ -468,6 +502,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             lbSave.Visible = !readOnly;
+            LoadAccountDropDown();
             BindTransactionDetailGrid( transaction );
         }
 

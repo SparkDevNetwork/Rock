@@ -18,13 +18,6 @@
                 <asp:HiddenField ID="hfBatchId" runat="server" />
 
                 <div class="row">
-                    <div class="col-md-6">
-<%--                        <Rock:DataTextBox ID="tbAmount" runat="server" PrependText="$" CssClass="input-width-md" Label="Amount" TabIndex="1"
-                            SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="Amount" />--%>
-                    </div>
-                </div>
-
-                <div class="row">
                     <div class="col-md-12">
                         <Rock:DataTextBox ID="tbSummary" TabIndex="2" runat="server" Label="Summary" TextMode="MultiLine" Rows="4"
                             SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="Summary" />
@@ -74,14 +67,14 @@
             <br />
             <asp:Panel ID="pnlTransactionDetails" runat="server">
                 <h4><asp:Literal ID="lHeading" runat="server" Text="Transaction Details" /></h4>
+                <Rock:ModalAlert ID="maGridWarning" runat="server" />
                 <div class="row col-md-12">
                     <Rock:Grid ID="gTransactionDetails" runat="server" EmptyDataText="No Transactions Details Found" OnRowSelected="gTransactionDetails_RowSelected" AllowSorting="true">
                         <Columns>
-                            <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
                             <asp:BoundField DataField="Account" HeaderText="Account" SortExpression="Account" />
                             <asp:BoundField DataField="Amount" HeaderText="Amount" SortExpression="Amount" />
                             <asp:BoundField DataField="Summary" HeaderText="Summary" SortExpression="Summary" />
-                            <Rock:DeleteField OnClick="gTransactionDetails_Delete" Visible="false"/>
+                            <Rock:DeleteField OnClick="gTransactionDetails_Delete" />
                         </Columns>
                     </Rock:Grid>
                 </div>
