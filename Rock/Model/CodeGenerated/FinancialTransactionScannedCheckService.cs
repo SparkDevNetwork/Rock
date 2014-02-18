@@ -94,7 +94,6 @@ namespace Rock.Model
             target.BatchId = source.BatchId;
             target.GatewayEntityTypeId = source.GatewayEntityTypeId;
             target.TransactionDateTime = source.TransactionDateTime;
-            target.Amount = source.Amount;
             target.TransactionCode = source.TransactionCode;
             target.Summary = source.Summary;
             target.TransactionTypeValueId = source.TransactionTypeValueId;

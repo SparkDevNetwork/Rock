@@ -552,6 +552,14 @@
     <Compile Include="Migrations\201402181246471_MyAccount.Designer.cs">
       <DependentUpon>201402181246471_MyAccount.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402181550456_AddVirtualAmount.cs" />
+    <Compile Include="Migrations\201402181550456_AddVirtualAmount.Designer.cs">
+      <DependentUpon>201402181550456_AddVirtualAmount.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402182106099_UpdateLoginAttributes.cs" />
+    <Compile Include="Migrations\201402182106099_UpdateLoginAttributes.Designer.cs">
+      <DependentUpon>201402182106099_UpdateLoginAttributes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -945,6 +953,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402181246471_MyAccount.resx">
       <DependentUpon>201402181246471_MyAccount.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402181550456_AddVirtualAmount.resx">
+      <DependentUpon>201402181550456_AddVirtualAmount.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402182106099_UpdateLoginAttributes.resx">
+      <DependentUpon>201402182106099_UpdateLoginAttributes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -21,20 +21,24 @@
 
         <div class="row">
 
-            <div class="col-md-6">
-                <asp:Literal ID="lEmail" runat="server" /><br />
-                <asp:Literal ID="lGender" runat="server" /><br />
-                <asp:Literal ID="lAge" runat="server" />
+            <div class="col-sm-6">
+                <ul class="person-demographics list-unstyled">
+                    <li><asp:Literal ID="lEmail" runat="server" /></li>
+                    <li><asp:Literal ID="lGender" runat="server" /></li>
+                    <li><asp:Literal ID="lAge" runat="server" /></li>
+                </ul>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-sm-6">
 
+                <ul class="phone-list list-unstyled">
                 <asp:Repeater ID="rptPhones" runat="server">
                     <ItemTemplate>
-                        <%# (bool)Eval("IsUnlisted") ? "Unlisted" : Rock.Model.PhoneNumber.FormattedNumber(Eval("Number").ToString()) %> <small><%# Eval("NumberTypeValue.Name") %></small><br />
+                        <li><%# (bool)Eval("IsUnlisted") ? "Unlisted" : Rock.Model.PhoneNumber.FormattedNumber(Eval("Number").ToString()) %> <small><%# Eval("NumberTypeValue.Name") %></small></li>
                     </ItemTemplate>
                 </asp:Repeater>
-            
+                </ul>
+
                 <asp:LinkButton ID="lbEditPerson" runat="server" CssClass="btn btn-primary btn-xs" OnClick="lbEditPerson_Click"><i class="fa fa-pencil"></i> Edit</asp:LinkButton>
         
             </div>
