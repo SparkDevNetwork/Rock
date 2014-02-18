@@ -55,7 +55,7 @@
                     </div>                        
                 </div>
                 <div class="actions">
-                    <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" CausesValidation="false" OnClick="lbEdit_Click" />
+                    <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-xs" CausesValidation="false" OnClick="lbEdit_Click" />
                 </div>
             </fieldset>
 

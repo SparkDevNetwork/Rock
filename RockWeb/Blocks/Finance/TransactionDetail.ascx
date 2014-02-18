@@ -72,20 +72,43 @@
             </fieldset>
 
             <br />
-            <div class="row col-md-12">
-                <Rock:Grid ID="gTransactionDetails" runat="server" EmptyDataText="No Transactions Details Found" OnRowSelected="gTransactionDetails_RowSelected" AllowSorting="true">
-                    <Columns>
-                        <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
-                        <asp:BoundField DataField="TransactionId" HeaderText="Transaction Id" SortExpression="TransactionId" />                
-                        <asp:BoundField DataField="AccountId" HeaderText="AccountId" SortExpression="AccountId" />
-                        <asp:BoundField DataField="Amount" HeaderText="Amount" SortExpression="Amount" />
-                        <asp:BoundField DataField="Summary" HeaderText="Summary" SortExpression="Summary" />
-                        <asp:BoundField DataField="EntityTypeId" HeaderText="Entity Type Id" SortExpression="EntityTypeId" />
-                        <asp:BoundField DataField="EntityId" HeaderText="Entity Id" SortExpression="EntityId" />
-                        <Rock:DeleteField OnClick="gTransactionDetails_Delete" Visible="false"/>
-                    </Columns>
-                </Rock:Grid>
-            </div>
+            <asp:Panel ID="pnlTransactionDetails" runat="server">
+                <h4><asp:Literal ID="lHeading" runat="server" Text="Transaction Details" /></h4>
+                <div class="row col-md-12">
+                    <Rock:Grid ID="gTransactionDetails" runat="server" EmptyDataText="No Transactions Details Found" OnRowSelected="gTransactionDetails_RowSelected" AllowSorting="true">
+                        <Columns>
+                            <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
+                            <asp:BoundField DataField="TransactionId" HeaderText="Transaction Id" SortExpression="TransactionId" />                
+                            <asp:BoundField DataField="AccountId" HeaderText="AccountId" SortExpression="AccountId" />
+                            <asp:BoundField DataField="Amount" HeaderText="Amount" SortExpression="Amount" />
+                            <asp:BoundField DataField="Summary" HeaderText="Summary" SortExpression="Summary" />
+                            <Rock:DeleteField OnClick="gTransactionDetails_Delete" Visible="false"/>
+                        </Columns>
+                    </Rock:Grid>
+                </div>
+            </asp:Panel>
+
+            <Rock:ModalDialog ID="mdDetails" runat="server" Title="Transaction Details" ValidationGroup="TransactionDetails">
+                <Content>
+                    <asp:HiddenField ID="hfIdValue" runat="server" />
+                    <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockDropDownList ID="ddlTransactionAccount" runat="server" Label="Account"></Rock:RockDropDownList>
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:DataTextBox ID="tbTransactionAmount" runat="server" PrependText="$" CssClass="input-width-md" Label="Amount"
+                                SourceTypeName="Rock.Model.FinancialTransactionDetail, Rock" PropertyName="Amount" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <Rock:DataTextBox ID="tbTransactionSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="4"
+                                SourceTypeName="Rock.Model.FinancialTransactionDetail, Rock" PropertyName="Summary" />
+                        </div>
+                    </div>
+                </Content>
+            </Rock:ModalDialog>
 
         </asp:Panel>
     </ContentTemplate>

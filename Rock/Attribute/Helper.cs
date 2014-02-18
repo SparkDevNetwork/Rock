@@ -859,7 +859,7 @@ namespace Rock.Attribute
 
             if ( !string.IsNullOrEmpty( category ) )
             {
-                HtmlGenericControl legend = new HtmlGenericControl( "legend" );
+                HtmlGenericControl legend = new HtmlGenericControl( "h4" );
                 fieldSet.Controls.Add( legend );
                 legend.Controls.Clear();
                 legend.InnerText = category.Trim();

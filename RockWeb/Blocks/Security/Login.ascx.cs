@@ -139,9 +139,9 @@ namespace RockWeb.Blocks.Security
                         {
                             if ( userLogin.IsLockedOut ?? false )
                             {
-                                phLogin.Visible = false;
+                                pnlLogin.Visible = false;
                                 lLockedOutCaption.Text = GetAttributeValue( "LockedOutCaption" );
-                                phLockedOut.Visible = true;
+                                pnlLockedOut.Visible = true;
                             }
                             else
                             {
@@ -154,8 +154,8 @@ namespace RockWeb.Blocks.Security
                                 {
                                     SendConfirmation( userLogin );
                                     lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" );
-                                    phLogin.Visible = false;
-                                    phConfirmation.Visible = true;
+                                    pnlLogin.Visible = false;
+                                    pnlConfirmation.Visible = true;
 
                                 }
                             }
