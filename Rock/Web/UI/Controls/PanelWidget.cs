@@ -34,6 +34,14 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private HiddenField _hfExpanded;
 
+        /// <summary>
+        /// The title label
+        /// </summary>
+        private HiddenField _hfTitle;
+
+        /// <summary>
+        /// The delete button
+        /// </summary>
         private LinkButton _lbDelete;
 
         /// <summary>
@@ -44,8 +52,16 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string Title
         {
-            get { return ViewState["Title"] as string ?? string.Empty; }
-            set { ViewState["Title"] = value; }
+            get
+            {
+                EnsureChildControls();
+                return _hfTitle.Value;
+            }
+            set
+            {
+                EnsureChildControls();
+                _hfTitle.Value = value;
+            }
         }
 
         /// <summary>
@@ -183,6 +199,10 @@ $('.js-stop-immediate-propagation').click(function (event) {
             _hfExpanded.ID = this.ID + "_hfExpanded";
             _hfExpanded.Value = "False";
 
+            _hfTitle = new HiddenField();
+            _hfTitle.ID = this.ID + "_hfTitle";
+            Controls.Add( _hfTitle );
+
             _lbDelete = new LinkButton();
             _lbDelete.CausesValidation = false;
             _lbDelete.ID = this.ID + "_lbDelete";
@@ -237,6 +257,12 @@ $('.js-stop-immediate-propagation').click(function (event) {
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 // Title
+
+
+                // Hidden Field to track Title
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-header-title-hidden" );
+                _hfTitle.RenderControl( writer );
+
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-item-description js-header-title" );
                 if ( Expanded )
                 {
@@ -244,7 +270,10 @@ $('.js-stop-immediate-propagation').click(function (event) {
                 }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.Write( Title );
+                
+                // also write out the value of the hidden field as the title
+                writer.Write( _hfTitle.Value );
+
                 writer.RenderEndTag();
 
                 // Header Controls
@@ -330,6 +359,7 @@ $('.js-stop-immediate-propagation').click(function (event) {
                 {
                     List<Control> alreadyRenderedControls = new List<Control>();
                     alreadyRenderedControls.Add( _hfExpanded );
+                    alreadyRenderedControls.Add( _hfTitle );
                     alreadyRenderedControls.Add( _lbDelete );
                     if ( this.HeaderControls != null )
                     {
