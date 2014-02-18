@@ -16,7 +16,7 @@
             <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
             <div class="clearfix">
-                <asp:LinkButton ID="lbAddCheckinArea" runat="server" CssClass="btn btn-action btn-mini pull-right" OnClick="lbAddCheckinArea_Click" CausesValidation="false"><i class="fa fa-plus"></i> Add Check-in Area</asp:LinkButton>
+                <asp:LinkButton ID="lbAddCheckinArea" runat="server" CssClass="btn btn-action btn-xs pull-right" OnClick="lbAddCheckinArea_Click" CausesValidation="false"><i class="fa fa-plus"></i> Add Check-in Area</asp:LinkButton>
             </div>
 
             <div class="checkin-grouptype-list">

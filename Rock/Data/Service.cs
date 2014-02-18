@@ -755,17 +755,6 @@ namespace Rock.Data
             return _repository.ExecuteQuery( elementType, query, parameters );
         }
 
-        /// <summary>
-        /// Gets the command.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <param name="commandType">Type of the command.</param>
-        /// <param name="parameters">The parameters.</param>
-        /// <returns></returns>
-        public SqlCommand GetCommand(string query, CommandType commandType, Dictionary<string, object> parameters)
-        {
-            return _repository.GetCommand( query, commandType, parameters);
-        }
 
         /// <summary>
         /// Gets a data set.

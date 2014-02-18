@@ -11,7 +11,7 @@
             <div class="treeview-actions">
                 
                 <div class="btn-group">
-                    <button type="button" class="btn btn-action btn-mini dropdown-toggle" data-toggle="dropdown">
+                    <button type="button" class="btn btn-action btn-xs dropdown-toggle" data-toggle="dropdown">
                         <i class="fa fa-plus-circle"></i> Add Location <span class="fa fa-caret-down"></span>
                     </button>
                     <ul class="dropdown-menu" role="menu">

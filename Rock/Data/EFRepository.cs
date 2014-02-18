@@ -614,24 +614,12 @@ namespace Rock.Data
             return _context.Database.SqlQuery( elementType, query, parameters );
         }
 
-        /// <summary>
-        /// Gets a data adapter.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <param name="commandType">Type of the command.</param>
-        /// <param name="parameters">The parameters.</param>
-        /// <returns></returns>
-        public IDataAdapter GetDataAdapter( string query, CommandType commandType, Dictionary<string, object> parameters )
+        private string GetConnectionString()
         {
-            SqlCommand sqlCommand = GetCommand( query, commandType, parameters );
-            if ( sqlCommand != null )
-            {
-                return new SqlDataAdapter( sqlCommand );
-            }
-
-            return null;
+            return ( _context.Database.Connection is SqlConnection ) ?
+                ( (SqlConnection)_context.Database.Connection ).ConnectionString :
+                System.Configuration.ConfigurationManager.ConnectionStrings["Rock"].ConnectionString;
         }
-
 
         /// <summary>
         /// Gets the data set.
@@ -642,16 +630,31 @@ namespace Rock.Data
         /// <returns></returns>
         public DataSet GetDataSet( string query, CommandType commandType, Dictionary<string, object> parameters )
         {
-            SqlCommand sqlCommand = GetCommand( query, commandType, parameters );
-            if ( sqlCommand != null )
+            using ( SqlConnection con = new SqlConnection(GetConnectionString()) )
             {
-                SqlDataAdapter adapter =new SqlDataAdapter( sqlCommand );
-                DataSet dataSet = new DataSet( "rockDs" );
-                adapter.Fill( dataSet );
-                return dataSet;
-            }
+                con.Open();
 
-            return null;
+                using ( SqlCommand sqlCommand = new SqlCommand( query, con ) )
+                {
+                    sqlCommand.CommandType = commandType;
+
+                    if ( parameters != null )
+                    {
+                        foreach ( var parameter in parameters )
+                        {
+                            SqlParameter sqlParam = new SqlParameter();
+                            sqlParam.ParameterName = parameter.Key.StartsWith( "@" ) ? parameter.Key : "@" + parameter.Key;
+                            sqlParam.Value = parameter.Value;
+                            sqlCommand.Parameters.Add( sqlParam );
+                        }
+                    }
+
+                    SqlDataAdapter adapter = new SqlDataAdapter( sqlCommand );
+                    DataSet dataSet = new DataSet( "rockDs" );
+                    adapter.Fill( dataSet );
+                    return dataSet;
+                }
+            }
         }
 
         /// <summary>
@@ -672,6 +675,7 @@ namespace Rock.Data
             return null;
         }
 
+
         /// <summary>
         /// Gets the data set.
         /// </summary>
@@ -681,44 +685,24 @@ namespace Rock.Data
         /// <returns></returns>
         public IDataReader GetDataReader( string query, CommandType commandType, Dictionary<string, object> parameters )
         {
-            SqlCommand sqlCommand = GetCommand( query, commandType, parameters );
-            if (sqlCommand != null)
-            {
-                return sqlCommand.ExecuteReader();
-            }
-            return null;
-        }
+            SqlConnection con = new SqlConnection( GetConnectionString() );
+            con.Open();
 
-        /// <summary>
-        /// Gets the command.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <param name="commandType">Type of the command.</param>
-        /// <param name="parameters">The parameters.</param>
-        /// <returns></returns>
-        public SqlCommand GetCommand( string query, CommandType commandType, Dictionary<string, object> parameters )
-        {
-            if ( _context.Database.Connection is SqlConnection )
-            {
-                SqlConnection sqlConnection = (SqlConnection)_context.Database.Connection;
+            SqlCommand sqlCommand = new SqlCommand( query, con );
+            sqlCommand.CommandType = commandType;
 
-                SqlCommand sqlCommand = new SqlCommand( query, sqlConnection );
-                sqlCommand.CommandType = commandType;
-                if ( parameters != null )
+            if ( parameters != null )
+            {
+                foreach ( var parameter in parameters )
                 {
-                    foreach ( var parameter in parameters )
-                    {
-                        SqlParameter sqlParam = new SqlParameter();
-                        sqlParam.ParameterName = parameter.Key.StartsWith( "@" ) ? parameter.Key : "@" + parameter.Key;
-                        sqlParam.Value = parameter.Value;
-                        sqlCommand.Parameters.Add( sqlParam );
-                    }
+                    SqlParameter sqlParam = new SqlParameter();
+                    sqlParam.ParameterName = parameter.Key.StartsWith( "@" ) ? parameter.Key : "@" + parameter.Key;
+                    sqlParam.Value = parameter.Value;
+                    sqlCommand.Parameters.Add( sqlParam );
                 }
-
-                return sqlCommand;
             }
 
-            return null;
+            return sqlCommand.ExecuteReader( CommandBehavior.CloseConnection );
         }
 
         /// <summary>
@@ -730,14 +714,28 @@ namespace Rock.Data
         /// <exception cref="System.NotImplementedException"></exception>
         public int ExecuteCommand( string query, CommandType commandType, Dictionary<string, object> parameters )
         {
-            var sqlCommand = GetCommand( query, commandType, parameters );
-            if ( sqlCommand != null )
+            using ( SqlConnection con = new SqlConnection(GetConnectionString()) )
             {
-                sqlCommand.Connection.Open();
-                return sqlCommand.ExecuteNonQuery();
+                con.Open();
+
+                using (SqlCommand sqlCommand = new SqlCommand( query, con ))
+                { 
+                    sqlCommand.CommandType = commandType;
+
+                    if ( parameters != null )
+                    {
+                        foreach ( var parameter in parameters )
+                        {
+                            SqlParameter sqlParam = new SqlParameter();
+                            sqlParam.ParameterName = parameter.Key.StartsWith( "@" ) ? parameter.Key : "@" + parameter.Key;
+                            sqlParam.Value = parameter.Value;
+                            sqlCommand.Parameters.Add( sqlParam );
+                        }
+                    }
+
+                    return sqlCommand.ExecuteNonQuery();
+                }
             }
-            
-            return 0;
         }
 
         /// <summary>
@@ -750,14 +748,28 @@ namespace Rock.Data
         /// <returns></returns>
         public object ExecuteScaler(string query, CommandType commandType, Dictionary<string, object> parameters)
         {
-            var sqlCommand = GetCommand( query, commandType, parameters );
-            if ( sqlCommand != null )
+            using ( SqlConnection con = new SqlConnection(GetConnectionString()) )
             {
-                sqlCommand.Connection.Open();
-                return sqlCommand.ExecuteScalar();
-            }
+                con.Open();
 
-            return null;
+                using (SqlCommand sqlCommand = new SqlCommand( query, con ))
+                { 
+                    sqlCommand.CommandType = commandType;
+
+                    if ( parameters != null )
+                    {
+                        foreach ( var parameter in parameters )
+                        {
+                            SqlParameter sqlParam = new SqlParameter();
+                            sqlParam.ParameterName = parameter.Key.StartsWith( "@" ) ? parameter.Key : "@" + parameter.Key;
+                            sqlParam.Value = parameter.Value;
+                            sqlCommand.Parameters.Add( sqlParam );
+                        }
+                    }
+                    
+                    return sqlCommand.ExecuteScalar();
+                }
+            }
         }
 
         /// <summary>
