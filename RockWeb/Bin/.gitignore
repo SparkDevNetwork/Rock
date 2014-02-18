@@ -38,3 +38,5 @@
 /System.Web.Optimization.dll
 /Microsoft.WindowsAzure.Storage.dll
 /Microsoft.WindowsAzure.Storage.xml
+/System.Net.Http.Formatting.dll
+/System.Web.Http.WebHost.dll
