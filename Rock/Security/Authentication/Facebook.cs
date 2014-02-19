@@ -193,7 +193,7 @@ namespace Rock.Security.ExternalAuthentication
                                         person.BirthDate = Convert.ToDateTime( me.birthday.ToString() );
                                         person.DoNotEmail = false;
 
-                                        new GroupService().SaveNewFamily( person, null, null );
+                                        new GroupService().SaveNewFamily( person, null, false, null );
                                     }
 
                                     user = userLoginService.Create( person, AuthenticationServiceType.External, this.TypeId, facebookId, "fb", true );

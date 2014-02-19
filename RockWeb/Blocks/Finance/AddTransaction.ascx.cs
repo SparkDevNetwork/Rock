@@ -887,7 +887,7 @@ achieve our mission.  We are so grateful for your commitment.
 
                             // Create Family
                             var groupService = new GroupService();
-                            var familyGroup = groupService.SaveNewFamily( person, null, CurrentPersonAlias );
+                            var familyGroup = groupService.SaveNewFamily( person, null, false, CurrentPersonAlias );
                             if (familyGroup != null)
                             {
                                 groupService.AddNewFamilyAddress(familyGroup, GetAttributeValue( "AddressType" ),

@@ -322,7 +322,7 @@ namespace RockWeb.Blocks.Finance
                     ConnectionStatusValueId = definedValue.Id,
                 };
 
-                new GroupService().SaveNewFamily( person, null, CurrentPersonAlias );
+                new GroupService().SaveNewFamily( person, null, false, CurrentPersonAlias );
             }
 
             return person;
