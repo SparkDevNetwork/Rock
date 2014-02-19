@@ -36,6 +36,11 @@ namespace Rock.Communication
         /// <param name="CurrentPersonAlias">The current person alias.</param>
         public abstract void Send( Rock.Model.Communication communication, PersonAlias CurrentPersonAlias );
 
+        /// <summary>
+        /// Sends the specified template.
+        /// </summary>
+        /// <param name="template">The template.</param>
+        /// <param name="recipients">The recipients.</param>
         public abstract void Send( EmailTemplate template, Dictionary<string, Dictionary<string, object>> recipients );
 
         /// <summary>
