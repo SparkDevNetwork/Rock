@@ -125,7 +125,7 @@ namespace RockWeb.Blocks.Administration
                     jobService.Save( job, CurrentPersonAlias );
                     job.LoadAttributes();
                     Rock.Attribute.Helper.GetEditValues( phAttributes, job );
-                    Rock.Attribute.Helper.SaveAttributeValues( job, CurrentPersonAlias );
+                    job.SaveAttributeValues( CurrentPersonAlias );
                 } );
 
             NavigateToParentPage();

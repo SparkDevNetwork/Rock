@@ -842,7 +842,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     {
                         p.LoadAttributes();
                         p.SetAttributeValue( "AbilityLevel", ability );
-                        Rock.Attribute.Helper.SaveAttributeValues( p, CurrentPersonAlias );
+                        p.SaveAttributeValues( CurrentPersonAlias );
                     }
                 }
             }

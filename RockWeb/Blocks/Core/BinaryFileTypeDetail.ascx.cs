@@ -298,7 +298,7 @@ namespace RockWeb.Blocks.Core
                         }
 
                         // SaveAttributeValues for the BinaryFileType
-                        Rock.Attribute.Helper.SaveAttributeValues( binaryFileType, CurrentPersonAlias );
+                        binaryFileType.SaveAttributeValues( CurrentPersonAlias );
 
                     } );
             }
