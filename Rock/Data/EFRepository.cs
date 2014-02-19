@@ -708,7 +708,8 @@ namespace Rock.Data
         /// <summary>
         /// Executes the query, and returns number of rows affected
         /// </summary>
-        /// <param name="command">The command.</param>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
         /// <param name="parameters">The parameters.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
@@ -740,7 +741,7 @@ namespace Rock.Data
 
         /// <summary>
         /// Executes the query, and returns the first column of the first row in the
-        //  result set returned by the query. Additional columns or rows are ignored.
+        /// result set returned by the query. Additional columns or rows are ignored.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <param name="commandType">Type of the command.</param>
