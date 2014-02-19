@@ -38,8 +38,6 @@ namespace RockWeb.Blocks.Core
     [Description( "Displays the details of the given exception." )]
 
     [LinkedPage("Detail Page")] 
-    [BooleanField( "Show Cookies", "Show cookie information when block loads.", false )]
-    [BooleanField( "Show Server Variables", "Show server variables when block loads.", false )]
     public partial class ExceptionDetail : RockBlock, IDetailBlock
     {
 
@@ -55,13 +53,6 @@ namespace RockWeb.Blocks.Core
             if ( !Page.IsPostBack )
             {
                 int exceptionId = 0;
-
-                // set page title
-                lPageTitle.Text = ("Exception Overview").FormatAsHtmlTitle();
-
-                //sets icon and text for cookies and server variables check boxes
-                chkShowCookies.Text = "<i class=\"fa fa-laptop\"> </i> Show Cookies";
-                chkShowServerVariables.Text = "<i class=\"fa fa-hdd-o\"></i> Show Server Variables";
 
                 //if ExceptionId is not null and is an integer
                 if ( !String.IsNullOrWhiteSpace( PageParameter( "ExceptionId" ) ) && int.TryParse( PageParameter( "ExceptionId" ), out exceptionId ) )
@@ -174,10 +165,13 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
+            // set page title
+            lPageTitle.Text = String.Format("Exception Overview").FormatAsHtmlTitle();
+
             DescriptionList dl = new DescriptionList();
 
             dl.Add( "Site", baseException.Site != null ? baseException.Site.Name : String.Empty, true );
-            dl.Add( "Page", baseException.Page != null ? string.Format( "{0} <a href=\"{1}\" class=\"btn btn-xs\" target=\"_blank\"><i class=\"fa fa-arrow-right\"></i></a>", baseException.Page.InternalName, baseException.PageUrl ) : String.Empty, true );
+            dl.Add( "Page", baseException.Page != null ? string.Format( "{0} <a href=\"{1}\" class=\"btn btn-link btn-xs\" target=\"_blank\">Visit Page</a>", baseException.Page.InternalName, baseException.PageUrl ) : String.Empty, true );
 
             //If query string is not empty build query string list
             if ( !String.IsNullOrWhiteSpace( baseException.QueryString ) )
@@ -199,29 +193,6 @@ namespace RockWeb.Blocks.Core
 
             lCookies.Text = baseException.Cookies;
             lServerVariables.Text = baseException.ServerVariables;
-
-            //check to see if Show Cookies attribute is true
-            if( Convert.ToBoolean( GetAttributeValue( "ShowCookies" ) ) )
-            {
-                //if so check check box and register script to show cookies div
-                chkShowCookies.Checked = true;
-                ScriptManager.RegisterStartupScript( upExcpetionDetail, upExcpetionDetail.GetType(), "ShowCookiesOnLoad" + RockDateTime.Now.Ticks, "$(\"#divCookies\").css(\"display\", \"inherit\");", true );
-            }
-            else
-            {
-                chkShowCookies.Checked = false;
-            }
-
-            //check to see if show server variables attribute is checked
-            if ( Convert.ToBoolean( GetAttributeValue( "ShowServerVariables" ) ) )
-            {
-                chkShowServerVariables.Checked = true;
-                ScriptManager.RegisterStartupScript( upExcpetionDetail, upExcpetionDetail.GetType(), "ShowServerVariablesOnLoad" + RockDateTime.Now.Ticks, "$(\"#divServerVariables\").css(\"display\", \"inherit\");", true );
-            }
-            else
-            {
-                chkShowServerVariables.Checked = false;
-            }
 
             rptExcpetionDetails.DataSource = GetExceptionLogs( baseException ).OrderBy( e => e.Id );
             rptExcpetionDetails.DataBind();

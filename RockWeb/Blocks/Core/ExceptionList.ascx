@@ -9,11 +9,23 @@
 <asp:UpdatePanel ID="upExceptionList" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlExceptionGroups" runat="server" Visible="true">
+            
+            <div class="banner">
+                <h1>
+                    <span class="first-word">Exception </span>  Types</h1>
+            </div>
+            
             <div class="row">
-                <div class="col-md-12 clearExceptionsLink">
-                    <asp:LinkButton ID="btnClearExceptions" runat="server" CssClass="btn btn-action btn-sm" OnClientClick="return confirmExceptionListClear();" OnClick="btnClearExceptions_Click" CausesValidation="false">
+                <div class="col-md-9">
+                    <p>The list below displays all of the types of errors that have occurred in the system in order by the last time it occurred. Counts are shown
+                        of how many times each exception has occurred.
+                    </p>
+                </div>
+                
+                <div class="col-md-3">
+                    <p class="clearfix"><asp:LinkButton ID="btnClearExceptions" runat="server" CssClass="btn btn-action btn-sm pull-right" OnClientClick="return confirmExceptionListClear();" OnClick="btnClearExceptions_Click" CausesValidation="false">
                         <i class="fa fa-repeat"></i> Clear All Exceptions
-                    </asp:LinkButton>
+                    </asp:LinkButton></p>
                 </div>
             </div>
 
@@ -46,6 +58,9 @@
 
             <div class="row">
                 <div class="col-md-12">
+                    <p>
+                        Below is a list of each occurence of this error.
+                    </p>
                     <asp:Literal ID="lblMainDetails" runat="server" />
                 </div>
             </div>
@@ -54,7 +69,8 @@
 
             <Rock:Grid ID="gExceptionOccurrences" runat="server" AllowSorting="true">
                 <Columns>
-                    <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="Date" SortExpression="CreatedDateTime" />
+                    <Rock:DateField DataField="CreatedDateTime" HeaderText="Date" SortExpression="CreatedDateTime" />
+                    <Rock:TimeField DataField="CreatedDateTime" HeaderText="Time" SortExpression="CreatedDateTime" />
                     <asp:BoundField DataField="FullName" HeaderText="Logged In User" SortExpression="FullName" />
                     <asp:BoundField DataField="Description" HeaderText="Exception" SortExpression="Description" />
                 </Columns>

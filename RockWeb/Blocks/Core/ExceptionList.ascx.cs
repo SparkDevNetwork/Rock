@@ -72,9 +72,7 @@ namespace RockWeb.Blocks.Administraton
             gExceptionOccurrences.RowSelected += gExceptionOccurrences_RowSelected;
             gExceptionOccurrences.RowItemText = "Exception";
 
-            // set detail title with formating
-            lDetailTitle.Text = ("Exception Occurrences").FormatAsHtmlTitle();
-
+            
             RockPage page = Page as RockPage;
             if ( page != null )
             {
@@ -535,18 +533,25 @@ namespace RockWeb.Blocks.Administraton
                 hfBaseExceptionID.Value = exceptionId.ToString();
 
                 var descriptionList = new Rock.Web.DescriptionList();
-                if ( exception.Site != null )
-                {
-                    descriptionList.Add( "Site", exception.Site.Name );
-                }
-                if ( exception.Page != null )
-                {
-                    descriptionList.Add( "Page", exception.Page.InternalName );
-                }
+
+                // set detail title with formating
+                lDetailTitle.Text = String.Format( "Occurrences of {0}", exception.ExceptionType ).FormatAsHtmlTitle();
+
                 if ( !string.IsNullOrEmpty( exception.ExceptionType ) )
                 {
                     descriptionList.Add( "Type", exception.ExceptionType );
                 }
+
+                if ( exception.Site != null )
+                {
+                    descriptionList.Add( "Site", exception.Site.Name );
+                }
+
+                if ( exception.Page != null )
+                {
+                    descriptionList.Add( "Page", exception.Page.InternalName );
+                }
+                
                 lblMainDetails.Text = descriptionList.Html;
 
                 //Load the occurrences for the selected exception
