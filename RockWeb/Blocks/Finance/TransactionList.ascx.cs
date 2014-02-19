@@ -288,6 +288,24 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Refreshes the list. Public method...can be called from other blocks.
+        /// </summary>
+        public void RefreshList()
+        {
+            var contextEntity = this.ContextEntity();
+            if ( contextEntity != null )
+            {
+                if ( contextEntity is FinancialBatch )
+                {
+                    var batchId = PageParameter( "financialBatchId" );
+                    var batch = new FinancialBatchService().Get( int.Parse( batchId ) );
+                    _batch = batch;
+                    BindGrid();
+                }
+            }
+        }
+
+        /// <summary>
         /// Binds the grid.
         /// </summary>
         private void BindGrid()
@@ -301,10 +319,15 @@ namespace RockWeb.Blocks.Finance
                 queryable = queryable.Where( t => t.BatchId.HasValue && t.BatchId.Value == _batch.Id );
 
                 // If the batch is closed, do not allow any editing of the transactions
-                if ( _batch.Status != BatchStatus.Open )
+                if ( _batch.Status != BatchStatus.Open && _canConfigure )
                 {
                     gTransactions.Actions.ShowAdd = false;
                     gTransactions.IsDeleteEnabled = false;
+                }
+                else
+                {
+                    gTransactions.Actions.ShowAdd = true;
+                    gTransactions.IsDeleteEnabled = true;
                 }
             }
             else if ( !string.IsNullOrWhiteSpace( PageParameter( "financialBatchId" ) ) && _batch == null )

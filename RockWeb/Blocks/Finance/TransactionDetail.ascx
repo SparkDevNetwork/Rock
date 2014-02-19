@@ -80,6 +80,19 @@
                 </div>
             </asp:Panel>
 
+            <br />
+            <asp:Panel ID="pnlTransactionImages" runat="server">
+                <h4><asp:Literal ID="lImageHeading" runat="server" Text="Transaction Images" /></h4>
+                <div class="row col-md-12">
+                    <!-- this will be for the image uploader -->
+                </div>
+                <div class="row">
+                    <!-- this will be for displaying the images -->
+                    <div class="col-md-6"></div>
+                    <div class="col-md-6"></div>
+                </div>
+            </asp:Panel>
+
             <Rock:ModalDialog ID="mdDetails" runat="server" Title="Transaction Details" ValidationGroup="TransactionDetails">
                 <Content>
                     <asp:HiddenField ID="hfIdValue" runat="server" />
