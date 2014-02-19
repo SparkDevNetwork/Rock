@@ -29,6 +29,12 @@
                 </div>
             </div>
 
+            <div class="row">
+                <div class="col-md-12">
+                    <div id="exception-chart" style="width: 100%; height: 300px;"></div>
+                </div>
+            </div>
+
             <Rock:GridFilter ID="fExceptionList" runat="server">
                 <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Site" />
                 <Rock:PagePicker ID="ppPage" runat="server" Label="Page" />
@@ -47,6 +53,10 @@
                     <asp:BoundField DataField="SubsetCount" SortExpression="SubsetCount" ItemStyle-HorizontalAlign="Right" />
                 </Columns>
             </Rock:Grid>
+
+            
+            <asp:Literal ID="lGraphScript" runat="server" />
+
         </asp:Panel>
 
         <asp:Panel ID="pnlExceptionOccurrences" runat="server" Visible="false">

@@ -94,6 +94,7 @@
                             <li><a href="#imagesloaded">imagesLoaded</a> (MIT) - <a href="http://imagesloaded.desandro.com/">Project Site</a></li>
                             <li><a href="#spinkit">SpinKit</a> (MIT) - <a href="https://github.com/tobiasahlin/SpinKit">Project Site</a></li>
                             <li><a href="#webicon">Web Icon Set (File Type Icons)</a> (Custom) - <a href="http://www.webiconset.com/file-type-icons/">Project Site</a></li>
+                            <li><a href="#smartresize">SmartResize</a> (Creative Commons Public Domain Dedication) - <a href="http://www.paulirish.com/2009/throttled-smartresize-jquery-event-handler/">Project Site</a></li>
                         </ul>
 
 
@@ -2392,6 +2393,13 @@ It's not compulsory but it's highly recomended that you give credits to http://w
 
  You can use the royalty-free icons for any personal, commercial project including web design, software, application, advertising, film, video, computer game, gui design, illustration, for you or for your clients for FREE.
 </pre>
+
+                                                <a name="smartresize"></a>
+                        <h3>Smart Resize</h3>
+                        <pre>
+The person who associated a work with this deed has dedicated the work to the public domain by waiving all of his or her rights to the work worldwide under copyright law, including all related and neighboring rights, to the extent allowed by law.
+
+You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission. See Other Information below.</pre>
 
 
                     </div>
