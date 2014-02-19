@@ -58,6 +58,7 @@ namespace RockWeb.Blocks.Groups
             base.OnInit( e );
 
             _groupId = PageParameter( "groupId" );
+            hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
 
             if ( string.IsNullOrWhiteSpace( _groupId ) )
             {
@@ -68,9 +69,19 @@ namespace RockWeb.Blocks.Groups
                     if ( group != null )
                     {
                         _groupId = group.Id.ToString();
+                        string redirectUrl = string.Empty;
 
                         // redirect so that the group treeview has the first node selected right away and group detail shows the group
-                        this.Response.Redirect( this.Request.Url + "?groupId=" + _groupId.ToString(), false );
+                        if ( hfPageRouteTemplate.Value.IndexOf("{groupId}", StringComparison.OrdinalIgnoreCase) >= 0 )
+                        {
+                            redirectUrl = "~/" + hfPageRouteTemplate.Value.ReplaceCaseInsensitive( "{groupId}", _groupId.ToString() );
+                        }
+                        else
+                        {
+                            redirectUrl = this.Request.Url + "?groupId=" + _groupId.ToString();
+                        }
+
+                        this.Response.Redirect( redirectUrl, false );
                         Context.ApplicationInstance.CompleteRequest();
                     }
                 }
