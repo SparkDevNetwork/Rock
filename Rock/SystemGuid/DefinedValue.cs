@@ -33,10 +33,10 @@ namespace Rock.SystemGuid
         #endregion
 
         #region Check-in Search Type
-         
+
         /// <summary>
         /// Phone number search type
-        /// 
+        ///
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE_PHONE_NUMBER = "F3F66040-C50F-4D13-9652-780305FFFE23";
 
@@ -49,6 +49,7 @@ namespace Rock.SystemGuid
         /// Name Search Type
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE_NAME = "071D6DAA-3063-463A-B8A1-7D9A1BE1BB31";
+
         #endregion
 
         #region Device Type
@@ -75,12 +76,12 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Cash
         /// </summary>
-        public const string CURRENCY_TYPE_CASH =	"F3ADC889-1EE8-4EB6-B3FD-8C10F3C8AF93";
+        public const string CURRENCY_TYPE_CASH = "F3ADC889-1EE8-4EB6-B3FD-8C10F3C8AF93";
 
         /// <summary>
         /// Check
         /// </summary>
-        public const string CURRENCY_TYPE_CHECK =	"8B086A19-405A-451F-8D44-174E92D6B402";
+        public const string CURRENCY_TYPE_CHECK = "8B086A19-405A-451F-8D44-174E92D6B402";
 
         /// <summary>
         /// Credit Card
@@ -105,7 +106,7 @@ namespace Rock.SystemGuid
         /// An Event Registration Transaction
         /// </summary>
         public const string TRANSACTION_TYPE_EVENT_REGISTRATION = "33CB96DD-8752-4BEE-A142-88DB7DE538F0";
-               
+
         #endregion
 
         #region Financial Transaction Image Type
@@ -285,18 +286,18 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Member Person Connection Status
         /// </summary>
-        public const string PERSON_CONNECTION_STATUS_MEMBER = "E8848110-CDE3-400E-B6CD-C2BD309FAF38";
+        public const string PERSON_CONNECTION_STATUS_MEMBER = "41540783-D9EF-4C70-8F1D-C9E83D91ED5F";
 
         /// <summary>
         /// Attendee Person Connection Status
         /// </summary>
         public const string PERSON_CONNECTION_STATUS_ATTENDEE = "39F491C5-D6AC-4A9B-8AC0-C431CB17D588";
-        
+
         /// <summary>
         /// Visitor Person Connection Status
         /// TODO: some places have B91BA046-BC1E-400C-B85D-638C1F4E0CE2
         /// </summary>
-        public const string PERSON_CONNECTION_STATUS_VISITOR = "1B439C81-68B1-44F1-8DDF-0B555823D0F8";
+        public const string PERSON_CONNECTION_STATUS_VISITOR = "B91BA046-BC1E-400C-B85D-638C1F4E0CE2";
 
         #endregion
     }
