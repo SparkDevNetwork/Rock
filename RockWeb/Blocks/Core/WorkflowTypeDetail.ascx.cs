@@ -397,7 +397,7 @@ namespace RockWeb.Blocks.Core
                 {
                     foreach ( var workflowActionType in activityType.ActionTypes )
                     {
-                        Rock.Attribute.Helper.SaveAttributeValues( workflowActionType, CurrentPersonAlias );
+                        workflowActionType.SaveAttributeValues( CurrentPersonAlias );
                     }
                 }
 

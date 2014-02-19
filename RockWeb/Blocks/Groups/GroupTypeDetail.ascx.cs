@@ -534,7 +534,7 @@ namespace RockWeb.Blocks.Groups
                                 {
                                     role.SetAttributeValue( attributeValue.Key, roleState.GetAttributeValue( attributeValue.Key ) );
                                 }
-                                Helper.SaveAttributeValues( role, CurrentPersonAlias );
+                                role.SaveAttributeValues( CurrentPersonAlias );
                             }
                         }
 

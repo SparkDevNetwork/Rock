@@ -1548,6 +1548,16 @@ namespace Rock
         }
 
         /// <summary>
+        /// Saves the attribute values.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="currentPersonAlias">The current person alias.</param>
+        public static void SaveAttributeValues( this Rock.Attribute.IHasAttributes entity, PersonAlias currentPersonAlias )
+        {
+            Rock.Attribute.Helper.SaveAttributeValues( entity, currentPersonAlias );
+        }
+
+        /// <summary>
         /// Copies the attributes.
         /// </summary>
         /// <param name="entity">The entity.</param>

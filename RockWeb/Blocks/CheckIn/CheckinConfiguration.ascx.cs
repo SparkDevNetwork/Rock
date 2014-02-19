@@ -735,7 +735,7 @@ namespace RockWeb.Blocks.CheckIn
 
                         groupTypeService.Save( groupTypeDB, CurrentPersonAlias );
 
-                        Rock.Attribute.Helper.SaveAttributeValues( groupTypeDB, this.CurrentPersonAlias );
+                        groupTypeDB.SaveAttributeValues( this.CurrentPersonAlias );
 
                         // get fresh from database to make sure we have Id so we can update the CheckinLabel Attributes
                         groupTypeDB = groupTypeService.Get( groupTypeDB.Guid );
@@ -830,7 +830,7 @@ namespace RockWeb.Blocks.CheckIn
 
                         groupService.Save( groupDB, CurrentPersonAlias );
 
-                        Rock.Attribute.Helper.SaveAttributeValues( groupDB, this.CurrentPersonAlias );
+                        groupDB.SaveAttributeValues( this.CurrentPersonAlias );
                     }
 
                     /* now that we have all the grouptypes saved, now lets go back and save them again with the current UI ChildGroupTypes */
