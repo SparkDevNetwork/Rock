@@ -288,7 +288,13 @@ namespace Rock.SystemGuid
         public const string PERSON_CONNECTION_STATUS_MEMBER = "E8848110-CDE3-400E-B6CD-C2BD309FAF38";
 
         /// <summary>
+        /// Attendee Person Connection Status
+        /// </summary>
+        public const string PERSON_CONNECTION_STATUS_ATTENDEE = "39F491C5-D6AC-4A9B-8AC0-C431CB17D588";
+        
+        /// <summary>
         /// Visitor Person Connection Status
+        /// TODO: some places have B91BA046-BC1E-400C-B85D-638C1F4E0CE2
         /// </summary>
         public const string PERSON_CONNECTION_STATUS_VISITOR = "1B439C81-68B1-44F1-8DDF-0B555823D0F8";
 
