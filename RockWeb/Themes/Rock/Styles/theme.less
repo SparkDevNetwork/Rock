@@ -166,11 +166,11 @@ a:hover i.fs
 // -------------------------
 
 // brand bar
-.pagerheader {
+.pageheader {
     background: none;
     background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=");
     color: @header-text-color;
-    padding-bottom: @spacing-md-px;
+    --padding-bottom: @spacing-md-px;
     margin-bottom: @spacing-md-px;
 
     a {
@@ -338,8 +338,8 @@ a:hover i.fs
 
 // Small devices (tablets, 768px and up)
 @media (min-width: @screen-sm-min) {
-
-    .pagerheader {
+    
+    .pageheader {
         padding-bottom: 0;
 
         .smartsearch {
@@ -372,6 +372,13 @@ a:hover i.fs
 
 @media (max-width: @screen-sm-min) { // if screen smaller than sm
 
+    .pageheader {
+        .smartsearch {
+            margin: 0 auto 20px;
+            float: none !important;
+        }
+    }
+                                     
     header .header-zone {
         margin: -10px 0 0 0;
 
