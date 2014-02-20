@@ -63,16 +63,6 @@ namespace RockWeb.Blocks.Core
 
         #endregion
 
-        #region Properties
-
-        protected int? LastAttributeEdited
-        {
-            get { return ViewState["LastAttributeValueEdited"] as int?; }
-            set { ViewState["LastAttributeValueEdited"] = value; }
-        }
-
-        #endregion
-
         #region Base Control Methods
 
         /// <summary>
@@ -175,6 +165,15 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
+                if (hfActiveDialog.Value.ToUpper() == "ATTRIBUTEVALUE")
+                {
+                    int attributeId = 0;
+                    if ( hfIdValues.Value != string.Empty && int.TryParse( hfIdValues.Value, out attributeId ) )
+                    {
+                        ShowEditValue( attributeId, false );
+                    }
+                }
+
                 ShowDialog();
             }
 
@@ -676,7 +675,6 @@ namespace RockWeb.Blocks.Core
                 SetValidationGroup( fsEditControl.Controls, mdAttributeValue.ValidationGroup );
 
                 hfIdValues.Value = attribute.Id.ToString();
-                LastAttributeEdited = attribute.Id;
 
                 ShowDialog( "AttributeValue", true );
             }
