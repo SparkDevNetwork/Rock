@@ -58,7 +58,21 @@ namespace RockWeb.Blocks.Groups
             base.OnInit( e );
 
             _groupId = PageParameter( "groupId" );
+            
             hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
+            hfLimitToSecurityRoleGroups.Value = GetAttributeValue( "LimittoSecurityRoleGroups" );
+            hfRootGroupId.Value = GetAttributeValue( "Group" );
+
+            // limit GroupType selection to what Block Attributes allow
+            List<Guid> groupTypeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( Guid.Parse ).ToList();
+
+            string groupTypeIds = "0";
+            if ( groupTypeGuids.Any() )
+            {
+                groupTypeIds = new GroupTypeService().Queryable().Where( a => groupTypeGuids.Contains( a.Guid ) ).Select( a => a.Id ).ToList().AsDelimited( "," );
+                groupTypeIds = string.IsNullOrWhiteSpace( groupTypeIds ) ? "0" : groupTypeIds;
+            }
+            hfGroupTypes.Value = groupTypeIds;
 
             if ( string.IsNullOrWhiteSpace( _groupId ) )
             {
@@ -95,20 +109,6 @@ namespace RockWeb.Blocks.Groups
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
-            hfLimitToSecurityRoleGroups.Value = GetAttributeValue( "LimittoSecurityRoleGroups" );
-            hfRootGroupId.Value = GetAttributeValue( "Group" );
-
-            // limit GroupType selection to what Block Attributes allow
-            List<Guid> groupTypeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( Guid.Parse ).ToList();
-
-            string groupTypeIds = "0";
-            if ( groupTypeGuids.Any() )
-            {
-                groupTypeIds = new GroupTypeService().Queryable().Where( a => groupTypeGuids.Contains( a.Guid ) ).Select( a => a.Id ).ToList().AsDelimited( "," );
-                groupTypeIds = string.IsNullOrWhiteSpace( groupTypeIds ) ? "0" : groupTypeIds;
-            }
-            hfGroupTypes.Value = groupTypeIds;
 
             if ( !string.IsNullOrWhiteSpace( _groupId ) )
             {

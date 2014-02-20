@@ -96,10 +96,13 @@ namespace Rock.Model
 
             if ( id == 0 )
             {
-                qry = qry.Where( a => a.ParentGroupId == null );
                 if ( rootGroupId != 0 )
                 {
                     qry = qry.Where( a => a.Id == rootGroupId );
+                }
+                else
+                {
+                    qry = qry.Where( a => a.ParentGroupId == null );
                 }
             }
             else
