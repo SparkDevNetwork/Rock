@@ -54,6 +54,8 @@ header {
 
 // homepage items
 #ad-rotator {
+    margin: 0  -@grid-gutter-width/2 @spacing-lg-px;
+
     .item {
         img {
             width: 100%;
@@ -62,16 +64,12 @@ header {
 }
 
 .ad-list {
+    .ad {
+        margin-bottom: @spacing-lg-px;
+    }
+    .ad-title { margin: @spacing-sm-px 0; }
     img {
         width: 100%;
-    }
-
-    h2 {
-        height: 70px;
-    }
-
-    .ad-text {
-        height: 110px;
     }
 }
 
@@ -137,7 +135,9 @@ footer {
 
 // Small devices (tablets, 768px and up)
 @media (min-width: @screen-sm-min) {
-    
+    #ad-rotator {
+        margin: @spacing-lg-px initial;
+    }
 }
 
 // Medium devices (desktops, 992px and up) 

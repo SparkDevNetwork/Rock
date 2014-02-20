@@ -3168,17 +3168,20 @@ header .page-menu,
 header .login-status {
   float: right;
 }
+#ad-rotator {
+  margin: 0 -15px 30px;
+}
 #ad-rotator .item img {
   width: 100%;
 }
+.ad-list .ad {
+  margin-bottom: 30px;
+}
+.ad-list .ad-title {
+  margin: 7.5px 0;
+}
 .ad-list img {
   width: 100%;
-}
-.ad-list h2 {
-  height: 70px;
-}
-.ad-list .ad-text {
-  height: 110px;
 }
 .ad-detail img {
   width: 100%;
@@ -3219,4 +3222,9 @@ footer .footer-address {
   font-size: 210px;
   position: relative;
   top: -12px;
+}
+@media (min-width: 768px) {
+  #ad-rotator {
+    margin: 30px initial;
+  }
 }
