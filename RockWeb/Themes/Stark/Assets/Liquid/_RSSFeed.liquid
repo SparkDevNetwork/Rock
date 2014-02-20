@@ -1,20 +1,30 @@
 {% assign firstArticle = CurrentPage | Times:ResultsPerPage %}
-{% assign lastArticle = 0 %}
 <h1>{{title}}</h1>
 {{description}}
 <div class="rss-articles">
 	
 	{% if item != null and item.size > 0 %}
-		
-		{% if firstArticle >= item.size %}
-			{% assign CurrentPage = 0 %}
-			{% assign firstArticle = 0 %}
-		{% endif %}
 	
 		{% if ResultsPerPage == 0 %}
 			{% assign ResultsPerPage = item.size %}
 		{% endif %}
 		
+		{% assign base0PageCount = 0 %}
+		
+		{% if ResultsPerPage > 0 and ResultsPerPage < item.size %}
+			{% assign base0PageCount = item.size | DividedBy:ResultsPerPage %}
+			
+			{% assign remainder = item.size | Modulo:ResultsPerPage %}
+			{% if remainder == 0 %}
+				{% assign base0PageCount = base0PageCount | Minus:1 %}
+			{% endif %}
+		{% endif %}
+		
+		{% if firstArticle >= item.size %}
+			{% assign CurrentPage = base0PageCount %}
+			{% assign firstArticle = base0PageCount | Times:ResultsPerPage %}
+		{% endif %}
+	
 		{% for article in item limit:ResultsPerPage offset:firstArticle -%}
 			<div class="rss-article">
 				<h2>{{article.title}}</h2>
@@ -32,18 +42,6 @@
 			</div>
 		{% endfor -%}
 		
-		{% assign base0PageCount = 0 %}
-		
-		{% if ResultsPerPage > 0 and ResultsPerPage < item.size %}
-			{% assign base0PageCount = item.size | DividedBy:ResultsPerPage %}
-			
-			{% assign remainder = item.size | Modulo:ResultsPerPage %}
-			{% if remainder == 0 %}
-				{% assign base0PageCount = base0PageCount | Minus:1 %}
-			{% endif %}
-		{% endif %}
-		
-	
 		{% if base0PageCount > 0 %}
 			<ul class="pagination pagination-sm">
 				{% if CurrentPage == 0 %}
