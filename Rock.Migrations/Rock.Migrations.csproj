@@ -564,6 +564,10 @@
     <Compile Include="Migrations\201402200353474_SecureRest.Designer.cs">
       <DependentUpon>201402200353474_SecureRest.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402200737171_AddSampleDataBlock.cs" />
+    <Compile Include="Migrations\201402200737171_AddSampleDataBlock.Designer.cs">
+      <DependentUpon>201402200737171_AddSampleDataBlock.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -966,6 +970,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402200353474_SecureRest.resx">
       <DependentUpon>201402200353474_SecureRest.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402200737171_AddSampleDataBlock.resx">
+      <DependentUpon>201402200737171_AddSampleDataBlock.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
