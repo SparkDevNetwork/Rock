@@ -43,7 +43,13 @@ namespace Rock.Reporting.DataFilter
 
         private string _clientFormatSelection = string.Empty;
         private Type _entityFieldsEntityType = null;
-        private List<EntityField> _entityFields = null;
+
+        /// <summary>
+        /// the list of fields and attributes for the EntityType. 
+        /// ThreadStatic so that the fields don't get refetched more than once per page load, but also don't become stale
+        /// </summary>
+        [ThreadStatic]
+        private static List<EntityField> _entityFields;
 
         #endregion
 
@@ -170,7 +176,14 @@ namespace Rock.Reporting.DataFilter
                     {
                         // If two more values, then it is a comparison and a value
                         ComparisonType comparisonType = values[1].ConvertToEnum<ComparisonType>( ComparisonType.StartsWith );
-                        return string.Format( "{0} {1} '{2}'", entityField.Title, comparisonType.ConvertToString(), values[2] );
+                        if ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank )
+                        {
+                            return string.Format( "{0} {1}", entityField.Title, comparisonType.ConvertToString() );
+                        }
+                        else
+                        {
+                            return string.Format( "{0} {1} '{2}'", entityField.Title, comparisonType.ConvertToString(), values[2] );
+                        }
                     }
                 }
             }
@@ -192,7 +205,9 @@ namespace Rock.Reporting.DataFilter
             filterControl.Controls.Add( ddlProperty );
             controls.Add( ddlProperty );
 
-            foreach ( var entityField in GetEntityFields( entityType ) )
+            var entityFields = GetEntityFields( entityType );
+
+            foreach ( var entityField in entityFields )
             {
                 // Add the field to the dropdown of availailable fields
                 ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
@@ -201,13 +216,15 @@ namespace Rock.Reporting.DataFilter
                 {
                     case SystemGuid.FieldType.DATE:
 
-                        var ddlDate = ComparisonControl( DateFilterComparisonTypes );
-                        ddlDate.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
-                        filterControl.Controls.Add( ddlDate );
-                        controls.Add( ddlDate );
+                        var ddlDateCompare = ComparisonControl( DateFilterComparisonTypes );
+                        ddlDateCompare.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                        ddlDateCompare.AddCssClass( "js-filter-compare" );
+                        filterControl.Controls.Add( ddlDateCompare );
+                        controls.Add( ddlDateCompare );
 
                         var dtPicker = new DatePicker();
                         dtPicker.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                        dtPicker.AddCssClass( "js-filter-control" );
                         filterControl.Controls.Add( dtPicker );
                         controls.Add( dtPicker );
 
@@ -215,13 +232,15 @@ namespace Rock.Reporting.DataFilter
 
                     case SystemGuid.FieldType.INTEGER:
 
-                        var ddlInteger = ComparisonControl( NumericFilterComparisonTypes );
-                        ddlInteger.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
-                        filterControl.Controls.Add( ddlInteger );
-                        controls.Add( ddlInteger );
+                        var ddlIntegerCompare = ComparisonControl( NumericFilterComparisonTypes );
+                        ddlIntegerCompare.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                        ddlIntegerCompare.AddCssClass( "js-filter-compare" );
+                        filterControl.Controls.Add( ddlIntegerCompare );
+                        controls.Add( ddlIntegerCompare );
 
                         var numberBox = new NumberBox();
                         numberBox.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                        numberBox.AddCssClass( "js-filter-control" );
                         filterControl.Controls.Add( numberBox );
                         controls.Add( numberBox );
 
@@ -343,7 +362,7 @@ namespace Rock.Reporting.DataFilter
         {
             string selectedEntityField = ( (DropDownList)controls[0] ).SelectedValue;
 
-            writer.AddAttribute( "class", "row" );
+            writer.AddAttribute( "class", "row js-filter-row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( "class", "col-md-3" );
@@ -402,12 +421,12 @@ namespace Rock.Reporting.DataFilter
                 switch ( entityField.FilterFieldType )
                 {
                     case SystemGuid.FieldType.DATE:
-                        clientFormatSelection = string.Format( "result = '... a date value ...'" );
+                        clientFormatSelection = string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' )", entityField.Title );
                         break;
 
                     case SystemGuid.FieldType.INTEGER:
                     case SystemGuid.FieldType.TEXT:
-                        clientFormatSelection = string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ' \\'' + $('input', $selectedContent).val() + '\\''", entityField.Title );
+                        clientFormatSelection = string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' )", entityField.Title );
                         break;
 
                     case SystemGuid.FieldType.MULTI_SELECT:
@@ -434,7 +453,7 @@ namespace Rock.Reporting.DataFilter
 
             writer.RenderEndTag();  // row
 
-            string scriptFormat =@"
+            string scriptFormat = @"
     function {0}PropertySelection($content){{
         var sIndex = $('select.entity-property-selection', $content).find(':selected').index();
         var $selectedContent = $('div.field-criteria', $content).eq(sIndex);
@@ -451,9 +470,21 @@ namespace Rock.Reporting.DataFilter
 
             script = @"
     $('select.entity-property-selection').change(function(){
-        var $parentRow = $(this).parent().parent();
+        var $parentRow = $(this).closest('.js-filter-row');
         $parentRow.find('div.field-criteria').hide();
         $parentRow.find('div.field-criteria').eq($(this).find(':selected').index()).show();
+    });
+
+    $('.js-filter-compare').change( function () {
+        var $fieldCriteriaRow = $(this).closest('.field-criteria');
+        var compareValue = $(this).val();
+        var isNullCompare = (compareValue == 32 || compareValue == 64);
+        if (isNullCompare) {
+            $fieldCriteriaRow.find('.js-filter-control').hide();
+        }
+        else {
+            $fieldCriteriaRow.find('.js-filter-control').show();
+        }
     });
 ";
             ScriptManager.RegisterStartupScript( filterControl, typeof( FilterField ), "property-filter-script", script, true );
@@ -568,6 +599,7 @@ namespace Rock.Reporting.DataFilter
                     }
 
                     var groupedControls = GroupControls( entityType, controls );
+                    bool hideFilterControl = false;
 
                     if ( groupedControls.ContainsKey( selectedProperty ) )
                     {
@@ -576,6 +608,16 @@ namespace Rock.Reporting.DataFilter
                             if ( values.Count >= i + 1 )
                             {
                                 Control control = groupedControls[selectedProperty][i];
+                                if (control is WebControl)
+                                {
+                                    if ((control as WebControl).CssClass.Contains("js-filter-control"))
+                                    {
+                                        if ( hideFilterControl )
+                                        {
+                                            ( control as WebControl ).Style[HtmlTextWriterStyle.Display] = "none";
+                                        }
+                                    }
+                                }
 
                                 if ( control is DatePicker )
                                 {
@@ -607,7 +649,14 @@ namespace Rock.Reporting.DataFilter
                                 }
                                 else if ( control is DropDownList )
                                 {
-                                    ( (DropDownList)control ).SelectedValue = values[i + 1];
+                                    DropDownList ddlControl = control as DropDownList;
+                                    ddlControl.SelectedValue = values[i + 1];
+
+                                    if ( ddlControl.CssClass.Contains( "js-filter-compare" ) )
+                                    {
+                                        ComparisonType comparisonType = ddlControl.SelectedValue.ConvertToEnum<ComparisonType>(ComparisonType.EqualTo);
+                                        hideFilterControl = comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank;
+                                    }
                                 }
                                 else if ( control is CheckBoxList )
                                 {
@@ -672,6 +721,7 @@ namespace Rock.Reporting.DataFilter
         /// <summary>
         /// Gets the properties and attributes for the entity
         /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
         /// <returns></returns>
         private List<EntityField> GetEntityFields( Type entityType )
         {
@@ -706,24 +756,22 @@ namespace Rock.Reporting.DataFilter
 
                     if ( values.Count == 2 )
                     {
-                        DateTime dateValue = DateTime.MinValue;
-                        if ( DateTime.TryParse( values[1], out dateValue ) )
-                        {
-                            comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                            constantExpression = Expression.Constant( dateValue );
+                        comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
 
+                        if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
+                        {
                             if ( entityField.PropertyType == typeof( DateTime? ) )
                             {
-                                Expression hasValue = Expression.Property( propertyExpression, "HasValue" );
-                                Expression valueExpression = Expression.Property( propertyExpression, "Value" );
+                                MemberExpression hasValue = Expression.Property( propertyExpression, "HasValue" );
+                                MemberExpression valueExpression = Expression.Property( propertyExpression, "Value" );
+                                DateTime dateValue = values[1].AsDateTime() ?? DateTime.MinValue;
+                                constantExpression = Expression.Constant( dateValue );
                                 Expression comparisonExpression = ComparisonExpression( comparisonType, valueExpression, constantExpression );
                                 return Expression.AndAlso( hasValue, comparisonExpression );
                             }
-                            else
-                            {
-                                return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
-                            }
                         }
+
+                        return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
                     }
 
                     break;
@@ -733,24 +781,22 @@ namespace Rock.Reporting.DataFilter
 
                     if ( values.Count == 2 )
                     {
-                        int intValue = int.MinValue;
-                        if ( int.TryParse( values[1], out intValue ) )
-                        {
-                            comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                            constantExpression = Expression.Constant( intValue );
+                        comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
 
+                        if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
+                        {
                             if ( entityField.PropertyType == typeof( int? ) )
                             {
-                                Expression hasValue = Expression.Property( propertyExpression, "HasValue" );
-                                Expression valueExpression = Expression.Property( propertyExpression, "Value" );
+                                MemberExpression hasValue = Expression.Property( propertyExpression, "HasValue" );
+                                MemberExpression valueExpression = Expression.Property( propertyExpression, "Value" );
+                                int intValue = values[1].AsInteger( false ) ?? int.MinValue;
+                                constantExpression = Expression.Constant( intValue );
                                 Expression comparisonExpression = ComparisonExpression( comparisonType, valueExpression, constantExpression );
                                 return Expression.AndAlso( hasValue, comparisonExpression );
                             }
-                            else
-                            {
-                                return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
-                            }
                         }
+
+                        return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
                     }
 
                     break;
@@ -783,8 +829,8 @@ namespace Rock.Reporting.DataFilter
 
                                 if ( entityField.PropertyType == typeof( int? ) )
                                 {
-                                    Expression hasValue = Expression.Property( propertyExpression, "HasValue" );
-                                    Expression valueExpression = Expression.Property( propertyExpression, "Value" );
+                                    MemberExpression hasValue = Expression.Property( propertyExpression, "HasValue" );
+                                    MemberExpression valueExpression = Expression.Property( propertyExpression, "Value" );
                                     MethodCallExpression containsExpression = Expression.Call( constantExpression, "Contains", new Type[] { }, valueExpression );
                                     return Expression.AndAlso( hasValue, containsExpression );
                                 }
@@ -809,8 +855,8 @@ namespace Rock.Reporting.DataFilter
 
                             if ( entityField.PropertyType == typeof( bool? ) )
                             {
-                                Expression hasValue = Expression.Property( propertyExpression, "HasValue" );
-                                Expression valueExpression = Expression.Property( propertyExpression, "Value" );
+                                MemberExpression hasValue = Expression.Property( propertyExpression, "HasValue" );
+                                MemberExpression valueExpression = Expression.Property( propertyExpression, "Value" );
                                 Expression compareExpression = ComparisonExpression( comparisonType, valueExpression, constantExpression );
                                 return Expression.AndAlso( hasValue, compareExpression );
                             }
@@ -866,11 +912,11 @@ namespace Rock.Reporting.DataFilter
 
                     if ( values.Count == 2 )
                     {
-                        DateTime dateValue = DateTime.MinValue;
-                        if ( DateTime.TryParse( values[1], out dateValue ) )
-                        {
-                            comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                        comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
 
+                        if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
+                        {
+                            DateTime dateValue = values[1].AsDateTime() ?? DateTime.MinValue;
                             switch ( comparisonType )
                             {
                                 case ComparisonType.EqualTo:
@@ -891,6 +937,10 @@ namespace Rock.Reporting.DataFilter
                                     break;
                             }
                         }
+                        else
+                        {
+                            ids = attributeValues.Select( v => v.EntityId.Value );
+                        }
                     }
 
                     break;
@@ -899,11 +949,11 @@ namespace Rock.Reporting.DataFilter
 
                     if ( values.Count == 2 )
                     {
-                        int intValue = int.MinValue;
-                        if ( int.TryParse( values[1], out intValue ) )
-                        {
-                            comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                        comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
 
+                        if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
+                        {
+                            int intValue = values[1].AsInteger( false ) ?? int.MinValue;
                             switch ( comparisonType )
                             {
                                 case ComparisonType.EqualTo:
@@ -923,6 +973,10 @@ namespace Rock.Reporting.DataFilter
                                     ids = attributeValues.Where( v => intValue.CompareTo( Convert.ToInt32( v.Value ) ) > 0 ).Select( v => v.EntityId.Value );
                                     break;
                             }
+                        }
+                        else
+                        {
+                            ids = attributeValues.Select( v => v.EntityId.Value );
                         }
                     }
 
