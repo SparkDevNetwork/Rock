@@ -1065,7 +1065,11 @@ namespace Rock.Reporting.DataFilter
 
             foreach ( var property in GetEntityFields( entityType ) )
             {
-                groupedControls.Add( property.Name, new List<Control>() );
+                if ( !groupedControls.ContainsKey( property.Name ) )
+                {
+                    groupedControls.Add( property.Name, new List<Control>() );
+                }
+
                 for ( int i = property.Index; i < property.Index + property.ControlCount; i++ )
                 {
                     groupedControls[property.Name].Add( controls[i] );
