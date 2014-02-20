@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<data>
+  <families>
+
+    <family name="Decker Family" guid="53A02527-C2A7-4F36-8585-71A85B8E4601" campus="main campus"
+            startingAttendance="12/25/2012" endingAttendanceWeeksAgo="0" percentAttendance="80"
+            percentAttendedRegularService="88" attendingScheduleId="3" attendingAltScheduleId="4">
+      <addresses>
+        <address type="home" street1="11624 N 31st Dr" street2="" city="Phoenix" state="AZ" zip="85029" lat="33.593043" long="-112.126518" />
+      </addresses>
+
+      <members>
+        <person guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4" firstName="Theodore" nickName="Ted"
+          lastName="Decker" birthDate="2/10/1976" age="38" gender="male" email="ted@rocksoliddemochurch.com"
+          emailIsActive="true" emailDoNotEmail="false" recordType="person" recordStatus="active"
+          connectionStatus="member"  maritalStatus="married" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_ted.jpg"
+          homePhone="6235553322" mobilePhone="6235553322" workPhone="602555-2911"/>
+
+        <person guid="B71494DB-D809-451A-A950-28898D0FD92C" firstName="Cynthia" nickName="Cindy"
+          lastName="Decker" birthDate="3/10/1977" age="37" gender="female" email="cindy@rocksoliddemochurch.com"
+          emailIsActive="true" emailDoNotEmail="false" recordType="person" recordStatus="active"
+          connectionStatus="member"  maritalStatus="married" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_cindy.png"
+          homePhone="6235553323" mobilePhone="6235553323" workPhone=""/>
+
+        <person guid="32AAB9E4-970D-4551-A17E-385E66113BD5" firstName="Noah" nickName="Noah"
+          lastName="Decker" birthDate="3/10/2004" age="10" gender="male" email=""
+          emailIsActive="true" emailDoNotEmail="false" recordType="person" recordStatus="active"
+          connectionStatus="attendee"  maritalStatus="single" familyRole="child"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_noah.jpg"
+          homePhone="" mobilePhone="" workPhone=""/>
+
+        <person guid="27919690-3CCE-4FA6-95C4-CD21419EB51F" firstName="Alexis" nickName="Alex"
+          lastName="Decker" birthDate="2/10/2007" age="7" gender="female" email=""
+          emailIsActive="true" emailDoNotEmail="false" recordType="person" recordStatus="active"
+          connectionStatus="attendee"  maritalStatus="single" familyRole="child"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_alexis.jpg"
+          homePhone="" mobilePhone="" workPhone=""/>
+      </members>
+    </family>
+
+
+    <family name="Jones Family" guid="3BE313A1-51B1-4B03-B396-CEB9C3D9B919" campus="main campus"
+            startingAttendance="2/15/2013" endingAttendance="10/15/2013" percentAttendance="50"
+            percentAttendedRegularService="50" attendingScheduleId="3" attendingAltScheduleId="4">
+      <addresses>
+        <address type="home" street1="10601 N 32nd Dr" street2="" city="Phoenix" state="AZ" zip="85029" lat="33.5822525" long="-112.1283722" />
+      </addresses>
+
+      <members>
+        <person guid="3C402382-3BD2-4337-A996-9E62F1BAB09D" firstName="Benjamin" nickName="Ben"
+          lastName="Jones" birthDate="7/10/1978" age="36" gender="male" email="ben.jones@rocksoliddemochurch.com"
+          emailIsActive="true" emailDoNotEmail="false" recordType="person" recordStatus="active"
+          connectionStatus="member"  maritalStatus="single" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/jones_ben.jpg"
+          homePhone="" mobilePhone="" workPhone=""/>
+
+        <person guid="3D7F6605-3666-4AB5-9F4E-D7FEBF93278E" firstName="Brian" nickName="Brian"
+          lastName="Jones" birthDate="6/9/2008" age="6" gender="male" email="brian.jones@rocksoliddemochurch.com"
+          emailIsActive="true" emailDoNotEmail="false" recordType="person" recordStatus="active"
+          connectionStatus="member"  maritalStatus="single" familyRole="child"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/jones_brian.jpg"
+          homePhone="" mobilePhone="" workPhone=""/>
+
+      </members>
+    </family>
+
+    <family name="Jones Family" guid="FA7316E2-FFA9-4A55-B975-8F762353D0A8" campus="main campus"
+            startingAttendance="10/15/2013" endingAttendanceWeeksAgo="0" percentAttendance="90"
+            percentAttendedRegularService="90" attendingScheduleId="4" attendingAltScheduleId="3">
+      <addresses>
+        <address type="home" street1="10828 N Biltmore Dr" street2="" city="Phoenix" state="AZ" zip="85029" lat="33.5855064" long="-112.1186981" />
+      </addresses>
+
+      <members>
+        <person guid="FB5D2DC6-5AB4-4CBD-B02F-3FB9ADBEFD33" firstName="James" nickName="Jim"
+          lastName="Simmons" birthDate="6/1/1979" age="35" gender="male" email="jim.simmons@rocksoliddemochurch.com"
+          emailIsActive="true" emailDoNotEmail="false" recordType="person" recordStatus="active"
+          connectionStatus="member"  maritalStatus="married" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/simmons_jim.jpg"
+          homePhone="" mobilePhone="" workPhone=""/>
+
+        <person guid="FC6B9819-EF2E-44C9-93DB-05571B39E58F" firstName="Sarah" nickName="Sarah"
+          lastName="Simmons" birthDate="5/3/1980" age="34" gender="female" email="sarah.simmons@rocksoliddemochurch.com"
+          emailIsActive="true" emailDoNotEmail="false" recordType="person" recordStatus="active"
+          connectionStatus="member"  maritalStatus="married" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/simmons_sarah.jpg"
+          homePhone="" mobilePhone="" workPhone=""/>
+
+        <person guid="3D7F6605-3666-4AB5-9F4E-D7FEBF93278E" firstName="Brian"/>
+
+      </members>
+    </family>
+
+  </families>
+
+  <groups>
+    <group type="" name="TBD" guid=""/>
+  </groups>
+
+</data>
