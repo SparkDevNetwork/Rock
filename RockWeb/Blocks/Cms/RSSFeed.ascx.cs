@@ -162,7 +162,7 @@ namespace RockWeb.Blocks.Cms
                 foreach ( var listItem in nodeList )
                 {
                     sb.AppendFormat( "<li><span>{0}</span>", node.Key );
-                    sb.AppendLine( "<ul>" );
+                   sb.AppendLine( "<ul>" );
                     foreach ( var child in listItem )
                     {
                         sb.Append( FeedDebugNode( child ) );
@@ -195,6 +195,42 @@ namespace RockWeb.Blocks.Cms
 
                 if ( feedDictionary != null )
                 {
+
+                    int articlesPerPage = GetAttributeValue( "Resultsperpage" ).AsInteger( true ) ?? 0;
+                    int currentPage = 0;
+                    string baseUrl = new PageReference( RockPage.PageId ).BuildUrl();
+
+                    int.TryParse( PageParameter( "articlepage" ), out currentPage );
+
+                    if ( feedDictionary.ContainsKey( "ResultsPerPage" ) )
+                    {
+                        feedDictionary["ResultsPerPage"] = articlesPerPage;
+                    }
+                    else
+                    {
+                        feedDictionary.Add( "ResultsPerPage", articlesPerPage );
+                    }
+
+
+                    if ( feedDictionary.ContainsKey( "CurrentPage" ) )
+                    {
+                        feedDictionary["CurrentPage"] = currentPage;
+                    }
+                    else
+                    {
+                        feedDictionary.Add( "CurrentPage", currentPage );
+                    }
+
+                    if ( feedDictionary.ContainsKey( "BaseUrl" ) )
+                    {
+                        feedDictionary["BaseUrl"] = baseUrl;
+                    }
+                    else
+                    {
+                        feedDictionary.Add( "BaseUrl", baseUrl );
+                    }
+
+
                     if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "RSSFeedUrl" ) ) && GetAttributeValue( "IncludeRSSLink" ).AsBoolean() )
                     {
                         string rssLink = string.Format( "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"{0}\" href=\"{1}\" />", 
