@@ -42,6 +42,8 @@ namespace RockWeb.Blocks.Cms
     [TextField("CSS File", "An optional CSS File to add to the page for styling. Example \"Styles/rss.css\" would point to a stylesheet in the current theme's style folder.", false, "", "Layout")]
     [CodeEditorField("Template", "The liquid template to use for rendering. This template should be in the theme's \"Assets/Liquid\" folder and should have a underscore prepended to the filename.", 
         CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, true, @"{% include 'RSSFeedItem' %}", "Layout")]
+    [BooleanField( "Enable Debug", "Flag indicating that the control should output the feed data that will be passed to Liquid for parsing.", false )]
+    [BooleanField( "Include RSS Link", "Flag indicating that an RSS link should be included in the page header.", true, "Feed" )]
     public partial class RSSFeedItem : RockBlock
     {
         #region Private Properties
@@ -68,9 +70,8 @@ namespace RockWeb.Blocks.Cms
             {
                 RockPage.AddCSSLink( ResolveRockUrl( cssFile ) );
             }
+
         }
-
-
 
         protected override void OnLoad( EventArgs e )
         {
@@ -123,6 +124,67 @@ namespace RockWeb.Blocks.Cms
             return template;
         }
 
+        private string LoadDebugData( Dictionary<string, object> feedDictionary )
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+
+            if ( feedDictionary != null && feedDictionary.Count > 0 )
+            {
+                sb.AppendLine( "<ul id=\"debugFeed\">" );
+                foreach ( var kvp in feedDictionary )
+                {
+                    sb.Append( FeedDebugNode( kvp ) );
+                }
+                sb.AppendLine( "</ul>" );
+            }
+            return sb.ToString();
+        }
+
+        private string FeedDebugNode( KeyValuePair<string,object> node )
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+
+
+            if ( node.Value == null )
+            {
+                sb.AppendFormat( "<li><span>{0}: {1}</span>", node.Key, "{null}" );
+            }
+            else if ( node.Value.GetType() == typeof( Dictionary<string, object> ) )
+            {
+                sb.AppendFormat( "<li><span>{0}</span>", node.Key );
+
+                foreach ( var child in (Dictionary<string, object>)node.Value )
+                {
+                    sb.AppendLine( "<ul>" );
+                    sb.Append( FeedDebugNode( child ) );
+                    sb.AppendLine( "</ul>" );
+                }
+            }
+            else if ( node.Value.GetType() == typeof( List<Dictionary<string, object>> ) )
+            {
+                List<Dictionary<string, object>> nodeList = (List<Dictionary<string, object>>)node.Value;
+
+                foreach ( var listItem in nodeList )
+                {
+                    sb.AppendFormat( "<li><span>{0}</span>", node.Key );
+                    sb.AppendLine( "<ul>" );
+                    foreach ( var child in listItem )
+                    {
+                        sb.Append( FeedDebugNode( child ) );
+                    }
+                    sb.AppendLine( "</ul>" );
+                }
+            }
+            else
+            {
+                sb.AppendFormat( "<li><span>{0}: {1}</span>", node.Key, node.Value == null ? "{null}" : System.Web.HttpUtility.HtmlEncode( node.Value.ToString() ) );
+            }
+
+            sb.Append( "</li>" );
+
+            return sb.ToString();
+        }
+
         private void LoadFeedItem(string feedItemId)
         {
             string feedUrl = GetAttributeValue( "RSSFeedUrl" );
@@ -135,6 +197,17 @@ namespace RockWeb.Blocks.Cms
 
                 if ( feedDictionary != null && feedDictionary.Count > 0 )
                 {
+
+
+                    if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "RSSFeedUrl" ) ) && GetAttributeValue( "IncludeRSSLink" ).AsBoolean() )
+                    {
+                        string rssLink = string.Format( "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"{0}\" href=\"{1}\" />", 
+                            feedDictionary.ContainsKey("title") ? feedDictionary["title"].ToString(): "RSS",
+                            GetAttributeValue( "RSSFeedUrl" ) );
+
+                        Page.Header.Controls.Add( new LiteralControl( rssLink ) );
+                    }
+
                     Dictionary<string, object> previousItem = null;
                     Dictionary<string, object> selectedItem = null;
                     Dictionary<string, object> nextItem = null;
@@ -163,6 +236,21 @@ namespace RockWeb.Blocks.Cms
 
                     }
 
+                    Dictionary<string, object> feedFinal = new Dictionary<string, object>();
+                    feedFinal.Add( "Feed", feedDictionary );
+                    feedFinal.Add( "SelectedItem", selectedItem );
+                    feedFinal.Add( "PreviousItem", previousItem );
+                    feedFinal.Add( "NextItem", nextItem );
+
+                    if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+                    {
+                        string debugValue = LoadDebugData( feedFinal );
+                        phFeedItem.Controls.Clear();
+                        phFeedItem.Controls.Add( new LiteralControl( debugValue ) );
+                        pnlContent.Visible = true;
+                        return;
+
+                    }
 
                     if ( selectedItem == null )
                     {
@@ -170,13 +258,7 @@ namespace RockWeb.Blocks.Cms
                     }
                     else
                     {
-                        Dictionary<string, object> feedFinal = new Dictionary<string, object>();
-                        feedFinal.Add( "Feed", feedDictionary );
-                        feedFinal.Add( "SelectedItem", selectedItem );
-                        feedFinal.Add( "PreviousItem", previousItem );
-                        feedFinal.Add( "NextItem", nextItem );
-
-                        string content = GetTemplate().Render( Hash.FromDictionary( feedFinal ) );
+                        string content = GetTemplate().Render( Hash.FromDictionary( feedFinal ) );                        
 
                         if ( content.Contains( "No such template" ) )
                         {
