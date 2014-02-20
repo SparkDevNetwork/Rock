@@ -238,7 +238,7 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     groupMemberService.Save( groupMember, CurrentPersonAlias );
-                    Rock.Attribute.Helper.SaveAttributeValues( groupMember, CurrentPersonAlias );
+                    groupMember.SaveAttributeValues( CurrentPersonAlias );
                 } );
 
                 Group group = new GroupService().Get( groupMember.GroupId );

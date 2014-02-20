@@ -59,9 +59,7 @@
                 <div class="container">
 			        <div class="navbar-header">
                         <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse">
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
+                            <i class="fa fa-bars"></i>
                         </button>
                         <Rock:Zone Name="Header" runat="server" />
 			        </div>	

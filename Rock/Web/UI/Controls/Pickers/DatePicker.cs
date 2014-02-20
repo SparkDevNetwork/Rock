@@ -31,7 +31,7 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            this.CssClass = "input-width-md";
+            this.AddCssClass( "input-width-md" );
             this.AppendText = "<i class='fa fa-calendar'></i>";
 
             if ( string.IsNullOrWhiteSpace( this.SourceTypeName ) )
@@ -73,7 +73,7 @@ namespace Rock.Web.UI.Controls
 
             set
             {
-                if ( (value ?? DateTime.MinValue) != DateTime.MinValue )
+                if ( ( value ?? DateTime.MinValue ) != DateTime.MinValue )
                 {
                     this.Text = value.Value.ToShortDateString();
                     this.Attributes["value"] = this.Text;

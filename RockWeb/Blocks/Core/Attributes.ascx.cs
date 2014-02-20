@@ -140,8 +140,8 @@ namespace RockWeb.Blocks.Core
                 SecurityField securityField = rGrid.Columns[7] as SecurityField;
                 securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
 
-                modalDetails.SaveClick += modalDetails_SaveClick;
-                modalDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValues.ClientID );
+                mdAttribute.SaveClick += mdAttribute_SaveClick;
+                mdAttributeValue.SaveClick += mdAttributeValue_SaveClick;
 
                 if ( !_configuredType )
                 {
@@ -175,15 +175,7 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                if ( LastAttributeEdited.HasValue )
-                {
-                    ShowEditValue( LastAttributeEdited.Value, false );
-                }
-
-                if ( !string.IsNullOrWhiteSpace( hfIdValues.Value ) )
-                {
-                    modalDetails.Show();
-                }
+                ShowDialog();
             }
 
 
@@ -426,11 +418,11 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Handles the Click event of the btnSave control.
+        /// Handles the SaveClick event of the mdAttribute control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnSave_Click( object sender, EventArgs e )
+        protected void mdAttribute_SaveClick( object sender, EventArgs e )
         {
             Rock.Model.Attribute attribute = null;
 
@@ -451,29 +443,17 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
+            HideDialog();
+
             BindGrid();
-
-            pnlDetails.Visible = false;
-            pnlList.Visible = true;
         }
 
         /// <summary>
-        /// Handles the Click event of the btnCancel control.
+        /// Handles the SaveClick event of the mdAttributeValue control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
-        {
-            pnlDetails.Visible = false;
-            pnlList.Visible = true;
-        }
-
-        /// <summary>
-        /// Handles the SaveClick event of the modalDetails control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void modalDetails_SaveClick( object sender, EventArgs e )
+        protected void mdAttributeValue_SaveClick( object sender, EventArgs e )
         {
             if ( _displayValueEdit )
             {
@@ -510,7 +490,8 @@ namespace RockWeb.Blocks.Core
                 }
 
                 hfIdValues.Value = string.Empty;
-                modalDetails.Hide();
+
+                HideDialog();
             }
 
             BindGrid();
@@ -622,7 +603,7 @@ namespace RockWeb.Blocks.Core
 
             if ( attributeModel == null )
             {
-                lAttributeTitle.Text = ("Add Attribute").FormatAsHtmlTitle();
+                mdAttribute.Title = ("Add Attribute").FormatAsHtmlTitle();
 
                 attributeModel = new Rock.Model.Attribute();
                 attributeModel.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
@@ -644,7 +625,7 @@ namespace RockWeb.Blocks.Core
             else
             {
                 edtAttribute.ActionTitle = Rock.Constants.ActionTitle.Edit( Rock.Model.Attribute.FriendlyTypeName );
-                lAttributeTitle.Text = ("Edit " + attributeModel.Name).FormatAsHtmlTitle();
+                mdAttribute.Title = ( "Edit " + attributeModel.Name ).FormatAsHtmlTitle();
             }
 
             Type type = null;
@@ -671,8 +652,7 @@ namespace RockWeb.Blocks.Core
                 tbAttrQualifierValue.Text = attributeModel.EntityTypeQualifierValue;
             }
 
-            pnlList.Visible = false;
-            pnlDetails.Visible = true;
+            ShowDialog( "Attribute", true );
         }
 
         /// <summary>
@@ -687,15 +667,55 @@ namespace RockWeb.Blocks.Core
                 fsEditControl.Controls.Clear();
 
                 var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
+
+                mdAttributeValue.Title = attribute.Name + " Value";
+
                 var attributeValue = new AttributeValueService().GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
                 attribute.AddControl( fsEditControl.Controls, attributeValue != null ? attributeValue.Value : null, string.Empty, setValues, true );
 
-                SetValidationGroup( fsEditControl.Controls, modalDetails.ValidationGroup );
+                SetValidationGroup( fsEditControl.Controls, mdAttributeValue.ValidationGroup );
 
                 hfIdValues.Value = attribute.Id.ToString();
                 LastAttributeEdited = attribute.Id;
-                modalDetails.Show();
+
+                ShowDialog( "AttributeValue", true );
             }
+        }
+
+        private void ShowDialog( string dialog, bool setValues = false )
+        {
+            hfActiveDialog.Value = dialog.ToUpper().Trim();
+            ShowDialog( setValues );
+        }
+
+
+        private void ShowDialog( bool setValues = false )
+        {
+            switch ( hfActiveDialog.Value )
+            {
+                case "ATTRIBUTE":
+                    mdAttribute.Show();
+                    break;
+                case "ATTRIBUTEVALUE":
+                    mdAttributeValue.Show();
+                    break;
+            }
+        }
+
+        private void HideDialog()
+        {
+            switch ( hfActiveDialog.Value )
+            {
+
+                case "ATTRIBUTE":
+                    mdAttribute.Hide();
+                    break;
+                case "ATTRIBUTEVALUE":
+                    mdAttributeValue.Hide();
+                    break;
+            }
+
+            hfActiveDialog.Value = string.Empty;
         }
 
         #endregion

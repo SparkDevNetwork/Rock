@@ -166,7 +166,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return Group.ToString() + " at " + Location.ToString();
+            return Group.ToStringSafe() + " at " + Location.ToStringSafe();
         }
 
         #endregion

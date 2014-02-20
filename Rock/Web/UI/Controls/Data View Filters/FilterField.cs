@@ -316,7 +316,7 @@ $('.filter-item-select').click(function (event) {
                 if ( component != null )
                 {
                     clientFormatString =
-                       string.Format( "if ($(this).find('.filter-view-state').children('i').attr('class') == 'fa-chevron-up') {{ var $article = $(this).parents('article:first'); var $content = $article.children('div.panel-body'); $article.find('div.filter-item-description:first').html({0}); }}", component.GetClientFormatSelection( FilteredEntityType ) );
+                       string.Format( "if ($(this).find('.filter-view-state').children('i').hasClass('fa-chevron-up')) {{ var $article = $(this).parents('article:first'); var $content = $article.children('div.panel-body'); $article.find('div.filter-item-description:first').html({0}); }}", component.GetClientFormatSelection( FilteredEntityType ) );
                 }
             }
 

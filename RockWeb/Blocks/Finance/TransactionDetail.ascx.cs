@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -49,7 +50,9 @@ namespace RockWeb.Blocks.Finance
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            gTransactionDetails.DataKeyNames = new string[] { "id" };
             gTransactionDetails.Actions.AddClick += gTransactionDetails_Add;
+            gTransactionDetails.GridRebind += gTransactionDetails_GridRebind;
             mdDetails.SaveClick += mdDetails_SaveClick;
             mdDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
 
@@ -115,9 +118,9 @@ namespace RockWeb.Blocks.Finance
                     financialTransaction.AuthorizedPersonId = null;
                 }
 
-                decimal amount = 0M;
-                decimal.TryParse( tbAmount.Text.Replace( "$", string.Empty ), out amount );
-                financialTransaction.Amount = amount;
+                //decimal amount = 0M;
+                //decimal.TryParse( tbAmount.Text.Replace( "$", string.Empty ), out amount );
+                //financialTransaction.Amount = amount;
 
                 if ( ddlCurrencyType.SelectedItem.ToString() == "Credit Card" )
                 {
@@ -197,6 +200,11 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbEdit_Click( object sender, EventArgs e )
         {
             BindDropdowns();
@@ -204,27 +212,133 @@ namespace RockWeb.Blocks.Finance
             ShowEdit( transaction );
         }
 
+        /// <summary>
+        /// Handles the RowSelected event of the gTransactionDetails control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gTransactionDetails_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-        }
-
-        protected void gTransactionDetails_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
-        {
-        }
-
-        void gTransactionDetails_Add( object sender, EventArgs e )
-        {
+            var transactionDetailsId = (int)e.RowKeyValue;
+            hfIdValue.Value = transactionDetailsId.ToString();
+            var ftd = new FinancialTransactionDetailService().Get( transactionDetailsId );
+            ddlTransactionAccount.SelectedValue = ftd.AccountId.ToString();
+            tbTransactionAmount.Text = ftd.Amount.ToString();
+            tbTransactionSummary.Text = ftd.Summary;
             mdDetails.Show();
         }
 
+        /// <summary>
+        /// Handles the Delete event of the gTransactionDetails control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
+        protected void gTransactionDetails_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        {
+            var ftdService = new FinancialTransactionDetailService();
+            var ftd = ftdService.Get( (int)e.RowKeyValue );
+            if ( ftd != null )
+            {
+                string errorMessage;
+                if ( !ftdService.CanDelete( ftd, out errorMessage ) )
+                {
+                    maGridWarning.Show( errorMessage, Rock.Web.UI.Controls.ModalAlertType.Information );
+                    return;
+                }
+                ftdService.Delete( ftd, CurrentPersonAlias );
+                ftdService.Save( ftd, CurrentPersonAlias );
+            }
+            var transactionId = PageParameter( "transactionId" );
+            FinancialTransaction transaction = new FinancialTransaction();
+            transaction = new FinancialTransactionService().Get( int.Parse( transactionId ) );
+            BindTransactionDetailGrid( transaction );
+        }
+
+        /// <summary>
+        /// Handles the Add event of the gTransactionDetails control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void gTransactionDetails_Add( object sender, EventArgs e )
+        {
+            var transactionDetailsId = 0;
+            hfIdValue.Value = transactionDetailsId.ToString();
+            ddlTransactionAccount.SelectedIndex = 0;
+            tbTransactionAmount.Text = "";
+            tbTransactionSummary.Text = "";
+            mdDetails.Show();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gTransactionDetails control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void gTransactionDetails_GridRebind( object sender, EventArgs e )
+        {
+            var transactionId = PageParameter( "transactionId" );
+            FinancialTransaction transaction = new FinancialTransaction();
+            transaction = new FinancialTransactionService().Get( int.Parse( transactionId ) );
+            BindTransactionDetailGrid( transaction );
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdDetails control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         void mdDetails_SaveClick( object sender, EventArgs e )
         {
+            var transactionId = PageParameter( "transactionId" );
+            if ( !string.IsNullOrWhiteSpace( tbTransactionAmount.Text ) )
+            {
+                var ftdService = new FinancialTransactionDetailService();
+                FinancialTransactionDetail ftd = null;
+                var transactionDetailId = int.Parse( hfIdValue.Value );
+                if ( transactionDetailId > 0 )
+                {
+                    ftd = ftdService.Get( transactionDetailId );
+                }
+                else
+                {
+                    ftd = new FinancialTransactionDetail { Id = 0 };
+                }
+
+                ftd.TransactionId = int.Parse( transactionId );
+                ftd.AccountId = int.Parse( ddlTransactionAccount.SelectedValue );
+                ftd.Amount = decimal.Parse( tbTransactionAmount.Text );
+                ftd.Summary = tbTransactionSummary.Text;
+                RockTransactionScope.WrapTransaction( () =>
+                {
+                    if ( transactionDetailId == 0 )
+                    {
+                        ftdService.Add( ftd );
+                    }
+                    ftdService.Save( ftd, CurrentPersonAlias );
+                } );
+            }
+
             mdDetails.Hide();
+            FinancialTransaction transaction = new FinancialTransaction();
+            transaction = new FinancialTransactionService().Get( int.Parse( transactionId ) );
+            BindTransactionDetailGrid( transaction );
         }
 
         #endregion Events
 
         #region Internal Methods
+
+        private void LoadAccountDropDown()
+        {
+            var accountList = new FinancialAccountService().Queryable().ToList();
+            foreach ( var account in accountList )
+            {
+                ListItem acc = new ListItem();
+                acc.Text = account.Name;
+                acc.Value = account.Id.ToString();
+                ddlTransactionAccount.Items.Add( acc );
+            }
+        }
 
         /// <summary>
         /// Binds the dropdowns.
@@ -269,7 +383,6 @@ namespace RockWeb.Blocks.Finance
             {
                 lTitle.Text = "Edit Transaction".FormatAsHtmlTitle();
                 hfIdTransValue.Value = transaction.Id.ToString();
-                tbAmount.Text = transaction.Amount.ToString();
                 hfBatchId.Value = PageParameter( "financialBatchId" );
                 ddlCreditCardType.SetValue( transaction.CreditCardTypeValueId );
                 ddlCurrencyType.SetValue( transaction.CurrencyTypeValueId );
@@ -322,7 +435,6 @@ namespace RockWeb.Blocks.Finance
             }
 
             lDetailsLeft.Text = new DescriptionList()
-                .Add( "Amount", transaction.Amount )
                 .Add( "Transaction Date/Time", transaction.TransactionDateTime )
                 .Add( "Transaction Type", transaction.TransactionTypeValue )
                 .Add( "Credit Card Type", transaction.CreditCardTypeValue )
@@ -390,20 +502,8 @@ namespace RockWeb.Blocks.Finance
             }
 
             lbSave.Visible = !readOnly;
-
-            // Load the TransactionDetails grid here if this transaction already exists.
-            if ( transaction.Id != 0 )
-            {
-                var financialTransactionDetails = new FinancialTransactionDetailService().Queryable().ToList();
-                gTransactionDetails.DataSource = financialTransactionDetails;
-                gTransactionDetails.DataBind();
-                gTransactionDetails.Actions.ShowAdd = true;
-                pnlTransactionDetails.Visible = true;
-            }
-            else
-            {
-                pnlTransactionDetails.Visible = false;
-            }
+            LoadAccountDropDown();
+            BindTransactionDetailGrid( transaction );
         }
 
         /// <summary>
@@ -415,6 +515,27 @@ namespace RockWeb.Blocks.Finance
             valSummaryTop.Controls.Clear();
             valSummaryTop.Controls.Add( new LiteralControl( message ) );
             valSummaryTop.Visible = true;
+        }
+
+        /// <summary>
+        /// Binds the transaction detail grid.
+        /// </summary>
+        /// <param name="transaction">The transaction.</param>
+        private void BindTransactionDetailGrid( FinancialTransaction transaction )
+        {
+            // Load the TransactionDetails grid here if this transaction already exists.
+            if ( transaction.Id != 0 )
+            {
+                var financialTransactionDetails = new FinancialTransactionDetailService().Queryable().Where( trans => trans.TransactionId == transaction.Id ).ToList();
+                gTransactionDetails.DataSource = financialTransactionDetails;
+                gTransactionDetails.DataBind();
+                gTransactionDetails.Actions.ShowAdd = true;
+                pnlTransactionDetails.Visible = true;
+            }
+            else
+            {
+                pnlTransactionDetails.Visible = false;
+            }
         }
 
         #endregion Internal Methods

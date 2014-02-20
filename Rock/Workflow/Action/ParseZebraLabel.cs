@@ -75,7 +75,7 @@ namespace Rock.Workflow.Action
                 newValues.Add( attributeValue );
 
                 binaryFile.AttributeValues["MergeCodes"] = newValues;
-                Rock.Attribute.Helper.SaveAttributeValues( binaryFile, null );
+                binaryFile.SaveAttributeValues( null );
             }
             
             return true;

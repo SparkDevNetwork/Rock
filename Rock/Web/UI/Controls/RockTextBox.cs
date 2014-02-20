@@ -264,6 +264,13 @@ namespace Rock.Web.UI.Controls
             if ( renderInputGroup )
             {
                 writer.AddAttribute( "class", "input-group " + cssClass );
+                if (this.Style[HtmlTextWriterStyle.Display] == "none")
+                {
+                    // render the display:none in the inputgroup div instead of the control itself
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+                    this.Style[HtmlTextWriterStyle.Display] = string.Empty;
+                }
+                
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 this.CssClass = string.Empty;

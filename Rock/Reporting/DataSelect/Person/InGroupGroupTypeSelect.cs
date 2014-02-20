@@ -178,9 +178,9 @@ namespace Rock.Reporting.DataSelect.Person
             cblRole = new RockCheckBoxList();
             cblRole.Label = "with Group Role(s)";
             cblRole.ID = parentControl.ID + "_1";
+            PopulateGroupRolesCheckList( groupTypePicker.SelectedGroupTypeId ?? 0 );
+            
             parentControl.Controls.Add( cblRole );
-
-            PopulateGroupRolesCheckList( groupTypePicker.SelectedGroupTypeId ?? 0);
 
             return new Control[2] { groupTypePicker, cblRole };
         }

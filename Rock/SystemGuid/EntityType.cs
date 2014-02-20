@@ -27,13 +27,23 @@ namespace Rock.SystemGuid
     public static class EntityType
     {
         /// <summary>
-        /// The database authenticatio provider
+        /// The database authentication provider
         /// </summary>
         public const string AUTHENTICATION_DATABASE = "4E9B798F-BB68-4C0E-9707-0928D15AB020";
 
         /// <summary>
-        /// Gets the guid for the email communication channel
+        /// The guid for the email communication channel
         /// </summary>
         public const string COMMUNICATION_CHANNEL_EMAIL = "5A653EBE-6803-44B4-85D2-FB7B8146D55D";
+
+        /// <summary>
+        /// The guid for the database storage provider entity
+        /// </summary>
+        public const string STORAGE_PROVIDER_DATABASE = "0AA42802-04FD-4AEC-B011-FEB127FC85CD";
+
+        /// <summary>
+        /// The guid for the filesystem storage provider entity
+        /// </summary>
+        public const string STORAGE_PROVIDER_FILESYSTEM = "A97B6002-454E-4890-B529-B99F8F2F376A";
     }
 }
