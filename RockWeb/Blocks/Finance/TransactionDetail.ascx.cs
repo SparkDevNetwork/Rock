@@ -50,6 +50,10 @@ namespace RockWeb.Blocks.Finance
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.js" ) );
+
             gTransactionDetails.DataKeyNames = new string[] { "id" };
             gTransactionDetails.Actions.AddClick += gTransactionDetails_Add;
             gTransactionDetails.GridRebind += gTransactionDetails_GridRebind;
@@ -324,10 +328,51 @@ namespace RockWeb.Blocks.Finance
             BindTransactionDetailGrid( transaction );
         }
 
+        /// <summary>
+        /// Handles the ItemDataBound event of the dlImages control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="DataListItemEventArgs"/> instance containing the event data.</param>
+        protected void dlImages_ItemDataBound( object sender, DataListItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {
+                PlaceHolder ph = e.Item.FindControl( "phImage" ) as PlaceHolder;
+                var imageId = ( (BinaryFile)e.Item.DataItem ).Id;
+                var imageUrl = "/GetImage.ashx?id=" + imageId;
+                var imageTag = new LiteralControl( "<img src='" + imageUrl + "' style='max-width:100%;max-height:100%;' />" );
+                var imageLink = new HyperLink();
+                imageLink.Attributes.Add( "href", imageUrl );
+                ph.Controls.Add( imageLink );
+                imageLink.Controls.Add( imageTag );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbSaveImage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbSaveImage_Click( object sender, EventArgs e )
+        {
+            var service = new FinancialTransactionImageService();
+            var financialTransactionImage = new FinancialTransactionImage();
+            var transactionId = int.Parse( PageParameter( "transactionId" ) );
+            financialTransactionImage.BinaryFileId = (int)imgupTransactionImages.BinaryFileId;
+            financialTransactionImage.TransactionId = transactionId;
+            financialTransactionImage.TransactionImageTypeValueId = ddlTransactionImageType.SelectedValueAsInt();
+            service.Add( financialTransactionImage );
+            service.Save( financialTransactionImage );
+            LoadRelatedImages( transactionId );
+        }
+
         #endregion Events
 
         #region Internal Methods
 
+        /// <summary>
+        /// Loads the account drop down.
+        /// </summary>
         private void LoadAccountDropDown()
         {
             var accountList = new FinancialAccountService().Queryable().ToList();
@@ -504,6 +549,8 @@ namespace RockWeb.Blocks.Finance
             lbSave.Visible = !readOnly;
             LoadAccountDropDown();
             BindTransactionDetailGrid( transaction );
+            BindDefinedTypeDropdown( ddlTransactionImageType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_IMAGE_TYPE ), "Transaction Image Type" );
+            LoadRelatedImages( transaction.Id );
         }
 
         /// <summary>
@@ -538,6 +585,28 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
+        /// <summary>
+        /// Loads the related images.
+        /// </summary>
+        /// <param name="transactionId">The transaction identifier.</param>
+        private void LoadRelatedImages( int transactionId)
+        {
+            // Let's get a list of related images from the FinancialTransactionImage table
+            var relatedImageList = new FinancialTransactionImageService().Queryable().Where( image => image.TransactionId == transactionId ).ToList();
+
+            // Now let's get the binary files from the BinaryFile table
+            var binaryFileList = new List<BinaryFile>();
+            foreach( var relatedImage in relatedImageList )
+            {
+                var binaryFileId = relatedImage.BinaryFileId;
+                var binaryFile = new BinaryFileService().Get( binaryFileId );
+                binaryFileList.Add( binaryFile );
+            }
+
+            dlImages.DataSource = binaryFileList;
+            dlImages.DataBind();
+        }
+
         #endregion Internal Methods
-    }
+}
 }

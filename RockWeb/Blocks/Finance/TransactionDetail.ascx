@@ -1,4 +1,9 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TransactionDetail.ascx.cs" Inherits="RockWeb.Blocks.Finance.TransactionDetail" %>
+<script>
+    $(function () {
+        $(".photo a").fluidbox();
+    });
+</script>
 <asp:UpdatePanel ID="upFinancialBatch" runat="server">
     <ContentTemplate>
 
@@ -80,16 +85,30 @@
                 </div>
             </asp:Panel>
 
-            <br />
             <asp:Panel ID="pnlTransactionImages" runat="server">
-                <h4><asp:Literal ID="lImageHeading" runat="server" Text="Transaction Images" /></h4>
+                <h4><asp:Literal ID="lImageHeading" runat="server" Text="Related Images" /></h4>
                 <div class="row col-md-12">
-                    <!-- this will be for the image uploader -->
-                </div>
-                <div class="row">
                     <!-- this will be for displaying the images -->
-                    <div class="col-md-6"></div>
-                    <div class="col-md-6"></div>
+                    <asp:DataList ID="dlImages" runat="server" RepeatDirection="Horizontal" RepeatColumns="2" OnItemDataBound="dlImages_ItemDataBound" >
+                        <ItemTemplate >
+                            <div class="photo">
+                                <asp:PlaceHolder ID="phImage" runat="server" />
+                            </div>
+                        </ItemTemplate>
+                    </asp:DataList>
+                </div>
+                <br />
+                <div class="row">
+                    <!-- this will be for the image uploader -->
+                    <div class="col-md-3">
+                        <Rock:ImageUploader ID="imgupTransactionImages" runat="server" Label="Upload an Image" />
+                    </div>
+                    <div class="col-md-3">
+                        <Rock:RockDropDownList ID="ddlTransactionImageType" runat="server" Label="Transaction Image Type" />
+                    </div>
+                </div>
+                <div class="row col-md-3">
+                    <asp:LinkButton ID="lbSaveImage" runat="server" Text="Save Image" CssClass="btn btn-primary btn-sm" OnClick="lbSaveImage_Click" />
                 </div>
             </asp:Panel>
 
