@@ -198,6 +198,20 @@ namespace Rock.Web.Cache
         public int? PageNotFoundPageRouteId { get; set; }
 
         /// <summary>
+        /// Gets the page not found page reference.
+        /// </summary>
+        /// <value>
+        /// The page not found page reference.
+        /// </value>
+        public PageReference PageNotFoundPageReference
+        {
+            get
+            {
+                return new Rock.Web.PageReference( PageNotFoundPageId ?? 0, PageNotFoundPageRouteId ?? 0 );
+            }
+        }
+        
+        /// <summary>
         /// Gets or sets the login page id.
         /// </summary>
         /// <value>
@@ -385,6 +399,16 @@ namespace Rock.Web.Cache
         {
             var context = HttpContext.Current;
             context.Response.Redirect( RegistrationPageReference.BuildUrl(), false );
+            context.ApplicationInstance.CompleteRequest();
+        }
+
+        /// <summary>
+        /// Redirects to registration page.
+        /// </summary>
+        public void RedirectToPageNotFoundPage()
+        {
+            var context = HttpContext.Current;
+            context.Response.Redirect( PageNotFoundPageReference.BuildUrl(), false );
             context.ApplicationInstance.CompleteRequest();
         }
         
