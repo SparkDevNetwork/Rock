@@ -278,7 +278,7 @@ namespace RockWeb.Blocks.Core
             RockTransactionScope.WrapTransaction( () =>
             {
                 binaryFileService.Save( binaryFile, CurrentPersonAlias );
-                Rock.Attribute.Helper.SaveAttributeValues( binaryFile, CurrentPersonAlias );
+                binaryFile.SaveAttributeValues( CurrentPersonAlias );
             } );
 
             NavigateToParentPage();

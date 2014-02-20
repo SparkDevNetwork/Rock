@@ -65,9 +65,11 @@ namespace Rock.Rest.Controllers
             List<Group> groupList = new List<Group>();
             List<TreeViewItem> groupNameList = new List<TreeViewItem>();
 
+            var person = GetPerson();
+
             foreach ( var group in qry )
             {
-                if ( group.IsAuthorized( "View", GetPerson() ) )
+                if ( group.IsAuthorized( "View", person ) )
                 {
                     groupList.Add( group );
                     var treeViewItem = new TreeViewItem();

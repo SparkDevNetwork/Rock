@@ -78,10 +78,7 @@ namespace RockWeb.Blocks.Cms
 
             SetNotificationBox( String.Empty, String.Empty );
 
-            if(!Page.IsPostBack)
-            {
-                LoadFeed();
-            }
+            LoadFeed();
         }
         #endregion
 

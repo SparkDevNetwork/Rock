@@ -79,10 +79,8 @@ namespace RockWeb.Blocks.Cms
 
             string feedItemId = System.Web.HttpUtility.UrlDecode( PageParameter( "feedItemId" ) );
             SetNotificationBox( String.Empty, String.Empty );
-            if ( !Page.IsPostBack )
-            {
-                LoadFeedItem( feedItemId );
-            }
+            
+            LoadFeedItem( feedItemId );
         }
         #endregion
 

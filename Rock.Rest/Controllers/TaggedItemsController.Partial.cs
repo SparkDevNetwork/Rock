@@ -129,6 +129,8 @@ namespace Rock.Rest.Controllers
                 if ( taggedItem == null )
                     throw new HttpResponseException( HttpStatusCode.NotFound );
 
+                CheckCanEdit( taggedItem );
+
                 taggedItemService.Delete( taggedItem, personAlias );
                 taggedItemService.Save( taggedItem, personAlias );
             }

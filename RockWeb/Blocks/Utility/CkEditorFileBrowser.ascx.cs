@@ -49,31 +49,19 @@ namespace RockWeb.Blocks.Utility
             fuprFileUpload.RootFolder = GetRootFolderPath();
 
             string submitScriptFormat = @"
+    // include the selected folder in the post to ~/ImageUploader.ashx    
     var selectedFolderPath = $('#{0}').val();
-    if (selectedFolderPath) {{
-        // include the selected folder in the post to ~/ImageUploader.ashx
-        data.formData = {{ folderPath: selectedFolderPath }};
-    }}
-    else {{
-        // no directory selected
-        return false;
-    }}
+    data.formData = {{ folderPath: selectedFolderPath }};
 ";
 
             // setup javascript for when a file is submitted
             fuprFileUpload.SubmitFunctionClientScript = string.Format( submitScriptFormat, hfSelectedFolder.ClientID );
 
             string doneScriptFormat = @"
+    // reselect the node to refresh the list of files    
     var selectedFolderPath = $('#{0}').val();
     var foldersTree = $('.js-folder-treeview .treeview').data('rockTree');
-    if (selectedFolderPath) {{
-        // reselect the node to refresh the list of files
-        foldersTree.$el.trigger('rockTree:selected', selectedFolderPath);
-    }}
-    else {{
-        // no directory selected
-        return false;
-    }}
+    foldersTree.$el.trigger('rockTree:selected', selectedFolderPath);
 ";
 
             // setup javascript for when a file is done uploading
@@ -131,8 +119,6 @@ namespace RockWeb.Blocks.Utility
         /// </summary>
         private void BuildFolderTreeView()
         {
-            var sb = new StringBuilder();
-            sb.AppendLine( "<ul id=\"treeview\">" );
             string physicalRootFolder = this.Request.MapPath( GetRootFolderPath() );
 
             if ( !Directory.Exists( physicalRootFolder ) )
@@ -141,18 +127,17 @@ namespace RockWeb.Blocks.Utility
                 {
                     Directory.CreateDirectory( physicalRootFolder );
                 }
-                catch { }
+                catch
+                {
+                    // intentionally ignore the exception (we will show the Warning below)
+                }
             }
 
             if ( Directory.Exists( physicalRootFolder ) )
             {
-                List<string> directoryList = Directory.GetDirectories( physicalRootFolder ).OrderBy( a => a ).ToList();
-
-                foreach ( string directoryPath in directoryList )
-                {
-                    sb.Append( DirectoryNode( directoryPath, physicalRootFolder ) );
-                }
-
+                var sb = new StringBuilder();
+                sb.AppendLine( "<ul id=\"treeview\">" );
+                sb.Append( DirectoryNode( physicalRootFolder, physicalRootFolder ) );
                 sb.AppendLine( "</ul>" );
 
                 lblFolders.Text = sb.ToString();
@@ -286,7 +271,7 @@ namespace RockWeb.Blocks.Utility
                 string imageUrl = this.ResolveUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + HttpUtility.UrlEncode( imagePath ) + "&width=100&height=100" );
                 string nameHtml = string.Format(
                     nameHtmlFormat,
-                    HttpUtility.HtmlEncode(relativeFilePath),
+                    HttpUtility.HtmlEncode( relativeFilePath ),
                     imageUrl,
                     fileName );
 
@@ -326,7 +311,7 @@ namespace RockWeb.Blocks.Utility
         {
             string rootFolder = GetRootFolderPath();
             string imageUrl = rootFolder.TrimEnd( '\\', '/' ) + '/' + relativeFilePath.TrimStart( '\\', '/' ).Replace( '\\', '/' );
-            string result =  string.Format( "{0},{1}", imageUrl.TrimStart( '~', '/', '\\' ), Path.GetFileName( relativeFilePath ) );
+            string result = string.Format( "{0},{1}", imageUrl.TrimStart( '~', '/', '\\' ), Path.GetFileName( relativeFilePath ) );
             return result;
         }
 
@@ -340,14 +325,14 @@ namespace RockWeb.Blocks.Utility
         protected void lbCreateFolder_Click( object sender, EventArgs e )
         {
             // truncate dir name if it's really long
-            if (hfSelectedFolder.Value.Length > 20)
+            if ( hfSelectedFolder.Value.Length > 20 )
             {
                 int startingPoint = hfSelectedFolder.Value.Length - 19;
-                tbNewFolderName.PrependText = "..." + hfSelectedFolder.Value.Substring(startingPoint).TrimEnd('\\') + "\\";
+                tbNewFolderName.PrependText = "..." + hfSelectedFolder.Value.Substring( startingPoint ).TrimEnd( '\\' ) + "\\";
             }
             else
             {
-                tbNewFolderName.PrependText = hfSelectedFolder.Value.TrimEnd('\\') + "\\";
+                tbNewFolderName.PrependText = hfSelectedFolder.Value.TrimEnd( '\\' ) + "\\";
             }
 
             tbNewFolderName.Text = string.Empty;

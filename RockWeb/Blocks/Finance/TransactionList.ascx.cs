@@ -288,6 +288,24 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Refreshes the list. Public method...can be called from other blocks.
+        /// </summary>
+        public void RefreshList()
+        {
+            var contextEntity = this.ContextEntity();
+            if ( contextEntity != null )
+            {
+                if ( contextEntity is FinancialBatch )
+                {
+                    var batchId = PageParameter( "financialBatchId" );
+                    var batch = new FinancialBatchService().Get( int.Parse( batchId ) );
+                    _batch = batch;
+                    BindGrid();
+                }
+            }
+        }
+
+        /// <summary>
         /// Binds the grid.
         /// </summary>
         private void BindGrid()
@@ -301,10 +319,15 @@ namespace RockWeb.Blocks.Finance
                 queryable = queryable.Where( t => t.BatchId.HasValue && t.BatchId.Value == _batch.Id );
 
                 // If the batch is closed, do not allow any editing of the transactions
-                if ( _batch.Status != BatchStatus.Open )
+                if ( _batch.Status != BatchStatus.Open && _canConfigure )
                 {
                     gTransactions.Actions.ShowAdd = false;
                     gTransactions.IsDeleteEnabled = false;
+                }
+                else
+                {
+                    gTransactions.Actions.ShowAdd = true;
+                    gTransactions.IsDeleteEnabled = true;
                 }
             }
             else if ( !string.IsNullOrWhiteSpace( PageParameter( "financialBatchId" ) ) && _batch == null )
@@ -339,12 +362,12 @@ namespace RockWeb.Blocks.Finance
                 nre.DelimitedValues = gfTransactions.GetUserPreference( "Amount Range" );
                 if ( nre.LowerValue.HasValue )
                 {
-                    queryable = queryable.Where( t => t.Amount >= nre.LowerValue.Value );
+                    queryable = queryable.Where( t => t.TotalAmount >= nre.LowerValue.Value );
                 }
 
                 if ( nre.UpperValue.HasValue )
                 {
-                    queryable = queryable.Where( t => t.Amount <= nre.UpperValue.Value );
+                    queryable = queryable.Where( t => t.TotalAmount <= nre.UpperValue.Value );
                 }
 
                 // Transaction Code
@@ -414,14 +437,14 @@ namespace RockWeb.Blocks.Finance
             {
                 Dictionary<string, string> qryParams = new Dictionary<string, string>();
                 qryParams.Add( "financialBatchId", _batch.Id.ToString() );
-                qryParams.Add( "transactionid", id.ToString() );
+                qryParams.Add( "transactionId", id.ToString() );
                 NavigateToLinkedPage( "DetailPage", qryParams );
             }
             else if ( _person != null )
             {
                 Dictionary<string, string> qryParams = new Dictionary<string, string>();
                 qryParams.Add( "personId", _person.Id.ToString() );
-                qryParams.Add( "transactionid", id.ToString() );
+                qryParams.Add( "transactionId", id.ToString() );
                 NavigateToLinkedPage( "DetailPage", qryParams );
             }
             else

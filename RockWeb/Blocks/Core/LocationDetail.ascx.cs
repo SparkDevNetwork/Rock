@@ -233,7 +233,7 @@ namespace RockWeb.Blocks.Core
                     }
 
                     locationService.Save( location, CurrentPersonAlias );
-                    Rock.Attribute.Helper.SaveAttributeValues( location, CurrentPersonAlias );
+                    location.SaveAttributeValues( CurrentPersonAlias );
 
                 } );
 
