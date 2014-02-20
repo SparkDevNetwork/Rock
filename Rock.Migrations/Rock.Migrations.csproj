@@ -576,6 +576,10 @@
     <Compile Include="Migrations\201402201810324_AddSampleDataPage.Designer.cs">
       <DependentUpon>201402201810324_AddSampleDataPage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402202122526_FixDataViewConfig.cs" />
+    <Compile Include="Migrations\201402202122526_FixDataViewConfig.Designer.cs">
+      <DependentUpon>201402202122526_FixDataViewConfig.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -987,6 +991,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402201810324_AddSampleDataPage.resx">
       <DependentUpon>201402201810324_AddSampleDataPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402202122526_FixDataViewConfig.resx">
+      <DependentUpon>201402202122526_FixDataViewConfig.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
