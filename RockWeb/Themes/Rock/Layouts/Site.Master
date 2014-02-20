@@ -4,16 +4,11 @@
 
 <script runat="server">
 
-    /// <summary>
-    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-    /// </summary>
-    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-    protected override void OnInit( EventArgs e )
+    protected override void OnLoad( EventArgs e )
     {
-        base.OnInit( e );
-        
-        //
-    }    
+        base.OnLoad( e );
+        divTitle.Visible = ShowPageTitle;
+    }  
     
 </script>
 
@@ -85,7 +80,7 @@
 	        </nav>
 
             <!-- Page Title -->
-	        <div class="navbar navbar-static-top pagetitle">
+	        <div id="divTitle" runat="server" class="navbar navbar-static-top pagetitle">
 		        <div class="container">
                     <div class="row">
 				        <div class="col-md-6">
