@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// The number of characters (length) that security codes should be.
         /// </summary>
-        private static int _securityCodeLength = 4;
+        private static int _securityCodeLength = 5;
 
         /// <summary>
         /// A little lookup list for finding a group/location appropriate for the child's attendance data
@@ -158,11 +158,17 @@ namespace RockWeb.Blocks.Examples
 
         #region Events
 
+        /// <summary>
+        /// This is the entry point for when the user clicks the "load data" button.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         protected void bbtnLoadData_Click( object sender, EventArgs e )
         {
+            string saveFile = Path.Combine( MapPath( "~" ), "sampledata1.xml" );
+
             try
             {
-                string saveFile = Path.Combine( MapPath( "~" ), "sampledata1.xml" );
                 if ( DownloadFile( _xmlFileUrl, saveFile ) )
                 {
                     ProcessXml( saveFile );
@@ -180,6 +186,11 @@ namespace RockWeb.Blocks.Examples
                 nbMessage.NotificationBoxType = NotificationBoxType.Danger;
                 nbMessage.Text = string.Format( "That wasn't supposed to happen.  The error was:<br/>{0}<br/>{1}<br/>{2}", ex.Message.ConvertCrLfToHtmlBr(),
                     ( ex.InnerException != null ) ? ex.InnerException.Message.ConvertCrLfToHtmlBr() : "", ex.StackTrace.ConvertCrLfToHtmlBr() );
+            }
+
+            if ( File.Exists( saveFile ) )
+            {
+                File.Delete( saveFile );
             }
         }
 
@@ -377,11 +388,19 @@ namespace RockWeb.Blocks.Examples
 
             // get some variables we'll need to create the attendance records
             DateTime startingDate = DateTime.Parse( elemFamily.Attribute( "startingAttendance" ).Value );
+            DateTime endDate = RockDateTime.Now;
 
-            int endingWeeksAgo = 0;
-            if ( elemFamily.Attribute( "endingAttendanceWeeksAgo" ) != null )
+            // If the XML specifies an endingAttendance date use it, otherwise use endingAttendanceWeeksAgo
+            // to calculate the end date otherwise we'll just use the current date as the end date.
+            if ( elemFamily.Attribute( "endingAttendance" ) != null )
             {
+                DateTime.TryParse( elemFamily.Attribute( "endingAttendance" ).Value, out endDate );
+            }
+            else if ( elemFamily.Attribute( "endingAttendanceWeeksAgo" ) != null )
+            {
+                int endingWeeksAgo = 0;
                 int.TryParse( elemFamily.Attribute( "endingAttendanceWeeksAgo" ).Value, out endingWeeksAgo );
+                endDate = RockDateTime.Now.AddDays( -7 * endingWeeksAgo );
             }
 
             int pctAttendance = 100;
@@ -408,7 +427,7 @@ namespace RockWeb.Blocks.Examples
                 int.TryParse( elemFamily.Attribute( "attendingAltScheduleId" ).Value, out altScheduleId );
             }
 
-            CreateAttendance( family.Members, startingDate, endingWeeksAgo, pctAttendance, pctAttendedRegularService, scheduleId, altScheduleId );
+            CreateAttendance( family.Members, startingDate, endDate, pctAttendance, pctAttendedRegularService, scheduleId, altScheduleId );
         }
 
         /// <summary>
@@ -419,22 +438,18 @@ namespace RockWeb.Blocks.Examples
         /// given.
         /// </summary>
         /// <param name="familyMembers"></param>
-        /// <param name="startingDate"></param>
-        /// <param name="endingWeeksAgo"></param>
+        /// <param name="startingDate">The first date of attendance</param>
+        /// <param name="endDate">The end date of attendance</param>
         /// <param name="pctAttendance"></param>
         /// <param name="pctAttendedRegularService"></param>
         /// <param name="scheduleId"></param>
         /// <param name="altScheduleId"></param>
-        private void CreateAttendance( ICollection<GroupMember> familyMembers, DateTime startingDate, int endingWeeksAgo, int pctAttendance, int pctAttendedRegularService, int scheduleId, int altScheduleId )
+        private void CreateAttendance( ICollection<GroupMember> familyMembers, DateTime startingDate, DateTime endDate, int pctAttendance, int pctAttendedRegularService, int scheduleId, int altScheduleId )
         {
             Guid childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
-            AttendanceCodeService attendanceCodeService = new AttendanceCodeService();
-
-            // compute the date they stopped attending (today if endingWeeksAgo is 0)
-            DateTime endingDate = RockDateTime.Now.AddDays( -7 * endingWeeksAgo );
 
             // foreach weekend between the starting and ending date...
-            for ( DateTime date = startingDate; date <= endingDate; date = date.AddDays( 7 ) )
+            for ( DateTime date = startingDate; date <= endDate; date = date.AddDays( 7 ) )
             {
                 // set an additional factor 
                 int summerFactor = ( 7 <= date.Month && date.Month <= 9 ) ? summerPercentFactor : 0;
@@ -471,7 +486,11 @@ namespace RockWeb.Blocks.Examples
                     }
 
                     // Only create one attendance record per day for each person/schedule/group/location
-                    var attendanceCode = attendanceCodeService.GetNew( _securityCodeLength );
+                    AttendanceCode attendanceCode = new AttendanceCode()
+                    {
+                        Code = GenerateRandomCode( _securityCodeLength ),
+                        IssueDateTime = RockDateTime.Now,
+                    };
 
                     Attendance attendance = new Attendance()
                     {
@@ -480,7 +499,7 @@ namespace RockWeb.Blocks.Examples
                         LocationId = item.LocationId,
                         DeviceId = _kioskDeviceId,
                         PersonId = member.PersonId,
-                        AttendanceCodeId = attendanceCode.Id,
+                        AttendanceCode = attendanceCode,
                         StartDateTime = checkinDateTime,
                         EndDateTime = null,
                         DidAttend = true
@@ -488,9 +507,14 @@ namespace RockWeb.Blocks.Examples
 
                     member.Person.Attendances.Add( attendance );
                 }
-
             }
+        }
 
+        private static string GenerateRandomCode( int len )
+        {
+            string chars = "BCDFGHJKMNPQRTVWXYZ0123456789";
+            var code = Enumerable.Range( 0, len ).Select( x => chars[_random.Next( 0, chars.Length )] );
+            return new string( code.ToArray() );
         }
 
         /// <summary>
@@ -534,18 +558,16 @@ namespace RockWeb.Blocks.Examples
                         person.BirthDate = DateTime.Parse( personElem.Attribute( "birthDate" ).Value );
                     }
 
-                    // TODO -- figure out why this causes errors on save...
-
-                    //if ( personElem.Attribute( "email" ) != null )
-                    //{
-                    //    var emailAddress = personElem.Attribute( "email" ).Value;
-                    //    if ( emailAddress.IsValidEmail() )
-                    //    {
-                    //        person.Email = personElem.Attribute( "email" ).Value;
-                    //        person.IsEmailActive = personElem.Attribute( "emailIsActive" ) != null && personElem.Attribute( "emailIsActive" ).Value.FromTrueFalse();
-                    //        person.DoNotEmail = personElem.Attribute( "emailDoNotEmail" ) != null && personElem.Attribute( "emailDoNotEmail" ).Value.FromTrueFalse();
-                    //    }
-                    //}
+                    if ( personElem.Attribute( "email" ) != null )
+                    {
+                        var emailAddress = personElem.Attribute( "email" ).Value;
+                        if ( emailAddress.IsValidEmail() )
+                        {
+                            person.Email = personElem.Attribute( "email" ).Value;
+                            person.IsEmailActive = personElem.Attribute( "emailIsActive" ) != null && personElem.Attribute( "emailIsActive" ).Value.FromTrueFalse();
+                            person.DoNotEmail = personElem.Attribute( "emailDoNotEmail" ) != null && personElem.Attribute( "emailDoNotEmail" ).Value.FromTrueFalse();
+                        }
+                    }
 
                     if ( personElem.Attribute( "photoUrl" ) != null )
                     {
@@ -678,45 +700,52 @@ namespace RockWeb.Blocks.Examples
             binaryFile.SetStorageEntityTypeId( _storageEntityType.Id );
 
             var webClient = new WebClient();
-            binaryFile.Data.Content = webClient.DownloadData( photoUrl );
+            try
+            {
+                binaryFile.Data.Content = webClient.DownloadData( photoUrl );
 
-            if ( webClient.ResponseHeaders != null )
-            {
-                binaryFile.MimeType = webClient.ResponseHeaders["content-type"];
-            }
-            else
-            {
-                switch ( Path.GetExtension( photoUrl ) )
+                if ( webClient.ResponseHeaders != null )
                 {
-                    case ".jpg":
-                    case ".jpeg":
-                        binaryFile.MimeType = "image/jpg";
-                        break;
-                    case ".png":
-                        binaryFile.MimeType = "image/png";
-                        break;
-                    case ".gif":
-                        binaryFile.MimeType = "image/gif";
-                        break;
-                    case ".bmp":
-                        binaryFile.MimeType = "image/bmp";
-                        break;
-                    case ".tiff":
-                        binaryFile.MimeType = "image/tiff";
-                        break;
-                    case ".svg":
-                    case ".svgz":
-                        binaryFile.MimeType = "image/svg+xml";
-                        break;
-                    default:
-                        throw new NotSupportedException( string.Format( "unknown MimeType for {0}", photoUrl ) );
+                    binaryFile.MimeType = webClient.ResponseHeaders["content-type"];
                 }
-            }
+                else
+                {
+                    switch ( Path.GetExtension( photoUrl ) )
+                    {
+                        case ".jpg":
+                        case ".jpeg":
+                            binaryFile.MimeType = "image/jpg";
+                            break;
+                        case ".png":
+                            binaryFile.MimeType = "image/png";
+                            break;
+                        case ".gif":
+                            binaryFile.MimeType = "image/gif";
+                            break;
+                        case ".bmp":
+                            binaryFile.MimeType = "image/bmp";
+                            break;
+                        case ".tiff":
+                            binaryFile.MimeType = "image/tiff";
+                            break;
+                        case ".svg":
+                        case ".svgz":
+                            binaryFile.MimeType = "image/svg+xml";
+                            break;
+                        default:
+                            throw new NotSupportedException( string.Format( "unknown MimeType for {0}", photoUrl ) );
+                    }
+                }
 
-            var binaryFileService = new BinaryFileService();
-            binaryFileService.Add( binaryFile );
-            binaryFileService.Save( binaryFile );
-            return binaryFile.Id;
+                var binaryFileService = new BinaryFileService();
+                binaryFileService.Add( binaryFile );
+                binaryFileService.Save( binaryFile );
+                return binaryFile.Id;
+            }
+            catch ( WebException )
+            {
+                return null;
+            }
         }
 
         /// <summary>
