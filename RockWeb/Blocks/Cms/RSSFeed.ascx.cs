@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Cms
     [CodeEditorField("Template", "The liquid template to use for rendering. This template should be in the theme's \"Assets/Liquid\" folder and should have an underscore prepended to the filename.", 
         CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, true, @"{% include 'RSSFeed' %}", "Layout")]
     [BooleanField("Enable Debug", "Flag indicating that the control should output the feed data that will be passed to Liquid for parsing.", false)]
+    [BooleanField("Include RSS Link", "Flag indicating that an RSS link should be included in the page header.", true, "Feed")]
     [LinkedPage("Detail Page")]
     public partial class RSSFeed : RockBlock
     {
@@ -62,7 +63,13 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
             BlockUpdated += RSSFeed_BlockUpdated;
-            AddConfigurationUpdateTrigger( upContent );    
+            AddConfigurationUpdateTrigger( upContent );
+
+            if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "CSSFile" ) ) )
+            {
+                RockPage.AddCSSLink( ResolveRockUrl( GetAttributeValue( "CSSFile" ) ) );
+            }
+
         }
 
         protected override void OnLoad( EventArgs e )
@@ -152,7 +159,7 @@ namespace RockWeb.Blocks.Cms
                 foreach ( var listItem in nodeList )
                 {
                     sb.AppendFormat( "<li><span>{0}</span>", node.Key );
-                    sb.AppendLine( "<ul>" );
+                   sb.AppendLine( "<ul>" );
                     foreach ( var child in listItem )
                     {
                         sb.Append( FeedDebugNode( child ) );
@@ -185,6 +192,51 @@ namespace RockWeb.Blocks.Cms
 
                 if ( feedDictionary != null )
                 {
+
+                    int articlesPerPage = GetAttributeValue( "Resultsperpage" ).AsInteger( true ) ?? 0;
+                    int currentPage = 0;
+                    string baseUrl = new PageReference( RockPage.PageId ).BuildUrl();
+
+                    int.TryParse( PageParameter( "articlepage" ), out currentPage );
+
+                    if ( feedDictionary.ContainsKey( "ResultsPerPage" ) )
+                    {
+                        feedDictionary["ResultsPerPage"] = articlesPerPage;
+                    }
+                    else
+                    {
+                        feedDictionary.Add( "ResultsPerPage", articlesPerPage );
+                    }
+
+
+                    if ( feedDictionary.ContainsKey( "CurrentPage" ) )
+                    {
+                        feedDictionary["CurrentPage"] = currentPage;
+                    }
+                    else
+                    {
+                        feedDictionary.Add( "CurrentPage", currentPage );
+                    }
+
+                    if ( feedDictionary.ContainsKey( "BaseUrl" ) )
+                    {
+                        feedDictionary["BaseUrl"] = baseUrl;
+                    }
+                    else
+                    {
+                        feedDictionary.Add( "BaseUrl", baseUrl );
+                    }
+
+
+                    if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "RSSFeedUrl" ) ) && GetAttributeValue( "IncludeRSSLink" ).AsBoolean() )
+                    {
+                        string rssLink = string.Format( "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"{0}\" href=\"{1}\" />", 
+                            feedDictionary.ContainsKey("title") ? feedDictionary["title"].ToString() : "RSS",
+                            GetAttributeValue( "RSSFeedUrl" ) );
+
+                        Page.Header.Controls.Add( new LiteralControl( rssLink ) );
+                    }
+
                     string content = String.Empty;
                     if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
                     {
