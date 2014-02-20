@@ -75,7 +75,7 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// A little lookup list for finding a group/location appropriate for the child's attendance data
         /// </summary>
-        protected static List<ClassGroupLocation> _classes = new List<ClassGroupLocation>
+        private static List<ClassGroupLocation> _classes = new List<ClassGroupLocation>
         {
             new ClassGroupLocation { GroupId = 25, LocationId = 4, MinAge =  0.0, MaxAge = 3.0,   Name = "Nursery - Bunnies Room"  },
             new ClassGroupLocation { GroupId = 26, LocationId = 5, MinAge =  0.0, MaxAge = 3.99,  Name = "Crawlers/Walkers - Kittens Room" },
@@ -87,34 +87,11 @@ namespace RockWeb.Blocks.Examples
             new ClassGroupLocation { GroupId = 32, LocationId = 11, MinAge = 13.0, MaxAge = 19.0,  Name = "Grades 9-12 - Garage" },
         };
 
-        public static Dictionary<string, int> locations = new Dictionary<string, int>()
-        {
-	        { "Bunnies Room", 4 },
-	        { "Kittens Room", 5 },
-	        { "Puppies Room", 6 },
-	        { "Bears Room",   7 },
-	        { "Bobcats Room", 8 },
-	        { "Outpost Room", 9 },
-	        { "the Warehouse", 10 },
-	        { "the Garage",    11 }
-        };
-
-        public static Dictionary<string, int> groups = new Dictionary<string, int>()
-        {
-	        { "Nursery",          25 },
-	        { "Crawlers/Walkers", 26 },
-	        { "Preschool",        27 },
-	        { "Grades K-1",       28 },
-	        { "Grades 2-3",       29 },
-	        { "Grades 4-6",       30 },
-	        { "Grades 7-8",       31 },
-	        { "Grades 9-12",      32 }
-        };
-
         /// <summary>
         /// Magic kiosk Id used for attendance data.
         /// </summary>
         private static int _kioskDeviceId = 2;
+
         #endregion
 
         #region Properties
@@ -260,24 +237,24 @@ namespace RockWeb.Blocks.Examples
                         DeleteExistingFamilyData( families, personService, phoneNumberService, personViewedService, binaryFileService );
                     }
 
-                    // Now create the family along with its members.
+                    // Next create the family along with its members.
                     foreach ( var elemFamily in families.Elements( "family" ) )
                     {
-                        Guid guid = Guid.Parse( elemFamily.Attribute( "guid" ).Value );
+                        Guid guid = Guid.Parse( elemFamily.Attribute( "guid" ).Value.Trim() );
                         var familyMembers = FamilyMembersFromXml( elemFamily.Element( "members" ) );
 
                         GroupService groupService = new GroupService();
 
                         Group family = groupService.SaveNewFamily( familyMembers, 1, false, CurrentPersonAlias );
                         family.Guid = guid;
-                        //groupService.Save( family );
 
-                        // Add the families address(es)
+                        // add the families address(es)
                         AddFamilyAddresses( groupService, family, elemFamily.Element( "addresses" ) );
 
-                        // Add their attendance data
+                        // add their attendance data
                         AddFamilyAttendance( family, elemFamily );
 
+                        // lastly, save the data and move to the next family
                         groupService.Save( family, CurrentPersonAlias );
                     }
                 }
@@ -296,14 +273,14 @@ namespace RockWeb.Blocks.Examples
         {
             foreach ( var elemFamily in families.Elements( "family" ) )
             {
-                Guid guid = Guid.Parse( elemFamily.Attribute( "guid" ).Value );
+                Guid guid = Guid.Parse( elemFamily.Attribute( "guid" ).Value.Trim() );
                 List<Guid> peopleGuids = new List<Guid>();
 
                 GroupService groupService = new GroupService();
                 Group family = groupService.Get( guid );
                 if ( family != null )
                 {
-                    // Delete addresses
+                    // delete addresses
                     GroupLocationService groupLocationService = new GroupLocationService();
                     if ( family.GroupLocations.Count > 0 )
                     {
@@ -315,7 +292,7 @@ namespace RockWeb.Blocks.Examples
                         }
                     }
 
-                    // Delete family members
+                    // delete family members
                     var familyMemberService = new GroupMemberService();
                     var familyMembers = familyMemberService.GetByGroupId( family.Id );
                     foreach ( var member in familyMembers.ToList() )
@@ -326,7 +303,7 @@ namespace RockWeb.Blocks.Examples
                         familyMemberService.Save( member, CurrentPersonAlias );
                     }
 
-                    // Delete the people records
+                    // delete the people records
                     var people = personService.GetByGuids( peopleGuids );
                     string errorMessage;
 
@@ -357,7 +334,6 @@ namespace RockWeb.Blocks.Examples
                             personViewedService.Save( view );
                         }
 
-                        // person.GivingGroup = null;
                         if ( personService.CanDelete( person, out errorMessage ) )
                         {
                             personService.Delete( person, CurrentPersonAlias );
@@ -365,7 +341,7 @@ namespace RockWeb.Blocks.Examples
                         personService.Save( person, CurrentPersonAlias );
                     }
 
-                    // Now delete the family
+                    // now delete the family
                     groupService.Delete( family, CurrentPersonAlias );
                     groupService.Save( family, CurrentPersonAlias );
                 }
@@ -381,50 +357,50 @@ namespace RockWeb.Blocks.Examples
         private void AddFamilyAttendance( Group family, XElement elemFamily )
         {
             // return from here if there's not startingAttendance date
-            if ( elemFamily.Attribute( "startingAttendance" ).Value == null )
+            if ( elemFamily.Attribute( "startingAttendance" ) == null )
             {
                 return;
             }
 
             // get some variables we'll need to create the attendance records
-            DateTime startingDate = DateTime.Parse( elemFamily.Attribute( "startingAttendance" ).Value );
+            DateTime startingDate = DateTime.Parse( elemFamily.Attribute( "startingAttendance" ).Value.Trim() );
             DateTime endDate = RockDateTime.Now;
 
             // If the XML specifies an endingAttendance date use it, otherwise use endingAttendanceWeeksAgo
             // to calculate the end date otherwise we'll just use the current date as the end date.
             if ( elemFamily.Attribute( "endingAttendance" ) != null )
             {
-                DateTime.TryParse( elemFamily.Attribute( "endingAttendance" ).Value, out endDate );
+                DateTime.TryParse( elemFamily.Attribute( "endingAttendance" ).Value.Trim(), out endDate );
             }
             else if ( elemFamily.Attribute( "endingAttendanceWeeksAgo" ) != null )
             {
                 int endingWeeksAgo = 0;
-                int.TryParse( elemFamily.Attribute( "endingAttendanceWeeksAgo" ).Value, out endingWeeksAgo );
+                int.TryParse( elemFamily.Attribute( "endingAttendanceWeeksAgo" ).Value.Trim(), out endingWeeksAgo );
                 endDate = RockDateTime.Now.AddDays( -7 * endingWeeksAgo );
             }
 
             int pctAttendance = 100;
             if ( elemFamily.Attribute( "percentAttendance" ) != null )
             {
-                int.TryParse( elemFamily.Attribute( "percentAttendance" ).Value, out pctAttendance );
+                int.TryParse( elemFamily.Attribute( "percentAttendance" ).Value.Trim(), out pctAttendance );
             }
 
             int pctAttendedRegularService = 100;
             if ( elemFamily.Attribute( "percentAttendedRegularService" ) != null )
             {
-                int.TryParse( elemFamily.Attribute( "percentAttendedRegularService" ).Value, out pctAttendedRegularService );
+                int.TryParse( elemFamily.Attribute( "percentAttendedRegularService" ).Value.Trim(), out pctAttendedRegularService );
             }
 
             int scheduleId = 3;
             if ( elemFamily.Attribute( "attendingScheduleId" ) != null )
             {
-                int.TryParse( elemFamily.Attribute( "attendingScheduleId" ).Value, out scheduleId );
+                int.TryParse( elemFamily.Attribute( "attendingScheduleId" ).Value.Trim(), out scheduleId );
             }
 
             int altScheduleId = 4;
             if ( elemFamily.Attribute( "attendingAltScheduleId" ) != null )
             {
-                int.TryParse( elemFamily.Attribute( "attendingAltScheduleId" ).Value, out altScheduleId );
+                int.TryParse( elemFamily.Attribute( "attendingAltScheduleId" ).Value.Trim(), out altScheduleId );
             }
 
             CreateAttendance( family.Members, startingDate, endDate, pctAttendance, pctAttendedRegularService, scheduleId, altScheduleId );
@@ -510,6 +486,11 @@ namespace RockWeb.Blocks.Examples
             }
         }
 
+        /// <summary>
+        /// A little method to generate a random sequence of characters of a certain length.
+        /// </summary>
+        /// <param name="len">length of code to generate</param>
+        /// <returns>a random sequence of alpha numeric characters</returns>
         private static string GenerateRandomCode( int len )
         {
             string chars = "BCDFGHJKMNPQRTVWXYZ0123456789";
@@ -533,7 +514,7 @@ namespace RockWeb.Blocks.Examples
             foreach ( var personElem in elemMembers.Elements( "person" ) )
             {
                 var groupMember = new GroupMember();
-                Guid guid = Guid.Parse( personElem.Attribute( "guid" ).Value );
+                Guid guid = Guid.Parse( personElem.Attribute( "guid" ).Value.Trim() );
 
                 // Attempt to find an existing person...
                 Person person = new PersonService().Get( guid );
@@ -541,29 +522,29 @@ namespace RockWeb.Blocks.Examples
                 {
                     person = new Person();
                     person.Guid = guid;
-                    person.FirstName = personElem.Attribute( "firstName" ).Value;
+                    person.FirstName = personElem.Attribute( "firstName" ).Value.Trim();
                     if ( personElem.Attribute( "nickName" ) != null )
                     {
-                        person.NickName = personElem.Attribute( "nickName" ).Value;
+                        person.NickName = personElem.Attribute( "nickName" ).Value.Trim();
                     }
 
                     if ( personElem.Attribute( "lastName" ) != null )
                     {
-                        person.LastName = personElem.Attribute( "lastName" ).Value;
+                        person.LastName = personElem.Attribute( "lastName" ).Value.Trim();
                     }
 
-                    //person.Age = int.Parse( personElem.Attribute( "age" ).Value );
+                    //person.Age = int.Parse( personElem.Attribute( "age" ).Value.Trim() );
                     if ( personElem.Attribute( "birthDate" ) != null )
                     {
-                        person.BirthDate = DateTime.Parse( personElem.Attribute( "birthDate" ).Value );
+                        person.BirthDate = DateTime.Parse( personElem.Attribute( "birthDate" ).Value.Trim() );
                     }
 
                     if ( personElem.Attribute( "email" ) != null )
                     {
-                        var emailAddress = personElem.Attribute( "email" ).Value;
+                        var emailAddress = personElem.Attribute( "email" ).Value.Trim();
                         if ( emailAddress.IsValidEmail() )
                         {
-                            person.Email = personElem.Attribute( "email" ).Value;
+                            person.Email = emailAddress;
                             person.IsEmailActive = personElem.Attribute( "emailIsActive" ) != null && personElem.Attribute( "emailIsActive" ).Value.FromTrueFalse();
                             person.DoNotEmail = personElem.Attribute( "emailDoNotEmail" ) != null && personElem.Attribute( "emailDoNotEmail" ).Value.FromTrueFalse();
                         }
@@ -571,20 +552,20 @@ namespace RockWeb.Blocks.Examples
 
                     if ( personElem.Attribute( "photoUrl" ) != null )
                     {
-                        person.PhotoId = SavePhoto( personElem.Attribute( "photoUrl" ).Value );
+                        person.PhotoId = SavePhoto( personElem.Attribute( "photoUrl" ).Value.Trim() );
                     }
 
-                    if ( personElem.Attribute( "recordType" ) != null && personElem.Attribute( "recordType" ).Value == "person" )
+                    if ( personElem.Attribute( "recordType" ) != null && personElem.Attribute( "recordType" ).Value.Trim() == "person" )
                     {
                         person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                     }
 
-                    if ( personElem.Attribute( "maritalStatus" ) != null && personElem.Attribute( "maritalStatus" ).Value == "married" )
+                    if ( personElem.Attribute( "maritalStatus" ) != null && personElem.Attribute( "maritalStatus" ).Value.Trim() == "married" )
                     {
                         person.MaritalStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
                     }
 
-                    switch ( personElem.Attribute( "recordStatus" ).Value )
+                    switch ( personElem.Attribute( "recordStatus" ).Value.Trim() )
                     {
                         case "active":
                             person.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
@@ -599,7 +580,7 @@ namespace RockWeb.Blocks.Examples
 
                     if ( personElem.Attribute( "gender" ) != null )
                     {
-                        switch ( personElem.Attribute( "gender" ).Value.ToLower() )
+                        switch ( personElem.Attribute( "gender" ).Value.Trim().ToLower() )
                         {
                             case "m":
                             case "male":
@@ -621,7 +602,7 @@ namespace RockWeb.Blocks.Examples
 
                     if ( personElem.Attribute( "connectionStatus" ) != null )
                     {
-                        switch ( personElem.Attribute( "connectionStatus" ).Value.ToLower() )
+                        switch ( personElem.Attribute( "connectionStatus" ).Value.Trim().ToLower() )
                         {
                             case "member":
                                 person.ConnectionStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_MEMBER.AsGuid() ).Id;
@@ -635,32 +616,32 @@ namespace RockWeb.Blocks.Examples
                         }
                     }
 
-                    if ( personElem.Attribute( "homePhone" ) != null && !string.IsNullOrEmpty( personElem.Attribute( "homePhone" ).Value.Trim( '"' ) ) )
+                    if ( personElem.Attribute( "homePhone" ) != null && !string.IsNullOrEmpty( personElem.Attribute( "homePhone" ).Value.Trim() ) )
                     {
                         var phoneNumber = new PhoneNumber
                         {
                             NumberTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() ).Id,
-                            Number = personElem.Attribute( "homePhone" ).Value
+                            Number = personElem.Attribute( "homePhone" ).Value.Trim()
                         };
                         person.PhoneNumbers.Add( phoneNumber );
                     }
 
-                    if ( personElem.Attribute( "mobilePhone" ) != null && !string.IsNullOrEmpty( personElem.Attribute( "mobilePhone" ).Value.Trim( '"' ) ) )
+                    if ( personElem.Attribute( "mobilePhone" ) != null && !string.IsNullOrEmpty( personElem.Attribute( "mobilePhone" ).Value.Trim() ) )
                     {
                         var phoneNumber = new PhoneNumber
                         {
                             NumberTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() ).Id,
-                            Number = personElem.Attribute( "mobilePhone" ).Value
+                            Number = personElem.Attribute( "mobilePhone" ).Value.Trim()
                         };
                         person.PhoneNumbers.Add( phoneNumber );
                     }
 
-                    if ( personElem.Attribute( "workPhone" ) != null && !string.IsNullOrEmpty( personElem.Attribute( "workPhone" ).Value.Trim( '"' ) ) )
+                    if ( personElem.Attribute( "workPhone" ) != null && !string.IsNullOrEmpty( personElem.Attribute( "workPhone" ).Value.Trim() ) )
                     {
                         var phoneNumber = new PhoneNumber
                         {
                             NumberTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() ).Id,
-                            Number = personElem.Attribute( "workPhone" ).Value
+                            Number = personElem.Attribute( "workPhone" ).Value.Trim()
                         };
                         person.PhoneNumbers.Add( phoneNumber );
                     }
@@ -668,7 +649,7 @@ namespace RockWeb.Blocks.Examples
 
                 groupMember.Person = person;
 
-                if ( personElem.Attribute( "familyRole" ) != null && personElem.Attribute( "familyRole" ).Value.ToLower() == "adult" )
+                if ( personElem.Attribute( "familyRole" ) != null && personElem.Attribute( "familyRole" ).Value.Trim().ToLower() == "adult" )
                 {
                     groupMember.GroupRoleId = new GroupTypeRoleService().Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
                 }
@@ -759,14 +740,14 @@ namespace RockWeb.Blocks.Examples
             // First add each person to the familyMembers collection
             foreach ( var addressElem in addresses.Elements( "address" ) )
             {
-                var addressType = addressElem.Attribute( "type" ).Value;
-                var street1 = addressElem.Attribute( "street1" ).Value;
-                var street2 = addressElem.Attribute( "street2" ).Value;
-                var city = addressElem.Attribute( "city" ).Value;
-                var state = addressElem.Attribute( "state" ).Value;
-                var zip = addressElem.Attribute( "zip" ).Value;
-                var lat = addressElem.Attribute( "lat" ).Value;
-                var lng = addressElem.Attribute( "long" ).Value;
+                var addressType = ( addressElem.Attribute( "type" ) != null ) ? addressElem.Attribute( "type" ).Value.Trim() : "";
+                var street1 = ( addressElem.Attribute( "street1" ) != null ) ? addressElem.Attribute( "street1" ).Value.Trim() : "";
+                var street2 = ( addressElem.Attribute( "street2" ) != null ) ? addressElem.Attribute( "street2" ).Value.Trim() : "";
+                var city = ( addressElem.Attribute( "city" ) != null ) ? addressElem.Attribute( "city" ).Value.Trim() : "";
+                var state = ( addressElem.Attribute( "state" ) != null ) ? addressElem.Attribute( "state" ).Value.Trim() : "";
+                var zip = ( addressElem.Attribute( "zip" ) != null ) ? addressElem.Attribute( "zip" ).Value.Trim() : "";
+                var lat = ( addressElem.Attribute( "lat" ) != null ) ? addressElem.Attribute( "lat" ).Value.Trim() : "";
+                var lng = ( addressElem.Attribute( "long" ) != null ) ? addressElem.Attribute( "long" ).Value.Trim() : "";
 
                 string locationTypeGuid;
 
