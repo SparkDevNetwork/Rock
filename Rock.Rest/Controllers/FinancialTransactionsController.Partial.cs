@@ -197,7 +197,7 @@ namespace Rock.Rest.Controllers
                 CurrencyTypeValueName = a.CurrencyTypeValue.Name,
                 a.Summary,
                 Account = a.TransactionDetails.FirstOrDefault().Account,
-                a.TotalAmount
+                TotalAmount = a.TransactionDetails.Sum( d=> d.Amount)
             } ).OrderBy( a => a.TransactionDateTime );
 
             DataTable dataTable = new DataTable( "contribution_transactions" );
