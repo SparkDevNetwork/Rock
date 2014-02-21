@@ -42,14 +42,6 @@ namespace Rock.Reporting.DataFilter
         #region Private Fields
 
         private string _clientFormatSelection = string.Empty;
-        private Type _entityFieldsEntityType = null;
-
-        /// <summary>
-        /// the list of fields and attributes for the EntityType. 
-        /// ThreadStatic so that the fields don't get refetched more than once per page load, but also don't become stale
-        /// </summary>
-        [ThreadStatic]
-        private static List<EntityField> _entityFields;
 
         #endregion
 
@@ -725,13 +717,7 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         private List<EntityField> GetEntityFields( Type entityType )
         {
-            if ( _entityFields == null || entityType != _entityFieldsEntityType )
-            {
-                _entityFieldsEntityType = entityType;
-                _entityFields = EntityHelper.GetEntityFields( entityType );
-            }
-
-            return _entityFields;
+            return EntityHelper.GetEntityFields( entityType );
         }
 
         /// <summary>
