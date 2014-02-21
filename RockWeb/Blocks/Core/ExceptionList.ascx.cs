@@ -588,7 +588,10 @@ namespace RockWeb.Blocks.Administraton
             //set the summary fields for the base exception
             if ( exception != null )
             {
-                this.AddHistory( "Exception", exceptionId.ToString(), string.Format( "Exception Occurrences {0}", exception.Description ) );
+                if ( Page.IsPostBack && Page.IsAsync )
+                {
+                    this.AddHistory( "Exception", exceptionId.ToString(), string.Format( "Exception Occurrences {0}", exception.Description ) );
+                }
                 hfBaseExceptionID.Value = exceptionId.ToString();
 
                 var descriptionList = new Rock.Web.DescriptionList();
