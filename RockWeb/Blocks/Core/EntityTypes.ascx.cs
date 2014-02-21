@@ -220,9 +220,6 @@ namespace RockWeb.Blocks.Core
             EntityTypeService entityTypeService = new EntityTypeService();
             EntityType entityType = entityTypeService.Get( entityTypeId );
 
-            // set edit history marker
-            this.AddHistory( "edit", "", "Edit Entity Type" );
-
             if ( entityType != null )
             {
                 mdEdit.Title = ActionTitle.Edit( EntityType.FriendlyTypeName );
