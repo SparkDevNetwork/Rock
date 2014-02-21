@@ -172,7 +172,9 @@ namespace RockWeb.Blocks.Core
             {
                 var update = NuGetService.SourceRepository.FindPackage( _rockPackageId, ( version != null ) ? SemanticVersion.Parse( version ) : null, false, false );
                 var installed = NuGetService.GetInstalledPackage( _rockPackageId );
-
+                
+                // Set timeout for up to 15 minutes (just like installer)
+                Server.ScriptTimeout = 900;
                 if ( installed == null )
                 {
                     errors = NuGetService.InstallPackage( update );
