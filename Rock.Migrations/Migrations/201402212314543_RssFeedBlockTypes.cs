@@ -22,16 +22,19 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class AddSampleDataPage : Rock.Migrations.RockMigration3
+    public partial class RssFeedBlockTypes : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            AddPage( "7F1F4130-CB98-473B-9DE1-7A886D2283ED", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Rock Solid Church Sample Data", "", "844ABF2A-D085-4370-945B-86C89580C6D5", "fa fa-flask" ); // Site:Rock RMS
-            // Add Block to Page: Rock Solid Church Sample Data, Site: Rock RMS
-            AddBlock("844ABF2A-D085-4370-945B-86C89580C6D5","","A42E0031-B2B9-403A-845B-9C968D7716A6","Rock Solid Church Sample Data","Main","","",0,"34CA1FA0-F8F1-449F-9788-B5E6315DC058");   
+            // clean up in case the framework added this before is was added as an IsSystem block
+            Sql( @"DELETE FROM [BlockType] where [Path] = '~/Blocks/Cms/RSSFeed.ascx' and [IsSystem] = 0" );
+            Sql( @"DELETE FROM [BlockType] where [Path] = '~/Blocks/Cms/RSSFeedItem.ascx' and [IsSystem] = 0" );
+            
+            AddBlockType( "RSS Feed", "Gets and consumes and RSS Feed. The feed is rendered based on a provided liquid template. ", "~/Blocks/Cms/RSSFeed.ascx", "CMS", "2760F435-3E89-4016-85D9-13C019D0C58F" );
+            AddBlockType( "RSS Feed Item", "Gets an item from a RSS feed and displays the content of that item based on a provided liquid template.", "~/Blocks/Cms/RSSFeedItem.ascx", "CMS", "F7898E47-8496-4D70-9594-4D1F616928F5" );
         }
         
         /// <summary>
@@ -39,10 +42,8 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            // Remove Block: Rock Solid Church Sample Data, from Page: Rock Solid Church Sample Data, Site: Rock RMS
-            DeleteBlock("34CA1FA0-F8F1-449F-9788-B5E6315DC058");
-            // Page: Rock Solid Church Sample DataLayout: Full Width, Site: Rock RMS
-            DeletePage( "844ABF2A-D085-4370-945B-86C89580C6D5" );
+            DeleteBlockType( "F7898E47-8496-4D70-9594-4D1F616928F5" ); // RSS Feed Item
+            DeleteBlockType( "2760F435-3E89-4016-85D9-13C019D0C58F" ); // RSS Feed
         }
     }
 }

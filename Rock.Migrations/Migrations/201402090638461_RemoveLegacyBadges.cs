@@ -22,7 +22,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class RemoveLegacyBadges : Rock.Migrations.RockMigration
+    public partial class RemoveLegacyBadges : Rock.Migrations.RockMigration3
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

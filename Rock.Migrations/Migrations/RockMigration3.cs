@@ -28,7 +28,7 @@ namespace Rock.Migrations
     /// <summary>
     /// Custom Migration methods
     /// </summary>
-    public abstract class RockMigration : DbMigration
+    public abstract class RockMigration3 : DbMigration
     {
         #region Entity Type Methods
 
@@ -185,21 +185,19 @@ namespace Rock.Migrations
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="path">The path.</param>
-        /// <param name="category">The category.</param>
         /// <param name="guid">The GUID.</param>
-        public void AddBlockType( string name, string description, string path, string category, string guid )
+        public void AddBlockType( string name, string description, string path, string guid )
         {
             Sql( string.Format( @"
                 
                 INSERT INTO [BlockType] (
-                    [IsSystem],[Path],[Category],[Name],[Description],
+                    [IsSystem],[Path],[Name],[Description],
                     [Guid])
                 VALUES(
-                    1,'{0}','{1}','{2}','{3}',
-                    '{4}')
+                    1,'{0}','{1}','{2}',
+                    '{3}')
 ",
                     path,
-                    category,
                     name,
                     description.Replace( "'", "''" ),
                     guid
