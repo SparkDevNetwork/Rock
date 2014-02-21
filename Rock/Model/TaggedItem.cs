@@ -108,7 +108,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.Tag != null ? this.Tag.Name : string.Empty;
+            return this.Tag.ToStringSafe();
         }
 
         #endregion
