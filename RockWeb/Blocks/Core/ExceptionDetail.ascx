@@ -10,37 +10,38 @@
                     </h1>
                 </div>
                 <fieldset>
-                    <legend>Summary</legend>
+                    <h4>Summary</h4>
                     <div class="row">
                         <div class="col-md-12">
                             <asp:Literal ID="lExceptionSummary" runat="server" />
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="row actions">
                         <div class="col-md-3">
-                            <Rock:RockCheckBox ID="chkShowCookies" runat="server" />
+                            <a href="#" class="btn-show-cookies btn btn-action"><i class="fa fa-laptop"></i> Show Cookies</a>
                         </div>
                         <div class="col-md-3">
-                            <Rock:RockCheckBox ID="chkShowServerVariables" runat="server" />
+                            <a href="#" class="btn-show-servervars btn btn-action"><i class="fa fa-hdd-o"></i> Show Server Variables</a>
                         </div>
                         <div class="col-md-6"></div>
                     </div>
                 </fieldset>
+
                 <div id="divCookies" style="display: none;">
                     <fieldset>
-                        <legend>Cookies</legend>
+                        <h4>Cookies</h4>
                         <asp:Literal ID="lCookies" runat="server" />
                     </fieldset>
                 </div>
                 <div id="divServerVariables" style="display: none">
                     <fieldset>
-                        <legend>Server Variables</legend>
+                        <h4>Server Variables</h4>
                         <asp:Literal ID="lServerVariables" runat="server" />
                     </fieldset>
                 </div>
                 <div id="divExceptionDetails">
                     <fieldset>
-                        <legend>Details</legend>
+                        <h4>Details</h4>
 
                         <asp:Repeater ID="rptExcpetionDetails" runat="server">
 
@@ -69,7 +70,7 @@
                                 </tr>
                                 <tr id="<%# "trStackTrace_" + Eval("Id").ToString() %>" class="exceptionDetail-stackTrace-hide" onclick="<%# string.Format("redirectToPage('{0}')", GetExceptionDetailUrl((int)Eval("Id"))) %>">
                                     <td colspan="4">
-                                        <%#Eval("StackTrace") %>
+                                        <pre><%#Eval("StackTrace") %></pre>
                                     </td>
                                 </tr>
                             </ItemTemplate>
@@ -112,12 +113,14 @@
         }
     }
 
-    $("[id*=chkShowServerVariables]").click(function () {
+    $(".btn-show-servervars").click(function () {
         $("#divServerVariables").slideToggle();
+        return false;
     });
 
-    $("[id*=chkShowCookies]").click(function () {
+    $(".btn-show-cookies").click(function () {
         $("#divCookies").slideToggle();
+        return false;
     });
 
 

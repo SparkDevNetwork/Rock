@@ -38,8 +38,8 @@
                     </div>
                     <div class="col-md-6">
                         <Rock:LocationAddressPicker ID="locapAddress" runat="server" Label="Address" />
-                        <Rock:GeoPicker ID="geopPoint" runat="server" DrawingMode="Point" Label="Geo-Point" />
-                        <Rock:GeoPicker ID="geopFence" runat="server" DrawingMode="Polygon" Label="Geo-Fence" />
+                        <Rock:GeoPicker ID="geopPoint" runat="server" DrawingMode="Point" Label="Point" />
+                        <Rock:GeoPicker ID="geopFence" runat="server" DrawingMode="Polygon" Label="Geo-fence" />
                     </div>
                 </div>
 

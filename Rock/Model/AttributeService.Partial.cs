@@ -130,6 +130,26 @@ namespace Rock.Model
             return this.Get( null, string.Empty, string.Empty, key );
         }
 
+
+        /// <summary>
+        /// Returns a queryable collection containing the Global <see cref="Rock.Model.Attribute">Attributes</see>.
+        /// </summary>
+        /// <returns>A queryable collection containing the Global <see cref="Rock.Model.Attribute">Attributes</see>.</returns>
+        public IQueryable<Attribute> GetSystemSettings()
+        {
+            return this.Get( null, Attribute.SYSTEM_SETTING_QUALIFIER, string.Empty );
+        }
+
+        /// <summary>
+        /// Returns a global <see cref="Rock.Model.Attribute"/> by it's Key.
+        /// </summary>
+        /// <param name="key">A <see cref="System.String"/> representing the name of the Attribute key.</param>
+        /// <returns>A global <see cref="Rock.Model.Attribute"/> by it's key.</returns>
+        public Attribute GetSystemSetting( string key )
+        {
+            return this.Get( null, Attribute.SYSTEM_SETTING_QUALIFIER, string.Empty, key );
+        }
+        
         /// <summary>
         /// Saves the specified item.
         /// </summary>

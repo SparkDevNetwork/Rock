@@ -29,12 +29,30 @@ namespace Rock.Reporting
     public static class EntityHelper
     {
         /// <summary>
+        /// the list of fields and attributes for the EntityType. 
+        /// ThreadStatic so that the fields don't get refetched more than once per page load, but also don't become stale
+        /// </summary>
+        [ThreadStatic]
+        private static Dictionary<Type, List<EntityField>> _entityFields = null;
+
+        /// <summary>
         /// Gets the entity fields.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
+        /// <param name="includeOnlyReportingFields">if set to <c>true</c> [include only reporting fields].</param>
         /// <returns></returns>
-        public static List<EntityField> GetEntityFields( Type entityType )
+        public static List<EntityField> GetEntityFields( Type entityType, bool includeOnlyReportingFields = true )
         {
+            if (_entityFields == null)
+            {
+                _entityFields = new Dictionary<Type, List<EntityField>>();
+            }
+            
+            if (_entityFields.ContainsKey(entityType) && _entityFields[entityType] != null)
+            {
+                return _entityFields[entityType];
+            }
+
             var entityFields = new List<EntityField>();
 
             // Get Properties
@@ -96,7 +114,18 @@ namespace Rock.Reporting
                     if ( entityProperty != null )
                     {
                         entityProperty.IsPreviewable = property.GetCustomAttributes( typeof( PreviewableAttribute ), true ).Any();
-                        entityFields.Add( entityProperty );
+                        if ( includeOnlyReportingFields )
+                        {
+                            bool isReportable = !property.GetCustomAttributes( typeof( HideFromReportingAttribute ), true ).Any();
+                            if ( isReportable )
+                            {
+                                entityFields.Add( entityProperty );
+                            }
+                        }
+                        else
+                        {
+                            entityFields.Add( entityProperty );
+                        }
                     }
                 }
             }
@@ -155,15 +184,15 @@ namespace Rock.Reporting
             }
 
             int index = 1;
-            List<EntityField> result = new List<EntityField>();
+            _entityFields[entityType] = new List<EntityField>();
             foreach ( var entityProperty in entityFields.OrderBy( p => p.Title ).ThenBy( p => p.Name ) )
             {
                 entityProperty.Index = index;
                 index += entityProperty.ControlCount;
-                result.Add( entityProperty );
+                _entityFields[entityType].Add( entityProperty );
             }
 
-            return result;
+            return _entityFields[entityType];
         }
     }
 

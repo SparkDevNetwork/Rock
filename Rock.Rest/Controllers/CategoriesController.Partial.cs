@@ -195,7 +195,6 @@ namespace Rock.Rest.Controllers
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="categoryId">The category id.</param>
         /// <returns></returns>
-        [Authenticate, Secured]
         private object GetCategorizedItems( IService serviceInstance, int categoryId )
         {
             if ( serviceInstance != null )

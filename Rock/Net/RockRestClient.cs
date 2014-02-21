@@ -271,19 +271,37 @@ namespace Rock.Net
             HttpError httpError = null;
             HttpResponseMessage httpMessage = null;
 
-            Action<Task<HttpResponseMessage>> handleContinue = new Action<Task<HttpResponseMessage>>( p =>
+            Action<Task<HttpResponseMessage>> handleContinue = new Action<Task<HttpResponseMessage>>( postTask =>
             {
-                p.Result.Content.ReadAsAsync<HttpError>().ContinueWith( c =>
+                if ( postTask.Result.IsSuccessStatusCode )
                 {
-                    httpError = c.Result;
-                } ).Wait();
+                    postTask.Result.Content.ReadAsAsync<HttpError>().ContinueWith( c =>
+                    {
+                        httpError = c.Result;
+                    } ).Wait();
 
-                p.Result.Content.ReadAsStringAsync().ContinueWith( c =>
+                    postTask.Result.Content.ReadAsStringAsync().ContinueWith( c =>
+                    {
+                        var contentResult = c.Result;
+                    } ).Wait();
+
+                    httpMessage = postTask.Result;
+                }
+                else
                 {
-                    var contentResult = c.Result;
-                } ).Wait();
-
-                httpMessage = p.Result;
+                    postTask.Result.Content.ReadAsStringAsync().ContinueWith( s =>
+                    {
+#if DEBUG
+                        string debugResult = postTask.Result.ReasonPhrase + "\n\n" + s.Result + "\n\n" + postPath;
+                        httpError = new HttpError( debugResult );
+#else                            
+                            // just get the simple error message, don't expose exception details to user
+                            httpError = new HttpError( postTask.Result.ReasonPhrase );
+#endif
+                    } ).Wait();
+                }
+                
+                
             } );
 
             if ( httpMethod == HttpMethod.Post )

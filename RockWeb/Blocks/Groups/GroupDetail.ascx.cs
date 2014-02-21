@@ -417,7 +417,7 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     groupService.Save( group, CurrentPersonAlias );
-                    Rock.Attribute.Helper.SaveAttributeValues( group, CurrentPersonAlias );
+                    group.SaveAttributeValues( CurrentPersonAlias );
 
                     /* Take care of Group Member Attributes */
                     var entityTypeId = EntityTypeCache.Read( typeof( GroupMember ) ).Id;

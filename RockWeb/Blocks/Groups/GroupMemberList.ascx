@@ -25,7 +25,6 @@
                         <asp:BoundField DataField="Person.LastName" HeaderText="Last Name" SortExpression="Person.LastName" />
                         <asp:BoundField DataField="GroupRole.Name" HeaderText="Role" SortExpression="GroupRole.Name" />
                         <asp:BoundField DataField="GroupMemberStatus" HeaderText="Status" SortExpression="GroupMemberStatus" />
-                        <Rock:DeleteField OnClick="DeleteGroupMember_Click" />
                     </Columns>
                 </Rock:Grid>
 

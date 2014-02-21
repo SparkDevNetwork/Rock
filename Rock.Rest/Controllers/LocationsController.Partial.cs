@@ -133,9 +133,11 @@ namespace Rock.Rest.Controllers
             List<Location> locationList = new List<Location>();
             List<TreeViewItem> locationNameList = new List<TreeViewItem>();
 
+            var person = GetPerson();
+
             foreach ( var location in qry )
             {
-                if ( location.IsAuthorized( "View", GetPerson() ) )
+                if ( location.IsAuthorized( "View", person ) )
                 {
                     locationList.Add( location );
                     var treeViewItem = new TreeViewItem();

@@ -166,7 +166,7 @@ namespace RockWeb.Blocks.Crm
             RockTransactionScope.WrapTransaction( () =>
             {
                 PersonBadgeService.Save( PersonBadge, CurrentPersonAlias );
-                Rock.Attribute.Helper.SaveAttributeValues( PersonBadge, CurrentPersonAlias );
+                PersonBadge.SaveAttributeValues( CurrentPersonAlias );
             } );
 
             NavigateToParentPage();

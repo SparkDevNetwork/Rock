@@ -64,13 +64,15 @@ namespace RockWeb.Blocks.Groups
                     upDetail.Visible = false;
                 }
             }
-
-            var groupMember = new GroupMember { GroupId = hfGroupId.ValueAsInt() };
-            if ( groupMember != null )
+            else
             {
-                groupMember.LoadAttributes();
-                phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, false );
+                var groupMember = new GroupMember { GroupId = hfGroupId.ValueAsInt() };
+                if ( groupMember != null )
+                {
+                    groupMember.LoadAttributes();
+                    phAttributes.Controls.Clear();
+                    Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, false );
+                }
             }
         }
 
@@ -238,7 +240,7 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     groupMemberService.Save( groupMember, CurrentPersonAlias );
-                    Rock.Attribute.Helper.SaveAttributeValues( groupMember, CurrentPersonAlias );
+                    groupMember.SaveAttributeValues( CurrentPersonAlias );
                 } );
 
                 Group group = new GroupService().Get( groupMember.GroupId );

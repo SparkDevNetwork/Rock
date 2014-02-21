@@ -58,33 +58,8 @@ namespace RockWeb.Blocks.Groups
             base.OnInit( e );
 
             _groupId = PageParameter( "groupId" );
-
-            if ( string.IsNullOrWhiteSpace( _groupId ) )
-            {
-                // If no group was selected, try to find the first group and redirect
-                // back to current page with that group selected
-                var group = FindFirstGroup();
-                {
-                    if ( group != null )
-                    {
-                        _groupId = group.Id.ToString();
-
-                        // redirect so that the group treeview has the first node selected right away and group detail shows the group
-                        this.Response.Redirect( this.Request.Url + "?groupId=" + _groupId.ToString(), false );
-                        Context.ApplicationInstance.CompleteRequest();
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnLoad( EventArgs e )
-        {
-            base.OnLoad( e );
-
+            
+            hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
             hfLimitToSecurityRoleGroups.Value = GetAttributeValue( "LimittoSecurityRoleGroups" );
             hfRootGroupId.Value = GetAttributeValue( "Group" );
 
@@ -98,6 +73,42 @@ namespace RockWeb.Blocks.Groups
                 groupTypeIds = string.IsNullOrWhiteSpace( groupTypeIds ) ? "0" : groupTypeIds;
             }
             hfGroupTypes.Value = groupTypeIds;
+
+            if ( string.IsNullOrWhiteSpace( _groupId ) )
+            {
+                // If no group was selected, try to find the first group and redirect
+                // back to current page with that group selected
+                var group = FindFirstGroup();
+                {
+                    if ( group != null )
+                    {
+                        _groupId = group.Id.ToString();
+                        string redirectUrl = string.Empty;
+
+                        // redirect so that the group treeview has the first node selected right away and group detail shows the group
+                        if ( hfPageRouteTemplate.Value.IndexOf("{groupId}", StringComparison.OrdinalIgnoreCase) >= 0 )
+                        {
+                            redirectUrl = "~/" + hfPageRouteTemplate.Value.ReplaceCaseInsensitive( "{groupId}", _groupId.ToString() );
+                        }
+                        else
+                        {
+                            redirectUrl = this.Request.Url + "?groupId=" + _groupId.ToString();
+                        }
+
+                        this.Response.Redirect( redirectUrl, false );
+                        Context.ApplicationInstance.CompleteRequest();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
 
             if ( !string.IsNullOrWhiteSpace( _groupId ) )
             {

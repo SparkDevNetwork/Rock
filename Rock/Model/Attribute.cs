@@ -32,6 +32,11 @@ namespace Rock.Model
     public partial class Attribute : Model<Attribute>, IOrdered
     {
 
+        /// <summary>
+        /// The Qualifier on null entity types to distinguish a 'System Setting' from a Global Attribute
+        /// </summary>
+        public const string SYSTEM_SETTING_QUALIFIER = "SystemSetting";
+
         #region Entity Properties
 
         /// <summary>

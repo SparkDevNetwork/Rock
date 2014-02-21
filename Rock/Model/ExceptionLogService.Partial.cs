@@ -103,7 +103,6 @@ namespace Rock.Model
                 if ( !isParent )
                 {
                     exceptionLog = log.Clone( false );
-                    exceptionLog.CreatedByPersonAlias = log.CreatedByPersonAlias.Clone( false );
 
                     if ( exceptionLog != null )
                     {

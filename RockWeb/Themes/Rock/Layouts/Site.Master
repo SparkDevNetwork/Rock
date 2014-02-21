@@ -4,16 +4,11 @@
 
 <script runat="server">
 
-    /// <summary>
-    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-    /// </summary>
-    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-    protected override void OnInit( EventArgs e )
+    protected override void OnLoad( EventArgs e )
     {
-        base.OnInit( e );
-        
-        //
-    }    
+        base.OnLoad( e );
+        divTitle.Visible = ShowPageTitle;
+    }  
     
 </script>
 
@@ -52,7 +47,7 @@
     <form id="form1" runat="server">
     
         <!-- Page Header -->
-        <header class="pagerheader">
+        <header class="pageheader">
             <div class="container">
             
                     <!-- Brand Bar -->
@@ -85,7 +80,7 @@
 	        </nav>
 
             <!-- Page Title -->
-	        <div class="navbar navbar-static-top pagetitle">
+	        <div id="divTitle" runat="server" class="navbar navbar-static-top pagetitle">
 		        <div class="container">
                     <div class="row">
 				        <div class="col-md-6">
@@ -105,8 +100,11 @@
 	    <footer class="page-footer">
 		    <div class="container">
                 <div class="row">
-			        <div class="col-md-12">
+			        <div class="col-md-8">
 				        <Rock:Zone Name="Footer" runat="server" />
+			        </div>
+                    <div class="col-md-4">
+				        <p><i class="fa fa-star"></i> Rock Beta - <a href="https://github.com/SparkDevNetwork/Rock/issues?state=open">Submit Issues</a> <i class="fa fa-star"></i></p>
 			        </div>
 		        </div>
 		    </div>

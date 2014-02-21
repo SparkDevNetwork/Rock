@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -34,6 +34,14 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private HiddenField _hfExpanded;
 
+        /// <summary>
+        /// The title label
+        /// </summary>
+        private HiddenField _hfTitle;
+
+        /// <summary>
+        /// The delete button
+        /// </summary>
         private LinkButton _lbDelete;
 
         /// <summary>
@@ -44,8 +52,16 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string Title
         {
-            get { return ViewState["Title"] as string ?? string.Empty; }
-            set { ViewState["Title"] = value; }
+            get
+            {
+                EnsureChildControls();
+                return _hfTitle.Value;
+            }
+            set
+            {
+                EnsureChildControls();
+                _hfTitle.Value = value;
+            }
         }
 
         /// <summary>
@@ -123,8 +139,16 @@ namespace Rock.Web.UI.Controls
         public string CssClass
         {
             get { return ViewState["CssClass"] as string ?? string.Empty; }
-            set {  ViewState["CssClass"] = value; }
+            set { ViewState["CssClass"] = value; }
         }
+
+        /// <summary>
+        /// Gets or sets the header controls.
+        /// </summary>
+        /// <value>
+        /// The header controls.
+        /// </value>
+        public Control[] HeaderControls { private get; set; }
 
         #endregion
 
@@ -142,6 +166,11 @@ namespace Rock.Web.UI.Controls
 $('.rock-panel-widget > header').click(function () {
     $(this).siblings('.panel-body').slideToggle();
 
+    if ( $(this).find('.js-header-controls').length ) {
+        $(this).find('.js-header-title').slideToggle();
+        $(this).find('.js-header-controls').slideToggle();
+    }
+
     $expanded = $(this).children('input.filter-expanded');
     $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
 
@@ -149,14 +178,8 @@ $('.rock-panel-widget > header').click(function () {
     $('a.view-state > i', this).toggleClass('fa-chevron-up');
 });
 
-
-// fix so that the Remove button will fire its event, but not the parent event 
-$('.rock-panel-widget a.btn-danger').click(function (event) {
-    event.stopImmediatePropagation();
-});
-
-// fix so that the Reorder button will fire its event, but not the parent event 
-$('.rock-panel-widget a.panel-widget-reorder').click(function (event) {
+// fix so that certain controls will fire its event, but not the parent event 
+$('.js-stop-immediate-propagation').click(function (event) {
     event.stopImmediatePropagation();
 });
 
@@ -176,12 +199,16 @@ $('.rock-panel-widget a.panel-widget-reorder').click(function (event) {
             _hfExpanded.ID = this.ID + "_hfExpanded";
             _hfExpanded.Value = "False";
 
+            _hfTitle = new HiddenField();
+            _hfTitle.ID = this.ID + "_hfTitle";
+            Controls.Add( _hfTitle );
+
             _lbDelete = new LinkButton();
             _lbDelete.CausesValidation = false;
             _lbDelete.ID = this.ID + "_lbDelete";
-            _lbDelete.CssClass = "btn btn-xs btn-danger";
+            _lbDelete.CssClass = "btn btn-xs btn-danger js-stop-immediate-propagation";
             _lbDelete.Click += lbDelete_Click;
-            _lbDelete.Controls.Add(new LiteralControl { Text = "<i class='fa fa fa-times'></i>" });
+            _lbDelete.Controls.Add( new LiteralControl { Text = "<i class='fa fa fa-times'></i>" } );
 
             Controls.Add( _lbDelete );
         }
@@ -225,13 +252,61 @@ $('.rock-panel-widget a.panel-widget-reorder').click(function (event) {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-expanded" );
                 _hfExpanded.RenderControl( writer );
 
-                // Title
+                /* Begin - Title and header controls */
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                writer.Write( Title );
+
+                // Title
+
+
+                // Hidden Field to track Title
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-header-title-hidden" );
+                _hfTitle.RenderControl( writer );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-item-description js-header-title" );
+                if ( Expanded )
+                {
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+                }
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                
+                // also write out the value of the hidden field as the title
+                writer.Write( _hfTitle.Value );
+
                 writer.RenderEndTag();
+
+                // Header Controls
+                if ( this.HeaderControls != null )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-item-select js-header-controls" );
+                    if ( !Expanded )
+                    {
+                        writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+                    }
+
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    foreach ( var control in this.HeaderControls )
+                    {
+                        if ( !this.Controls.Contains( control ) )
+                        {
+                            this.Controls.Add( control );
+                        }
+
+                        if ( control is WebControl )
+                        {
+                            ( control as WebControl ).AddCssClass( "js-stop-immediate-propagation" );
+                        }
+
+                        control.RenderControl( writer );
+                    }
+
+                    writer.RenderEndTag();
+                }
+
                 writer.RenderEndTag();
+
+                /* End - Title and Header Controls */
 
                 // Panel Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
@@ -240,7 +315,7 @@ $('.rock-panel-widget a.panel-widget-reorder').click(function (event) {
                 if ( ShowReorderIcon )
                 {
                     // Reorder Icon
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs panel-widget-reorder" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs panel-widget-reorder js-stop-immediate-propagation" );
                     writer.RenderBeginTag( HtmlTextWriterTag.A );
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-bars" );
                     writer.RenderBeginTag( HtmlTextWriterTag.I );
@@ -282,10 +357,18 @@ $('.rock-panel-widget a.panel-widget-reorder').click(function (event) {
                 // Render placeholder's child controls
                 if ( this.Controls != null )
                 {
-                    var builtInControls = new Control[] { _hfExpanded, _lbDelete };
+                    List<Control> alreadyRenderedControls = new List<Control>();
+                    alreadyRenderedControls.Add( _hfExpanded );
+                    alreadyRenderedControls.Add( _hfTitle );
+                    alreadyRenderedControls.Add( _lbDelete );
+                    if ( this.HeaderControls != null )
+                    {
+                        alreadyRenderedControls.AddRange( HeaderControls );
+                    }
+
                     foreach ( Control child in this.Controls )
                     {
-                        if ( !builtInControls.Contains( child ) )
+                        if ( !alreadyRenderedControls.Contains( child ) )
                         {
                             child.RenderControl( writer );
                         }

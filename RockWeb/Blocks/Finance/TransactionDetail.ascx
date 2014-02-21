@@ -1,4 +1,9 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TransactionDetail.ascx.cs" Inherits="RockWeb.Blocks.Finance.TransactionDetail" %>
+<script>
+    $(function () {
+        $(".photo a").fluidbox();
+    });
+</script>
 <asp:UpdatePanel ID="upFinancialBatch" runat="server">
     <ContentTemplate>
 
@@ -16,13 +21,6 @@
 
                 <asp:HiddenField ID="hfIdTransValue" runat="server" />
                 <asp:HiddenField ID="hfBatchId" runat="server" />
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <Rock:DataTextBox ID="tbAmount" runat="server" PrependText="$" CssClass="input-width-md" Label="Amount" TabIndex="1"
-                            SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="Amount" />
-                    </div>
-                </div>
 
                 <div class="row">
                     <div class="col-md-12">
@@ -72,20 +70,69 @@
             </fieldset>
 
             <br />
-            <div class="row col-md-12">
-                <Rock:Grid ID="gTransactionDetails" runat="server" EmptyDataText="No Transactions Details Found" OnRowSelected="gTransactionDetails_RowSelected" AllowSorting="true">
-                    <Columns>
-                        <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
-                        <asp:BoundField DataField="TransactionId" HeaderText="Transaction Id" SortExpression="TransactionId" />                
-                        <asp:BoundField DataField="AccountId" HeaderText="AccountId" SortExpression="AccountId" />
-                        <asp:BoundField DataField="Amount" HeaderText="Amount" SortExpression="Amount" />
-                        <asp:BoundField DataField="Summary" HeaderText="Summary" SortExpression="Summary" />
-                        <asp:BoundField DataField="EntityTypeId" HeaderText="Entity Type Id" SortExpression="EntityTypeId" />
-                        <asp:BoundField DataField="EntityId" HeaderText="Entity Id" SortExpression="EntityId" />
-                        <Rock:DeleteField OnClick="gTransactionDetails_Delete" Visible="false"/>
-                    </Columns>
-                </Rock:Grid>
-            </div>
+            <asp:Panel ID="pnlTransactionDetails" runat="server">
+                <h4><asp:Literal ID="lHeading" runat="server" Text="Transaction Details" /></h4>
+                <Rock:ModalAlert ID="maGridWarning" runat="server" />
+                <div class="row col-md-12">
+                    <Rock:Grid ID="gTransactionDetails" runat="server" EmptyDataText="No Transactions Details Found" OnRowSelected="gTransactionDetails_RowSelected" AllowSorting="true">
+                        <Columns>
+                            <asp:BoundField DataField="Account" HeaderText="Account" SortExpression="Account" />
+                            <asp:BoundField DataField="Amount" HeaderText="Amount" SortExpression="Amount" />
+                            <asp:BoundField DataField="Summary" HeaderText="Summary" SortExpression="Summary" />
+                            <Rock:DeleteField OnClick="gTransactionDetails_Delete" />
+                        </Columns>
+                    </Rock:Grid>
+                </div>
+            </asp:Panel>
+
+            <asp:Panel ID="pnlTransactionImages" runat="server">
+                <h4><asp:Literal ID="lImageHeading" runat="server" Text="Related Images" /></h4>
+                <div class="row col-md-12">
+                    <!-- this will be for displaying the images -->
+                    <asp:DataList ID="dlImages" runat="server" RepeatDirection="Horizontal" RepeatColumns="2" OnItemDataBound="dlImages_ItemDataBound" >
+                        <ItemTemplate >
+                            <div class="photo">
+                                <asp:PlaceHolder ID="phImage" runat="server" />
+                            </div>
+                        </ItemTemplate>
+                    </asp:DataList>
+                </div>
+                <br />
+                <div class="row">
+                    <!-- this will be for the image uploader -->
+                    <div class="col-md-3">
+                        <Rock:ImageUploader ID="imgupTransactionImages" runat="server" Label="Upload an Image" />
+                    </div>
+                    <div class="col-md-3">
+                        <Rock:RockDropDownList ID="ddlTransactionImageType" runat="server" Label="Transaction Image Type" />
+                    </div>
+                </div>
+                <div class="row col-md-3">
+                    <asp:LinkButton ID="lbSaveImage" runat="server" Text="Save Image" CssClass="btn btn-primary btn-sm" OnClick="lbSaveImage_Click" />
+                </div>
+            </asp:Panel>
+
+            <Rock:ModalDialog ID="mdDetails" runat="server" Title="Transaction Details" ValidationGroup="TransactionDetails">
+                <Content>
+                    <asp:HiddenField ID="hfIdValue" runat="server" />
+                    <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockDropDownList ID="ddlTransactionAccount" runat="server" Label="Account"></Rock:RockDropDownList>
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:DataTextBox ID="tbTransactionAmount" runat="server" PrependText="$" CssClass="input-width-md" Label="Amount"
+                                SourceTypeName="Rock.Model.FinancialTransactionDetail, Rock" PropertyName="Amount" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <Rock:DataTextBox ID="tbTransactionSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="4"
+                                SourceTypeName="Rock.Model.FinancialTransactionDetail, Rock" PropertyName="Summary" />
+                        </div>
+                    </div>
+                </Content>
+            </Rock:ModalDialog>
 
         </asp:Panel>
     </ContentTemplate>

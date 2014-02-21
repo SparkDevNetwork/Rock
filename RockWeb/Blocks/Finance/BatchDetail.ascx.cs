@@ -109,6 +109,11 @@ namespace RockWeb.Blocks.Finance
                 } );
             }
 
+            foreach( var block in RockPage.RockBlocks.OfType<RockWeb.Blocks.Finance.TransactionList>() )
+            {
+                ( (RockWeb.Blocks.Finance.TransactionList)block ).RefreshList();
+            }
+
             var savedFinancialBatch = new FinancialBatchService().Get( hfBatchId.ValueAsInt() );
             ShowSummary( savedFinancialBatch );
         }

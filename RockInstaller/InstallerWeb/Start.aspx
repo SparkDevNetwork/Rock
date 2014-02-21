@@ -20,7 +20,7 @@
 	// some constants
 	//
     const string dotNetVersionRequired = "4.5";
-	const string internetCheckSite = "www.google.com";
+    const string internetCheckSite = "https://rockrms.blob.core.windows.net/install/html-alive.txt";
     const string rockZipAssemblyFile = "http://storage.rockrms.com/install/Ionic.Zip.dll";
     const string rockInstallFile = "http://storage.rockrms.com/install/Install.aspx";
     const string rockConfigureFile = "http://storage.rockrms.com/install/Configure.aspx";
@@ -206,22 +206,22 @@
 		
 	
 		// check for internet connection
-		TcpClient tcpClient = new TcpClient();
+        WebClient client = new WebClient();
 		
 		try {
-			tcpClient.Connect(internetCheckSite, 80);
+            string results = client.DownloadString( internetCheckSite );
 			
-			if (!tcpClient.Connected) {
-				checksFailed = true;
-                errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i> You don't seem to be connected to the internet. The Rock installer requires an Internet connection.</li>";
-			}
+            if (!results.Contains("success")) {
+                checksFailed = true;
+                errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i> Could not connect to the Rock Install Server. Please check your internet connection or try again soon.</li>";
+            }
 		}
 		catch(Exception ex) {
 			checksFailed = true;
-            errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i> You don't seem to be connected to the internet. The Rock installer requires an Internet connection.</li>";
+            errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i> Could not connect to the Rock Install Server. Please check your internet connection or try again soon.</li>";
 		}
 		finally {
-			tcpClient = null;
+			client = null;
 		}
 		
 		// check for write access to the file system
