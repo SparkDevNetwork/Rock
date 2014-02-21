@@ -97,7 +97,24 @@ namespace RockWeb.Blocks.Crm
                         case ( "name" ):
 
                             people = personService.GetByFullName( term, true );
-
+                            if (people.Count() != 1)
+                            {
+                                var similiarNames = personService.GetSimiliarNames( term,
+                                    people.Select( p => p.Id ).ToList(), true );
+                                if ( similiarNames.Any() )
+                                {
+                                    var hyperlinks = new List<string>();
+                                    foreach(string name in similiarNames.Distinct())
+                                    {
+                                        var pageRef = CurrentPageReference;
+                                        pageRef.Parameters["SearchTerm"] = name;
+                                        hyperlinks.Add( string.Format( "<a href='{0}'>{1}</a>", pageRef.BuildUrl(), name ) );
+                                    }
+                                    string altNames = string.Join( ", ", hyperlinks );
+                                    nbNotice.Text = string.Format( "Other Search Values: {0}", altNames );
+                                    nbNotice.Visible = true;
+                                }
+                            }
                             break;
 
                         case ( "phone" ):
@@ -146,20 +163,6 @@ namespace RockWeb.Blocks.Crm
                 {
                     Response.Redirect( string.Format( "~/Person/{0}", personList[0].Id ), false );
                     Context.ApplicationInstance.CompleteRequest();
-                }
-                else if ( personList.Count == 0 && type.ToLower() == "name" )
-                {
-                    // If no one was found and it was a search by name, try
-                    // the soundex function
-                    personList = new PersonService().GetByFullName( term, true, includeSoundsLike:true ).ToList();
-                    if ( personList.Count > 0 )
-                    {
-                        string altNames = string.Join( ", ", personList.Select( p => p.FullName ).Distinct() );
-                        nbNotice.Text = string.Format( "Did you mean: {0}", altNames );
-                        nbNotice.Visible = true;
-                        gPeople.DataSource = personList;
-                        gPeople.DataBind();
-                    }
                 }
                 else
                 {

@@ -469,7 +469,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     .GetEditValue( allergyAttributeControl, allergyAttribute.QualifierValues ) );
             }
 
-            Rock.Attribute.Helper.SaveAttributeValues( person.Person, CurrentPersonAlias );
+            person.Person.SaveAttributeValues( CurrentPersonAlias );
             hfAllergyAttributeId.Value = string.Empty;
             mpeAddNote.Hide();
         }

@@ -3,7 +3,7 @@
 
 <asp:Content ID="ctFeature" ContentPlaceHolderID="feature" runat="server">
 
-    <section class="jumbotron">
+    <section class="main-feature">
         <div class="container">
             <div class="row">
                 <div class="col-md-12">

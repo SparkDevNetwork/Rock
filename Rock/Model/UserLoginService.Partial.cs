@@ -94,11 +94,13 @@ namespace Rock.Model
                     DateTime createDate = RockDateTime.Now;
 
                     user = new UserLogin();
+                    user.Guid = Guid.NewGuid();
                     user.EntityTypeId = entityTypeId;
                     user.UserName = username;
                     user.IsConfirmed = isConfirmed;
                     user.LastPasswordChangedDateTime = createDate;
                     user.PersonId = person.Id;
+
 
                     if ( serviceType == AuthenticationServiceType.Internal )
                     {

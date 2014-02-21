@@ -72,6 +72,14 @@ namespace RockWeb.Blocks.Groups
                         gGroupMembers.IsDeleteEnabled = true;
                         gGroupMembers.GridRebind += gGroupMembers_GridRebind;
                         gGroupMembers.RowItemText = _group.GroupType.GroupTerm + " " + _group.GroupType.GroupMemberTerm;
+
+                        // Add attribute columns
+                        AddAttributeColumns();
+
+                        // Add delete column
+                        var deleteField = new DeleteField();
+                        gGroupMembers.Columns.Add( deleteField );
+                        deleteField.Click += DeleteGroupMember_Click;
                     }
                 }
             }
@@ -231,6 +239,44 @@ namespace RockWeb.Blocks.Groups
             cblStatus.BindToEnum( typeof( GroupMemberStatus ) );
         }
 
+        private void AddAttributeColumns()
+        {
+            // Remove attribute columns
+            foreach ( var column in gGroupMembers.Columns.OfType<AttributeField>().ToList() )
+            {
+                gGroupMembers.Columns.Remove( column );
+            }
+
+            if ( _group != null )
+            {
+                // Add attribute columns
+                int entityTypeId = new GroupMember().TypeId;
+                string groupQualifier = _group.Id.ToString();
+                string groupTypeQualifier = _group.GroupTypeId.ToString();
+                foreach ( var attribute in new AttributeService().Queryable()
+                    .Where( a =>
+                        a.EntityTypeId == entityTypeId &&
+                        a.IsGridColumn &&
+                        ( a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase ) && a.EntityTypeQualifierValue.Equals( groupQualifier ) ||
+                         a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) && a.EntityTypeQualifierValue.Equals( groupTypeQualifier ) )
+                         )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name ) )
+                {
+                    string dataFieldExpression = attribute.Key;
+                    bool columnExists = gGroupMembers.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
+                    if ( !columnExists )
+                    {
+                        AttributeField boundField = new AttributeField();
+                        boundField.DataField = dataFieldExpression;
+                        boundField.HeaderText = attribute.Name;
+                        boundField.SortExpression = string.Empty;
+                        gGroupMembers.Columns.Add( boundField );
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Binds the group members grid.
         /// </summary>
@@ -249,40 +295,6 @@ namespace RockWeb.Blocks.Groups
                         nbRoleWarning.Visible = false;
                         rFilter.Visible = true;
                         gGroupMembers.Visible = true;
-
-                        // Remove attribute columns
-                        foreach ( var column in gGroupMembers.Columns.OfType<AttributeField>().ToList() )
-                        {
-                            gGroupMembers.Columns.Remove( column );
-                        }
-
-                        // Add attribute columns
-                        int entityTypeId = new GroupMember().TypeId;
-                        string groupQualifier = _group.Id.ToString();
-                        string groupTypeQualifier = _group.GroupTypeId.ToString();
-                        foreach ( var attribute in new AttributeService().Queryable()
-                            .Where( a =>
-                                a.EntityTypeId == entityTypeId &&
-                                a.IsGridColumn &&
-                                ( a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase ) && a.EntityTypeQualifierValue.Equals( groupQualifier ) ||
-                                 a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) && a.EntityTypeQualifierValue.Equals( groupTypeQualifier ) )
-                                 )
-                            .OrderBy( a => a.Order )
-                            .ThenBy( a => a.Name ) )
-                        {
-                            string dataFieldExpression = attribute.Key;
-                            bool columnExists = gGroupMembers.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
-                            if ( !columnExists )
-                            {
-                                AttributeField boundField = new AttributeField();
-                                boundField.DataField = dataFieldExpression;
-                                boundField.HeaderText = attribute.Name;
-                                boundField.SortExpression = string.Empty;
-                                int insertPos = gGroupMembers.Columns.IndexOf( gGroupMembers.Columns.OfType<DeleteField>().First() );
-                                gGroupMembers.Columns.Insert( insertPos, boundField );
-                            }
-
-                        }
 
                         GroupMemberService groupMemberService = new GroupMemberService();
                         var qry = groupMemberService.Queryable( "Person,GroupRole" )

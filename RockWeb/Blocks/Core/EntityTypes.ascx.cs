@@ -55,13 +55,8 @@ namespace RockWeb.Blocks.Core
                 gEntityTypes.RowSelected += gEntityTypes_EditRow;
                 gEntityTypes.GridRebind += gEntityTypes_GridRebind;
                 gEntityTypes.RowDataBound += gEntityTypes_RowDataBound;
-            }
 
-            // wire up page naviagte
-            RockPage page = Page as RockPage;
-            if ( page != null )
-            {
-                page.PageNavigate += page_PageNavigate;
+                mdEdit.SaveClick += mdEdit_SaveClick;
             }
 
         }
@@ -79,9 +74,13 @@ namespace RockWeb.Blocks.Core
                 if ( !Page.IsPostBack )
                 {
                     new EntityTypeService().RegisterEntityTypes( Request.MapPath( "~" ) );
-
                     BindGrid();
                 }
+                else
+                {
+                    ShowDialog();
+                }
+
             }
             else
             {
@@ -161,34 +160,11 @@ namespace RockWeb.Blocks.Core
         #region Edit Events
 
         /// <summary>
-        /// Handles the Click event of the btnCancel control.
+        /// Handles the SaveClick event of the mdEdit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
-        {
-            pnlDetails.Visible = false;
-            pnlList.Visible = true;
-            hfEntityTypeId.Value = string.Empty;
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnEdit control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnEdit_Click( object sender, EventArgs e )
-        {
-            pnlDetails.Visible = true;
-            pnlList.Visible = false;
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnSave control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnSave_Click( object sender, EventArgs e )
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdEdit_SaveClick( object sender, EventArgs e )
         {
             EntityTypeService entityTypeService = new EntityTypeService();
             EntityType entityType = entityTypeService.Get( int.Parse( hfEntityTypeId.Value ) );
@@ -198,19 +174,11 @@ namespace RockWeb.Blocks.Core
 
             entityTypeService.Save( entityType, CurrentPersonAlias );
 
+            hfEntityTypeId.Value = string.Empty;
+
+            HideDialog();
+
             BindGrid();
-
-            pnlDetails.Visible = false;
-            pnlList.Visible = true;
-
-            hfEntityTypeId.Value = string.Empty;
-        }
-
-        void page_PageNavigate( object sender, HistoryEventArgs e )
-        {
-            pnlDetails.Visible = false;
-            pnlList.Visible = true;
-            hfEntityTypeId.Value = string.Empty;
         }
 
         #endregion
@@ -249,9 +217,6 @@ namespace RockWeb.Blocks.Core
         /// <param name="entityTypeId">The entity type id.</param>
         protected void ShowEdit( int entityTypeId )
         {
-            pnlList.Visible = false;
-            pnlDetails.Visible = true;
-
             EntityTypeService entityTypeService = new EntityTypeService();
             EntityType entityType = entityTypeService.Get( entityTypeId );
 
@@ -260,7 +225,7 @@ namespace RockWeb.Blocks.Core
 
             if ( entityType != null )
             {
-                lActionTitle.Text = ActionTitle.Edit( EntityType.FriendlyTypeName ).FormatAsHtmlTitle();
+                mdEdit.Title = ActionTitle.Edit( EntityType.FriendlyTypeName );
                 hfEntityTypeId.Value = entityType.Id.ToString();
                 tbName.Text = entityType.Name;
                 tbFriendlyName.Text = entityType.FriendlyName;
@@ -268,7 +233,7 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( EntityType.FriendlyTypeName ).FormatAsHtmlTitle();
+                mdEdit.Title = ActionTitle.Add( EntityType.FriendlyTypeName );
                 hfEntityTypeId.Value = 0.ToString();
                 tbName.Text = string.Empty;
                 tbFriendlyName.Text = string.Empty;
@@ -277,6 +242,36 @@ namespace RockWeb.Blocks.Core
 
             tbName.Enabled = !entityType.IsEntity;
 
+            ShowDialog( "Edit" );
+        }
+
+        private void ShowDialog( string dialog, bool setValues = false )
+        {
+            hfActiveDialog.Value = dialog.ToUpper().Trim();
+            ShowDialog( setValues );
+        }
+
+        private void ShowDialog( bool setValues = false )
+        {
+            switch ( hfActiveDialog.Value )
+            {
+                case "EDIT":
+                    mdEdit.Show();
+                    break;
+            }
+        }
+
+        private void HideDialog()
+        {
+            switch ( hfActiveDialog.Value )
+            {
+
+                case "EDIT":
+                    mdEdit.Hide();
+                    break;
+            }
+
+            hfActiveDialog.Value = string.Empty;
         }
 
         #endregion

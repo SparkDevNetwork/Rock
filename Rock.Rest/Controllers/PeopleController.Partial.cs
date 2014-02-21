@@ -46,7 +46,7 @@ namespace Rock.Rest.Controllers
                     controller = "People",
                     action = "Search"
                 } );
-            
+
             routes.MapHttpRoute(
                 name: "PeopleSearch",
                 routeTemplate: "api/People/Search/{name}/{includeHtml}",
@@ -63,6 +63,15 @@ namespace Rock.Rest.Controllers
                 {
                     controller = "People",
                     action = "GetByUserName"
+                } );
+
+            routes.MapHttpRoute(
+                name: "PeopleGetByPersonAliasId",
+                routeTemplate: "api/People/GetByPersonAliasId/{personAliasId}",
+                defaults: new
+                {
+                    controller = "People",
+                    action = "GetByPersonAliasId"
                 } );
 
             routes.MapHttpRoute(
@@ -83,7 +92,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        public IQueryable<PersonSearchResult> Search( string name)
+        public IQueryable<PersonSearchResult> Search( string name )
         {
             return Search( name, false );
         }
@@ -95,11 +104,11 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        public IQueryable<PersonSearchResult> Search( string name, bool includeHtml)
+        public IQueryable<PersonSearchResult> Search( string name, bool includeHtml )
         {
             int count = 20;
             bool reversed;
-            IOrderedQueryable<Person> sortedPersonQry = new PersonService().Queryable().QueryByName( name, out reversed );
+            IOrderedQueryable<Person> sortedPersonQry = new PersonService().GetByFullNameOrdered( name, false, out reversed );
 
             var topQry = sortedPersonQry.Take( count );
             List<Person> sortedPersonList = topQry.ToList();
@@ -115,12 +124,12 @@ namespace Rock.Rest.Controllers
 ";
 
             Guid activeRecord = new Guid( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE );
- 
+
             // figure out Family, Address, Spouse
             GroupMemberService groupMemberService = new GroupMemberService();
 
             List<PersonSearchResult> searchResult = new List<PersonSearchResult>();
-            foreach ( var person in sortedPersonList)
+            foreach ( var person in sortedPersonList )
             {
                 PersonSearchResult personSearchResult = new PersonSearchResult();
                 personSearchResult.Name = reversed ? person.FullNameReversed : person.FullName;
@@ -146,7 +155,7 @@ namespace Rock.Rest.Controllers
                 {
                     string imageHtml = null;
 
-                    imageHtml = Person.GetPhotoImageTag(person.PhotoId, person.Gender, 65, 65);
+                    imageHtml = Person.GetPhotoImageTag( person.PhotoId, person.Gender, 65, 65 );
 
                     string personInfo = string.Empty;
 
@@ -216,7 +225,7 @@ namespace Rock.Rest.Controllers
 
                 searchResult.Add( personSearchResult );
             }
-            
+
             return searchResult.AsQueryable();
         }
 
@@ -230,6 +239,25 @@ namespace Rock.Rest.Controllers
         public Person GetByUserName( string username )
         {
             int? personId = new UserLoginService().Queryable().Where( u => u.UserName.Equals( username ) ).Select( a => a.PersonId ).FirstOrDefault();
+            if ( personId != null )
+            {
+                return this.Get( personId.Value );
+            }
+
+            throw new HttpResponseException( System.Net.HttpStatusCode.NotFound );
+        }
+
+        /// <summary>
+        /// Gets the Person by person alias identifier.
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [HttpGet]
+        public Person GetByPersonAliasId( int personAliasId )
+        {
+            int? personId = new PersonAliasService().Queryable().Where( u => u.Id.Equals( personAliasId ) ).Select( a => a.PersonId ).FirstOrDefault();
             if ( personId != null )
             {
                 return this.Get( personId.Value );
@@ -257,31 +285,31 @@ namespace Rock.Rest.Controllers
             {
                 var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
                 html.AppendFormat( "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
-                    Person.GetPhotoImageTag(person.PhotoId, person.Gender, 65,65),
+                    Person.GetPhotoImageTag( person.PhotoId, person.Gender, 65, 65 ),
                     person.FullName,
                     person.ConnectionStatusValueId.HasValue ? person.ConnectionStatusValue.Name : string.Empty );
 
                 var spouse = person.GetSpouse();
-                if (spouse != null)
+                if ( spouse != null )
                 {
-                    html.AppendFormat("<strong>Spouse</strong> {0}", 
-                        spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName);
+                    html.AppendFormat( "<strong>Spouse</strong> {0}",
+                        spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName );
                 }
 
                 int? age = person.Age;
-                if (age.HasValue)
+                if ( age.HasValue )
                 {
-                    html.AppendFormat("<br/><strong>Age</strong> {0}", age); 
+                    html.AppendFormat( "<br/><strong>Age</strong> {0}", age );
                 }
 
-                if (!string.IsNullOrWhiteSpace(person.Email))
+                if ( !string.IsNullOrWhiteSpace( person.Email ) )
                 {
-                    html.AppendFormat("<br/><strong>Email</strong> <a href='mailto:{0}'>{0}</a>", person.Email); 
+                    html.AppendFormat( "<br/><strong>Email</strong> <a href='mailto:{0}'>{0}</a>", person.Email );
                 }
 
-                foreach(var phoneNumber in person.PhoneNumbers.Where( n => n.IsUnlisted == false).OrderBy( n => n.NumberTypeValue.Order))
+                foreach ( var phoneNumber in person.PhoneNumbers.Where( n => n.IsUnlisted == false ).OrderBy( n => n.NumberTypeValue.Order ) )
                 {
-                    html.AppendFormat("<br/><strong>{0}</strong> {1}", phoneNumber.NumberTypeValue.Name, phoneNumber.NumberFormatted);
+                    html.AppendFormat( "<br/><strong>{0}</strong> {1}", phoneNumber.NumberTypeValue.Name, phoneNumber.NumberFormatted );
                 }
 
                 // TODO: Should also show area: <br /><strong>Area</strong> WestwingS
@@ -320,7 +348,7 @@ namespace Rock.Rest.Controllers
         /// <value>
         /// The image HTML tag.
         /// </value>
-        public string ImageHtmlTag { get; set; } 
+        public string ImageHtmlTag { get; set; }
 
         /// <summary>
         /// Gets or sets the age.

@@ -55,7 +55,13 @@ namespace Rock.Search.Person
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
-            return new PersonService().Queryable().SelectFullNames( searchterm, true );
+            bool reversed = false;
+            var qry = new PersonService().GetByFullNameOrdered( searchterm, true, out reversed );
+            return qry
+                .Select( p => ( reversed ?
+                    p.LastName + ", " + p.NickName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Name : "" ) :
+                    p.NickName + " " + p.LastName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Name : "" ) ) )
+                .Distinct();
         }
     }
 }

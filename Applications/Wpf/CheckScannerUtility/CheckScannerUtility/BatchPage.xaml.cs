@@ -382,7 +382,17 @@ namespace Rock.Apps.CheckScannerUtility
             else
             {
                 WpfHelper.FadeOut( lblUploadProgress );
-                MessageBox.Show( string.Format( "Upload Error: {0}", e.Error.Message ) );
+                Exception ex = e.Error;
+                if ( ex is AggregateException )
+                {
+                    AggregateException ax = ( ex as AggregateException );
+                    if (ax.InnerExceptions.Count() == 1)
+                    {
+                        ex = ax.InnerExceptions[0];
+                    }
+                }
+
+                MessageBox.Show( string.Format( "Upload Error: {0}", ex.Message ) );
             }
         }
 
@@ -465,7 +475,6 @@ namespace Rock.Apps.CheckScannerUtility
 
                 FinancialTransactionScannedCheck financialTransactionScannedCheck = new FinancialTransactionScannedCheck();
                 financialTransactionScannedCheck.BatchId = SelectedFinancialBatchId;
-                financialTransactionScannedCheck.Amount = 0.00M;
                 financialTransactionScannedCheck.TransactionCode = string.Empty;
                 financialTransactionScannedCheck.Summary = string.Format( "Scanned Check from {0}", appInfo );
                 financialTransactionScannedCheck.Guid = Guid.NewGuid();
@@ -809,7 +818,7 @@ namespace Rock.Apps.CheckScannerUtility
                 FinancialBatch financialBatch = null;
                 if ( SelectedFinancialBatchId.Equals( 0 ) )
                 {
-                    financialBatch = new FinancialBatch { Id = 0, Guid = Guid.NewGuid(), Status = BatchStatus.Pending, CreatedByPersonAliasId = LoggedInPerson.Id };
+                    financialBatch = new FinancialBatch { Id = 0, Guid = Guid.NewGuid(), Status = BatchStatus.Pending, CreatedByPersonAliasId = LoggedInPerson.PrimaryAlias.Id };
                 }
                 else
                 {
@@ -914,7 +923,7 @@ namespace Rock.Apps.CheckScannerUtility
 
             lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campus/{0}", selectedBatch.CampusId ) ).Name : None.Text;
             lblBatchDateReadOnly.Content = selectedBatch.BatchStartDateTime.Value.ToString( "d" );
-            lblBatchCreatedByReadOnly.Content = client.GetData<Person>( string.Format( "api/People/{0}", selectedBatch.CreatedByPersonAliasId ) ).FullName;
+            lblBatchCreatedByReadOnly.Content = client.GetData<Person>( string.Format( "api/People/GetByPersonAliasId/{0}", selectedBatch.CreatedByPersonAliasId ) ).FullName;
             lblBatchControlAmountReadOnly.Content = selectedBatch.ControlAmount.ToString( "F" );
 
             txtBatchName.Text = selectedBatch.Name;
@@ -942,7 +951,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnAddBatch_Click( object sender, RoutedEventArgs e )
         {
-            var financialBatch = new FinancialBatch { Id = 0, BatchStartDateTime = DateTime.Now.Date, CreatedByPersonAliasId = LoggedInPerson.Id };
+            var financialBatch = new FinancialBatch { Id = 0, BatchStartDateTime = DateTime.Now.Date, CreatedByPersonAliasId = LoggedInPerson.PrimaryAlias.Id };
             UpdateBatchUI( financialBatch );
             ShowBatch( true );
         }

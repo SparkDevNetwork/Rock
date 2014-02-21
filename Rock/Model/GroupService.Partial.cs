@@ -96,10 +96,13 @@ namespace Rock.Model
 
             if ( id == 0 )
             {
-                qry = qry.Where( a => a.ParentGroupId == null );
                 if ( rootGroupId != 0 )
                 {
                     qry = qry.Where( a => a.Id == rootGroupId );
+                }
+                else
+                {
+                    qry = qry.Where( a => a.ParentGroupId == null );
                 }
             }
             else
@@ -151,9 +154,10 @@ namespace Rock.Model
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="campusId">The campus identifier.</param>
+        /// <param name="savePersonAttributes">if set to <c>true</c> [save person attributes].</param>
         /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
-        public Group SaveNewFamily( Person person, int? campusId, PersonAlias personAlias )
+        public Group SaveNewFamily( Person person, int? campusId, bool savePersonAttributes, PersonAlias personAlias )
         {
             var groupMember = new GroupMember();
             groupMember.Person = person;
@@ -167,7 +171,7 @@ namespace Rock.Model
             var groupMembers = new List<GroupMember>();
             groupMembers.Add( groupMember );
 
-            return SaveNewFamily( groupMembers, campusId, personAlias );
+            return SaveNewFamily( groupMembers, campusId, savePersonAttributes, personAlias );
         }
 
         /// <summary>
@@ -175,9 +179,10 @@ namespace Rock.Model
         /// </summary>
         /// <param name="familyMembers">The family members.</param>
         /// <param name="campusId">The campus identifier.</param>
+        /// <param name="savePersonAttributes">if set to <c>true</c> [save person attributes].</param>
         /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
-        public Group SaveNewFamily( List<GroupMember> familyMembers, int? campusId, PersonAlias personAlias )
+        public Group SaveNewFamily( List<GroupMember> familyMembers, int? campusId, bool savePersonAttributes, PersonAlias personAlias )
         {
             var familyGroupType = GroupTypeCache.GetFamilyGroupType();
 
@@ -256,7 +261,35 @@ namespace Rock.Model
 
                 foreach ( var groupMember in familyMembers )
                 {
-                    var person = personService.Get( groupMember.PersonId );
+                    var person = groupMember.Person;
+
+                    if ( savePersonAttributes )
+                    {
+                        var newValues = person.AttributeValues;
+                        
+                        person.LoadAttributes();
+                        foreach ( var attributeCache in person.Attributes.Select( a => a.Value ) )
+                        {
+                            string oldValue = person.GetAttributeValue( attributeCache.Key ) ?? string.Empty;
+                            string newValue = string.Empty;
+                            if ( newValues != null &&
+                                newValues.ContainsKey( attributeCache.Key ) &&
+                                newValues[attributeCache.Key].Count > 0 )
+                            {
+                                newValue = newValues[attributeCache.Key][0].Value ?? string.Empty;
+                            }
+
+                            if ( !oldValue.Equals( newValue ) )
+                            {
+                                History.EvaluateChange( familyDemographicChanges[person.Guid], attributeCache.Name,
+                                    attributeCache.FieldType.Field.FormatValue( null, oldValue, attributeCache.QualifierValues, false ),
+                                    attributeCache.FieldType.Field.FormatValue( null, newValue, attributeCache.QualifierValues, false ) );
+                                Rock.Attribute.Helper.SaveAttributeValue( person, attributeCache, newValue, personAlias );
+                            }
+                        }
+                    }
+
+                    person = personService.Get( groupMember.PersonId );
                     if ( person != null )
                     {
                         bool updateRequired = false;

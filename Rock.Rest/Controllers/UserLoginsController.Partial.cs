@@ -45,7 +45,6 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="username"></param>
         /// <returns></returns>
-        [Authenticate, Secured]
         [HttpGet]
         public bool Available( string username )
         {

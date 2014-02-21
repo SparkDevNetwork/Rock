@@ -189,6 +189,7 @@
     <Compile Include="Data\IModel.cs" />
     <Compile Include="Data\IService.cs" />
     <Compile Include="Data\LinqRuntimeTypeBuilder.cs" />
+    <Compile Include="Data\HideFromReportingAttribute.cs" />
     <Compile Include="Field\Types\PersonBadgesFieldType.cs" />
     <Compile Include="Field\Types\GroupLocationTypeFieldType.cs" />
     <Compile Include="Field\Types\CodeEditorFieldType.cs" />
@@ -236,6 +237,7 @@
     <Compile Include="PersonProfile\Badge\InGroupOfType.cs" />
     <Compile Include="PersonProfile\Badge\FamilyWeeksAttendedInDuration.cs" />
     <Compile Include="PersonProfile\Badge\Liquid.cs" />
+    <Compile Include="Reporting\DataFilter\Person\TagFilter.cs" />
     <Compile Include="Reporting\DataSelectComponent.cs" />
     <Compile Include="Reporting\DataFilter\Person\GivingAmountFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\DistanceFromFilter.cs" />
@@ -293,6 +295,7 @@
     <Compile Include="SystemGuid\EntityType.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\Cache\CategoryCache.cs" />
+    <Compile Include="Web\SystemSettings.cs" />
     <Compile Include="Web\Cache\GroupTypeCache.cs" />
     <Compile Include="Web\Cache\LayoutCache.cs" />
     <Compile Include="Web\DescriptionList.cs" />
@@ -482,7 +485,6 @@
     </Compile>
     <Compile Include="Model\Category.cs" />
     <Compile Include="Services\NuGet\PackageService.cs" />
-    <Compile Include="Search\Person\PersonQueryExtensions.cs" />
     <Compile Include="SystemGuid\BinaryFileType.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />
     <Compile Include="Web\UI\Adapters\CheckBoxAdapter.cs" />
@@ -492,6 +494,7 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\Grid\TimeField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LiquidField.cs" />
     <Compile Include="Web\UI\Controls\Grid\ListDelimitedField.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonMergeField.cs" />

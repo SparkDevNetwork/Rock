@@ -309,18 +309,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMember.Person.ConnectionStatusValueId = row.ConnectionStatusValueId;
                 groupMember.Person.Grade = row.Grade;
 
-                groupMember.Person.Attributes = new Dictionary<string, AttributeCache>();
-                groupMember.Person.AttributeValues = new Dictionary<string, List<AttributeValue>>();
+                groupMember.Person.LoadAttributes();
 
                 foreach ( var attributeControl in attributeControls )
                 {
-                    attributeControl.AttributeList.ForEach( a =>
-                    {
-                        groupMember.Person.Attributes.Add( a.Key, a );
-                        groupMember.Person.AttributeValues.Add( a.Key, new List<AttributeValue>() );
-                        groupMember.Person.AttributeValues[a.Key].Add( new AttributeValue { AttributeId = a.Id } );
-                    } );
-
                     NewFamilyAttributesRow attributeRow = attributeControl.AttributesRows.FirstOrDefault( r => r.PersonGuid == row.PersonGuid );
                     if ( attributeRow != null )
                     {
@@ -404,7 +396,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             using ( new UnitOfWorkScope() )
                             {
                                 var groupService = new GroupService();
-                                var familyGroup = groupService.SaveNewFamily( familyMembers, cpCampus.SelectedValueAsInt(), CurrentPersonAlias );
+                                var familyGroup = groupService.SaveNewFamily( familyMembers, cpCampus.SelectedValueAsInt(), true, CurrentPersonAlias );
                                 if (familyGroup != null)
                                 {
                                     groupService.AddNewFamilyAddress(familyGroup, GetAttributeValue( "LocationType" ),

@@ -56,13 +56,6 @@ namespace RockWeb.Blocks.Core
 
             _isAuthorizedToConfigure = RockPage.IsAuthorized( "Administrate", CurrentPerson );
 
-            // wire up page naviagte
-            RockPage page = Page as RockPage;
-            if (page != null)
-            {
-                page.PageNavigate += page_PageNavigate;
-            }
-
             Type containerType = Type.GetType( GetAttributeValue( "ComponentContainer" ) );
             if ( containerType != null )
             {
@@ -89,6 +82,9 @@ namespace RockWeb.Blocks.Core
                         {
                             rGrid.RowItemText = containerType.BaseType.GenericTypeArguments[0].Name.SplitCase();
                         }
+
+                        mdEditComponent.SaveClick += mdEditComponent_SaveClick;
+
                     }
                     else
                         DisplayError( "Could not get ContainerManaged instance from Instance property" );
@@ -101,26 +97,35 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Handles the history state to allow the back button to work in the update panel.
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.Web.UI.HistoryEventArgs"/> instance containing the history data.</param>
-        void page_PageNavigate(object sender, HistoryEventArgs e)
-        {
-            SetEditMode(false);
-        }
-
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
             LoadEditControls();
         }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
 
-            if ( !Page.IsPostBack && _container != null)
-                BindGrid();
+            if ( !Page.IsPostBack )
+            {
+                if ( _container != null )
+                {
+                    BindGrid();
+                }
+            }
+            else
+            {
+                ShowDialog();
+            }
+
         }
 
         #endregion
@@ -217,31 +222,21 @@ namespace RockWeb.Blocks.Core
         #region Edit Events
 
         /// <summary>
-        /// Handles the Click event of the btnCancel control.
+        /// Handles the SaveClick event of the mdEditComponent control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
-        {
-            SetEditMode( false );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnSave control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        protected void btnSave_Click( object sender, EventArgs e )
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdEditComponent_SaveClick( object sender, EventArgs e )
         {
             int serviceId = ( int )ViewState["serviceId"];
             Rock.Attribute.IHasAttributes component = _container.Dictionary[serviceId].Value;
 
             Rock.Attribute.Helper.GetEditValues( phProperties, component );
-            Rock.Attribute.Helper.SaveAttributeValues( component, CurrentPersonAlias );
+            component.SaveAttributeValues( CurrentPersonAlias );
+
+            HideDialog();
 
             BindGrid();
-
-            SetEditMode( false );
         }
 
         #endregion
@@ -318,27 +313,13 @@ namespace RockWeb.Blocks.Core
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         protected void ShowEdit( int serviceId )
         {
-            // set edit history marker
-            this.AddHistory("edit", "", "Edit " + _container.Dictionary[serviceId].Key);
-            
             ViewState["serviceId"] = serviceId;
             phProperties.Controls.Clear();
             LoadEditControls();
 
-            lProperties.Text = (_container.Dictionary[serviceId].Key + " Properties").FormatAsHtmlTitle();
+            mdEditComponent.Title = (_container.Dictionary[serviceId].Key + " Properties").FormatAsHtmlTitle();
 
-            SetEditMode( true );
-        }
-
-
-        /// <summary>
-        /// Sets the edit mode.
-        /// </summary>
-        /// <param name="editable">if set to <c>true</c> [editable].</param>
-        private void SetEditMode (bool editable)
-        {
-            pnlDetails.Visible = editable;
-            pnlList.Visible = !editable;
+            ShowDialog( "EditComponent" );
         }
 
         private void LoadEditControls()
@@ -352,6 +333,35 @@ namespace RockWeb.Blocks.Core
         private void DisplayError( string message )
         {
             mdAlert.Show( message, ModalAlertType.Alert );
+        }
+
+        private void ShowDialog( string dialog, bool setValues = false )
+        {
+            hfActiveDialog.Value = dialog.ToUpper().Trim();
+            ShowDialog( setValues );
+        }
+
+        private void ShowDialog( bool setValues = false )
+        {
+            switch ( hfActiveDialog.Value )
+            {
+                case "EDITCOMPONENT":
+                    mdEditComponent.Show();
+                    break;
+            }
+        }
+
+        private void HideDialog()
+        {
+            switch ( hfActiveDialog.Value )
+            {
+
+                case "EDITCOMPONENT":
+                    mdEditComponent.Hide();
+                    break;
+            }
+
+            hfActiveDialog.Value = string.Empty;
         }
 
         #endregion
