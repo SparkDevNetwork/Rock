@@ -584,6 +584,10 @@
     <Compile Include="Migrations\201402210410566_SecureRest2.Designer.cs">
       <DependentUpon>201402210410566_SecureRest2.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402211810096_ModifyAttCodeIndex.cs" />
+    <Compile Include="Migrations\201402211810096_ModifyAttCodeIndex.Designer.cs">
+      <DependentUpon>201402211810096_ModifyAttCodeIndex.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1001,6 +1005,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402210410566_SecureRest2.resx">
       <DependentUpon>201402210410566_SecureRest2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402211810096_ModifyAttCodeIndex.resx">
+      <DependentUpon>201402211810096_ModifyAttCodeIndex.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
