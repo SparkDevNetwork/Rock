@@ -45,7 +45,7 @@
                         </div>
                         <div class="pull-right">
                             <div class="form-control-group">
-                                <asp:LinkButton runat="server" ID="btnAddField" CssClass="btn btn-primary btn-sm" Text="Add" OnClick="btnAddField_Click" /></td>
+                                <asp:LinkButton runat="server" ID="btnAddField" CssClass="btn btn-primary btn-sm" Text="Add" CausesValidation="false" OnClick="btnAddField_Click" /></td>
                             </div>
                         </div>
                     </header>
