@@ -4,14 +4,13 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <title>Rock - Error</title>
 
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Stark/Styles/bootstrap.css") %>" />
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Stark/Styles/theme.css") %>" />
 
-    <script src="<%= ResolveUrl("~/Scripts/jquery.js") %>" >
-    <script>
+    <script src="<%# ResolveUrl("~/Scripts/jquery-1.10.2.min.js") %>">
         $(document).ready(function () {
             $(".stack-trace").hide();
             
