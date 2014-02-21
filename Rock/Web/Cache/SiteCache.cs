@@ -548,25 +548,32 @@ namespace Rock.Web.Cache
             ObjectCache cache = MemoryCache.Default;
             Dictionary<string, int> sites = cache[cacheKey] as Dictionary<string, int>;
             if ( sites == null )
+            {
                 sites = new Dictionary<string, int>();
+                var cachePolicy = new CacheItemPolicy();
+                cache.Set( cacheKey, sites, cachePolicy );
+            }
 
             // look in cache
-            if (sites.ContainsKey(host))
-                site = Rock.Web.Cache.SiteCache.Read(sites[host]);
+            if ( sites.ContainsKey( host ) )
+            {
+                site = Rock.Web.Cache.SiteCache.Read( sites[host] );
+            }
             else
             {
                 // get from database
                 Rock.Model.SiteDomainService siteDomainService = new Rock.Model.SiteDomainService();
-                Rock.Model.SiteDomain siteDomain = siteDomainService.GetByDomain(host);
+                Rock.Model.SiteDomain siteDomain = siteDomainService.GetByDomain( host );
 
-                if (siteDomain == null)
+                if ( siteDomain == null )
                 {
-                    siteDomain = siteDomainService.GetByDomainContained(host);
+                    siteDomain = siteDomainService.GetByDomainContained( host );
                 }
 
-                if (siteDomain != null)
+                if ( siteDomain != null )
                 {
-                    return SiteCache.Read(siteDomain.SiteId);
+                    sites.Add( host, siteDomain.SiteId );
+                    return SiteCache.Read( siteDomain.SiteId );
                 }
             }
 
