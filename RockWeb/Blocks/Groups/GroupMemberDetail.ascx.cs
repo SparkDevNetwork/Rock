@@ -64,13 +64,15 @@ namespace RockWeb.Blocks.Groups
                     upDetail.Visible = false;
                 }
             }
-
-            var groupMember = new GroupMember { GroupId = hfGroupId.ValueAsInt() };
-            if ( groupMember != null )
+            else
             {
-                groupMember.LoadAttributes();
-                phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, false );
+                var groupMember = new GroupMember { GroupId = hfGroupId.ValueAsInt() };
+                if ( groupMember != null )
+                {
+                    groupMember.LoadAttributes();
+                    phAttributes.Controls.Clear();
+                    Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, false );
+                }
             }
         }
 
