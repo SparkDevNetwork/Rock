@@ -81,6 +81,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
+                EnsureChildControls();
                 LocationPickerMode pickerMode = _hfCurrentPickerMode.Value.ConvertToEnum<LocationPickerMode>( LocationPickerMode.Named );
 
                 if ( string.IsNullOrWhiteSpace( _hfCurrentPickerMode.Value ) )
@@ -110,6 +111,7 @@ namespace Rock.Web.UI.Controls
 
             set
             {
+                EnsureChildControls();
                 _hfCurrentPickerMode.Value = value.ConvertToString( false );
             }
         }
