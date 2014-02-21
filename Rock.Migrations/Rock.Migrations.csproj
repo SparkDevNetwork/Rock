@@ -588,9 +588,14 @@
     <Compile Include="Migrations\201402211810096_ModifyAttCodeIndex.Designer.cs">
       <DependentUpon>201402211810096_ModifyAttCodeIndex.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402212314543_RssFeedBlockTypes.cs" />
+    <Compile Include="Migrations\201402212314543_RssFeedBlockTypes.Designer.cs">
+      <DependentUpon>201402212314543_RssFeedBlockTypes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
+    <Compile Include="Migrations\RockMigration3.cs" />
     <Compile Include="Migrations\RockMigration2.cs" />
     <Compile Include="Migrations\RockMigration1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -1008,6 +1013,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402211810096_ModifyAttCodeIndex.resx">
       <DependentUpon>201402211810096_ModifyAttCodeIndex.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402212314543_RssFeedBlockTypes.resx">
+      <DependentUpon>201402212314543_RssFeedBlockTypes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
