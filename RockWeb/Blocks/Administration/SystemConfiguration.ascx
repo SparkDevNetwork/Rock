@@ -7,23 +7,9 @@
 
         <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger"  />
         <fieldset>
-            <dl>
-                <dt>Time Zone</dt>
-                <dd>
-                    <Rock:RockDropDownList ID="ddTimeZone" runat="server" CausesValidation="false" Help="Set should be the time zone you want Rock to operate in (regardless of what time zone the server is set to.)" ></Rock:RockDropDownList>
-                </dd>
-
-                <dt>Run Jobs In IIS Context</dt>
-                <dd>
-                    <Rock:RockCheckBox ID="cbRunJobsInIISContext" runat="server" Label="Enable" Help="When checked, Rock's job engine runs on the webserver. This setting allows you to disable this in order to run jobs as a Windows Agent. See the 'Jobs' section in the Admin guide for more information on this topic." />
-                </dd>
-
-                <dt>Max Upload File Size</dt>
-                <dd>
-                    <Rock:NumberBox ID="numbMaxSize" runat="server" NumberType="Integer" MinimumValue="1" MaximumValue="10000" AppendText="MB"></Rock:NumberBox>
-                </dd>
-
-            </dl>
+            <Rock:RockDropDownList ID="ddTimeZone" runat="server" CausesValidation="false" Label="Time Zone" Help="Set should be the time zone you want Rock to operate in (regardless of what time zone the server is set to.)" ></Rock:RockDropDownList>
+            <Rock:RockCheckBox ID="cbRunJobsInIISContext" runat="server" Label="Enable Run Jobs In IIS Context" Help="When checked, Rock's job engine runs on the webserver. This setting allows you to disable this in order to run jobs as a Windows Agent. See the 'Jobs' section in the Admin guide for more information on this topic." />
+            <Rock:NumberBox ID="numbMaxSize" runat="server" NumberType="Integer" Label="Max Upload File Size" MinimumValue="1" MaximumValue="10000" AppendText="MB"></Rock:NumberBox>
         </fieldset>
 
         <div class="actions margin-t-lg">
