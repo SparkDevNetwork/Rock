@@ -307,7 +307,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.TotalAmount.ToString();
+            return this.TotalAmount.ToStringSafe();
         }
 
         #endregion Public Methods

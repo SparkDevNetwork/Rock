@@ -153,7 +153,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.Person.FullName;
+            return this.Person.ToStringSafe();
         }
 
         #endregion
