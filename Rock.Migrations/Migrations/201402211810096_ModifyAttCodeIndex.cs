@@ -29,11 +29,8 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            Sql( @"
-                IF  EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[AttendanceCode]') AND name = N'IX_Code')
-                DROP INDEX [IX_Code] ON [dbo].[AttendanceCode] WITH ( ONLINE = OFF )
-
-                CREATE UNIQUE INDEX IX_Code ON dbo.[AttendanceCode] ([Code], [IssueDateTime]);" );
+            DropIndex( "AttendanceCode", new string[] { "Code" } );
+            CreateIndex( "AttendanceCode", new string[] { "Code", "IssueDateTime" }, true );
         }
         
         /// <summary>
