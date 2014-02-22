@@ -1177,7 +1177,7 @@ namespace Rock.Web.UI.Controls
                 Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
                 
                 // if the list is just List<object>, try to find out what the properties of specific type of object are by examining the first item in the list
-                if (oType == typeof(object))
+                if (oType == typeof(object) || oType == typeof(Rock.Data.IEntity))
                 {
                     if (data.Count > 0)
                     {
@@ -1185,7 +1185,21 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
-                IList<PropertyInfo> props = new List<PropertyInfo>( oType.GetProperties() );
+                // get all properties of the objects in the grid
+                IList<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties());
+                IList<PropertyInfo> props = new List<PropertyInfo>();
+                
+                // figure out which properties we can get data from and put those in the grid
+                foreach ( PropertyInfo prop in allprops )
+                {
+                    if ( prop.GetGetMethod().IsVirtual )
+                    {
+                        // skip over virtual properties since they are probably lazy loaded and it is too late to get them
+                        continue;
+                    }
+
+                    props.Add( prop );
+                }
 
                 // print column headings
                 foreach ( PropertyInfo prop in props )
