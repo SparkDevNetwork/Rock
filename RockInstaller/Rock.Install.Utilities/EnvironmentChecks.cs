@@ -121,27 +121,37 @@ namespace Rock.Install.Utilities
         /// <summary>
         /// Checks the version of the IIS installed
         /// </summary>
-        public static bool CheckIisVersion(out string errorDetails)
+        public static bool CheckIisVersion( string iisString, out string errorDetails )
         {
 
 #if DEBUG
             errorDetails = "IIS version is correct (d).";
             return true;
 #else
-            bool checksPassed = false;
-            errorDetails = string.Empty;
+           bool checksPassed = false;
+           errorDetails = string.Empty;
 
-            RegistryKey parameters = Registry.LocalMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Services\\W3SVC\\Parameters");
-            string iisVersion = parameters.GetValue("MajorVersion") + "." + parameters.GetValue("MinorVersion");
-
-            if (double.Parse(iisVersion) >= iisVersionRequired)
+            try
             {
-                errorDetails = "Your IIS version is correct.  You have version " + iisVersion + ".";
-                checksPassed = true;
+
+                iisString = iisString.Split( '/' )[1];
+
+                double iisVersion = Convert.ToDouble( iisString );
+
+                if ( iisVersion >= iisVersionRequired )
+                {
+                    errorDetails = "Your IIS version is correct.  You have version " + iisVersion + ".";
+                    checksPassed = true;
+                }
+                else
+                {
+                    errorDetails = "The server's IIS version is not correct.  You have version " + iisVersion + " Rock requires version " + iisVersionRequired.ToString() + " or greater.";
+                }
             }
-            else
+            catch ( Exception ex )
             {
-                errorDetails = "The server's IIS version is not correct.  You have version " + iisVersion + " Rock requires version " + iisVersionRequired.ToString() + " or greater.";
+                checksPassed = true;
+                errorDetails = errorDetails = "We could not determine your IIS version please ensure you are running IIS v " + iisVersionRequired.ToString() + " or better."; ;
             }
 
             return checksPassed; 

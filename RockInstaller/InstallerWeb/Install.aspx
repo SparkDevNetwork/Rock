@@ -105,7 +105,7 @@
     		}
     		
     		// check IIS version
-            if (EnvironmentChecks.CheckIisVersion(out checkResults))
+            if (EnvironmentChecks.CheckIisVersion(Request.ServerVariables["SERVER_SOFTWARE"], out checkResults))
             {
                 outputMessages += "<li><i class='fa fa-check-circle pass'></i> " + checkResults + "</li>";
     		} else {
