@@ -988,7 +988,8 @@ namespace Rock.Web.UI
             Page.Header.DataBind();
 
             // create a page view transaction if enabled
-            if (!Page.IsPostBack && _pageCache != null && Convert.ToBoolean( ConfigurationManager.AppSettings["EnablePageViewTracking"] ) )
+            var globalAttributesCache = GlobalAttributesCache.Read();
+            if ( !Page.IsPostBack && _pageCache != null && Convert.ToBoolean( globalAttributesCache.GetValue( "EnablePageViewTracking" ) ) )
             {
                 PageViewTransaction transaction = new PageViewTransaction();
                 transaction.DateViewed = RockDateTime.Now;
