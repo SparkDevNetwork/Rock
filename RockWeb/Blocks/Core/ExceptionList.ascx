@@ -31,7 +31,9 @@
 
             <div class="row">
                 <div class="col-md-12">
-                    <div id="exception-chart" style="width: 100%; height: 300px;"></div>
+                    <asp:Panel ID="pnlExceptionChart" runat="server">
+                        <div id="exception-chart" style="width: 100%; height: 300px;"></div>
+                    </asp:Panel>
                 </div>
             </div>
 

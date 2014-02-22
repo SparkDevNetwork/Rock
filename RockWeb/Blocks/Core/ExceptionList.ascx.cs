@@ -103,34 +103,41 @@ namespace RockWeb.Blocks.Administraton
 
             // get data for graphs
             ExceptionLogService exceptionLogService = new ExceptionLogService();
-            var query = exceptionLogService.Queryable()
+            var exceptionList = exceptionLogService.Queryable()
+            .Where(x => x.HasInnerException == false)
             .GroupBy( x => DbFunctions.TruncateTime(x.CreatedDateTime.Value ))
             .Select( eg => new
             {
                 DateValue = eg.Key,
                 ExceptionCount = eg.Count(),
                 UniqueExceptionCount = eg.Select( y => y.ExceptionType ).Distinct().Count()
-            } );
+            } ).ToList();
 
-            StringBuilder sbChartData = new StringBuilder();
-            sbChartData.Append( "[['Date', 'Unique Exceptions', 'Total Exceptions']," );
-
-            // load datatable
-            foreach ( var exception in query.ToList() )
+            if ( exceptionList.Count > 1 )
             {
-                sbChartData.Append( String.Format( "['{0}', {1}, {2}],", exception.DateValue.Value.ToShortDateString(), exception.UniqueExceptionCount, exception.ExceptionCount ) );
-            }
 
-            sbChartData.Append("]");
+                StringBuilder sbChartData = new StringBuilder();
+                //sbChartData.Append( "[['Date', 'Unique Exceptions', 'Total Exceptions']," );
+                sbChartData.Append( "data.addColumn('date', 'Date');\n" );
+                sbChartData.Append( "data.addColumn('number', 'Unique Exceptions');\n" );
+                sbChartData.Append( "data.addColumn('number', 'Total Exceptions');\n" );
 
-            lGraphScript.Text = String.Format( @"
+                // load datatable
+                foreach ( var exception in exceptionList )
+                {
+                    //sbChartData.Append( String.Format( "['{0}', {1}, {2}],", exception.DateValue.Value.ToShortDateString(), exception.UniqueExceptionCount, exception.ExceptionCount ) );
+                    sbChartData.Append( String.Format( "data.addRow([new Date({0}, {1}, {2}), {3}, {4}]);\n", exception.DateValue.Value.Year, (exception.DateValue.Value.Month - 1), exception.DateValue.Value.Day, exception.UniqueExceptionCount, exception.ExceptionCount ) );
+                }
+
+                lGraphScript.Text = String.Format( @"
 
             <script type=""text/javascript"">
                 google.load(""visualization"", ""1"", {{ packages: [""corechart""] }});
                 google.setOnLoadCallback(drawChart);
 
                 function drawChart() {{
-                    var data = google.visualization.arrayToDataTable({0});
+                    var data = new google.visualization.DataTable();
+                    {0}
 
                     var options = {{
                         vAxis: {{ title: 'Exception Count', minValue: 0, titleTextStyle: {{ color: '#515151',  italic: 'false' }} }},
@@ -151,6 +158,11 @@ namespace RockWeb.Blocks.Administraton
 
                 
             </script>", sbChartData.ToString() );
+            }
+            else
+            {
+                pnlExceptionChart.Visible = false;
+            }
 
         }
 
