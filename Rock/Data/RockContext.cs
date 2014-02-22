@@ -844,6 +844,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new PageConfiguration() );
             modelBuilder.Configurations.Add( new PageContextConfiguration() );
             modelBuilder.Configurations.Add( new PageRouteConfiguration() );
+            modelBuilder.Configurations.Add( new PageViewConfiguration() );
             modelBuilder.Configurations.Add( new PersonConfiguration() );
             modelBuilder.Configurations.Add( new PersonAliasConfiguration() );
             modelBuilder.Configurations.Add( new PersonBadgeConfiguration() );
