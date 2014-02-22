@@ -592,6 +592,10 @@
     <Compile Include="Migrations\201402212314543_RssFeedBlockTypes.Designer.cs">
       <DependentUpon>201402212314543_RssFeedBlockTypes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402220548227_RenameSampleDataPage.cs" />
+    <Compile Include="Migrations\201402220548227_RenameSampleDataPage.Designer.cs">
+      <DependentUpon>201402220548227_RenameSampleDataPage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1016,6 +1020,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402212314543_RssFeedBlockTypes.resx">
       <DependentUpon>201402212314543_RssFeedBlockTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402220548227_RenameSampleDataPage.resx">
+      <DependentUpon>201402220548227_RenameSampleDataPage.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
