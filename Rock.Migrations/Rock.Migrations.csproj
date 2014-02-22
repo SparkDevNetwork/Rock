@@ -596,6 +596,10 @@
     <Compile Include="Migrations\201402220548227_RenameSampleDataPage.Designer.cs">
       <DependentUpon>201402220548227_RenameSampleDataPage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402220640212_AddPageTrackingGlobalAttrib.cs" />
+    <Compile Include="Migrations\201402220640212_AddPageTrackingGlobalAttrib.Designer.cs">
+      <DependentUpon>201402220640212_AddPageTrackingGlobalAttrib.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1023,6 +1027,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402220548227_RenameSampleDataPage.resx">
       <DependentUpon>201402220548227_RenameSampleDataPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402220640212_AddPageTrackingGlobalAttrib.resx">
+      <DependentUpon>201402220640212_AddPageTrackingGlobalAttrib.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
