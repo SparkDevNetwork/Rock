@@ -28,31 +28,31 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Site Service class
+    /// PageView Service class
     /// </summary>
-    public partial class SiteService : Service<Site>
+    public partial class PageViewService : Service<PageView>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SiteService"/> class
+        /// Initializes a new instance of the <see cref="PageViewService"/> class
         /// </summary>
-        public SiteService()
+        public PageViewService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SiteService"/> class
+        /// Initializes a new instance of the <see cref="PageViewService"/> class
         /// </summary>
         /// <param name="repository">The repository.</param>
-        public SiteService(IRepository<Site> repository) : base(repository)
+        public PageViewService(IRepository<PageView> repository) : base(repository)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SiteService"/> class
+        /// Initializes a new instance of the <see cref="PageViewService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public SiteService(RockContext context) : base(context)
+        public PageViewService(RockContext context) : base(context)
         {
         }
 
@@ -64,15 +64,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( Site item, out string errorMessage )
+        public bool CanDelete( PageView item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<PageView>().Queryable().Any( a => a.SiteId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Site.FriendlyTypeName, PageView.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -80,55 +74,44 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class SiteExtensionMethods
+    public static partial class PageViewExtensionMethods
     {
         /// <summary>
-        /// Clones this Site object to a new Site object
+        /// Clones this PageView object to a new PageView object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static Site Clone( this Site source, bool deepCopy )
+        public static PageView Clone( this PageView source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as Site;
+                return source.Clone() as PageView;
             }
             else
             {
-                var target = new Site();
+                var target = new PageView();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another Site object to this Site object
+        /// Copies the properties from another PageView object to this PageView object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this Site target, Site source )
+        public static void CopyPropertiesFrom( this PageView target, PageView source )
         {
-            target.IsSystem = source.IsSystem;
-            target.Name = source.Name;
-            target.Description = source.Description;
-            target.Theme = source.Theme;
-            target.DefaultPageId = source.DefaultPageId;
-            target.DefaultPageRouteId = source.DefaultPageRouteId;
-            target.LoginPageId = source.LoginPageId;
-            target.LoginPageRouteId = source.LoginPageRouteId;
-            target.RegistrationPageId = source.RegistrationPageId;
-            target.RegistrationPageRouteId = source.RegistrationPageRouteId;
-            target.PageNotFoundPageId = source.PageNotFoundPageId;
-            target.PageNotFoundPageRouteId = source.PageNotFoundPageRouteId;
-            target.ErrorPage = source.ErrorPage;
-            target.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
-            target.FacebookAppId = source.FacebookAppId;
-            target.FacebookAppSecret = source.FacebookAppSecret;
-            target.CreatedDateTime = source.CreatedDateTime;
-            target.ModifiedDateTime = source.ModifiedDateTime;
-            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
-            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
+            target.PageId = source.PageId;
+            target.SiteId = source.SiteId;
+            target.PersonAliasId = source.PersonAliasId;
+            target.DateTimeViewed = source.DateTimeViewed;
+            target.UserAgent = source.UserAgent;
+            target.ClientType = source.ClientType;
+            target.QueryString = source.QueryString;
+            target.SessionId = source.SessionId;
+            target.IpAddress = source.IpAddress;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

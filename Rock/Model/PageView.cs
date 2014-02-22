@@ -1,4 +1,5 @@
-﻿// <copyright>
+﻿using System;
+// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +20,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -54,7 +54,7 @@ namespace Rock.Model
         /// A <see cref="System.int"/> the id of the site viewed.
         /// </value>
         [DataMember]
-        public int SiteId { get; set; }
+        public int? SiteId { get; set; }
 
         /// <summary>
         /// Gets or sets the person alias id of the person who viewed the page.
@@ -63,17 +63,17 @@ namespace Rock.Model
         /// A <see cref="System.int"/> the id of the person alias who viewed the page.
         /// </value>
         [DataMember]
-        public int PersonAliasId { get; set; }
+        public int? PersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the date and time the page was viewed.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.RockDateTime"/> the date and time the page was viewed.
+        /// A <see cref="System.DateTime"/> the date and time the page was viewed.
         /// </value>
         [Required]
         [DataMember]
-        public RockDateTime DateTimeViewed { get; set; }
+        public DateTime? DateTimeViewed { get; set; }
 
 
         /// <summary>
@@ -85,6 +85,16 @@ namespace Rock.Model
         [DataMember]
         [MaxLength( 500 )]
         public string UserAgent { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of client.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.string"/> client type.
+        /// </value>
+        [DataMember]
+        [MaxLength( 25 )]
+        public string ClientType { get; set; }
 
         /// <summary>
         /// Gets or sets the query string of the request.
@@ -166,7 +176,7 @@ namespace Rock.Model
         /// </summary>
         public PageViewConfiguration()
         {
-            this.HasOptional( p => p.Page ).WithMany().HasForeignKey( p => p.PageId ).WillCascadeOnDelete(false);
+            this.HasRequired( p => p.Page ).WithMany().HasForeignKey( p => p.PageId ).WillCascadeOnDelete(false);
             this.HasOptional( p => p.Site ).WithMany().HasForeignKey( p => p.SiteId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.PersonAlias ).WithMany().HasForeignKey( p => p.PersonAliasId ).WillCascadeOnDelete( true );
         }

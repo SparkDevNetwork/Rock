@@ -209,6 +209,7 @@
     </Compile>
     <Compile Include="Jobs\RunSQL.cs" />
     <Compile Include="Model\AuditDetail.cs" />
+    <Compile Include="Model\CodeGenerated\PageViewService.cs" />
     <Compile Include="Model\CodeGenerated\PersonBadgeService.cs" />
     <Compile Include="Model\PersonBadge.cs" />
     <Compile Include="Model\CodeGenerated\AuditDetailService.cs" />
