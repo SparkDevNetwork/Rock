@@ -995,12 +995,14 @@ namespace Rock.Web.UI
                 transaction.DateViewed = RockDateTime.Now;
                 transaction.PageId = _pageCache.Id;
                 transaction.SiteId = _pageCache.Layout.Site.Id;
-                if ( CurrentPerson != null )
+                if ( CurrentPersonAlias != null )
                 {
-                    transaction.PersonId = CurrentPerson.Id;
+                    transaction.PersonId = CurrentPersonAlias.Id;
                 }
                 transaction.IPAddress = Request.UserHostAddress;
                 transaction.UserAgent = Request.UserAgent;
+                transaction.QueryString = Request.QueryString.ToString();
+                transaction.SessionId = Session.SessionID;
 
                 RockQueue.TransactionQueue.Enqueue( transaction );
             }
