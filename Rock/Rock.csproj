@@ -788,7 +788,7 @@
     <Compile Include="Transactions\ITransaction.cs" />
     <Compile Include="Transactions\PageViewTransaction.cs" />
     <Compile Include="Transactions\RockQueue.cs" />
-    <Compile Include="SystemGuid\EmailTemplate.cs" />
+    <Compile Include="SystemGuid\SystemEmail.cs" />
     <Compile Include="Model\WorkflowActivityType.cs" />
     <Compile Include="Model\WorkflowActionType.cs" />
     <Compile Include="Model\WorkflowActivity.cs" />
