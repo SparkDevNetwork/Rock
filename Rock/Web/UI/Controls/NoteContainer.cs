@@ -519,7 +519,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void note_SaveButtonClick( object sender, EventArgs e )
+        protected void note_SaveButtonClick( object sender, NoteEventArgs e )
         {
             EnsureChildControls();
             _noteNew.Text = string.Empty;
@@ -539,7 +539,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void note_Updated( object sender, EventArgs e )
+        protected void note_Updated( object sender, NoteEventArgs e )
         {
             RebuildNotes( true );
             if ( NotesUpdated != null )
@@ -559,7 +559,7 @@ namespace Rock.Web.UI.Controls
             RebuildNotes( true );
             if ( NotesUpdated != null )
             {
-                NotesUpdated( this, e );
+                NotesUpdated( this, new NoteEventArgs( null ) );
             }
         }
 
@@ -698,7 +698,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Occurs when notes are updated.
         /// </summary>
-        public event EventHandler NotesUpdated;
+        public event EventHandler<NoteEventArgs> NotesUpdated;
         
         #endregion
     }
