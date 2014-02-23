@@ -321,6 +321,14 @@ namespace Rock.Data
         public DbSet<FinancialTransactionRefund> FinancialTransactionRefunds { get; set; }
 
         /// <summary>
+        /// Gets or sets the followings.
+        /// </summary>
+        /// <value>
+        /// The followings.
+        /// </value>
+        public DbSet<Following> Followings { get; set; }
+
+        /// <summary>
         /// Gets or sets the Groups.
         /// </summary>
         /// <value>
@@ -479,6 +487,14 @@ namespace Rock.Data
         /// the Page Routes.
         /// </value>
         public DbSet<PageRoute> PageRoutes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the page views.
+        /// </summary>
+        /// <value>
+        /// The page views.
+        /// </value>
+        public DbSet<PageView> PageViews { get; set; }
 
         /// <summary>
         /// Gets or sets the People.
@@ -824,6 +840,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new FinancialTransactionDetailConfiguration() );
             modelBuilder.Configurations.Add( new FinancialTransactionImageConfiguration() );
             modelBuilder.Configurations.Add( new FinancialTransactionRefundConfiguration() );
+            modelBuilder.Configurations.Add( new FollowingConfiguration() );
             modelBuilder.Configurations.Add( new GroupConfiguration() );
             modelBuilder.Configurations.Add( new GroupLocationConfiguration() );
             modelBuilder.Configurations.Add( new GroupMemberConfiguration() );
