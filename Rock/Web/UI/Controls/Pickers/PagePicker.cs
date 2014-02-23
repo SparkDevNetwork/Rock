@@ -37,7 +37,7 @@ namespace Rock.Web.UI.Controls
         private HyperLink _btnCancelPageRoute;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AccountPicker" /> class.
+        /// Initializes a new instance of the <see cref="PagePicker" /> class.
         /// </summary>
         public PagePicker()
             : base()
