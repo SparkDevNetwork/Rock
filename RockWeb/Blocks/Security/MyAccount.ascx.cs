@@ -93,9 +93,7 @@ namespace RockWeb.Blocks.Security
         {
             if ( CurrentPerson != null )
             {
-                var parms = new Dictionary<string, string>();
-                parms.Add( "person", CurrentPerson.ContextKey );
-                NavigateToLinkedPage( "DetailPage", parms );
+                NavigateToLinkedPage( "DetailPage" );
             }
         }
 
