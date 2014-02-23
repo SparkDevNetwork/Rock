@@ -24,7 +24,7 @@ namespace Rock.SystemGuid
     /// <summary>
     /// System Email Templates
     /// </summary>
-    public static class EmailTemplate
+    public static class SystemEmail
     {
         /// <summary>
         /// Gets the template guid for the Forgot Username email
