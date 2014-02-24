@@ -103,7 +103,7 @@ namespace Rock.Rest.Controllers
             // determine if person is in this type of group
             GroupMemberService groupMemberService = new GroupMemberService();
             IQueryable<GroupMember> groupMembershipsQuery = groupMemberService.Queryable("Person,GroupRole,Group")
-                                        .Where(t => t.Group.GroupType.Guid == groupTypeId)
+                                        .Where(t => t.Group.GroupType.Guid == groupTypeId && t.PersonId == personId )
                                         .OrderBy(g => g.GroupRole.Order);
 
             foreach (GroupMember member in groupMembershipsQuery)
