@@ -27,28 +27,43 @@ namespace Rock.SystemGuid
     public static class GroupType
     {
         /// <summary>
-        /// Gets the Security Role group type
+        /// Security Role group type guid
         /// </summary>
         public const string GROUPTYPE_SECURITY_ROLE= "AECE949F-704C-483E-A4FB-93D5E4720C4C";
 
         /// <summary>
-        /// Gets the Family group type
+        /// Family group type guid
         /// </summary>
         public const string GROUPTYPE_FAMILY= "790E3215-3B10-442B-AF69-616C0DCB998E";
 
         /// <summary>
-        /// Gets the Event Attendees GroupType
+        /// Event Attendees group type guid
         /// </summary>
         public const string GROUPTYPE_EVENTATTENDEES = "3311132B-268D-44E9-811A-A56A0835E50A";
 
         /// <summary>
-        /// Know relationship group type
+        /// Know relationship group type guid
         /// </summary>
         public const string GROUPTYPE_KNOWN_RELATIONSHIPS = "E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF";
 
         /// <summary>
-        /// Implied relationship group type
+        /// Implied relationship group type guid
         /// </summary>
         public const string GROUPTYPE_IMPLIED_RELATIONSHIPS = "8C0E5852-F08F-4327-9AA5-87800A6AB53E";
+
+        /// <summary>
+        /// Serving Team group type guid
+        /// </summary>
+        public const string GROUPTYPE_SERVING_TEAM = "2C42B2D4-1C5F-4AD5-A9AD-08631B872AC4";
+
+        /// <summary>
+        /// Small Group Section group type guid
+        /// </summary>
+        public const string GROUPTYPE_SMALL_GROUP_SECTION = "5C1BE068-AC1B-4C6E-83C2-E554CBAC1336";
+
+        /// <summary>
+        /// Small Group group type guid
+        /// </summary>
+        public const string GROUPTYPE_SMALL_GROUP = "B19CA035-148C-426E-9DAA-3F2EA8E25F80";
     }
 }
