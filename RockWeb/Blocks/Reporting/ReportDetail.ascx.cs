@@ -841,6 +841,7 @@ namespace RockWeb.Blocks.Reporting
                 if ( isPersonDataSet )
                 {
                     gReport.PersonIdField = "Id";
+                    gReport.DataKeyNames = new string[] { "id" };
                 }
                 else
                 {
@@ -860,6 +861,13 @@ namespace RockWeb.Blocks.Reporting
 
                 gReport.Columns.Clear();
                 int columnIndex = 0;
+
+                if (!string.IsNullOrWhiteSpace(gReport.PersonIdField))
+                {
+                    gReport.Columns.Add( new SelectField() );
+                    columnIndex++;
+                }
+
                 foreach ( var reportField in report.ReportFields.OrderBy( a => a.Order ) )
                 {
                     columnIndex++;
