@@ -620,6 +620,10 @@
     <Compile Include="Migrations\201402241644413_ContentFileWhiteListBlackList.Designer.cs">
       <DependentUpon>201402241644413_ContentFileWhiteListBlackList.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402242333082_UpdatePageContent.cs" />
+    <Compile Include="Migrations\201402242333082_UpdatePageContent.Designer.cs">
+      <DependentUpon>201402242333082_UpdatePageContent.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1065,6 +1069,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402241644413_ContentFileWhiteListBlackList.resx">
       <DependentUpon>201402241644413_ContentFileWhiteListBlackList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402242333082_UpdatePageContent.resx">
+      <DependentUpon>201402242333082_UpdatePageContent.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
