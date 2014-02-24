@@ -2,7 +2,8 @@
     var iframeUrl = Rock.settings.get('baseUrl') + "ckeditorplugins/rockfilebrowser";
     iframeUrl += "?rootFolder=" + encodeURIComponent(editor.config.rockFileBrowserOptions.imageFolderRoot);
     iframeUrl += "&browserMode=image";
-    iframeUrl += "&fileFilter=" + encodeURIComponent(editor.config.rockFileBrowserOptions.imageFileFilter);
+    iframeUrl += "&fileTypeBlackList=" + encodeURIComponent(editor.config.rockFileBrowserOptions.fileTypeBlackList);
+    iframeUrl += "&imageFileTypeWhiteList=" + encodeURIComponent(editor.config.rockFileBrowserOptions.imageFileTypeWhiteList);
     return {
         title: 'Select Image',
         minWidth: 1000,
