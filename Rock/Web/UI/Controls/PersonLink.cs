@@ -28,8 +28,6 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:PersonLink runat=server></{0}:PersonLink>" )]
     public class PersonLink : HtmlAnchor
     {
-        private Literal _personName;
-
         /// <summary>
         /// Gets or sets the person id.
         /// </summary>
@@ -50,8 +48,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string PersonName
         {
-            get { return _personName.Text; }
-            set { _personName.Text = value; }
+            get { return ViewState["PersonName"] as string; }
+            set { ViewState["PersonName"] = value; }
         }
 
         /// <summary>
@@ -76,14 +74,6 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["PhotoId"] as int?; }
             set { ViewState["PhotoId"] = value; }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PersonLink"/> class.
-        /// </summary>
-        public PersonLink()
-        {
-            _personName = new Literal();
         }
 
         /// <summary>
@@ -116,7 +106,7 @@ namespace Rock.Web.UI.Controls
             }
 
             writer.RenderBeginTag( HtmlTextWriterTag.Strong );
-            _personName.RenderControl(writer);
+            writer.Write( PersonName );
             writer.RenderEndTag();
 
             base.RenderEndTag( writer );
