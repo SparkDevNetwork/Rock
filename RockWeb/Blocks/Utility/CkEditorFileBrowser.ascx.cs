@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Utility
             fuprFileUpload.RootFolder = GetRootFolderPath();
 
             string submitScriptFormat = @"
-    // include the selected folder in the post to ~/ImageUploader.ashx    
+    // include the selected folder in the post to ~/FileUploader.ashx    
     var selectedFolderPath = $('#{0}').val();
     data.formData = {{ folderPath: selectedFolderPath }};
 ";
@@ -66,6 +66,17 @@ namespace RockWeb.Blocks.Utility
 
             // setup javascript for when a file is done uploading
             fuprFileUpload.DoneFunctionClientScript = string.Format( doneScriptFormat, hfSelectedFolder.ClientID );
+
+            if (PageParameter("browserMode") == "image")
+            {
+                // point file uploads to ImageUploader.ashx which has special rules for file uploads
+                fuprFileUpload.UploadUrl = "ImageUploader.ashx";
+            }
+            else
+            {
+                // use the default fileUploader url
+                fuprFileUpload.UploadUrl = null;
+            }
         }
 
         /// <summary>
@@ -142,6 +153,7 @@ namespace RockWeb.Blocks.Utility
 
                 lblFolders.Text = sb.ToString();
                 upnlFolders.Update();
+                ListFolderContents( "" );
             }
             else
             {
@@ -232,14 +244,16 @@ namespace RockWeb.Blocks.Utility
             var sb = new StringBuilder();
             sb.AppendLine( "<ul class='js-rocklist rocklist'>" );
 
-            string fileFilter = PageParameter( "fileFilter" );
-            if ( string.IsNullOrWhiteSpace( fileFilter ) )
+            string imageFileTypeWhiteList = PageParameter( "imageFileTypeWhiteList" );
+            if ( string.IsNullOrWhiteSpace( imageFileTypeWhiteList ) )
             {
-                fileFilter = "*.*";
+                imageFileTypeWhiteList = "*.*";
             }
 
             // Directory.GetFiles doesn't support multiple patterns, so we'll do one at a time
-            List<string> fileFilters = fileFilter.Split( new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            List<string> fileFilters = imageFileTypeWhiteList.Split( new char[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries )
+                .Select( s => s = "*." + s.TrimStart( new char[] { '*', ' ' } ).TrimStart( '.' )) // ensure that the filter starts with '*.'
+                .ToList();
             List<string> fileList = new List<string>();
             foreach ( var filter in fileFilters )
             {
