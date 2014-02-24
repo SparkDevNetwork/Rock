@@ -45,7 +45,7 @@
                                 <h1>Hey...</h1>
                                 <h3>We can't let you view this page...</h3>
 
-                                <p class="error-icon">
+                                <p class="error-icon danger">
                                     <i class="fa fa-lock"></i>
                                 </p>
 
@@ -61,7 +61,7 @@
                             <div class="error-wrap">
                                 <h1>That Wasn't Supposed To Happen... </h1>
                             
-                                <p class="error-icon">
+                                <p class="error-icon warning">
                                     <i class="fa fa-exclamation-triangle"></i>
                                 </p>
 
