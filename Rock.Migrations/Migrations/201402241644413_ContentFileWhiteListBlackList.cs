@@ -31,6 +31,14 @@ namespace Rock.Migrations
         {
             AddGlobalAttribute( "9C204CD0-1233-41C5-818A-C5DA439445AA", "", "", "Content Image Filetype Whitelist", "List of file types that are allowed to be uploaded as images in the HTML Editor.", 0, "jpg,png,gif,bmp,svg", "0F842054-7629-419F-BC72-90BDDE9F3676" );
             AddGlobalAttribute( "9C204CD0-1233-41C5-818A-C5DA439445AA", "", "", "Content Filetype Blacklist", "List of file types are not allowed to be uploaded in the HTML Editor.", 0, "ascx,ashx,aspx,ascx.cs,ashx.cs,aspx.cs,cs,aspx.cs,php,exe,dll", "9FFB15C1-AA53-4FBA-A480-64C9B348C5E5" );
+
+            // set attribute category
+            Sql( @"
+                DELETE FROM [AttributeCategory] WHERE [AttributeId] in (SELECT [ID] FROM [Attribute] WHERE [GUID] in ('0F842054-7629-419F-BC72-90BDDE9F3676', '9FFB15C1-AA53-4FBA-A480-64C9B348C5E5'));
+
+                INSERT INTO [AttributeCategory] ([AttributeId], [CategoryId])
+                    SELECT [ID], 5 FROM [Attribute] WHERE [GUID] in ('0F842054-7629-419F-BC72-90BDDE9F3676', '9FFB15C1-AA53-4FBA-A480-64C9B348C5E5');
+            " );
         }
 
         /// <summary>
