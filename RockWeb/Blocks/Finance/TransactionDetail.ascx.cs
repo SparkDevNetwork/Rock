@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Finance
         #region Fields
 
         private string contextTypeName = string.Empty;
+        private bool readOnly = false;
 
         #endregion Fields
 
@@ -60,6 +61,11 @@ namespace RockWeb.Blocks.Finance
             mdDetails.SaveClick += mdDetails_SaveClick;
             mdDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
 
+            if ( !IsUserAuthorized( "Edit" ) )
+            {
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialBatch.FriendlyTypeName );
+            }
         }
 
         /// <summary>
@@ -223,13 +229,16 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gTransactionDetails_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            var transactionDetailsId = (int)e.RowKeyValue;
-            hfIdValue.Value = transactionDetailsId.ToString();
-            var ftd = new FinancialTransactionDetailService().Get( transactionDetailsId );
-            ddlTransactionAccount.SelectedValue = ftd.AccountId.ToString();
-            tbTransactionAmount.Text = ftd.Amount.ToString();
-            tbTransactionSummary.Text = ftd.Summary;
-            mdDetails.Show();
+            if ( !readOnly )
+            {
+                var transactionDetailsId = (int)e.RowKeyValue;
+                hfIdValue.Value = transactionDetailsId.ToString();
+                var ftd = new FinancialTransactionDetailService().Get( transactionDetailsId );
+                ddlTransactionAccount.SelectedValue = ftd.AccountId.ToString();
+                tbTransactionAmount.Text = ftd.Amount.ToString();
+                tbTransactionSummary.Text = ftd.Summary;
+                mdDetails.Show();
+            }
         }
 
         /// <summary>
@@ -520,12 +529,12 @@ namespace RockWeb.Blocks.Finance
             hfIdTransValue.Value = transaction.Id.ToString();
             hfBatchId.Value = PageParameter( "financialBatchId" );
 
-            bool readOnly = false;
-            if ( !IsUserAuthorized( "Edit" ) )
-            {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialBatch.FriendlyTypeName );
-            }
+            //bool readOnly = false;
+            //if ( !IsUserAuthorized( "Edit" ) )
+            //{
+            //    readOnly = true;
+            //    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialBatch.FriendlyTypeName );
+            //}
 
             if ( !readOnly )
             {
@@ -539,11 +548,17 @@ namespace RockWeb.Blocks.Finance
                     BindDropdowns();
                     ShowEdit( transaction );
                 }
+                gTransactionDetails.Actions.ShowAdd = true;
+                gTransactionDetails.IsDeleteEnabled = true;
+                pnlImageUpload.Visible = true;
             }
             else
             {
                 lbEdit.Visible = false;
                 ShowSummary( transaction );
+                gTransactionDetails.Actions.ShowAdd = false;
+                gTransactionDetails.IsDeleteEnabled = false;
+                pnlImageUpload.Visible = false;
             }
 
             lbSave.Visible = !readOnly;
@@ -576,7 +591,7 @@ namespace RockWeb.Blocks.Finance
                 var financialTransactionDetails = new FinancialTransactionDetailService().Queryable().Where( trans => trans.TransactionId == transaction.Id ).ToList();
                 gTransactionDetails.DataSource = financialTransactionDetails;
                 gTransactionDetails.DataBind();
-                gTransactionDetails.Actions.ShowAdd = true;
+                //gTransactionDetails.Actions.ShowAdd = true;
                 pnlTransactionDetails.Visible = true;
             }
             else

@@ -98,18 +98,20 @@
                     </asp:DataList>
                 </div>
                 <br />
-                <div class="row">
-                    <!-- this will be for the image uploader -->
-                    <div class="col-md-3">
-                        <Rock:ImageUploader ID="imgupTransactionImages" runat="server" Label="Upload an Image" />
+                <asp:Panel ID="pnlImageUpload" runat="server">
+                    <div class="row">
+                        <!-- this will be for the image uploader -->
+                        <div class="col-md-3">
+                            <Rock:ImageUploader ID="imgupTransactionImages" runat="server" Label="Upload an Image" />
+                        </div>
+                        <div class="col-md-3">
+                            <Rock:RockDropDownList ID="ddlTransactionImageType" runat="server" Label="Transaction Image Type" />
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        <Rock:RockDropDownList ID="ddlTransactionImageType" runat="server" Label="Transaction Image Type" />
+                    <div class="row col-md-3">
+                        <asp:LinkButton ID="lbSaveImage" runat="server" Text="Save Image" CssClass="btn btn-primary btn-sm" OnClick="lbSaveImage_Click" />
                     </div>
-                </div>
-                <div class="row col-md-3">
-                    <asp:LinkButton ID="lbSaveImage" runat="server" Text="Save Image" CssClass="btn btn-primary btn-sm" OnClick="lbSaveImage_Click" />
-                </div>
+                </asp:Panel>
             </asp:Panel>
 
             <Rock:ModalDialog ID="mdDetails" runat="server" Title="Transaction Details" ValidationGroup="TransactionDetails">
