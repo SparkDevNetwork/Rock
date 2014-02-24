@@ -612,6 +612,10 @@
     <Compile Include="Migrations\201402241446432_RecreateRefundReason.Designer.cs">
       <DependentUpon>201402241446432_RecreateRefundReason.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402241628190_IntranetPagesEditable.cs" />
+    <Compile Include="Migrations\201402241628190_IntranetPagesEditable.Designer.cs">
+      <DependentUpon>201402241628190_IntranetPagesEditable.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1051,6 +1055,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402241446432_RecreateRefundReason.resx">
       <DependentUpon>201402241446432_RecreateRefundReason.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402241628190_IntranetPagesEditable.resx">
+      <DependentUpon>201402241628190_IntranetPagesEditable.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
