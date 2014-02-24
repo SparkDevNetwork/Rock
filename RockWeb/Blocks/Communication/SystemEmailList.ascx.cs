@@ -21,6 +21,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -30,12 +31,14 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Communication
 {
     /// <summary>
-    /// User control for managing the emailTemplates that are available for a specific entity
+    /// User control for managing the system emails
     /// </summary>
-    [DisplayName( "Email Templates" )]
+    [DisplayName( "System Email List" )]
     [Category( "Communication" )]
-    [Description( "Allows the administration of email templates." )]
-    public partial class EmailTemplates : RockBlock
+    [Description( "Lists the system emails that can be configured." )]
+
+    [LinkedPage( "Detail Page" )]
+    public partial class SystemEmailList : RockBlock
     {
         #region Control Methods
 
@@ -107,7 +110,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gEmailTemplates_AddClick( object sender, EventArgs e )
         {
-            ShowEdit( 0 );
+            NavigateToLinkedPage( "DetailPage", "emailId", 0 );
         }
 
         /// <summary>
@@ -117,7 +120,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gEmailTemplates_Edit( object sender, RowEventArgs e )
         {
-            ShowEdit( (int)gEmailTemplates.DataKeys[e.RowIndex]["id"] );
+            NavigateToLinkedPage( "DetailPage", "emailId", (int)e.RowKeyValue );
         }
 
         /// <summary>
@@ -146,65 +149,6 @@ namespace RockWeb.Blocks.Communication
         protected void gEmailTemplates_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
-        }
-
-        #endregion
-
-        #region Edit Events
-
-        /// <summary>
-        /// Handles the Click event of the btnCancel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
-        {
-            pnlList.Visible = true;
-            pnlDetails.Visible = false;
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnSave control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnSave_Click( object sender, EventArgs e )
-        {
-            EmailTemplateService emailTemplateService = new EmailTemplateService();
-            EmailTemplate emailTemplate;
-
-            int emailTemplateId = int.Parse(hfEmailTemplateId.Value);
-
-            if ( emailTemplateId == 0 )
-            {
-                emailTemplate = new EmailTemplate();
-                emailTemplateService.Add( emailTemplate, CurrentPersonAlias );
-            }
-            else
-            {
-                emailTemplate = emailTemplateService.Get( emailTemplateId );
-            }
-
-            emailTemplate.Category = tbCategory.Text;
-            emailTemplate.Title = tbTitle.Text;
-            emailTemplate.From = tbFrom.Text;
-            emailTemplate.To = tbTo.Text;
-            emailTemplate.Cc = tbCc.Text;
-            emailTemplate.Bcc = tbBcc.Text;
-            emailTemplate.Subject = tbSubject.Text;
-            emailTemplate.Body = tbBody.Text;
-
-            if ( !emailTemplate.IsValid )
-            {
-                // Controls will render the error messages                    
-                return;
-            }
-
-            emailTemplateService.Save( emailTemplate, CurrentPersonAlias );
-            BindFilter();
-            BindGrid();
-            pnlDetails.Visible = false;
-            pnlList.Visible = true;
         }
 
         #endregion
@@ -259,52 +203,6 @@ namespace RockWeb.Blocks.Communication
             }
 
             gEmailTemplates.DataBind();
-        }
-
-        /// <summary>
-        /// Shows the edit.
-        /// </summary>
-        /// <param name="emailTemplateId">The email template id.</param>
-        protected void ShowEdit( int emailTemplateId )
-        {
-            var globalAttributes = GlobalAttributesCache.Read();
-            string globalFrom = globalAttributes.GetValue( "OrganizationEmail" );
-            tbFrom.Help = string.Format( "If a From value is not entered the 'Organization Email' Global Attribute value of '{0}' will be used when this template is sent.", globalFrom );
-
-            pnlList.Visible = false;
-            pnlDetails.Visible = true;
-
-            EmailTemplateService emailTemplateService = new EmailTemplateService();
-            EmailTemplate emailTemplate = emailTemplateService.Get( emailTemplateId );
-
-            if ( emailTemplate != null )
-            {
-                lActionTitle.Text = ActionTitle.Edit( EmailTemplate.FriendlyTypeName ).FormatAsHtmlTitle();
-                hfEmailTemplateId.Value = emailTemplate.Id.ToString();
-
-                tbCategory.Text = emailTemplate.Category;
-                tbTitle.Text = emailTemplate.Title;
-                tbFrom.Text = emailTemplate.From;
-                tbTo.Text = emailTemplate.To;
-                tbCc.Text = emailTemplate.Cc;
-                tbBcc.Text = emailTemplate.Bcc;
-                tbSubject.Text = emailTemplate.Subject;
-                tbBody.Text = emailTemplate.Body;
-            }
-            else
-            {
-                lActionTitle.Text = ActionTitle.Add( EmailTemplate.FriendlyTypeName ).FormatAsHtmlTitle();
-                hfEmailTemplateId.Value = 0.ToString();
-
-                tbCategory.Text = string.Empty;
-                tbTitle.Text = string.Empty;
-                tbFrom.Text = string.Empty;
-                tbTo.Text = string.Empty;
-                tbCc.Text = string.Empty;
-                tbBcc.Text = string.Empty;
-                tbSubject.Text = string.Empty;
-                tbBody.Text = string.Empty;
-            }
         }
 
         #endregion

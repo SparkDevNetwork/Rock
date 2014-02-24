@@ -123,6 +123,14 @@ namespace RockWeb.Blocks.Administration
                 var page = pageService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
                 if ( page != null )
                 {
+                    string errorMessage = string.Empty;
+                    if ( ! pageService.CanDelete( page, out errorMessage ) )
+                    {
+                        //errorMessage = "The page is the parent page of another page.";
+                        mdDeleteWarning.Show( errorMessage, ModalAlertType.Alert );
+                        return;
+                    }
+
                     RockTransactionScope.WrapTransaction( () =>
                     {
                         foreach ( var site in siteService.Queryable() )
@@ -231,7 +239,9 @@ namespace RockWeb.Blocks.Administration
 
                 }
                 else
+                {
                     page = pageService.Get( pageId );
+                }
 
                 page.LayoutId = ddlLayout.SelectedValueAsInt().Value;
                 page.InternalName = dtbPageName.Text;

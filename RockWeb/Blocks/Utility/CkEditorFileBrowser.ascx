@@ -100,12 +100,10 @@
                     if (selectedFolderPath && selectedFolderPath != '') {
                         $('#<%=lbRenameFolder.ClientID%>').removeAttr('disabled');
                         $('#<%=lbDeleteFolder.ClientID%>').removeAttr('disabled');
-                        $('#<%=fuprFileUpload.ClientID%>').css('visibility', 'visible');
                     }
                     else {
                         $('#<%=lbRenameFolder.ClientID%>').attr('disabled', 'disabled');
                         $('#<%=lbDeleteFolder.ClientID%>').attr('disabled', 'disabled');
-                        $('#<%=fuprFileUpload.ClientID%>').css('visibility', 'hidden');
                     }
                 });
 

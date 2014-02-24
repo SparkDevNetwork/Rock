@@ -192,7 +192,7 @@ namespace RockWeb.Blocks.Core
                 }
 
                 definedValueService.Save( definedValue, CurrentPersonAlias );
-                Rock.Attribute.Helper.SaveAttributeValues( definedValue, CurrentPersonAlias );
+                definedValue.SaveAttributeValues( CurrentPersonAlias );
 
                 Rock.Web.Cache.DefinedTypeCache.Flush( definedValue.DefinedTypeId );
                 Rock.Web.Cache.DefinedValueCache.Flush( definedValue.Id );

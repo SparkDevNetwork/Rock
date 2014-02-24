@@ -295,6 +295,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MergeField]
+        [HideFromReporting]
         public int? GivingGroupId { get; set; }
 
         /// <summary>

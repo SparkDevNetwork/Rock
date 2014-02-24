@@ -25,7 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
-namespace Rock.Reporting.DataTransform.Person
+namespace Rock.Reporting.DataFilter.Person
 {
     /// <summary>
     /// 

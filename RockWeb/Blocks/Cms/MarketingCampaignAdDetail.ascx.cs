@@ -373,7 +373,7 @@ namespace RockWeb.Blocks.Cms
                     }
 
                     marketingCampaignAdService.Save( marketingCampaignAd, CurrentPersonAlias );
-                    Rock.Attribute.Helper.SaveAttributeValues( marketingCampaignAd, CurrentPersonAlias );
+                    marketingCampaignAd.SaveAttributeValues( CurrentPersonAlias );
                 } );
 
             Dictionary<string, string> qryString = new Dictionary<string, string>();

@@ -259,13 +259,28 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities by the person's full name.
+        /// Gets the full name of the by.
         /// </summary>
-        /// <param name="fullName">A <see cref="System.String"/> representing the full name to search by.</param>
-        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be 
+        /// <param name="fullName">The full name.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns></returns>
+        public IQueryable<Person> GetByFullName( string fullName, bool includeDeceased = false )
+        {
+            bool reversed = false;
+            return GetByFullName( fullName, includeDeceased, out reversed );
+        }
+
+        /// <summary>
+        /// Returns a queryable collection of <see cref="Rock.Model.Person" /> entities by the person's full name.
+        /// </summary>
+        /// <param name="fullName">A <see cref="System.String" /> representing the full name to search by.</param>
+        /// <param name="includeDeceased">A <see cref="System.Boolean" /> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be
         /// included, otherwise <c>false</c>.</param>
-        /// <returns>A queryable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.</returns>
-        public IQueryable<Person> GetByFullName( string fullName, bool includeDeceased = false, bool includeSoundsLike = false )
+        /// <param name="reversed">if set to <c>true</c> [reversed].</param>
+        /// <returns>
+        /// A queryable collection of <see cref="Rock.Model.Person" /> entities that match the search criteria.
+        /// </returns>
+        public IQueryable<Person> GetByFullName( string fullName, bool includeDeceased, out bool reversed )
         {
             var names = fullName.SplitDelimitedValues();
 
@@ -274,6 +289,74 @@ namespace Rock.Model
 
             if ( fullName.Contains( ',' ) )
             {
+                reversed = true;
+                lastName = names.Length >= 1 ? names[0].Trim() : string.Empty;
+                firstName = names.Length >= 2 ? names[1].Trim() : string.Empty;
+            }
+            else if ( fullName.Contains( ' ' ) )
+            {
+                reversed = false;
+                firstName = names.Length >= 1 ? names[0].Trim() : string.Empty;
+                lastName = names.Length >= 2 ? names[1].Trim() : string.Empty;
+            }
+            else
+            {
+                reversed = true;
+                lastName = fullName.Trim();
+            }
+
+            var qry = Queryable( includeDeceased );
+            if ( !string.IsNullOrWhiteSpace( lastName ) )
+            {
+                qry = qry.Where( p => p.LastName.StartsWith( lastName ) );
+            }
+            if ( !string.IsNullOrWhiteSpace( firstName ) )
+            {
+                qry = qry.Where( p => p.FirstName.StartsWith( firstName ) || p.NickName.StartsWith( firstName ) );
+            }
+
+            return qry;
+        }
+
+        /// <summary>
+        /// Gets the by full name ordered.
+        /// </summary>
+        /// <param name="fullName">The full name.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="reversed">if set to <c>true</c> [reversed].</param>
+        /// <returns></returns>
+        public IOrderedQueryable<Person> GetByFullNameOrdered(string fullName, bool includeDeceased, out bool reversed)
+        {
+            var qry = new PersonService().GetByFullName( fullName, includeDeceased, out reversed );
+            if ( reversed )
+            {
+                return qry.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName );
+            }
+            else
+            {
+                return qry.OrderBy( p => p.FirstName ).ThenBy( p => p.LastName );
+            }
+        }
+
+        /// <summary>
+        /// Gets the similiar sounding names.
+        /// </summary>
+        /// <param name="fullName">The full name.</param>
+        /// <param name="excludeIds">The exclude ids.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns></returns>
+        public List<string> GetSimiliarNames(string fullName, List<int> excludeIds, bool includeDeceased = false)
+        {
+            var names = fullName.SplitDelimitedValues();
+
+            string firstName = string.Empty;
+            string lastName = string.Empty;
+
+            bool reversed = false;
+
+            if ( fullName.Contains( ',' ) )
+            {
+                reversed = true;
                 lastName = names.Length >= 1 ? names[0].Trim() : string.Empty;
                 firstName = names.Length >= 2 ? names[1].Trim() : string.Empty;
             }
@@ -284,23 +367,21 @@ namespace Rock.Model
             }
             else
             {
+                reversed = true;
                 lastName = fullName.Trim();
             }
 
-            var qry = Queryable( includeDeceased );
-            if ( !string.IsNullOrWhiteSpace( lastName ) )
-            {
-                qry = qry.Where( p => p.LastName.StartsWith( lastName )
-                    || ( includeSoundsLike && SqlFunctions.SoundCode( p.LastName ) == SqlFunctions.SoundCode( lastName ) ) );
-            }
-            if ( !string.IsNullOrWhiteSpace( firstName ) )
-            {
-                qry = qry.Where( p => p.FirstName.StartsWith( firstName ) || p.NickName.StartsWith( firstName ) 
-                    || p.NickName.StartsWith( firstName ) 
-                    || ( includeSoundsLike && SqlFunctions.SoundCode( p.FirstName ) == SqlFunctions.SoundCode( firstName ) ) );
-            }
-
-            return qry;
+            return Queryable( includeDeceased )
+                .Where( p =>
+                    !excludeIds.Contains( p.Id ) &&
+                    SqlFunctions.SoundCode( p.LastName ) == SqlFunctions.SoundCode(lastName) &&
+                    ( SqlFunctions.SoundCode( p.FirstName ) == SqlFunctions.SoundCode(firstName) ||
+                      SqlFunctions.SoundCode( p.NickName ) == SqlFunctions.SoundCode(firstName) ) )
+                .Select( p => ( reversed ?
+                    p.LastName + ", " + p.NickName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Name : "" ) :
+                    p.NickName + " " + p.LastName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Name : "" ) ) )
+                .Distinct()
+                .ToList();
         }
 
         /// <summary>

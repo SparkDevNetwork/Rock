@@ -194,7 +194,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return string.Format( "{0}[{1}]", this.ActionType.ToString(), this.Id );
+            return string.Format( "{0}[{1}]", this.ActionType.ToStringSafe(), this.Id );
         }
 
         #endregion

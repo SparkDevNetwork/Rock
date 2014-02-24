@@ -88,7 +88,7 @@ achieve our mission.  We are so grateful for your commitment.
     [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 ", "Text Options", 16 )]
 
-    [EmailTemplateField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.EmailTemplate.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 17, "ConfirmAccountTemplate" )]
+    [EmailTemplateField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 17, "ConfirmAccountTemplate" )]
 
     #endregion
 
@@ -887,7 +887,7 @@ achieve our mission.  We are so grateful for your commitment.
 
                             // Create Family
                             var groupService = new GroupService();
-                            var familyGroup = groupService.SaveNewFamily( person, null, CurrentPersonAlias );
+                            var familyGroup = groupService.SaveNewFamily( person, null, false, CurrentPersonAlias );
                             if (familyGroup != null)
                             {
                                 groupService.AddNewFamilyAddress(familyGroup, GetAttributeValue( "AddressType" ),
@@ -1343,7 +1343,6 @@ achieve our mission.  We are so grateful for your commitment.
                         transaction.TransactionDateTime = RockDateTime.Now;
                         transaction.AuthorizedPersonId = person.Id;
                         transaction.GatewayEntityTypeId = gateway.TypeId;
-                        transaction.Amount = paymentInfo.Amount;
                         transaction.TransactionTypeValueId = DefinedValueCache.Read(new Guid(Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION)).Id;
                         transaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
                         transaction.CreditCardTypeValueId = CreditCardTypeValueId;
@@ -1400,7 +1399,7 @@ achieve our mission.  We are so grateful for your commitment.
                                 batch = batchService.Get( batch.Id );
                             }
 
-                            batch.ControlAmount += transaction.Amount;
+                            batch.ControlAmount += transaction.TotalAmount;
                             batchService.Save( batch, CurrentPersonAlias );
 
                             var transactionService = new FinancialTransactionService();

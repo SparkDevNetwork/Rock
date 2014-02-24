@@ -22,9 +22,11 @@ using System.Net.Http;
 using System.ServiceModel.Channels;
 using System.Web.Http;
 using System.Web.Http.OData.Query;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Security;
 
 namespace Rock.Rest
 {
@@ -62,7 +64,10 @@ namespace Rock.Rest
         [Authenticate, Secured]
         public virtual HttpResponseMessage Post( [FromBody]T value )
         {
+            CheckCanEdit( value );
+
             var personAlias = GetPersonAlias();
+
             _service.Add( value, personAlias );
 
             if ( !value.IsValid )
@@ -83,11 +88,12 @@ namespace Rock.Rest
         public virtual void Put( int id, [FromBody]T value )
         {
             T targetModel;
-
             if ( !_service.TryGet( id, out targetModel ) )
             {
                 throw new HttpResponseException( HttpStatusCode.NotFound );
             }
+
+            CheckCanEdit( targetModel );
 
             _service.SetValues( value, targetModel );
 
@@ -107,7 +113,11 @@ namespace Rock.Rest
         {
             T model;
             if ( !_service.TryGet( id, out model ) )
+            {
                 throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            CheckCanEdit( model );
 
             var personAlias = GetPersonAlias();
             _service.Delete( model, personAlias );
@@ -125,6 +135,9 @@ namespace Rock.Rest
         public IQueryable<T> GetDataView( int id )
         {
             var dataView = new DataViewService().Get( id );
+
+            CheckCanEdit( dataView );
+
             if ( dataView != null && dataView.EntityType.Name == typeof( T ).FullName )
             {
                 var errorMessages = new List<string>();
@@ -161,6 +174,7 @@ namespace Rock.Rest
 
             return null;
         }
+
         protected virtual Rock.Model.PersonAlias GetPersonAlias()
         {
             var person = GetPerson();
@@ -170,6 +184,27 @@ namespace Rock.Rest
             }
 
             return null;
+        }
+
+        protected void CheckCanEdit( T entity )
+        {
+            if ( entity is ISecured )
+            {
+                CheckCanEdit( (ISecured)entity );
+            }
+        }
+
+        protected void CheckCanEdit( ISecured securedModel )
+        {
+            CheckCanEdit( securedModel, GetPerson() );
+        }
+
+        protected void CheckCanEdit( ISecured securedModel, Person person )
+        {
+            if ( !securedModel.IsAuthorized( "Edit", person ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
         }
     }
 }

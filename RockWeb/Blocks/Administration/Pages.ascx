@@ -7,7 +7,7 @@
     <asp:PlaceHolder ID="phContent" runat="server">
 
         <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger"/>
-
+        <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
         <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="page" OnRowSelected="rGrid_Edit">
             <Columns>
                 <Rock:ReorderField />

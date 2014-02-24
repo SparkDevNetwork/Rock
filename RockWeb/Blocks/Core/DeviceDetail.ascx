@@ -38,8 +38,8 @@
                             <Rock:DataDropDownList ID="ddlDeviceType" runat="server" SourceTypeName="Rock.Model.Device, Rock" PropertyName="DeviceTypeValueId" Required="true"
                                 Help="What type of device is this?" />
 
-                            <Rock:GeoPicker ID="gpGeoPoint" runat="server" Required="false" Label="Geo Point" DrawingMode="Point" />
-                            <Rock:GeoPicker ID="gpGeoFence" runat="server" Required="false" Label="Geo Fence" DrawingMode="Polygon" />
+                            <Rock:GeoPicker ID="gpGeoPoint" runat="server" Required="false" Label="Point" DrawingMode="Point" />
+                            <Rock:GeoPicker ID="gpGeoFence" runat="server" Required="false" Label="Geo-fence" DrawingMode="Polygon" />
                             
                         </div>
                         <div class="col-md-6">

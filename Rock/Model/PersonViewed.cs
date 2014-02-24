@@ -107,7 +107,7 @@ namespace Rock.Model
         public override string ToString()
         {
             if (ViewerPerson != null && TargetPerson != null)
-                return string.Format("{0} Viewed {1}", ViewerPerson.FullName, TargetPerson.FullName);
+                return string.Format( "{0} Viewed {1}", ViewerPerson.ToStringSafe(), TargetPerson.ToStringSafe() );
             return string.Empty;
         }
     }
