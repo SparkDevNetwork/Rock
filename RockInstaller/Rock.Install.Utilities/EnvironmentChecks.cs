@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Data.SqlClient;
 using Microsoft.Win32;
+using System.Web;
 
 namespace Rock.Install.Utilities
 {
@@ -14,7 +15,29 @@ namespace Rock.Install.Utilities
     {
         const string dotNetVersionRequired = "4.5";
         const double iisVersionRequired = 7.0;
-        
+
+        /// <summary>
+        /// Checks that server allows full trust
+        /// </summary>
+        public static bool CheckTrustLevel( out string errorDetails )
+        {
+            bool checksPassed = false;
+            errorDetails = string.Empty;
+
+            try
+            {
+                new AspNetHostingPermission( AspNetHostingPermissionLevel.Unrestricted ).Demand();
+                checksPassed = true;
+                errorDetails = "Your webserver is configured for Full-Trust.";
+            }
+            catch ( System.Security.SecurityException )
+            {
+                checksPassed = false;
+                errorDetails = "Your webserver is not configured for Full-Trust.";
+            }
+
+            return checksPassed;
+        }
 
         /// <summary>
         /// Checks that Rock is not already on the file system by checking for the existance of

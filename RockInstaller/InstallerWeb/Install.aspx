@@ -103,6 +103,17 @@
                 outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#WebServerPermissions' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
     			environmentClean = false;
     		}
+
+            // check web server trust level
+            if ( EnvironmentChecks.CheckTrustLevel( out checkResults ) )
+            {
+                outputMessages += "<li><i class='fa fa-check-circle pass'></i> " + checkResults + "</li>";
+            }
+            else
+            {
+                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#WebServerTrust' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+                environmentClean = false;
+            }
     		
     		// check IIS version
             if (EnvironmentChecks.CheckIisVersion(Request.ServerVariables["SERVER_SOFTWARE"], out checkResults))
