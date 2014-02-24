@@ -95,6 +95,7 @@
                             <li><a href="#spinkit">SpinKit</a> (MIT) - <a href="https://github.com/tobiasahlin/SpinKit">Project Site</a></li>
                             <li><a href="#webicon">Web Icon Set (File Type Icons)</a> (Custom) - <a href="http://www.webiconset.com/file-type-icons/">Project Site</a></li>
                             <li><a href="#smartresize">SmartResize</a> (Creative Commons Public Domain Dedication) - <a href="http://www.paulirish.com/2009/throttled-smartresize-jquery-event-handler/">Project Site</a></li>
+                            <li><a href="#mobiledetect">Mobile Detect</a> (Unlicense) - <a href="http://detectmobilebrowsers.com/">Project Site</a></li>
                         </ul>
 
 
@@ -2401,7 +2402,36 @@ The person who associated a work with this deed has dedicated the work to the pu
 
 You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission. See Other Information below.</pre>
 
+<a name="mobiledetect"></a>
+                        <h3>Mobile Detect</h3>
+                        <pre>
+Unlicense
 
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org/>
+</pre>
                     </div>
                 </div>
             </div>
