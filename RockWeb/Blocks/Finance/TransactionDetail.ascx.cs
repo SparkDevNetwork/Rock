@@ -66,6 +66,8 @@ namespace RockWeb.Blocks.Finance
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialBatch.FriendlyTypeName );
             }
+
+            ScriptManager.RegisterStartupScript( pnlDetails, pnlDetails.GetType(), "images-fluidbox", "$('.photo a').fluidbox();", true );
         }
 
         /// <summary>

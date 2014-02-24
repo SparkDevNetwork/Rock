@@ -1,9 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TransactionDetail.ascx.cs" Inherits="RockWeb.Blocks.Finance.TransactionDetail" %>
-<script>
-    $(function () {
-        $(".photo a").fluidbox();
-    });
-</script>
+
 <asp:UpdatePanel ID="upFinancialBatch" runat="server">
     <ContentTemplate>
 
