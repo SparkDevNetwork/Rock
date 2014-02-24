@@ -32,16 +32,17 @@
                     <div class="col-md-12">
                         
                         <div class="error-wrap">
-                        <h1>We Can't Find That Page</h1>
+                            <h1>We Can't Find That Page</h1>
                         
-                        <p class="error-icon info">
-                            <i class="fa fa-question-circle"></i>
-                        </p>
+                            <p class="error-icon info">
+                                <i class="fa fa-question-circle"></i>
+                            </p>
 
-                        <p>
-                            Sorry, but the page you are looking for can not be found. Check the address of the page
-                            and see your adminstrator if you still need assistance.
-                        </p>
+                            <p>
+                                Sorry, but the page you are looking for can not be found. Check the address of the page
+                                and see your adminstrator if you still need assistance.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
