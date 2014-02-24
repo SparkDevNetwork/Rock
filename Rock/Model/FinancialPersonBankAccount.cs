@@ -82,7 +82,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.AccountNumberSecured.ToString();
+            return this.AccountNumberSecured.ToStringSafe();
         }
 
         #endregion

@@ -189,6 +189,7 @@
     <Compile Include="Data\IModel.cs" />
     <Compile Include="Data\IService.cs" />
     <Compile Include="Data\LinqRuntimeTypeBuilder.cs" />
+    <Compile Include="Data\HideFromReportingAttribute.cs" />
     <Compile Include="Field\Types\PersonBadgesFieldType.cs" />
     <Compile Include="Field\Types\GroupLocationTypeFieldType.cs" />
     <Compile Include="Field\Types\CodeEditorFieldType.cs" />
@@ -207,7 +208,10 @@
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Jobs\RunSQL.cs" />
+    <Compile Include="Model\CodeGenerated\FollowingService.cs" />
+    <Compile Include="Model\Following.cs" />
     <Compile Include="Model\AuditDetail.cs" />
+    <Compile Include="Model\CodeGenerated\PageViewService.cs" />
     <Compile Include="Model\CodeGenerated\PersonBadgeService.cs" />
     <Compile Include="Model\PersonBadge.cs" />
     <Compile Include="Model\CodeGenerated\AuditDetailService.cs" />
@@ -230,12 +234,14 @@
     <Compile Include="Model\PersonAlias.cs" />
     <Compile Include="Model\ReportField.cs" />
     <Compile Include="Model\RestControllerService.Partial.cs" />
+    <Compile Include="Model\PageView.cs" />
     <Compile Include="Net\RestParameters\ContributionStatementOptions.cs" />
     <Compile Include="PersonProfile\Badge\Campus.cs" />
     <Compile Include="PersonProfile\Badge\AttendingDuration.cs" />
     <Compile Include="PersonProfile\Badge\InGroupOfType.cs" />
     <Compile Include="PersonProfile\Badge\FamilyWeeksAttendedInDuration.cs" />
     <Compile Include="PersonProfile\Badge\Liquid.cs" />
+    <Compile Include="Reporting\DataFilter\Person\TagFilter.cs" />
     <Compile Include="Reporting\DataSelectComponent.cs" />
     <Compile Include="Reporting\DataFilter\Person\GivingAmountFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\DistanceFromFilter.cs" />
@@ -293,6 +299,7 @@
     <Compile Include="SystemGuid\EntityType.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\Cache\CategoryCache.cs" />
+    <Compile Include="Web\SystemSettings.cs" />
     <Compile Include="Web\Cache\GroupTypeCache.cs" />
     <Compile Include="Web\Cache\LayoutCache.cs" />
     <Compile Include="Web\DescriptionList.cs" />
@@ -482,7 +489,6 @@
     </Compile>
     <Compile Include="Model\Category.cs" />
     <Compile Include="Services\NuGet\PackageService.cs" />
-    <Compile Include="Search\Person\PersonQueryExtensions.cs" />
     <Compile Include="SystemGuid\BinaryFileType.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />
     <Compile Include="Web\UI\Adapters\CheckBoxAdapter.cs" />
@@ -492,6 +498,7 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\Grid\TimeField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LiquidField.cs" />
     <Compile Include="Web\UI\Controls\Grid\ListDelimitedField.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonMergeField.cs" />
@@ -783,7 +790,7 @@
     <Compile Include="Transactions\ITransaction.cs" />
     <Compile Include="Transactions\PageViewTransaction.cs" />
     <Compile Include="Transactions\RockQueue.cs" />
-    <Compile Include="SystemGuid\EmailTemplate.cs" />
+    <Compile Include="SystemGuid\SystemEmail.cs" />
     <Compile Include="Model\WorkflowActivityType.cs" />
     <Compile Include="Model\WorkflowActionType.cs" />
     <Compile Include="Model\WorkflowActivity.cs" />

@@ -196,6 +196,10 @@ namespace Rock.Model
             
             // ignoring FinancialTransactionRefund,ModifiedByPersonAliasId 
             
+            // ignoring Following,CreatedByPersonAliasId 
+            
+            // ignoring Following,ModifiedByPersonAliasId 
+            
             // ignoring Group,CreatedByPersonAliasId 
             
             // ignoring Group,ModifiedByPersonAliasId 

@@ -231,7 +231,7 @@ namespace Rock.Web
                 foreach ( string key in QueryString.AllKeys )
                 {
                     // check that the dictionary doesn't already have this key
-                    if ( !parms.ContainsKey( key ) )
+                    if ( key != null && !parms.ContainsKey( key ) && QueryString[key] != null )
                         parms.Add( key, QueryString[key].ToString() );
                 }
             }

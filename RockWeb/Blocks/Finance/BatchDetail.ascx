@@ -1,4 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BatchDetail.ascx.cs" Inherits="RockWeb.Blocks.Finance.BatchDetail" %>
+<%@ Reference Control="~/Blocks/Finance/TransactionList.ascx" %>
 
 <asp:UpdatePanel ID="upnlFinancialBatch" runat="server">
     <ContentTemplate>
@@ -32,7 +33,7 @@
 
                 <div class="actions">
                     <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary btn-sm" OnClick="lbSaveFinancialBatch_Click" />
-                    <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-sm" CausesValidation="false" OnClick="lbCancelFinancialBatch_Click" />
+                    <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link btn-sm" CausesValidation="false" OnClick="lbCancelFinancialBatch_Click" />
                 </div>
             </div>
 

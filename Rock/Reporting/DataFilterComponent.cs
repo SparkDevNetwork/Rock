@@ -203,7 +203,7 @@ namespace Rock.Reporting
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        protected Expression ComparisonExpression( ComparisonType comparisonType, Expression property, Expression value )
+        protected Expression ComparisonExpression( ComparisonType comparisonType, MemberExpression property, Expression value )
         {
             if ( comparisonType == ComparisonType.Contains )
             {
@@ -237,16 +237,30 @@ namespace Rock.Reporting
 
             if ( comparisonType == ComparisonType.IsBlank )
             {
-                Expression trimmed = Expression.Call( property, typeof( string ).GetMethod( "Trim", System.Type.EmptyTypes ) );
-                Expression emtpyString = Expression.Constant( string.Empty );
-                return Expression.Equal( trimmed, value );
+                if ( property.Type == typeof( string ) )
+                {
+                    Expression trimmed = Expression.Call( property, typeof( string ).GetMethod( "Trim", System.Type.EmptyTypes ) );
+                    Expression emtpyString = Expression.Constant( string.Empty );
+                    return Expression.Equal( trimmed, value );
+                }
+                else
+                {
+                    return Expression.Equal( property, Expression.Constant( null, property.Type ) );
+                }
             }
 
             if ( comparisonType == ComparisonType.IsNotBlank )
             {
-                Expression trimmed = Expression.Call( property, typeof( string ).GetMethod( "Trim", System.Type.EmptyTypes ) );
-                Expression emtpyString = Expression.Constant( string.Empty );
-                return Expression.NotEqual( trimmed, value );
+                if ( property.Type == typeof( string ) )
+                {
+                    Expression trimmed = Expression.Call( property, typeof( string ).GetMethod( "Trim", System.Type.EmptyTypes ) );
+                    Expression emtpyString = Expression.Constant( string.Empty );
+                    return Expression.NotEqual( trimmed, value );
+                }
+                else
+                {
+                    return Expression.NotEqual( property, Expression.Constant( null, property.Type ) );
+                }
             }
 
             if ( comparisonType == ComparisonType.LessThan )
@@ -323,6 +337,8 @@ namespace Rock.Reporting
             {
                 return
                     ComparisonType.EqualTo |
+                    ComparisonType.IsBlank |
+                    ComparisonType.IsNotBlank |
                     ComparisonType.NotEqualTo |
                     ComparisonType.GreaterThan |
                     ComparisonType.GreaterThanOrEqualTo |
@@ -343,6 +359,8 @@ namespace Rock.Reporting
             {
                 return
                     ComparisonType.EqualTo |
+                    ComparisonType.IsBlank |
+                    ComparisonType.IsNotBlank |
                     ComparisonType.GreaterThan |
                     ComparisonType.GreaterThanOrEqualTo |
                     ComparisonType.LessThan |

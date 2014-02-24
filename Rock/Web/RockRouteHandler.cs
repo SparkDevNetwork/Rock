@@ -107,12 +107,19 @@ namespace Rock.Web
                 SiteCache site = SiteCache.GetSiteByDomain(requestContext.HttpContext.Request.Url.Host);
                 if (site != null && site.PageNotFoundPageId != null)
                 {
-                    page = PageCache.Read(site.PageNotFoundPageId ?? 0);
+                    if ( Convert.ToBoolean( GlobalAttributesCache.Read().GetValue( "Log404AsException" ) ) )
+                    {
+                        Rock.Model.ExceptionLogService.LogException( 
+                            new Exception( string.Format( "404 Error: {0}", requestContext.HttpContext.Request.Url.AbsoluteUri ) ),
+                            requestContext.HttpContext.ApplicationInstance.Context );
+                    } 
+                    
+                    page = PageCache.Read( site.PageNotFoundPageId ?? 0 );
                 }
                 else
                 {
-                    // no 404 page found for the site
-                    return new HttpHandlerError(404);
+                    // no 404 page found for the site, return the default 404 error page
+                    return (System.Web.UI.Page)BuildManager.CreateInstanceFromVirtualPath( "~/Http404Error.aspx", typeof( System.Web.UI.Page ) );
                 }
 
             }

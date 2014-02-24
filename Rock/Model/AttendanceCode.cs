@@ -52,7 +52,6 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the attendance/security code.
         /// </value>
         [MaxLength(10)]
-        [AlternateKey]
         [DataMember]
         public string Code { get; set; }
 

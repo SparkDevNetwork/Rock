@@ -29,6 +29,9 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using System.Data;
+using System.Data.Entity;
+using System.Text;
 
 namespace RockWeb.Blocks.Administraton
 {
@@ -72,15 +75,16 @@ namespace RockWeb.Blocks.Administraton
             gExceptionOccurrences.RowSelected += gExceptionOccurrences_RowSelected;
             gExceptionOccurrences.RowItemText = "Exception";
 
-            // set detail title with formating
-            lDetailTitle.Text = ("Exception Occurrences").FormatAsHtmlTitle();
-
+            
             RockPage page = Page as RockPage;
             if ( page != null )
             {
                 page.PageNavigate += page_PageNavigate;
             }
 
+
+            RockPage.AddScriptLink( this.Page, "https://www.google.com/jsapi" );
+            RockPage.AddScriptLink( this.Page, "~/Scripts/jquery.smartresize.js" );
         }
 
         /// <summary>
@@ -96,6 +100,70 @@ namespace RockWeb.Blocks.Administraton
                 //Set Exception Panel visibility to show Exception List
                 SetExceptionPanelVisibility( None.Id );
             }
+
+            // get data for graphs
+            ExceptionLogService exceptionLogService = new ExceptionLogService();
+            var exceptionList = exceptionLogService.Queryable()
+            .Where(x => x.HasInnerException == false)
+            .GroupBy( x => DbFunctions.TruncateTime(x.CreatedDateTime.Value ))
+            .Select( eg => new
+            {
+                DateValue = eg.Key,
+                ExceptionCount = eg.Count(),
+                UniqueExceptionCount = eg.Select( y => y.ExceptionType ).Distinct().Count()
+            } ).ToList();
+
+            if ( exceptionList.Count > 1 )
+            {
+
+                StringBuilder sbChartData = new StringBuilder();
+                //sbChartData.Append( "[['Date', 'Unique Exceptions', 'Total Exceptions']," );
+                sbChartData.Append( "data.addColumn('date', 'Date');\n" );
+                sbChartData.Append( "data.addColumn('number', 'Unique Exceptions');\n" );
+                sbChartData.Append( "data.addColumn('number', 'Total Exceptions');\n" );
+
+                // load datatable
+                foreach ( var exception in exceptionList )
+                {
+                    //sbChartData.Append( String.Format( "['{0}', {1}, {2}],", exception.DateValue.Value.ToShortDateString(), exception.UniqueExceptionCount, exception.ExceptionCount ) );
+                    sbChartData.Append( String.Format( "data.addRow([new Date({0}, {1}, {2}), {3}, {4}]);\n", exception.DateValue.Value.Year, (exception.DateValue.Value.Month - 1), exception.DateValue.Value.Day, exception.UniqueExceptionCount, exception.ExceptionCount ) );
+                }
+
+                lGraphScript.Text = String.Format( @"
+
+            <script type=""text/javascript"">
+                google.load(""visualization"", ""1"", {{ packages: [""corechart""] }});
+                google.setOnLoadCallback(drawChart);
+
+                function drawChart() {{
+                    var data = new google.visualization.DataTable();
+                    {0}
+
+                    var options = {{
+                        vAxis: {{ title: 'Exception Count', minValue: 0, titleTextStyle: {{ color: '#515151',  italic: 'false' }} }},
+                        backgroundColor: 'transparent',
+                        colors: ['#8498ab', '#a4b4c4', '#b9c7d5', '#c6d2df', '#d8e1ea'],
+                        hAxis: {{  textStyle: {{ color: '#515151' }}, baselineColor: '#515151' }},
+                        legend: {{ position: 'bottom', textStyle: {{ color: '#515151' }} }}
+                    }};
+
+                    var chart = new google.visualization.AreaChart(document.getElementById('exception-chart'));
+                    chart.draw(data, options);
+
+                    $(window).smartresize(function(){{
+                        chart.draw(data, options);
+                    }});
+
+                }}
+
+                
+            </script>", sbChartData.ToString() );
+            }
+            else
+            {
+                pnlExceptionChart.Visible = false;
+            }
+
         }
 
         void page_PageNavigate( object sender, HistoryEventArgs e )
@@ -445,6 +513,7 @@ namespace RockWeb.Blocks.Administraton
             ddlSite.Items.Insert( 0, new ListItem( All.Text, All.IdValue ) );
         }
 
+
         /// <summary>
         /// Builds the base query for the Exception List grid data
         /// </summary>
@@ -531,22 +600,32 @@ namespace RockWeb.Blocks.Administraton
             //set the summary fields for the base exception
             if ( exception != null )
             {
-                this.AddHistory( "Exception", exceptionId.ToString(), string.Format( "Exception Occurrences {0}", exception.Description ) );
+                if ( Page.IsPostBack && Page.IsAsync )
+                {
+                    this.AddHistory( "Exception", exceptionId.ToString(), string.Format( "Exception Occurrences {0}", exception.Description ) );
+                }
                 hfBaseExceptionID.Value = exceptionId.ToString();
 
                 var descriptionList = new Rock.Web.DescriptionList();
-                if ( exception.Site != null )
-                {
-                    descriptionList.Add( "Site", exception.Site.Name );
-                }
-                if ( exception.Page != null )
-                {
-                    descriptionList.Add( "Page", exception.Page.InternalName );
-                }
+
+                // set detail title with formating
+                lDetailTitle.Text = String.Format( "Occurrences of {0}", exception.ExceptionType ).FormatAsHtmlTitle();
+
                 if ( !string.IsNullOrEmpty( exception.ExceptionType ) )
                 {
                     descriptionList.Add( "Type", exception.ExceptionType );
                 }
+
+                if ( exception.Site != null )
+                {
+                    descriptionList.Add( "Site", exception.Site.Name );
+                }
+
+                if ( exception.Page != null )
+                {
+                    descriptionList.Add( "Page", exception.Page.InternalName );
+                }
+                
                 lblMainDetails.Text = descriptionList.Html;
 
                 //Load the occurrences for the selected exception

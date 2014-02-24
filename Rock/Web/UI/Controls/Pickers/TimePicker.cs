@@ -32,7 +32,7 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            this.CssClass = "input-width-md";
+            this.AddCssClass( "input-width-md" );
             this.AppendText = "<span class='add-on'><i class='fa fa-clock-o'></i></span>";
 
             if ( string.IsNullOrWhiteSpace( this.SourceTypeName ) )

@@ -2,7 +2,7 @@
 
 <script type="text/javascript">
 
-    $(document).ready(function () {
+    function pageLoad() {
 
         $('#show-cache-objects').click(function () {
             $('#cache-objects').toggle('slow', function () {
@@ -13,17 +13,25 @@
         });
 
         $('a.show-pill').click(function () {
-
-            $('ul.nav-pills > li').attr('class', '');
-            $(this).parent().attr('class', 'active');
-            $('div.tabContent > div').hide('slow');
-            $('#' + $(this).attr('pill')).show('slow', function () {
-                if ($('#modal-scroll-container').length) {
-                    $('#modal-scroll-container').tinyscrollbar_update('relative');
-                }
-            });
+    	    $('ul.nav-pills > li').attr('class', '');
+    	    $(this).parent().attr('class', 'active');
+    	    $('div.tabContent > div').hide('slow');
+    	    $('#' + $(this).attr('pill')).show('slow', function () {
+    	        if ($('#modal-scroll-container').length) {
+    	            $('#modal-scroll-container').tinyscrollbar_update('relative');
+    	        }
+    	    });
         });
-    });
+
+        if ($('div.alert.alert-success').length > 0) {
+    	        window.setTimeout("fadeAndClear()", 5000);
+        }
+    }
+
+    function fadeAndClear() {
+    	$('div.alert.alert-success').animate({ opacity: 0 }, 2000 );
+    }
+
 
 </script>
 
@@ -38,6 +46,8 @@
 
         <p>Rock Version: 
             <asp:Literal ID="lRockVersion" runat="server"></asp:Literal></p>
+            <Rock:NotificationBox ID="nbMessage" runat="server" NotificationBoxType="Success" Title="Success" Visible="false" Text=""></Rock:NotificationBox>
+
         <div class="actions margin-t-xl">
             <asp:Button runat="server" ID="btnFlushCache" CssClass="btn btn-primary btn-sm" Text="Clear Cache" OnClick="btnClearCache_Click" ToolTip="Flushes Pages, BlockTypes, Blocks and Attributes from the Rock web cache." />
             <asp:Button runat="server" ID="btnRestart" CssClass="btn btn-link btn-sm restart" Text="Restart Rock" OnClick="btnRestart_Click" ToolTip="Restarts the Application." />

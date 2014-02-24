@@ -61,8 +61,7 @@ namespace Rock.Rest.Controllers
             if ( !service.TryGet( id, out model ) )
                 throw new HttpResponseException( HttpStatusCode.NotFound );
 
-            if ( !model.IsAuthorized( "Edit", person ) )
-                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            CheckCanEdit( model, person );
 
             Rock.Web.Cache.BlockCache.Flush( id );
 

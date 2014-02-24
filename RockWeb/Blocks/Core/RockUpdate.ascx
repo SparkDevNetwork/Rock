@@ -31,8 +31,11 @@
 
         <div runat="server" id="divPackage" visible="false">
 
-        <Rock:NotificationBox runat="server" NotificationBoxType="Warning" Title="Note" 
-            Text="We recommend that you always take a backup of your database and website before updating Rock. The changes that are made during the update process can't be undone." />
+        <Rock:NotificationBox runat="server" Title="Note" NotificationBoxType="Warning">
+            We recommend that you always take a backup of your database and website before updating Rock.
+            The changes that are made during the update process can't be undone.
+            Also, be patient when updating. An update can take anywhere from a few seconds
+            to 10 minutes depending on the size and your download speed.</Rock:NotificationBox>
 
             <asp:Repeater ID="rptPackageVersions" runat="server" Visible="True"  OnItemDataBound="rptPackageVersions_ItemDataBound" OnItemCommand="rptPackageVersions_ItemCommand">
                     <ItemTemplate>

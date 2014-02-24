@@ -173,7 +173,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.MaskedAccountNumber.ToString();
+            return this.MaskedAccountNumber.ToStringSafe();
         }
 
         #endregion

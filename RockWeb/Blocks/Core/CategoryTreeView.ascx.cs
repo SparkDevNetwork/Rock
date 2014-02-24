@@ -58,7 +58,8 @@ namespace RockWeb.Blocks.Core
 
             RockPage.AddScriptLink( "~/Scripts/jquery.tinyscrollbar.js" );
 
-
+            hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
+             
             // Get EntityTypeName
             Guid entityTypeGuid = Guid.Empty;
             if ( Guid.TryParse( GetAttributeValue( "EntityType" ), out entityTypeGuid ) )

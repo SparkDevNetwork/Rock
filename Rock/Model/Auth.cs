@@ -166,11 +166,11 @@ namespace Rock.Model
             sb.AppendFormat("{0} ", this.AllowOrDeny == "A" ? "Allow" : "Deny");
 
             if (SpecialRole != Model.SpecialRole.None)
-                sb.AppendFormat("{0} ", SpecialRole.ToString().SplitCase());
+                sb.AppendFormat( "{0} ", SpecialRole.ToStringSafe().SplitCase() );
             else if(Person != null)
-                sb.AppendFormat("{0} ", Person.ToString());
+                sb.AppendFormat( "{0} ", Person.ToStringSafe() );
             else if(Group != null)
-                sb.AppendFormat("{0} ", Group.ToString());
+                sb.AppendFormat( "{0} ", Group.ToStringSafe() );
 
             sb.AppendFormat("{0} Access", Action);
 

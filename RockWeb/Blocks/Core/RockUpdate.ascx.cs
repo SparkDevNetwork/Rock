@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Reflection;
 using System.IO;
 using System.Web.UI.WebControls;
@@ -29,11 +30,11 @@ using NuGet;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Model;
 using Rock.Services.NuGet;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.VersionInfo;
-using System.Text.RegularExpressions;
 
 namespace RockWeb.Blocks.Core
 {
@@ -171,7 +172,9 @@ namespace RockWeb.Blocks.Core
             {
                 var update = NuGetService.SourceRepository.FindPackage( _rockPackageId, ( version != null ) ? SemanticVersion.Parse( version ) : null, false, false );
                 var installed = NuGetService.GetInstalledPackage( _rockPackageId );
-
+                
+                // Set timeout for up to 15 minutes (just like installer)
+                Server.ScriptTimeout = 900;
                 if ( installed == null )
                 {
                     errors = NuGetService.InstallPackage( update );
@@ -182,6 +185,16 @@ namespace RockWeb.Blocks.Core
                 }
                 nbSuccess.Text = System.Web.HttpUtility.HtmlEncode( update.ReleaseNotes ).ConvertCrLfToHtmlBr();
                 nbSuccess.Text += "<p><b>NOTE:</b> Any database changes will take effect at the next page load.</p>";
+
+                // register any new REST controllers
+                try
+                {
+                    new RestControllerService().RegisterControllers( CurrentPersonAlias );
+                }
+                catch (Exception ex)
+                {
+                    errors = errors.Concat( new[] { string.Format( "The update was installed but there was a problem registering any new REST controllers. ({0})", ex.Message ) } );
+                }
             }
             catch ( InvalidOperationException ex )
             {

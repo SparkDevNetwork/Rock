@@ -33,6 +33,11 @@ namespace Rock.PersonProfile.Badge
     [CodeEditorField( "Display Text", "The text (or html) to display as a badge",CodeEditorMode.Liquid, CodeEditorTheme.Rock, 100 )]
     public class Liquid : BadgeComponent
     {
+        /// <summary>
+        /// Renders the specified writer.
+        /// </summary>
+        /// <param name="badge">The badge.</param>
+        /// <param name="writer">The writer.</param>
         public override void Render( PersonBadge badge, System.Web.UI.HtmlTextWriter writer )
         {
             string displayText = GetAttributeValue( badge, "DisplayText" );
