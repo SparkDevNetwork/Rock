@@ -309,66 +309,69 @@ namespace Rock.Web.Cache
         public void AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId)
         {
             Control attributeControl = this.FieldType.Field.EditControl( QualifierValues, setId ? string.Format( "attribute_field_{0}", this.Id ) : string.Empty );
-            if ( setId )
+            if ( attributeControl != null )
             {
-                attributeControl.ClientIDMode = ClientIDMode.AutoID;
-            }
-
-            // If the control is a RockControl
-            var rockControl = attributeControl as IRockControl;
-            if ( rockControl != null )
-            {
-                controls.Add( attributeControl );
-
-                rockControl.Label = this.Name;
-                rockControl.Help = this.Description;
-                rockControl.Required = this.IsRequired;
-                rockControl.ValidationGroup = validationGroup;
-            }
-            else
-            {
-                bool renderLabel = ( !string.IsNullOrEmpty( Name ) );
-                bool renderHelp = ( !string.IsNullOrWhiteSpace(Description));
-
-                if ( renderLabel || renderHelp )
+                if ( setId )
                 {
-                    HtmlGenericControl div = new HtmlGenericControl( "div" );
-                    controls.Add( div );
+                    attributeControl.ClientIDMode = ClientIDMode.AutoID;
+                }
 
-                    div.Controls.Clear();
-                    div.AddCssClass( "form-group" );
-                    if ( this.IsRequired )
-                    {
-                        div.AddCssClass( "required" );
-                    }
-                    div.ClientIDMode = ClientIDMode.AutoID;
+                // If the control is a RockControl
+                var rockControl = attributeControl as IRockControl;
+                if ( rockControl != null )
+                {
+                    controls.Add( attributeControl );
 
-                    if ( renderLabel )
-                    {
-                        Label label = new Label();
-                        div.Controls.Add( label );
-                        label.ClientIDMode = ClientIDMode.AutoID;
-                        label.Text = this.Name;
-                        label.AssociatedControlID = attributeControl.ID;
-                    }
-                    if ( renderHelp )
-                    {
-                        var HelpBlock = new Rock.Web.UI.Controls.HelpBlock();
-                        div.Controls.Add( HelpBlock );
-                        HelpBlock.ClientIDMode = ClientIDMode.AutoID;
-                        HelpBlock.Text = this.Description;
-                    }
-                    div.Controls.Add( attributeControl );
+                    rockControl.Label = this.Name;
+                    rockControl.Help = this.Description;
+                    rockControl.Required = this.IsRequired;
+                    rockControl.ValidationGroup = validationGroup;
                 }
                 else
                 {
-                    controls.Add( attributeControl );
-                }
-            }
+                    bool renderLabel = ( !string.IsNullOrEmpty( Name ) );
+                    bool renderHelp = ( !string.IsNullOrWhiteSpace( Description ) );
 
-            if ( setValue )
-            {
-                this.FieldType.Field.SetEditValue( attributeControl, QualifierValues, value );
+                    if ( renderLabel || renderHelp )
+                    {
+                        HtmlGenericControl div = new HtmlGenericControl( "div" );
+                        controls.Add( div );
+
+                        div.Controls.Clear();
+                        div.AddCssClass( "form-group" );
+                        if ( this.IsRequired )
+                        {
+                            div.AddCssClass( "required" );
+                        }
+                        div.ClientIDMode = ClientIDMode.AutoID;
+
+                        if ( renderLabel )
+                        {
+                            Label label = new Label();
+                            div.Controls.Add( label );
+                            label.ClientIDMode = ClientIDMode.AutoID;
+                            label.Text = this.Name;
+                            label.AssociatedControlID = attributeControl.ID;
+                        }
+                        if ( renderHelp )
+                        {
+                            var HelpBlock = new Rock.Web.UI.Controls.HelpBlock();
+                            div.Controls.Add( HelpBlock );
+                            HelpBlock.ClientIDMode = ClientIDMode.AutoID;
+                            HelpBlock.Text = this.Description;
+                        }
+                        div.Controls.Add( attributeControl );
+                    }
+                    else
+                    {
+                        controls.Add( attributeControl );
+                    }
+                }
+
+                if ( setValue )
+                {
+                    this.FieldType.Field.SetEditValue( attributeControl, QualifierValues, value );
+                }
             }
         }
 
