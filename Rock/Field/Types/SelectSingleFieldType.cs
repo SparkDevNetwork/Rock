@@ -122,10 +122,10 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            ListControl editControl = null;
-
             if ( configurationValues != null )
             {
+                ListControl editControl = null;
+
                 if ( configurationValues.ContainsKey( "fieldtype" ) && configurationValues["fieldtype"].Value == "rb" )
                 {
                     editControl = new RockRadioButtonList { ID = id }; 
@@ -167,10 +167,16 @@ namespace Rock.Field.Types
                             }
                         }
                     }
+
+                    if ( editControl.Items.Count > 0 )
+                    {
+                        return editControl;
+                    }
                 }
             }
 
-            return editControl;
+            return null;
+
         }
 
         /// <summary>

@@ -164,16 +164,21 @@ namespace Rock.Field.Types
                         var locationTypeValues = groupType.LocationTypeValues;
                         if ( locationTypeValues != null )
                         {
-                            foreach ( var locationTypeValue in locationTypeValues )
+                            if ( locationTypeValues.Any() )
                             {
-                                editControl.Items.Add( new ListItem( locationTypeValue.Name, locationTypeValue.Id.ToString() ) );
+                                foreach ( var locationTypeValue in locationTypeValues )
+                                {
+                                    editControl.Items.Add( new ListItem( locationTypeValue.Name, locationTypeValue.Id.ToString() ) );
+                                }
+
+                                return editControl;
                             }
                         }
                     }
                 }
             }
             
-            return editControl;
+            return null;
         }
 
         /// <summary>

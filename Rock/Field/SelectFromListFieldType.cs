@@ -49,13 +49,20 @@ namespace Rock.Field.Types
             RockCheckBoxList editControl = new RockCheckBoxList { ID = id };
             editControl.RepeatDirection = RepeatDirection.Horizontal;
 
-            foreach ( var item in ListSource )
+            if ( ListSource.Any() )
             {
-                ListItem listItem = new ListItem( item.Value, item.Key );
-                editControl.Items.Add( listItem );
-            }
+                foreach ( var item in ListSource )
+                {
+                    ListItem listItem = new ListItem( item.Value, item.Key );
+                    editControl.Items.Add( listItem );
+                }
 
-            return editControl;
+                return editControl;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
