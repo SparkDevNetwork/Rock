@@ -46,7 +46,12 @@
         
         
     }
-	
+
+    void EnvCheckRetry_Click( Object sender, EventArgs e )
+    {
+        Response.Redirect( "Start.aspx" );
+    }
+    
 	void DbConfigNext_Click(Object sender, EventArgs e)
     {
                
@@ -393,7 +398,7 @@
 							<div class="btn-list">
 							
 								<asp:LinkButton id="btnEnvBack" runat="server"  Text="<i class='fa fa-chevron-left'></i> Back"  CssClass="btn btn-default" OnClick="EnvBack_Click"></asp:LinkButton>  
-								<asp:LinkButton id="btnTryAgain" runat="server"  Text="Try Again <i class='fa fa-refresh'></i>"  CssClass="btn btn-primary" OnClick="DbConfigNext_Click"></asp:LinkButton> 
+								<asp:LinkButton id="btnTryAgain" runat="server"  Text="Try Again <i class='fa fa-refresh'></i>"  CssClass="btn btn-primary" OnClick="EnvCheckRetry_Click"></asp:LinkButton> 
 								<asp:LinkButton id="btnEnvNext" runat="server"  Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="EnvNext_Click"></asp:LinkButton> 
 							</div>
 						</asp:Panel>
