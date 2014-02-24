@@ -59,7 +59,7 @@
                         
                         <asp:Panel ID="pnlException" runat="server" Visible="false">
                             <div class="error-wrap">
-                                <h1>That Wasn't Suppose To Happen... </h1>
+                                <h1>That Wasn't Supposed To Happen... </h1>
                             
                                 <p class="error-icon">
                                     <i class="fa fa-exclamation-triangle"></i>
