@@ -438,7 +438,6 @@ CKEDITOR.replace('{0}', {{
     allowedContent: true,
     toolbar: toolbar_RockCustomConfig{1},
     removeButtons: '',
-    height: '{2}',
     baseFloatZIndex: 200000,  // set zindex to be 200000 so it will be on top of our modals (100000)
     extraPlugins: '{5}',
     resize_maxWidth: '{3}',
@@ -460,6 +459,13 @@ CKEDITOR.replace('{0}', {{
             $('#cke_{0}').on( 'change', '.cke_source', function(e, data) {{
                 CKEDITOR.instances.{0}.updateElement();
             }});
+
+            // set the height
+            if ('{2}' != '') {{
+              var topHeight = $('#' + e.editor.id + '_top').height();
+              var contentHeight = '{2}'.replace('px','') - topHeight - 40;
+              $('#' + e.editor.id + '_contents').css('height', contentHeight);
+            }}
         }}
     }}
 }}
