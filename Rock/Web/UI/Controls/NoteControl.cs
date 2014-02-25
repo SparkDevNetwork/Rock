@@ -719,7 +719,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( SaveButtonClick != null )
                 {
-                    SaveButtonClick( this, e );
+                    SaveButtonClick( this, new NoteEventArgs( note.Id ) );
                 }
             }
         }
@@ -751,13 +751,15 @@ namespace Rock.Web.UI.Controls
                     {
                         service.Delete( note, personAlias );
                         service.Save( note, personAlias );
+
                     }
                 }
 
                 if ( DeleteButtonClick != null )
                 {
-                    DeleteButtonClick( this, e );
+                    DeleteButtonClick( this, new NoteEventArgs( NoteId ) );
                 }
+
             }
         }
 
@@ -768,17 +770,42 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Occurs when [save button click].
         /// </summary>
-        public event EventHandler SaveButtonClick;
+        public event EventHandler<NoteEventArgs> SaveButtonClick;
 
         /// <summary>
         /// Occurs when [delete button click].
         /// </summary>
-        public event EventHandler DeleteButtonClick;
+        public event EventHandler<NoteEventArgs> DeleteButtonClick;
+
+
 
         #endregion
 
     }
 
+    /// <summary>
+    /// Note Event Argument includes id of note updated
+    /// </summary>
+    public class NoteEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Gets the note identifier.
+        /// </summary>
+        /// <value>
+        /// The note identifier.
+        /// </value>
+        public int? NoteId { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NoteEventArgs"/> class.
+        /// </summary>
+        /// <param name="noteId">The note identifier.</param>
+        public NoteEventArgs(int? noteId)
+        {
+            NoteId = noteId;
+        }
+    }
+    
     #region Enums
 
     /// <summary>

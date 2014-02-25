@@ -151,6 +151,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
+            // TODO ask David if we can EntityType.ToStringSafe() instead of EntityType.Name below
             return this.WorkflowName ?? EntityType.Name + " " + WorkflowTriggerType.ConvertToString();
         }
 

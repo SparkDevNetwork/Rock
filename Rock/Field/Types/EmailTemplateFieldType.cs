@@ -40,15 +40,20 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl(Dictionary<string,ConfigurationValue> configurationValues, string id)
         {
-            var editControl = new RockDropDownList { ID = id }; 
+            var editControl = new RockDropDownList { ID = id };
 
-            var service = new EmailTemplateService();
-            foreach ( var emailTemplate in service.Queryable().OrderBy( e => e.Title ) )
+            var systemEmails = new EmailTemplateService().Queryable().OrderBy( e => e.Title );
+            if ( systemEmails.Any() )
             {
-                editControl.Items.Add( new ListItem( emailTemplate.Title, emailTemplate.Guid.ToString() ) );
+                foreach ( var systemEmail in systemEmails )
+                {
+                    editControl.Items.Add( new ListItem( systemEmail.Title, systemEmail.Guid.ToString() ) );
+                }
+
+                return editControl;
             }
 
-            return editControl;
+            return null;
         }
 
         /// <summary>

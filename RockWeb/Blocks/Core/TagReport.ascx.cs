@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
-            gReport.DataKeyNames = new string[] { "Guid" };
+            gReport.DataKeyNames = new string[] { "Id" };
             gReport.GridRebind += gReport_GridRebind;
 
             int tagId = int.MinValue;
@@ -86,21 +86,26 @@ namespace RockWeb.Blocks.Core
                     {
                         Type modelType = TagEntityType.GetEntityType();
 
+                        gReport.RowItemText = modelType.Name + " Tag";
                         lTaggedTitle.Text = "Tagged " + modelType.Name.Pluralize();
 
                         if ( modelType != null )
                         {
-                            Dictionary<string, BoundField> boundFields = gReport.Columns.OfType<BoundField>().ToDictionary( a => a.DataField );
-                            foreach ( var column in gReport.GetPreviewColumns( modelType ) )
-                            {
-                                int insertPos = gReport.Columns.IndexOf( gReport.Columns.OfType<DeleteField>().First() );
-                                gReport.Columns.Insert( insertPos, column );
-                            }
-
+                            // If displaying people, set the person id fiels so that merge and communication icons are displayed
                             if ( TagEntityType.Name == "Rock.Model.Person" )
                             {
                                 gReport.PersonIdField = "Id";
+                            }                            
+                            
+                            foreach ( var column in gReport.GetPreviewColumns( modelType ) )
+                            {
+                                gReport.Columns.Add( column );
                             }
+
+                            // Add delete column
+                            var deleteField = new DeleteField();
+                            gReport.Columns.Add( deleteField );
+                            deleteField.Click += gReport_Delete;
 
                             BindGrid();
                         }
@@ -126,19 +131,11 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gReport_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            Guid guid = Guid.Empty;
-            if ( TagEntityType != null && Guid.TryParse( e.RowKeyValue.ToString(), out guid ) )
+            int id = int.MinValue;
+            if ( TagEntityType != null && int.TryParse( e.RowKeyValue.ToString(), out id ) )
             {
-                object entity = InvokeServiceMethod( "Get", new Type[] { typeof( Guid ) }, new object[] { guid } );
-                if ( entity != null )
-                {
-                    Rock.Data.IEntity model = entity as Rock.Data.IEntity;
-                    if ( model != null )
-                    {
-                        string routePath = string.Format( "~/{0}/{1}", TagEntityType.FriendlyName.Replace( " ", "" ), model.Id );
-                        Response.Redirect( routePath, false );
-                    }
-                }
+                string routePath = string.Format( "~/{0}/{1}", TagEntityType.FriendlyName.Replace( " ", "" ), id );
+                Response.Redirect( routePath, false );
             }
         }
 
@@ -149,22 +146,30 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gReport_Delete( object sender, RowEventArgs e )
         {
-            Guid guid = Guid.Empty;
-            if ( TagId.HasValue && Guid.TryParse( e.RowKeyValue.ToString(), out guid ) )
+            int id = int.MinValue;
+            if ( TagId.HasValue && int.TryParse( e.RowKeyValue.ToString(), out id ) )
             {
-                var service = new TaggedItemService();
-                var taggedItem = service.Get( TagId.Value, guid );
-                if ( taggedItem != null )
+                object obj = InvokeServiceMethod( "Get", new Type[] { typeof( int ) }, new object[] { id } );
+                if ( obj != null )
                 {
-                    string errorMessage;
-                    if ( !service.CanDelete( taggedItem, out errorMessage ) )
+                    Rock.Data.IEntity entity = obj as Rock.Data.IEntity;
+                    if ( entity != null )
                     {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
+                        var service = new TaggedItemService();
+                        var taggedItem = service.Get( TagId.Value, entity.Guid );
+                        if ( taggedItem != null )
+                        {
+                            string errorMessage;
+                            if ( !service.CanDelete( taggedItem, out errorMessage ) )
+                            {
+                                mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                                return;
+                            }
 
-                    service.Delete( taggedItem, CurrentPersonAlias );
-                    service.Save( taggedItem, CurrentPersonAlias );
+                            service.Delete( taggedItem, CurrentPersonAlias );
+                            service.Save( taggedItem, CurrentPersonAlias );
+                        }
+                    }
                 }
             }
 

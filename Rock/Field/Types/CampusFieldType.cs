@@ -43,13 +43,18 @@ namespace Rock.Field.Types
 
             CampusService campusService = new CampusService();
             var campusList = campusService.Queryable().OrderBy( a => a.Name ).ToList();
-            editControl.Items.Add( None.ListItem );
-            foreach ( var campus in campusList )
+
+            if ( campusList.Any() )
             {
-                editControl.Items.Add( new ListItem( campus.Name, campus.Id.ToString() ) );
+                foreach ( var campus in campusList )
+                {
+                    editControl.Items.Add( new ListItem( campus.Name, campus.Id.ToString() ) );
+                }
+
+                return editControl;
             }
 
-            return editControl;
+            return null;
         }
 
         /// <summary>

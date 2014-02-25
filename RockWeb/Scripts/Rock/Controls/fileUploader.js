@@ -6,17 +6,17 @@
     Rock.controls.fileUploader = (function () {
         var _configure = function (options) {
             options.isBinaryFile = options.isBinaryFile || 'T';
+            options.uploadUrl = options.uploadUrl || 'FileUploader.ashx';
 
             var wsUrl = Rock.settings.get('baseUrl')
-                        + 'FileUploader.ashx?'
+                        + options.uploadUrl + '?'
                         + 'isBinaryFile=' + options.isBinaryFile;
 
             if (options.isBinaryFile == 'T') {
                 wsUrl += '&fileId=' + options.fileId
                     + '&fileTypeGuid=' + options.fileTypeGuid;
             }
-            else
-            {
+            else {
                 // note rootFolder is encrypted to prevent direct access to filesystem via the URL
                 wsUrl += '&rootFolder=' + (encodeURIComponent(options.rootFolder) || '');
             }
@@ -63,6 +63,21 @@
                     if (options.doneFunction) {
                         options.doneFunction(e, data);
                     }
+                },
+                fail: function (e, data) {
+                    var $el = $('#' + options.controlId).closest('.fileupload-group');
+                    $el.siblings('.js-rockupload-alert').remove();
+                    var $warning = $('<div class="alert alert-warning alert-dismissable js-rockupload-alert"/>');
+
+                    var msg = "unable to upload";
+                    if (data.response().jqXHR && data.response().jqXHR.status == 406) {
+                        msg = "file type not allowed";
+                    }
+
+                    $warning.append('<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>')
+                        .append('<strong><i class="fa fa-exclamation-triangle"></i> Warning </strong>')
+                        .append(msg);
+                    $warning.insertBefore($el);
                 }
             });
 

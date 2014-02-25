@@ -46,7 +46,12 @@
         
         
     }
-	
+
+    void EnvCheckRetry_Click( Object sender, EventArgs e )
+    {
+        Response.Redirect( "Start.aspx" );
+    }
+    
 	void DbConfigNext_Click(Object sender, EventArgs e)
     {
                
@@ -103,9 +108,20 @@
                 outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#WebServerPermissions' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
     			environmentClean = false;
     		}
+
+            // check web server trust level
+            if ( EnvironmentChecks.CheckTrustLevel( out checkResults ) )
+            {
+                outputMessages += "<li><i class='fa fa-check-circle pass'></i> " + checkResults + "</li>";
+            }
+            else
+            {
+                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#WebServerTrust' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+                environmentClean = false;
+            }
     		
     		// check IIS version
-            if (EnvironmentChecks.CheckIisVersion(out checkResults))
+            if (EnvironmentChecks.CheckIisVersion(Request.ServerVariables["SERVER_SOFTWARE"], out checkResults))
             {
                 outputMessages += "<li><i class='fa fa-check-circle pass'></i> " + checkResults + "</li>";
     		} else {
@@ -172,55 +188,68 @@
     
     void EnvNext_Click(Object sender, EventArgs e)
     {
-    	// set server timeout to 15 mins
-        Server.ScriptTimeout = 900;
-        
-        // download install file
-    	bool downloadSuccessful = false;
-    	string checkMessages = string.Empty;
-    	downloadSuccessful = DownloadFile(InstallSetting.RockInstallFile, Server.MapPath(".") + @"\RockInstall.zip", out checkMessages);
-    	
-    	// change active panels
-    	pTestEnv.Visible = false;
-    	pDownloadZip.Visible = true;
-    	pWelcome.Visible = false;
-    	
-    	if (downloadSuccessful) {
-    		// let's unzip this bad boy
-    		using (ZipFile zip = ZipFile.Read(Server.MapPath(".") + @"\RockInstall.zip"))
-			{
-				zip.ExtractAll(Server.MapPath("."), ExtractExistingFileAction.OverwriteSilently);    
-			}
-			
-			// update the web.config with unique password key
-			int passwordLength = 32;
-			int alphaNumericalCharsAllowed = 2;
-			string randomPassword = Membership.GeneratePassword(passwordLength, alphaNumericalCharsAllowed);
-			
-			// turn string into byte array
-			byte[] bytes = System.Text.Encoding.Unicode.GetBytes( randomPassword );
-            System.Text.StringBuilder hex = new System.Text.StringBuilder( bytes.Length * 2 );
-            foreach ( byte b in bytes ) {
-                hex.AppendFormat( "{0:x2}", b );
+        try
+        {
+
+            // set server timeout to 15 mins
+            Server.ScriptTimeout = 900;
+
+            // download install file
+            bool downloadSuccessful = false;
+            string checkMessages = string.Empty;
+            downloadSuccessful = DownloadFile( InstallSetting.RockInstallFile, Server.MapPath( "." ) + @"\RockInstall.zip", out checkMessages );
+
+            // change active panels
+            pTestEnv.Visible = false;
+            pDownloadZip.Visible = true;
+            pWelcome.Visible = false;
+
+            if ( downloadSuccessful )
+            {
+                // let's unzip this bad boy
+                using ( ZipFile zip = ZipFile.Read( Server.MapPath( "." ) + @"\RockInstall.zip" ) )
+                {
+                    zip.ExtractAll( Server.MapPath( "." ), ExtractExistingFileAction.OverwriteSilently );
+                }
+
+                // update the web.config with unique password key
+                int passwordLength = 32;
+                int alphaNumericalCharsAllowed = 2;
+                string randomPassword = Membership.GeneratePassword( passwordLength, alphaNumericalCharsAllowed );
+
+                // turn string into byte array
+                byte[] bytes = System.Text.Encoding.Unicode.GetBytes( randomPassword );
+                System.Text.StringBuilder hex = new System.Text.StringBuilder( bytes.Length * 2 );
+                foreach ( byte b in bytes )
+                {
+                    hex.AppendFormat( "{0:x2}", b );
+                }
+
+                string hexBytes = hex.ToString().ToUpper();
+
+                Configuration rockWebConfig = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration( "~" );
+                rockWebConfig.AppSettings.Settings["PasswordKey"].Value = hexBytes;
+                rockWebConfig.AppSettings.Settings["DataEncryptionKey"].Value = InstallUtilities.GenerateRandomDataEncryptionKey();
+
+                //rockWebConfig.AppSettings.Settings["BaseUrl"].Value = Request.Url.Scheme + @"://" + Request.Url.Host + Request.ApplicationPath;  // not needed removed from web.config per https://github.com/SparkDevNetwork/Rock-ChMS/commit/17b0d30082f0b98bec8bc31d2034fb774690b2e1
+                rockWebConfig.Save();
+
+
+                lDownloadTitle.Text = "Download Successful";
+                lDownloadDetails.Text = "<p>The Rock ChMS has been downloaded and installed on your web server.  The next step is to setup and configure the database.</p><div class='alert alert-info'><strong>Letting You Know:</strong> We'll be loading a new page as the database is created. This could take a couple of minutes also. Good things come to those who wait.</div>";
             }
-            
-            string hexBytes = hex.ToString().ToUpper();
-			
-			Configuration rockWebConfig  = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration("~");
-			rockWebConfig.AppSettings.Settings["PasswordKey"].Value = hexBytes;
-            rockWebConfig.AppSettings.Settings["DataEncryptionKey"].Value = InstallUtilities.GenerateRandomDataEncryptionKey();
-            
-            //rockWebConfig.AppSettings.Settings["BaseUrl"].Value = Request.Url.Scheme + @"://" + Request.Url.Host + Request.ApplicationPath;  // not needed removed from web.config per https://github.com/SparkDevNetwork/Rock-ChMS/commit/17b0d30082f0b98bec8bc31d2034fb774690b2e1
-			rockWebConfig.Save();
-			
-			
-			lDownloadTitle.Text = "Download Successful";
-    		lDownloadDetails.Text = "<p>The Rock ChMS has been downloaded and installed on your web server.  The next step is to setup and configure the database.</p><div class='alert alert-info'><strong>Letting You Know:</strong> We'll be loading a new page as the database is created. This could take a couple of minutes also. Good things come to those who wait.</div>";
-    	} else {
-    		lDownloadTitle.Text = "Error on Download";
-    		lDownloadDetails.Text = checkMessages;
-    		//TODO: Where do we direct the user?
-    	}
+            else
+            {
+                lDownloadTitle.Text = "Error on Download";
+                lDownloadDetails.Text = checkMessages;
+                //TODO: Where do we direct the user?
+            }
+        }
+        catch ( Exception ex )
+        {
+            ProcessPageException( ex.Message );
+            lDownloadDetails.Text += "Exception on Download and web.config update.";
+        }
     	
     }
     
@@ -369,7 +398,7 @@
 							<div class="btn-list">
 							
 								<asp:LinkButton id="btnEnvBack" runat="server"  Text="<i class='fa fa-chevron-left'></i> Back"  CssClass="btn btn-default" OnClick="EnvBack_Click"></asp:LinkButton>  
-								<asp:LinkButton id="btnTryAgain" runat="server"  Text="Try Again <i class='fa fa-refresh'></i>"  CssClass="btn btn-primary" OnClick="DbConfigNext_Click"></asp:LinkButton> 
+								<asp:LinkButton id="btnTryAgain" runat="server"  Text="Try Again <i class='fa fa-refresh'></i>"  CssClass="btn btn-primary" OnClick="EnvCheckRetry_Click"></asp:LinkButton> 
 								<asp:LinkButton id="btnEnvNext" runat="server"  Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="EnvNext_Click"></asp:LinkButton> 
 							</div>
 						</asp:Panel>
@@ -377,6 +406,16 @@
 						<asp:Panel id="pDownloadZip" Visible="false" runat="server">
 							<h1><asp:Label id="lDownloadTitle" runat="server"></asp:Label></h1>
 						
+                            <asp:Panel id="pError" Visible="false" runat="server">
+							    <h2>Bummer... Something Bad Happened!</h2>
+						
+							    <p>We tried hard to think of everything that could go wrong and work through it, but I guess we missed this error. Feel free to
+							    post the error below into the community and someone might be able to assist.</p>
+						
+							    <asp:Label id="lErrorDetails" runat="server"></asp:Label>
+							
+						    </asp:Panel>
+
 							<asp:Label id="lDownloadDetails" runat="server"></asp:Label>
 							
 							<div class="btn-list">		
@@ -384,15 +423,7 @@
 							</div>
 						</asp:Panel>
 
-						<asp:Panel id="pError" Visible="false" runat="server">
-							<h1>Bummer... Something Bad Happened!</h1>
 						
-							<p>We tried hard to think of everything that could go wrong and work through it, but I guess we missed this error. Feel free to
-							post the error below into the community and someone might be able to assist.</p>
-						
-							<asp:Label id="lErrorDetails" runat="server"></asp:Label>
-							
-						</asp:Panel>
 					</div>
 				</div>
 			</ContentTemplate>
@@ -462,6 +493,9 @@
                 control.Visible = false;
             }
         }
+        
+        // hide next button
+        btnDownloadNext.Visible = false;
         
         // show error panel
         pError.Visible = true;

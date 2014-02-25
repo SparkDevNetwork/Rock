@@ -88,7 +88,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return string.Format( "{0}: {1}", this.LogDateTime.ToString(), this.LogText );
+            return string.Format( "{0}: {1}", this.LogDateTime.ToStringSafe(), this.LogText );
         }
 
         #endregion

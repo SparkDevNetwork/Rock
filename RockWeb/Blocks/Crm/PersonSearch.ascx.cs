@@ -111,7 +111,7 @@ namespace RockWeb.Blocks.Crm
                                         hyperlinks.Add( string.Format( "<a href='{0}'>{1}</a>", pageRef.BuildUrl(), name ) );
                                     }
                                     string altNames = string.Join( ", ", hyperlinks );
-                                    nbNotice.Text = string.Format( "Other Search Values: {0}", altNames );
+                                    nbNotice.Text = string.Format( "Are you looking for: {0}", altNames );
                                     nbNotice.Visible = true;
                                 }
                             }

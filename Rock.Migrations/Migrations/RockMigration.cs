@@ -185,19 +185,21 @@ namespace Rock.Migrations
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="path">The path.</param>
+        /// <param name="category">The category.</param>
         /// <param name="guid">The GUID.</param>
-        public void AddBlockType( string name, string description, string path, string guid )
+        public void AddBlockType( string name, string description, string path, string category, string guid )
         {
             Sql( string.Format( @"
                 
                 INSERT INTO [BlockType] (
-                    [IsSystem],[Path],[Name],[Description],
+                    [IsSystem],[Path],[Category],[Name],[Description],
                     [Guid])
                 VALUES(
-                    1,'{0}','{1}','{2}',
-                    '{3}')
+                    1,'{0}','{1}','{2}','{3}',
+                    '{4}')
 ",
                     path,
+                    category,
                     name,
                     description.Replace( "'", "''" ),
                     guid

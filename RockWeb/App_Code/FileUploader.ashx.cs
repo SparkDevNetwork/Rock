@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.ServiceModel.Web;
@@ -23,6 +24,7 @@ using System.Web.SessionState;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace RockWeb
 {
@@ -49,7 +51,7 @@ namespace RockWeb
         {
             if ( !context.User.Identity.IsAuthenticated )
             {
-                throw new WebFaultException<string>( "Must be logged in", System.Net.HttpStatusCode.Forbidden );
+                throw new Rock.Web.FileUploadException( "Must be logged in", System.Net.HttpStatusCode.Forbidden );
             }
 
             try
@@ -76,10 +78,17 @@ namespace RockWeb
                     ProcessContentFile( context, uploadedFile );
                 }
             }
+            catch ( Rock.Web.FileUploadException fex )
+            {
+                ExceptionLogService.LogException( fex, context );
+                context.Response.StatusCode = (int)fex.StatusCode;
+                context.Response.Write( "error: " + fex.Detail );
+            }
             catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, context );
-                context.Response.Write( "err:" + ex.Message + "<br>" + ex.StackTrace );
+                context.Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
+                context.Response.Write( "error: " + ex.Message );
             }
         }
 
@@ -90,11 +99,14 @@ namespace RockWeb
         /// <param name="uploadedFile">The uploaded file.</param>
         private void ProcessContentFile( HttpContext context, HttpPostedFile uploadedFile )
         {
+            // validate file type (child FileUploader classes, like ImageUploader, can do additional validation);
+            this.ValidateFileType( context, uploadedFile );
+
             // get folderPath and construct filePath
             string relativeFolderPath = context.Request.Form["folderPath"] ?? string.Empty;
             string relativeFilePath = Path.Combine( relativeFolderPath, Path.GetFileName( uploadedFile.FileName ) );
             string rootFolderParam = context.Request.QueryString["rootFolder"];
-            
+
             string rootFolder = string.Empty;
 
             if ( !string.IsNullOrWhiteSpace( rootFolderParam ) )
@@ -108,7 +120,7 @@ namespace RockWeb
                 // set to default rootFolder if not specified in the params
                 rootFolder = "~/Content";
             }
-            
+
             string physicalRootFolder = context.Request.MapPath( rootFolder );
             string physicalContentFolderName = Path.Combine( physicalRootFolder, relativeFolderPath.TrimStart( new char[] { '/', '\\' } ) );
             string physicalFilePath = Path.Combine( physicalContentFolderName, uploadedFile.FileName );
@@ -178,6 +190,28 @@ namespace RockWeb
             var bytes = new byte[uploadedFile.ContentLength];
             uploadedFile.InputStream.Read( bytes, 0, uploadedFile.ContentLength );
             return bytes;
+        }
+
+        /// <summary>
+        /// Validates the type of the file.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="uploadedFile">The uploaded file.</param>
+        /// <exception cref="WebFaultException{System.String}">Filetype not allowed</exception>
+        public virtual void ValidateFileType( HttpContext context, HttpPostedFile uploadedFile )
+        {
+            // validate file type (applies to all uploaded files)
+            var globalAttributesCache = GlobalAttributesCache.Read();
+            IEnumerable<string> contentFileTypeBlackList = ( globalAttributesCache.GetValue( "ContentFiletypeBlacklist" ) ?? string.Empty ).Split( new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries );
+
+            // clean up list
+            contentFileTypeBlackList = contentFileTypeBlackList.Select( a => a.ToLower().TrimStart( new char[] { '.', ' ' } ) );
+
+            string fileExtension = Path.GetExtension( uploadedFile.FileName ).ToLower().TrimStart( new char[] { '.' } );
+            if ( contentFileTypeBlackList.Contains( fileExtension ) )
+            {
+                throw new Rock.Web.FileUploadException( "Filetype not allowed", System.Net.HttpStatusCode.NotAcceptable );
+            }
         }
     }
 }

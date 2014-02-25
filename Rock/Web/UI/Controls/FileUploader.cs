@@ -321,6 +321,38 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+
+        /// <summary>
+        /// Gets or sets the upload URL.
+        /// </summary>
+        /// <value>
+        /// The upload URL.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "true" ),
+        Description( "The Url where files will be uploaded to" )
+        ]
+        public string UploadUrl
+        {
+            get
+            {
+                string result = ViewState["UploadUrl"] as string;
+                if (string.IsNullOrWhiteSpace(result))
+                {
+                    result = "FileUploader.ashx";
+                }
+
+                return result;
+            }
+
+            set
+            {
+                ViewState["UploadUrl"] = value;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the submit function client script.
         /// </summary>
@@ -547,11 +579,12 @@ Rock.controls.fileUploader.initialize({{
     fileType: 'file',
     isBinaryFile: '{7}',
     rootFolder: '{8}',
+    uploadUrl: '{9}',
     submitFunction: function (e, data) {{
-        {9}
+        {10}
     }},
     doneFunction: function (e, data) {{
-        {10}
+        {11}
     }}
 }});",
                 _fileUpload.ClientID,
@@ -563,6 +596,7 @@ Rock.controls.fileUploader.initialize({{
                 postBackScript,
                 this.IsBinaryFile.ToTrueFalse().ToLower(),
                 Rock.Security.Encryption.EncryptString( this.RootFolder ),
+                this.UploadUrl,
                 this.SubmitFunctionClientScript,
                 this.DoneFunctionClientScript );
             ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "FileUploaderScript_" + this.ClientID, script, true );

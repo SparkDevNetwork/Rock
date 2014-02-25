@@ -241,15 +241,15 @@ namespace Rock.Model
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append( Person != null ? Person.ToString() + " " : "" );
+            sb.Append( Person != null ? Person.ToStringSafe() + " " : "" );
             sb.Append( DidAttend ? "attended " : "did not attend " );
-            sb.Append( Group != null ? Group.ToString() + " " : "" );
+            sb.Append( Group != null ? Group.ToStringSafe() + " " : "" );
             sb.AppendFormat( "on {0} at {1} ", StartDateTime.ToShortDateString(), StartDateTime.ToShortTimeString() );
             if ( EndDateTime.HasValue )
             {
                 sb.AppendFormat( "until {0} at {1} ", EndDateTime.Value.ToShortDateString(), EndDateTime.Value.ToShortTimeString() );
             }
-            sb.Append( Location != null ? "in " + Location.ToString() : "" );
+            sb.Append( Location != null ? "in " + Location.ToStringSafe() : "" );
 
             return sb.ToString().Trim();
 

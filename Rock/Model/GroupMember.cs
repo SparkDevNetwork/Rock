@@ -117,9 +117,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            if ( Person != null )
-                return Person.FullName;
-            return string.Empty;
+            return Person.ToStringSafe();
         }
     }
 

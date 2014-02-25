@@ -4,14 +4,13 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <title>Rock - Error</title>
 
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Stark/Styles/bootstrap.css") %>" />
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Stark/Styles/theme.css") %>" />
 
-    <script src="<%= ResolveUrl("~/Scripts/jquery.js") %>" >
-    <script>
+    <script src="<%# ResolveUrl("~/Scripts/jquery-1.10.2.min.js") %>">
         $(document).ready(function () {
             $(".stack-trace").hide();
             
@@ -32,7 +31,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="error-wrap">
-                            <h1>That Wasn't Suppose To Happen...</h1>
+                            <h1>That Wasn't Supposed To Happen...</h1>
                             <p><strong>An Error Occurred...</strong>  The website administrators have 
                             been notified of this problem.</p>
 

@@ -20,10 +20,10 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -88,6 +88,16 @@ namespace RockWeb.Blocks.Examples
         };
 
         /// <summary>
+        /// Holds a cached copy of the "start time" DateTime for any scheduleIds this block encounters.
+        /// </summary>
+        private Dictionary<int, DateTime> scheduleTimes = new Dictionary<int, DateTime>();
+
+        /// <summary>
+        /// Holds a cached copy of the Ids for each person's Guid
+        /// </summary>
+        private Dictionary<Guid, int> peopleDictionary = new Dictionary<Guid, int>();
+
+        /// <summary>
         /// Magic kiosk Id used for attendance data.
         /// </summary>
         private static int _kioskDeviceId = 2;
@@ -124,11 +134,6 @@ namespace RockWeb.Blocks.Examples
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
-            if ( !Page.IsPostBack )
-            {
-                // added for your convience
-            }
         }
 
         #endregion
@@ -161,8 +166,8 @@ namespace RockWeb.Blocks.Examples
                 nbMessage.Visible = true;
                 nbMessage.Title = "Oops!";
                 nbMessage.NotificationBoxType = NotificationBoxType.Danger;
-                nbMessage.Text = string.Format( "That wasn't supposed to happen.  The error was:<br/>{0}<br/>{1}<br/>{2}", ex.Message.ConvertCrLfToHtmlBr(),
-                    ( ex.InnerException != null ) ? ex.InnerException.Message.ConvertCrLfToHtmlBr() : "", ex.StackTrace.ConvertCrLfToHtmlBr() );
+                nbMessage.Text = string.Format( "That wasn't supposed to happen.  The error was:<br/>{0}<br/>{1}<br/>{2}", ex.Message.ConvertCrLfToHtmlBr(), FlattenInnerExceptions(ex.InnerException),
+                    ex.StackTrace.ConvertCrLfToHtmlBr() );
             }
 
             if ( File.Exists( saveFile ) )
@@ -224,98 +229,163 @@ namespace RockWeb.Blocks.Examples
             {
                 using ( new UnitOfWorkScope() )
                 {
-                    var families = xdoc.Element( "data" ).Element( "families" );
-                    if ( families != null )
-                    {
-                        // First we'll clean up and delete any previously created data such as
-                        // families, addresses, people, photos, attendance data, etc.
-                        PersonService personService = new PersonService();
-                        PhoneNumberService phoneNumberService = new PhoneNumberService();
-                        PersonViewedService personViewedService = new PersonViewedService();
-                        BinaryFileService binaryFileService = new BinaryFileService();
+                    var elemFamilies = xdoc.Element( "data" ).Element( "families" );
+                    var elemGroups = xdoc.Element( "data" ).Element( "groups" );
 
-                        DeleteExistingFamilyData( families, personService, phoneNumberService, personViewedService, binaryFileService );
-                    }
+                    // First we'll clean up by deleting any previously created data such as
+                    // families, addresses, people, photos, attendance data, etc.
+                    DeleteExistingGroups( elemGroups );
+                    DeleteExistingFamilyData( elemFamilies );
 
-                    // Next create the family along with its members.
-                    foreach ( var elemFamily in families.Elements( "family" ) )
-                    {
-                        Guid guid = Guid.Parse( elemFamily.Attribute( "guid" ).Value.Trim() );
-                        var familyMembers = FamilyMembersFromXml( elemFamily.Element( "members" ) );
-
-                        GroupService groupService = new GroupService();
-
-                        Group family = groupService.SaveNewFamily( familyMembers, 1, false, CurrentPersonAlias );
-                        family.Guid = guid;
-
-                        // add the families address(es)
-                        AddFamilyAddresses( groupService, family, elemFamily.Element( "addresses" ) );
-
-                        // add their attendance data
-                        AddFamilyAttendance( family, elemFamily );
-
-                        // lastly, save the data and move to the next family
-                        groupService.Save( family, CurrentPersonAlias );
-                    }
+                    // Now we can add the families (and people) and then groups.
+                    AddFamilies( elemFamilies );
+                    AddGroups( elemGroups );
                 }
             } );
         }
 
         /// <summary>
+        /// Handles adding families from the given XML element snippet
+        /// </summary>
+        /// <param name="elemFamilies"></param>
+        private void AddFamilies( XElement elemFamilies )
+        {
+            // Add families
+            if ( elemFamilies == null )
+            {
+                return;
+            }
+
+            // Next create the family along with its members.
+            foreach ( var elemFamily in elemFamilies.Elements( "family" ) )
+            {
+                Guid guid = elemFamily.Attribute( "guid" ).Value.Trim().AsGuid();
+                var familyMembers = BuildFamilyMembersFromXml( elemFamily.Element( "members" ) );
+
+                GroupService groupService = new GroupService();
+
+                Group family = groupService.SaveNewFamily( familyMembers, 1, savePersonAttributes: true, personAlias: CurrentPersonAlias );
+                family.Guid = guid;
+
+                // add the families address(es)
+                AddFamilyAddresses( groupService, family, elemFamily.Element( "addresses" ) );
+
+                // add their attendance data
+                AddFamilyAttendance( family, elemFamily );
+
+                // lastly, save the data and move to the next family
+                groupService.Save( family, CurrentPersonAlias );
+
+                foreach ( var p in family.Members )
+                {
+                    // Put the person's id into the people dictionary for later use.
+                    if ( !peopleDictionary.ContainsKey( p.Person.Guid ) )
+                    {
+                        peopleDictionary.Add( p.Person.Guid, p.PersonId );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles adding groups from the given XML element snippet.
+        /// </summary>
+        /// <param name="elemGroups"></param>
+        private void AddGroups( XElement elemGroups )
+        {
+            // Add groups
+            if ( elemGroups == null )
+            {
+                return;
+            }
+
+            // Next create the group along with its members.
+            foreach ( var elemGroup in elemGroups.Elements( "group" ) )
+            {
+                Guid guid = elemGroup.Attribute( "guid" ).Value.Trim().AsGuid();
+                String type = elemGroup.Attribute( "type" ).Value;
+                Group group = new Group()
+                {
+                    Guid = guid,
+                    Name = elemGroup.Attribute( "name" ).Value.Trim()
+                };
+
+                // skip any where there is no group type given -- they are invalid entries.
+                if ( string.IsNullOrEmpty( elemGroup.Attribute( "type" ).Value.Trim() ) )
+                {
+                    return;
+                }
+
+                int? roleId;
+                GroupTypeCache groupType;
+                switch ( elemGroup.Attribute( "type" ).Value.Trim() )
+                {
+                    case "serving":
+                        groupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SERVING_TEAM.AsGuid() );
+                        group.GroupTypeId = groupType.Id;
+                        roleId = groupType.DefaultGroupRoleId;
+                        break;
+                    case "smallgroup":
+                        groupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SMALL_GROUP.AsGuid() );
+                        group.GroupTypeId = groupType.Id;
+                        roleId = groupType.DefaultGroupRoleId;
+
+                        break;
+                    default:
+                        throw new NotSupportedException( string.Format( "unknown group type {0}", elemGroup.Attribute( "type" ).Value.Trim() ) );
+                        break;
+                }
+
+                foreach ( var elemPerson in elemGroup.Elements( "person" ) )
+                {
+                    Guid personGuid = elemPerson.Attribute( "guid" ).Value.Trim().AsGuid();
+
+                    GroupMember groupMember = new GroupMember();
+                    groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                    groupMember.GroupRoleId = roleId ?? -1;
+                    groupMember.PersonId = peopleDictionary[personGuid];
+                    group.Members.Add( groupMember );
+                }
+
+                GroupService groupService = new GroupService();
+                groupService.Add( group );
+                groupService.Save( group, CurrentPersonAlias );
+            }
+        }
+
+        /// <summary>
         /// Deletes the family's addresses, phone numbers, photos, viewed records, and people.
+        /// TODO: delete attendance codes for attendance data that's about to be deleted when
+        /// we delete the person record.
         /// </summary>
         /// <param name="families"></param>
-        /// <param name="personService"></param>
-        /// <param name="phoneNumberService"></param>
-        /// <param name="personViewedService"></param>
-        /// <param name="binaryFileService"></param>
-        private void DeleteExistingFamilyData( XElement families, PersonService personService, PhoneNumberService phoneNumberService, PersonViewedService personViewedService, BinaryFileService binaryFileService )
+        private void DeleteExistingFamilyData( XElement families )
         {
+            PersonService personService = new PersonService();
+            PhoneNumberService phoneNumberService = new PhoneNumberService();
+            PersonViewedService personViewedService = new PersonViewedService();
+            BinaryFileService binaryFileService = new BinaryFileService();
+
             foreach ( var elemFamily in families.Elements( "family" ) )
             {
-                Guid guid = Guid.Parse( elemFamily.Attribute( "guid" ).Value.Trim() );
-                List<Guid> peopleGuids = new List<Guid>();
+                Guid guid = elemFamily.Attribute( "guid" ).Value.Trim().AsGuid();
 
                 GroupService groupService = new GroupService();
                 Group family = groupService.Get( guid );
                 if ( family != null )
                 {
-                    // delete addresses
-                    GroupLocationService groupLocationService = new GroupLocationService();
-                    if ( family.GroupLocations.Count > 0 )
-                    {
-                        foreach ( var familyAddress in family.GroupLocations.ToList() )
-                        {
-                            family.GroupLocations.Remove( familyAddress );
-                            groupLocationService.Delete( familyAddress, CurrentPersonAlias );
-                            groupLocationService.Save( familyAddress, CurrentPersonAlias );
-                        }
-                    }
 
-                    // delete family members
-                    var familyMemberService = new GroupMemberService();
-                    var familyMembers = familyMemberService.GetByGroupId( family.Id );
-                    foreach ( var member in familyMembers.ToList() )
-                    {
-                        peopleGuids.Add( member.Person.Guid );
-                        family.Members.Remove( member );
-                        familyMemberService.Delete( member );
-                        familyMemberService.Save( member, CurrentPersonAlias );
-                    }
+                    var groupMemberService = new GroupMemberService();
+                    var members = groupMemberService.GetByGroupId( family.Id );
 
                     // delete the people records
-                    var people = personService.GetByGuids( peopleGuids );
                     string errorMessage;
+                    List<int> photoIds = members.Select( m => m.Person ).Where( p => p.PhotoId != null ).Select( a => (int)a.PhotoId ).ToList();
 
-                    foreach ( var person in people )
+                    foreach ( var person in members.Select( m => m.Person ) )
                     {
-                        // delete the photos
-                        List<int> photoIds = people.Where( p => p.PhotoId != null ).Select( a => (int)a.PhotoId ).ToList();
-                        foreach ( var photo in binaryFileService.GetByIds( photoIds ) )
-                        {
-                            binaryFileService.Delete( photo );
-                            binaryFileService.Save( photo );
-                        }
+                        person.GivingGroupId = null;
+                        person.PhotoId = null;
 
                         // delete phone numbers
                         foreach ( var phone in phoneNumberService.GetByPersonId( person.Id ) )
@@ -341,9 +411,78 @@ namespace RockWeb.Blocks.Examples
                         personService.Save( person, CurrentPersonAlias );
                     }
 
-                    // now delete the family
-                    groupService.Delete( family, CurrentPersonAlias );
-                    groupService.Save( family, CurrentPersonAlias );
+                    // delete all member photos
+                    foreach ( var photo in binaryFileService.GetByIds( photoIds ) )
+                    {
+                        binaryFileService.Delete( photo );
+                        binaryFileService.Save( photo );
+                    }
+
+                    DeleteGroupAndMemberData( family );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Generic method to delete the members of a group and then the group.
+        /// </summary>
+        /// <param name="group"></param>
+        private void DeleteGroupAndMemberData( Group group )
+        {
+            GroupService groupService = new GroupService();
+
+            // delete addresses
+            GroupLocationService groupLocationService = new GroupLocationService();
+            if ( group.GroupLocations.Count > 0 )
+            {
+                foreach ( var groupLocations in group.GroupLocations.ToList() )
+                {
+                    group.GroupLocations.Remove( groupLocations );
+                    groupLocationService.Delete( groupLocations, CurrentPersonAlias );
+                    groupLocationService.Save( groupLocations, CurrentPersonAlias );
+                }
+            }
+
+            // delete members
+            var groupMemberService = new GroupMemberService();
+            var members = groupMemberService.GetByGroupId( group.Id );
+            foreach ( var member in members.ToList() )
+            {
+                group.Members.Remove( member );
+                groupMemberService.Delete( member );
+                groupMemberService.Save( member, CurrentPersonAlias );
+            }
+
+            // now delete the group
+            if ( groupService.Delete( group, CurrentPersonAlias ) )
+            {
+                groupService.Save( group, CurrentPersonAlias );
+            }
+            else
+            {
+                throw new InvalidOperationException( "Unable to delete group: " + group.Name );
+            }
+        }
+
+        /// <summary>
+        /// Delete all groups found in the given XML.
+        /// </summary>
+        /// <param name="elemGroups"></param>
+        private void DeleteExistingGroups( XElement elemGroups )
+        {
+            if ( elemGroups == null )
+            {
+                return;
+            }
+
+            GroupService groupService = new GroupService();
+            foreach ( var elemGroup in elemGroups.Elements( "group" ) )
+            {
+                Guid guid = elemGroup.Attribute( "guid" ).Value.Trim().AsGuid();
+                Group group = groupService.Get( guid );
+                if ( group != null )
+                {
+                    DeleteGroupAndMemberData( group );
                 }
             }
         }
@@ -395,12 +534,22 @@ namespace RockWeb.Blocks.Examples
             if ( elemFamily.Attribute( "attendingScheduleId" ) != null )
             {
                 int.TryParse( elemFamily.Attribute( "attendingScheduleId" ).Value.Trim(), out scheduleId );
+                if ( ! scheduleTimes.ContainsKey(scheduleId) )
+                {
+                    Schedule schedule = new ScheduleService().Get( scheduleId );
+                    scheduleTimes.Add( scheduleId, schedule.GetCalenderEvent().DTStart.Value );
+                }
             }
 
             int altScheduleId = 4;
             if ( elemFamily.Attribute( "attendingAltScheduleId" ) != null )
             {
                 int.TryParse( elemFamily.Attribute( "attendingAltScheduleId" ).Value.Trim(), out altScheduleId );
+                if ( ! scheduleTimes.ContainsKey( altScheduleId ) )
+                {
+                    Schedule schedule = new ScheduleService().Get( altScheduleId );
+                    scheduleTimes.Add( altScheduleId, schedule.GetCalenderEvent().DTStart.Value );
+                }
             }
 
             CreateAttendance( family.Members, startingDate, endDate, pctAttendance, pctAttendedRegularService, scheduleId, altScheduleId );
@@ -442,7 +591,10 @@ namespace RockWeb.Blocks.Examples
                 int plusMinus = ( _random.Next( 0, 4 ) == 0 ) ? 1 : -1;
                 int randomSeconds = _random.Next( 0, 60 );
 
-                DateTime checkinDateTime = date.AddMinutes( Convert.ToDouble( plusMinus * minutes ) ).AddSeconds( randomSeconds );
+                var time = scheduleTimes[serviceSchedId];
+
+                DateTime dtTime = new DateTime( date.Year, date.Month, date.Day, time.Hour, time.Minute, time.Second );
+                DateTime checkinDateTime = dtTime.AddMinutes( Convert.ToDouble( plusMinus * minutes ) ).AddSeconds( randomSeconds );
 
                 // foreach child in the family
                 foreach ( var member in familyMembers.Where( m => m.GroupRole.Guid == childGuid ) )
@@ -505,8 +657,8 @@ namespace RockWeb.Blocks.Examples
         /// 'person' tag.
         /// </summary>
         /// <param name="elemMembers"></param>
-        /// <returns></returns>
-        private List<GroupMember> FamilyMembersFromXml( XElement elemMembers )
+        /// <returns>a list of family members.</returns>
+        private List<GroupMember> BuildFamilyMembersFromXml( XElement elemMembers )
         {
             var familyMembers = new List<GroupMember>();
 
@@ -533,12 +685,20 @@ namespace RockWeb.Blocks.Examples
                         person.LastName = personElem.Attribute( "lastName" ).Value.Trim();
                     }
 
-                    //person.Age = int.Parse( personElem.Attribute( "age" ).Value.Trim() );
                     if ( personElem.Attribute( "birthDate" ) != null )
                     {
                         person.BirthDate = DateTime.Parse( personElem.Attribute( "birthDate" ).Value.Trim() );
                     }
 
+                    // Now, if their age was given we'll change the given birth year to make them
+                    // be this age as of Today.
+                    if ( personElem.Attribute( "age" ) != null )
+                    {
+                        int age = int.Parse( personElem.Attribute( "age" ).Value.Trim() );
+                        int ageDiff = person.Age - age  ?? 0;
+                        person.BirthDate = person.BirthDate.Value.AddYears( ageDiff );
+                    }
+                    
                     if ( personElem.Attribute( "email" ) != null )
                     {
                         var emailAddress = personElem.Attribute( "email" ).Value.Trim();
@@ -658,10 +818,35 @@ namespace RockWeb.Blocks.Examples
                     groupMember.GroupRoleId = new GroupTypeRoleService().Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
                 }
 
+                // person attributes
+                if ( personElem.Elements( "attributes" ).Any() )
+                {
+                    AddPersonAttributes( groupMember, personElem.Elements( "attributes" ) );
+                }
+
                 familyMembers.Add( groupMember );
             }
 
             return familyMembers;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="groupMember"></param>
+        /// <param name="attributes"></param>
+        private void AddPersonAttributes( GroupMember groupMember, IEnumerable<XElement> attributes )
+        {
+            // In order to add attributes to the person, you have to first load them all
+            groupMember.Person.LoadAttributes();
+
+            foreach ( var personAttribute in attributes.Elements( "attribute" ) )
+            {
+                foreach ( var pa in personAttribute.Attributes() )
+                {
+                    groupMember.Person.SetAttributeValue( pa.Name.LocalName, pa.Value );
+                }
+            }
         }
 
         /// <summary>
@@ -769,6 +954,23 @@ namespace RockWeb.Blocks.Examples
                 // TODO add latitude and longitude
                 groupService.AddNewFamilyAddress( family, locationTypeGuid, street1, street2, city, state, zip, CurrentPersonAlias );
             }
+        }
+
+        /// <summary>
+        /// Flattens exception's innerexceptions and returns an Html formatted string
+        /// useful for debugging.
+        /// </summary>
+        /// <param name="ex"></param>
+        /// <returns></returns>
+        private string FlattenInnerExceptions( Exception ex )
+        {
+            StringBuilder sb = new StringBuilder();
+            while ( ex != null && ex.InnerException != null )
+            {
+                sb.AppendLine( ex.InnerException.Message.ConvertCrLfToHtmlBr() );
+                ex = ex.InnerException;
+            }
+            return sb.ToString();
         }
 
         #endregion
