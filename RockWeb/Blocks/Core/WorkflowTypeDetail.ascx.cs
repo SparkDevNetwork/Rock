@@ -678,12 +678,12 @@ namespace RockWeb.Blocks.Core
                 Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
                 attributeService.Delete( attribute, CurrentPersonAlias );
                 attributeService.Save( attribute, CurrentPersonAlias );
-            }
 
-            // reload page so that other blocks respond to any data that was changed
-            var qryParams = new Dictionary<string, string>();
-            qryParams["workflowTypeId"] = hfWorkflowTypeId.Value;
-            NavigateToPage( RockPage.Guid, qryParams );
+                // reload page so that other blocks respond to any data that was changed
+                var qryParams = new Dictionary<string, string>();
+                qryParams["workflowTypeId"] = hfWorkflowTypeId.Value;
+                NavigateToPage( RockPage.Guid, qryParams );
+            }
         }
 
         /// <summary>
