@@ -128,10 +128,20 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 // get the parents of the selected item so we can tell the treeview to expand those
+                int? rootGroupId = GetAttributeValue( "RootGroup" ).AsInteger();
                 List<string> parentIdList = new List<string>();
                 while ( group != null )
                 {
-                    group = group.ParentGroup;
+                    if ( group.Id == rootGroupId )
+                    {
+                        // stop if we are at the root group
+                        group = null;
+                    }
+                    else
+                    {
+                        group = group.ParentGroup;
+                    }
+
                     if ( group != null )
                     {
                         parentIdList.Insert( 0, group.Id.ToString() );
