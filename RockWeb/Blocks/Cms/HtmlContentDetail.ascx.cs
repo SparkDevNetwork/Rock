@@ -182,6 +182,23 @@ namespace RockWeb.Blocks.Cms
             string entityValue = EntityValue();
             HtmlContent htmlContent = new HtmlContentService().GetActiveContent( this.BlockId, entityValue );
 
+            // set Height of editors
+            if ( supportsVersioning && requireApproval )
+            {
+                ceHtml.EditorHeight = "280";
+                htmlEditor.Height = 280;
+            }
+            else if (supportsVersioning)
+            {
+                ceHtml.EditorHeight = "350";
+                htmlEditor.Height = 350;
+            }
+            else
+            {
+                ceHtml.EditorHeight = "380";
+                htmlEditor.Height = 380;
+            }
+
             ShowEditDetail( htmlContent );
         }
 
@@ -258,17 +275,18 @@ namespace RockWeb.Blocks.Cms
 
             htmlContent.StartDateTime = drpDateRange.LowerValue;
             htmlContent.ExpireDateTime = drpDateRange.UpperValue;
+            bool currentUserCanApprove = IsUserAuthorized( "Approve" );
 
-            if ( !requireApproval || IsUserAuthorized( "Approve" ) )
+            if ( !requireApproval || currentUserCanApprove )
             {
-                htmlContent.IsApproved = !requireApproval || hfApprovalStatus.Value.AsBoolean();
+                htmlContent.IsApproved = ( !requireApproval || hfApprovalStatus.Value.AsBoolean() ) || currentUserCanApprove;
                 if ( htmlContent.IsApproved )
                 {
                     int? personId = hfApprovalStatusPersonId.Value.AsInteger( false );
                     if (!personId.HasValue)
                     {
                         // if it wasn't approved, but the current user can approve, make the current user the approver
-                        if (IsUserAuthorized( "Approve" ))
+                        if ( currentUserCanApprove )
                         {
                             personId = this.CurrentPersonId;
                         }
