@@ -267,6 +267,9 @@ namespace RockWeb
         protected void Session_Start( object sender, EventArgs e )
         {
             new Rock.Model.UserLoginService().UpdateLastLogin( UserLogin.GetCurrentUserName() );
+
+            // add new session id
+            Session["RockSessionId"] = Guid.NewGuid();
         }
 
         /// <summary>
