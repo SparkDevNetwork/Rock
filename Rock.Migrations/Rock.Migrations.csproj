@@ -628,6 +628,10 @@
     <Compile Include="Migrations\201402251615420_AddSGGroupTypes.Designer.cs">
       <DependentUpon>201402251615420_AddSGGroupTypes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402251711271_InstanceIdAsSetting.cs" />
+    <Compile Include="Migrations\201402251711271_InstanceIdAsSetting.Designer.cs">
+      <DependentUpon>201402251711271_InstanceIdAsSetting.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1079,6 +1083,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402251615420_AddSGGroupTypes.resx">
       <DependentUpon>201402251615420_AddSGGroupTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402251711271_InstanceIdAsSetting.resx">
+      <DependentUpon>201402251711271_InstanceIdAsSetting.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
