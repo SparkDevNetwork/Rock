@@ -15,14 +15,23 @@
           emailIsActive="true" emailDoNotEmail="false" recordType="person" recordStatus="active"
           connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_ted.jpg"
-          homePhone="6235553322" mobilePhone="6235553322" workPhone="602555-2911"/>
+          homePhone="6235553322" mobilePhone="6235553322" workPhone="602555-2911">
+          <attributes>
+            <attribute BaptismDate="9/13/2001"/>
+            <attribute FirstVisit="12/15/2012"/>
+          </attributes>
+        </person>
 
         <person guid="B71494DB-D809-451A-A950-28898D0FD92C" firstName="Cynthia" nickName="Cindy"
           lastName="Decker" birthDate="3/10/1977" age="37" gender="female" email="cindy@rocksoliddemochurch.com"
           emailIsActive="true" emailDoNotEmail="false" recordType="person" recordStatus="active"
           connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_cindy.png"
-          homePhone="6235553323" mobilePhone="6235553323" workPhone=""/>
+          homePhone="6235553323" mobilePhone="6235553323" workPhone="">
+          <attributes>
+            <attribute FirstVisit="9/13/2001"/>
+          </attributes>
+        </person>
 
         <person guid="32AAB9E4-970D-4551-A17E-385E66113BD5" firstName="Noah" nickName="Noah"
           lastName="Decker" birthDate="3/10/2004" age="10" gender="male" email=""
@@ -96,7 +105,16 @@
   </families>
 
   <groups>
-    <group type="" name="TBD" guid=""/>
+    <group type="serving" name="Ushers" guid="0BA93D66-21B1-4229-979D-F76CEB57666D">
+      <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
+      <person fullname="Jim Simmons" guid="FB5D2DC6-5AB4-4CBD-B02F-3FB9ADBEFD33"/>
+    </group>
+
+    <!--<group type="smallgroup" name="Decker Group" guid="62DC3753-01D5-48B5-B22D-D2825D92900B">
+      <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
+      <person fullname="Jim Simmons" guid="FB5D2DC6-5AB4-4CBD-B02F-3FB9ADBEFD33"/>
+    </group>-->
+
   </groups>
 
 </data>

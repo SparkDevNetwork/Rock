@@ -22,7 +22,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class PersonBirthdateDbComputed : Rock.Migrations.RockMigration
+    public partial class PersonBirthdateDbComputed : Rock.Migrations.RockMigration3
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

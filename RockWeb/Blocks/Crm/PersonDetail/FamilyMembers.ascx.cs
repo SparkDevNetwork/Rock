@@ -115,7 +115,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     {
                         rptrAddresses.ItemDataBound += rptrAddresses_ItemDataBound;
                         rptrAddresses.ItemCommand += rptrAddresses_ItemCommand;
-                        rptrAddresses.DataSource = group.GroupLocations.ToList();
+                        rptrAddresses.DataSource = group.GroupLocations.OrderBy( l => l.GroupLocationTypeValue.Order).ToList();
                         rptrAddresses.DataBind();
                     }
                 }
@@ -259,7 +259,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 Guid familyGroupGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 
                 var memberService = new GroupMemberService();
-                var families = memberService.Queryable()
+                var families = memberService.Queryable( "Group.GroupLocations.GroupLocationTypeValue" )
                     .Where( m =>
                         m.PersonId == Person.Id &&
                         m.Group.GroupType.Guid == familyGroupGuid

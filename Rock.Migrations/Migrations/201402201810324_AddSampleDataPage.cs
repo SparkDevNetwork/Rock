@@ -22,14 +22,14 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class AddSampleDataPage : Rock.Migrations.RockMigration
+    public partial class AddSampleDataPage : Rock.Migrations.RockMigration3
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            AddPage( "7F1F4130-CB98-473B-9DE1-7A886D2283ED", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Rock Solid Church Sample Data", "", "844ABF2A-D085-4370-945B-86C89580C6D5", "fa fa-flask" ); // Site:Rock RMS
+            AddPage( "7F1F4130-CB98-473B-9DE1-7A886D2283ED", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Sample Data", "", "844ABF2A-D085-4370-945B-86C89580C6D5", "fa fa-flask" ); // Site:Rock RMS
             // Add Block to Page: Rock Solid Church Sample Data, Site: Rock RMS
             AddBlock("844ABF2A-D085-4370-945B-86C89580C6D5","","A42E0031-B2B9-403A-845B-9C968D7716A6","Rock Solid Church Sample Data","Main","","",0,"34CA1FA0-F8F1-449F-9788-B5E6315DC058");   
         }

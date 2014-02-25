@@ -74,7 +74,7 @@ namespace Rock.Rest.Controllers
                     groupList.Add( group );
                     var treeViewItem = new TreeViewItem();
                     treeViewItem.Id = group.Id.ToString();
-                    treeViewItem.Name = System.Web.HttpUtility.HtmlEncode( group.Name );
+                    treeViewItem.Name = group.Name;
 
                     // if there a IconCssClass is assigned, use that as the Icon.
                     var groupType = Rock.Web.Cache.GroupTypeCache.Read( group.GroupTypeId );

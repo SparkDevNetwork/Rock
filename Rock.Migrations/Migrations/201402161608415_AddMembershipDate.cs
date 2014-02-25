@@ -22,7 +22,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class AddMembershipDate : Rock.Migrations.RockMigration
+    public partial class AddMembershipDate : Rock.Migrations.RockMigration3
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

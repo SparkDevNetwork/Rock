@@ -11,22 +11,33 @@
 #splash.error #content {
     width: 750px;
     margin: @spacing-lg-px auto;
+}
 
-    .error-wrap {
-        text-align: center;
-        max-width: 450px;
-        margin: 0 auto;
+.error-wrap {
+    text-align: center;
+    max-width: 450px;
+    margin: 0 auto;
 
-        h1 {
-            font-size: 45px;
+    h1 {
+        font-size: 45px;
+    }
+
+    .error-icon {
+        font-size: 256px;
+        line-height: 256px;
+        margin: @spacing-md-px;
+        opacity: 0.7;
+
+        &.info {
+            color: @brand-info;
         }
 
-        .error-icon {
-            font-size: 256px;
-            line-height: 256px;
-            margin: @spacing-md-px;
-            opacity: 0.7;
+        &.warning {
             color: @brand-warning;
+        }
+
+        &.danger {
+            color: @brand-danger;
         }
     }
 }

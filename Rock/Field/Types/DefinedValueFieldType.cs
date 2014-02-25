@@ -195,14 +195,19 @@ namespace Rock.Field.Types
                 if ( Int32.TryParse( configurationValues[DEFINED_TYPE_KEY].Value, out definedTypeId ) )
                 {
                     Rock.Model.DefinedValueService definedValueService = new Model.DefinedValueService();
-                    foreach ( var definedValue in definedValueService.GetByDefinedTypeId( definedTypeId ) )
+                    var definedValues = definedValueService.GetByDefinedTypeId( definedTypeId );
+                    if ( definedValues.Any() )
                     {
-                        editControl.Items.Add( new ListItem( definedValue.Name, definedValue.Id.ToString() ) );
+                        foreach ( var definedValue in definedValues )
+                        {
+                            editControl.Items.Add( new ListItem( definedValue.Name, definedValue.Id.ToString() ) );
+                        }
+                        return editControl;
                     }
                 }
             }
-            
-            return editControl;
+
+            return null;
         }
 
         /// <summary>

@@ -22,7 +22,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class ImprovePerformanceAttendanceBadgeSP : Rock.Migrations.RockMigration
+    public partial class ImprovePerformanceAttendanceBadgeSP : Rock.Migrations.RockMigration3
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

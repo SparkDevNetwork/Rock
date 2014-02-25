@@ -37,6 +37,8 @@
                 </ul>
             </div>
 
+            <asp:HiddenField ID="hfActiveDialog" runat="server" />
+    
             <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Relationship" Content-Height="380" ValidationGroup="NewRelationship">
                 <Content>
 
@@ -45,7 +47,7 @@
                     <div id="divExistingPerson" runat="server">
                         <fieldset>
                             <Rock:GroupRolePicker ID="grpRole" runat="server" Label="Relationship Type" ValidationGroup="NewRelationship" />
-                            <Rock:AutoCompleteDropDown ID="acPerson" runat="server" Label="Person" Required="true" ValidationGroup="NewRelationship" />
+                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="true" ValidationGroup="NewRelationship" />
                             <asp:Panel ID="pnlSelectedPerson" runat="server" />
                         </fieldset>
                     </div>

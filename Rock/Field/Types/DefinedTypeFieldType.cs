@@ -67,11 +67,17 @@ namespace Rock.Field.Types
         {
             var editControl = new RockDropDownList { ID = id }; 
 
-            Rock.Model.DefinedTypeService definedTypeService = new Model.DefinedTypeService();
-            foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Order ) )
-                editControl.Items.Add( new ListItem( definedType.Name, definedType.Guid.ToString() ) );
+            var definedTypes = new Model.DefinedTypeService().Queryable().OrderBy( d => d.Order );
+            if ( definedTypes.Any() )
+            {
+                foreach ( var definedType in definedTypes )
+                {
+                    editControl.Items.Add( new ListItem( definedType.Name, definedType.Guid.ToString() ) );
+                }
+                return editControl;
+            }
 
-            return editControl;
+            return null;
         }
 
         /// <summary>

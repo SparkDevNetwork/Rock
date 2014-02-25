@@ -85,6 +85,8 @@ namespace RockWeb.Blocks.Administration
                 BindOtherAppSettings();
                 BindMaxFileSize();
             }
+
+            lTitle.Text = ("Edit System Configuration").FormatAsHtmlTitle();
         }
 
         #endregion

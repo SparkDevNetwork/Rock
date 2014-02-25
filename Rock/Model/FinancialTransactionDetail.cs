@@ -134,7 +134,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.Amount.ToString();
+            return this.Amount.ToStringSafe();
         }
 
         #endregion

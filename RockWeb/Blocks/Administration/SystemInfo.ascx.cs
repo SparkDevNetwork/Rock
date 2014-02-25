@@ -102,6 +102,9 @@ namespace RockWeb.Blocks.Administration
             {
                 Rock.Web.Cache.DefinedValueCache.Flush( definedValue.Id );
             }
+
+            nbMessage.Visible = true;
+            nbMessage.Text = "The cache has been cleared.";
         }
 
         protected void btnRestart_Click( object sender, EventArgs e )

@@ -11,7 +11,6 @@
 
         <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-
         <div class="row">
             <div class="col-md-6">
                 <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.EmailTemplate, Rock" PropertyName="Title" />
@@ -29,6 +28,11 @@
         <Rock:CodeEditor ID="tbBody" EditorHeight="500" Label="Message Body" EditorMode="Liquid" EditorTheme="Rock" runat="server" SourceTypeName="Rock.Model.EmailTemplate, Rock" PropertyName="Body" />
 
         <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Danger" Visible="false" />
+
+        <div class="actions">
+            <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" ValidationGroup="LayoutDetail" ></asp:LinkButton>
+            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
+        </div>
 
     </ContentTemplate>
 </asp:UpdatePanel>

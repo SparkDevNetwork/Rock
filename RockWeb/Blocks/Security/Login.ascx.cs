@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Security
 Thank-you for logging in, however, we need to confirm the email associated with this account belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.
 ", "", 2 )]
     [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", true, "", "", 3 )]
-    [EmailTemplateField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.EmailTemplate.SECURITY_CONFIRM_ACCOUNT, "", 4 )]
+    [EmailTemplateField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 4 )]
     [CodeEditorField( "Locked Out Caption", "The text (HTML) to display when a user's account has been locked.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, @"
 Sorry, your account has been locked.  Please contact our office at {{ GlobalAttribute.OrganizationPhone }} or email {{ GlobalAttribute.OrganizationEmail }} to resolve this.  Thank-you. 
 ", "", 5 )]

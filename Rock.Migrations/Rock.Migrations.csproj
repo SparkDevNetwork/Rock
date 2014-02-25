@@ -588,9 +588,46 @@
     <Compile Include="Migrations\201402211810096_ModifyAttCodeIndex.Designer.cs">
       <DependentUpon>201402211810096_ModifyAttCodeIndex.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402212314543_RssFeedBlockTypes.cs" />
+    <Compile Include="Migrations\201402212314543_RssFeedBlockTypes.Designer.cs">
+      <DependentUpon>201402212314543_RssFeedBlockTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402220548227_RenameSampleDataPage.cs" />
+    <Compile Include="Migrations\201402220548227_RenameSampleDataPage.Designer.cs">
+      <DependentUpon>201402220548227_RenameSampleDataPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402220640212_AddPageTrackingGlobalAttrib.cs" />
+    <Compile Include="Migrations\201402220640212_AddPageTrackingGlobalAttrib.Designer.cs">
+      <DependentUpon>201402220640212_AddPageTrackingGlobalAttrib.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402222052199_AddPageViewTable.cs" />
+    <Compile Include="Migrations\201402222052199_AddPageViewTable.Designer.cs">
+      <DependentUpon>201402222052199_AddPageViewTable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402231840161_Following.cs" />
+    <Compile Include="Migrations\201402231840161_Following.Designer.cs">
+      <DependentUpon>201402231840161_Following.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402241446432_RecreateRefundReason.cs" />
+    <Compile Include="Migrations\201402241446432_RecreateRefundReason.Designer.cs">
+      <DependentUpon>201402241446432_RecreateRefundReason.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402241628190_IntranetPagesEditable.cs" />
+    <Compile Include="Migrations\201402241628190_IntranetPagesEditable.Designer.cs">
+      <DependentUpon>201402241628190_IntranetPagesEditable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402241644413_ContentFileWhiteListBlackList.cs" />
+    <Compile Include="Migrations\201402241644413_ContentFileWhiteListBlackList.Designer.cs">
+      <DependentUpon>201402241644413_ContentFileWhiteListBlackList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402242333082_UpdatePageContent.cs" />
+    <Compile Include="Migrations\201402242333082_UpdatePageContent.Designer.cs">
+      <DependentUpon>201402242333082_UpdatePageContent.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
+    <Compile Include="Migrations\RockMigration3.cs" />
     <Compile Include="Migrations\RockMigration2.cs" />
     <Compile Include="Migrations\RockMigration1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -1008,6 +1045,33 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402211810096_ModifyAttCodeIndex.resx">
       <DependentUpon>201402211810096_ModifyAttCodeIndex.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402212314543_RssFeedBlockTypes.resx">
+      <DependentUpon>201402212314543_RssFeedBlockTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402220548227_RenameSampleDataPage.resx">
+      <DependentUpon>201402220548227_RenameSampleDataPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402220640212_AddPageTrackingGlobalAttrib.resx">
+      <DependentUpon>201402220640212_AddPageTrackingGlobalAttrib.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402222052199_AddPageViewTable.resx">
+      <DependentUpon>201402222052199_AddPageViewTable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402231840161_Following.resx">
+      <DependentUpon>201402231840161_Following.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402241446432_RecreateRefundReason.resx">
+      <DependentUpon>201402241446432_RecreateRefundReason.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402241628190_IntranetPagesEditable.resx">
+      <DependentUpon>201402241628190_IntranetPagesEditable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402241644413_ContentFileWhiteListBlackList.resx">
+      <DependentUpon>201402241644413_ContentFileWhiteListBlackList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402242333082_UpdatePageContent.resx">
+      <DependentUpon>201402242333082_UpdatePageContent.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

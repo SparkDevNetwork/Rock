@@ -88,7 +88,7 @@ achieve our mission.  We are so grateful for your commitment.
     [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 ", "Text Options", 16 )]
 
-    [EmailTemplateField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.EmailTemplate.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 17, "ConfirmAccountTemplate" )]
+    [EmailTemplateField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 17, "ConfirmAccountTemplate" )]
 
     #endregion
 

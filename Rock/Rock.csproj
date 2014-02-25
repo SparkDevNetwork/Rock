@@ -208,7 +208,10 @@
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Jobs\RunSQL.cs" />
+    <Compile Include="Model\CodeGenerated\FollowingService.cs" />
+    <Compile Include="Model\Following.cs" />
     <Compile Include="Model\AuditDetail.cs" />
+    <Compile Include="Model\CodeGenerated\PageViewService.cs" />
     <Compile Include="Model\CodeGenerated\PersonBadgeService.cs" />
     <Compile Include="Model\PersonBadge.cs" />
     <Compile Include="Model\CodeGenerated\AuditDetailService.cs" />
@@ -231,6 +234,7 @@
     <Compile Include="Model\PersonAlias.cs" />
     <Compile Include="Model\ReportField.cs" />
     <Compile Include="Model\RestControllerService.Partial.cs" />
+    <Compile Include="Model\PageView.cs" />
     <Compile Include="Net\RestParameters\ContributionStatementOptions.cs" />
     <Compile Include="PersonProfile\Badge\Campus.cs" />
     <Compile Include="PersonProfile\Badge\AttendingDuration.cs" />
@@ -295,6 +299,7 @@
     <Compile Include="SystemGuid\EntityType.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\Cache\CategoryCache.cs" />
+    <Compile Include="Web\FileUploadException.cs" />
     <Compile Include="Web\SystemSettings.cs" />
     <Compile Include="Web\Cache\GroupTypeCache.cs" />
     <Compile Include="Web\Cache\LayoutCache.cs" />
@@ -786,7 +791,7 @@
     <Compile Include="Transactions\ITransaction.cs" />
     <Compile Include="Transactions\PageViewTransaction.cs" />
     <Compile Include="Transactions\RockQueue.cs" />
-    <Compile Include="SystemGuid\EmailTemplate.cs" />
+    <Compile Include="SystemGuid\SystemEmail.cs" />
     <Compile Include="Model\WorkflowActivityType.cs" />
     <Compile Include="Model\WorkflowActionType.cs" />
     <Compile Include="Model\WorkflowActivity.cs" />
