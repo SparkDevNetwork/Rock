@@ -895,6 +895,10 @@ namespace Rock.Model
             }
         }
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Creates a <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of the Person object
         /// </summary>
@@ -906,11 +910,7 @@ namespace Rock.Model
             dictionary.Add( "DaysToBirthday", DaysToBirthday );
             return dictionary;
         }
-
-        #endregion
-
-        #region Methods
-
+        
         /// <summary>
         /// Returns a <see cref="System.String" /> containing the Person's FullName that represents this instance.
         /// </summary>

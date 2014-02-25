@@ -96,6 +96,7 @@
                             <li><a href="#webicon">Web Icon Set (File Type Icons)</a> (Custom) - <a href="http://www.webiconset.com/file-type-icons/">Project Site</a></li>
                             <li><a href="#smartresize">SmartResize</a> (Creative Commons Public Domain Dedication) - <a href="http://www.paulirish.com/2009/throttled-smartresize-jquery-event-handler/">Project Site</a></li>
                             <li><a href="#mobiledetect">Mobile Detect</a> (Unlicense) - <a href="http://detectmobilebrowsers.com/">Project Site</a></li>
+                            <li><a href="#doublemetaphone">Double Metaphone</a> (Custom) - <a href="http://www.codeproject.com/Articles/4625/Implement-Phonetic-Sounds-like-Name-Searches-wit-4">Project Site</a></li>
                         </ul>
 
 
@@ -2431,6 +2432,32 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
+</pre
+
+<a name="doublemetaphone"></a>
+                        <h3>Double Metaphone</h3>
+                        <pre>
+An implemenatation of Lawrence Phillips' Double Metaphone phonetic matching
+algorithm, published in C/C++ Users Journal, June, 2000.
+
+This implementation was written by Adam J. Nelson (anelson@nullpointer.net).
+It is based on the C++ template implementation, also by Adam Nelson.
+For the latest version of this implementation, implementations
+in other languages, and links to articles I've written on the use of my various
+Double Metaphone implementations, see:
+http;//www.nullpointer.net/anelson/
+
+Note that since this impl implements IComparable, it can be used to key associative containers,
+thereby easily implementing phonetic matching within a simple container.  Examples of this
+should have been included in the archive from which you obtained this file.
+
+Current Version: 1.0.0
+Revision History:
+	1.0.0 - ajn - First release
+
+This implemenatation, and optimizations, Copyright (C) 2003, Adam J. Nelson
+The Double Metaphone algorithm was written by Lawrence Phillips, and is 
+Copyright (c) 1998, 1999 by Lawrence Philips.
 </pre>
                     </div>
                 </div>

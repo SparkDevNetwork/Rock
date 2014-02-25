@@ -21,7 +21,9 @@ using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
 using System.Reflection;
 using System.Web;
+
 using Rock.Model;
+using Rock.Utility;
 
 namespace Rock.Data
 {
@@ -433,6 +435,14 @@ namespace Rock.Data
         public DbSet<MarketingCampaignCampus> MarketingCampaignCampuses { get; set; }
 
         /// <summary>
+        /// Gets or sets the metaphones.
+        /// </summary>
+        /// <value>
+        /// The metaphones.
+        /// </value>
+        public DbSet<Metaphone> Metaphones { get; set; }
+
+        /// <summary>
         /// Gets or sets the Defined Types.
         /// </summary>
         /// <value>
@@ -762,10 +772,24 @@ namespace Rock.Data
                     entry.ModifiedDateTime = RockDateTime.Now;
                     entry.ModifiedByPersonAliasId = personAliasId;
                 }
+
+                foreach ( var person in changeSet
+                    .Where( c => 
+                        (c.State == EntityState.Added || c.State == EntityState.Modified) &&
+                        (c.Entity is Person) )
+                    .Select( c => c.Entity as Person))
+                {
+                    var transaction = new Rock.Transactions.SaveMetaphoneTransaction( person );
+                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                }
             }
 
             return base.SaveChanges();
 
+        }
+
+        private void SetPersonMetaphone(string name, string metaphone1, string metaphone2 )
+        {
         }
 
         /// <summary>
@@ -854,6 +878,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new MarketingCampaignAdTypeConfiguration() );
             modelBuilder.Configurations.Add( new MarketingCampaignAudienceConfiguration() );
             modelBuilder.Configurations.Add( new MarketingCampaignCampusConfiguration() );
+            modelBuilder.Configurations.Add( new MetaphoneConfiguration() );
             modelBuilder.Configurations.Add( new MetricConfiguration() );
             modelBuilder.Configurations.Add( new MetricValueConfiguration() );
             modelBuilder.Configurations.Add( new NoteConfiguration() );

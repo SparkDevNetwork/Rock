@@ -208,6 +208,7 @@
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Jobs\RunSQL.cs" />
+    <Compile Include="Model\Metaphone.cs" />
     <Compile Include="Model\CodeGenerated\FollowingService.cs" />
     <Compile Include="Model\Following.cs" />
     <Compile Include="Model\AuditDetail.cs" />
@@ -267,6 +268,8 @@
     <Compile Include="Reporting\EntityHelper.cs" />
     <Compile Include="Reporting\SelectExpressionExtractor.cs" />
     <Compile Include="Reporting\FilterExpressionExtractor.cs" />
+    <Compile Include="Transactions\SaveMetaphoneTransaction.cs" />
+    <Compile Include="Utility\DoubleMetaphone.cs" />
     <Compile Include="Utility\RockDateTime.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
