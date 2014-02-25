@@ -905,7 +905,7 @@ namespace Rock.Migrations
 
         #endregion
 
-        #region DefinedType Methods
+        #region DefinedValue Methods
 
         /// <summary>
         /// Adds the defined value.
@@ -936,6 +936,61 @@ namespace Rock.Migrations
 ",
                     definedTypeGuid,
                     name,
+                    description.Replace( "'", "''" ),
+                    guid,
+                    isSystem.Bit().ToString()
+                    ) );
+        }
+
+        /// <summary>
+        /// Updates (or Adds) the defined value.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type GUID.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The GUID.</param>
+        /// <param name="isSystem">if set to <c>true</c> [is system].</param>
+        public void UpdateDefinedValue( string definedTypeGuid, string name, string description, string guid, bool isSystem = true )
+        {
+            Sql( string.Format( @"
+
+                DECLARE @DefinedTypeId int
+                SET @DefinedTypeId = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}')
+
+                IF EXISTS ( SELECT [Id] FROM [DefinedValue] WHERE [Guid] = '{3}' )
+                BEGIN
+                    UPDATE [DefinedValue]
+                    SET 
+                        [IsSystem] = {4}
+                        ,[DefinedTypeId] = @DefinedTypeId
+                        ,[Name] = '{1}'
+                        ,[Description] = '{2}'
+                    WHERE
+                        [Guid] = '{3}'
+                END
+                ELSE
+                BEGIN
+                    DECLARE @Order int
+                    SELECT @Order = ISNULL(MAX([order])+1,0) FROM [DefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId
+
+                    INSERT INTO [DefinedValue]
+                        ([IsSystem]
+                        ,[DefinedTypeId]
+                        ,[Order]
+                        ,[Name]
+                        ,[Description]
+                        ,[Guid])
+                    VALUES
+                        ({4}
+                        ,@DefinedTypeId
+                        ,@Order
+                        ,'{1}'
+                        ,'{2}'
+                        ,'{3}')
+                END
+",
+                    definedTypeGuid,
+                    name.Replace( "'", "''" ),
                     description.Replace( "'", "''" ),
                     guid,
                     isSystem.Bit().ToString()
@@ -1056,6 +1111,82 @@ INSERT INTO [dbo].[Auth]
             Sql( string.Format( "DELETE FROM [dbo].[Auth] where [Guid] = '{0}'", guid ) );
         }
 
+        #endregion
+
+        #region Group Type
+
+        /// <summary>
+        /// Adds a GroupType "Group Attribute" for the given GroupType (guid) with given parameters. 
+        /// </summary>
+        /// <param name="groupTypeGuid"></param>
+        /// <param name="fieldTypeGuid"></param>
+        /// <param name="name"></param>
+        /// <param name="description"></param>
+        /// <param name="order"></param>
+        /// <param name="defaultValue">a string, empty string, or NULL</param>
+        /// <param name="guid"></param>
+        public void AddGroupTypeGroupAttribute( string groupTypeGuid, string fieldTypeGuid, string name, string description, int order, string defaultValue, string guid )
+        {
+            Sql( string.Format( @"
+
+                DECLARE @EntityTypeId int
+                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Group')
+                 
+                DECLARE @GroupTypeId int
+                SET @GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Guid] = '{0}')
+
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
+
+                -- Delete existing attribute first (might have been created by Rock system)
+                DELETE [Attribute] 
+                WHERE
+                    [EntityTypeId] = @EntityTypeId
+                    AND [Key] = '{2}'
+                    AND [EntityTypeQualifierColumn] = 'GroupTypeId'
+                    AND [EntityTypeQualifierValue] = @GroupTypeId
+
+                INSERT INTO [Attribute]
+                    ([IsSystem]
+                    ,[FieldTypeId]
+                    ,[EntityTypeId]
+                    ,[EntityTypeQualifierColumn]
+                    ,[EntityTypeQualifierValue]
+                    ,[Key]
+                    ,[Name]
+                    ,[Description]
+                    ,[Order]
+                    ,[IsGridColumn]
+                    ,[DefaultValue]
+                    ,[IsMultiValue]
+                    ,[IsRequired]
+                    ,[Guid])
+                VALUES
+                    (1
+                    ,@FieldTypeId
+                    ,@EntityTypeId
+                    ,'GroupTypeId'
+                    ,@GroupTypeId
+                    ,'{2}'
+                    ,'{3}'
+                    ,'{4}'
+                    ,{5}
+                    ,0
+                    ,{6}
+                    ,0
+                    ,0
+                    ,'{7}')
+",
+                    groupTypeGuid,
+                    fieldTypeGuid,
+                    name.Replace( " ", string.Empty ),
+                    name,
+                    description.Replace( "'", "''" ),
+                    order,
+                    (defaultValue == null) ? "NULL" : "'" + defaultValue +"'",
+                    guid)
+            );
+        }
         #endregion
 
     }
