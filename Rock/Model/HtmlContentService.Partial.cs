@@ -58,7 +58,7 @@ namespace Rock.Model
         /// <returns>The first <see cref="Rock.Model.HtmlContent"/> that matches the provided criteria. If no match is found, this value will be null. </returns>
         public HtmlContent GetByBlockIdAndEntityValueAndVersion( int blockId, string entityValue, int version )
         {
-            return Repository.FirstOrDefault( t => t.BlockId == blockId && ( t.EntityValue == entityValue || ( entityValue == null && t.EntityValue == null ) ) && t.Version == version );
+            return Repository.AsQueryable().OrderByDescending( o => o.ModifiedDateTime).FirstOrDefault( t => t.BlockId == blockId && ( t.EntityValue == entityValue || ( entityValue == null && t.EntityValue == null ) ) && t.Version == version );
         }
 
         /// <summary>
