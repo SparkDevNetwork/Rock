@@ -40,7 +40,7 @@ namespace Rock.Transactions
         {
             if (!string.IsNullOrWhiteSpace(name))
             {
-                string ucName = name.Trim().ToUpper();
+                string ucName = name.Trim();
                 if (!names.Contains(ucName))
                 {
                     names.Add(ucName);

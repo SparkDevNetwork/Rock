@@ -788,10 +788,6 @@ namespace Rock.Data
 
         }
 
-        private void SetPersonMetaphone(string name, string metaphone1, string metaphone2 )
-        {
-        }
-
         /// <summary>
         /// Gets the name of the entity from table.
         /// </summary>
