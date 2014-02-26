@@ -128,6 +128,34 @@ namespace Rock.Jobs
                 }
             }
 
+            // Add any missing metaphones
+            using ( new Rock.Data.UnitOfWorkScope() )
+            {
+                PersonService personService = new PersonService();
+                var firstNameQry = personService.Queryable().Select( p => p.FirstName );
+                var nickNameQry = personService.Queryable().Select( p => p.NickName );
+                var lastNameQry = personService.Queryable().Select( p => p.LastName );
+                var nameQry = firstNameQry.Union( nickNameQry.Union( lastNameQry ) );
+
+                var metaphones = personService.RockContext.Metaphones;
+                var existingNames = metaphones.Select( m => m.Name ).Distinct();
+
+                foreach ( string name in nameQry.Where( n => !existingNames.Contains( n ) ) )
+                {
+                    string mp1 = string.Empty;
+                    string mp2 = string.Empty;
+                    Rock.Utility.DoubleMetaphone.doubleMetaphone( name, ref mp1, ref mp2 );
+
+                    var metaphone = new Metaphone();
+                    metaphone.Name = name;
+                    metaphone.Metaphone1 = mp1;
+                    metaphone.Metaphone2 = mp2;
+
+                    metaphones.Add( metaphone );
+                }
+
+                personService.RockContext.SaveChanges();
+            }
         }
 
         /// <summary>
