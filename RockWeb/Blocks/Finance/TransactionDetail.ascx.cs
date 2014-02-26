@@ -67,7 +67,14 @@ namespace RockWeb.Blocks.Finance
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialBatch.FriendlyTypeName );
             }
 
-            ScriptManager.RegisterStartupScript( pnlDetails, pnlDetails.GetType(), "images-fluidbox", "$('.photo a').fluidbox();", true );
+            ScriptManager.RegisterStartupScript( pnlDetails, pnlDetails.GetType(), "images-fluidbox", "$('.photo a.transaction-image').fluidbox();", true );
+
+            string deleteButtonScriptFormat = @"
+                $('.image-delete-button').on( 'click', function (event) {{
+                return Rock.dialogs.confirmDelete(event, '{0}');
+            }});";
+            string deleteButtonScript = string.Format( deleteButtonScriptFormat, "image" );
+            ScriptManager.RegisterStartupScript( pnlTransactionImages, pnlTransactionImages.GetType(), "image-delete-confirm-script", deleteButtonScript, true );
         }
 
         /// <summary>
@@ -352,9 +359,38 @@ namespace RockWeb.Blocks.Finance
                 var imageTag = new LiteralControl( "<img src='" + imageUrl + "' style='max-width:100%;max-height:100%;' />" );
                 var imageLink = new HyperLink();
                 imageLink.Attributes.Add( "href", imageUrl );
+                imageLink.AddCssClass( "transaction-image" );
                 ph.Controls.Add( imageLink );
                 imageLink.Controls.Add( imageTag );
+
+                LinkButton lbDelete = e.Item.FindControl( "lbDelete" ) as LinkButton;
+                lbDelete.Attributes.Add( "imageId", imageId.ToString() );
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbDelete_Click( object sender, EventArgs e )
+        {
+            LinkButton lbDelete = sender as LinkButton;
+            var imageId = int.Parse( lbDelete.Attributes["imageId"] );
+
+            // Delete the reference to the binary file (image) from the FinancialTransactionImage table
+            var imageService = new FinancialTransactionImageService();
+            var financialTransactionImage = imageService.Queryable().Where( image => image.BinaryFileId == imageId ).FirstOrDefault();
+            imageService.Delete( financialTransactionImage, CurrentPersonAlias );
+            imageService.Save( financialTransactionImage, CurrentPersonAlias );
+
+            // Delete the actual binary file (image)
+            var binaryFileService = new BinaryFileService();
+            var binaryFile = binaryFileService.Get( imageId );
+            binaryFileService.Delete( binaryFile, CurrentPersonAlias );
+            binaryFileService.Save( binaryFile, CurrentPersonAlias );
+
+            LoadRelatedImages( hfIdTransValue.ValueAsInt() );
         }
 
         /// <summary>
@@ -372,6 +408,7 @@ namespace RockWeb.Blocks.Finance
             financialTransactionImage.TransactionImageTypeValueId = ddlTransactionImageType.SelectedValueAsInt();
             service.Add( financialTransactionImage );
             service.Save( financialTransactionImage );
+            imgupTransactionImages.BinaryFileId = 0;
             LoadRelatedImages( transactionId );
         }
 

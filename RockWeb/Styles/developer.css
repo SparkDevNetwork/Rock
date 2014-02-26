@@ -218,3 +218,25 @@ span.cke_button__rockmergefield_label {
     padding-left: 0;
     text-align: center;
 }
+
+/* Added by Rich Dubay 02.26.2014 */
+/* For related transaction image delete button stuff */
+.photo-display {
+    position: relative;
+}
+
+.image-delete-button {
+    display: none;
+    position: absolute;
+    bottom: 0;
+    z-index: 500;
+    width: 100%;
+}
+
+.photo:hover > a.image-delete-button {
+    display: block;
+}
+
+.photo > a.fluidbox-opened:hover + a {
+    display: none;
+}
