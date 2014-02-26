@@ -299,6 +299,8 @@ namespace RockWeb.Blocks.Examples
                 return;
             }
 
+            GroupService groupService = new GroupService();
+
             // Next create the group along with its members.
             foreach ( var elemGroup in elemGroups.Elements( "group" ) )
             {
@@ -329,11 +331,16 @@ namespace RockWeb.Blocks.Examples
                         groupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SMALL_GROUP.AsGuid() );
                         group.GroupTypeId = groupType.Id;
                         roleId = groupType.DefaultGroupRoleId;
-
                         break;
                     default:
                         throw new NotSupportedException( string.Format( "unknown group type {0}", elemGroup.Attribute( "type" ).Value.Trim() ) );
                         break;
+                }
+
+                if ( elemGroup.Attribute( "parentGroupGuid" ) != null )
+                {
+                    var parentGroup = groupService.Get( elemGroup.Attribute( "parentGroupGuid" ).Value.AsGuid() );
+                    group.ParentGroupId = parentGroup.Id;
                 }
 
                 foreach ( var elemPerson in elemGroup.Elements( "person" ) )
@@ -347,7 +354,6 @@ namespace RockWeb.Blocks.Examples
                     group.Members.Add( groupMember );
                 }
 
-                GroupService groupService = new GroupService();
                 groupService.Add( group );
                 groupService.Save( group, CurrentPersonAlias );
             }
@@ -770,6 +776,7 @@ namespace RockWeb.Blocks.Examples
                             case "attendee":
                                 person.ConnectionStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_ATTENDEE.AsGuid() ).Id;
                                 break;
+                            case "visitor":
                             default:
                                 person.ConnectionStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() ).Id;
                                 break;
@@ -951,8 +958,20 @@ namespace RockWeb.Blocks.Examples
                         throw new NotSupportedException( string.Format( "unknown addressType: {0}", addressType ) );
                 }
 
-                // TODO add latitude and longitude
                 groupService.AddNewFamilyAddress( family, locationTypeGuid, street1, street2, city, state, zip, CurrentPersonAlias );
+
+                // TODO add latitude and longitude
+                double latitude;
+                double longitude;
+                if ( !string.IsNullOrEmpty( lat ) && !string.IsNullOrEmpty( lng )
+                    && double.TryParse( lat, out latitude ) && double.TryParse( lng, out longitude ) )
+                {
+                    var location = family.GroupLocations.Where( gl => gl.Location.Street1 == street1 ).Select( gl => gl.Location ).FirstOrDefault();
+                    if ( location != null )
+                    {
+                        location.SetLocationPointFromLatLong( latitude, longitude );
+                    }
+                }
             }
         }
 
