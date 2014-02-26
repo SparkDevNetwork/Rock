@@ -74,6 +74,8 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
+            LoadCampusPicker();
+
             gMarketingCampaignAudiencesPrimary.DataKeyNames = new string[] { "id" };
             gMarketingCampaignAudiencesPrimary.Actions.ShowAdd = true;
             gMarketingCampaignAudiencesPrimary.Actions.AddClick += gMarketingCampaignAudiencesPrimary_Add;
@@ -332,7 +334,13 @@ namespace RockWeb.Blocks.Cms
             groups.Insert( 0, new Group { Id = None.Id, Name = None.Text } );
             ddlEventGroup.DataSource = groups;
             ddlEventGroup.DataBind();
+        }
 
+        /// <summary>
+        /// Loads the campus picker.
+        /// </summary>
+        private void LoadCampusPicker()
+        {
             CampusService campusService = new CampusService();
 
             cpCampuses.Campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
