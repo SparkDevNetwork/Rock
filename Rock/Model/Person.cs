@@ -584,7 +584,6 @@ namespace Rock.Model
         /// The aliases.
         /// </value>
         [DataMember]
-        [MergeField]
         public virtual ICollection<PersonAlias> Aliases
         {
             get { return _aliases; }
