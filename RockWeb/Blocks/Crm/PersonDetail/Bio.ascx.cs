@@ -57,7 +57,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 // Set the browser page title to include person's name
                 RockPage.BrowserTitle = Person.FullName;
 
-                lName.Text = Person.FullName.FormatAsHtmlTitle();
+                if (Person.NickName == Person.FirstName) {
+                    lName.Text = Person.FullName.FormatAsHtmlTitle();
+                }
+                else {
+                    lName.Text = String.Format( "{0} ({1}) {2}", Person.NickName, Person.FirstName, Person.LastName ).FormatAsHtmlTitle();
+                }
 
                 // Setup Image
                 var imgTag = new LiteralControl( Rock.Model.Person.GetPhotoImageTag( Person.PhotoId, Person.Gender, 188, 188 ) );
