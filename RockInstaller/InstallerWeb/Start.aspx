@@ -25,6 +25,7 @@
     const string rockInstallFile = "http://storage.rockrms.com/install/Install.aspx";
     const string rockConfigureFile = "http://storage.rockrms.com/install/Configure.aspx";
     const string rockUtilitiesAssembly = "http://storage.rockrms.com/install/Rock.Install.Utilities.dll";
+    const string rockInitalWebConfig = "http://storage.rockrms.com/install/web.config";
 
     const string rockLogoIco = "http://storage.rockrms.com/install/rock-chms.ico";
     const string rockStyles = "http://storage.rockrms.com/install/install.css";
@@ -101,6 +102,16 @@
             downloadSuccessful = DownloadFile(rockUtilitiesAssembly, Server.MapPath(".") + @"\bin\Rock.Install.Utilities.dll", out checkMessages);
 
             if (!downloadSuccessful)
+            {
+                lTitle.Text = "An Error Occurred...";
+                lOutput.Text = "<p>" + checkMessages + "</p>";
+                return;
+            }
+
+            // download the install file
+            downloadSuccessful = DownloadFile( rockInitalWebConfig, Server.MapPath( "." ) + @"\web.config", out checkMessages );
+
+            if ( !downloadSuccessful )
             {
                 lTitle.Text = "An Error Occurred...";
                 lOutput.Text = "<p>" + checkMessages + "</p>";
