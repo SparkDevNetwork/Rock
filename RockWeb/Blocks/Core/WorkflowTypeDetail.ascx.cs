@@ -454,6 +454,7 @@ namespace RockWeb.Blocks.Core
             else
             {
                 workflowType = new WorkflowType { Id = 0, IsActive = true, IsPersisted = true, IsSystem = false, CategoryId = parentCategoryId };
+                workflowType.ActivityTypes.Add( new WorkflowActivityType { Guid = Guid.NewGuid(), IsActive = true } );
             }
 
             if ( workflowType == null )
