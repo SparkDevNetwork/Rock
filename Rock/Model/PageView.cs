@@ -43,9 +43,8 @@ namespace Rock.Model
         /// A <see cref="System.int"/> the id of the page viewed.
         /// </value>
         /// 
-        [Required]
         [DataMember]
-        public int PageId { get; set; }
+        public int? PageId { get; set; }
 
         /// <summary>
         /// Gets or sets the site id of the page viewed.
@@ -104,7 +103,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 500 )]
-        public string QueryString { get; set; }
+        public string Url { get; set; }
 
         /// <summary>
         /// Gets or sets the session id of the request.
@@ -113,8 +112,7 @@ namespace Rock.Model
         /// A <see cref="System.string"/> of the session id of the request.
         /// </value>
         [DataMember]
-        [MaxLength( 25 )]
-        public string SessionId { get; set; }
+        public Guid? SessionId { get; set; }
 
         /// <summary>
         /// Gets or sets the IP address of the request.
@@ -176,9 +174,9 @@ namespace Rock.Model
         /// </summary>
         public PageViewConfiguration()
         {
-            this.HasRequired( p => p.Page ).WithMany().HasForeignKey( p => p.PageId ).WillCascadeOnDelete(false);
-            this.HasOptional( p => p.Site ).WithMany().HasForeignKey( p => p.SiteId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.PersonAlias ).WithMany().HasForeignKey( p => p.PersonAliasId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.Page ).WithMany().HasForeignKey( p => p.PageId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.Site ).WithMany().HasForeignKey( p => p.SiteId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.PersonAlias ).WithMany().HasForeignKey( p => p.PersonAliasId ).WillCascadeOnDelete( false );
         }
     }
 

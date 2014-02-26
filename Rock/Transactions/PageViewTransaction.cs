@@ -89,7 +89,7 @@ namespace Rock.Transactions
         /// <value>
         /// Query String.
         /// </value>
-        public string QueryString { get; set; }
+        public string Url { get; set; }
         
         
         /// <summary>
@@ -105,8 +105,8 @@ namespace Rock.Transactions
 
             pageView.PageId = this.PageId;
             pageView.SiteId = this.SiteId;
-            pageView.SessionId = this.SessionId;
-            pageView.QueryString = this.QueryString;
+            pageView.SessionId = new Guid(this.SessionId);
+            pageView.Url = this.Url;
             pageView.UserAgent = this.UserAgent;
             pageView.DateTimeViewed = this.DateViewed;
             pageView.IpAddress = this.IPAddress;
