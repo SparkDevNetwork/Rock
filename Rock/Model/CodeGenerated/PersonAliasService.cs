@@ -283,6 +283,12 @@ namespace Rock.Model
             // ignoring PageRoute,CreatedByPersonAliasId 
             
             // ignoring PageRoute,ModifiedByPersonAliasId 
+ 
+            if ( new Service<PageView>().Queryable().Any( a => a.PersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, PageView.FriendlyTypeName );
+                return false;
+            }  
             
             // ignoring Person,CreatedByPersonAliasId 
             

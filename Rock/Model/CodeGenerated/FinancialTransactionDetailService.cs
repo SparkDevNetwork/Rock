@@ -105,6 +105,7 @@ namespace Rock.Model
         {
             target.TransactionId = source.TransactionId;
             target.AccountId = source.AccountId;
+            target.IsNonCash = source.IsNonCash;
             target.Amount = source.Amount;
             target.Summary = source.Summary;
             target.EntityTypeId = source.EntityTypeId;
