@@ -640,6 +640,10 @@
     <Compile Include="Migrations\201402252310095_Metaphone.Designer.cs">
       <DependentUpon>201402252310095_Metaphone.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402260633011_PageViewTableUpdates.cs" />
+    <Compile Include="Migrations\201402260633011_PageViewTableUpdates.Designer.cs">
+      <DependentUpon>201402260633011_PageViewTableUpdates.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1100,6 +1104,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402252310095_Metaphone.resx">
       <DependentUpon>201402252310095_Metaphone.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402260633011_PageViewTableUpdates.resx">
+      <DependentUpon>201402260633011_PageViewTableUpdates.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

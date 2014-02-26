@@ -109,7 +109,7 @@ namespace Rock.Model
             target.DateTimeViewed = source.DateTimeViewed;
             target.UserAgent = source.UserAgent;
             target.ClientType = source.ClientType;
-            target.QueryString = source.QueryString;
+            target.Url = source.Url;
             target.SessionId = source.SessionId;
             target.IpAddress = source.IpAddress;
             target.Id = source.Id;
