@@ -10,10 +10,10 @@
       </addresses>
 
       <members>
-        <person guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4" firstName="Theodore" nickName="Ted"
-          lastName="Decker" birthDate="2/10/1976" age="38" gender="male" email="ted@rocksoliddemochurch.com"
-          emailIsActive="true" emailDoNotEmail="false" recordType="person" recordStatus="active"
-          connectionStatus="member"  maritalStatus="married" familyRole="adult"
+        <person guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"
+          firstName="Theodore" nickName="Ted" lastName="Decker" birthDate="2/10/1976" age="38" gender="male"
+          email="ted@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_ted.jpg"
           homePhone="6235553322" mobilePhone="6235553322" workPhone="602555-2911">
           <attributes>
@@ -22,10 +22,10 @@
           </attributes>
         </person>
 
-        <person guid="B71494DB-D809-451A-A950-28898D0FD92C" firstName="Cynthia" nickName="Cindy"
-          lastName="Decker" birthDate="3/10/1977" age="37" gender="female" email="cindy@rocksoliddemochurch.com"
-          emailIsActive="true" emailDoNotEmail="false" recordType="person" recordStatus="active"
-          connectionStatus="member"  maritalStatus="married" familyRole="adult"
+        <person guid="B71494DB-D809-451A-A950-28898D0FD92C"
+          firstName="Cynthia" nickName="Cindy" lastName="Decker" birthDate="3/10/1977" age="37" gender="female"
+          email="cindy@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_cindy.png"
           homePhone="6235553323" mobilePhone="6235553323" workPhone="">
           <attributes>
@@ -33,23 +33,24 @@
           </attributes>
         </person>
 
-        <person guid="32AAB9E4-970D-4551-A17E-385E66113BD5" firstName="Noah" nickName="Noah"
-          lastName="Decker" birthDate="3/10/2004" age="10" gender="male" email=""
-          emailIsActive="true" emailDoNotEmail="false" recordType="person" recordStatus="active"
-          connectionStatus="attendee"  maritalStatus="single" familyRole="child"
+        <person guid="32AAB9E4-970D-4551-A17E-385E66113BD5"
+          firstName="Noah" nickName="Noah" lastName="Decker" birthDate="3/10/2004" age="10" gender="male"
+          email="" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="attendee"  maritalStatus="single" familyRole="child"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_noah.jpg"
           homePhone="" mobilePhone="" workPhone=""/>
 
-        <person guid="27919690-3CCE-4FA6-95C4-CD21419EB51F" firstName="Alexis" nickName="Alex"
-          lastName="Decker" birthDate="2/10/2007" age="7" gender="female" email=""
-          emailIsActive="true" emailDoNotEmail="false" recordType="person" recordStatus="active"
-          connectionStatus="attendee"  maritalStatus="single" familyRole="child"
+        <person guid="27919690-3CCE-4FA6-95C4-CD21419EB51F"
+          firstName="Alexis" nickName="Alex" lastName="Decker" birthDate="2/10/2007" age="7" gender="female"
+          email="" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="attendee"  maritalStatus="single" familyRole="child"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_alexis.jpg"
           homePhone="" mobilePhone="" workPhone=""/>
       </members>
     </family>
 
 
+    <!-- Jones family, dual custody of Child Brian Jones with Simmons family -->
     <family name="Jones Family" guid="3BE313A1-51B1-4B03-B396-CEB9C3D9B919" campus="main campus"
             startingAttendance="2/15/2013" endingAttendance="10/15/2013" percentAttendance="50"
             percentAttendedRegularService="50" attendingScheduleId="3" attendingAltScheduleId="4">
@@ -58,24 +59,25 @@
       </addresses>
 
       <members>
-        <person guid="3C402382-3BD2-4337-A996-9E62F1BAB09D" firstName="Benjamin" nickName="Ben"
-          lastName="Jones" birthDate="7/10/1978" age="36" gender="male" email="ben.jones@rocksoliddemochurch.com"
-          emailIsActive="true" emailDoNotEmail="false" recordType="person" recordStatus="active"
-          connectionStatus="member"  maritalStatus="single" familyRole="adult"
+        <person guid="3C402382-3BD2-4337-A996-9E62F1BAB09D"
+          firstName="Benjamin" nickName="Ben" lastName="Jones" birthDate="7/10/1978" age="36" gender="male"
+          email="ben.jones@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/jones_ben.jpg"
           homePhone="" mobilePhone="" workPhone=""/>
 
-        <person guid="3D7F6605-3666-4AB5-9F4E-D7FEBF93278E" firstName="Brian" nickName="Brian"
-          lastName="Jones" birthDate="6/9/2008" age="6" gender="male" email="brian.jones@rocksoliddemochurch.com"
-          emailIsActive="true" emailDoNotEmail="false" recordType="person" recordStatus="active"
-          connectionStatus="member"  maritalStatus="single" familyRole="child"
+        <person guid="3D7F6605-3666-4AB5-9F4E-D7FEBF93278E"
+          firstName="Brian" nickName="Brian" lastName="Jones" birthDate="6/9/2008" age="6" gender="male"
+          email="brian.jones@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="child"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/jones_brian.jpg"
           homePhone="" mobilePhone="" workPhone=""/>
 
       </members>
     </family>
 
-    <family name="Jones Family" guid="FA7316E2-FFA9-4A55-B975-8F762353D0A8" campus="main campus"
+    <!-- Simmons family, dual custody of Child Brian Jones with Jones family -->
+    <family name="Simmons Family" guid="FA7316E2-FFA9-4A55-B975-8F762353D0A8" campus="main campus"
             startingAttendance="10/15/2013" endingAttendanceWeeksAgo="0" percentAttendance="90"
             percentAttendedRegularService="90" attendingScheduleId="4" attendingAltScheduleId="3">
       <addresses>
@@ -83,17 +85,17 @@
       </addresses>
 
       <members>
-        <person guid="FB5D2DC6-5AB4-4CBD-B02F-3FB9ADBEFD33" firstName="James" nickName="Jim"
-          lastName="Simmons" birthDate="6/1/1979" age="35" gender="male" email="jim.simmons@rocksoliddemochurch.com"
-          emailIsActive="true" emailDoNotEmail="false" recordType="person" recordStatus="active"
-          connectionStatus="member"  maritalStatus="married" familyRole="adult"
+        <person guid="FB5D2DC6-5AB4-4CBD-B02F-3FB9ADBEFD33"
+          firstName="James" nickName="Jim" lastName="Simmons" birthDate="6/1/1979" age="35" gender="male"
+          email="jim.simmons@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/simmons_jim.jpg"
           homePhone="" mobilePhone="" workPhone=""/>
 
-        <person guid="FC6B9819-EF2E-44C9-93DB-05571B39E58F" firstName="Sarah" nickName="Sarah"
-          lastName="Simmons" birthDate="5/3/1980" age="34" gender="female" email="sarah.simmons@rocksoliddemochurch.com"
-          emailIsActive="true" emailDoNotEmail="false" recordType="person" recordStatus="active"
-          connectionStatus="member"  maritalStatus="married" familyRole="adult"
+        <person guid="FC6B9819-EF2E-44C9-93DB-05571B39E58F"
+          firstName="Sarah" nickName="Sarah" lastName="Simmons" birthDate="5/3/1980" age="34" gender="female"
+          email="sarah.simmons@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/simmons_sarah.jpg"
           homePhone="" mobilePhone="" workPhone=""/>
 
@@ -102,7 +104,92 @@
       </members>
     </family>
 
+    <!-- Jackson family, custody of child Madison Lowe who is related to father Craig in the Lowe Family -->
+    <family name="Jackson Family" guid="DFBF8D82-3D34-406B-8C84-9F10046ADE30" campus="main campus"
+        startingAttendance="9/25/2013" endingAttendanceWeeksAgo="0" percentAttendance="65"
+        percentAttendedRegularService="50" attendingScheduleId="4" attendingAltScheduleId="3">
+      <addresses>
+        <address type="home" street1="4931 E White Gates Dr" street2="" city="Phoenix" state="AZ" zip="85018" lat="33.5123291" long="-111.9730911" />
+      </addresses>
+
+      <members>
+        <person guid="9C2A020B-CF34-403E-A948-3E91FDFB958B"
+          firstName="Mariah" nickName="Mariah" lastName="Jackson" birthDate="1/11/1970" age="37" gender="female"
+          email="mariah.jackson@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/jackson_mariah.jpg"
+          homePhone="" mobilePhone="" workPhone=""/>
+
+        <person guid="C398A8E3-C9BC-4017-A3F6-7C2BFF654056"
+          firstName="Madison" nickName="Maddie" lastName="Lowe" birthDate="10/4/2006" age="7" gender="female"
+          email="madison.lowe@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="child"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/lowe_madison.jpg"
+          homePhone="" mobilePhone="" workPhone=""/>
+
+      </members>
+    </family>
+
+    <!-- Lowe family, Can-Check-in relationship with child Madison Lowe who is in the Jackson Family -->
+    <family name="Lowe Family" guid="61DC882F-0064-48D6-833F-226B60E79168" campus="main campus">
+      <addresses>
+        <address type="home" street1="3224 W Sahuaro Dr" street2="" city="Phoenix" state="AZ" zip="85029" lat="33.5837936" long="-112.1293106" />
+      </addresses>
+
+      <members>
+        <person guid="B701E5D2-ADBD-4C66-91E8-3D6CD298D9A0"
+          firstName="Craig" nickName="Craig" lastName="Lowe" birthDate="8/1/1970" age="37" gender="male"
+          email="craig.lowe@rocksoliddemochurch.com" emailIsActive="false" emailDoNotEmail="true" recordType="person"
+          recordStatus="active" connectionStatus="visitor"  maritalStatus="married" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/lowe_craig.jpg"
+          homePhone="" mobilePhone="" workPhone=""/>
+
+        <person guid="20A2C167-D16E-43B3-A5B0-80CE912589AF"
+         firstName="Tricia" nickName="Trish" lastName="Lowe" birthDate="9/15/1970" age="35" gender="female"
+         email="trish.lowe@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+         recordStatus="active" connectionStatus="visitor"  maritalStatus="married" familyRole="adult"
+         photoUrl="http://storage.rockrms.com/sampledata/person-images/lowe_tricia.jpg"
+         homePhone="" mobilePhone="" workPhone=""/>
+      </members>
+    </family>
+
+    <!-- The famous Alisha Marble family -->
+    <family name="Marble Family" guid="6F2E6B64-3592-4543-8D8E-6BA4040CDC4E" campus="main campus"
+            startingAttendance="1/1/2012" endingAttendanceWeeksAgo="0" percentAttendance="88"
+            percentAttendedRegularService="88" attendingScheduleId="4" attendingAltScheduleId="3">
+      <addresses>
+        <address type="home" street1="3002 W Lupine Ave" street2="" city="Phoenix" state="AZ" zip="85029" lat="33.591269" long="-112.123658" />
+      </addresses>
+
+      <members>
+        <!-- Alisha -->
+        <person guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"
+          firstName="Alisha" nickName="Alisha" lastName="Marble" birthDate="5/29/1967" age="48" gender="female"
+          email="alisha.marble@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/marble_alisha.jpg"
+          homePhone="" mobilePhone="" workPhone=""/>
+        <!-- Bill leap year birthday -->
+        <person guid="1EA811BB-3118-42D1-B020-32A82BC8081A"
+         firstName="William" nickName="Bill" lastName="Marble" birthDate="2/29/1964" gender="male"
+         email="bill.marble@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+         recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
+         photoUrl="http://storage.rockrms.com/sampledata/person-images/marble_bill.jpg"
+         homePhone="" mobilePhone="" workPhone=""/>
+
+      </members>
+
+    </family>
+
   </families>
+
+  <relationships>
+    <relationship a="Ben" personGuid="3C402382-3BD2-4337-A996-9E62F1BAB09D" is="step-parent" forGuid="3D7F6605-3666-4AB5-9F4E-D7FEBF93278E" name="Brian" />
+    <relationship a="Brian" personGuid="3D7F6605-3666-4AB5-9F4E-D7FEBF93278E" is="step-child" forGuid="3C402382-3BD2-4337-A996-9E62F1BAB09D" name="Ben" />
+
+    <relationship a="Craig" personGuid="B701E5D2-ADBD-4C66-91E8-3D6CD298D9A0" is="can-check-in" forGuid="C398A8E3-C9BC-4017-A3F6-7C2BFF654056" name="Madison Lowe"/>
+    <relationship a="Madison" personGuid="C398A8E3-C9BC-4017-A3F6-7C2BFF654056" is="allow-check-in-by" forGuid="B701E5D2-ADBD-4C66-91E8-3D6CD298D9A0" name="Craig"/>
+  </relationships>
 
   <groups>
     <group type="serving" name="Ushers" guid="0BA93D66-21B1-4229-979D-F76CEB57666D">
@@ -110,10 +197,12 @@
       <person fullname="Jim Simmons" guid="FB5D2DC6-5AB4-4CBD-B02F-3FB9ADBEFD33"/>
     </group>
 
-    <!--<group type="smallgroup" name="Decker Group" guid="62DC3753-01D5-48B5-B22D-D2825D92900B">
+    <group type="smallgroup" name="Decker Group" guid="62DC3753-01D5-48B5-B22D-D2825D92900B" parentGroupGuid="C05E60C4-6DFC-420D-8DBA-28DBB5F0E3F9 ">
       <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
-      <person fullname="Jim Simmons" guid="FB5D2DC6-5AB4-4CBD-B02F-3FB9ADBEFD33"/>
-    </group>-->
+      <person fullname="Cindy Decker" guid="B71494DB-D809-451A-A950-28898D0FD92C"/>
+      <person fullname="Bill Marble" guid="1EA811BB-3118-42D1-B020-32A82BC8081A"/>
+      <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"/>
+    </group>
 
   </groups>
 
