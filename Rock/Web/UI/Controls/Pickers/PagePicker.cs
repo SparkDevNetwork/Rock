@@ -81,6 +81,39 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the hidden page ids.
+        /// </summary>
+        /// <value>
+        /// The hidden page ids.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        Description( "List of PageIds that should not be shown" )
+        ]
+        public int[] HiddenPageIds
+        {
+            get
+            {
+                int[] result = ViewState["HiddenPageIds"] as int[] ?? new int[0] { };
+                return result;
+            }
+
+            set
+            {
+                ViewState["HiddenPageIds"] = value;
+                if ( value != null && value.Length > 0 )
+                {
+                    this.ItemRestUrlExtraParams = "?hidePageIds=" + System.Web.HttpUtility.UrlEncode( value.ToList().AsDelimited( "," ) );
+                }
+                else
+                {
+                    this.ItemRestUrlExtraParams = string.Empty;
+                }
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -138,7 +171,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets or sets the page route unique identifier.
         /// </summary>
@@ -150,9 +183,9 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _hfPageRouteId.Value.AsInteger(false);
+                return _hfPageRouteId.Value.AsInteger( false );
             }
-            
+
             set
             {
                 EnsureChildControls();
@@ -197,7 +230,7 @@ namespace Rock.Web.UI.Controls
                 {
                     // PageRoute is selected, so show the Page and it's PageRoute and don't show the PageRoute picker
                     ItemName = page.InternalName + " (" + pageRoute.Route + ")";
-                    
+
                     _rblSelectPageRoute.Visible = false;
                     _btnShowPageRoutePicker.Style[HtmlTextWriterStyle.Display] = "none";
                 }
@@ -384,10 +417,10 @@ namespace Rock.Web.UI.Controls
         protected void _btnSelectPageRoute_Click( object sender, EventArgs e )
         {
             _rblSelectPageRoute.Visible = false;
-            
+
             // pluck the selectedValueId of the Page Params in case the ViewState is shut off
             int selectedValueId = this.Page.Request.Params[_rblSelectPageRoute.UniqueID].AsInteger() ?? 0;
-            PageRoute pageRoute = new PageRouteService().Get(selectedValueId);
+            PageRoute pageRoute = new PageRouteService().Get( selectedValueId );
             SetValue( pageRoute );
         }
 
@@ -407,12 +440,12 @@ namespace Rock.Web.UI.Controls
                 if ( PromptForPageRoute )
                 {
                     _hfPageRouteId.RenderControl( writer );
-                    
+
                     _btnShowPageRoutePicker.RenderControl( writer );
 
-                    writer.Write("<div class='picker'>");
+                    writer.Write( "<div class='picker'>" );
                     writer.Write( string.Format( @"<div id='page-route-picker_{0}' class='picker-menu picker dropdown-menu'>", this.ClientID ) );
-                    
+
 
                     _rblSelectPageRoute.RenderControl( writer );
 
@@ -421,7 +454,7 @@ namespace Rock.Web.UI.Controls
                     _btnSelectPageRoute.RenderControl( writer );
                     writer.WriteLine();
                     _btnCancelPageRoute.RenderControl( writer );
-                    writer.Write("</div>");
+                    writer.Write( "</div>" );
                     writer.Write( @"</div>" );
                     writer.Write( @"</div>" );
                 }
