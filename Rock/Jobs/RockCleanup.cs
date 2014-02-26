@@ -36,6 +36,7 @@ namespace Rock.Jobs
     [IntegerField( "Audit Log Expiration Days", "The number of days to keep items in the audit log (default is 14 days.)", false, 14, "General", 2, "AuditLogExpirationDays" )]
     [IntegerField( "Days to Keep Cached Files", "The number of days to keep cached files in the cache folder (default is 14 days.)", false, 14, "General", 3, "DaysKeepCachedFiles" )]
     [TextField( "Base Cache Folder", "The base/starting Directory for the file cache (default is ~/Cache.)", false, "~/Cache", "General", 4, "BaseCacheDirectory" )]
+    [IntegerField( "Max Metaphone Names", "The maximum number of person names to process metaphone values for each time job is run (only names that have not yet been processed are checked).", false, 500, "General", 5 )]
     public class RockCleanup : IJob
     {        
         /// <summary> 
@@ -129,32 +130,42 @@ namespace Rock.Jobs
             }
 
             // Add any missing metaphones
-            using ( new Rock.Data.UnitOfWorkScope() )
+            int namesToProcess = Int32.Parse( dataMap.GetString( "MaxMetaphoneNames" ) );
+            if ( namesToProcess > 0 )
             {
-                PersonService personService = new PersonService();
-                var firstNameQry = personService.Queryable().Select( p => p.FirstName );
-                var nickNameQry = personService.Queryable().Select( p => p.NickName );
-                var lastNameQry = personService.Queryable().Select( p => p.LastName );
-                var nameQry = firstNameQry.Union( nickNameQry.Union( lastNameQry ) );
-
-                var metaphones = personService.RockContext.Metaphones;
-                var existingNames = metaphones.Select( m => m.Name ).Distinct();
-
-                foreach ( string name in nameQry.Where( n => !existingNames.Contains( n ) ) )
+                using ( new Rock.Data.UnitOfWorkScope() )
                 {
-                    string mp1 = string.Empty;
-                    string mp2 = string.Empty;
-                    Rock.Utility.DoubleMetaphone.doubleMetaphone( name, ref mp1, ref mp2 );
+                    PersonService personService = new PersonService();
+                    var firstNameQry = personService.Queryable().Select( p => p.FirstName );
+                    var nickNameQry = personService.Queryable().Select( p => p.NickName );
+                    var lastNameQry = personService.Queryable().Select( p => p.LastName );
+                    var nameQry = firstNameQry.Union( nickNameQry.Union( lastNameQry ) );
 
-                    var metaphone = new Metaphone();
-                    metaphone.Name = name;
-                    metaphone.Metaphone1 = mp1;
-                    metaphone.Metaphone2 = mp2;
+                    var metaphones = personService.RockContext.Metaphones;
+                    var existingNames = metaphones.Select( m => m.Name ).Distinct();
 
-                    metaphones.Add( metaphone );
+                    // Get the names that have not yet been processed
+                    var namesToUpdate = nameQry
+                        .Where( n => !existingNames.Contains( n ) )
+                        .Take( namesToProcess )
+                        .ToList();
+
+                    foreach ( string name in namesToUpdate )
+                    {
+                        string mp1 = string.Empty;
+                        string mp2 = string.Empty;
+                        Rock.Utility.DoubleMetaphone.doubleMetaphone( name, ref mp1, ref mp2 );
+
+                        var metaphone = new Metaphone();
+                        metaphone.Name = name;
+                        metaphone.Metaphone1 = mp1;
+                        metaphone.Metaphone2 = mp2;
+
+                        metaphones.Add( metaphone );
+                    }
+
+                    personService.RockContext.SaveChanges();
                 }
-
-                personService.RockContext.SaveChanges();
             }
         }
 
