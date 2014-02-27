@@ -187,6 +187,7 @@
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
     <Compile Include="Communication\Transport\Twilio.cs" />
+    <Compile Include="Data\IgnoreCanDelete.cs" />
     <Compile Include="Data\IModel.cs" />
     <Compile Include="Data\IService.cs" />
     <Compile Include="Data\LinqRuntimeTypeBuilder.cs" />
