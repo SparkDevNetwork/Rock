@@ -941,6 +941,11 @@ namespace Rock.Apps.CheckScannerUtility
             txtControlAmount.Text = selectedBatch.ControlAmount.ToString( "F" );
 
             List<FinancialTransaction> transactions = client.GetData<List<FinancialTransaction>>( "api/FinancialTransactions/", string.Format( "BatchId eq {0}", selectedBatch.Id ) );
+            foreach (var transaction in transactions)
+            {
+                transaction.TransactionDetails = client.GetData<List<FinancialTransactionDetail>>( "api/FinancialTransactionDetails/", string.Format( "TransactionId eq {0}", transaction.Id ) );
+            }
+
             grdBatchItems.DataContext = transactions.OrderByDescending( a => a.TransactionDateTime );
         }
 
