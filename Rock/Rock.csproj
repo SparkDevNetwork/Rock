@@ -146,6 +146,7 @@
     <Compile Include="Address\GeocodeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Address\Geocode\Bing.cs" />
     <Compile Include="Attribute\AccountsFieldAttribute.cs" />
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\PersonBadgesAttribute.cs" />
