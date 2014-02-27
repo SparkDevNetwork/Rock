@@ -52,7 +52,7 @@
 	<summary>
 		<codepage>1252</codepage>
 		<title>Installation Database</title>
-		<subject>RockChMS Job Scheduler Service</subject>
+		<subject>RockRMS Job Scheduler Service</subject>
 		<author>##ID_STRING2##</author>
 		<keywords>Installer,MSI,Database</keywords>
 		<comments>Contact:  Your local administrator</comments>
@@ -1146,7 +1146,7 @@
 		<row><td>FavoritesFolder</td><td>TARGETDIR</td><td>.:FAVORI~1|Favorites</td><td/><td>0</td><td/></row>
 		<row><td>FontsFolder</td><td>TARGETDIR</td><td>.:Fonts</td><td/><td>0</td><td/></row>
 		<row><td>GlobalAssemblyCache</td><td>TARGETDIR</td><td>.:Global~1|GlobalAssemblyCache</td><td/><td>0</td><td/></row>
-		<row><td>INSTALLDIR</td><td>ROCKCHMS_JOB_SCHEDULER_SERVICE</td><td>.</td><td/><td>0</td><td/></row>
+		<row><td>INSTALLDIR</td><td>ROCKRMS_JOB_SCHEDULER_SERVICE</td><td>.</td><td/><td>0</td><td/></row>
 		<row><td>ISCommonFilesFolder</td><td>CommonFilesFolder</td><td>Instal~1|InstallShield</td><td/><td>0</td><td/></row>
 		<row><td>ISMyCompanyDir</td><td>ProgramFilesFolder</td><td>MYCOMP~1|My Company Name</td><td/><td>0</td><td/></row>
 		<row><td>ISMyProductDir</td><td>ISMyCompanyDir</td><td>MYPROD~1|My Product Name</td><td/><td>0</td><td/></row>
@@ -1161,7 +1161,7 @@
 		<row><td>ProgramFiles64Folder</td><td>TARGETDIR</td><td>.:Prog64~1|Program Files 64</td><td/><td>0</td><td/></row>
 		<row><td>ProgramFilesFolder</td><td>TARGETDIR</td><td>.:PROGRA~1|program files</td><td/><td>0</td><td/></row>
 		<row><td>ProgramMenuFolder</td><td>TARGETDIR</td><td>.:Programs</td><td/><td>3</td><td/></row>
-		<row><td>ROCKCHMS_JOB_SCHEDULER_SERVICE</td><td>SPARK_DEVELOPMENT_NETWORK</td><td>ROCKCH~1|RockChMS Job Scheduler Service</td><td/><td>0</td><td/></row>
+		<row><td>ROCKRMS_JOB_SCHEDULER_SERVICE</td><td>SPARK_DEVELOPMENT_NETWORK</td><td>ROCKCH~1|RockRMS Job Scheduler Service</td><td/><td>0</td><td/></row>
 		<row><td>RecentFolder</td><td>TARGETDIR</td><td>.:Recent</td><td/><td>0</td><td/></row>
 		<row><td>SPARK_DEVELOPMENT_NETWORK</td><td>ProgramFilesFolder</td><td>SPARKD~1|Spark Development Network</td><td/><td>0</td><td/></row>
 		<row><td>SendToFolder</td><td>TARGETDIR</td><td>.:SendTo</td><td/><td>3</td><td/></row>
@@ -1883,7 +1883,7 @@
 		<col def="S255">ISBuildSourcePath</col>
 		<col def="I4">ISAttributes</col>
 		<col def="S72">ISComponentSubFolder_</col>
-		<row><td>app.config</td><td>ISX_DEFAULTCOMPONENT</td><td>APP~1.CON|app.config</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Projects\Rock-ChMS\RockJobSchedulerService\app.config</td><td>1</td><td/></row>
+		<row><td>app.config</td><td>ISX_DEFAULTCOMPONENT</td><td>APP~1.CON|app.config</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Projects\Rock\RockJobSchedulerService\app.config</td><td>1</td><td/></row>
 		<row><td>rockjobschedulerservice.prim</td><td>RockJobSchedulerService.Primary_output</td><td>RockJobSchedulerService.Primary output</td><td>0</td><td/><td/><td>0</td><td>1</td><td>&lt;RockJobSchedulerService&gt;|Built</td><td>3</td><td/></row>
 	</table>
 
@@ -2648,7 +2648,7 @@
 		<col def="I2">Encoded</col>
 		<col def="S0">Comment</col>
 		<col def="I4">TimeStamp</col>
-		<row><td>COMPANY_NAME</td><td>1033</td><td>Spark Development Network</td><td>0</td><td/><td>1445020970</td></row>
+		<row><td>COMPANY_NAME</td><td>1033</td><td>Spark Development Network</td><td>0</td><td/><td>-786293489</td></row>
 		<row><td>DN_AlwaysInstall</td><td>1033</td><td>Always Install</td><td>0</td><td/><td>1445034537</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_COLOR</td><td>1033</td><td>The color settings of your system are not adequate for running [ProductName].</td><td>0</td><td/><td>1445034537</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_DOTNETVERSION45FULL</td><td>1033</td><td>Microsoft .NET Framework 4.5 Full package or greater needs to be installed for this installation to continue.</td><td>0</td><td/><td>1445045193</td></row>
@@ -3749,8 +3749,8 @@
 		<row><td>IDS__TargetReq_DESC_PROCESSOR</td><td>1033</td><td>The processor is not adequate for running [ProductName].</td><td>0</td><td/><td>1445034537</td></row>
 		<row><td>IDS__TargetReq_DESC_RAM</td><td>1033</td><td>The amount of RAM is not adequate for running [ProductName].</td><td>0</td><td/><td>1445034537</td></row>
 		<row><td>IDS__TargetReq_DESC_RESOLUTION</td><td>1033</td><td>The screen resolution is not adequate for running [ProductName].</td><td>0</td><td/><td>1445034537</td></row>
-		<row><td>ID_STRING1</td><td>1033</td><td>http://www.SparkDevelopmentNetwork.com</td><td>0</td><td/><td>1445020970</td></row>
-		<row><td>ID_STRING2</td><td>1033</td><td>Spark Development Network</td><td>0</td><td/><td>1445020970</td></row>
+		<row><td>ID_STRING1</td><td>1033</td><td>http://www.SparkDevelopmentNetwork.com</td><td>0</td><td/><td>-786293489</td></row>
+		<row><td>ID_STRING2</td><td>1033</td><td>Spark Development Network</td><td>0</td><td/><td>-786293489</td></row>
 		<row><td>IIDS_UITEXT_FeatureUninstalled</td><td>1033</td><td>This feature will remain uninstalled.</td><td>0</td><td/><td>1445034537</td></row>
 	</table>
 
@@ -3993,7 +3993,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>ISTheme</td><td>InstallShield Blue.theme</td></row>
 		<row><td>ISUSLock</td><td>{1E9DA5CF-A8A9-42AE-9DC4-ED2F9A2576B0}</td></row>
 		<row><td>ISUSSignature</td><td>{0E486813-EE2F-4CBF-B8C5-FBFE896E67BA}</td></row>
-		<row><td>ISVisitedViews</td><td>viewAssistant,viewISToday,viewUI,viewSystemSearch,viewInstallScriptStd,viewCustomActions,viewSupportFiles,viewAppV,viewAppFiles,viewProject,viewUpgradePaths,viewUpdateService,viewShortcuts,viewServices,viewRelease</td></row>
+		<row><td>ISVisitedViews</td><td>viewAssistant,viewISToday,viewUI,viewSystemSearch,viewInstallScriptStd,viewCustomActions,viewSupportFiles,viewAppV,viewAppFiles,viewProject,viewUpgradePaths,viewUpdateService,viewShortcuts,viewServices,viewRelease,viewRegistry,viewIniFiles,viewTextFiles,viewBillboards,viewTextMessages,viewDesignPatches</td></row>
 		<row><td>Limited</td><td>1</td></row>
 		<row><td>LockPermissionMode</td><td>1</td></row>
 		<row><td>MsiExecCmdLineOptions</td><td/></row>
@@ -4369,7 +4369,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>PROGMSG_IIS_ROLLBACKVROOTS</td><td>##IDS_PROGMSG_IIS_ROLLBACKVROOTS##</td><td/></row>
 		<row><td>PROGMSG_IIS_ROLLBACKWEBSERVICEEXTENSIONS</td><td>##IDS_PROGMSG_IIS_ROLLBACKWEBSERVICEEXTENSIONS##</td><td/></row>
 		<row><td>ProductCode</td><td>{C4E63CEA-4A85-45A6-9C73-FC3D8E0CA1D1}</td><td/></row>
-		<row><td>ProductName</td><td>RockChMS Job Scheduler Service</td><td/></row>
+		<row><td>ProductName</td><td>RockRMS Job Scheduler Service</td><td/></row>
 		<row><td>ProductVersion</td><td>1.00.0000</td><td/></row>
 		<row><td>ProgressType0</td><td>install</td><td/></row>
 		<row><td>ProgressType1</td><td>Installing</td><td/></row>
