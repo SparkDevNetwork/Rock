@@ -44,6 +44,7 @@ namespace Rock.Model
         /// </value>
         /// 
         [DataMember]
+        [IgnoreCanDelete]
         public int? PageId { get; set; }
 
         /// <summary>
