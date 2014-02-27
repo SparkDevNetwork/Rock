@@ -170,7 +170,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             lbGeocode.CommandName = "geocode";
                             lbGeocode.CommandArgument = loc.Id.ToString();
 
-                            if ( loc.GeocodedDateTime.HasValue )
+                            if ( loc.GeoPoint != null )
                             {
                                 lbGeocode.ToolTip = string.Format( "{0} {1}",
                                     loc.GeoPoint.Latitude,
