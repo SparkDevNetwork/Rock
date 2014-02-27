@@ -652,6 +652,10 @@
     <Compile Include="Migrations\201402271740119_AddMissingBlockTypeCategories.Designer.cs">
       <DependentUpon>201402271740119_AddMissingBlockTypeCategories.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402271850193_AddSPForNullingPageViewPageIds.cs" />
+    <Compile Include="Migrations\201402271850193_AddSPForNullingPageViewPageIds.Designer.cs">
+      <DependentUpon>201402271850193_AddSPForNullingPageViewPageIds.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1121,6 +1125,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402271740119_AddMissingBlockTypeCategories.resx">
       <DependentUpon>201402271740119_AddMissingBlockTypeCategories.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402271850193_AddSPForNullingPageViewPageIds.resx">
+      <DependentUpon>201402271850193_AddSPForNullingPageViewPageIds.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
