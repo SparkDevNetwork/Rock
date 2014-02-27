@@ -1,11 +1,10 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.30110.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{6141683F-8A12-4E36-9623-2EB02B2C2303}") = "RockJobSchedulerServiceInstaller", "RockJobSchedulerServiceInstaller.isproj", "{4E6120EE-5B99-448C-818A-C046A5BFF2AA}"
 	ProjectSection(ProjectDependencies) = postProject
-		{AEF8823B-E45B-4B35-A4D0-C08C1196D017} = {AEF8823B-E45B-4B35-A4D0-C08C1196D017}
 		{40A78663-3080-4A9D-9E11-38A188555C87} = {40A78663-3080-4A9D-9E11-38A188555C87}
 		{8F8C2A79-24F4-4157-8B99-45F75FA85799} = {8F8C2A79-24F4-4157-8B99-45F75FA85799}
 	EndProjectSection
