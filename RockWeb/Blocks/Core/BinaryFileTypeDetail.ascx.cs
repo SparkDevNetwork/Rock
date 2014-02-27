@@ -175,14 +175,13 @@ namespace RockWeb.Blocks.Core
 
             if ( binaryFileType.IsSystem )
             {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( BinaryFileType.FriendlyTypeName );
+                nbEditModeMessage.Text = EditModeMessage.System( BinaryFileType.FriendlyTypeName );
             }
 
             phAttributes.Controls.Clear();
             binaryFileType.LoadAttributes();
 
-            if ( readOnly )
+            if ( readOnly || binaryFileType.IsSystem)
             {
                 lActionTitle.Text = ActionTitle.View( BinaryFileType.FriendlyTypeName ).FormatAsHtmlTitle();
                 btnCancel.Text = "Close";
@@ -193,13 +192,17 @@ namespace RockWeb.Blocks.Core
                 Rock.Attribute.Helper.AddEditControls( binaryFileType, phAttributes, true );
             }
 
-            tbName.ReadOnly = readOnly;
-            tbDescription.ReadOnly = readOnly;
-            tbIconCssClass.ReadOnly = readOnly;
-            gBinaryFileAttributes.Enabled = !readOnly;
-            cbAllowCaching.Enabled = !readOnly;
+            tbName.ReadOnly = readOnly || binaryFileType.IsSystem;
+            tbDescription.ReadOnly = readOnly || binaryFileType.IsSystem;
+            tbIconCssClass.ReadOnly = readOnly || binaryFileType.IsSystem;
+            cbAllowCaching.Enabled = !readOnly && !binaryFileType.IsSystem;
+            gBinaryFileAttributes.Enabled = !readOnly && !binaryFileType.IsSystem;
+
+            // allow storagetype to be edited if IsSystem
             cpStorageType.Enabled = !readOnly;
-            btnSave.Visible = !readOnly;
+
+            // allow save to be clicked if IsSystem since some things can be edited
+            btnSave.Visible = !readOnly ;
 
         }
 
