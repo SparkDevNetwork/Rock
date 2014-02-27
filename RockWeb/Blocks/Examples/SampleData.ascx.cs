@@ -93,9 +93,14 @@ namespace RockWeb.Blocks.Examples
         private Dictionary<int, DateTime> scheduleTimes = new Dictionary<int, DateTime>();
 
         /// <summary>
-        /// Holds a cached copy of the Ids for each person's Guid
+        /// Holds a cached copy of the Id for each person Guid
         /// </summary>
         private Dictionary<Guid, int> peopleDictionary = new Dictionary<Guid, int>();
+
+        /// <summary>
+        /// Holds a cached copy of the location Id for each family Guid
+        /// </summary>
+        private Dictionary<Guid, int> familyLocationDictionary = new Dictionary<Guid, int>();
 
         /// <summary>
         /// Magic kiosk Id used for attendance data.
@@ -134,6 +139,7 @@ namespace RockWeb.Blocks.Examples
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+            Server.ScriptTimeout = 300;
         }
 
         #endregion
@@ -337,12 +343,52 @@ namespace RockWeb.Blocks.Examples
                         break;
                 }
 
+                if ( elemGroup.Attribute( "description" ) != null )
+                {
+                    group.Description = elemGroup.Attribute( "description" ).Value;
+                }
+
                 if ( elemGroup.Attribute( "parentGroupGuid" ) != null )
                 {
                     var parentGroup = groupService.Get( elemGroup.Attribute( "parentGroupGuid" ).Value.AsGuid() );
                     group.ParentGroupId = parentGroup.Id;
                 }
 
+                // Set the group's meeting location
+                if ( elemGroup.Attribute( "meetsAtHomeOfFamily") != null )
+                {
+                    int meetingLocationValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_MEETING_LOCATION.AsGuid() ).Id;
+                    var groupLocation = new GroupLocation()
+                    {
+                        IsMappedLocation = false,
+                        IsMailingLocation = false,
+                        GroupLocationTypeValueId = meetingLocationValueId,
+                        LocationId = familyLocationDictionary[elemGroup.Attribute( "meetsAtHomeOfFamily" ).Value.AsGuid()],
+                    };
+
+                    // Set the group location's GroupMemberPersonId if given (required?)
+                    if ( elemGroup.Attribute( "meetsAtHomeOfPerson" ) != null )
+                    {
+                        groupLocation.GroupMemberPersonId = peopleDictionary[elemGroup.Attribute( "meetsAtHomeOfPerson" ).Value.AsGuid()];
+                    }
+                    group.GroupLocations.Add( groupLocation );
+                }
+
+                group.LoadAttributes();
+
+                // Set the study topic
+                if ( elemGroup.Attribute( "studyTopic" ) != null )
+                {
+                    group.SetAttributeValue( "StudyTopic", elemGroup.Attribute( "studyTopic" ).Value );
+                }
+
+                // Set the meeting time
+                if ( elemGroup.Attribute( "meetingTime" ) != null )
+                {
+                    group.SetAttributeValue( "MeetingTime", elemGroup.Attribute( "meetingTime" ).Value );
+                }
+
+                // Add each person as a member
                 foreach ( var elemPerson in elemGroup.Elements( "person" ) )
                 {
                     Guid personGuid = elemPerson.Attribute( "guid" ).Value.Trim().AsGuid();
@@ -356,6 +402,8 @@ namespace RockWeb.Blocks.Examples
 
                 groupService.Add( group );
                 groupService.Save( group, CurrentPersonAlias );
+                group.SaveAttributeValues( CurrentPersonAlias );
+
             }
         }
 
@@ -960,17 +1008,22 @@ namespace RockWeb.Blocks.Examples
 
                 groupService.AddNewFamilyAddress( family, locationTypeGuid, street1, street2, city, state, zip, CurrentPersonAlias );
 
-                // TODO add latitude and longitude
+                var location = family.GroupLocations.Where( gl => gl.Location.Street1 == street1 ).Select( gl => gl.Location ).FirstOrDefault();
+
+                // Set the address with the given latitude and longitude
                 double latitude;
                 double longitude;
                 if ( !string.IsNullOrEmpty( lat ) && !string.IsNullOrEmpty( lng )
-                    && double.TryParse( lat, out latitude ) && double.TryParse( lng, out longitude ) )
+                    && double.TryParse( lat, out latitude ) && double.TryParse( lng, out longitude )
+                    && location != null )
                 {
-                    var location = family.GroupLocations.Where( gl => gl.Location.Street1 == street1 ).Select( gl => gl.Location ).FirstOrDefault();
-                    if ( location != null )
-                    {
-                        location.SetLocationPointFromLatLong( latitude, longitude );
-                    }
+                    location.SetLocationPointFromLatLong( latitude, longitude );
+                }
+
+                // Put the location id into the dictionary for later use.
+                if ( location != null && !familyLocationDictionary.ContainsKey( family.Guid ) )
+                {
+                    familyLocationDictionary.Add( family.Guid, location.Id );
                 }
             }
         }
