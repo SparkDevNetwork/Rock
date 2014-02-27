@@ -594,7 +594,7 @@ Rock.controls.fileUploader.initialize({{
                 _aFileName.ClientID,
                 _aRemove.ClientID,
                 postBackScript,
-                this.IsBinaryFile.ToTrueFalse().ToLower(),
+                this.IsBinaryFile ? "T" : "F",
                 Rock.Security.Encryption.EncryptString( this.RootFolder ),
                 this.UploadUrl,
                 this.SubmitFunctionClientScript,
