@@ -57,12 +57,22 @@ namespace Rock.Model
         {
             // build the type object, will depend if the class is in an assembly or the App_Code folder
             Type type = null;
-            if ( job.Assembly == string.Empty || job.Assembly == null )
+            
+            if ( string.IsNullOrWhiteSpace(job.Assembly) )
             {
+                // first try to load the job type from the App_Code folder
                 type = BuildManager.GetType( job.Class, false );
+
+                if (type == null)
+                {
+                    // if it couldn't be loaded from the app_code folder, look in Rock.dll
+                    string thetype = string.Format( "{0}, {1}", job.Class, this.GetType().Assembly.FullName );
+                    type = Type.GetType( thetype );
+                }
             }
             else
             {
+                // if an assembly is specified, load the type from that
                 string thetype = string.Format( "{0}, {1}", job.Class, job.Assembly );
                 type = Type.GetType( thetype );
             }
