@@ -553,7 +553,6 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.GroupMember">GroupMember</see> entities representing the group memberships that are associated with
         /// </value>
-        [DataMember]
         [MergeField]
         public virtual ICollection<GroupMember> Members
         {
@@ -568,7 +567,6 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.Attendance"/> entities representing the Person's attendance history.
         /// </value>
-        [DataMember]
         [MergeField]
         public virtual ICollection<Attendance> Attendances
         {
@@ -583,7 +581,6 @@ namespace Rock.Model
         /// <value>
         /// The aliases.
         /// </value>
-        [DataMember]
         public virtual ICollection<PersonAlias> Aliases
         {
             get { return _aliases; }
