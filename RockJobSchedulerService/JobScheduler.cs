@@ -33,11 +33,17 @@ using Rock.Model;
 
 namespace RockJobSchedulerService
 {
+    /// <summary>
+    /// 
+    /// </summary>
     partial class JobScheduler : ServiceBase
     {
         // global Quartz scheduler for jobs
         IScheduler sched = null;
-        
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JobScheduler"/> class.
+        /// </summary>
         public JobScheduler()
         {
             this.ServiceName = "Rock Job Scheduler Service";
@@ -46,8 +52,21 @@ namespace RockJobSchedulerService
             InitializeComponent();
         }
 
+        /// <summary>
+        /// When implemented in a derived class, executes when a Start command is sent to the service by the Service Control Manager (SCM) or when the operating system starts (for a service that starts automatically). Specifies actions to take when the service starts.
+        /// </summary>
+        /// <param name="args">Data passed by the start command.</param>
         protected override void OnStart( string[] args )
         {
+            StartJobScheduler();
+        }
+
+        /// <summary>
+        /// Starts the job scheduler.
+        /// </summary>
+        public void StartJobScheduler()
+        {
+            this.EventLog.WriteEntry( "JobScheduler:" + System.IO.Directory.GetCurrentDirectory() );
             ISchedulerFactory sf;
 
             // create scheduler
@@ -60,21 +79,19 @@ namespace RockJobSchedulerService
             {
                 try
                 {
-
                     IJobDetail jobDetail = jobService.BuildQuartzJob( job );
                     ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
 
                     sched.ScheduleJob( jobDetail, jobTrigger );
-
                 }
                 catch ( Exception ex )
                 {
                     // get path to the services directory
-                    String path = System.Reflection.Assembly.GetExecutingAssembly().Location;
-                    path = System.IO.Path.GetDirectoryName(path);
+                    string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                    path = System.IO.Path.GetDirectoryName( path );
 
                     // create a friendly error message
-                    string message = string.Format("Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the services directory ({2}) of your server.", job.Name, job.Assembly, path);
+                    string message = string.Format( "Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the services directory ({2}) of your server.", job.Name, job.Assembly, path );
                     message = message + "\n\n\n\n" + ex.Message;
                     //throw new JobLoadFailedException( message );
                     job.LastStatusMessage = message;
@@ -89,13 +106,17 @@ namespace RockJobSchedulerService
 
             // start the scheduler
             sched.Start();
-
         }
 
+        /// <summary>
+        /// When implemented in a derived class, executes when a Stop command is sent to the service by the Service Control Manager (SCM). Specifies actions to take when a service stops running.
+        /// </summary>
         protected override void OnStop()
         {
             if ( sched != null )
+            {
                 sched.Shutdown();
+            }
         }
     }
 }
