@@ -181,6 +181,42 @@
 
     </family>
 
+    <!-- Tom and Thomas Miller are actually the same person (duplicate) that needs
+        to be merged. The records have the same email and same phone mumber.
+        Tom Miller used to live at one address but later moved to a new address.
+        Someone created the Thomas Miller account from a 'connection card' placed
+        in the offering satchel because they did not know that the Tom record (which had 
+        a different address) was the same person.
+     -->
+    <family name="Miller Family" guid="ED6AC70A-4022-446D-B116-A1CD611151C4" campus="main campus">
+      <addresses>
+        <address type="home" street1="2302 E Curnow Dr" street2="" city="Phoenix" state="AZ" zip="85016" lat="33.4840026" long="-112.0321966" />
+      </addresses>
+
+      <members>
+        <person guid="47A42BD0-38A3-49D6-A32A-0FCD5E386CC3"
+          firstName="Tom" nickName="Tom" lastName="Miller" birthDate="4/1/1979" gender="male"
+          email="tom.miller@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/miller_tom.jpg"
+          homePhone="6235550909" mobilePhone="" workPhone=""/>
+      </members>
+    </family>
+
+    <family name="Miller Family" guid="A1C61DF4-8C5B-4BD6-90D2-0F09117950A8" campus="main campus">
+      <addresses>
+        <address type="home" street1="11827 N 33rd Circle" street2="" city="Phoenix" state="AZ" zip="85029" lat="33.5943947" long="-112.1305923" />
+      </addresses>
+
+      <members>
+        <person guid="955BF3E9-D38A-4DCB-A6F2-EDF5EC2571C5"
+          firstName="Thomas" nickName="Thomas" lastName="Miller" gender="male"
+          email="tom.miller@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="web prospect"  maritalStatus="single" familyRole="adult"
+          homePhone="6235550909" mobilePhone="" workPhone=""/>
+      </members>
+    </family>
+    
   </families>
 
   <relationships>
@@ -197,7 +233,10 @@
       <person fullname="Jim Simmons" guid="FB5D2DC6-5AB4-4CBD-B02F-3FB9ADBEFD33"/>
     </group>
 
-    <group type="smallgroup" name="Decker Group" guid="62DC3753-01D5-48B5-B22D-D2825D92900B" parentGroupGuid="C05E60C4-6DFC-420D-8DBA-28DBB5F0E3F9 ">
+    <group type="smallgroup" name="Decker Group" guid="62DC3753-01D5-48B5-B22D-D2825D92900B" parentGroupGuid="C05E60C4-6DFC-420D-8DBA-28DBB5F0E3F9"
+           meetsAtHomeOfFamily="53A02527-C2A7-4F36-8585-71A85B8E4601" meetsAtHomeOfPerson="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"
+           studyTopic="Book of Genesis" meetingTime="19:00:00"
+           description ="Small group with Ted as the group leader.">
       <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
       <person fullname="Cindy Decker" guid="B71494DB-D809-451A-A950-28898D0FD92C"/>
       <person fullname="Bill Marble" guid="1EA811BB-3118-42D1-B020-32A82BC8081A"/>

@@ -146,9 +146,14 @@ namespace Rock.SystemGuid
         public const string GROUP_LOCATION_TYPE_WORK = "E071472A-F805-4FC4-917A-D5E3C095C35C";
 
         /// <summary>
-        /// Work Record Type
+        /// Previous Location Type
         /// </summary>
         public const string GROUP_LOCATION_TYPE_PREVIOUS = "853D98F1-6E08-4321-861B-520B4106CFE0";
+
+        /// <summary>
+        /// Meeting Location Type
+        /// </summary>
+        public const string GROUP_LOCATION_TYPE_MEETING_LOCATION = "96D540F5-071D-4BBD-9906-28F0A64D39C4";
 
         #endregion
 
