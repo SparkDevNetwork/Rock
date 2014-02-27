@@ -31,14 +31,17 @@ using Rock.Web.UI;
 namespace Rock.Address.Geocode
 {
     /// <summary>
-    /// The USAddressVerification service from <a href="http://dev.virtualearth.net">Bing</a>
+    /// The geocoding service from <a href="http://dev.virtualearth.net">Bing</a>
     /// </summary>
     [Description( "Address Standardization and Geocoding service from Bing" )]
     [Export( typeof( GeocodeComponent ) )]
     [ExportMetadata( "ComponentName", "Bing" )]
-    [TextField( "Bing Maps Key", "The Bing maps key", true, "", "Security", 0 )]
+    [TextField( "Bing Maps Key", "The Bing maps key", true, "", "", 1 )]
+    [IntegerField("Daily Transaction Limit", "The maximum number of transactions to process each day.", false, 5000, "", 2)]
     public class Bing : GeocodeComponent
     {
+        const string TXN_DATE = "com.rockrms.bing.txnDate";
+        const string DAILY_TXN_COUNT = "com.rockrms.bing.dailyTxnCount";
         /// <summary>
         /// Geocodes the specified address.
         /// </summary>
@@ -51,59 +54,83 @@ namespace Rock.Address.Geocode
         {
             if ( location != null )
             {
-                string key = GetAttributeValue( "BingMapsKey" );
-                string query = HttpUtility.UrlEncode( string.Format( "{0} {1} {2} {3} {4}",
-                    location.Street1, location.Street2, location.City, location.State, location.Zip ) );
+                DateTime? txnDate = Rock.Web.SystemSettings.GetValue( TXN_DATE ).AsDateTime();
+                int? dailyTxnCount = 0;
 
-                Uri geocodeRequest = new Uri( string.Format( "http://dev.virtualearth.net/REST/v1/Locations?q={0}&key={1}", query, key ) );
-
-                WebClient wc = new WebClient();
-                var stream = wc.OpenRead( geocodeRequest );
-
-                DataContractJsonSerializer ser = new DataContractJsonSerializer( typeof( Response ) );
-                var x = ser.ReadObject( stream ) as Response;
-                if ( x != null )
+                if (txnDate.Equals(RockDateTime.Today))
                 {
-                    if ( x.ResourceSets.Length > 0 &&
-                        x.ResourceSets[0].Resources.Length == 1 )
+                    dailyTxnCount = Rock.Web.SystemSettings.GetValue( DAILY_TXN_COUNT ).AsInteger();
+                }
+                else
+                {
+                    Rock.Web.SystemSettings.SetValue( TXN_DATE, RockDateTime.Today.ToShortDateString(), null);
+                }
+
+                int? maxTxnCount = GetAttributeValue( "DailyTransactionLimit" ).AsInteger();
+
+                if ( !maxTxnCount.HasValue || maxTxnCount.Value == 0 || dailyTxnCount < maxTxnCount.Value )
+                {
+                    dailyTxnCount++;
+                    Rock.Web.SystemSettings.SetValue( DAILY_TXN_COUNT, dailyTxnCount.ToString(), null );
+
+                    string key = GetAttributeValue( "BingMapsKey" );
+                    string query = HttpUtility.UrlEncode( string.Format( "{0} {1} {2} {3} {4}",
+                        location.Street1, location.Street2, location.City, location.State, location.Zip ) );
+
+                    Uri geocodeRequest = new Uri( string.Format( "http://dev.virtualearth.net/REST/v1/Locations?q={0}&key={1}", query, key ) );
+
+                    WebClient wc = new WebClient();
+                    var stream = wc.OpenRead( geocodeRequest );
+
+                    DataContractJsonSerializer ser = new DataContractJsonSerializer( typeof( Response ) );
+                    var x = ser.ReadObject( stream ) as Response;
+                    if ( x != null )
                     {
-                        var bingLocation = (Location)x.ResourceSets[0].Resources[0];
-                        var matchCodes = bingLocation.MatchCodes.ToList();
-
-                        result = string.Format( "Confidence: {0}; MatchCodes: {1}",
-                            bingLocation.Confidence, matchCodes.AsDelimited( "," ) );
-                        if ( bingLocation.Confidence == "High" && matchCodes.Contains( "Good" ) )
+                        if ( x.ResourceSets.Length > 0 &&
+                            x.ResourceSets[0].Resources.Length == 1 )
                         {
-                            if ( !location.StandardizedDateTime.HasValue )
-                            {
-                                var address = bingLocation.Address;
-                                if ( address != null )
-                                {
-                                    location.Street1 = address.AddressLine;
-                                    location.City = address.Locality;
-                                    location.State = address.AdminDistrict;
-                                    if ( !location.Zip.StartsWith( address.PostalCode ) )
-                                    {
-                                        location.Zip = address.PostalCode;
-                                    }
-                                    location.StandardizeAttemptedServiceType = "Bing";
-                                    location.StandardizeAttemptedResult = "High";
-                                    location.StandardizedDateTime = RockDateTime.Now;
-                                }
-                            }
+                            var bingLocation = (Location)x.ResourceSets[0].Resources[0];
+                            var matchCodes = bingLocation.MatchCodes.ToList();
 
-                            location.SetLocationPointFromLatLong( bingLocation.Point.Coordinates[0], bingLocation.Point.Coordinates[1] );
-                            return true;
+                            result = string.Format( "Confidence: {0}; MatchCodes: {1}",
+                                bingLocation.Confidence, matchCodes.AsDelimited( "," ) );
+                            if ( bingLocation.Confidence == "High" && matchCodes.Contains( "Good" ) )
+                            {
+                                if ( !location.StandardizedDateTime.HasValue )
+                                {
+                                    var address = bingLocation.Address;
+                                    if ( address != null )
+                                    {
+                                        location.Street1 = address.AddressLine;
+                                        location.City = address.Locality;
+                                        location.State = address.AdminDistrict;
+                                        if ( !location.Zip.StartsWith( address.PostalCode ) )
+                                        {
+                                            location.Zip = address.PostalCode;
+                                        }
+                                        location.StandardizeAttemptedServiceType = "Bing";
+                                        location.StandardizeAttemptedResult = "High";
+                                        location.StandardizedDateTime = RockDateTime.Now;
+                                    }
+                                }
+
+                                location.SetLocationPointFromLatLong( bingLocation.Point.Coordinates[0], bingLocation.Point.Coordinates[1] );
+                                return true;
+                            }
+                        }
+                        else
+                        {
+                            result = "Zero or More than 1 result";
                         }
                     }
                     else
                     {
-                        result = "Zero or More than 1 result";
+                        result = "Invalid response";
                     }
                 }
                 else
                 {
-                    result = "Invalid response";
+                    result = "Daily transaction limit exceeded";
                 }
             }
             else
