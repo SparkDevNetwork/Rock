@@ -10,7 +10,7 @@
 
         <Rock:Grid ID="gValues" runat="server" AllowSorting="false" EmptyDataText="No Results" />
             
-        <Rock:NotificationBox ID="nbSecurityNotice" runat="server" NotificationBoxType="danger" Visible="true" Title="Multiple Email Addresses Exist" Heading="Security Alert" 
+        <Rock:NotificationBox ID="nbSecurityNotice" runat="server" NotificationBoxType="danger" Visible="false" Title="Multiple Email Addresses Exist" Heading="Security Alert" 
             Text="Please choose the correct email address carefully!  After the merge, this person will be prompted to reconfirm their logins using the email address you select.  If it appears that a user created a new email address, you may want to consider manually confirming the validity of that request before selecting the new email address and merging these records." />
 
         <div class="actions pull-right">
