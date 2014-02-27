@@ -204,6 +204,9 @@ namespace RockWeb
             new FieldTypeService().RegisterFieldTypes( Server.MapPath( "~" ) );
 
             BundleConfig.RegisterBundles( BundleTable.Bundles );
+
+            // mark any user login stored as 'IsOnline' in the database as offline
+            MarkOnlineUsersOffline();
         }
 
         /// <summary>
@@ -490,6 +493,17 @@ namespace RockWeb
         protected void Session_End( object sender, EventArgs e )
         {
 
+            // mark user offline
+            if ( this.Session["RockUserId"] != null ) { 
+
+                UserLoginService userLoginService = new UserLoginService();
+
+                var user = userLoginService.Get( Int32.Parse( this.Session["RockUserId"].ToString() ) );
+                user.IsOnLine = false;
+
+                userLoginService.Save( user, null );
+
+            }
         }
 
         /// <summary>
@@ -529,6 +543,9 @@ namespace RockWeb
 
             // process the transaction queue
             DrainTransactionQueue();
+
+            // mark any user login stored as 'IsOnline' in the database as offline
+            MarkOnlineUsersOffline();
         }
 
         #endregion
@@ -544,6 +561,25 @@ namespace RockWeb
             HttpRuntime.Cache.Insert( "IISCallBack", 60, null,
                 RockDateTime.Now.AddSeconds( 60 ), Cache.NoSlidingExpiration,
                 CacheItemPriority.NotRemovable, OnCacheRemove );
+        }
+
+        /// <summary>
+        /// Adds the call back.
+        /// </summary>
+        private void MarkOnlineUsersOffline()
+        {
+            UserLoginService userLoginService = new UserLoginService();
+
+            var usersOnline = userLoginService.Queryable().Where( u => u.IsOnLine == true ).ToList();
+
+            foreach ( var user in usersOnline )
+            {
+                userLoginService.Attach( user );
+                user.IsOnLine = false;
+                userLoginService.Save( user, null );
+            }
+
+   
         }
 
         /// <summary>

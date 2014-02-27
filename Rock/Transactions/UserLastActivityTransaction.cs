@@ -42,6 +42,15 @@ namespace Rock.Transactions
         public DateTime LastActivityDate { get; set; }
 
         /// <summary>
+        /// Gets or sets the rock user id in session.
+        /// </summary>
+        /// <value>
+        /// The rock user id in session.
+        /// </value>
+        public int? SessionUserId { get; set; }
+
+        
+        /// <summary>
         /// Execute method to write transaction to the database.
         /// </summary>
         public void Execute()
@@ -52,6 +61,22 @@ namespace Rock.Transactions
             if ( user != null )
             {
                 user.LastActivityDateTime = LastActivityDate;
+                user.IsOnLine = true;
+
+                // check if this session had a previous account on-line
+                if ( SessionUserId.HasValue )
+                {
+                    if ( SessionUserId != user.Id )
+                    {
+                        // mark old session online
+                        var oldUser = userLoginService.Get( SessionUserId.Value );
+                        oldUser.IsOnLine = false;
+                        userLoginService.Save( oldUser, null );
+                    }
+                }
+
+
+
                 userLoginService.Save( user, null );
             }
         }
