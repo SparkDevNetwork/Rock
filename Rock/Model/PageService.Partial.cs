@@ -32,18 +32,17 @@ namespace Rock.Model
         /// <param name="item">The page.</param>
         /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
-        public override bool Delete( Page item )
+        public override bool Delete( Page item, PersonAlias personAlias )
         {
-            var context = this.RockContext;
-            var pageViewSet = context.PageViews;
-            
-            foreach ( var pageView in pageViewSet.Where( p => p.PageId == item.Id ) )
-            {
-                pageViewSet.Remove( pageView );
-            }
-            context.SaveChanges();
 
-            return base.Delete( item );
+            Service service = new Service();
+
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            parameters.Add( "PageId", item.Id );
+
+            service.ExecuteCommand( "spCore_PageViewNullPageId", System.Data.CommandType.StoredProcedure, parameters );
+
+            return base.Delete( item, personAlias );
         }
 
         
