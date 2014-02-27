@@ -363,7 +363,7 @@
                         <DataGridTextColumn Header="AMOUNT"
                                             HeaderStyle="{StaticResource gridHeaderStyleCurrency}"
                                             CellStyle="{StaticResource gridCellStyleNumber}"
-                                            Binding="{Binding Amount, Converter={StaticResource zeroCurrencyConverter}}"
+                                            Binding="{Binding TotalAmount, Converter={StaticResource zeroCurrencyConverter}}"
                                             CanUserResize="False"
                                             CanUserSort="False" />
                     </DataGrid.Columns>
