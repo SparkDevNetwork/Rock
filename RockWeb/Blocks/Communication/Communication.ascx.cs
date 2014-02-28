@@ -145,15 +145,9 @@ namespace RockWeb.Blocks.Communication
             set { ViewState["AdditionalMergeFields"] = value; }
         }
 
-        private string PageTitle
-        {
-            get { return ViewState["PageTitle"] as string ?? "a New Communication"; }
-            set { ViewState["PageTitle"] = value; }
-        }
-
         #endregion
 
-        #region Control Methods
+        #region Base Control Methods
 
         protected override void OnInit( EventArgs e )
         {
@@ -193,7 +187,37 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
-            BreadCrumbs.Add( new BreadCrumb( PageTitle, true ) );
+        }
+
+        /// <summary>
+        /// Returns breadcrumbs specific to the block that should be added to navigation
+        /// based on the current page reference.  This function is called during the page's
+        /// oninit to load any initial breadcrumbs.
+        /// </summary>
+        /// <param name="pageReference">The <see cref="Rock.Web.PageReference" />.</param>
+        /// <returns>
+        /// A <see cref="System.Collections.Generic.List{BreadCrumb}" /> of block related <see cref="Rock.Web.UI.BreadCrumb">BreadCrumbs</see>.
+        /// </returns>
+        public override List<Rock.Web.UI.BreadCrumb> GetBreadCrumbs( Rock.Web.PageReference pageReference )
+        {
+            var breadCrumbs = new List<BreadCrumb>();
+
+            string pageTitle = "New Communication";
+
+            int? commId = PageParameter( "CommunicationId" ).AsInteger( false );
+            if ( commId.HasValue )
+            {
+                var communication = new CommunicationService().Get( commId.Value );
+                if ( communication != null )
+                {
+                    pageTitle = string.Format( "Communication #{0}", communication.Id );
+                }
+            }
+
+            breadCrumbs.Add( new BreadCrumb( pageTitle, pageReference ) );
+            RockPage.Title = pageTitle;
+
+            return breadCrumbs;
         }
 
         #endregion
@@ -583,7 +607,6 @@ namespace RockWeb.Blocks.Communication
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 communication = new CommunicationService().Get( itemKeyValue );
-                RockPage.PageTitle = string.Format( "Communication #{0}", communication.Id );
                 this.AdditionalMergeFields = communication.AdditionalMergeFields.ToList();
 
                 lTitle.Text = ("Subject: " + communication.Subject).FormatAsHtmlTitle();

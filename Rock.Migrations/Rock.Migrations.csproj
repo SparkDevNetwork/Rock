@@ -656,6 +656,10 @@
     <Compile Include="Migrations\201402271850193_AddSPForNullingPageViewPageIds.Designer.cs">
       <DependentUpon>201402271850193_AddSPForNullingPageViewPageIds.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402272333477_CommunicationTemplate.cs" />
+    <Compile Include="Migrations\201402272333477_CommunicationTemplate.Designer.cs">
+      <DependentUpon>201402272333477_CommunicationTemplate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1128,6 +1132,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402271850193_AddSPForNullingPageViewPageIds.resx">
       <DependentUpon>201402271850193_AddSPForNullingPageViewPageIds.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402272333477_CommunicationTemplate.resx">
+      <DependentUpon>201402272333477_CommunicationTemplate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

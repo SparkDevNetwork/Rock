@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Communication
             else
             {
                 gEmailTemplates.Visible = false;
-                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( EmailTemplate.FriendlyTypeName );
+                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( SystemEmail.FriendlyTypeName );
                 nbMessage.Visible = true;
             }
 
@@ -131,7 +131,7 @@ namespace RockWeb.Blocks.Communication
         protected void gEmailTemplates_Delete( object sender, RowEventArgs e )
         {
             EmailTemplateService emailTemplateService = new EmailTemplateService();
-            EmailTemplate emailTemplate = emailTemplateService.Get( (int)gEmailTemplates.DataKeys[e.RowIndex]["id"] );
+            SystemEmail emailTemplate = emailTemplateService.Get( (int)gEmailTemplates.DataKeys[e.RowIndex]["id"] );
             if ( emailTemplate != null )
             {
                 emailTemplateService.Delete( emailTemplate, CurrentPersonAlias );
