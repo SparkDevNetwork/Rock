@@ -28,31 +28,31 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// EmailTemplate Service class
+    /// SystemEmail Service class
     /// </summary>
-    public partial class EmailTemplateService : Service<SystemEmail>
+    public partial class SystemEmailService : Service<SystemEmail>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="EmailTemplateService"/> class
+        /// Initializes a new instance of the <see cref="SystemEmailService"/> class
         /// </summary>
-        public EmailTemplateService()
+        public SystemEmailService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EmailTemplateService"/> class
+        /// Initializes a new instance of the <see cref="SystemEmailService"/> class
         /// </summary>
         /// <param name="repository">The repository.</param>
-        public EmailTemplateService(IRepository<SystemEmail> repository) : base(repository)
+        public SystemEmailService(IRepository<SystemEmail> repository) : base(repository)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EmailTemplateService"/> class
+        /// Initializes a new instance of the <see cref="SystemEmailService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public EmailTemplateService(RockContext context) : base(context)
+        public SystemEmailService(RockContext context) : base(context)
         {
         }
 
@@ -74,10 +74,10 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class EmailTemplateExtensionMethods
+    public static partial class SystemEmailExtensionMethods
     {
         /// <summary>
-        /// Clones this EmailTemplate object to a new EmailTemplate object
+        /// Clones this SystemEmail object to a new SystemEmail object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
@@ -97,7 +97,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Copies the properties from another EmailTemplate object to this EmailTemplate object
+        /// Copies the properties from another SystemEmail object to this SystemEmail object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
