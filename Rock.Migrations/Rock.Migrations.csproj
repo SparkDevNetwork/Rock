@@ -660,6 +660,10 @@
     <Compile Include="Migrations\201402272333477_CommunicationTemplate.Designer.cs">
       <DependentUpon>201402272333477_CommunicationTemplate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402280022509_StoredProcConsistency.cs" />
+    <Compile Include="Migrations\201402280022509_StoredProcConsistency.Designer.cs">
+      <DependentUpon>201402280022509_StoredProcConsistency.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1135,6 +1139,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402272333477_CommunicationTemplate.resx">
       <DependentUpon>201402272333477_CommunicationTemplate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402280022509_StoredProcConsistency.resx">
+      <DependentUpon>201402280022509_StoredProcConsistency.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
