@@ -18,7 +18,6 @@
                                 <Rock:ReorderField/>
                                 <asp:BoundField DataField="Name" HeaderText="Name"/>
                                 <asp:BoundField DataField="Description" HeaderText="Description"/>
-                                <Rock:DeleteField OnClick="gDefinedValues_Delete" />
                             </Columns>
                         </Rock:Grid>
 
