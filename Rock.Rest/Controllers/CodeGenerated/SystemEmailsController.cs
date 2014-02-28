@@ -26,10 +26,10 @@ using Rock.Model;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// EmailTemplates REST API
+    /// SystemEmails REST API
     /// </summary>
-    public partial class EmailTemplatesController : Rock.Rest.ApiController<Rock.Model.SystemEmail>
+    public partial class SystemEmailsController : Rock.Rest.ApiController<Rock.Model.SystemEmail>
     {
-        public EmailTemplatesController() : base( new Rock.Model.EmailTemplateService() ) { } 
+        public SystemEmailsController() : base( new Rock.Model.SystemEmailService() ) { } 
     }
 }

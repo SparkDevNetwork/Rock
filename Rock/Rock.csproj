@@ -210,6 +210,7 @@
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Jobs\RunSQL.cs" />
+    <Compile Include="Model\CodeGenerated\CommunicationTemplateService.cs" />
     <Compile Include="Model\CommunicationTemplate.cs" />
     <Compile Include="Model\Metaphone.cs" />
     <Compile Include="Model\CodeGenerated\FollowingService.cs" />
@@ -667,8 +668,7 @@
     <Compile Include="Model\LocationService.Partial.cs" />
     <Compile Include="Model\Campus.cs" />
     <Compile Include="Model\CodeGenerated\CampusService.cs" />
-    <Compile Include="Model\CodeGenerated\EmailTemplateService.cs" />
-    <Compile Include="Model\EmailTemplateService.Partial.cs" />
+    <Compile Include="Model\CodeGenerated\SystemEmailService.cs" />
     <Compile Include="Model\CodeGenerated\PersonService.cs" />
     <Compile Include="Model\PersonService.Partial.cs" />
     <Compile Include="Model\PersonAliasService.Partial.cs" />
