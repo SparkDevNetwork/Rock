@@ -298,7 +298,7 @@
         });
 
         $('#<%= pnlFamily.ClientID %>').on('click', 'a', function () {
-            $('.nothing-eligible').html("<i class='fa fa-spinner fa-spin fa-2x'></i>");
+            $('.nothing-eligible').html("<i class='fa fa-refresh fa-spin fa-2x'></i>");
         });
                 
         $find("mpeAddPerson").add_shown(function () {

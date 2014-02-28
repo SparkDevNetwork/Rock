@@ -431,7 +431,7 @@ namespace Rock.Web.UI.Controls
 
             writer.Write( @"
                 <div class='js-upload-progress pull-left' style='display:none'>
-                    <i class='fa fa-spinner fa-3x fa-spin'></i>                    
+                    <i class='fa fa-refresh fa-3x fa-spin'></i>                    
                 </div>" );
             
             writer.AddAttribute( "class", "imageupload-dropzone" );
