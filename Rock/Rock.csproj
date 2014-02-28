@@ -720,7 +720,7 @@
     <Compile Include="Model\FieldType.cs" />
     <Compile Include="Model\ServiceLog.cs" />
     <Compile Include="Model\Location.cs" />
-    <Compile Include="Model\EmailTemplate.cs" />
+    <Compile Include="Model\SystemEmail.cs" />
     <Compile Include="Model\Person.cs" />
     <Compile Include="Model\PhoneNumber.cs" />
     <Compile Include="Extension\IContainer.cs" />
