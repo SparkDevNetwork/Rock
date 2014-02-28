@@ -40,6 +40,7 @@ ORDER BY RC.[Name], A.[Action], A.[Order]
 
 
 -- SQL to create any controllers that are secured
+-- The output of this goes into the migration.  Pre-Beta: Can go to earlier REST migrations and empty them out 
 SELECT DISTINCT
 	'IF NOT EXISTS (SELECT [Id] FROM [RestController] WHERE [ClassName] = ''' + [ClassName] + ''') ' + CHAR(13) + CHAR(9) +
 	'INSERT INTO [RestController] ( [Name], [ClassName], [Guid] )' + CHAR(13) + CHAR(9) + CHAR(9) +
@@ -59,6 +60,7 @@ WHERE [Id] IN (
 )
 
 -- SQL to create any actions that are secured
+-- The output of this goes into the migration.  Pre-Beta: Can go to earlier REST migrations and empty them out 
 SELECT DISTINCT
 	'IF NOT EXISTS (SELECT [Id] FROM [RestAction] WHERE [ApiId] = ''' + RA.[ApiId] + ''') ' + CHAR(13) + CHAR(9) +
 	'INSERT INTO [RestAction] ( [ControllerId], [Method], [ApiId], [Path], [Guid] )' + CHAR(13) + CHAR(9) + CHAR(9) +
@@ -71,6 +73,7 @@ INNER JOIN [RestController] RC ON RC.[Id] = RA.[ControllerId]
 
 
 -- SQL to delete all auth rules associated to REST controllers or actions
+-- This DELETE statement gets pasted into the migration so that following INSERTS will work
 /*
 DELETE A
 FROM [Auth] A
@@ -79,6 +82,7 @@ FROM [Auth] A
 */
 
 -- Generate SQL to create inserts for current db's action auth rules
+-- The output of this goes into the migration.  Pre-Beta: Can go to earlier REST migrations and empty them out 
 SELECT 
 	'INSERT INTO [Auth] ( [EntityTypeId], [EntityId], [Order], [Action], [AllowOrDeny], [SpecialRole], [GroupId], [Guid] ) ' + CHAR(13) + CHAR(9) +
 	'VALUES (' + CHAR(13) + CHAR(9) + CHAR(9) +
@@ -100,6 +104,7 @@ LEFT OUTER JOIN [RestAction] RA ON RA.[Id] = A.[EntityId]
 LEFT OUTER JOIN [Group] G ON G.[Id] = A.[GroupId]
 
 -- Generate SQL to create inserts for current db's controller auth rules
+-- The output of this goes into the migration.  Pre-Beta: Can go to earlier REST migrations and empty them out 
 SELECT 
 	'INSERT INTO [Auth] ( [EntityTypeId], [EntityId], [Order], [Action], [AllowOrDeny], [SpecialRole], [GroupId], [Guid] ) ' + CHAR(13) + CHAR(9) +
 	'VALUES (' + CHAR(13) + CHAR(9) + CHAR(9) +
