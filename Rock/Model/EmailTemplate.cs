@@ -28,9 +28,9 @@ namespace Rock.Model
     /// <summary>
     /// Represents a Rock email template.
     /// </summary>
-    [Table( "EmailTemplate" )]
+    [Table( "SystemEmail" )]
     [DataContract]
-    public partial class EmailTemplate : Model<EmailTemplate>
+    public partial class SystemEmail : Model<SystemEmail>
     {
         /// <summary>
         /// Gets or sets a flag indicating if the email template is part of the Rock core system/framework.
@@ -164,12 +164,12 @@ namespace Rock.Model
     /// <summary>
     /// Email Template Configuration class.
     /// </summary>
-    public partial class EmailTemplateConfiguration : EntityTypeConfiguration<EmailTemplate>
+    public partial class SystemEmailConfiguration : EntityTypeConfiguration<SystemEmail>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="EmailTemplateConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="SystemEmailConfiguration"/> class.
         /// </summary>
-        public EmailTemplateConfiguration()
+        public SystemEmailConfiguration()
         {
             this.HasOptional( p => p.Person ).WithMany( p => p.EmailTemplates ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
         }

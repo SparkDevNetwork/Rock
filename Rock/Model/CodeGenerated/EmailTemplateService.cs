@@ -30,7 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// EmailTemplate Service class
     /// </summary>
-    public partial class EmailTemplateService : Service<EmailTemplate>
+    public partial class EmailTemplateService : Service<SystemEmail>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="EmailTemplateService"/> class
@@ -44,7 +44,7 @@ namespace Rock.Model
         /// Initializes a new instance of the <see cref="EmailTemplateService"/> class
         /// </summary>
         /// <param name="repository">The repository.</param>
-        public EmailTemplateService(IRepository<EmailTemplate> repository) : base(repository)
+        public EmailTemplateService(IRepository<SystemEmail> repository) : base(repository)
         {
         }
 
@@ -64,7 +64,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( EmailTemplate item, out string errorMessage )
+        public bool CanDelete( SystemEmail item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -82,15 +82,15 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static EmailTemplate Clone( this EmailTemplate source, bool deepCopy )
+        public static SystemEmail Clone( this SystemEmail source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as EmailTemplate;
+                return source.Clone() as SystemEmail;
             }
             else
             {
-                var target = new EmailTemplate();
+                var target = new SystemEmail();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
@@ -101,7 +101,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this EmailTemplate target, EmailTemplate source )
+        public static void CopyPropertiesFrom( this SystemEmail target, SystemEmail source )
         {
             target.IsSystem = source.IsSystem;
             target.PersonId = source.PersonId;

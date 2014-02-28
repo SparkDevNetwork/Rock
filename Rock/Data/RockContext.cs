@@ -163,6 +163,14 @@ namespace Rock.Data
         public DbSet<CommunicationRecipient> CommunicationRecipients { get; set; }
 
         /// <summary>
+        /// Gets or sets the communication templates.
+        /// </summary>
+        /// <value>
+        /// The communication templates.
+        /// </value>
+        public DbSet<Rock.Model.CommunicationTemplate> CommunicationTemplates { get; set; }
+
+        /// <summary>
         /// Gets or sets the data views.
         /// </summary>
         /// <value>
@@ -208,7 +216,7 @@ namespace Rock.Data
         /// <value>
         /// the Email Templates.
         /// </value>
-        public DbSet<EmailTemplate> EmailTemplates { get; set; }
+        public DbSet<SystemEmail> EmailTemplates { get; set; }
 
         /// <summary>
         /// Gets or sets the entity types.
@@ -840,12 +848,13 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new CategoryConfiguration() );
             modelBuilder.Configurations.Add( new CommunicationConfiguration() );
             modelBuilder.Configurations.Add( new CommunicationRecipientConfiguration() );
+            modelBuilder.Configurations.Add( new CommunicationTemplateConfiguration() );
             modelBuilder.Configurations.Add( new DataViewConfiguration() );
             modelBuilder.Configurations.Add( new DataViewFilterConfiguration() );
             modelBuilder.Configurations.Add( new DefinedTypeConfiguration() );
             modelBuilder.Configurations.Add( new DefinedValueConfiguration() );
             modelBuilder.Configurations.Add( new DeviceConfiguration() );
-            modelBuilder.Configurations.Add( new EmailTemplateConfiguration() );
+            modelBuilder.Configurations.Add( new SystemEmailConfiguration() );
             modelBuilder.Configurations.Add( new EntityTypeConfiguration() );
             modelBuilder.Configurations.Add( new ExceptionLogConfiguration() );
             modelBuilder.Configurations.Add( new FieldTypeConfiguration() );
