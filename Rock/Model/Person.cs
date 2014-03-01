@@ -372,7 +372,6 @@ namespace Rock.Model
         public Person() : base()
         {
             _users = new Collection<UserLogin>();
-            _emailTemplates = new Collection<SystemEmail>();
             _phoneNumbers = new Collection<PhoneNumber>();
             _members = new Collection<GroupMember>();
             _attendances = new Collection<Attendance>();
@@ -516,20 +515,6 @@ namespace Rock.Model
             set { _users = value; }
         }
         private ICollection<UserLogin> _users;
-
-        /// <summary>
-        /// Gets or sets a collection containing the <see cref="Rock.Model.SystemEmail">EmailTemplates</see> that were created by this Person.
-        /// </summary>
-        /// <value>
-        /// A collection containing the <see cref="Rock.Model.SystemEmail">EmailTemplates</see> that were created by this Person.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<SystemEmail> EmailTemplates
-        {
-            get { return _emailTemplates; }
-            set { _emailTemplates = value; }
-        }
-        private ICollection<SystemEmail> _emailTemplates;
 
         /// <summary>
         /// Gets or sets a collection of <see cref="Rock.Model.PhoneNumber">PhoneNumbers</see> 

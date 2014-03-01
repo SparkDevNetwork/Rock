@@ -104,7 +104,6 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this SystemEmail target, SystemEmail source )
         {
             target.IsSystem = source.IsSystem;
-            target.PersonId = source.PersonId;
             target.Category = source.Category;
             target.Title = source.Title;
             target.From = source.From;
