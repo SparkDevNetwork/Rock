@@ -178,7 +178,7 @@ namespace Rock.Constants
     public static class EditModeMessage
     {
         /// <summary>
-        /// Returns a message in the format: "INFO: This is a read-only system {0}."
+        /// Returns a message in the format: "<h4> Note</h4>Because this {0} is used by Rock, editing is not enabled."
         /// </summary>
         /// <param name="itemFriendlyName">Name of the item friendly.</param>
         /// <returns></returns>
@@ -188,7 +188,7 @@ namespace Rock.Constants
         }
 
         /// <summary>
-        /// Returns a message in the format: "INFO: This is a system {0}."
+        /// Returns a message in the format: "<h4> Note</h4>Because this {0} is used by Rock, editing is restricted."
         /// </summary>
         /// <param name="itemFriendlyName">Name of the item friendly.</param>
         /// <returns></returns>
@@ -198,7 +198,7 @@ namespace Rock.Constants
         }
 
         /// <summary>
-        /// Returns a message in the format: "INFO: You do not have access to edit this {0}."
+        /// Returns a message in the format: ""
         /// </summary>
         /// <param name="itemFriendlyName">Name of the item field.</param>
         /// <returns></returns>

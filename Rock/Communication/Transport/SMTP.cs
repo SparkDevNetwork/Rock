@@ -171,7 +171,7 @@ namespace Rock.Communication.Transport
         /// </summary>
         /// <param name="template">The template.</param>
         /// <param name="recipients">The recipients.</param>
-        public override void Send( EmailTemplate template, Dictionary<string, Dictionary<string, object>> recipients )
+        public override void Send( SystemEmail template, Dictionary<string, Dictionary<string, object>> recipients )
         {
             string from = template.From;
             if (string.IsNullOrWhiteSpace(from))

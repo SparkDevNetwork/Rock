@@ -59,11 +59,11 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Small Group Section group type guid
         /// </summary>
-        public const string GROUPTYPE_SMALL_GROUP_SECTION = "5C1BE068-AC1B-4C6E-83C2-E554CBAC1336";
+        public const string GROUPTYPE_SMALL_GROUP_SECTION = "FAB75EC6-0402-456A-BE34-252097DE4F20";
 
         /// <summary>
         /// Small Group group type guid
         /// </summary>
-        public const string GROUPTYPE_SMALL_GROUP = "B19CA035-148C-426E-9DAA-3F2EA8E25F80";
+        public const string GROUPTYPE_SMALL_GROUP = "50FCFB30-F51A-49DF-86F4-2B176EA1820B";
     }
 }

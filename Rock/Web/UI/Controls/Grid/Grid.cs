@@ -701,7 +701,8 @@ namespace Rock.Web.UI.Controls
             RowSelectedColumns = new Dictionary<int, string>();
             for ( int i = 0; i < this.Columns.Count; i++ )
             {
-                if ( !( this.Columns[i] is INotRowSelectedField ) )
+                var column = this.Columns[i];
+                if ( !( column is INotRowSelectedField ) && !(column is HyperLinkField ) )
                 {
                     RowSelectedColumns.Add( i, this.Columns[i].ItemStyle.CssClass );
                 }

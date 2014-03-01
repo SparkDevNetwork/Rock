@@ -372,7 +372,6 @@ namespace Rock.Model
         public Person() : base()
         {
             _users = new Collection<UserLogin>();
-            _emailTemplates = new Collection<EmailTemplate>();
             _phoneNumbers = new Collection<PhoneNumber>();
             _members = new Collection<GroupMember>();
             _attendances = new Collection<Attendance>();
@@ -516,20 +515,6 @@ namespace Rock.Model
             set { _users = value; }
         }
         private ICollection<UserLogin> _users;
-
-        /// <summary>
-        /// Gets or sets a collection containing the <see cref="Rock.Model.EmailTemplate">EmailTemplates</see> that were created by this Person.
-        /// </summary>
-        /// <value>
-        /// A collection containing the <see cref="Rock.Model.EmailTemplate">EmailTemplates</see> that were created by this Person.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<EmailTemplate> EmailTemplates
-        {
-            get { return _emailTemplates; }
-            set { _emailTemplates = value; }
-        }
-        private ICollection<EmailTemplate> _emailTemplates;
 
         /// <summary>
         /// Gets or sets a collection of <see cref="Rock.Model.PhoneNumber">PhoneNumbers</see> 
@@ -891,6 +876,10 @@ namespace Rock.Model
             }
         }
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Creates a <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of the Person object
         /// </summary>
@@ -902,11 +891,7 @@ namespace Rock.Model
             dictionary.Add( "DaysToBirthday", DaysToBirthday );
             return dictionary;
         }
-
-        #endregion
-
-        #region Methods
-
+        
         /// <summary>
         /// Returns a <see cref="System.String" /> containing the Person's FullName that represents this instance.
         /// </summary>

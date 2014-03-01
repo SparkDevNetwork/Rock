@@ -86,6 +86,9 @@ namespace RockWeb.Blocks.Administration
                 int pageId = int.MinValue;
                 if ( int.TryParse( PageParameter( "Page" ), out pageId ) )
                 {
+                    // hide the current page in the page picker to prevent setting this page's parent page to itself (or one of it's child pages)
+                    ppParentPage.HiddenPageIds = new int[] { pageId };
+                    
                     var pageCache = Rock.Web.Cache.PageCache.Read( pageId );
 
                     DialogPage dialogPage = this.Page as DialogPage;

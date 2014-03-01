@@ -624,6 +624,62 @@
     <Compile Include="Migrations\201402242333082_UpdatePageContent.Designer.cs">
       <DependentUpon>201402242333082_UpdatePageContent.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201402251615420_AddSGGroupTypes.cs" />
+    <Compile Include="Migrations\201402251615420_AddSGGroupTypes.Designer.cs">
+      <DependentUpon>201402251615420_AddSGGroupTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402251711271_InstanceIdAsSetting.cs" />
+    <Compile Include="Migrations\201402251711271_InstanceIdAsSetting.Designer.cs">
+      <DependentUpon>201402251711271_InstanceIdAsSetting.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402251752122_GroupTreeRootGroup.cs" />
+    <Compile Include="Migrations\201402251752122_GroupTreeRootGroup.Designer.cs">
+      <DependentUpon>201402251752122_GroupTreeRootGroup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402252310095_Metaphone.cs" />
+    <Compile Include="Migrations\201402252310095_Metaphone.Designer.cs">
+      <DependentUpon>201402252310095_Metaphone.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402260633011_PageViewTableUpdates.cs" />
+    <Compile Include="Migrations\201402260633011_PageViewTableUpdates.Designer.cs">
+      <DependentUpon>201402260633011_PageViewTableUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402262048025_NonCash.cs" />
+    <Compile Include="Migrations\201402262048025_NonCash.Designer.cs">
+      <DependentUpon>201402262048025_NonCash.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402271740119_AddMissingBlockTypeCategories.cs" />
+    <Compile Include="Migrations\201402271740119_AddMissingBlockTypeCategories.Designer.cs">
+      <DependentUpon>201402271740119_AddMissingBlockTypeCategories.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402271850193_AddSPForNullingPageViewPageIds.cs" />
+    <Compile Include="Migrations\201402271850193_AddSPForNullingPageViewPageIds.Designer.cs">
+      <DependentUpon>201402271850193_AddSPForNullingPageViewPageIds.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402272333477_CommunicationTemplate.cs" />
+    <Compile Include="Migrations\201402272333477_CommunicationTemplate.Designer.cs">
+      <DependentUpon>201402272333477_CommunicationTemplate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402280022509_StoredProcConsistency.cs" />
+    <Compile Include="Migrations\201402280022509_StoredProcConsistency.Designer.cs">
+      <DependentUpon>201402280022509_StoredProcConsistency.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402280709471_UpdateAdminChecklist.cs" />
+    <Compile Include="Migrations\201402280709471_UpdateAdminChecklist.Designer.cs">
+      <DependentUpon>201402280709471_UpdateAdminChecklist.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402281803220_SecureRest3.cs" />
+    <Compile Include="Migrations\201402281803220_SecureRest3.Designer.cs">
+      <DependentUpon>201402281803220_SecureRest3.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403011329500_CommunicationsMenu.cs" />
+    <Compile Include="Migrations\201403011329500_CommunicationsMenu.Designer.cs">
+      <DependentUpon>201403011329500_CommunicationsMenu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403011451393_HTMLCacheDuration.cs" />
+    <Compile Include="Migrations\201403011451393_HTMLCacheDuration.Designer.cs">
+      <DependentUpon>201403011451393_HTMLCacheDuration.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1072,6 +1128,48 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402242333082_UpdatePageContent.resx">
       <DependentUpon>201402242333082_UpdatePageContent.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402251615420_AddSGGroupTypes.resx">
+      <DependentUpon>201402251615420_AddSGGroupTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402251711271_InstanceIdAsSetting.resx">
+      <DependentUpon>201402251711271_InstanceIdAsSetting.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402251752122_GroupTreeRootGroup.resx">
+      <DependentUpon>201402251752122_GroupTreeRootGroup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402252310095_Metaphone.resx">
+      <DependentUpon>201402252310095_Metaphone.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402260633011_PageViewTableUpdates.resx">
+      <DependentUpon>201402260633011_PageViewTableUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402262048025_NonCash.resx">
+      <DependentUpon>201402262048025_NonCash.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402271740119_AddMissingBlockTypeCategories.resx">
+      <DependentUpon>201402271740119_AddMissingBlockTypeCategories.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402271850193_AddSPForNullingPageViewPageIds.resx">
+      <DependentUpon>201402271850193_AddSPForNullingPageViewPageIds.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402272333477_CommunicationTemplate.resx">
+      <DependentUpon>201402272333477_CommunicationTemplate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402280022509_StoredProcConsistency.resx">
+      <DependentUpon>201402280022509_StoredProcConsistency.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402280709471_UpdateAdminChecklist.resx">
+      <DependentUpon>201402280709471_UpdateAdminChecklist.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402281803220_SecureRest3.resx">
+      <DependentUpon>201402281803220_SecureRest3.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403011329500_CommunicationsMenu.resx">
+      <DependentUpon>201403011329500_CommunicationsMenu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403011451393_HTMLCacheDuration.resx">
+      <DependentUpon>201403011451393_HTMLCacheDuration.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

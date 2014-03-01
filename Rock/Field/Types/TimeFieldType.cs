@@ -46,7 +46,7 @@ namespace Rock.Field.Types
             var timeValue = TimeSpan.MinValue;
             if ( TimeSpan.TryParse( value, out timeValue ) )
             {
-                formattedValue = timeValue.ToString();
+                formattedValue = timeValue.ToTimeString();
             }
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );

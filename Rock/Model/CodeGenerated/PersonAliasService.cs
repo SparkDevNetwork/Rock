@@ -120,6 +120,14 @@ namespace Rock.Model
             
             // ignoring CommunicationRecipient,ModifiedByPersonAliasId 
             
+            // ignoring CommunicationTemplate,CreatedByPersonAliasId 
+            
+            // ignoring CommunicationTemplate,ModifiedByPersonAliasId 
+            
+            // ignoring CommunicationTemplate,OwnerPersonAliasId 
+            
+            // ignoring CommunicationTemplate,SenderPersonAliasId 
+            
             // ignoring DataView,CreatedByPersonAliasId 
             
             // ignoring DataView,ModifiedByPersonAliasId 
@@ -139,10 +147,6 @@ namespace Rock.Model
             // ignoring Device,CreatedByPersonAliasId 
             
             // ignoring Device,ModifiedByPersonAliasId 
-            
-            // ignoring EmailTemplate,CreatedByPersonAliasId 
-            
-            // ignoring EmailTemplate,ModifiedByPersonAliasId 
             
             // ignoring ExceptionLog,CreatedByPersonAliasId 
             
@@ -283,6 +287,12 @@ namespace Rock.Model
             // ignoring PageRoute,CreatedByPersonAliasId 
             
             // ignoring PageRoute,ModifiedByPersonAliasId 
+ 
+            if ( new Service<PageView>().Queryable().Any( a => a.PersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, PageView.FriendlyTypeName );
+                return false;
+            }  
             
             // ignoring Person,CreatedByPersonAliasId 
             
@@ -335,6 +345,10 @@ namespace Rock.Model
             // ignoring SiteDomain,CreatedByPersonAliasId 
             
             // ignoring SiteDomain,ModifiedByPersonAliasId 
+            
+            // ignoring SystemEmail,CreatedByPersonAliasId 
+            
+            // ignoring SystemEmail,ModifiedByPersonAliasId 
             
             // ignoring Tag,CreatedByPersonAliasId 
             

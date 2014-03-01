@@ -109,8 +109,7 @@ namespace Rock.Web.UI.Controls
             GridViewRow gridViewRow = lOutputText.NamingContainer as GridViewRow;
             if ( gridViewRow.DataItem != null )
             {
-                Dictionary<string, object> mergeValues = new Dictionary<string, object>();
-                mergeValues.Add( this.LiquidField.LiquidKey, this.ToGridItemsDictionary( gridViewRow, gridViewRow.DataItem ) );
+                Dictionary<string, object> mergeValues = this.ToGridItemsDictionary( gridViewRow, gridViewRow.DataItem );
                 lOutputText.Text = this.LiquidField.LiquidTemplate.ResolveMergeFields( mergeValues );
             }
         }
@@ -152,7 +151,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="dataItem">The data item.</param>
         private void PopulateDataItemPropertiesDictionary( object dataItem )
         {
-            var dataItemProperties = dataItem.GetType().GetProperties().Where( a => !a.GetGetMethod().IsVirtual || a.Name == "Id" || a.Name == "Guid" || a.Name == "Order" ).ToArray();
+            var dataItemProperties = dataItem.GetType().GetProperties().Where( a => !a.GetGetMethod().IsVirtual ).ToArray();
             this.DataItemPropertiesDictionary = new Dictionary<string, System.Reflection.PropertyInfo>();
 
             // add MergeFields based on the associated ColumnHeaderText of each property of the dataitem (without spaces or special chars)

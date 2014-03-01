@@ -1001,8 +1001,8 @@ namespace Rock.Web.UI
                 }
                 transaction.IPAddress = Request.UserHostAddress;
                 transaction.UserAgent = Request.UserAgent;
-                transaction.QueryString = Request.QueryString.ToString();
-                transaction.SessionId = Session.SessionID;
+                transaction.Url = Request.Url.ToString();
+                transaction.SessionId = Session["RockSessionId"].ToString();
 
                 RockQueue.TransactionQueue.Enqueue( transaction );
             }

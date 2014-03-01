@@ -55,12 +55,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             rGroupMembers.ItemCommand += rGroupMembers_ItemCommand;
 
             modalAddPerson.SaveClick += modalAddPerson_SaveClick;
+            modalAddPerson.OnCancelScript = string.Format( "$('#{0}').val('');", hfActiveDialog.ClientID );
 
             string script = @"
     $('a.remove-relationship').click(function(){
         return confirm('Are you sure you want to remove this relationship?');
     });
-
 ";
             ScriptManager.RegisterStartupScript( rGroupMembers, rGroupMembers.GetType(), "ConfirmRemoveRelationship", script, true );
         }

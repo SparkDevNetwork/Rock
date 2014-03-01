@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Web.Security;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -319,6 +320,14 @@ namespace Rock.Model
                             var transaction = new Rock.Transactions.UserLastActivityTransaction();
                             transaction.UserId = user.Id;
                             transaction.LastActivityDate = RockDateTime.Now;
+
+                            if ( HttpContext.Current.Session["RockUserId"] != null )
+                            {
+                                transaction.SessionUserId = (int)HttpContext.Current.Session["RockUserId"];
+                            }
+
+                            HttpContext.Current.Session["RockUserId"] = user.Id;
+
                             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                         }
                         else

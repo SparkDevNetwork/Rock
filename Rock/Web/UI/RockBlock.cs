@@ -321,8 +321,16 @@ namespace Rock.Web.UI
         /// <returns>A <see cref="System.String" /> representing the fully qualified key name.</returns>
         private string ItemCacheKey( string key )
         {
-            return string.Format( "Rock:Page:{0}:RockBlock:{1}:ItemCache:{2}",
-                RockPage.PageId, _blockCache.Id, key );
+            string cacheKeyTemplate = "Rock:{0}:{1}:RockBlock:{2}:ItemCache:{3}";
+
+            if (_blockCache.PageId.HasValue)
+            {
+                return string.Format( cacheKeyTemplate, "Page", _blockCache.PageId.Value, _blockCache.Id, key );
+            }
+            else
+            {
+                return string.Format( cacheKeyTemplate, "Layout", (_blockCache.LayoutId ?? 0), _blockCache.Id, key );
+            }
         }
 
         #endregion

@@ -72,7 +72,7 @@ namespace RockWeb.Blocks.Communication
             int? emailId = PageParameter( "EmailId" ).AsInteger( false );
             if ( emailId.HasValue )
             {
-                EmailTemplate email = new EmailTemplateService().Get( emailId.Value );
+                SystemEmail email = new SystemEmailService().Get( emailId.Value );
                 if ( email != null )
                 {
                     pageTitle = email.Title;
@@ -106,14 +106,14 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            EmailTemplateService emailTemplateService = new EmailTemplateService();
-            EmailTemplate emailTemplate;
+            SystemEmailService emailTemplateService = new SystemEmailService();
+            SystemEmail emailTemplate;
 
             int emailTemplateId = int.Parse(hfEmailTemplateId.Value);
 
             if ( emailTemplateId == 0 )
             {
-                emailTemplate = new EmailTemplate();
+                emailTemplate = new SystemEmail();
                 emailTemplateService.Add( emailTemplate, CurrentPersonAlias );
             }
             else
@@ -155,12 +155,12 @@ namespace RockWeb.Blocks.Communication
             string globalFrom = globalAttributes.GetValue( "OrganizationEmail" );
             tbFrom.Help = string.Format( "If a From value is not entered the 'Organization Email' Global Attribute value of '{0}' will be used when this template is sent.", globalFrom );
 
-            EmailTemplateService emailTemplateService = new EmailTemplateService();
-            EmailTemplate emailTemplate = emailTemplateService.Get( emailTemplateId );
+            SystemEmailService emailTemplateService = new SystemEmailService();
+            SystemEmail emailTemplate = emailTemplateService.Get( emailTemplateId );
 
             if ( emailTemplate != null )
             {
-                lActionTitle.Text = ActionTitle.Edit( EmailTemplate.FriendlyTypeName ).FormatAsHtmlTitle();
+                lActionTitle.Text = ActionTitle.Edit( SystemEmail.FriendlyTypeName ).FormatAsHtmlTitle();
                 hfEmailTemplateId.Value = emailTemplate.Id.ToString();
 
                 tbCategory.Text = emailTemplate.Category;
@@ -174,7 +174,7 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( EmailTemplate.FriendlyTypeName ).FormatAsHtmlTitle();
+                lActionTitle.Text = ActionTitle.Add( SystemEmail.FriendlyTypeName ).FormatAsHtmlTitle();
                 hfEmailTemplateId.Value = 0.ToString();
 
                 tbCategory.Text = string.Empty;

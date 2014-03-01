@@ -87,16 +87,18 @@
                     <!-- this will be for displaying the images -->
                     <asp:DataList ID="dlImages" runat="server" RepeatDirection="Horizontal" RepeatColumns="2" OnItemDataBound="dlImages_ItemDataBound" >
                         <ItemTemplate >
-                            <div class="photo">
-                                <asp:PlaceHolder ID="phImage" runat="server" />
-                            </div>
+                            <div class="photo-display">
+                                <div class="photo">
+                                    <asp:PlaceHolder ID="phImage" runat="server" />
+                                    <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-danger btn-sm image-delete-button" OnClick="lbDelete_Click"><i class="fa fa-times"></i></asp:LinkButton>
+                                </div>
+                           </div>
                         </ItemTemplate>
                     </asp:DataList>
                 </div>
                 <br />
                 <asp:Panel ID="pnlImageUpload" runat="server">
                     <div class="row">
-                        <!-- this will be for the image uploader -->
                         <div class="col-md-3">
                             <Rock:ImageUploader ID="imgupTransactionImages" runat="server" Label="Upload an Image" />
                         </div>

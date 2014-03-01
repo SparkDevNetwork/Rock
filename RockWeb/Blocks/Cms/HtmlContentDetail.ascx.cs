@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Cms
     [TextField("Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 1 )]
     [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 2 )]
     [BooleanField( "User Specific Folders", "Should the root folders be specific to current user?", false, "", 3 )]
-    [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 0, "", 4 )]
+    [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 3600, "", 4 )]
     [TextField( "Context Parameter", "Query string parameter to use for 'personalizing' content based on unique values.", false, "", "", 5 )]
     [TextField( "Context Name", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "", "", 6 )]
     [BooleanField( "Require Approval", "Require that content be approved?", false, "", 7 )]
@@ -182,6 +182,23 @@ namespace RockWeb.Blocks.Cms
             string entityValue = EntityValue();
             HtmlContent htmlContent = new HtmlContentService().GetActiveContent( this.BlockId, entityValue );
 
+            // set Height of editors
+            if ( supportsVersioning && requireApproval )
+            {
+                ceHtml.EditorHeight = "280";
+                htmlEditor.Height = 280;
+            }
+            else if (supportsVersioning)
+            {
+                ceHtml.EditorHeight = "350";
+                htmlEditor.Height = 350;
+            }
+            else
+            {
+                ceHtml.EditorHeight = "380";
+                htmlEditor.Height = 380;
+            }
+
             ShowEditDetail( htmlContent );
         }
 
@@ -258,17 +275,18 @@ namespace RockWeb.Blocks.Cms
 
             htmlContent.StartDateTime = drpDateRange.LowerValue;
             htmlContent.ExpireDateTime = drpDateRange.UpperValue;
+            bool currentUserCanApprove = IsUserAuthorized( "Approve" );
 
-            if ( !requireApproval || IsUserAuthorized( "Approve" ) )
+            if ( !requireApproval || currentUserCanApprove )
             {
-                htmlContent.IsApproved = !requireApproval || hfApprovalStatus.Value.AsBoolean();
+                htmlContent.IsApproved = ( !requireApproval || hfApprovalStatus.Value.AsBoolean() ) || currentUserCanApprove;
                 if ( htmlContent.IsApproved )
                 {
                     int? personId = hfApprovalStatusPersonId.Value.AsInteger( false );
                     if (!personId.HasValue)
                     {
                         // if it wasn't approved, but the current user can approve, make the current user the approver
-                        if (IsUserAuthorized( "Approve" ))
+                        if ( currentUserCanApprove )
                         {
                             personId = this.CurrentPersonId;
                         }

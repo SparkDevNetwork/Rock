@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-// Copyright 2013 by the Spark Development Network
+﻿// Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,6 +13,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Web.UI;

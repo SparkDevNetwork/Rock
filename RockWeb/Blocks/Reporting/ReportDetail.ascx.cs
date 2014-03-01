@@ -862,7 +862,7 @@ namespace RockWeb.Blocks.Reporting
                 gReport.Columns.Clear();
                 int columnIndex = 0;
 
-                if (!string.IsNullOrWhiteSpace(gReport.PersonIdField))
+                if ( !string.IsNullOrWhiteSpace( gReport.PersonIdField ) )
                 {
                     gReport.Columns.Add( new SelectField() );
                     columnIndex++;
@@ -878,23 +878,22 @@ namespace RockWeb.Blocks.Reporting
                         {
                             selectedEntityFields.Add( columnIndex, entityField );
 
-                            if ( reportField.ShowInGrid )
+                            BoundField boundField;
+                            if ( entityField.DefinedTypeId.HasValue )
                             {
-                                BoundField boundField;
-                                if ( entityField.DefinedTypeId.HasValue )
-                                {
-                                    boundField = new DefinedValueField();
-                                }
-                                else
-                                {
-                                    boundField = Grid.GetGridField( entityField.PropertyType );
-                                }
-
-                                boundField.DataField = string.Format( "Entity_{0}_{1}", entityField.Name, columnIndex );
-                                boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? entityField.Title : reportField.ColumnHeaderText;
-                                boundField.SortExpression = entityField.Name;
-                                gReport.Columns.Add( boundField );
+                                boundField = new DefinedValueField();
                             }
+                            else
+                            {
+                                boundField = Grid.GetGridField( entityField.PropertyType );
+                            }
+
+                            boundField.DataField = string.Format( "Entity_{0}_{1}", entityField.Name, columnIndex );
+                            boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? entityField.Title : reportField.ColumnHeaderText;
+                            boundField.SortExpression = entityField.Name;
+                            boundField.Visible = reportField.ShowInGrid;
+                            gReport.Columns.Add( boundField );
+
                         }
                     }
                     else if ( reportField.ReportFieldType == ReportFieldType.Attribute )
@@ -905,54 +904,52 @@ namespace RockWeb.Blocks.Reporting
                             var attribute = AttributeCache.Read( attributeId.Value );
                             selectedAttributes.Add( columnIndex, attribute );
 
-                            if ( reportField.ShowInGrid )
+                            BoundField boundField;
+
+                            if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.BOOLEAN.AsGuid() ) )
                             {
-                                BoundField boundField;
-
-                                if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.BOOLEAN.AsGuid() ) )
-                                {
-                                    boundField = new BoolField();
-                                }
-                                else
-                                {
-                                    boundField = new BoundField();
-                                }
-
-                                boundField.DataField = string.Format( "Attribute_{0}_{1}", attribute.Id, columnIndex );
-                                boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? attribute.Name : reportField.ColumnHeaderText;
-                                boundField.SortExpression = null;
-
-                                if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.INTEGER.AsGuid() ) ||
-                                    attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) )
-                                {
-                                    boundField.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
-                                    boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
-                                }
-
-                                // NOTE:  Additional formatting for attributes is done in the gReport_RowDataBound event
-                                gReport.Columns.Add( boundField );
+                                boundField = new BoolField();
                             }
+                            else
+                            {
+                                boundField = new BoundField();
+                            }
+
+                            boundField.DataField = string.Format( "Attribute_{0}_{1}", attribute.Id, columnIndex );
+                            boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? attribute.Name : reportField.ColumnHeaderText;
+                            boundField.SortExpression = null;
+
+                            if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.INTEGER.AsGuid() ) ||
+                                attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) )
+                            {
+                                boundField.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
+                                boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
+                            }
+
+                            boundField.Visible = reportField.ShowInGrid;
+                            // NOTE:  Additional formatting for attributes is done in the gReport_RowDataBound event
+                            gReport.Columns.Add( boundField );
+
                         }
                     }
                     else if ( reportField.ReportFieldType == ReportFieldType.DataSelectComponent )
                     {
                         selectedComponents.Add( columnIndex, reportField );
-                        if ( reportField.ShowInGrid )
+
+                        DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
+                        if ( selectComponent != null )
                         {
-                            DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
-                            if ( selectComponent != null )
+                            DataControlField columnField = selectComponent.GetGridField( entityType, reportField.Selection );
+
+                            if ( columnField is BoundField )
                             {
-                                DataControlField columnField = selectComponent.GetGridField( entityType, reportField.Selection );
-
-                                if ( columnField is BoundField )
-                                {
-                                    ( columnField as BoundField ).DataField = string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, columnIndex );
-                                }
-
-                                columnField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? selectComponent.ColumnHeaderText : reportField.ColumnHeaderText;
-                                columnField.SortExpression = null;
-                                gReport.Columns.Add( columnField );
+                                ( columnField as BoundField ).DataField = string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, columnIndex );
                             }
+
+                            columnField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? selectComponent.ColumnHeaderText : reportField.ColumnHeaderText;
+                            columnField.SortExpression = null;
+                            columnField.Visible = reportField.ShowInGrid;
+                            gReport.Columns.Add( columnField );
                         }
                     }
                 }

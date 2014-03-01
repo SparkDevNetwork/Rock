@@ -161,14 +161,14 @@ namespace RockWeb
             byte[] fileContent = null;
 
             // Is it cached
-            string cacheName = Uri.EscapeDataString( context.Request.Url.Query );
+            string cacheName = UrlQueryToCachedFileName( context.Request.QueryString, binaryFileMetaData.MimeType );
             string physCachedFilePath = context.Request.MapPath( string.Format( "~/App_Data/Cache/{0}", cacheName ) );
             if ( binaryFileMetaData.BinaryFileType_AllowCaching && File.Exists( physCachedFilePath ) )
             {
                 //// Compare the File's Creation DateTime (which comes from the OS's clock), adjust it for the Rock OrgTimeZone, then compare to BinaryFile's ModifiedDateTime (which is already in OrgTimeZone).
                 //// If the BinaryFile record in the database is less recent than the last time this was cached, it is safe to use the Cached version.
                 //// NOTE: A BinaryFile record is typically just added and never modified (a modify is just creating a new BinaryFile record and deleting the old one), so the cached version will probably always be the correct choice.
-                DateTime cachedFileDateTime = RockDateTime.ConvertLocalDateTimeToRockDateTime(File.GetCreationTime( physCachedFilePath ));
+                DateTime cachedFileDateTime = RockDateTime.ConvertLocalDateTimeToRockDateTime( File.GetCreationTime( physCachedFilePath ) );
                 if ( binaryFileMetaData.ModifiedDateTime < cachedFileDateTime )
                 {
                     // NOTE: the cached file has already been resized (the size is part of the cached file's filename), so we don't need to resize it again
@@ -218,6 +218,41 @@ namespace RockWeb
             context.Response.AddHeader( "content-disposition", "inline;filename=" + binaryFileMetaData.FileName );
             context.Response.BinaryWrite( fileContent );
             context.Response.Flush();
+        }
+
+        /// <summary>
+        /// URLs the name of the query to cached file.
+        /// </summary>
+        /// <param name="queryString">The query string.</param>
+        /// <param name="mimeType">Type of the MIME.</param>
+        /// <returns></returns>
+        private string UrlQueryToCachedFileName( NameValueCollection queryString, string mimeType )
+        {
+            NameValueCollection cleanedQueryString = new NameValueCollection( queryString );
+
+            // remove params that don't have impact on uniqueness
+            cleanedQueryString.Remove("isBinaryFile");
+            cleanedQueryString.Remove("rootFolder");
+            cleanedQueryString.Remove("fileName");
+            
+            string fileName = string.Empty;
+            foreach (var key in cleanedQueryString.Keys)
+            {
+                fileName += (string.Format( "{0}_{1}", key, cleanedQueryString[key as string] )).RemoveSpecialCharacters() + "-";
+            }
+
+            fileName = fileName.TrimEnd( new char[] { '-' } );
+
+            if ( !string.IsNullOrWhiteSpace( mimeType ) )
+            {
+                string[] mimeParts = mimeType.Split( new char[] { '/' } );
+                if ( mimeParts.Length >= 2 )
+                {
+                    fileName += "." + mimeParts[1].Replace( "jpeg", "jpg" ).Replace( "svg+xml", "svg" );
+                }
+            }
+
+            return fileName;
         }
 
         /// <summary>
