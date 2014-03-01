@@ -45,7 +45,6 @@ namespace RockWeb.Blocks.Core
             base.OnInit( e );
 
             gCampuses.DataKeyNames = new string[] { "id" };
-            gCampuses.Actions.ShowAdd = true;
             gCampuses.Actions.AddClick += gCampuses_Add;
             gCampuses.GridRebind += gCampuses_GridRebind;
 

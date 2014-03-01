@@ -40,26 +40,6 @@ namespace Rock.Web.UI.Controls.Communication
         private RockTextBox tbTextMessage;
         private HiddenField hfAttachments;
         private FileUploader fuAttachments;
-        private Dictionary<int, LinkButton> removeButtons;
-
-        #endregion
-
-        #region Constructor
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Email" /> class.
-        /// </summary>
-        public Email()
-        {
-            tbFromName = new RockTextBox();
-            tbFromAddress = new RockTextBox();
-            tbReplyToAddress = new RockTextBox();
-            tbSubject = new RockTextBox();
-            htmlMessage = new HtmlEditor();
-            tbTextMessage = new RockTextBox();
-            hfAttachments = new HiddenField();
-            fuAttachments = new FileUploader();
-        }
 
         #endregion
 
@@ -75,6 +55,7 @@ namespace Rock.Web.UI.Controls.Communication
         {
             get
             {
+                EnsureChildControls();
                 var data = new Dictionary<string, string>();
                 data.Add( "FromName", tbFromName.Text );
                 data.Add( "FromAddress", tbFromAddress.Text );
@@ -88,6 +69,7 @@ namespace Rock.Web.UI.Controls.Communication
 
             set
             {
+                EnsureChildControls();
                 tbFromName.Text = GetDataValue( value, "FromName" );
                 tbFromAddress.Text = GetDataValue( value, "FromAddress" );
                 tbReplyToAddress.Text = GetDataValue( value, "ReplyTo" );
@@ -95,8 +77,6 @@ namespace Rock.Web.UI.Controls.Communication
                 htmlMessage.Text = GetDataValue( value, "HtmlMessage" );
                 tbTextMessage.Text = GetDataValue( value, "TextMessage" );
                 hfAttachments.Value = GetDataValue( value, "Attachments" );
-
-                Attachments = GetAttachments();
             }
         }
 
@@ -110,13 +90,24 @@ namespace Rock.Web.UI.Controls.Communication
         {
             get
             {
-                return ViewState["Attachments"] as Dictionary<int, string> ?? new Dictionary<int, string>();
-            }
+                EnsureChildControls();
 
-            set
-            {
-                ViewState["Attachments"] = value;
-                RecreateChildControls();
+                var attachments = new Dictionary<int, string>();
+
+                var fileIds = new List<int>();
+                hfAttachments.Value.SplitDelimitedValues().ToList().ForEach( v => fileIds.Add(v.AsInteger() ?? 0));
+
+                new BinaryFileService().Queryable()
+                    .Where( f => fileIds.Contains( f.Id ) )
+                    .Select( f => new
+                    {
+                        f.Id,
+                        f.FileName
+                    } )
+                    .ToList()
+                    .ForEach( f => attachments.Add( f.Id, f.FileName ) );
+
+                return attachments;
             }
         }
 
@@ -132,23 +123,28 @@ namespace Rock.Web.UI.Controls.Communication
             base.CreateChildControls();
             Controls.Clear();
 
+            tbFromName = new RockTextBox();
             tbFromName.ID = string.Format( "tbFromName_{0}", this.ID );
             tbFromName.Label = "From Name";
             Controls.Add( tbFromName );
 
+            tbFromAddress = new RockTextBox();
             tbFromAddress.ID = string.Format( "tbFromAddress_{0}", this.ID );
             tbFromAddress.Label = "From Address";
             tbFromAddress.Required = true;
             Controls.Add( tbFromAddress );
 
+            tbReplyToAddress = new RockTextBox();
             tbReplyToAddress.ID = string.Format( "tbReplyToAddress_{0}", this.ID );
             tbReplyToAddress.Label = "Reply To Address";
             Controls.Add( tbReplyToAddress );
 
+            tbSubject = new RockTextBox();
             tbSubject.ID = string.Format( "tbSubject_{0}", this.ID );
             tbSubject.Label = "Subject";
             Controls.Add( tbSubject );
 
+            htmlMessage = new HtmlEditor();
             htmlMessage.ID = string.Format( "htmlMessage_{0}", this.ID );
             htmlMessage.MergeFields.Clear();
             htmlMessage.MergeFields.Add( "GlobalAttribute" );
@@ -157,6 +153,7 @@ namespace Rock.Web.UI.Controls.Communication
             htmlMessage.Label = "Message";
             Controls.Add( htmlMessage );
 
+            tbTextMessage = new RockTextBox();
             tbTextMessage.ID = string.Format( "tbTextMessage_{0}", this.ID );
             tbTextMessage.Label = "Message (Text Version)";
             tbTextMessage.TextMode = TextBoxMode.MultiLine;
@@ -164,23 +161,15 @@ namespace Rock.Web.UI.Controls.Communication
             tbTextMessage.CssClass = "span12";
             Controls.Add( tbTextMessage );
 
+            hfAttachments = new HiddenField();
             hfAttachments.ID = string.Format( "hfAttachments_{0}", this.ID );
             Controls.Add( hfAttachments );
 
+            fuAttachments = new FileUploader();
             fuAttachments.ID = string.Format( "fuAttachments_{0}", this.ID );
             fuAttachments.Label = "Attachments";
             fuAttachments.FileUploaded += fuAttachments_FileUploaded;
             Controls.Add( fuAttachments );
-
-            removeButtons = new Dictionary<int, LinkButton>();
-            foreach ( var attachment in Attachments )
-            {
-                var lbRemove = new LinkButton();
-                lbRemove.ID = string.Format( "lbRemove_{0}_{1}", this.ID, attachment.Key );
-                lbRemove.Click += lbRemove_Click;
-                Controls.Add( lbRemove );
-                removeButtons.Add( attachment.Key, lbRemove );
-            }
         }
 
         /// <summary>
@@ -190,6 +179,8 @@ namespace Rock.Web.UI.Controls.Communication
         /// <exception cref="System.NotImplementedException"></exception>
         public override void InitializeFromSender( Person sender )
         {
+            EnsureChildControls();
+
             if ( string.IsNullOrEmpty( tbFromName.Text ) )
             {
                 tbFromName.Text = sender.FullName;
@@ -235,18 +226,20 @@ namespace Rock.Web.UI.Controls.Communication
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Target, "_blank" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Href,
-                    string.Format( "{0}GetFile.ashx?{1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), attachment.Key ) );
+                    string.Format( "{0}GetFile.ashx?id={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), attachment.Key ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
                 writer.Write( attachment.Value );
                 writer.RenderEndTag();
 
                 writer.Write( " " );
 
-                removeButtons[attachment.Key].RenderBeginTag(writer);
+                writer.RenderBeginTag( HtmlTextWriterTag.A );
+                writer.AddAttribute( HtmlTextWriterAttribute.Onclick, 
+                    string.Format( "removeAttachment( this, '{0}', '{1}' );", hfAttachments.ClientID, attachment.Key ) );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-times" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
-                removeButtons[attachment.Key].RenderEndTag( writer );
+                writer.RenderEndTag();
                             
                 writer.RenderEndTag();  // li
             }
@@ -268,6 +261,8 @@ namespace Rock.Web.UI.Controls.Communication
             writer.RenderEndTag();
 
             writer.RenderEndTag();
+
+            RegisterClientScript();
         }
 
         #endregion
@@ -281,67 +276,38 @@ namespace Rock.Web.UI.Controls.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void fuAttachments_FileUploaded( object sender, EventArgs e )
         {
+            EnsureChildControls();
             var attachmentList = hfAttachments.Value.SplitDelimitedValues().ToList();
             attachmentList.Add( fuAttachments.BinaryFileId.ToString() );
             hfAttachments.Value = attachmentList.AsDelimited( "," );
-
             fuAttachments.BinaryFileId = null;
-
-            Attachments = GetAttachments();
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbRemove control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void lbRemove_Click( object sender, EventArgs e )
-        {
-            LinkButton lbRemove = sender as LinkButton;
-            var idParts = lbRemove.ID.Split( '_' );
-            if ( idParts.Length == 3 )
-            {
-                hfAttachments.Value = hfAttachments.Value.SplitDelimitedValues()
-                    .ToList()
-                    .Where( i => i != idParts[2] )
-                    .Select( i => i.ToString() )
-                    .ToList()
-                    .AsDelimited( "," );
-
-                Attachments = GetAttachments();
-            }
         }
 
         #endregion
 
-        #region Private Methods
+        #region Methods
 
         /// <summary>
-        /// Creates the attachment list.
+        /// Registers the client script.
         /// </summary>
-        private Dictionary<int, string> GetAttachments()
+        private void RegisterClientScript()
         {
-            var attachments = new Dictionary<int, string>();
+            string script = @"
+function removeAttachment(source, hf, fileId)
+{
+    // Get the attachment list
+    var $hf = $('#' + hf);
+    var fileIds = $hf.val().split(',');
 
-            var service = new BinaryFileService();
-            foreach ( string FileId in hfAttachments.Value.SplitDelimitedValues() )
-            {
-                int binaryFileId = int.MinValue;
-                if ( int.TryParse( FileId, out binaryFileId ) )
-                {
-                    string fileName = service.Queryable()
-                        .Where( f => f.Id == binaryFileId )
-                        .Select( f => f.FileName )
-                        .FirstOrDefault();
+    // Remove the selected attachment 
+    var removeAt = $.inArray(fileId, fileIds);
+    fileIds.splice(removeAt, 1);
+    $hf.val(fileIds.join());
 
-                    if ( fileName != null )
-                    {
-                        attachments.Add( binaryFileId, fileName );
-                    }
-                }
-            }
-
-            return attachments;
+    // Remove parent <li>
+    $(source).closest($('li')).remove();
+}";
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "removeAttachment", script, true );
         }
 
         #endregion

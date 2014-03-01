@@ -672,6 +672,10 @@
     <Compile Include="Migrations\201402281803220_SecureRest3.Designer.cs">
       <DependentUpon>201402281803220_SecureRest3.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201403011329500_CommunicationsMenu.cs" />
+    <Compile Include="Migrations\201403011329500_CommunicationsMenu.Designer.cs">
+      <DependentUpon>201403011329500_CommunicationsMenu.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1156,6 +1160,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201402281803220_SecureRest3.resx">
       <DependentUpon>201402281803220_SecureRest3.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403011329500_CommunicationsMenu.resx">
+      <DependentUpon>201403011329500_CommunicationsMenu.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
