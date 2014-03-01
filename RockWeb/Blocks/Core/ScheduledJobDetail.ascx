@@ -33,7 +33,7 @@
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlNotificationStatus" runat="server" Label="Notification Status" TabIndex="5" />
                         <Rock:DataTextBox ID="tbCronExpression" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock" PropertyName="CronExpression" 
-                            Help="Add a valid cron expression. Need help? Try <a href='http://cronmaker.com' target='_blank'>CronMaker</a>." TabIndex="7" />
+                            Help="Add a valid cron expression. Need help? Try <a href='http://www.cronmaker.com' target='_blank'>CronMaker</a>." TabIndex="7" />
                     </div>
                 </div>
 
