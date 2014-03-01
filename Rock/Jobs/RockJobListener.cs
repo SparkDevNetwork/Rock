@@ -101,7 +101,7 @@ namespace Rock.Jobs
                 sendMessage = true;
 
             // set last run date
-            job.LastRunDateTime = context.FireTimeUtc.Value.DateTime.ToLocalTime();
+            job.LastRunDateTime = RockDateTime.Now; // context.FireTimeUtc.Value.DateTime.ToLocalTime();
 
             // set run time
             job.LastRunDurationSeconds = Convert.ToInt32(context.JobRunTime.TotalSeconds);
