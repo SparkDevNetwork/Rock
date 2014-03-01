@@ -306,16 +306,16 @@ namespace RockWeb.Blocks.Groups
                         Rock.Security.Authorization.Flush();
                     }
                 }
+
+                // reload page, selecting the deleted group's parent
+                var qryParams = new Dictionary<string, string>();
+                if ( parentGroupId != null )
+                {
+                    qryParams["groupId"] = parentGroupId.ToString();
+                }
+
+                NavigateToPage( RockPage.Guid, qryParams );
             } );
-
-            // reload page, selecting the deleted group's parent
-            var qryParams = new Dictionary<string, string>();
-            if ( parentGroupId != null )
-            {
-                qryParams["groupId"] = parentGroupId.ToString();
-            }
-
-            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>

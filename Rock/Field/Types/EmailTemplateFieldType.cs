@@ -42,7 +42,7 @@ namespace Rock.Field.Types
         {
             var editControl = new RockDropDownList { ID = id };
 
-            var systemEmails = new EmailTemplateService().Queryable().OrderBy( e => e.Title );
+            var systemEmails = new SystemEmailService().Queryable().OrderBy( e => e.Title );
             if ( systemEmails.Any() )
             {
                 foreach ( var systemEmail in systemEmails )

@@ -150,16 +150,16 @@ namespace RockWeb.Blocks.Core
                     locationService.Delete( location, CurrentPersonAlias );
                     locationService.Save( location, CurrentPersonAlias );
                 }
+
+                // reload page, selecting the deleted location's parent
+                var qryParams = new Dictionary<string, string>();
+                if ( parentLocationId != null )
+                {
+                    qryParams["locationId"] = parentLocationId.ToString();
+                }
+
+                NavigateToPage( RockPage.Guid, qryParams );
             } );
-
-            // reload page, selecting the deleted location's parent
-            var qryParams = new Dictionary<string, string>();
-            if ( parentLocationId != null )
-            {
-                qryParams["locationId"] = parentLocationId.ToString();
-            }
-
-            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>

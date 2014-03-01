@@ -5,8 +5,8 @@
 
     Rock.controls.itemPicker = (function () {
         var ItemPicker = function (options) {
-                this.options = options;
-            },
+            this.options = options;
+        },
             exports;
 
         ItemPicker.prototype = {
@@ -44,7 +44,7 @@
                 if ($hfItemIds.val() && $hfItemIds !== '0') {
                     treeOptions.selectedIds = $hfItemIds.val().split(',');
                 }
-                
+
                 if ($hfExpandedIds.val()) {
                     treeOptions.expandedIds = $hfExpandedIds.val().split(',');
                 }
@@ -62,19 +62,7 @@
                 // Bind tree events
                 $control.find('.treeview')
                     .on('rockTree:selected', function () {
-                        var rockTree = $(this).data('rockTree'),
-                            selectedNodes = rockTree.selectedNodes,
-                            selectedIds = [],
-                            selectedNames = [];
-
-                        $.each(selectedNodes, function (index, node) {
-                            selectedIds.push(node.id);
-                            selectedNames.push(node.name);
-                        });
-
-                        $hfItemIds.val(selectedIds.join(','));
-                        $hfItemNames.val(selectedNames.join(','));
-                        $spanNames.text(selectedNames.join(', '));
+                        // intentionally blank
                     })
                     .on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree:rendered', function (evt) {
                         self.updateScrollbar();
@@ -96,7 +84,26 @@
                         $control.find('.rock-picker-select-none').fadeOut(500);
                     });
 
-                $control.find('.picker-cancel, .picker-btn').click(function () {
+                $control.find('.picker-cancel').click(function () {
+                    $(this).closest('.picker-menu').slideUp();
+                });
+
+                $control.find('.picker-btn').click(function () {
+
+                    var rockTree = $control.find('.treeview').data('rockTree'),
+                            selectedNodes = rockTree.selectedNodes,
+                            selectedIds = [],
+                            selectedNames = [];
+
+                    $.each(selectedNodes, function (index, node) {
+                        selectedIds.push(node.id);
+                        selectedNames.push(node.name);
+                    });
+
+                    $hfItemIds.val(selectedIds.join(','));
+                    $hfItemNames.val(selectedNames.join(','));
+                    $spanNames.text(selectedNames.join(', '));
+
                     $(this).closest('.picker-menu').slideUp();
                 });
 

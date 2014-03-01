@@ -371,17 +371,58 @@ namespace Rock.Model
                 lastName = fullName.Trim();
             }
 
-            return Queryable( includeDeceased )
-                .Where( p =>
-                    !excludeIds.Contains( p.Id ) &&
-                    SqlFunctions.SoundCode( p.LastName ) == SqlFunctions.SoundCode(lastName) &&
-                    ( SqlFunctions.SoundCode( p.FirstName ) == SqlFunctions.SoundCode(firstName) ||
-                      SqlFunctions.SoundCode( p.NickName ) == SqlFunctions.SoundCode(firstName) ) )
-                .Select( p => ( reversed ?
-                    p.LastName + ", " + p.NickName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Name : "" ) :
-                    p.NickName + " " + p.LastName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Name : "" ) ) )
-                .Distinct()
-                .ToList();
+            var similarNames = new List<string>();
+
+            if ( !string.IsNullOrWhiteSpace( firstName ) && !string.IsNullOrWhiteSpace( lastName ) )
+            {
+                var metaphones = this.RockContext.Metaphones;
+
+                string ln1 = string.Empty;
+                string ln2 = string.Empty;
+                Rock.Utility.DoubleMetaphone.doubleMetaphone( lastName, ref ln1, ref ln2 );
+                ln1 = ln1 ?? "";
+                ln2 = ln2 ?? "";
+
+                var lastNames = metaphones
+                    .Where( m =>
+                        ( ln1 != "" && ( m.Metaphone1 == ln1 || m.Metaphone2 == ln1 ) ) ||
+                        ( ln2 != "" && ( m.Metaphone1 == ln2 || m.Metaphone2 == ln2 ) ) )
+                    .Select( m => m.Name )
+                    .Distinct()
+                    .ToList();
+
+                if ( lastNames.Any() )
+                {
+                    string fn1 = string.Empty;
+                    string fn2 = string.Empty;
+                    Rock.Utility.DoubleMetaphone.doubleMetaphone( firstName, ref fn1, ref fn2 );
+                    fn1 = fn1 ?? "";
+                    fn2 = fn2 ?? "";
+
+                    var firstNames = metaphones
+                        .Where( m => 
+                            ( fn1 != "" && ( m.Metaphone1 == fn1 || m.Metaphone2 == fn1 ) ) ||
+                            ( fn2 != "" && ( m.Metaphone1 == fn2 || m.Metaphone2 == fn2 ) ) )
+                        .Select( m => m.Name )
+                        .Distinct()
+                        .ToList();
+
+                    if ( firstNames.Any() )
+                    {
+                        similarNames = Queryable( includeDeceased )
+                        .Where( p => !excludeIds.Contains( p.Id ) &&
+                            lastNames.Contains( p.LastName ) &&
+                            ( firstNames.Contains( p.FirstName ) || firstNames.Contains( p.NickName ) ) )
+                        .Select( p => ( reversed ?
+                            p.LastName + ", " + p.NickName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Name : "" ) :
+                            p.NickName + " " + p.LastName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Name : "" ) ) )
+                        .Distinct()
+                        .ToList();
+                    }
+                }
+            }
+
+            return similarNames;
         }
 
         /// <summary>

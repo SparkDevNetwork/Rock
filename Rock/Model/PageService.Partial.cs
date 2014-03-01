@@ -27,6 +27,27 @@ namespace Rock.Model
     public partial class PageService 
     {
         /// <summary>
+        /// Deletes the specified page.
+        /// </summary>
+        /// <param name="item">The page.</param>
+        /// <param name="personAlias">The person alias.</param>
+        /// <returns></returns>
+        public override bool Delete( Page item, PersonAlias personAlias )
+        {
+
+            Service service = new Service();
+
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            parameters.Add( "PageId", item.Id );
+
+            service.ExecuteCommand( "spCore_PageViewNullPageId", System.Data.CommandType.StoredProcedure, parameters );
+
+            return base.Delete( item, personAlias );
+        }
+
+        
+        
+        /// <summary>
         /// Gets an enumerable collection of <see cref="Rock.Model.Page"/> entities by the parent <see cref="Rock.Model.Page">Page's</see> Id.
         /// </summary>
         /// <param name="parentPageId">The Id of the Parent <see cref="Rock.Model.Page"/> to search by. </param>

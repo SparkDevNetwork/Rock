@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Groups
 
     [TextField( "Treeview Title", "Group Tree View", false )]
     [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false )]
-    [GroupField( "Group", "Select the root group to show in this block.", false )]
+    [GroupField( "Root Group", "Select the root group to use as a starting point for the tree view.", false )]
     [BooleanField( "Limit to Security Role Groups" )]
     [LinkedPage("Detail Page")]
     public partial class GroupTreeView : RockBlock
@@ -61,7 +61,7 @@ namespace RockWeb.Blocks.Groups
             
             hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
             hfLimitToSecurityRoleGroups.Value = GetAttributeValue( "LimittoSecurityRoleGroups" );
-            hfRootGroupId.Value = GetAttributeValue( "Group" );
+            hfRootGroupId.Value = GetAttributeValue( "RootGroup" );
 
             // limit GroupType selection to what Block Attributes allow
             List<Guid> groupTypeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( Guid.Parse ).ToList();
@@ -128,10 +128,20 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 // get the parents of the selected item so we can tell the treeview to expand those
+                int? rootGroupId = GetAttributeValue( "RootGroup" ).AsInteger();
                 List<string> parentIdList = new List<string>();
                 while ( group != null )
                 {
-                    group = group.ParentGroup;
+                    if ( group.Id == rootGroupId )
+                    {
+                        // stop if we are at the root group
+                        group = null;
+                    }
+                    else
+                    {
+                        group = group.ParentGroup;
+                    }
+
                     if ( group != null )
                     {
                         parentIdList.Insert( 0, group.Id.ToString() );

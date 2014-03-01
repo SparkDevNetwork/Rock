@@ -146,6 +146,7 @@
     <Compile Include="Address\GeocodeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Address\Geocode\Bing.cs" />
     <Compile Include="Attribute\AccountsFieldAttribute.cs" />
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\PersonBadgesAttribute.cs" />
@@ -186,6 +187,7 @@
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
     <Compile Include="Communication\Transport\Twilio.cs" />
+    <Compile Include="Data\IgnoreCanDelete.cs" />
     <Compile Include="Data\IModel.cs" />
     <Compile Include="Data\IService.cs" />
     <Compile Include="Data\LinqRuntimeTypeBuilder.cs" />
@@ -208,6 +210,9 @@
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Jobs\RunSQL.cs" />
+    <Compile Include="Model\CodeGenerated\CommunicationTemplateService.cs" />
+    <Compile Include="Model\CommunicationTemplate.cs" />
+    <Compile Include="Model\Metaphone.cs" />
     <Compile Include="Model\CodeGenerated\FollowingService.cs" />
     <Compile Include="Model\Following.cs" />
     <Compile Include="Model\AuditDetail.cs" />
@@ -267,6 +272,8 @@
     <Compile Include="Reporting\EntityHelper.cs" />
     <Compile Include="Reporting\SelectExpressionExtractor.cs" />
     <Compile Include="Reporting\FilterExpressionExtractor.cs" />
+    <Compile Include="Transactions\SaveMetaphoneTransaction.cs" />
+    <Compile Include="Utility\DoubleMetaphone.cs" />
     <Compile Include="Utility\RockDateTime.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
@@ -661,8 +668,7 @@
     <Compile Include="Model\LocationService.Partial.cs" />
     <Compile Include="Model\Campus.cs" />
     <Compile Include="Model\CodeGenerated\CampusService.cs" />
-    <Compile Include="Model\CodeGenerated\EmailTemplateService.cs" />
-    <Compile Include="Model\EmailTemplateService.Partial.cs" />
+    <Compile Include="Model\CodeGenerated\SystemEmailService.cs" />
     <Compile Include="Model\CodeGenerated\PersonService.cs" />
     <Compile Include="Model\PersonService.Partial.cs" />
     <Compile Include="Model\PersonAliasService.Partial.cs" />
@@ -714,7 +720,7 @@
     <Compile Include="Model\FieldType.cs" />
     <Compile Include="Model\ServiceLog.cs" />
     <Compile Include="Model\Location.cs" />
-    <Compile Include="Model\EmailTemplate.cs" />
+    <Compile Include="Model\SystemEmail.cs" />
     <Compile Include="Model\Person.cs" />
     <Compile Include="Model\PhoneNumber.cs" />
     <Compile Include="Extension\IContainer.cs" />

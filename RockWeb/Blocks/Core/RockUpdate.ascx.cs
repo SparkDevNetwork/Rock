@@ -23,6 +23,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Reflection;
 using System.IO;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
 
@@ -75,6 +76,10 @@ namespace RockWeb.Blocks.Core
         /// <param name="e"></param>
         protected void Page_Load( object sender, EventArgs e )
         {
+            // Set timeout for up to 15 minutes (just like installer)
+            Server.ScriptTimeout = 900;
+            ScriptManager.GetCurrent( Page ).AsyncPostBackTimeout = 900;
+
             DisplayRockVersion();
             if ( !IsPostBack )
             {
@@ -173,8 +178,6 @@ namespace RockWeb.Blocks.Core
                 var update = NuGetService.SourceRepository.FindPackage( _rockPackageId, ( version != null ) ? SemanticVersion.Parse( version ) : null, false, false );
                 var installed = NuGetService.GetInstalledPackage( _rockPackageId );
                 
-                // Set timeout for up to 15 minutes (just like installer)
-                Server.ScriptTimeout = 900;
                 if ( installed == null )
                 {
                     errors = NuGetService.InstallPackage( update );

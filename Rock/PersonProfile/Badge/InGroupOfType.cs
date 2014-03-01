@@ -90,9 +90,6 @@ namespace Rock.PersonProfile.Badge
                                             }}
                                             $('.badge-ingroupoftype').html(badgeHtml);
                                             $('.badge-ingroupoftype').attr('data-original-title', labelText);
-console.log(data);
-                                                
-
                                         }}
                                     }},
                             }});

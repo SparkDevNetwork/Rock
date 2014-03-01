@@ -189,7 +189,7 @@ namespace Rock.Model
             SqlConnection conn = new SqlConnection( string.Format( "{0};Asynchronous Processing=true;", ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString ) );
             conn.Open();
             SqlCommand cmd = conn.CreateCommand();
-            cmd.CommandText = "spBinaryFileGet";
+            cmd.CommandText = "spCore_BinaryFileGet";
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.Add( new SqlParameter( "@Id", fileId.HasValue ? fileId.Value : 0 ) );
             cmd.Parameters.Add( new SqlParameter( "@Guid", fileGuid ) );
@@ -221,7 +221,7 @@ namespace Rock.Model
             {
                 BinaryFile binaryFile = new BinaryFile();
 
-                // Columns must be read in Sequential Order (see stored procedure spBinaryFileGet)
+                // Columns must be read in Sequential Order (see stored procedure spCore_BinaryFileGet)
                 reader.Read();
                 binaryFile.Id = reader["Id"] as int? ?? 0;
                 binaryFile.IsTemporary = ( (bool)reader["IsTemporary"] );

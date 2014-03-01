@@ -194,6 +194,7 @@ namespace Rock.Extension
                         return isActive;
                     }
                 }
+
                 return isActive;
             }
         }

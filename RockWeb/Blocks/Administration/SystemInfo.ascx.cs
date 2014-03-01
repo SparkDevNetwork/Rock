@@ -103,6 +103,26 @@ namespace RockWeb.Blocks.Administration
                 Rock.Web.Cache.DefinedValueCache.Flush( definedValue.Id );
             }
 
+            foreach ( var group in new Rock.Model.GroupTypeService().Queryable().ToList() )
+            {
+                Rock.Web.Cache.GroupTypeCache.Flush( group.Id );
+            }
+
+            foreach ( var campus in new Rock.Model.CampusService().Queryable().ToList() )
+            {
+                Rock.Web.Cache.CampusCache.Flush( campus.Id );
+            }
+
+            foreach ( var category in new Rock.Model.CategoryService().Queryable().ToList() )
+            {
+                Rock.Web.Cache.CategoryCache.Flush( category.Id );
+            }
+
+            foreach ( var layout in new Rock.Model.LayoutService().Queryable().ToList() )
+            {
+                Rock.Web.Cache.LayoutCache.Flush( layout.Id );
+            }
+
             nbMessage.Visible = true;
             nbMessage.Text = "The cache has been cleared.";
         }

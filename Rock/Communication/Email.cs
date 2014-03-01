@@ -46,7 +46,7 @@ namespace Rock.Communication
                         var transport = channel.Transport;
                         if ( transport != null )
                         {
-                            var template = new EmailTemplateService().GetByGuid( emailTemplateGuid );
+                            var template = new SystemEmailService().Get( emailTemplateGuid );
                             if ( template != null )
                             {
                                 transport.Send( template, recipients );

@@ -187,36 +187,6 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-
-            // NOTE: The Script Registration is done in RenderBaseControl because Render has to be called before calling GetPostBackEventReference
-        }
-
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
-        /// </summary>
-        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnLoad( EventArgs e )
-        {
-            base.OnLoad( e );
-
-            if ( Page.IsPostBack )
-            {
-                string eventTarget = Page.Request.Params["__EVENTTARGET"] ?? string.Empty;
-                EnsureChildControls();
-                if ( eventTarget == _fileUpload.UniqueID )
-                {
-                    RaisePostBackEvent( Page.Request.Params["__EVENTARGUMENT"] );
-                }
-            }
-        }
-
         #region Properties
 
         /// <summary>
@@ -529,7 +499,7 @@ namespace Rock.Web.UI.Controls
 
             writer.Write( @"
                 <div class='js-upload-progress pull-left' style='display:none'>
-                    <i class='fa fa-spinner fa-3x fa-spin'></i>                    
+                    <i class='fa fa-refresh fa-3x fa-spin'></i>                    
                 </div>" );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "fileupload-dropzone" );
@@ -564,7 +534,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void RegisterStartupScript()
         {
-            var postBackScript = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this._fileUpload, "FileUploaded" ), true );
+            var postBackScript = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "FileUploaded" ), true );
             postBackScript = postBackScript.Replace( '\'', '"' );
             var script = string.Format(
 @"
@@ -594,7 +564,7 @@ Rock.controls.fileUploader.initialize({{
                 _aFileName.ClientID,
                 _aRemove.ClientID,
                 postBackScript,
-                this.IsBinaryFile.ToTrueFalse().ToLower(),
+                this.IsBinaryFile ? "T" : "F",
                 Rock.Security.Encryption.EncryptString( this.RootFolder ),
                 this.UploadUrl,
                 this.SubmitFunctionClientScript,

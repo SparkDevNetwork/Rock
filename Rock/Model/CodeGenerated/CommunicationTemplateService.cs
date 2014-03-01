@@ -28,31 +28,31 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// EmailTemplate Service class
+    /// CommunicationTemplate Service class
     /// </summary>
-    public partial class EmailTemplateService : Service<EmailTemplate>
+    public partial class CommunicationTemplateService : Service<CommunicationTemplate>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="EmailTemplateService"/> class
+        /// Initializes a new instance of the <see cref="CommunicationTemplateService"/> class
         /// </summary>
-        public EmailTemplateService()
+        public CommunicationTemplateService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EmailTemplateService"/> class
+        /// Initializes a new instance of the <see cref="CommunicationTemplateService"/> class
         /// </summary>
         /// <param name="repository">The repository.</param>
-        public EmailTemplateService(IRepository<EmailTemplate> repository) : base(repository)
+        public CommunicationTemplateService(IRepository<CommunicationTemplate> repository) : base(repository)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EmailTemplateService"/> class
+        /// Initializes a new instance of the <see cref="CommunicationTemplateService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public EmailTemplateService(RockContext context) : base(context)
+        public CommunicationTemplateService(RockContext context) : base(context)
         {
         }
 
@@ -64,7 +64,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( EmailTemplate item, out string errorMessage )
+        public bool CanDelete( CommunicationTemplate item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -74,45 +74,42 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class EmailTemplateExtensionMethods
+    public static partial class CommunicationTemplateExtensionMethods
     {
         /// <summary>
-        /// Clones this EmailTemplate object to a new EmailTemplate object
+        /// Clones this CommunicationTemplate object to a new CommunicationTemplate object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static EmailTemplate Clone( this EmailTemplate source, bool deepCopy )
+        public static CommunicationTemplate Clone( this CommunicationTemplate source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as EmailTemplate;
+                return source.Clone() as CommunicationTemplate;
             }
             else
             {
-                var target = new EmailTemplate();
+                var target = new CommunicationTemplate();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another EmailTemplate object to this EmailTemplate object
+        /// Copies the properties from another CommunicationTemplate object to this CommunicationTemplate object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this EmailTemplate target, EmailTemplate source )
+        public static void CopyPropertiesFrom( this CommunicationTemplate target, CommunicationTemplate source )
         {
-            target.IsSystem = source.IsSystem;
-            target.PersonId = source.PersonId;
-            target.Category = source.Category;
-            target.Title = source.Title;
-            target.From = source.From;
-            target.To = source.To;
-            target.Cc = source.Cc;
-            target.Bcc = source.Bcc;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.OwnerPersonAliasId = source.OwnerPersonAliasId;
+            target.SenderPersonAliasId = source.SenderPersonAliasId;
             target.Subject = source.Subject;
-            target.Body = source.Body;
+            target.ChannelEntityTypeId = source.ChannelEntityTypeId;
+            target.ChannelDataJson = source.ChannelDataJson;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -28,9 +28,9 @@ namespace Rock.Model
     /// <summary>
     /// Represents a Rock email template.
     /// </summary>
-    [Table( "EmailTemplate" )]
+    [Table( "SystemEmail" )]
     [DataContract]
-    public partial class EmailTemplate : Model<EmailTemplate>
+    public partial class SystemEmail : Model<SystemEmail>
     {
         /// <summary>
         /// Gets or sets a flag indicating if the email template is part of the Rock core system/framework.
@@ -41,16 +41,6 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who is the owner of this email template. This property is only populated for private EmailTemplates
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who is the owner of the email template. If the email template is a public template 
-        /// this value will be null.
-        /// </value>
-        [DataMember]
-        public int? PersonId { get; set; }
         
         /// <summary>
         /// Gets or sets a string to identify the category that the EmailTemplate belongs to.
@@ -141,15 +131,6 @@ namespace Rock.Model
         public string Body { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> who is the owner of the email template. This property is only populated for private email templates.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.Person"/> who is the owner of the email template. If the template is a public template, this property will be null.
-        /// </value>
-        [DataMember]
-        public virtual Person Person { get; set; }
-
-        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -164,14 +145,13 @@ namespace Rock.Model
     /// <summary>
     /// Email Template Configuration class.
     /// </summary>
-    public partial class EmailTemplateConfiguration : EntityTypeConfiguration<EmailTemplate>
+    public partial class SystemEmailConfiguration : EntityTypeConfiguration<SystemEmail>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="EmailTemplateConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="SystemEmailConfiguration"/> class.
         /// </summary>
-        public EmailTemplateConfiguration()
+        public SystemEmailConfiguration()
         {
-            this.HasOptional( p => p.Person ).WithMany( p => p.EmailTemplates ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
         }
     }
 }

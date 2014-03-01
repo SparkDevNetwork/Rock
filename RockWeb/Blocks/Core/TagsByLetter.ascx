@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upnlTagCloud" runat="server">
     <ContentTemplate>
 
-        <div class="nav nav-pills">
+        <div class="nav nav-pills margin-b-md">
             <li class='<%= personalTagsCss %>'><asp:LinkButton id="lbPersonalTags" runat="server" OnClick="lbPersonalTags_Click" Text="Personal Tags" CssClass="active"></asp:LinkButton></li>
             <li class="<%= publicTagsCss %>"><asp:LinkButton id="lbPublicTags" runat="server" OnClick="lbPublicTags_Click" Text="Organizational Tags"></asp:LinkButton></li>
         </div>

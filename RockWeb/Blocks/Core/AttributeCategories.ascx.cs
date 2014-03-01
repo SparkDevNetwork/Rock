@@ -405,11 +405,13 @@ namespace RockWeb.Blocks.Core
             {
                 tbName.Text = category.Name;
                 tbDescription.Text = category.Description;
+                tbIconCssClass.Text = category.IconCssClass;
             }
             else
             {
                 tbName.Text = string.Empty;
                 tbDescription.Text = string.Empty;
+                tbIconCssClass.Text = string.Empty;
             }
 
             int entityTypeId = 0;
@@ -432,8 +434,6 @@ namespace RockWeb.Blocks.Core
             }
 
             entityTypePicker.SelectedEntityTypeId = entityTypeId;
-
-            tbIconCssClass.Text = category.IconCssClass;
 
             hfIdValue.Value = categoryId.ToString();
             modalDetails.Show();
