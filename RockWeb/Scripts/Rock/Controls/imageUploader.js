@@ -51,7 +51,7 @@
                         + '&rootFolder=' + (encodeURIComponent(options.rootFolder) || '')
                         + '&id=' + data.response().result.Id
                         + '&fileName=' + data.response().result.FileName
-                        + '&width=50';
+                        + '&width=150';
 
                     $el.attr('src', getImageUrl);
                     $('#' + options.aRemove).show();
