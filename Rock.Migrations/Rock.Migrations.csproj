@@ -680,6 +680,10 @@
     <Compile Include="Migrations\201403011451393_HTMLCacheDuration.Designer.cs">
       <DependentUpon>201403011451393_HTMLCacheDuration.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201403012008557_AddJobForProcessingWorkflows.cs" />
+    <Compile Include="Migrations\201403012008557_AddJobForProcessingWorkflows.Designer.cs">
+      <DependentUpon>201403012008557_AddJobForProcessingWorkflows.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1170,6 +1174,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201403011451393_HTMLCacheDuration.resx">
       <DependentUpon>201403011451393_HTMLCacheDuration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403012008557_AddJobForProcessingWorkflows.resx">
+      <DependentUpon>201403012008557_AddJobForProcessingWorkflows.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
