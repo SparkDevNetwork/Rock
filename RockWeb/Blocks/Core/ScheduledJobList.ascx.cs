@@ -90,11 +90,11 @@ namespace RockWeb.Blocks.Administration
 
                     if ( durationSeconds >= 60 )
                     {
-                        e.Row.Cells[4].Text = String.Format( "{0:%m}m {0:%s}s", duration );
+                        e.Row.Cells[3].Text = String.Format( "{0:%m}m {0:%s}s", duration );
                     }
                     else
                     {
-                        e.Row.Cells[4].Text = String.Format( "{0:%s}s", duration );
+                        e.Row.Cells[3].Text = String.Format( "{0:%s}s", duration );
                     }
                 }
 
@@ -106,16 +106,16 @@ namespace RockWeb.Blocks.Administration
                     switch ( lastStatus )
                     {
                         case "Success":
-                            e.Row.Cells[5].Text = "<span class='label label-success'>Success</span>";
+                            e.Row.Cells[4].Text = "<span class='label label-success'>Success</span>";
                             break;
                         case "Exception":
-                            e.Row.Cells[5].Text = "<span class='label label-danger'>Failed</span>";
+                            e.Row.Cells[4].Text = "<span class='label label-danger'>Failed</span>";
                             break;
                         case "":
-                            e.Row.Cells[5].Text = "";
+                            e.Row.Cells[4].Text = "";
                             break;
                         default:
-                            e.Row.Cells[5].Text = String.Format( "<span class='label label-warning'>{0}</span>", lastStatus );
+                            e.Row.Cells[4].Text = String.Format( "<span class='label label-warning'>{0}</span>", lastStatus );
                             break;
                     }
                 }
