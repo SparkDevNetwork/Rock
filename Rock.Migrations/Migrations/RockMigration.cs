@@ -187,6 +187,40 @@ namespace Rock.Migrations
         /// <param name="path">The path.</param>
         /// <param name="category">The category.</param>
         /// <param name="guid">The GUID.</param>
+        public void UpdateBlockType( string name, string description, string path, string category, string guid )
+        {
+            Sql( string.Format( @"
+                
+                DECLARE @Id int
+                SET @Id = (SELECT [Id] FROM [BlockType] WHERE [Path] = '{0}')
+                IF @Id IS NULL
+                BEGIN
+                    INSERT INTO [BlockType] (
+                        [IsSystem],[Path],[Category],[Name],[Description],
+                        [Guid])
+                    VALUES(
+                        1,'{0}','{1}','{2}','{3}',
+                        '{4}')
+                END
+                ELSE
+                BEGIN
+                    UPDATE [BlockType] SET 
+                        [IsSystem] = 1,
+                        [Category] = '{1}',
+                        [Name] = '{2}',
+                        [Description] = '{3}',
+                        [Guid] = '{4}'
+                    WHERE [Path] = '{0}'
+                END
+",
+                    path,
+                    category,
+                    name,
+                    description.Replace( "'", "''" ),
+                    guid
+                    ) );
+        }
+        
         public void AddBlockType( string name, string description, string path, string category, string guid )
         {
             Sql( string.Format( @"
