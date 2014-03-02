@@ -29,12 +29,8 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            // clean up in case the framework added this before is was added as an IsSystem block
-            Sql( @"DELETE FROM [BlockType] where [Path] = '~/Blocks/Cms/RSSFeed.ascx' and [IsSystem] = 0" );
-            Sql( @"DELETE FROM [BlockType] where [Path] = '~/Blocks/Cms/RSSFeedItem.ascx' and [IsSystem] = 0" );
-            
-            AddBlockType( "RSS Feed", "Gets and consumes and RSS Feed. The feed is rendered based on a provided liquid template. ", "~/Blocks/Cms/RSSFeed.ascx", "CMS", "2760F435-3E89-4016-85D9-13C019D0C58F" );
-            AddBlockType( "RSS Feed Item", "Gets an item from a RSS feed and displays the content of that item based on a provided liquid template.", "~/Blocks/Cms/RSSFeedItem.ascx", "CMS", "F7898E47-8496-4D70-9594-4D1F616928F5" );
+            UpdateBlockType( "RSS Feed", "Gets and consumes and RSS Feed. The feed is rendered based on a provided liquid template. ", "~/Blocks/Cms/RSSFeed.ascx", "CMS", "2760F435-3E89-4016-85D9-13C019D0C58F" );
+            UpdateBlockType( "RSS Feed Item", "Gets an item from a RSS feed and displays the content of that item based on a provided liquid template.", "~/Blocks/Cms/RSSFeedItem.ascx", "CMS", "F7898E47-8496-4D70-9594-4D1F616928F5" );
         }
         
         /// <summary>
@@ -42,8 +38,6 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            DeleteBlockType( "F7898E47-8496-4D70-9594-4D1F616928F5" ); // RSS Feed Item
-            DeleteBlockType( "2760F435-3E89-4016-85D9-13C019D0C58F" ); // RSS Feed
         }
     }
 }
