@@ -3147,6 +3147,20 @@ a.help {
   outline: 0;
   color: #bbbbbb;
 }
+@media print {
+  @page {
+    margin: .5in;
+  }
+  .nav-sub {
+    display: none;
+  }
+  #cms-admin-footer {
+    display: none;
+  }
+  a[href]:after {
+    content: '' !important;
+  }
+}
 /*
     Rock Theme Styles
 
