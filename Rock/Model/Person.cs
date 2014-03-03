@@ -372,7 +372,6 @@ namespace Rock.Model
         public Person() : base()
         {
             _users = new Collection<UserLogin>();
-            _emailTemplates = new Collection<SystemEmail>();
             _phoneNumbers = new Collection<PhoneNumber>();
             _members = new Collection<GroupMember>();
             _attendances = new Collection<Attendance>();
@@ -518,20 +517,6 @@ namespace Rock.Model
         private ICollection<UserLogin> _users;
 
         /// <summary>
-        /// Gets or sets a collection containing the <see cref="Rock.Model.SystemEmail">EmailTemplates</see> that were created by this Person.
-        /// </summary>
-        /// <value>
-        /// A collection containing the <see cref="Rock.Model.SystemEmail">EmailTemplates</see> that were created by this Person.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<SystemEmail> EmailTemplates
-        {
-            get { return _emailTemplates; }
-            set { _emailTemplates = value; }
-        }
-        private ICollection<SystemEmail> _emailTemplates;
-
-        /// <summary>
         /// Gets or sets a collection of <see cref="Rock.Model.PhoneNumber">PhoneNumbers</see> 
         /// </summary>
         /// <value>
@@ -553,7 +538,6 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.GroupMember">GroupMember</see> entities representing the group memberships that are associated with
         /// </value>
-        [DataMember]
         [MergeField]
         public virtual ICollection<GroupMember> Members
         {
@@ -568,7 +552,6 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.Attendance"/> entities representing the Person's attendance history.
         /// </value>
-        [DataMember]
         [MergeField]
         public virtual ICollection<Attendance> Attendances
         {
@@ -583,8 +566,6 @@ namespace Rock.Model
         /// <value>
         /// The aliases.
         /// </value>
-        [DataMember]
-        [MergeField]
         public virtual ICollection<PersonAlias> Aliases
         {
             get { return _aliases; }

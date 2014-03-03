@@ -22,15 +22,31 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class RssFeedBlockTypes : Rock.Migrations.RockMigration
+    public partial class AddJobForProcessingWorkflows : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            UpdateBlockType( "RSS Feed", "Gets and consumes and RSS Feed. The feed is rendered based on a provided liquid template. ", "~/Blocks/Cms/RSSFeed.ascx", "CMS", "2760F435-3E89-4016-85D9-13C019D0C58F" );
-            UpdateBlockType( "RSS Feed Item", "Gets an item from a RSS feed and displays the content of that item based on a provided liquid template.", "~/Blocks/Cms/RSSFeedItem.ascx", "CMS", "F7898E47-8496-4D70-9594-4D1F616928F5" );
+            Sql( @"  INSERT INTO [ServiceJob]
+           ([IsSystem]
+           ,[IsActive]
+           ,[Name]
+           ,[Description]
+           ,[Class]
+           ,[CronExpression]
+           ,[NotificationStatus]
+           ,[Guid])
+     VALUES
+           (1
+           ,1
+           ,'Process Workflows'
+           ,'Runs continuously to process in workflows activities/actions in progress.'
+           ,'Rock.Jobs.ProcessWorkflows'
+           ,'0 0/10 * 1/1 * ? *'
+           ,3
+           ,'35EABBDB-1EFA-46F1-86D4-4199FFA2D9A7')" );
         }
         
         /// <summary>
@@ -38,6 +54,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            Sql( @"DELETE FROM [ServiceJob] WHERE [GUID] = '35EABBDB-1EFA-46F1-86D4-4199FFA2D9A7'" );
         }
     }
 }

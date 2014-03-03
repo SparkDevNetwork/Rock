@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -72,6 +73,57 @@ namespace RockWeb.Blocks.Administration
         #endregion
 
         #region Grid Events
+
+        protected void gScheduledJobs_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
+        {
+            var site = RockPage.Site;
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                
+                // format duration
+                if ( e.Row.DataItem.GetPropertyValue( "LastRunDurationSeconds" ) != null )
+                {
+                    int durationSeconds = 0;
+                    int.TryParse( e.Row.DataItem.GetPropertyValue( "LastRunDurationSeconds" ).ToString(), out durationSeconds );
+
+                    TimeSpan duration = new TimeSpan( 0, 0, durationSeconds );
+
+                    if ( durationSeconds >= 60 )
+                    {
+                        e.Row.Cells[3].Text = String.Format( "{0:%m}m {0:%s}s", duration );
+                    }
+                    else
+                    {
+                        e.Row.Cells[3].Text = String.Format( "{0:%s}s", duration );
+                    }
+                }
+
+                // format last status
+                if ( e.Row.DataItem.GetPropertyValue( "LastStatus" ) != null )
+                {
+                    string lastStatus = e.Row.DataItem.GetPropertyValue( "LastStatus" ).ToString();
+
+                    switch ( lastStatus )
+                    {
+                        case "Success":
+                            e.Row.Cells[4].Text = "<span class='label label-success'>Success</span>";
+                            break;
+                        case "Exception":
+                            e.Row.Cells[4].Text = "<span class='label label-danger'>Failed</span>";
+                            break;
+                        case "":
+                            e.Row.Cells[4].Text = "";
+                            break;
+                        default:
+                            e.Row.Cells[4].Text = String.Format( "<span class='label label-warning'>{0}</span>", lastStatus );
+                            break;
+                    }
+                }
+                    
+
+            }
+        }
+
 
         /// <summary>
         /// Handles the Add event of the gScheduledJobs control.

@@ -22,15 +22,32 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class RssFeedBlockTypes : Rock.Migrations.RockMigration
+    public partial class HTMLCacheDuration : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            UpdateBlockType( "RSS Feed", "Gets and consumes and RSS Feed. The feed is rendered based on a provided liquid template. ", "~/Blocks/Cms/RSSFeed.ascx", "CMS", "2760F435-3E89-4016-85D9-13C019D0C58F" );
-            UpdateBlockType( "RSS Feed Item", "Gets an item from a RSS feed and displays the content of that item based on a provided liquid template.", "~/Blocks/Cms/RSSFeedItem.ascx", "CMS", "F7898E47-8496-4D70-9594-4D1F616928F5" );
+            Sql( @"
+    -- HTML Cache Duration Attribute
+    DECLARE @AttributeId int = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '4DFDB295-6D0F-40A1-BEF9-7B70C56F66C4')
+
+    -- Update existing values
+    UPDATE AV
+	    SET [Value] = '3600'
+    FROM [block] B
+	    INNER JOIN [BlockType] BT ON BT.[Id] = B.[BlockTypeId] AND BT.[Guid] = '19B61D65-37E3-459F-A44F-DEF0089118A3'
+	    INNER JOIN [AttributeValue] AV ON AV.[AttributeId] = @AttributeId AND AV.[EntityId] = B.[Id]
+
+    -- Add missing values
+    INSERT INTO [AttributeValue] ( [IsSystem], [AttributeId], [EntityId], [Order], [Value], [Guid] )
+    SELECT 0, @AttributeId, B.[Id], 0, '3600', NEWID()
+    FROM [block] B
+	    INNER JOIN [BlockType] BT ON BT.[Id] = B.[BlockTypeId] AND BT.[Guid] = '19B61D65-37E3-459F-A44F-DEF0089118A3'
+	    LEFT OUTER JOIN [AttributeValue] AV ON AV.[AttributeId] = @AttributeId AND AV.[EntityId] = B.[Id]
+    WHERE AV.[Id] IS NULL
+" );
         }
         
         /// <summary>

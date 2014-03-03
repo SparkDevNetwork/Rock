@@ -92,7 +92,7 @@ namespace Rock.Model
         /// The person.
         /// </value>
         [DataMember]
-        public Person Person { get; set; }
+        public virtual Person Person { get; set; }
 
         /// <summary>
         /// Gets the previous encrypted key for the <see cref="Rock.Model.Person"/>.

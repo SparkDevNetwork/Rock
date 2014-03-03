@@ -48,6 +48,7 @@ namespace Rock.Data
         /// </value>
         [Key]
         [DataMember]
+        [MergeField]
         public int Id { get; set; }
 
         /// <summary>
@@ -65,6 +66,7 @@ namespace Rock.Data
         /// </value>
         [AlternateKey]
         [DataMember]
+        [MergeField]
         public Guid Guid
         {
             get { return _guid; }

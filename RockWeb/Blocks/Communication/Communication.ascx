@@ -14,6 +14,8 @@
         <asp:HiddenField ID="hfCommunicationId" runat="server" />
         <asp:HiddenField ID="hfChannelId" runat="server" />
 
+        <Rock:RockDropDownList ID="ddlTemplate" runat="server" Label="Template" AutoPostBack="true" OnSelectedIndexChanged="ddlTemplate_SelectedIndexChanged" />
+
         <ul class="nav nav-pills nav-pagelist">
             <asp:Repeater ID="rptChannels" runat="server">
                 <ItemTemplate>

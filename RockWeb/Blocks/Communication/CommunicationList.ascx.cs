@@ -325,25 +325,19 @@ namespace RockWeb.Blocks.Communication
 
                 var recipients = new CommunicationRecipientService().Queryable();
 
-                var sortProperty = gCommunication.SortProperty;
-
                 var queryable = communications
-                    .Join( recipients,
-                        c => c.Id,
-                        r => r.CommunicationId,
-                        ( c, r ) => new { c, r } )
-                    .GroupBy( cr => cr.c )
-                    .Select( g => new CommunicationItem
+                    .Select( c => new CommunicationItem
                     {
-                        Id = g.Key.Id,
-                        Communication = g.Key,
-                        Recipients = g.Count(),
-                        PendingRecipients = g.Count( s => s.r.Status == CommunicationRecipientStatus.Pending ),
-                        SuccessRecipients = g.Count( s => s.r.Status == CommunicationRecipientStatus.Success ),
-                        FailedRecipients = g.Count( s => s.r.Status == CommunicationRecipientStatus.Failed ),
-                        CancelledRecipients = g.Count( s => s.r.Status == CommunicationRecipientStatus.Cancelled )
+                        Id = c.Id,
+                        Communication = c,
+                        Recipients = recipients.Where( r => r.CommunicationId == c.Id).Count(),
+                        PendingRecipients = recipients.Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Pending).Count(),
+                        SuccessRecipients = recipients.Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Success).Count(),
+                        FailedRecipients = recipients.Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Failed).Count(),
+                        CancelledRecipients = recipients.Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Cancelled).Count()
                     } );
 
+                var sortProperty = gCommunication.SortProperty;
                 if ( sortProperty != null )
                 {
                     queryable = queryable.Sort( sortProperty );

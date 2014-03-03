@@ -2,6 +2,9 @@
 <data>
   <families>
 
+    <!-- The Decker family kids attend service about 80% of the time and attend the regular service 88% of the time.
+         Ted serves as an usher and he and his wife, Cindy are in a small group bible study with the Marble family. 
+    -->
     <family name="Decker Family" guid="53A02527-C2A7-4F36-8585-71A85B8E4601" campus="main campus"
             startingAttendance="12/25/2012" endingAttendanceWeeksAgo="0" percentAttendance="80"
             percentAttendedRegularService="88" attendingScheduleId="3" attendingAltScheduleId="4">
@@ -49,10 +52,11 @@
       </members>
     </family>
 
-
-    <!-- Jones family, dual custody of Child Brian Jones with Simmons family -->
+    <!-- The Jones family started attending the church in October, 2012 and had a very low attendance rate (about 40%).
+    Unfortunately in August, 2013 Ben and Sarah divorced and now both have joint custody of their son, Brian.  Sarah
+    went on to marry Jim Simmons. -->
     <family name="Jones Family" guid="3BE313A1-51B1-4B03-B396-CEB9C3D9B919" campus="main campus"
-            startingAttendance="2/15/2013" endingAttendance="10/15/2013" percentAttendance="50"
+            startingAttendance="10/15/2012" endingAttendance="08/15/2013" percentAttendance="40"
             percentAttendedRegularService="50" attendingScheduleId="3" attendingAltScheduleId="4">
       <addresses>
         <address type="home" street1="10601 N 32nd Dr" street2="" city="Phoenix" state="AZ" zip="85029" lat="33.5822525" long="-112.1283722" />
@@ -76,10 +80,13 @@
       </members>
     </family>
 
-    <!-- Simmons family, dual custody of Child Brian Jones with Jones family -->
+    <!-- Jim Simmons married Sarah (formerly Sarah Jones) and Jim is now the step-parent of Brian Jones,
+    who lives with them most of the time. They started attending church in November 2013 and have a high
+    percentage attendance rate (90%) and almost always attend the same service.
+    -->
     <family name="Simmons Family" guid="FA7316E2-FFA9-4A55-B975-8F762353D0A8" campus="main campus"
-            startingAttendance="10/15/2013" endingAttendanceWeeksAgo="0" percentAttendance="90"
-            percentAttendedRegularService="90" attendingScheduleId="4" attendingAltScheduleId="3">
+            startingAttendance="11/15/2013" endingAttendanceWeeksAgo="0" percentAttendance="90"
+            percentAttendedRegularService="98" attendingScheduleId="4" attendingAltScheduleId="3">
       <addresses>
         <address type="home" street1="10828 N Biltmore Dr" street2="" city="Phoenix" state="AZ" zip="85029" lat="33.5855064" long="-112.1186981" />
       </addresses>
@@ -104,7 +111,9 @@
       </members>
     </family>
 
-    <!-- Jackson family, custody of child Madison Lowe who is related to father Craig in the Lowe Family -->
+    <!-- Mariah Jackson has sole custody of her child Madison Lowe.  Madison is also the child of 
+    of her father Craig, of the Lowe family.
+    -->
     <family name="Jackson Family" guid="DFBF8D82-3D34-406B-8C84-9F10046ADE30" campus="main campus"
         startingAttendance="9/25/2013" endingAttendanceWeeksAgo="0" percentAttendance="65"
         percentAttendedRegularService="50" attendingScheduleId="4" attendingAltScheduleId="3">
@@ -130,7 +139,9 @@
       </members>
     </family>
 
-    <!-- Lowe family, Can-Check-in relationship with child Madison Lowe who is in the Jackson Family -->
+    <!-- Not too much is known about the Lowe family but Craig Lowe has a "Can-Check-in" relationship
+    with his child Madison Lowe who lives exclusively with Madison Jackson of the Jackson family.
+    -->
     <family name="Lowe Family" guid="61DC882F-0064-48D6-833F-226B60E79168" campus="main campus">
       <addresses>
         <address type="home" street1="3224 W Sahuaro Dr" street2="" city="Phoenix" state="AZ" zip="85029" lat="33.5837936" long="-112.1293106" />
@@ -153,7 +164,10 @@
       </members>
     </family>
 
-    <!-- The famous Alisha Marble family -->
+    <!-- Alisha Marble, who is the Rock administrator at the church, is married to Bill. They are in 
+    a bible study group with the Decker family. Interesting side note about Bill.  He is one of only
+    0.3% of the population who was born on a leap day (February 29, 1967). 
+    -->
     <family name="Marble Family" guid="6F2E6B64-3592-4543-8D8E-6BA4040CDC4E" campus="main campus"
             startingAttendance="1/1/2012" endingAttendanceWeeksAgo="0" percentAttendance="88"
             percentAttendedRegularService="88" attendingScheduleId="4" attendingAltScheduleId="3">
@@ -162,14 +176,13 @@
       </addresses>
 
       <members>
-        <!-- Alisha -->
         <person guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"
           firstName="Alisha" nickName="Alisha" lastName="Marble" birthDate="5/29/1967" age="48" gender="female"
           email="alisha.marble@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/marble_alisha.jpg"
           homePhone="" mobilePhone="" workPhone=""/>
-        <!-- Bill leap year birthday -->
+        
         <person guid="1EA811BB-3118-42D1-B020-32A82BC8081A"
          firstName="William" nickName="Bill" lastName="Marble" birthDate="2/29/1964" gender="male"
          email="bill.marble@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
@@ -220,11 +233,11 @@
   </families>
 
   <relationships>
-    <relationship a="Ben" personGuid="3C402382-3BD2-4337-A996-9E62F1BAB09D" is="step-parent" forGuid="3D7F6605-3666-4AB5-9F4E-D7FEBF93278E" name="Brian" />
-    <relationship a="Brian" personGuid="3D7F6605-3666-4AB5-9F4E-D7FEBF93278E" is="step-child" forGuid="3C402382-3BD2-4337-A996-9E62F1BAB09D" name="Ben" />
+    <relationship a="Ben" personGuid="3C402382-3BD2-4337-A996-9E62F1BAB09D" has="step-child" forGuid="3D7F6605-3666-4AB5-9F4E-D7FEBF93278E" name="Brian" />
+    <relationship a="Brian" personGuid="3D7F6605-3666-4AB5-9F4E-D7FEBF93278E" has="step-parent" forGuid="3C402382-3BD2-4337-A996-9E62F1BAB09D" name="Ben" />
 
-    <relationship a="Craig" personGuid="B701E5D2-ADBD-4C66-91E8-3D6CD298D9A0" is="can-check-in" forGuid="C398A8E3-C9BC-4017-A3F6-7C2BFF654056" name="Madison Lowe"/>
-    <relationship a="Madison" personGuid="C398A8E3-C9BC-4017-A3F6-7C2BFF654056" is="allow-check-in-by" forGuid="B701E5D2-ADBD-4C66-91E8-3D6CD298D9A0" name="Craig"/>
+    <relationship a="Craig" personGuid="B701E5D2-ADBD-4C66-91E8-3D6CD298D9A0" has="can-check-in" forGuid="C398A8E3-C9BC-4017-A3F6-7C2BFF654056" name="Madison Lowe"/>
+    <relationship a="Madison" personGuid="C398A8E3-C9BC-4017-A3F6-7C2BFF654056" has="allow-check-in-by" forGuid="B701E5D2-ADBD-4C66-91E8-3D6CD298D9A0" name="Craig"/>
   </relationships>
 
   <groups>

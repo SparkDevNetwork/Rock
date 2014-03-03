@@ -174,6 +174,7 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
+                LoadTemplates();
                 ShowAllRecipients = false;
 
                 string itemId = PageParameter( "CommunicationId" );
@@ -224,6 +225,22 @@ namespace RockWeb.Blocks.Communication
 
         #region Events
 
+        protected void ddlTemplate_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            int? templateID = ddlTemplate.SelectedValue.AsInteger( false );
+            if (templateID.HasValue)
+            {
+                var template = new CommunicationTemplateService().Get( templateID.Value );
+                if (template != null)
+                {
+                    ChannelEntityTypeId = template.ChannelEntityTypeId;
+                    ChannelData = template.ChannelData;
+                    ChannelData.Add( "Subject", template.Subject );
+                    LoadChannelControl( true );
+                }
+            }
+        }
+        
         /// <summary>
         /// Handles the Click event of the lbChannel control.
         /// </summary>
@@ -476,25 +493,22 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            if ( Page.IsValid )
+            using ( new UnitOfWorkScope() )
             {
-                using ( new UnitOfWorkScope() )
+                var service = new CommunicationService();
+                var communication = UpdateCommunication( service );
+
+                if ( communication != null )
                 {
-                    var service = new CommunicationService();
-                    var communication = UpdateCommunication( service );
-
-                    if ( communication != null )
+                    var prevStatus = communication.Status;
+                    if ( communication.Status == CommunicationStatus.Transient )
                     {
-                        var prevStatus = communication.Status;
-                        if ( communication.Status == CommunicationStatus.Transient )
-                        {
-                            communication.Status = CommunicationStatus.Draft;
-                        }
-
-                        service.Save( communication, CurrentPersonAlias );
-
-                        ShowResult( "The communication has been saved", communication );
+                        communication.Status = CommunicationStatus.Draft;
                     }
+
+                    service.Save( communication, CurrentPersonAlias );
+
+                    ShowResult( "The communication has been saved", communication );
                 }
             }
         }
@@ -658,6 +672,25 @@ namespace RockWeb.Blocks.Communication
             dtpFutureSend.SelectedDateTime = communication.FutureSendDateTime;
 
             ShowActions( communication );
+        }
+
+        private void LoadTemplates()
+        {
+            bool visible = false;
+
+            ddlTemplate.Items.Clear();
+            ddlTemplate.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            foreach(var template in new CommunicationTemplateService().Queryable()
+                .Where( t =>
+                    t.OwnerPersonAlias == null ||
+                    t.OwnerPersonAlias.PersonId == (CurrentPersonId ?? 0))
+                .OrderBy( t => t.Name ))
+            {
+                visible = true;
+                ddlTemplate.Items.Add( new ListItem( template.Name, template.Id.ToString() ) );
+            }
+
+            ddlTemplate.Visible = visible;
         }
 
         /// <summary>
@@ -1041,5 +1074,5 @@ namespace RockWeb.Blocks.Communication
 
         #endregion
 
-    }
+}
 }
