@@ -33,7 +33,7 @@ namespace Rock.Transactions
         /// <value>
         /// Page Id.
         /// </value>
-        public int PageId { get; set; }
+        public int? PageId { get; set; }
 
         /// <summary>
         /// Gets or sets the Site Id.
@@ -41,7 +41,7 @@ namespace Rock.Transactions
         /// <value>
         /// Site Id.
         /// </value>
-        public int SiteId { get; set; }
+        public int? SiteId { get; set; }
 
         /// <summary>
         /// Gets or sets the Person Id.
@@ -49,7 +49,7 @@ namespace Rock.Transactions
         /// <value>
         /// Person Id.
         /// </value>
-        public int PersonId { get; set; }
+        public int? PersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the DateTime the page was viewed.
@@ -110,7 +110,7 @@ namespace Rock.Transactions
             pageView.UserAgent = this.UserAgent;
             pageView.DateTimeViewed = this.DateViewed;
             pageView.IpAddress = this.IPAddress;
-            pageView.PersonAliasId = this.PersonId;
+            pageView.PersonAliasId = this.PersonAliasId;
 
             // determine client type
             // note this regex should be updated from http://detectmobilebrowsers.com/ occassionally

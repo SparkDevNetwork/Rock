@@ -997,7 +997,7 @@ namespace Rock.Web.UI
                 transaction.SiteId = _pageCache.Layout.Site.Id;
                 if ( CurrentPersonAlias != null )
                 {
-                    transaction.PersonId = CurrentPersonAlias.Id;
+                    transaction.PersonAliasId = CurrentPersonAlias.Id;
                 }
                 transaction.IPAddress = Request.UserHostAddress;
                 transaction.UserAgent = Request.UserAgent;
