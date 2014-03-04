@@ -615,43 +615,41 @@ Rock.controls.imageUploader.initialize({{
     imgThumbnail: '{4}',
     aRemove: '{5}',
     fileType: 'image',
-    maxHeight: {6},
-    maxWidth: {7},
     submitFunction: function (e, data) {{
-        {8}
+        {6}
     }},
     doneFunction: function (e, data) {{
         // custom done function
-        {9}
+        {7}
         
         // toggle the edit/upload buttons
-        $('#{12}').hide();
-        $('#{13}').show();
+        $('#{10}').hide();
+        $('#{11}').show();
         
         // postback to show Modal
-        {14}
+        {12}
     }}
 }});
 
-$('#{10}').Jcrop({{
+$('#{8}').Jcrop({{
     aspectRatio:1,
     setSelect: [ 0,0,300,300 ],
     boxWidth:480,
     boxHeight:480,
     onSelect: function(c) {{
-        $('#{11}').val(c.x + ',' + c.y + ',' + c.w + ',' +c.h + ',');
+        $('#{9}').val(c.x + ',' + c.y + ',' + c.w + ',' +c.h + ',');
     }}
 }});
 
 // prompt to upload image
-$('#{12}').click( function (e, data) {{
+$('#{10}').click( function (e, data) {{
     $('#{0}').click();
 }});
 
 // hide/show buttons when remove is clicked (note: imageUploader.js also does stuff when remove is clicked)
 $('#{5}').click(function () {{
-    $('#{12}').show();
-    $('#{13}').hide();
+    $('#{10}').show();
+    $('#{11}').hide();
 }});
 
 ",
@@ -661,8 +659,6 @@ $('#{5}').click(function () {{
                 _hfBinaryFileId.ClientID,
                 _imgPhoto.ClientID,
                 _aRemove.ClientID,
-                this.MaxImageHeight.HasValue ? this.MaxImageHeight.ToString() : "null",
-                this.MaxImageWidth.HasValue ? this.MaxImageWidth.ToString() : "null",
                 this.SubmitFunctionClientScript,
                 this.DoneFunctionClientScript,
                 _imgCropSource.ClientID,
