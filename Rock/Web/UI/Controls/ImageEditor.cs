@@ -175,7 +175,7 @@ namespace Rock.Web.UI.Controls
 
         private ModalDialog _mdImageDialog;
         private Panel _pnlCropContainer;
-        private NotificationBox _nbSvgNotSupported;
+        private NotificationBox _nbImageWarning;
         private Image _imgCropSource;
         private HiddenField _hfCropCoords;
 
@@ -394,18 +394,18 @@ namespace Rock.Web.UI.Controls
 
             _pnlCropContainer = new Panel();
             _pnlCropContainer.CssClass = "crop-container image-editor-crop-container clearfix";
-            _nbSvgNotSupported = new NotificationBox();
-            _nbSvgNotSupported.ID = this.ID + "_nbSvgNotSupported";
-            _nbSvgNotSupported.NotificationBoxType = NotificationBoxType.Warning;
-            _nbSvgNotSupported.Text = "SVG image cropping is not supported.";
+            _nbImageWarning = new NotificationBox();
+            _nbImageWarning.ID = this.ID + "_nbImageWarning";
+            _nbImageWarning.NotificationBoxType = NotificationBoxType.Warning;
+            _nbImageWarning.Text = "SVG image cropping is not supported.";
 
             _imgCropSource = new Image();
             _imgCropSource.ID = this.ID + "_imgCropSource";
             _imgCropSource.CssClass = "image-editor-crop-source";
 
-            _pnlCropContainer.Controls.Add( _nbSvgNotSupported );
             _pnlCropContainer.Controls.Add( _imgCropSource );
 
+            _mdImageDialog.Content.Controls.Add( _nbImageWarning );
             _mdImageDialog.Content.Controls.Add( _pnlCropContainer );
 
             _hfCropCoords = new HiddenField();
@@ -422,28 +422,40 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void _mdImageDialog_SaveClick( object sender, EventArgs e )
         {
-            BinaryFileService binaryFileService = new BinaryFileService();
-            var binaryFile = binaryFileService.Get( _hfBinaryFileId.ValueAsInt() );
-            if ( binaryFile != null )
+            try
             {
+                BinaryFileService binaryFileService = new BinaryFileService();
+
                 // load image from database
-                byte[] croppedImage = CropImage( binaryFile.Data.Content, binaryFile.MimeType );
+                var binaryFile = binaryFileService.Get( _hfBinaryFileId.ValueAsInt() );
+                if ( binaryFile != null )
+                {
+                    byte[] croppedImage = CropImage( binaryFile.Data.Content, binaryFile.MimeType );
 
-                BinaryFile croppedBinaryFile = new BinaryFile();
-                croppedBinaryFile.IsTemporary = true;
-                croppedBinaryFile.BinaryFileTypeId = binaryFile.BinaryFileTypeId;
-                croppedBinaryFile.MimeType = binaryFile.MimeType;
-                croppedBinaryFile.FileName = binaryFile.FileName;
-                croppedBinaryFile.Description = binaryFile.Description;
-                croppedBinaryFile.Data = new BinaryFileData();
-                croppedBinaryFile.Data.Content = croppedImage;
+                    BinaryFile croppedBinaryFile = new BinaryFile();
+                    croppedBinaryFile.IsTemporary = true;
+                    croppedBinaryFile.BinaryFileTypeId = binaryFile.BinaryFileTypeId;
+                    croppedBinaryFile.MimeType = binaryFile.MimeType;
+                    croppedBinaryFile.FileName = binaryFile.FileName;
+                    croppedBinaryFile.Description = binaryFile.Description;
+                    croppedBinaryFile.Data = new BinaryFileData();
+                    croppedBinaryFile.Data.Content = croppedImage;
 
-                binaryFileService.Add( croppedBinaryFile, this.RockBlock().CurrentPersonAlias );
-                binaryFileService.Save( croppedBinaryFile, this.RockBlock().CurrentPersonAlias );
-                this.BinaryFileId = croppedBinaryFile.Id;
+                    binaryFileService.Add( croppedBinaryFile, this.RockBlock().CurrentPersonAlias );
+                    binaryFileService.Save( croppedBinaryFile, this.RockBlock().CurrentPersonAlias );
+                    this.BinaryFileId = croppedBinaryFile.Id;
+                }
+
+                _mdImageDialog.Hide();
             }
-
-            _mdImageDialog.Hide();
+            catch ( ImageResizer.Plugins.Basic.SizeLimits.SizeLimitException )
+            {
+                // shouldn't happen because we resize it below the limit in CropImage(), but just in case
+                var sizeLimits = new ImageResizer.Plugins.Basic.SizeLimits();
+                _nbImageWarning.Visible = true;
+                _nbImageWarning.Text = string.Format( "The image size exceeds the maximum resolution of {0}x{1}. Press cancel and try selecting a smaller image.", sizeLimits.TotalSize.Width, sizeLimits.TotalSize.Height );
+                _mdImageDialog.Show();
+            }
         }
 
         /// <summary>
@@ -458,7 +470,7 @@ namespace Rock.Web.UI.Controls
             {
                 return bitmapContent;
             }
-            
+
             int[] photoCoords = _hfCropCoords.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => (int)a.AsDecimal().Value ).ToArray();
             int x = photoCoords[0];
             int y = photoCoords[1];
@@ -470,32 +482,33 @@ namespace Rock.Web.UI.Controls
             System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap( new MemoryStream( bitmapContent ) );
 
             // Crop Image
+            var sizingPlugin = ImageResizer.Configuration.Config.Current.Plugins.Get<ImageResizer.Plugins.Basic.SizeLimiting>();
+            var origLimit = sizingPlugin.Limits.TotalBehavior;
+            sizingPlugin.Limits.TotalBehavior = ImageResizer.Plugins.Basic.SizeLimits.TotalSizeBehavior.IgnoreLimits;
             MemoryStream croppedStream = new MemoryStream();
             ImageResizer.ResizeSettings resizeCropSettings = new ImageResizer.ResizeSettings( string.Format( "crop={0},{1},{2},{3}", x, y, x2, y2 ) );
             MemoryStream imageStream = new MemoryStream();
             bitmap.Save( imageStream, bitmap.RawFormat );
             imageStream.Seek( 0, SeekOrigin.Begin );
-            ImageResizer.ImageBuilder.Current.Build( imageStream, croppedStream, resizeCropSettings );
+
+            try
+            {
+                ImageResizer.ImageBuilder.Current.Build( imageStream, croppedStream, resizeCropSettings );
+            }
+            finally
+            {
+                sizingPlugin.Limits.TotalBehavior = origLimit;
+            }
 
             // Make sure Image is no bigger than maxwidth/maxheight
-            string resizeParams = null;
-            if ( this.MaxImageWidth.HasValue )
-            {
-                resizeParams += "width=" + this.MaxImageWidth.ToString();
-            }
-            
-            if ( this.MaxImageHeight.HasValue )
-            {
-                if ( !string.IsNullOrWhiteSpace(resizeParams) )
-                {
-                    resizeParams += "&";
-                }
+            int maxWidth = this.MaxImageWidth ?? sizingPlugin.Limits.TotalSize.Width;
+            int maxHeight = this.MaxImageHeight ?? sizingPlugin.Limits.TotalSize.Height;
+            croppedStream.Seek( 0, SeekOrigin.Begin );
+            System.Drawing.Bitmap croppedBitmap = new System.Drawing.Bitmap( croppedStream );
 
-                resizeParams += "height=" + this.MaxImageHeight.ToString();
-            }
-            
-            if ( !string.IsNullOrWhiteSpace( resizeParams ) )
+            if ( ( croppedBitmap.Width > maxWidth ) || ( croppedBitmap.Height > maxHeight ) )
             {
+                string resizeParams = string.Format( "width={0}&height={1}", maxWidth, maxHeight );
                 MemoryStream croppedAndResizedStream = new MemoryStream();
                 ImageResizer.ResizeSettings resizeSettings = new ImageResizer.ResizeSettings( resizeParams );
                 croppedStream.Seek( 0, SeekOrigin.Begin );
@@ -515,6 +528,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void _lbShowModal_Click( object sender, EventArgs e )
         {
+            _nbImageWarning.Visible = false;
             _imgCropSource.ImageUrl = "~/GetImage.ashx?id=" + BinaryFileId;
             var binaryFile = new BinaryFileService().Get( BinaryFileId ?? 0 );
             if ( binaryFile != null )
@@ -527,15 +541,16 @@ namespace Rock.Web.UI.Controls
                         _imgCropSource.Width = bitMap.Width;
                         _imgCropSource.Height = bitMap.Height;
                     }
-                    _nbSvgNotSupported.Visible = false;
                 }
                 else
                 {
                     _imgCropSource.Width = Unit.Empty;
                     _imgCropSource.Height = Unit.Empty;
-                    _nbSvgNotSupported.Visible = true;
+                    _nbImageWarning.Visible = true;
+                    _nbImageWarning.Text = "SVG image cropping is not supported.";
                 }
             }
+
             _mdImageDialog.Show();
         }
 
@@ -559,11 +574,16 @@ namespace Rock.Web.UI.Controls
         public void RenderBaseControl( HtmlTextWriter writer )
         {
             writer.AddAttribute( "id", this.ClientID );
-            writer.AddAttribute( "class", "image-editor-group" );
+            writer.AddAttribute( "class", "image-editor-group imageupload-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( "class", "image-editor-photo" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.Write( @"
+                <div class='js-upload-progress' style='display:none'>
+                    <i class='fa fa-refresh fa-3x fa-spin'></i>                    
+                </div>" );
 
             if ( BinaryFileId != null )
             {
@@ -583,13 +603,13 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             if ( ( BinaryFileId ?? 0 ) > 0 )
             {
-                _lbShowModal.Style[HtmlTextWriterStyle.Display] = "";
+                _lbShowModal.Style[HtmlTextWriterStyle.Display] = string.Empty;
                 _aUploadImage.Style[HtmlTextWriterStyle.Display] = "none";
             }
             else
             {
                 _lbShowModal.Style[HtmlTextWriterStyle.Display] = "none";
-                _aUploadImage.Style[HtmlTextWriterStyle.Display] = "";
+                _aUploadImage.Style[HtmlTextWriterStyle.Display] = string.Empty;
             }
 
             _lbShowModal.RenderControl( writer );
@@ -613,15 +633,10 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
             writer.WriteLine();
 
-            writer.RenderEndTag(); //image-editor-photo
+            writer.RenderEndTag(); // image-editor-photo
             writer.WriteLine();
 
-            writer.Write( @"
-                <div class='js-upload-progress pull-left' style='display:none'>
-                    <i class='fa fa-spinner fa-3x fa-spin'></i>                    
-                </div>" );
-
-            writer.RenderEndTag(); //image-editor-group
+            writer.RenderEndTag(); // image-editor-group
 
             _mdImageDialog.RenderControl( writer );
 
@@ -693,8 +708,7 @@ $('#{5}').click(function () {{
                 _hfCropCoords.ClientID,
                 _aUploadImage.ClientID,
                 _lbShowModal.ClientID,
-                Page.ClientScript.GetPostBackEventReference( _lbShowModal, string.Empty )
-                );
+                Page.ClientScript.GetPostBackEventReference( _lbShowModal, string.Empty ) );
 
             ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "ImageUploaderScript_" + this.ID, script, true );
         }
