@@ -269,8 +269,9 @@ span.cke_button__rockmergefield_label {
 	-webkit-transition: opacity .25s ease-in-out; 
 }
 
-.image-editor-crop-source {
+.image-editor-crop-container {
     height:480px;
+    width:480px; 
 }
 						
 .image-editor-photo:hover .options {
@@ -281,7 +282,6 @@ span.cke_button__rockmergefield_label {
 	color: #fff;
 	text-decoration: none;
 	margin-left: 12px;
-									
 }
 						
 .image-editor-photo .options a:hover {
