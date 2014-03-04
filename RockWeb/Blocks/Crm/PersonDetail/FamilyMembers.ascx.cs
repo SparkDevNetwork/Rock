@@ -27,6 +27,7 @@ using System.Web.UI.HtmlControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -55,7 +56,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
             //if (!Page.IsPostBack)
             //{
                 BindFamilies();
@@ -82,8 +82,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     Repeater rptrMembers = e.Item.FindControl( "rptrMembers" ) as Repeater;
                     if (rptrMembers != null)
                     {
-                        var members = group.Members
-                            .Where( m => m.PersonId != Person.Id )
+                        var members = new GroupMemberService().Queryable("GroupRole,Person")
+                            .Where( m => 
+                                m.GroupId == group.Id &&
+                                m.PersonId != Person.Id )
                             .OrderBy( m => m.GroupRole.Order )
                             .ToList();
 
@@ -115,7 +117,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     {
                         rptrAddresses.ItemDataBound += rptrAddresses_ItemDataBound;
                         rptrAddresses.ItemCommand += rptrAddresses_ItemCommand;
-                        rptrAddresses.DataSource = group.GroupLocations.OrderBy( l => l.GroupLocationTypeValue.Order).ToList();
+                        rptrAddresses.DataSource = new GroupLocationService().Queryable("Location,GroupLocationTypeValue")
+                            .Where( l => l.GroupId == group.Id)
+                            .OrderBy( l => l.GroupLocationTypeValue.Order)
+                            .ToList();
                         rptrAddresses.DataBind();
                     }
                 }
@@ -259,7 +264,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 Guid familyGroupGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 
                 var memberService = new GroupMemberService();
-                var families = memberService.Queryable( "Group.GroupLocations.GroupLocationTypeValue" )
+                var families = memberService.Queryable()
                     .Where( m =>
                         m.PersonId == Person.Id &&
                         m.Group.GroupType.Guid == familyGroupGuid
@@ -269,16 +274,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 if ( !families.Any() )
                 {
-                    var role = new GroupTypeRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) );
-                    if ( role != null && role.GroupTypeId.HasValue )
+                    var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+                    if ( familyGroupType != null )
                     {
                         var groupMember = new GroupMember();
                         groupMember.PersonId = Person.Id;
-                        groupMember.GroupRoleId = role.Id;
+                        groupMember.GroupRoleId = familyGroupType.DefaultGroupRoleId.Value;
 
                         var family = new Group();
                         family.Name = Person.LastName;
-                        family.GroupTypeId = role.GroupTypeId.Value;
+                        family.GroupTypeId = familyGroupType.Id;
                         family.Members.Add( groupMember );
 
                         var groupService = new GroupService();

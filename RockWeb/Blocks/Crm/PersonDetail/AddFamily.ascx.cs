@@ -75,10 +75,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             cpCampus.Campuses = campusi;
             cpCampus.Visible = campusi.Any();
 
-            var childRole = new GroupTypeRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) );
-            if ( childRole != null )
+            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+            if (familyGroupType != null)
             {
-                _childRoleId = childRole.Id;
+                _childRoleId = familyGroupType.Roles
+                    .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) )
+                    .Select( r => r.Id)
+                    .FirstOrDefault();
             }
 
             bool.TryParse( GetAttributeValue( "Gender" ), out _requireGender );
@@ -149,6 +152,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             GetControlData().ForEach( m => groupMembers.Add( m.ToJson() ) );
 
             ViewState["FamilyMembers"] = groupMembers;
+
             return base.SaveViewState();
         }
 

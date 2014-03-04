@@ -58,7 +58,7 @@
                                                 </strong>
                                             </div>
                                             <div class="releasenotes-body" style="display: none">
-                                                <asp:Literal ID="litReleaseNotes" runat="server" Text='<%# System.Web.HttpUtility.HtmlEncode( Eval( "ReleaseNotes" ) ).ConvertCrLfToHtmlBr()  %>'></asp:Literal>
+                                                <asp:Literal ID="litReleaseNotes" runat="server" Text='<%# ConvertToHtmlLiWrappedUl( Eval( "ReleaseNotes" ).ToStringSafe() ).ConvertCrLfToHtmlBr()  %>'></asp:Literal>
                                             </div>
                                      </div>
                                     </div>

@@ -19,6 +19,7 @@ using System.Web.UI;
 using Rock;
 using Rock.Model;
 using Rock.PersonProfile;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -33,7 +34,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The name of the badge entity type.
         /// </value>
-        public PersonBadge PersonBadge { get; set; }
+        public PersonBadgeCache PersonBadge { get; set; }
 
         /// <summary>
         /// Restores view-state information from a previous page request that was saved by the <see cref="M:System.Web.UI.Control.SaveViewState" /> method.
@@ -46,7 +47,7 @@ namespace Rock.Web.UI.Controls
             string json = ViewState["PersonBadge"] as string;
             if ( !string.IsNullOrWhiteSpace( json ) )
             {
-                PersonBadge = PersonBadge.FromJson( json );
+                PersonBadge = PersonBadgeCache.FromJson( json );
             }
         }
 

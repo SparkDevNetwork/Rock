@@ -1241,61 +1241,80 @@ namespace Rock.Web.UI
 
                 if ( keyModel.Entity == null )
                 {
-                    Type modelType = entity.GetEntityType();
-
-                    if ( modelType == null )
+                    if ( entity.Name.Equals( "Rock.Model.Person", StringComparison.OrdinalIgnoreCase ) )
                     {
-                        // if the Type isn't found in the Rock.dll (it might be from a Plugin), lookup which assessmbly it is in and look in there
-                        string[] assemblyNameParts = entity.AssemblyName.Split( new char[] { ',' } );
-                        if ( assemblyNameParts.Length > 1 )
-                        {
-                            modelType = Type.GetType( string.Format( "{0}, {1}", entity.Name, assemblyNameParts[1] ) );
-                        }
-                    }
-
-                    if ( modelType != null )
-                    {
-                        // In the case of core Rock.dll Types, we'll just use Rock.Data.Service<> and Rock.Data.RockContext<>
-                        // otherwise find the first (and hopefully only) Service<> and dbContext we can find in the Assembly.  
-                        Type serviceType = typeof( Rock.Data.Service<> );
-                        Type contextType = typeof( Rock.Data.RockContext );
-                        if ( modelType.Assembly != serviceType.Assembly )
-                        {
-                            var serviceTypeLookup = Reflection.SearchAssembly( modelType.Assembly, serviceType );
-                            if ( serviceTypeLookup.Any() )
-                            {
-                                serviceType = serviceTypeLookup.First().Value;
-                            }
-
-                            var contextTypeLookup = Reflection.SearchAssembly( modelType.Assembly, typeof( System.Data.Entity.DbContext ) );
-
-                            if ( contextTypeLookup.Any() )
-                            {
-                                contextType = contextTypeLookup.First().Value;
-                            }
-                        }
-
-                        System.Data.Entity.DbContext dbContext = Activator.CreateInstance( contextType ) as System.Data.Entity.DbContext;
-
-                        Type service = serviceType.MakeGenericType( new Type[] { modelType } );
-                        var serviceInstance = Activator.CreateInstance( service, dbContext );
-
                         if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
                         {
-                            MethodInfo getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
-                            keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Id } ) as Rock.Data.IEntity;
+                            keyModel.Entity = new PersonService()
+                                .Queryable( "MaritalStatusValue,ConnectionStatusValue,RecordStatusValue,RecordStatusReasonValue,RecordTypevalue,SuffixValue,TitleValue,GivingGroup,Photo" )
+                                .Where( p => p.Id == keyModel.Id ).FirstOrDefault();
                         }
                         else
                         {
-                            MethodInfo getMethod = service.GetMethod( "GetByPublicKey" );
-                            keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Key } ) as Rock.Data.IEntity;
-                        }
-
-                        if ( keyModel.Entity is Rock.Attribute.IHasAttributes )
-                        {
-                            Rock.Attribute.Helper.LoadAttributes( keyModel.Entity as Rock.Attribute.IHasAttributes );
+                            keyModel.Entity = new PersonService().GetByPublicKey( keyModel.Key );
                         }
                     }
+                    else
+                    {
+
+                        Type modelType = entity.GetEntityType();
+
+                        if ( modelType == null )
+                        {
+                            // if the Type isn't found in the Rock.dll (it might be from a Plugin), lookup which assessmbly it is in and look in there
+                            string[] assemblyNameParts = entity.AssemblyName.Split( new char[] { ',' } );
+                            if ( assemblyNameParts.Length > 1 )
+                            {
+                                modelType = Type.GetType( string.Format( "{0}, {1}", entity.Name, assemblyNameParts[1] ) );
+                            }
+                        }
+
+                        if ( modelType != null )
+                        {
+                            // In the case of core Rock.dll Types, we'll just use Rock.Data.Service<> and Rock.Data.RockContext<>
+                            // otherwise find the first (and hopefully only) Service<> and dbContext we can find in the Assembly.  
+                            Type serviceType = typeof( Rock.Data.Service<> );
+                            Type contextType = typeof( Rock.Data.RockContext );
+                            if ( modelType.Assembly != serviceType.Assembly )
+                            {
+                                var serviceTypeLookup = Reflection.SearchAssembly( modelType.Assembly, serviceType );
+                                if ( serviceTypeLookup.Any() )
+                                {
+                                    serviceType = serviceTypeLookup.First().Value;
+                                }
+
+                                var contextTypeLookup = Reflection.SearchAssembly( modelType.Assembly, typeof( System.Data.Entity.DbContext ) );
+
+                                if ( contextTypeLookup.Any() )
+                                {
+                                    contextType = contextTypeLookup.First().Value;
+                                }
+                            }
+
+                            System.Data.Entity.DbContext dbContext = Activator.CreateInstance( contextType ) as System.Data.Entity.DbContext;
+
+                            Type service = serviceType.MakeGenericType( new Type[] { modelType } );
+                            var serviceInstance = Activator.CreateInstance( service, dbContext );
+
+                            if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
+                            {
+                                MethodInfo getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
+                                keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Id } ) as Rock.Data.IEntity;
+                            }
+                            else
+                            {
+                                MethodInfo getMethod = service.GetMethod( "GetByPublicKey" );
+                                keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Key } ) as Rock.Data.IEntity;
+                            }
+                        }
+
+                    }
+
+                    if ( keyModel.Entity != null && keyModel.Entity is Rock.Attribute.IHasAttributes )
+                    {
+                        Rock.Attribute.Helper.LoadAttributes( keyModel.Entity as Rock.Attribute.IHasAttributes );
+                    }
+
                 }
 
                 return keyModel.Entity;

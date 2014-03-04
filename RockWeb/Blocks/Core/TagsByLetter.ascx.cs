@@ -127,7 +127,7 @@ namespace RockWeb.Blocks.Core
         private void DisplayTags(int? ownerId, int entityId)
         {
             // get tags
-            var tags = new TagService()
+            var qry = new TagService()
                 .Queryable()
                 .Where(t => t.EntityTypeId == entityId && t.OwnerId == ownerId)
                 .Select(t => new
@@ -148,7 +148,9 @@ namespace RockWeb.Blocks.Core
             }
 
             // load tags
-            foreach (var tag in tags)
+            var tags = qry.ToList();
+
+            foreach ( var tag in tags )
             {
                 var tagSummary = new TagSummary { Id = tag.Id, Name = tag.Name, Count = tag.Count };
                 tagAlphabit[(char)tag.Name.Substring(0, 1).ToUpper()[0]].Add(tagSummary);
@@ -192,7 +194,7 @@ namespace RockWeb.Blocks.Core
             letterOutput.Append("</ul>");
 
             // if no tags add message instead
-            if (tags.Count() == 0)
+            if ( tags.Count() == 0 )
             {
                 tagOutput.Clear();
                 tagOutput.Append("<div class='alert alert-info'><h4>Note</h4>No personal tags exist.</div>");
