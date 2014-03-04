@@ -9,9 +9,7 @@
 
             var wsUrl = Rock.settings.get('baseUrl')
                         + 'ImageUploader.ashx?'
-                        + 'isBinaryFile=' + options.isBinaryFile
-                        + '&maxHeight=' + options.maxHeight
-                        + '&maxWidth=' + options.maxWidth
+                        + 'isBinaryFile=' + options.isBinaryFile;
 
             if (options.isBinaryFile == 'T') {
                 wsUrl += '&fileId=' + options.fileId
