@@ -160,6 +160,11 @@ namespace Rock.Rest
         /// <returns></returns>
         protected virtual Rock.Model.Person GetPerson()
         {
+            if (Request.Properties.Keys.Contains("Person"))
+            {
+                return Request.Properties["Person"] as Person;
+            }
+
             var principal = ControllerContext.Request.GetUserPrincipal();
             if ( principal != null && principal.Identity != null )
             {
@@ -168,6 +173,8 @@ namespace Rock.Rest
 
                 if ( userLogin != null )
                 {
+                    var person = userLogin.Person;
+                    Request.Properties.Add( "Person", person );
                     return userLogin.Person;
                 }
             }

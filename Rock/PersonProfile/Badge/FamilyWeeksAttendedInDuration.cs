@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Data;
 using System;
 using System.Diagnostics;
+using Rock.Web.Cache;
 
 namespace Rock.PersonProfile.Badge
 {
@@ -47,7 +48,7 @@ namespace Rock.PersonProfile.Badge
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public override void Render( PersonBadge badge, System.Web.UI.HtmlTextWriter writer )
+        public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
             writer.Write(String.Format("<div class='badge badge-weeksattendanceduration' data-original-title='Family attendance for the last {0} weeks.'>", GetAttributeValue(badge, "Duration")));
 

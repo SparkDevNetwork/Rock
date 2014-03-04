@@ -256,9 +256,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            GroupService groupService = new GroupService();
-            Group group = groupService.Get( int.Parse( hfGroupId.Value ) );
-            ShowEditDetails( group );
+            ShowEditDetails( GetGroup( hfGroupId.Value.AsInteger() ?? 0 ) );
         }
 
         /// <summary>
@@ -502,9 +500,7 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 // Cancelling on Edit.  Return to Details
-                GroupService groupService = new GroupService();
-                Group group = groupService.Get( int.Parse( hfGroupId.Value ) );
-                ShowReadonlyDetails( group );
+                ShowReadonlyDetails( GetGroup( hfGroupId.Value.AsInteger() ?? 0 ) );
             }
         }
 
@@ -533,7 +529,7 @@ namespace RockWeb.Blocks.Groups
             int? parentGroupId = gpParentGroup.SelectedValueAsInt();
             if ( ( parentGroupId ?? 0 ) != 0 )
             {
-                Group parentGroup = new GroupService().Get( parentGroupId.Value );
+                Group parentGroup = new GroupService().Queryable( "GroupType" ).Where( g => g.Id == parentGroupId.Value ).FirstOrDefault();
                 List<int> allowedChildGroupTypeIds = parentGroup.GroupType.ChildGroupTypes.Select( a => a.Id ).ToList();
                 groupTypeQry = groupTypeQry.Where( a => allowedChildGroupTypeIds.Contains( a.Id ) );
             }
@@ -612,7 +608,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                group = new GroupService().Get( itemKeyValue );
+                group = GetGroup( itemKeyValue );
                 if ( group != null )
                 {
                     editAllowed = group.IsAuthorized( "Edit", CurrentPerson );
@@ -967,6 +963,21 @@ namespace RockWeb.Blocks.Groups
             fieldsetViewDetails.Visible = !editable;
 
             this.HideSecondaryBlocks( editable );
+        }
+
+        private Group GetGroup( int groupId )
+        {
+            string key = string.Format( "Group:{0}", groupId );
+            Group group = RockPage.GetSharedItem( key ) as Group;
+            if ( group == null )
+            {
+                group = new GroupService().Queryable( "GroupType" )
+                    .Where( g => g.Id == groupId )
+                    .FirstOrDefault();
+                RockPage.SaveSharedItem( key, group );
+            }
+
+            return group;
         }
 
         /// <summary>

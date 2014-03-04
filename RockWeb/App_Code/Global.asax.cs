@@ -729,30 +729,23 @@ namespace RockWeb
                 }
 
                 // Cache all the Field Types
-                var fieldTypeService = new Rock.Model.FieldTypeService();
-                foreach ( var fieldType in fieldTypeService.Queryable().ToList() )
-                {
-                    fieldType.LoadAttributes();
-                    Rock.Web.Cache.FieldTypeCache.Read( fieldType );
-                }
+                var all = Rock.Web.Cache.FieldTypeCache.All();
 
                 // DT: When running with production CCV Data, this is taking a considerable amount of time 
 
                 // Cache all tha Defined Types
-                //var definedTypeService = new Rock.Model.DefinedTypeService();
-                //foreach ( var definedType in definedTypeService.Queryable().ToList() )
-                //{
-                //    definedType.LoadAttributes();
-                //    Rock.Web.Cache.DefinedTypeCache.Read( definedType );
-                //}
+                var definedTypeService = new Rock.Model.DefinedTypeService();
+                foreach ( var definedType in definedTypeService.Queryable().ToList() )
+                {
+                    Rock.Web.Cache.DefinedTypeCache.Read( definedType );
+                }
 
                 // Cache all the Defined Values
-                //var definedValueService = new Rock.Model.DefinedValueService();
-                //foreach ( var definedValue in definedValueService.Queryable().ToList() )
-                //{
-                //    definedValue.LoadAttributes();
-                //    Rock.Web.Cache.DefinedValueCache.Read( definedValue );
-                //}
+                var definedValueService = new Rock.Model.DefinedValueService();
+                foreach ( var definedValue in definedValueService.Queryable().ToList() )
+                {
+                    Rock.Web.Cache.DefinedValueCache.Read( definedValue );
+                }
             }
         }
 
