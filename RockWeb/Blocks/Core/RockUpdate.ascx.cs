@@ -44,10 +44,17 @@ namespace RockWeb.Blocks.Core
     [Description( "Handles checking for and performing upgrades to the Rock system." )]
     public partial class RockUpdate : Rock.Web.UI.RockBlock
     {
+
+        #region Fields
+
         WebProjectManager nuGetService = null;
         private string _rockPackageId = "Rock";
         IEnumerable<IPackage> _availablePackages = null;
-        SemanticVersion _installedVersion = new SemanticVersion("0.0.0");
+        SemanticVersion _installedVersion = new SemanticVersion( "0.0.0" );
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Obtains a WebProjectManager from the Global "UpdateServerUrl" Attribute.
@@ -67,14 +74,14 @@ namespace RockWeb.Blocks.Core
             }
         }
 
-        #region Event Handlers
+        #endregion
 
+        #region Base Control Methods
         /// <summary>
         /// Invoked on page load.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected void Page_Load( object sender, EventArgs e )
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
         {
             // Set timeout for up to 15 minutes (just like installer)
             Server.ScriptTimeout = 900;
@@ -92,6 +99,9 @@ namespace RockWeb.Blocks.Core
                 }
             }
         }
+        #endregion
+
+        #region Events
 
         /// <summary>
         /// Bind the available packages to the repeater.
@@ -165,6 +175,7 @@ namespace RockWeb.Blocks.Core
 
         #endregion
 
+        #region Methods
         /// <summary>
         /// Updates an existing Rock package to the given version and returns true if successful.
         /// </summary>
@@ -186,7 +197,7 @@ namespace RockWeb.Blocks.Core
                 {
                     errors = NuGetService.UpdatePackage( update );
                 }
-                nbSuccess.Text = System.Web.HttpUtility.HtmlEncode( update.ReleaseNotes ).ConvertCrLfToHtmlBr();
+                nbSuccess.Text = ConvertToHtmlLiWrappedUl( update.ReleaseNotes).ConvertCrLfToHtmlBr();
                 nbSuccess.Text += "<p><b>NOTE:</b> Any database changes will take effect at the next page load.</p>";
 
                 // register any new REST controllers
@@ -362,5 +373,44 @@ namespace RockWeb.Blocks.Core
 </html>
 " );
         }
-}
+
+        /// <summary>
+        /// Converts + and * to html line items (li) wrapped in unordered lists (ul).
+        /// </summary>
+        /// <param name="str">a string that contains lines that start with + or *</param>
+        /// <returns>an html string of <code>li</code> wrapped in <code>ul</code></returns>
+        public string ConvertToHtmlLiWrappedUl( string str )
+        {
+            if ( str == null )
+            {
+                return string.Empty;
+            }
+
+            bool foundMatch = false;
+            var re = new System.Text.RegularExpressions.Regex( @"\s*([\+\* ]+)(.*)" );
+            var htmlBuilder = new StringBuilder();
+
+            // split the string on newlines...
+            string[] splits = str.Split( new[] { Environment.NewLine, "\x0A" }, StringSplitOptions.RemoveEmptyEntries );
+            // look at each line to see if it starts with a + or * and then strip it and wrap it in <li></li>
+            for ( int i = 0; i < splits.Length; i++ )
+            {
+                var match = re.Match( splits[i] );
+                if ( match.Success )
+                {
+                    foundMatch = true;
+                    htmlBuilder.AppendFormat( "<li>{0}</li>", match.Groups[2] );
+                }
+                else
+                {
+                    htmlBuilder.Append( str );
+                }
+            }
+
+            // if we had a match then wrap it in <ul></ul> markup
+            return foundMatch ? string.Format( "<ul>{0}</ul>", htmlBuilder.ToString() ) : htmlBuilder.ToString();
+        }
+        #endregion
+
+    }
 }
