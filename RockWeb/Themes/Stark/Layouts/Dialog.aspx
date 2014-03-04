@@ -1,4 +1,4 @@
-﻿<%@ Page ValidateRequest="false" Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.DialogPage" %>
+﻿<%@ Page ValidateRequest="true" Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.DialogPage" %>
 <%@ Import Namespace="System.Web.Optimization" %>
 <%@ Import Namespace="Rock" %>
 
