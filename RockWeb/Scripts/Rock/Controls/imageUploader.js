@@ -9,7 +9,9 @@
 
             var wsUrl = Rock.settings.get('baseUrl')
                         + 'ImageUploader.ashx?'
-                        + 'isBinaryFile=' + options.isBinaryFile;
+                        + 'isBinaryFile=' + options.isBinaryFile
+                        + '&maxHeight=' + options.maxHeight
+                        + '&maxWidth=' + options.maxWidth
 
             if (options.isBinaryFile == 'T') {
                 wsUrl += '&fileId=' + options.fileId
@@ -51,7 +53,7 @@
                         + '&rootFolder=' + (encodeURIComponent(options.rootFolder) || '')
                         + '&id=' + data.response().result.Id
                         + '&fileName=' + data.response().result.FileName
-                        + '&width=50';
+                        + '&width=150';
 
                     $el.attr('src', getImageUrl);
                     $('#' + options.aRemove).show();

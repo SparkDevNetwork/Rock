@@ -60,6 +60,7 @@ public class BundleConfig
             "~/Scripts/typeahead.min.js",
             "~/Scripts/jquery.fileupload.js",
             "~/Scripts/jquery.tinyscrollbar.js",
+            "~/Scripts/jcrop.min.js",
             "~/Scripts/Rock/Extensions/*.js" ) );
 
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockUi" ).Include(
