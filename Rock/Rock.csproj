@@ -101,6 +101,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NuGet.Core.2.2.0\lib\net40-Client\NuGet.Core.dll</HintPath>
     </Reference>
+    <Reference Include="Quartz">
+      <HintPath>..\Quartz\bin\Quartz.dll</HintPath>
+    </Reference>
     <Reference Include="RestSharp">
       <HintPath>..\packages\RestSharp.104.3.3\lib\net4\RestSharp.dll</HintPath>
     </Reference>
@@ -1061,12 +1064,6 @@
     <WCFMetadataStorage Include="Service References\StrikeIron.USAddressVerification\" />
     <WCFMetadataStorage Include="Service References\TeleAtlas.Authentication\" />
     <WCFMetadataStorage Include="Service References\TeleAtlas.Geocoding\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Quartz\Quartz.csproj">
-      <Project>{AEF8823B-E45B-4B35-A4D0-C08C1196D017}</Project>
-      <Name>Quartz</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />

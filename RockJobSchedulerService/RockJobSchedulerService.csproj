@@ -42,6 +42,13 @@
     <Reference Include="DotLiquid">
       <HintPath>..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
     </Reference>
+    <Reference Include="Quartz">
+      <HintPath>..\Quartz\bin\Quartz.dll</HintPath>
+    </Reference>
+    <Reference Include="Rock, Version=0.1.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Rock\bin\Rock.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
@@ -71,16 +78,6 @@
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Quartz\Quartz.csproj">
-      <Project>{AEF8823B-E45B-4B35-A4D0-C08C1196D017}</Project>
-      <Name>Quartz</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rock\Rock.csproj">
-      <Project>{8F8C2A79-24F4-4157-8B99-45F75FA85799}</Project>
-      <Name>Rock</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
