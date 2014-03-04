@@ -678,7 +678,7 @@ namespace RockWeb.Blocks.CheckIn
                 PopulateDeleteLists( groupTypesToDelete, groupsToDelete, parentGroupTypeDB, parentGroupTypeUI );
                 PopulateAddUpdateLists( groupTypesToAddUpdate, groupsToAddUpdate, parentGroupTypeUI );
 
-                int binaryFileFieldTypeID = new FieldTypeService().Get( new Guid( Rock.SystemGuid.FieldType.BINARY_FILE ) ).Id;
+                int binaryFileFieldTypeID = FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() ).Id;
                 int binaryFileTypeId = new BinaryFileTypeService().Get( new Guid( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL ) ).Id;
 
                 RockTransactionScope.WrapTransaction( () =>

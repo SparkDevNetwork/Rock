@@ -497,10 +497,7 @@ namespace Rock.Web.UI.Controls
                 {
                     _ddlFieldType.DataValueField = "Id";
                     _ddlFieldType.DataTextField = "Name";
-                    _ddlFieldType.DataSource = new FieldTypeService()
-                        .Queryable()
-                        .OrderBy( a => a.Name )
-                        .Select( a => new { a.Id, a.Name } ).ToList(); ;
+                    _ddlFieldType.DataSource = FieldTypeCache.All();
                     _ddlFieldType.DataBind();
                 }
 

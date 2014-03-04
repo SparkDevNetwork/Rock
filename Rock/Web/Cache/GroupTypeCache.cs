@@ -248,7 +248,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The roles.
         /// </value>
-        public Dictionary<int, string> Roles { get; set; } 
+        public List<GroupTypeRoleCache> Roles { get; set; } 
 
         /// <summary>
         /// Gets the child group types.
@@ -383,10 +383,10 @@ namespace Rock.Web.Cache
                 this.InheritedGroupTypeId = groupType.InheritedGroupTypeId;
                 this.LocationSelectionMode = groupType.LocationSelectionMode;
                 this.GroupTypePurposeValueId = groupType.GroupTypePurposeValueId;
-                this.locationTypeValueIDs = groupType.LocationTypes.Select( l => l.LocationTypeValueId).ToList();
+                this.locationTypeValueIDs = groupType.LocationTypes.Select( l => l.LocationTypeValueId ).ToList();
 
-                this.Roles = new Dictionary<int, string>();
-                groupType.Roles.OrderBy( r => r.Order).ToList().ForEach( r => Roles.Add( r.Id, r.Name ) );
+                this.Roles = new List<GroupTypeRoleCache>();
+                groupType.Roles.OrderBy( r => r.Order ).ToList().ForEach( r => Roles.Add( new GroupTypeRoleCache( r ) ) );
             }
         }
 
@@ -551,5 +551,45 @@ namespace Rock.Web.Cache
         }
 
         #endregion
+    }
+
+    /// <summary>
+    /// Cached version of GroupTypeRole
+    /// </summary>
+    public class GroupTypeRoleCache
+    {
+        /// <summary>
+        /// Gets or sets the identifier.
+        /// </summary>
+        /// <value>
+        /// The identifier.
+        /// </value>
+        public int Id { get;set; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier.
+        /// </summary>
+        /// <value>
+        /// The unique identifier.
+        /// </value>
+        public Guid Guid { get; set; }
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string Name { get; set;}
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupTypeRoleCache"/> class.
+        /// </summary>
+        /// <param name="role">The role.</param>
+        public GroupTypeRoleCache( GroupTypeRole role)
+        {
+            Id = role.Id;
+            Guid = role.Guid;
+            Name = role.Name;
+        }
     }
 }

@@ -19,9 +19,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
+
 using Rock.Model;
 using Rock.PersonProfile;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 { 
@@ -38,7 +41,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The component guids.
         /// </value>
-        public List<PersonBadge> PersonBadges 
+        public List<PersonBadgeCache> PersonBadges 
         { 
             get 
             {
@@ -50,7 +53,7 @@ namespace Rock.Web.UI.Controls
                 RecreateChildControls();
             }
         }
-        private List<PersonBadge> _personBadges = new List<PersonBadge>();
+        private List<PersonBadgeCache> _personBadges = new List<PersonBadgeCache>();
 
         /// <summary>
         /// Restores view-state information from a previous request that was saved with the <see cref="M:System.Web.UI.WebControls.WebControl.SaveViewState" /> method.
@@ -63,7 +66,7 @@ namespace Rock.Web.UI.Controls
             var json = ViewState["PersonBadges"] as string;
             if ( !string.IsNullOrWhiteSpace( json ) )
             {
-                PersonBadges = JsonConvert.DeserializeObject( json, typeof( List<PersonBadge> ) ) as List<PersonBadge>;
+                PersonBadges = JsonConvert.DeserializeObject( json, typeof( List<PersonBadgeCache> ) ) as List<PersonBadgeCache>;
             }
         }
 
