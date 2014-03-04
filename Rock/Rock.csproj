@@ -78,6 +78,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\HtmlAgilityPack.1.4.6\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
+    <Reference Include="ImageResizer">
+      <HintPath>..\packages\ImageResizer.3.4.2\lib\ImageResizer.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.SqlServer.Types, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <Private>True</Private>
@@ -518,6 +521,7 @@
     <Compile Include="Web\UI\Controls\Grid\RockBoundField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LinkButtonField.cs" />
     <Compile Include="Web\UI\Controls\IHasValidationGroup.cs" />
+    <Compile Include="Web\UI\Controls\ImageEditor.cs" />
     <Compile Include="Web\UI\Controls\NoteContainer.cs" />
     <Compile Include="Web\UI\Controls\Pickers\EntityTypePicker.cs" />
     <Compile Include="Web\UI\Controls\PanelWidget.cs" />
