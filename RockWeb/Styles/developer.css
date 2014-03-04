@@ -273,6 +273,10 @@ span.cke_button__rockmergefield_label {
     height:480px;
     width:480px; 
 }
+
+.image-editor-photo .js-upload-progress {
+    position:absolute;
+}
 						
 .image-editor-photo:hover .options {
 	opacity: 1;
