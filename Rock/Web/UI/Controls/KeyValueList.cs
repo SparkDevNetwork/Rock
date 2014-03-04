@@ -74,12 +74,12 @@ namespace Rock.Web.UI.Controls
             {
                 string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "controls controls-row" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "controls controls-row form-control-group js-key-value-input" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.WriteLine();
 
                 // Write Name
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "span3 key-value-key" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "key-value-key form-control input-width-lg js-key-value-input" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Type, "text" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Value, nameAndValue.Length >= 1 ? nameAndValue[0] : string.Empty );
                 writer.AddAttribute( "placeholder", "Key" );
@@ -91,7 +91,7 @@ namespace Rock.Web.UI.Controls
                 // Write Value
                 if ( values == null )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "span4 key-value-value" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "key-value-value form-control input-width-lg js-key-value-input" );
                     writer.AddAttribute( HtmlTextWriterAttribute.Type, "text" );
                     writer.AddAttribute( "placeholder", "Value" );
                     writer.AddAttribute( HtmlTextWriterAttribute.Value, nameAndValue.Length >= 2 ? nameAndValue[1] : string.Empty );
@@ -101,7 +101,7 @@ namespace Rock.Web.UI.Controls
                 else
                 {
                     DropDownList ddl = new DropDownList();
-                    ddl.AddCssClass( "key-value-value" );
+                    ddl.AddCssClass( "key-value-value form-control input-width-lg js-key-value-input" );
                     ddl.DataTextField = "Name";
                     ddl.DataValueField = "Id";
                     ddl.DataSource = values;
@@ -118,7 +118,7 @@ namespace Rock.Web.UI.Controls
                 writer.WriteLine();
 
                 // Write Remove Button
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn key-value-remove" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-sm btn-danger key-value-remove" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
                 writer.AddAttribute(HtmlTextWriterAttribute.Class, "fa fa-minus-circle");
@@ -134,12 +134,18 @@ namespace Rock.Web.UI.Controls
 
             writer.RenderEndTag();
             writer.WriteLine();
+            
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn key-value-add" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-action btn-xs key-value-add" );
             writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
             writer.AddAttribute(HtmlTextWriterAttribute.Class, "fa fa-plus-circle");
             writer.RenderBeginTag( HtmlTextWriterTag.I );
+            
+            writer.RenderEndTag();
             writer.RenderEndTag();
             writer.RenderEndTag();
             writer.WriteLine();
@@ -169,10 +175,10 @@ namespace Rock.Web.UI.Controls
 
         $('a.key-value-add').click(function (e) {{
             e.preventDefault();
-            var newKeyValue = '<div class=""controls controls-row""><input class=""span3 key-value-key"" type=""text"" placeholder=""Key""></input> " );
+            var newKeyValue = '<div class=""controls controls-row form-control-group""><input class=""key-value-key form-control input-width-lg js-key-value-input"" type=""text"" placeholder=""Key""></input> " );
             if ( values != null )
             {
-                script.Append( @"<select class=""key-value-value""><option value=""""></option>" );
+                script.Append( @"<select class=""key-value-value form-control input-width-lg js-key-value-input""><option value=""""></option>" );
 
                 foreach ( var value in values )
                 {
@@ -183,14 +189,14 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                script.Append( @"<input class=""span4 key-value-value"" type=""text"" placeholder=""Value""></input>" );
+                script.Append( @"<input class=""key-value-value input-width-lg form-control js-key-value-input"" type=""text"" placeholder=""Value""></input>" );
             }
 
-            script.Append(@" <a href=""#"" class=""btn key-value-remove""><i class=""fa fa-minus-circle""></i></a></div>';
-            $(this).prev().append(newKeyValue);
+            script.Append( @" <a href=""#"" class=""btn btn-sm btn-danger key-value-remove""><i class=""fa fa-minus-circle""></i></a></div>';
+            $(this).closest('.key-value-list').find('.key-value-rows').append(newKeyValue);
         }});
 
-        $('a.key-value-remove').on('click', function (e) {{
+        $(document).on('click', 'a.key-value-remove', function (e) {{
             e.preventDefault();
             var $rows = $(this).closest('span.key-value-rows');
             $(this).closest('div.controls-row').remove();
@@ -201,7 +207,7 @@ namespace Rock.Web.UI.Controls
             if ( values != null )
             {
                 script.Append( @"
-        $('span.key-value-rows > div.controls-row > select').on('click', function (e) {{
+        $(document).on('focusout', '.js-key-value-input', function (e) {{
             updateKeyValues($(this));            
         }});
 " );
@@ -209,7 +215,7 @@ namespace Rock.Web.UI.Controls
             else
             {
                 script.Append( @"
-        $('span.key-value-rows > div.controls-row > input').on('blur', function (e) {{
+        $(document).on('focusout', '.js-key-value-input', function (e) {{
             updateKeyValues($(this));            
         }});
 " );

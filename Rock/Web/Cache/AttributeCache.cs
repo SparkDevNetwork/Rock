@@ -351,6 +351,7 @@ namespace Rock.Web.Cache
                             div.Controls.Add( label );
                             label.ClientIDMode = ClientIDMode.AutoID;
                             label.Text = this.Name;
+                            label.CssClass = "control-label";
                             label.AssociatedControlID = attributeControl.ID;
                         }
                         if ( renderHelp )
