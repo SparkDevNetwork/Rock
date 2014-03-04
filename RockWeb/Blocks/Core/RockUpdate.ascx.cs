@@ -387,7 +387,9 @@ namespace RockWeb.Blocks.Core
             }
 
             bool foundMatch = false;
-            var re = new System.Text.RegularExpressions.Regex( @"\s*([\+\* ]+)(.*)" );
+
+            // Lines that start with  "+ *" or "+" or "*"
+            var re = new System.Text.RegularExpressions.Regex( @"^\s*(\+ \* |[\+\*]+)(.*)" );
             var htmlBuilder = new StringBuilder();
 
             // split the string on newlines...
@@ -403,7 +405,7 @@ namespace RockWeb.Blocks.Core
                 }
                 else
                 {
-                    htmlBuilder.Append( str );
+                    htmlBuilder.Append( splits[i] );
                 }
             }
 
