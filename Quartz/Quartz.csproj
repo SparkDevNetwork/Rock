@@ -523,7 +523,7 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>copy /Y "$(TargetDir)$(ProjectName).dll" "$(SolutionDir)\..\libs\Quartz\$(ProjectName).dll"
+</PostBuildEvent>
   </PropertyGroup>
 </Project>
