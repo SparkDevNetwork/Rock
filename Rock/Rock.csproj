@@ -938,16 +938,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
-    <Compile Include="Service References\TeleAtlas.Authentication\Reference.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Compile>
-    <Compile Include="Service References\TeleAtlas.Geocoding\Reference.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Compile>
     <Compile Include="Data\IFeed.cs" />
     <Compile Include="Jobs\JobLoadFailedException.cs" />
     <Compile Include="Web\UI\PersonBlock.cs">
@@ -1009,20 +999,6 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\StrikeIron.USAddressVerification\USAddressVerification5.wsdl" />
-    <None Include="Service References\TeleAtlas.Authentication\Authentication.wsdl" />
-    <None Include="Service References\TeleAtlas.Geocoding\Geocoding.wsdl" />
-    <None Include="Service References\TeleAtlas.Geocoding\Rock.TeleAtlas.Geocoding.Geocode.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TeleAtlas.Geocoding\Rock.TeleAtlas.Geocoding.MatchType.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TeleAtlas.Geocoding\Rock.TeleAtlas.Geocoding.NameValue.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TeleAtlas.Geocoding\Rock.TeleAtlas.Geocoding.OutputField.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
     <None Include="Service References\ServiceObjects.GeoCoder\GeoCoder.disco" />
     <None Include="Service References\ServiceObjects.GeoCoder\configuration91.svcinfo" />
     <None Include="Service References\ServiceObjects.GeoCoder\configuration.svcinfo" />
@@ -1043,18 +1019,6 @@
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
-    <None Include="Service References\TeleAtlas.Authentication\configuration91.svcinfo" />
-    <None Include="Service References\TeleAtlas.Authentication\configuration.svcinfo" />
-    <None Include="Service References\TeleAtlas.Authentication\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
-    <None Include="Service References\TeleAtlas.Geocoding\configuration91.svcinfo" />
-    <None Include="Service References\TeleAtlas.Geocoding\configuration.svcinfo" />
-    <None Include="Service References\TeleAtlas.Geocoding\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
@@ -1063,8 +1027,6 @@
     <WCFMetadataStorage Include="Service References\MelissaData.AddressCheck\" />
     <WCFMetadataStorage Include="Service References\ServiceObjects.GeoCoder\" />
     <WCFMetadataStorage Include="Service References\StrikeIron.USAddressVerification\" />
-    <WCFMetadataStorage Include="Service References\TeleAtlas.Authentication\" />
-    <WCFMetadataStorage Include="Service References\TeleAtlas.Geocoding\" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
