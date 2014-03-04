@@ -72,6 +72,16 @@ namespace RockWeb
         #region Asp.Net Events
 
         /// <summary>
+        /// Handles the Pre Send Request event of the Application control.
+        /// </summary>
+        protected void Application_PreSendRequestHeaders()
+        {
+            Response.Headers.Remove( "Server" );
+            Response.Headers.Remove( "X-AspNet-Version" );
+            Response.AddHeader( "X-Frame-Options", "SAMEORIGIN" );
+        }
+
+        /// <summary>
         /// Handles the Start event of the Application control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
