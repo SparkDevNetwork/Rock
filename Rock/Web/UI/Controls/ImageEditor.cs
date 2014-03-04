@@ -456,7 +456,6 @@ namespace Rock.Web.UI.Controls
         {
             if ( mimeType == "image/svg+xml" )
             {
-                // todo: message about SVG not supported for cropping
                 return bitmapContent;
             }
             
@@ -470,14 +469,43 @@ namespace Rock.Web.UI.Controls
 
             System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap( new MemoryStream( bitmapContent ) );
 
+            // Crop Image
             MemoryStream croppedStream = new MemoryStream();
-            ImageResizer.ResizeSettings resizeSettings = new ImageResizer.ResizeSettings( string.Format( "crop={0},{1},{2},{3}", x, y, x2, y2 ) );
+            ImageResizer.ResizeSettings resizeCropSettings = new ImageResizer.ResizeSettings( string.Format( "crop={0},{1},{2},{3}", x, y, x2, y2 ) );
             MemoryStream imageStream = new MemoryStream();
             bitmap.Save( imageStream, bitmap.RawFormat );
             imageStream.Seek( 0, SeekOrigin.Begin );
-            ImageResizer.ImageBuilder.Current.Build( imageStream, croppedStream, resizeSettings );
+            ImageResizer.ImageBuilder.Current.Build( imageStream, croppedStream, resizeCropSettings );
 
-            return croppedStream.GetBuffer();
+            // Make sure Image is no bigger than maxwidth/maxheight
+            string resizeParams = null;
+            if ( this.MaxImageWidth.HasValue )
+            {
+                resizeParams += "width=" + this.MaxImageWidth.ToString();
+            }
+            
+            if ( this.MaxImageHeight.HasValue )
+            {
+                if ( !string.IsNullOrWhiteSpace(resizeParams) )
+                {
+                    resizeParams += "&";
+                }
+
+                resizeParams += "height=" + this.MaxImageHeight.ToString();
+            }
+            
+            if ( !string.IsNullOrWhiteSpace( resizeParams ) )
+            {
+                MemoryStream croppedAndResizedStream = new MemoryStream();
+                ImageResizer.ResizeSettings resizeSettings = new ImageResizer.ResizeSettings( resizeParams );
+                croppedStream.Seek( 0, SeekOrigin.Begin );
+                ImageResizer.ImageBuilder.Current.Build( croppedStream, croppedAndResizedStream, resizeSettings );
+                return croppedAndResizedStream.GetBuffer();
+            }
+            else
+            {
+                return croppedStream.GetBuffer();
+            }
         }
 
         /// <summary>
