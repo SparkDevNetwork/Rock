@@ -701,7 +701,7 @@ namespace Rock.Web.UI
 
                             HtmlGenericContainer blockWrapper = new HtmlGenericContainer( "div" );
                             blockWrapper.ID = string.Format( "bid_{0}", block.Id );
-                            blockWrapper.Attributes.Add( "zoneloc", block.BlockLocation.ToString() );
+                            blockWrapper.Attributes.Add( "data-zone-location", block.BlockLocation.ToString() );
                             blockWrapper.ClientIDMode = ClientIDMode.Static;
                             FindZone( block.Zone ).Controls.Add( blockWrapper );
 
