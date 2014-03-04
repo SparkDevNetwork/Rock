@@ -266,6 +266,11 @@
                 <Rock:ImageUploader ID="imageUploader" runat="server" Label="Rock:ImageUploader" />
             </div>
 
+            <a id="ImageEditor"></a>
+            <div runat="server" class="r-example">
+                <Rock:ImageEditor ID="imageEditor" runat="server" Label="Rock:ImageEditor" MaxImageWidth="1600" MaxImageHeight="1200" />
+            </div>
+
             <a id="NotificationBox"></a>
             <div runat="server" class="r-example">
                 <Rock:NotificationBox ID="notificationBox" runat="server" Title="Rock:NotificationBox" Text="Box Text" />
