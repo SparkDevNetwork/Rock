@@ -858,8 +858,8 @@ namespace Rock.Web.UI
                     HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );
                     aMoveBlock.Attributes.Add( "class", "block-move block-move" );
                     aMoveBlock.Attributes.Add( "href", _blockCache.Id.ToString() );
-                    aMoveBlock.Attributes.Add( "zone", _blockCache.Zone );
-                    aMoveBlock.Attributes.Add( "zoneloc", _blockCache.BlockLocation.ToString() );
+                    aMoveBlock.Attributes.Add( "data-zone", _blockCache.Zone );
+                    aMoveBlock.Attributes.Add( "data-zone-location", _blockCache.BlockLocation.ToString() );
                     aMoveBlock.Attributes.Add( "title", "Move Block" );
                     configControls.Add( aMoveBlock );
                     HtmlGenericControl iMoveBlock = new HtmlGenericControl( "i" );
