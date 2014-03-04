@@ -36,6 +36,10 @@
     <Reference Include="Payflow_dotNET">
       <HintPath>..\libs\PayFlow\Payflow_dotNET.dll</HintPath>
     </Reference>
+    <Reference Include="Rock, Version=0.1.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Rock\bin\Rock.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
@@ -62,17 +66,10 @@
     <Compile Include="Reporting\RequestResponse.cs" />
     <Compile Include="Reporting\ReportRequest.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Rock\Rock.csproj">
-      <Project>{8f8c2a79-24f4-4157-8b99-45f75fa85799}</Project>
-      <Name>Rock</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(TargetDir)$(ProjectName).dll" "$(SolutionDir)RockWeb\Plugins\$(ProjectName).dll"
-copy /Y "$(TargetDir)$(ProjectName).pdb" "$(SolutionDir)RockWeb\Plugins\$(ProjectName).pdb"
-copy /Y "$(TargetDir)Payflow_dotNET.dll" "$(SolutionDir)RockWeb\Plugins\Payflow_dotNET.dll"</PostBuildEvent>
+    <PostBuildEvent>copy /Y "$(TargetDir)$(ProjectName).dll" "$(SolutionDir)\..\RockWeb\Plugins\$(ProjectName).dll"
+copy /Y "$(TargetDir)Payflow_dotNET.dll" "$(SolutionDir)\..\RockWeb\Plugins\Payflow_dotNET.dll"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
