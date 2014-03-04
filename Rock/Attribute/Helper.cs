@@ -674,7 +674,7 @@ namespace Rock.Attribute
 
             attributeValueService.Save( attributeValue, currentPersonAlias );
 
-            model.AttributeValues[attribute.Key] = new List<Rock.Model.AttributeValue>() { attributeValue.Clone() as Rock.Model.AttributeValue };
+            model.AttributeValues[attribute.Key] = new List<Rock.Model.AttributeValue>() { attributeValue.Clone( false ) as Rock.Model.AttributeValue };
 
         }
 
@@ -746,7 +746,7 @@ namespace Rock.Attribute
                 {
                     if ( attributeValue.Value != newValues[i].Value )
                         attributeValue.Value = newValues[i].Value;
-                    newValues[i] = attributeValue.Clone() as Rock.Model.AttributeValue;
+                    newValues[i] = attributeValue.Clone( false ) as Rock.Model.AttributeValue;
                 }
 
                 attributeValueService.Save( attributeValue, currentPersonAlias );
