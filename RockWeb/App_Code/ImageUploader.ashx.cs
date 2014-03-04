@@ -23,6 +23,7 @@ using System.IO;
 using System.Linq;
 using System.Web;
 using Goheer.EXIF;
+using Rock;
 using Rock.Web.Cache;
 
 namespace RockWeb
@@ -60,9 +61,11 @@ namespace RockWeb
                     }
                 }
 
-                if ( context.Request.QueryString["enableResize"] != null )
+                if ( context.Request.QueryString["maxHeight"] != null || context.Request.QueryString["maxWidth"] != null )
                 {
-                    Bitmap resizedBmp = RoughResize( bmp, 1024, 768 );
+                    int maxHeight = context.Request.QueryString["maxHeight"].AsInteger( false ) ?? 3200;
+                    int maxWidth = context.Request.QueryString["maxWidth"].AsInteger( false ) ?? 3200;
+                    Bitmap resizedBmp = RoughResize( bmp, maxWidth, maxHeight );
                     bmp = resizedBmp;
                 }
 
