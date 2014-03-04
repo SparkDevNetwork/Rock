@@ -817,6 +817,9 @@ namespace Rock.Web.UI
 
                                 // Add the block
                                 blockContent.Controls.Add( control );
+
+                                control.ValidateRequestMode = ( canAdministrate || canEdit ) ? ValidateRequestMode.Disabled : System.Web.UI.ValidateRequestMode.Inherit;
+
                             }
                         }
                     }
