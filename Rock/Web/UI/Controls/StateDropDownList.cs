@@ -25,6 +25,9 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class StateDropDownList : RockDropDownList
     {
+        const string LOC_GUID = "com.rockrms.orgLocatoinGuid";
+        const string LOC_STATE = "com.rockrms.orgLocationState";
+        
         private bool _rebindRequired = false;
 
         /// <summary>
@@ -58,21 +61,37 @@ namespace Rock.Web.UI.Controls
 
             if ( !this.Page.IsPostBack )
             {
-                string orgLocGuid = GlobalAttributesCache.Read().GetValue( "OrganizationAddress" );
-                if ( !string.IsNullOrWhiteSpace( orgLocGuid ) )
+                string orgState = string.Empty;
+
+                // Check to see if there is an global attribute for organization address
+                Guid locGuid = GlobalAttributesCache.Read().GetValue( "OrganizationAddress" ).AsGuid();
+                if ( !locGuid.Equals( Guid.Empty ) )
                 {
-                    Guid locGuid = Guid.Empty;
-                    if ( Guid.TryParse( orgLocGuid, out locGuid ) )
+                    // If the organization location is still same as last check, use saved value
+                    if ( locGuid.Equals( Rock.Web.SystemSettings.GetValue( LOC_GUID ).AsGuid() ) )
                     {
+                        orgState = Rock.Web.SystemSettings.GetValue( LOC_STATE );
+                    }
+                    else
+                    {
+                        // otherwise read the new location and save the state
+                        Rock.Web.SystemSettings.SetValue( LOC_GUID, locGuid.ToString(), null );
                         var location = new Rock.Model.LocationService().Get( locGuid );
                         if ( location != null )
                         {
-                            var li = this.Items.FindByValue( location.State );
-                            if ( li != null )
-                            {
-                                li.Selected = true;
-                            }
+                            orgState = location.State;
+                            Rock.Web.SystemSettings.SetValue( LOC_STATE, orgState, null );
                         }
+                    }
+                }
+
+                // If a state was found, set the default value
+                if ( !string.IsNullOrWhiteSpace( orgState ) )
+                {
+                    var li = this.Items.FindByValue( orgState );
+                    if ( li != null )
+                    {
+                        li.Selected = true;
                     }
                 }
             }

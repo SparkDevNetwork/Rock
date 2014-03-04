@@ -214,26 +214,16 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The family roles.
         /// </value>
-        public Dictionary<int, string> FamilyRoles
+        public List<GroupTypeRoleCache> FamilyRoles
         {
             get
             {
-                if (HttpContext.Current.Items.Contains(FAMILY_ROLE_KEY))
+                var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+                if (familyGroupType != null)
                 {
-                    return HttpContext.Current.Items[FAMILY_ROLE_KEY] as Dictionary<int, string>;
+                    return familyGroupType.Roles;
                 }
-                else
-                {
-                    var familyRoles = new Dictionary<int, string>();
-                    var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
-                    if (familyGroupType != null)
-                    {
-                        new GroupTypeRoleService().GetByGroupTypeId(familyGroupType.Id)
-                            .ToList().ForEach( r => familyRoles.Add(r.Id, r.Name));
-                    }
-                    HttpContext.Current.Items[FAMILY_ROLE_KEY] = familyRoles;
-                    return familyRoles;
-                }
+                return new List<GroupTypeRoleCache>();
             }
         }
 
@@ -366,8 +356,8 @@ namespace Rock.Web.UI.Controls
             _rblRole.SelectedIndexChanged += rblRole_SelectedIndexChanged;
             _rblRole.Required = true;
             _rblRole.RequiredErrorMessage = "Role is required for all members";
-            _rblRole.DataTextField = "Value";
-            _rblRole.DataValueField = "Key";
+            _rblRole.DataTextField = "Name";
+            _rblRole.DataValueField = "Id";
             _rblRole.DataSource = FamilyRoles;
             _rblRole.DataBind();
 

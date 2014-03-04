@@ -15,8 +15,10 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Runtime.Caching;
 using System.Runtime.Serialization;
+using System.Linq;
 
 using Rock.Model;
 
@@ -136,6 +138,28 @@ namespace Rock.Web.Cache
 
         #region Static Methods
 
+        public static List<FieldTypeCache> All()
+        {
+            string cacheKey = "Rock:FieldType:All";
+
+            ObjectCache cache = MemoryCache.Default;
+            var allfieldTypes = cache[cacheKey] as List<FieldTypeCache>;
+            if ( allfieldTypes == null )
+            {
+                allfieldTypes = new List<FieldTypeCache>();
+                foreach ( var fieldType in new FieldTypeService().Queryable()
+                    .OrderBy( f => f.Name ) )
+                {
+                    allfieldTypes.Add( Read( fieldType ) );
+                }
+
+                var cachePolicy = new CacheItemPolicy();
+                cache.Set( cacheKey, allfieldTypes, cachePolicy );
+            }
+
+            return allfieldTypes;
+        }
+
         private static string CacheKey( int id )
         {
             return string.Format( "Rock:FieldType:{0}", id );
@@ -164,7 +188,6 @@ namespace Rock.Web.Cache
                 var fieldTypeModel = fieldTypeService.Get( id );
                 if ( fieldTypeModel != null )
                 {
-                    fieldTypeModel.LoadAttributes();
                     fieldType = new FieldTypeCache( fieldTypeModel );
 
                     var cachePolicy = new CacheItemPolicy();
@@ -210,7 +233,6 @@ namespace Rock.Web.Cache
                 var fieldTypeModel = fieldTypeService.Get( guid );
                 if ( fieldTypeModel != null )
                 {
-                    fieldTypeModel.LoadAttributes();
                     var fieldType = new FieldTypeCache( fieldTypeModel );
 
                     var cachePolicy = new CacheItemPolicy();
@@ -261,6 +283,7 @@ namespace Rock.Web.Cache
         {
             ObjectCache cache = MemoryCache.Default;
             cache.Remove( FieldTypeCache.CacheKey( id ) );
+            cache.Remove( "Rock:FieldType:All" );
         }
 
         #endregion
