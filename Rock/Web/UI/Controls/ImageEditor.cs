@@ -16,9 +16,12 @@
 //
 using System;
 using System.ComponentModel;
+using System.IO;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using Rock.Model;
 
 namespace Rock.Web.UI.Controls
 {
@@ -168,10 +171,13 @@ namespace Rock.Web.UI.Controls
         private FileUpload _fileUpload;
         private HtmlAnchor _aRemove;
         private LinkButton _lbShowModal;
-        
+        private HtmlAnchor _aUploadImage;
+
         private ModalDialog _mdImageDialog;
         private Panel _pnlCropContainer;
+        private NotificationBox _nbSvgNotSupported;
         private Image _imgCropSource;
+        private HiddenField _hfCropCoords;
 
         #endregion
 
@@ -184,8 +190,6 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             HelpBlock = new HelpBlock();
-            _hfBinaryFileId = new HiddenField();
-            _hfBinaryFileTypeGuid = new HiddenField();
         }
 
         #endregion
@@ -257,56 +261,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [is binary file].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [is binary file]; otherwise, <c>false</c>.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Behavior" ),
-        DefaultValue( "true" ),
-        Description( "Does this use the BinaryFile framework?" )
-        ]
-        public bool IsBinaryFile
-        {
-            get
-            {
-                return ViewState["IsBinaryFile"] as bool? ?? true;
-            }
-
-            set
-            {
-                ViewState["IsBinaryFile"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the root folder.
-        /// </summary>
-        /// <value>
-        /// The root folder.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Behavior" ),
-        DefaultValue( "true" ),
-        Description( "The RootFolder where NonBinaryFile files will be uploaded to" )
-        ]
-        public string RootFolder
-        {
-            get
-            {
-                return ViewState["RootFolder"] as string;
-            }
-
-            set
-            {
-                ViewState["RootFolder"] = value;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the submit function client script.
         /// </summary>
         /// <value>
@@ -356,6 +310,44 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the maximum height of the image.
+        /// </summary>
+        /// <value>
+        /// The maximum height of the image.
+        /// </value>
+        public int? MaxImageHeight
+        {
+            get
+            {
+                return ViewState["MaxImageHeight"] as int?;
+            }
+
+            set
+            {
+                ViewState["MaxImageHeight"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the maximum width of the image.
+        /// </summary>
+        /// <value>
+        /// The maximum width of the image.
+        /// </value>
+        public int? MaxImageWidth
+        {
+            get
+            {
+                return ViewState["MaxImageWidth"] as int?;
+            }
+
+            set
+            {
+                ViewState["MaxImageWidth"] = value;
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -367,9 +359,11 @@ namespace Rock.Web.UI.Controls
             _imgPhoto.ID = this.ID + "_imgPhoto";
             Controls.Add( _imgPhoto );
 
+            _hfBinaryFileId = new HiddenField();
             _hfBinaryFileId.ID = this.ID + "_hfBinaryFileId";
             Controls.Add( _hfBinaryFileId );
 
+            _hfBinaryFileTypeGuid = new HiddenField();
             _hfBinaryFileTypeGuid.ID = this.ID + "_hfBinaryFileTypeGuid";
             Controls.Add( _hfBinaryFileTypeGuid );
 
@@ -384,6 +378,11 @@ namespace Rock.Web.UI.Controls
             _lbShowModal.Click += _lbShowModal_Click;
             Controls.Add( _lbShowModal );
 
+            _aUploadImage = new HtmlAnchor();
+            _aUploadImage.ID = this.ID + "_aUploadImage";
+            _aUploadImage.InnerHtml = "<i class='fa fa-pencil'></i>";
+            Controls.Add( _aUploadImage );
+
             _fileUpload = new FileUpload();
             _fileUpload.ID = this.ID + "_fu";
             Controls.Add( _fileUpload );
@@ -394,14 +393,24 @@ namespace Rock.Web.UI.Controls
             _mdImageDialog.SaveClick += _mdImageDialog_SaveClick;
 
             _pnlCropContainer = new Panel();
-            _pnlCropContainer.CssClass = "crop-container clearfix";
+            _pnlCropContainer.CssClass = "crop-container image-editor-crop-container clearfix";
+            _nbSvgNotSupported = new NotificationBox();
+            _nbSvgNotSupported.ID = this.ID + "_nbSvgNotSupported";
+            _nbSvgNotSupported.NotificationBoxType = NotificationBoxType.Warning;
+            _nbSvgNotSupported.Text = "SVG image cropping is not supported.";
+
             _imgCropSource = new Image();
             _imgCropSource.ID = this.ID + "_imgCropSource";
             _imgCropSource.CssClass = "image-editor-crop-source";
+
+            _pnlCropContainer.Controls.Add( _nbSvgNotSupported );
             _pnlCropContainer.Controls.Add( _imgCropSource );
 
             _mdImageDialog.Content.Controls.Add( _pnlCropContainer );
-            
+
+            _hfCropCoords = new HiddenField();
+            _hfCropCoords.ID = this.ID + "_hfCropCoords";
+            _pnlCropContainer.Controls.Add( _hfCropCoords );
 
             Controls.Add( _mdImageDialog );
         }
@@ -413,7 +422,62 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void _mdImageDialog_SaveClick( object sender, EventArgs e )
         {
-            _mdImageDialog.Hide(); 
+            BinaryFileService binaryFileService = new BinaryFileService();
+            var binaryFile = binaryFileService.Get( _hfBinaryFileId.ValueAsInt() );
+            if ( binaryFile != null )
+            {
+                // load image from database
+                byte[] croppedImage = CropImage( binaryFile.Data.Content, binaryFile.MimeType );
+
+                BinaryFile croppedBinaryFile = new BinaryFile();
+                croppedBinaryFile.IsTemporary = true;
+                croppedBinaryFile.BinaryFileTypeId = binaryFile.BinaryFileTypeId;
+                croppedBinaryFile.MimeType = binaryFile.MimeType;
+                croppedBinaryFile.FileName = binaryFile.FileName;
+                croppedBinaryFile.Description = binaryFile.Description;
+                croppedBinaryFile.Data = new BinaryFileData();
+                croppedBinaryFile.Data.Content = croppedImage;
+
+                binaryFileService.Add( croppedBinaryFile, this.RockBlock().CurrentPersonAlias );
+                binaryFileService.Save( croppedBinaryFile, this.RockBlock().CurrentPersonAlias );
+                this.BinaryFileId = croppedBinaryFile.Id;
+            }
+
+            _mdImageDialog.Hide();
+        }
+
+        /// <summary>
+        /// Crops the image.
+        /// </summary>
+        /// <param name="bitmapContent">Content of the bitmap.</param>
+        /// <param name="mimeType">Type of the MIME.</param>
+        /// <returns></returns>
+        private byte[] CropImage( byte[] bitmapContent, string mimeType )
+        {
+            if ( mimeType == "image/svg+xml" )
+            {
+                // todo: message about SVG not supported for cropping
+                return bitmapContent;
+            }
+            
+            int[] photoCoords = _hfCropCoords.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => (int)a.AsDecimal().Value ).ToArray();
+            int x = photoCoords[0];
+            int y = photoCoords[1];
+            int width = photoCoords[2];
+            int height = photoCoords[3];
+            int x2 = x + width;
+            int y2 = y + height;
+
+            System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap( new MemoryStream( bitmapContent ) );
+
+            MemoryStream croppedStream = new MemoryStream();
+            ImageResizer.ResizeSettings resizeSettings = new ImageResizer.ResizeSettings( string.Format( "crop={0},{1},{2},{3}", x, y, x2, y2 ) );
+            MemoryStream imageStream = new MemoryStream();
+            bitmap.Save( imageStream, bitmap.RawFormat );
+            imageStream.Seek( 0, SeekOrigin.Begin );
+            ImageResizer.ImageBuilder.Current.Build( imageStream, croppedStream, resizeSettings );
+
+            return croppedStream.GetBuffer();
         }
 
         /// <summary>
@@ -424,6 +488,26 @@ namespace Rock.Web.UI.Controls
         protected void _lbShowModal_Click( object sender, EventArgs e )
         {
             _imgCropSource.ImageUrl = "~/GetImage.ashx?id=" + BinaryFileId;
+            var binaryFile = new BinaryFileService().Get( BinaryFileId ?? 0 );
+            if ( binaryFile != null )
+            {
+                if ( binaryFile.MimeType != "image/svg+xml" )
+                {
+                    if ( binaryFile.Data != null && binaryFile.Data.Content != null )
+                    {
+                        var bitMap = new System.Drawing.Bitmap( new MemoryStream( binaryFile.Data.Content ) );
+                        _imgCropSource.Width = bitMap.Width;
+                        _imgCropSource.Height = bitMap.Height;
+                    }
+                    _nbSvgNotSupported.Visible = false;
+                }
+                else
+                {
+                    _imgCropSource.Width = Unit.Empty;
+                    _imgCropSource.Height = Unit.Empty;
+                    _nbSvgNotSupported.Visible = true;
+                }
+            }
             _mdImageDialog.Show();
         }
 
@@ -468,14 +552,27 @@ namespace Rock.Web.UI.Controls
             writer.WriteLine();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "options" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div);
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            if ( ( BinaryFileId ?? 0 ) > 0 )
+            {
+                _lbShowModal.Style[HtmlTextWriterStyle.Display] = "";
+                _aUploadImage.Style[HtmlTextWriterStyle.Display] = "none";
+            }
+            else
+            {
+                _lbShowModal.Style[HtmlTextWriterStyle.Display] = "none";
+                _aUploadImage.Style[HtmlTextWriterStyle.Display] = "";
+            }
+
             _lbShowModal.RenderControl( writer );
+            _aUploadImage.RenderControl( writer );
+
             writer.WriteLine();
             _aRemove.RenderControl( writer );
             writer.WriteLine();
             writer.RenderEndTag();
             writer.WriteLine();
-            
+
             _hfBinaryFileId.RenderControl( writer );
             writer.WriteLine();
             _hfBinaryFileTypeGuid.RenderControl( writer );
@@ -518,23 +615,44 @@ Rock.controls.imageUploader.initialize({{
     imgThumbnail: '{4}',
     aRemove: '{5}',
     fileType: 'image',
-    isBinaryFile: '{6}',
-    rootFolder: '{7}',
+    maxHeight: {6},
+    maxWidth: {7},
     submitFunction: function (e, data) {{
         {8}
     }},
     doneFunction: function (e, data) {{
+        // custom done function
         {9}
+        
+        // toggle the edit/upload buttons
+        $('#{12}').hide();
+        $('#{13}').show();
+        
+        // postback to show Modal
+        {14}
     }}
 }});
 
 $('#{10}').Jcrop({{
-    aspectRatio:1
-}},function(){{
-	jcrop_api = this;
-	jcrop_api.setSelect([ 0,0,300,300 ]);
+    aspectRatio:1,
+    setSelect: [ 0,0,300,300 ],
+    boxWidth:480,
+    boxHeight:480,
+    onSelect: function(c) {{
+        $('#{11}').val(c.x + ',' + c.y + ',' + c.w + ',' +c.h + ',');
+    }}
 }});
 
+// prompt to upload image
+$('#{12}').click( function (e, data) {{
+    $('#{0}').click();
+}});
+
+// hide/show buttons when remove is clicked (note: imageUploader.js also does stuff when remove is clicked)
+$('#{5}').click(function () {{
+    $('#{12}').show();
+    $('#{13}').hide();
+}});
 
 ",
                 _fileUpload.ClientID,
@@ -543,11 +661,17 @@ $('#{10}').Jcrop({{
                 _hfBinaryFileId.ClientID,
                 _imgPhoto.ClientID,
                 _aRemove.ClientID,
-                this.IsBinaryFile ? "T" : "F",
-                Rock.Security.Encryption.EncryptString( this.RootFolder ),
+                this.MaxImageHeight.HasValue ? this.MaxImageHeight.ToString() : "null",
+                this.MaxImageWidth.HasValue ? this.MaxImageWidth.ToString() : "null",
                 this.SubmitFunctionClientScript,
                 this.DoneFunctionClientScript,
-                this._imgCropSource.ClientID);
+                _imgCropSource.ClientID,
+                _hfCropCoords.ClientID,
+                _aUploadImage.ClientID,
+                _lbShowModal.ClientID,
+                Page.ClientScript.GetPostBackEventReference( _lbShowModal, string.Empty )
+                );
+
             ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "ImageUploaderScript_" + this.ID, script, true );
         }
 
