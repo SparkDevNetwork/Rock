@@ -16,9 +16,15 @@
                     <h4>Family Members</h4>
                 </div>
                 <div class="col-md-8">
-                    <div class="pull-right">
-                        <asp:Literal ID="lAdultCaption" runat="server"></asp:Literal>
-                        <Rock:RockDropDownList ID="ddlMaritalStatus" runat="server" />
+                    <div class="form-horizontal">
+                        <div class="form-group form-no-margin">
+                            <label class="col-sm-8 control-label label-right">
+                                <asp:Literal ID="lAdultCaption" runat="server" />
+                            </label>
+                            <div class="col-sm-4">
+                                <Rock:RockDropDownList ID="ddlMaritalStatus" CssClass="input-sm" runat="server" />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
