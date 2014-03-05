@@ -328,7 +328,7 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
             var recipients = new Dictionary<string, Dictionary<string, object>>();
             recipients.Add( userLogin.Person.Email, mergeObjects );
 
-            Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients );
+            Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
         }
 
         #endregion
