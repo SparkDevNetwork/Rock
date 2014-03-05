@@ -688,6 +688,10 @@
     <Compile Include="Migrations\201403051630556_DefaultMaritalStatus.Designer.cs">
       <DependentUpon>201403051630556_DefaultMaritalStatus.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201403052222057_MigrationRollUp.cs" />
+    <Compile Include="Migrations\201403052222057_MigrationRollUp.Designer.cs">
+      <DependentUpon>201403052222057_MigrationRollUp.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1184,6 +1188,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201403051630556_DefaultMaritalStatus.resx">
       <DependentUpon>201403051630556_DefaultMaritalStatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403052222057_MigrationRollUp.resx">
+      <DependentUpon>201403052222057_MigrationRollUp.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
