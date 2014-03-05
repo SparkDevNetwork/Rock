@@ -8,7 +8,7 @@
         <div class="row">
 
             <div class="col-md-3">
-                <Rock:ImageUploader ID="imgPhoto" runat="server" Label="Photo" BinaryFileTypeGuid="03BD8476-8A9F-4078-B628-5B538F967AFC" />
+                <Rock:ImageEditor ID="imgPhoto" runat="server" Label="Photo" BinaryFileTypeGuid="03BD8476-8A9F-4078-B628-5B538F967AFC" />
             </div>
 
             <div class="col-md-9">
