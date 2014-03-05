@@ -169,6 +169,8 @@ namespace RockWeb.Blocks.Crm
                 PersonBadge.SaveAttributeValues( CurrentPersonAlias );
             } );
 
+            PersonBadgeCache.Flush( PersonBadge.Id );
+
             NavigateToParentPage();
         }
 
