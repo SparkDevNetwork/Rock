@@ -47,7 +47,7 @@ namespace Rock.Field
             if ( condensed )
                 return System.Web.HttpUtility.HtmlEncode( value ).Truncate( 100 );
 
-            return System.Web.HttpUtility.HtmlEncode( value );
+            return value;
         }
 
         /// <summary>

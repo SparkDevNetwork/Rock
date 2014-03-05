@@ -26,14 +26,6 @@ namespace Rock.Field.Types
     /// </summary>
     public class HtmlFieldType : FieldType
     {
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            if ( condensed )
-                return System.Web.HttpUtility.HtmlEncode( value ).Truncate( 100 );
-
-            return value;
-        }
-
         /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
