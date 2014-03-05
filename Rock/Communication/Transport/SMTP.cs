@@ -171,7 +171,7 @@ namespace Rock.Communication.Transport
         /// </summary>
         /// <param name="template">The template.</param>
         /// <param name="recipients">The recipients.</param>
-        public override void Send( SystemEmail template, Dictionary<string, Dictionary<string, object>> recipients )
+        public override void Send( SystemEmail template, Dictionary<string, Dictionary<string, object>> recipients, string appRoot, string themeRoot )
         {
             string from = template.From;
             if (string.IsNullOrWhiteSpace(from))
@@ -217,10 +217,24 @@ namespace Rock.Communication.Transport
                     sendTo.Add( recipient.Key );
                     foreach ( string to in sendTo )
                     {
+                        string subject = template.Subject.ResolveMergeFields( mergeObjects );
+                        string body = template.Body.ResolveMergeFields( mergeObjects );
+                        if (!string.IsNullOrWhiteSpace(themeRoot))
+                        {
+                            subject = subject.Replace( "~~/", themeRoot );
+                            body = subject.Replace( "~~/", themeRoot );
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(appRoot))
+                        {
+                            subject = subject.Replace( "~/", appRoot );
+                            body = subject.Replace( "~/", appRoot );
+                        }
+
                         message.To.Clear();
                         message.To.Add( to );
-                        message.Subject = template.Subject.ResolveMergeFields( mergeObjects );
-                        message.Body = template.Body.ResolveMergeFields( mergeObjects );
+                        message.Subject = subject;
+                        message.Body = body;
                         smtpClient.Send( message );
                     }
                 }
