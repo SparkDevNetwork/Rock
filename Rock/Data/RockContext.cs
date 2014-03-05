@@ -742,58 +742,8 @@ namespace Rock.Data
         /// </returns>
         public override int SaveChanges()
         {
-            // Try to get the current person alias
-            int? personAliasId = null;
-            if ( HttpContext.Current != null && HttpContext.Current.Items.Contains("CurrentPerson"))
-            {
-                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
-                if ( currentPerson != null && currentPerson.PrimaryAlias != null )
-                {
-                    personAliasId = currentPerson.PrimaryAlias.Id;
-                }
-            }
-
-            var changeSet = this.ChangeTracker.Entries().Where( e => e.Entity is IModel );
-            if (changeSet != null)
-            {
-                foreach(var entry in changeSet
-                    .Where( c => c.State == EntityState.Added)
-                    .Select( a => a.Entity as IModel))
-                {
-                    if ( !entry.CreatedDateTime.HasValue )
-                    {
-                        entry.CreatedDateTime = RockDateTime.Now;
-                    }
-                    if ( !entry.CreatedByPersonAliasId.HasValue )
-                    {
-                        entry.CreatedByPersonAliasId = personAliasId;
-                    }
-
-                    entry.ModifiedDateTime = RockDateTime.Now;
-                    entry.ModifiedByPersonAliasId = personAliasId;
-                }
-
-                foreach ( var entry in changeSet
-                    .Where( c => c.State == EntityState.Modified )
-                    .Select( a => a.Entity as IModel ) )
-                {
-                    entry.ModifiedDateTime = RockDateTime.Now;
-                    entry.ModifiedByPersonAliasId = personAliasId;
-                }
-
-                foreach ( var person in changeSet
-                    .Where( c => 
-                        (c.State == EntityState.Added || c.State == EntityState.Modified) &&
-                        (c.Entity is Person) )
-                    .Select( c => c.Entity as Person))
-                {
-                    var transaction = new Rock.Transactions.SaveMetaphoneTransaction( person );
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
-                }
-            }
-
+            ContextHelper.AddAuditData( this.ChangeTracker, HttpContext.Current );
             return base.SaveChanges();
-
         }
 
         /// <summary>
@@ -917,6 +867,65 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new WorkflowLogConfiguration() );
             modelBuilder.Configurations.Add( new WorkflowTriggerConfiguration() );
             modelBuilder.Configurations.Add( new WorkflowTypeConfiguration() );
+        }
+
+        /// <summary>
+        /// Updates the Created/Modified data for any model being created or modified
+        /// </summary>
+        /// <param name="changeTracker">The current DbChangeTracker object.</param>
+        /// <param name="context">The current HttpContext.</param>
+        public static void AddAuditData(System.Data.Entity.Infrastructure.DbChangeTracker changeTracker, HttpContext context)
+        {
+            // Try to get the current person alias
+            int? personAliasId = null;
+            if ( context != null && context.Items.Contains( "CurrentPerson" ) )
+            {
+                var currentPerson = context.Items["CurrentPerson"] as Person;
+                if ( currentPerson != null && currentPerson.PrimaryAlias != null )
+                {
+                    personAliasId = currentPerson.PrimaryAlias.Id;
+                }
+            }
+
+            var changeSet = changeTracker.Entries().Where( e => e.Entity is IModel );
+            if ( changeSet != null )
+            {
+                foreach ( var entry in changeSet
+                    .Where( c => c.State == EntityState.Added )
+                    .Select( a => a.Entity as IModel ) )
+                {
+                    if ( !entry.CreatedDateTime.HasValue )
+                    {
+                        entry.CreatedDateTime = RockDateTime.Now;
+                    }
+                    if ( !entry.CreatedByPersonAliasId.HasValue )
+                    {
+                        entry.CreatedByPersonAliasId = personAliasId;
+                    }
+
+                    entry.ModifiedDateTime = RockDateTime.Now;
+                    entry.ModifiedByPersonAliasId = personAliasId;
+                }
+
+                foreach ( var entry in changeSet
+                    .Where( c => c.State == EntityState.Modified )
+                    .Select( a => a.Entity as IModel ) )
+                {
+                    entry.ModifiedDateTime = RockDateTime.Now;
+                    entry.ModifiedByPersonAliasId = personAliasId;
+                }
+
+                foreach ( var person in changeSet
+                    .Where( c =>
+                        ( c.State == EntityState.Added || c.State == EntityState.Modified ) &&
+                        ( c.Entity is Person ) )
+                    .Select( c => c.Entity as Person ) )
+                {
+                    var transaction = new Rock.Transactions.SaveMetaphoneTransaction( person );
+                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                }
+            }
+
         }
     }
 }
