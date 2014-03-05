@@ -255,17 +255,17 @@ namespace RockWeb
             {
                 Global.QueueInUse = true;
 
-                try
+                while ( RockQueue.TransactionQueue.Count != 0 )
                 {
-                    while ( RockQueue.TransactionQueue.Count != 0 )
+                    ITransaction transaction = (ITransaction)RockQueue.TransactionQueue.Dequeue();
+                    try
                     {
-                        ITransaction transaction = (ITransaction)RockQueue.TransactionQueue.Dequeue();
                         transaction.Execute();
                     }
-                }
-                catch ( Exception ex )
-                {
-                    LogError( new Exception( string.Format( "Exception in Global.DrainTransactionQueue(): {0}", ex.Message ) ), null );
+                    catch ( Exception ex )
+                    {
+                        LogError( new Exception( string.Format( "Exception in Global.DrainTransactionQueue(): {0}", transaction.GetType().Name), ex ), null );
+                    }
                 }
 
                 Global.QueueInUse = false;
