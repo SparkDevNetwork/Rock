@@ -29,6 +29,13 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:RockCheckBoxList runat=server></{0}:RockCheckBoxList>" )]
     public class RockCheckBoxList : CheckBoxList, IRockControl
     {
+        #region Controls
+
+        // hidden field to assist in figuring out which items are checked
+        private HiddenField _hfCheckListBoxId;
+
+        #endregion
+
         #region IRockControl implementation
 
         /// <summary>
@@ -182,27 +189,42 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
             Controls.Clear();
+
+            _hfCheckListBoxId = new HiddenField();
+            _hfCheckListBoxId.ID = this.ID + "_hfCheckListBoxId";
+            _hfCheckListBoxId.Value = "1";
+
+            Controls.Add( _hfCheckListBoxId );
+
             RockControlHelper.CreateChildControls( this, Controls );
         }
 
         /// <summary>
-        /// Handles the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// Processes the posted data for the <see cref="T:System.Web.UI.WebControls.CheckBoxList" /> control.
         /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains event data.</param>
-        protected override void OnLoad( System.EventArgs e )
+        /// <param name="postDataKey">The key identifier for the control, used to index the <see cref="T:System.Collections.Specialized.NameValueCollection" /> specified in the <paramref name="postCollection" /> parameter.</param>
+        /// <param name="postCollection">A <see cref="T:System.Collections.Specialized.NameValueCollection" /> that contains value information indexed by control identifiers.</param>
+        /// <returns>
+        /// true if the state of the <see cref="T:System.Web.UI.WebControls.CheckBoxList" /> is different from the last posting; otherwise, false.
+        /// </returns>
+        protected override bool LoadPostData( string postDataKey, System.Collections.Specialized.NameValueCollection postCollection )
         {
-            base.OnLoad( e );
-
-            // Hack to get the selected items on postback.  
-            if ( Page.IsPostBack )
+            EnsureChildControls();
+            
+            // make sure we are dealing with a postback for this control by seeing if the hidden field is included
+            if ( postDataKey == _hfCheckListBoxId.UniqueID )
             {
+                // Hack to get the selected items on postback.  
                 for ( int i = 0; i < this.Items.Count; i++ )
                 {
-                    if ( this.Page.Request.Form[string.Format( "{0}${1}", this.UniqueID, i )] != null )
-                    {
-                        this.Items[i].Selected = true;
-                    }
+                    this.Items[i].Selected = ( postCollection[string.Format( "{0}${1}", this.UniqueID, i )] != null );
                 }
+
+                return false;
+            }
+            else
+            {
+                return base.LoadPostData( postDataKey, postCollection );
             }
         }
 
@@ -224,6 +246,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            _hfCheckListBoxId.RenderControl( writer );
+            
             writer.AddAttribute( "class", "controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
