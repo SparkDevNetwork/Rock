@@ -316,6 +316,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             lTitle.Text = String.Format( "Edit: {0}", Person.FullName ).FormatAsHtmlTitle();
 
             imgPhoto.BinaryFileId = Person.PhotoId;
+            imgPhoto.NoPictureUrl = Person.GetPhotoUrl( null, Person.Gender );
+
             ddlTitle.SelectedValue = Person.TitleValueId.HasValue ? Person.TitleValueId.Value.ToString() : string.Empty;
             tbFirstName.Text = Person.FirstName;
             tbNickName.Text = string.IsNullOrWhiteSpace( Person.NickName ) ? "" : ( Person.NickName.Equals( Person.FirstName, StringComparison.OrdinalIgnoreCase ) ? "" : Person.NickName );

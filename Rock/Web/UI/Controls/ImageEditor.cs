@@ -163,6 +163,25 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        #region OnLoad
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            if ( this.Page.Request.Params["__EVENTTARGET"] == _lbUploadImage.UniqueID )
+            {
+                // manually wire up to _lblUploadImage_Click since we want the fileUpload dialog javascript to happen first, then this
+                _lbUploadImage_Click( _lbUploadImage, e );
+            }
+        }
+
+        #endregion
+
         #region UI Controls
 
         private Image _imgPhoto;
@@ -171,8 +190,9 @@ namespace Rock.Web.UI.Controls
         private FileUpload _fileUpload;
         private HtmlAnchor _aRemove;
         private LinkButton _lbShowModal;
-        private HtmlAnchor _aUploadImage;
+        private LinkButton _lbUploadImage;
 
+        private HiddenField _hfCropBinaryFileId;
         private ModalDialog _mdImageDialog;
         private Panel _pnlCropContainer;
         private NotificationBox _nbImageWarning;
@@ -197,17 +217,11 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
-        /// Gets or sets a value indicating whether [display required indicator].
+        /// The BinaryFileId of the image displayed on in the main image (not necessarily the one being cropped in the Modal)
         /// </summary>
         /// <value>
-        ///     <c>true</c> if [display required indicator]; otherwise, <c>false</c>.
+        /// The binary file identifier.
         /// </value>
-        [
-        Bindable( true ),
-        Category( "Data" ),
-        DefaultValue( "" ),
-        Description( "BinaryFile Id" )
-        ]
         public int? BinaryFileId
         {
             get
@@ -229,6 +243,36 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _hfBinaryFileId.Value = value.ToString();
+            }
+        }
+
+        /// <summary>
+        /// The BinaryFileId of the BinaryFile that in the process of being cropped (not necessarily the one shown in the base image)
+        /// </summary>
+        /// <value>
+        /// The uploaded binary file identifier.
+        /// </value>
+        public int? CropBinaryFileId
+        {
+            get
+            {
+                EnsureChildControls();
+                int? result = _hfCropBinaryFileId.ValueAsInt();
+                if ( result > 0 )
+                {
+                    return result;
+                }
+                else
+                {
+                    // BinaryFileId of 0 means no file, so just return null instead
+                    return null;
+                }
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _hfCropBinaryFileId.Value = value.ToString();
             }
         }
 
@@ -257,56 +301,6 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _hfBinaryFileTypeGuid.Value = value.ToString();
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the submit function client script.
-        /// </summary>
-        /// <value>
-        /// The submit function client script.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Behavior" ),
-        DefaultValue( "" ),
-        Description( "The optional javascript to run in the image uploader's submitFunction" )
-        ]
-        public string SubmitFunctionClientScript
-        {
-            get
-            {
-                return ViewState["SubmitFunctionClientScript"] as string;
-            }
-
-            set
-            {
-                ViewState["SubmitFunctionClientScript"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the done function client script.
-        /// </summary>
-        /// <value>
-        /// The done function client script.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Behavior" ),
-        DefaultValue( "" ),
-        Description( "The optional javascript to run in the image uploader's doneFunction" )
-        ]
-        public string DoneFunctionClientScript
-        {
-            get
-            {
-                return ViewState["DoneFunctionClientScript"] as string;
-            }
-
-            set
-            {
-                ViewState["DoneFunctionClientScript"] = value;
             }
         }
 
@@ -348,6 +342,33 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the picture URL to use when there is no image selected
+        /// </summary>
+        /// <value>
+        /// The no picture URL.
+        /// </value>
+        public string NoPictureUrl
+        {
+            get
+            {
+                string nopictureUrl = ViewState["NoPictureUrl"] as string;
+                if ( string.IsNullOrWhiteSpace( nopictureUrl ) )
+                {
+                    return System.Web.VirtualPathUtility.ToAbsolute( "~/Assets/Images/person-no-photo-male.svg" );
+                }
+                else
+                {
+                    return nopictureUrl;
+                }
+            }
+
+            set
+            {
+                ViewState["NoPictureUrl"] = value;
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -362,6 +383,10 @@ namespace Rock.Web.UI.Controls
             _hfBinaryFileId = new HiddenField();
             _hfBinaryFileId.ID = this.ID + "_hfBinaryFileId";
             Controls.Add( _hfBinaryFileId );
+
+            _hfCropBinaryFileId = new HiddenField();
+            _hfCropBinaryFileId.ID = this.ID + "_hfCropBinaryFileId";
+            Controls.Add( _hfCropBinaryFileId );
 
             _hfBinaryFileTypeGuid = new HiddenField();
             _hfBinaryFileTypeGuid.ID = this.ID + "_hfBinaryFileTypeGuid";
@@ -378,10 +403,10 @@ namespace Rock.Web.UI.Controls
             _lbShowModal.Click += _lbShowModal_Click;
             Controls.Add( _lbShowModal );
 
-            _aUploadImage = new HtmlAnchor();
-            _aUploadImage.ID = this.ID + "_aUploadImage";
-            _aUploadImage.InnerHtml = "<i class='fa fa-pencil'></i>";
-            Controls.Add( _aUploadImage );
+            _lbUploadImage = new LinkButton();
+            _lbUploadImage.ID = this.ID + "_lbUploadImage";
+            _lbUploadImage.Text = "<i class='fa fa-pencil'></i>";
+            Controls.Add( _lbUploadImage );
 
             _fileUpload = new FileUpload();
             _fileUpload.ID = this.ID + "_fu";
@@ -390,6 +415,7 @@ namespace Rock.Web.UI.Controls
             _mdImageDialog = new ModalDialog();
             _mdImageDialog.ID = this.ID + "_mdImageDialog";
             _mdImageDialog.Title = "Image";
+            _mdImageDialog.SaveButtonText = "Crop";
             _mdImageDialog.SaveClick += _mdImageDialog_SaveClick;
 
             _pnlCropContainer = new Panel();
@@ -427,7 +453,7 @@ namespace Rock.Web.UI.Controls
                 BinaryFileService binaryFileService = new BinaryFileService();
 
                 // load image from database
-                var binaryFile = binaryFileService.Get( _hfBinaryFileId.ValueAsInt() );
+                var binaryFile = binaryFileService.Get( CropBinaryFileId ?? 0 );
                 if ( binaryFile != null )
                 {
                     byte[] croppedImage = CropImage( binaryFile.Data.Content, binaryFile.MimeType );
@@ -481,7 +507,7 @@ namespace Rock.Web.UI.Controls
 
             System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap( new MemoryStream( bitmapContent ) );
 
-            // Crop Image
+            // intentionally tell imageResizer to ignore the 3200x3200 size limit so that we can crop it first before limiting the size.
             var sizingPlugin = ImageResizer.Configuration.Config.Current.Plugins.Get<ImageResizer.Plugins.Basic.SizeLimiting>();
             var origLimit = sizingPlugin.Limits.TotalBehavior;
             sizingPlugin.Limits.TotalBehavior = ImageResizer.Plugins.Basic.SizeLimits.TotalSizeBehavior.IgnoreLimits;
@@ -491,6 +517,7 @@ namespace Rock.Web.UI.Controls
             bitmap.Save( imageStream, bitmap.RawFormat );
             imageStream.Seek( 0, SeekOrigin.Begin );
 
+            // set the size limit behavior back to what it was
             try
             {
                 ImageResizer.ImageBuilder.Current.Build( imageStream, croppedStream, resizeCropSettings );
@@ -500,7 +527,7 @@ namespace Rock.Web.UI.Controls
                 sizingPlugin.Limits.TotalBehavior = origLimit;
             }
 
-            // Make sure Image is no bigger than maxwidth/maxheight
+            // Make sure Image is no bigger than maxwidth/maxheight.  Default to whatever imageresizer's limits are set to
             int maxWidth = this.MaxImageWidth ?? sizingPlugin.Limits.TotalSize.Width;
             int maxHeight = this.MaxImageHeight ?? sizingPlugin.Limits.TotalSize.Height;
             croppedStream.Seek( 0, SeekOrigin.Begin );
@@ -522,15 +549,39 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Handles the Click event of the _lbUploadImage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void _lbUploadImage_Click( object sender, EventArgs e )
+        {
+            _lbShowModal_Click( _lbUploadImage, e );
+        }
+
+        /// <summary>
         /// Handles the Click event of the _lbShowModal control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void _lbShowModal_Click( object sender, EventArgs e )
         {
+            if ( !BinaryFileId.HasValue )
+            {
+                // no image to crop. they probably cancelled the image upload dialog
+                return;
+            }
+
+            CropBinaryFileId = BinaryFileId;
+
+            if ( sender == _lbUploadImage )
+            {
+                // we are uploading a new file and might cancel cropping it, so set the base ImageId to null
+                BinaryFileId = null;
+            }
+
             _nbImageWarning.Visible = false;
-            _imgCropSource.ImageUrl = "~/GetImage.ashx?id=" + BinaryFileId;
-            var binaryFile = new BinaryFileService().Get( BinaryFileId ?? 0 );
+            _imgCropSource.ImageUrl = "~/GetImage.ashx?id=" + CropBinaryFileId;
+            var binaryFile = new BinaryFileService().Get( CropBinaryFileId ?? 0 );
             if ( binaryFile != null )
             {
                 if ( binaryFile.MimeType != "image/svg+xml" )
@@ -592,7 +643,7 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                _imgPhoto.ImageUrl = "/Assets/Images/no-picture.svg";
+                _imgPhoto.ImageUrl = this.NoPictureUrl;
                 _aRemove.Style[HtmlTextWriterStyle.Display] = "none";
             }
 
@@ -604,16 +655,16 @@ namespace Rock.Web.UI.Controls
             if ( ( BinaryFileId ?? 0 ) > 0 )
             {
                 _lbShowModal.Style[HtmlTextWriterStyle.Display] = string.Empty;
-                _aUploadImage.Style[HtmlTextWriterStyle.Display] = "none";
+                _lbUploadImage.Style[HtmlTextWriterStyle.Display] = "none";
             }
             else
             {
                 _lbShowModal.Style[HtmlTextWriterStyle.Display] = "none";
-                _aUploadImage.Style[HtmlTextWriterStyle.Display] = string.Empty;
+                _lbUploadImage.Style[HtmlTextWriterStyle.Display] = string.Empty;
             }
 
             _lbShowModal.RenderControl( writer );
-            _aUploadImage.RenderControl( writer );
+            _lbUploadImage.RenderControl( writer );
 
             writer.WriteLine();
             _aRemove.RenderControl( writer );
@@ -622,6 +673,8 @@ namespace Rock.Web.UI.Controls
             writer.WriteLine();
 
             _hfBinaryFileId.RenderControl( writer );
+            writer.WriteLine();
+            _hfCropBinaryFileId.RenderControl( writer );
             writer.WriteLine();
             _hfBinaryFileTypeGuid.RenderControl( writer );
             writer.WriteLine();
@@ -658,41 +711,37 @@ Rock.controls.imageUploader.initialize({{
     imgThumbnail: '{4}',
     aRemove: '{5}',
     fileType: 'image',
-    submitFunction: function (e, data) {{
-        {6}
-    }},
+    setImageUrlOnUpload: false,
+    noPictureUrl: '{11}',
     doneFunction: function (e, data) {{
-        // custom done function
-        {7}
-        
         // toggle the edit/upload buttons
-        $('#{10}').hide();
-        $('#{11}').show();
-        
-        // postback to show Modal
-        {12}
+        $('#{8}').hide();
+        $('#{9}').show();
+
+        // postback to show Modal after uploading new image
+        {10}
     }}
 }});
 
-$('#{8}').Jcrop({{
+$('#{6}').Jcrop({{
     aspectRatio:1,
     setSelect: [ 0,0,300,300 ],
     boxWidth:480,
     boxHeight:480,
     onSelect: function(c) {{
-        $('#{9}').val(c.x + ',' + c.y + ',' + c.w + ',' +c.h + ',');
+        $('#{7}').val(c.x + ',' + c.y + ',' + c.w + ',' +c.h + ',');
     }}
 }});
 
 // prompt to upload image
-$('#{10}').click( function (e, data) {{
+$('#{8}').click( function (e, data) {{
     $('#{0}').click();
 }});
 
 // hide/show buttons when remove is clicked (note: imageUploader.js also does stuff when remove is clicked)
 $('#{5}').click(function () {{
-    $('#{10}').show();
-    $('#{11}').hide();
+    $('#{8}').show();
+    $('#{9}').hide();
 }});
 
 ",
@@ -702,13 +751,12 @@ $('#{5}').click(function () {{
                 _hfBinaryFileId.ClientID,
                 _imgPhoto.ClientID,
                 _aRemove.ClientID,
-                this.SubmitFunctionClientScript,
-                this.DoneFunctionClientScript,
                 _imgCropSource.ClientID,
                 _hfCropCoords.ClientID,
-                _aUploadImage.ClientID,
+                _lbUploadImage.ClientID,
                 _lbShowModal.ClientID,
-                Page.ClientScript.GetPostBackEventReference( _lbShowModal, string.Empty ) );
+                Page.ClientScript.GetPostBackEventReference( _lbUploadImage, string.Empty ),
+                this.NoPictureUrl);
 
             ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "ImageUploaderScript_" + this.ID, script, true );
         }
