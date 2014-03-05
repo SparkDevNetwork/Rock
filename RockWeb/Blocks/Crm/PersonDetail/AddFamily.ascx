@@ -12,14 +12,24 @@
             </div>
             
             <div class="row">
-                <div class="col-md-12">
+                <div class="col-md-4">
                     <h4>Family Members</h4>
+                </div>
+                <div class="col-md-8">
+                    <div class="pull-right">
+                        <asp:Literal ID="lAdultCaption" runat="server"></asp:Literal>
+                        <Rock:RockDropDownList ID="ddlMaritalStatus" runat="server" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
                     <Rock:NewFamilyMembers id="nfmMembers" runat="server" OnAddFamilyMemberClick="nfmMembers_AddFamilyMemberClick" />
                 </div>
             </div>
 
             <div class="row">
-
                 <div class="col-md-4">
                     <Rock:CampusPicker ID="cpCampus" runat="server" Required="true" />
                 </div>
