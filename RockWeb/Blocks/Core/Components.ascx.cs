@@ -97,16 +97,6 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
-        /// </summary>
-        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
-        protected override void LoadViewState( object savedState )
-        {
-            base.LoadViewState( savedState );
-            LoadEditControls();
-        }
-
-        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -123,6 +113,14 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
+                if (hfActiveDialog.Value.Trim().ToUpper() == "EDITCOMPONENT")
+                {
+                    int? serviceId = ViewState["serviceId"] as int?;
+                    if (serviceId.HasValue)
+                    {
+                        LoadEditControls(serviceId.Value, false);
+                    }
+                }
                 ShowDialog();
             }
 
@@ -315,19 +313,17 @@ namespace RockWeb.Blocks.Core
         {
             ViewState["serviceId"] = serviceId;
             phProperties.Controls.Clear();
-            LoadEditControls();
+            LoadEditControls(serviceId, true);
 
             mdEditComponent.Title = (_container.Dictionary[serviceId].Key + " Properties").FormatAsHtmlTitle();
 
             ShowDialog( "EditComponent" );
         }
 
-        private void LoadEditControls()
+        private void LoadEditControls(int serviceId, bool setValues)
         {
-            int serviceId = ( int )ViewState["serviceId"];
             Rock.Attribute.IHasAttributes component = _container.Dictionary[serviceId].Value;
-
-            Rock.Attribute.Helper.AddEditControls( component, phProperties, true, string.Empty, new List<string>() { "Order" }  );
+            Rock.Attribute.Helper.AddEditControls( component, phProperties, setValues, string.Empty, new List<string>() { "Order" } );
         }
 
         private void DisplayError( string message )
