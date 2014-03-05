@@ -40,8 +40,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         "The type of location that address should use", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 0 )]
     [BooleanField( "Nick Name", "Show Nick Name column", "Hide Nick Name column", "Should the Nick Name field be displayed?", false, "", 1 )]
     [BooleanField( "Gender", "Require a gender for each person", "Don't require", "Should Gender be required for each person added?", false, "", 2 )]
-    [BooleanField( "Grade", "Require a grade for each child", "Don't require", "Should Grade be required for each child added?", false, "", 3 )]
-    [AttributeCategoryField( "Attribute Categories", "The Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 4 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Adult Marital Status", "The default marital status for adults in the family.", false, false, "", "", 3)]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Child Marital Status", "The marital status to use for children in the family.", false, false,
+        Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE, "", 4 )]
+    [BooleanField( "Grade", "Require a grade for each child", "Don't require", "Should Grade be required for each child added?", false, "", 5 )]
+    [AttributeCategoryField( "Attribute Categories", "The Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 6 )]
     public partial class AddFamily : Rock.Web.UI.RockBlock
     {
 
@@ -96,6 +99,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             base.OnInit( e );
 
             ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ) );
+            var AdultMaritalStatus = DefinedValueCache.Read( GetAttributeValue( "AdultMaritalStatus" ).AsGuid() );
+            if (AdultMaritalStatus != null)
+            {
+                ddlMaritalStatus.SetValue( AdultMaritalStatus.Id );
+            }
 
             var campusi = new CampusService().Queryable().OrderBy( a => a.Name ).ToList();
             cpCampus.Campuses = campusi;
@@ -395,7 +403,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private List<GroupMember> GetControlData()
         {
             var familyMembers = new List<GroupMember>();
-            int singleId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE ).Id;
+
+            int? childMaritalStatusId = null;
+            var childMaritalStatus = DefinedValueCache.Read( GetAttributeValue("ChildMaritalStatus").AsGuid() );
+            if ( childMaritalStatus != null )
+            {
+                childMaritalStatusId = childMaritalStatus.Id;
+            }
+
+            int? adultMaritalStatusId = ddlMaritalStatus.SelectedValueAsInt();
 
             foreach ( NewFamilyMembersRow row in nfmMembers.FamilyMemberRows )
             {
@@ -410,11 +426,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     if (groupMember.GroupRoleId == _childRoleId)
                     {
-                        groupMember.Person.MaritalStatusValueId = singleId;
+                        groupMember.Person.MaritalStatusValueId = childMaritalStatusId;
                     }
                     else
                     {
-                        groupMember.Person.MaritalStatusValueId = ddlMaritalStatus.SelectedValueAsInt();
+                        groupMember.Person.MaritalStatusValueId = adultMaritalStatusId;
                     }
                 }
 
