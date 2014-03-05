@@ -405,7 +405,7 @@ namespace RockWeb.Blocks.Security
                     var recipients = new Dictionary<string, Dictionary<string, object>>();
                     recipients.Add( person.Email, mergeObjects );
 
-                    Email.Send( GetAttributeValue( "ForgotUsernameTemplate" ).AsGuid(), recipients );
+                    Email.Send( GetAttributeValue( "ForgotUsernameTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
                 }
                 else
                     ShowErrorMessage( "Invalid Person" );
@@ -439,7 +439,7 @@ namespace RockWeb.Blocks.Security
                 var recipients = new Dictionary<string, Dictionary<string, object>>();
                 recipients.Add( person.Email, mergeObjects );
 
-                Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients );
+                Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
 
                 ShowPanel( 4 );
             }
@@ -477,7 +477,7 @@ namespace RockWeb.Blocks.Security
                         var recipients = new Dictionary<string, Dictionary<string, object>>();
                         recipients.Add( person.Email, mergeObjects );
 
-                        Email.Send( GetAttributeValue( "AccountCreatedTemplate" ).AsGuid(), recipients );
+                        Email.Send( GetAttributeValue( "AccountCreatedTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
                     }
                     catch(SystemException ex)
                     {

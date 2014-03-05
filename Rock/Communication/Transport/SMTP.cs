@@ -222,13 +222,13 @@ namespace Rock.Communication.Transport
                         if (!string.IsNullOrWhiteSpace(themeRoot))
                         {
                             subject = subject.Replace( "~~/", themeRoot );
-                            body = subject.Replace( "~~/", themeRoot );
+                            body = body.Replace( "~~/", themeRoot );
                         }
 
                         if (!string.IsNullOrWhiteSpace(appRoot))
                         {
                             subject = subject.Replace( "~/", appRoot );
-                            body = subject.Replace( "~/", appRoot );
+                            body = body.Replace( "~/", appRoot );
                         }
 
                         message.To.Clear();
