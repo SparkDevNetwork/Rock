@@ -704,11 +704,9 @@
     <Compile Include="Extension\Container.cs" />
     <Compile Include="Extension\ComponentDescription.cs" />
     <Compile Include="Address\Standardize\MelissaData.cs" />
-    <Compile Include="Address\Standardize\StrikeIron.cs" />
     <Compile Include="Address\StandardizeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Address\Geocode\StrikeIron.cs" />
     <Compile Include="Address\StandardizeComponent.cs" />
     <Compile Include="Address\GeocodeComponent.cs" />
     <Compile Include="Address\Geocode\ServiceObjects.cs" />
@@ -933,11 +931,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
-    <Compile Include="Service References\StrikeIron.USAddressVerification\Reference.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Compile>
     <Compile Include="Data\IFeed.cs" />
     <Compile Include="Jobs\JobLoadFailedException.cs" />
     <Compile Include="Web\UI\PersonBlock.cs">
@@ -980,35 +973,10 @@
     <None Include="Service References\ServiceObjects.GeoCoder\Rock.ServiceObjects.GeoCoder.ZipCodeInfo.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
-    <None Include="Service References\StrikeIron.USAddressVerification\Rock.StrikeIron.USAddressVerification.SIWsOutputOfMethodStatusRecord.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\StrikeIron.USAddressVerification\Rock.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfMethodStatusRecord.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\StrikeIron.USAddressVerification\Rock.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfServiceInfoRecord.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\StrikeIron.USAddressVerification\Rock.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfUSAddressWithStatus.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\StrikeIron.USAddressVerification\Rock.StrikeIron.USAddressVerification.SIWsOutputOfUSAddress.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\StrikeIron.USAddressVerification\Rock.StrikeIron.USAddressVerification.SubscriptionInfo.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\StrikeIron.USAddressVerification\USAddressVerification5.wsdl" />
     <None Include="Service References\ServiceObjects.GeoCoder\GeoCoder.disco" />
     <None Include="Service References\ServiceObjects.GeoCoder\configuration91.svcinfo" />
     <None Include="Service References\ServiceObjects.GeoCoder\configuration.svcinfo" />
     <None Include="Service References\ServiceObjects.GeoCoder\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
-    <None Include="Service References\StrikeIron.USAddressVerification\configuration91.svcinfo" />
-    <None Include="Service References\StrikeIron.USAddressVerification\configuration.svcinfo" />
-    <None Include="Service References\StrikeIron.USAddressVerification\Reference.svcmap">
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
@@ -1026,7 +994,6 @@
   <ItemGroup>
     <WCFMetadataStorage Include="Service References\MelissaData.AddressCheck\" />
     <WCFMetadataStorage Include="Service References\ServiceObjects.GeoCoder\" />
-    <WCFMetadataStorage Include="Service References\StrikeIron.USAddressVerification\" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
