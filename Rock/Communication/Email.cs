@@ -33,7 +33,7 @@ namespace Rock.Communication
         /// </summary>
         /// <param name="emailTemplateGuid">The email template unique identifier.</param>
         /// <param name="recipients">The recipients.</param>
-        public static void Send( Guid emailTemplateGuid, Dictionary<string, Dictionary<string, object>> recipients )
+        public static void Send( Guid emailTemplateGuid, Dictionary<string, Dictionary<string, object>> recipients, string appRoot = "", string themeRoot = "" )
         {
             if ( emailTemplateGuid != Guid.Empty && recipients != null && recipients.Any() )
             {
@@ -49,7 +49,7 @@ namespace Rock.Communication
                             var template = new SystemEmailService().Get( emailTemplateGuid );
                             if ( template != null )
                             {
-                                transport.Send( template, recipients );
+                                transport.Send( template, recipients, appRoot, themeRoot );
                             }
                         }
                     }
