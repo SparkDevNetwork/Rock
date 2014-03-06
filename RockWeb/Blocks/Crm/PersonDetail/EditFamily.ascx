@@ -156,6 +156,8 @@
 
         <Rock:ConfirmPageUnload ID="confirmExit" runat="server" ConfirmationMessage="Changes have been made to this family that have not yet been saved." Enabled="false" />
 
+        <asp:HiddenField ID="hfActiveDialog" runat="server" />
+
         <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Person" Content-Height="380" ValidationGroup="AddPerson" >
             <Content>
 
@@ -172,7 +174,7 @@
 
                     <div id="divExistingPerson" runat="server" class="tab-pane active">
                         <fieldset>
-                            <Rock:AutoCompleteDropDown ID="acPerson" runat="server" Label="Person" Required="true" ValidationGroup="AddPerson" />
+                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="true" ValidationGroup="AddPerson" />
                             <Rock:RockCheckBox ID="cbRemoveOtherFamilies" runat="server" Checked="true" Text="Remove person from other families" ValidationGroup="AddPerson"/>
                         </fieldset>
                     </div>
@@ -216,7 +218,7 @@
                     Sys.Application.add_load(function () {
                         
                         $find('<%=modalAddPerson.ClientID%>').add_shown(function () {
-                            enableRequiredField('<%=acPerson.ClientID%>_rfv', true)
+                            enableRequiredField('<%=ppPerson.ClientID%>_rfv', true)
                             enableRequiredField('<%=tbNewPersonFirstName.ClientID%>_rfv', false);
                             enableRequiredField('<%=tbNewPersonLastName.ClientID%>_rfv', false);
                         });
@@ -225,12 +227,12 @@
                             var tabHref = $(e.target).attr("href");
                             if (tabHref == '#<%=divExistingPerson.ClientID%>') {
                                 $('#<%=hfActiveTab.ClientID%>').val('Existing');
-                                enableRequiredField('<%=acPerson.ClientID%>_rfv', true)
+                                enableRequiredField('<%=ppPerson.ClientID%>_rfv', true)
                                 enableRequiredField('<%=tbNewPersonFirstName.ClientID%>_rfv', false);
                                 enableRequiredField('<%=tbNewPersonLastName.ClientID%>_rfv', false);
                             } else {
                                 $('#<%=hfActiveTab.ClientID%>').val('New');
-                                enableRequiredField('<%=acPerson.ClientID%>_rfv', false)
+                                enableRequiredField('<%=ppPerson.ClientID%>_rfv', false)
                                 enableRequiredField('<%=tbNewPersonFirstName.ClientID%>_rfv', true);
                                 enableRequiredField('<%=tbNewPersonLastName.ClientID%>_rfv', true);
                             }
