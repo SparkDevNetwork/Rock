@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Finance
     /// Lists scheduled transactions for current or selected user (if context for person is not configured, will display for currently logged in person).
     /// </summary>
     [DisplayName("Giving Profile List")]
-    [Category("Financial")]
+    [Category("Finance")]
     [Description("Lists scheduled transactions for current or selected user (if context for person is not configured, will display for currently logged in person).")]
 
     [LinkedPage("Edit Page")]
@@ -72,18 +72,13 @@ namespace RockWeb.Blocks.Finance
             bool canEdit = RockPage.IsAuthorized( "Edit", CurrentPerson );
 
             rGridGivingProfile.DataKeyNames = new string[] { "id" };
-            rGridGivingProfile.Actions.ShowAdd = canEdit;
+            rGridGivingProfile.Actions.ShowAdd = canEdit && !string.IsNullOrWhiteSpace( GetAttributeValue( "AddPage" ) );
             rGridGivingProfile.IsDeleteEnabled = canEdit;
 
             rGridGivingProfile.Actions.AddClick += rGridGivingProfile_Add;
             rGridGivingProfile.GridRebind += rGridGivingProfile_GridRebind;
 
             TargetPerson = ContextEntity<Person>();
-            if (TargetPerson == null)
-            {
-                TargetPerson = CurrentPerson;
-            }
-
         }
 
         /// <summary>
@@ -135,9 +130,27 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void rGridGivingProfile_Edit( object sender, RowEventArgs e )
         {
+            string urlEncodedKey = string.Empty;
+            if (TargetPerson != null)
+            {
+                urlEncodedKey = TargetPerson.UrlEncodedKey;
+            }
+            else
+            {
+                var txn = new FinancialScheduledTransactionService().Get( (int)e.RowKeyValue );
+                if (txn != null && txn.AuthorizedPerson != null)
+                {
+                    urlEncodedKey = txn.AuthorizedPerson.UrlEncodedKey;
+                }
+            }
+
             var parms = new Dictionary<string, string>();
             parms.Add( "Txn", rGridGivingProfile.DataKeys[e.RowIndex]["id"].ToString() );
-            parms.Add( "Person", TargetPerson.UrlEncodedKey );
+            if (!string.IsNullOrWhiteSpace(urlEncodedKey))
+            {
+                parms.Add( "Person", urlEncodedKey );
+            }
+
             NavigateToLinkedPage( "EditPage", parms );
         }
 
@@ -195,8 +208,16 @@ namespace RockWeb.Blocks.Finance
         {
             bool includeInactive = !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Include Inactive" ) );
 
+            int? personId = null;
+            int? givingGroupId = null;
+            if (TargetPerson != null)
+            {
+                personId = TargetPerson.Id;
+                givingGroupId = TargetPerson.GivingGroupId;
+            }
+
             rGridGivingProfile.DataSource = new FinancialScheduledTransactionService()
-                .Get(TargetPerson.Id, TargetPerson.GivingGroupId, includeInactive).ToList();
+                .Get(personId, givingGroupId, includeInactive).ToList();
 
             rGridGivingProfile.DataBind();
         }
