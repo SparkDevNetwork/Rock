@@ -175,12 +175,6 @@ span.data-view-filter-label {
 }
 
 
-/* Mike had this for ck editor items. can't find where it's needed JME 2/10/2014
-
-span.cke_button__rockmergefield_label {
-    display: inline;
-}*/
-
 /*css for RSS Item paging*/
 
 
@@ -296,16 +290,3 @@ span.cke_button__rockmergefield_label {
 	margin-left: 0;
 }
 
-
-/* DT - Small person image container for family members on perosn profile and on Edit Family block */
-
-ul.groupmembers li.member div.person-image {
-    display: inline-block;
-    width: 70px;
-    height: 70px;
-}
-
-.personprofilebar-family ul li.member div.person-image {
-    float: left;
-    margin-right: 7.5px;
-}
