@@ -151,21 +151,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             ddlNewPersonGender.BindToEnum( typeof( Gender ) );
 
-            acPerson.Url = "api/People/Search/%QUERY/false";
-            acPerson.NameProperty = "Name";
-            acPerson.IdProperty = "Id";
-            acPerson.Template = @"
-<div class='picker-select-item'>
-    <label>{{Name}}</label>
-    <div class='picker-select-item-details clearfix'>
-        {{ImageHtmlTag}}
-        <div class='contents'>
-            {% if Age >= 0 %}<em>({{ Age }} yrs old)</em>{% endif %}
-        </div>
-    </div>
-</div>
-";
-
             // Save and Cancel should not confirm exit
             btnSave.OnClientClick = string.Format( "javascript:$('#{0}').val('');return true;", confirmExit.ClientID );
             btnCancel.OnClientClick = string.Format( "javascript:$('#{0}').val('');return true;", confirmExit.ClientID );
@@ -203,6 +188,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         }
                     }
                 }
+
+                if ( !string.IsNullOrWhiteSpace( hfActiveTab.Value ) )
+                {
+                    modalAddPerson.Show();
+                }
+
             }
             else
             {
@@ -248,11 +239,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         FamilyAddresses.Add( new FamilyAddress( groupLocation ) );
                     }
                     BindLocations();
-                }
-
-                if ( !string.IsNullOrWhiteSpace( hfActiveTab.Value ) )
-                {
-                    modalAddPerson.Show();
                 }
             }
         }
@@ -395,9 +381,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             tbNewPersonLastName.Required = true;
             hfActiveTab.Value = "Existing";
 
-            acPerson.Value = string.Empty;
-            acPerson.Text = string.Empty;
-
             modalAddPerson.Show();
         }
 
@@ -410,12 +393,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             if ( hfActiveTab.Value == "Existing" )
             {
-                int personId = int.MinValue;
-                if (int.TryParse(acPerson.Value, out personId))
+                if ( ppPerson.PersonId.HasValue && !FamilyMembers.Any( m => m.Id == ppPerson.PersonId.Value ) )
                 {
                     using ( new UnitOfWorkScope() )
                     {
-                        var person = new PersonService().Get( personId );
+                        var person = new PersonService().Get( ppPerson.PersonId.Value );
                         if ( person != null )
                         {
                             var familyMember = new FamilyMember();
@@ -466,6 +448,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             confirmExit.Enabled = true;
 
             hfActiveTab.Value = string.Empty;
+
+            modalAddPerson.Hide();
 
             BindMembers();
         }
