@@ -299,10 +299,13 @@ span.cke_button__rockmergefield_label {
 
 /* DT - Small person image container for family members on perosn profile and on Edit Family block */
 
-div.groupmembers-image-container {
+ul.groupmembers li.member div.person-image {
     display: inline-block;
     width: 70px;
     height: 70px;
+}
+
+.personprofilebar-family ul li.member div.person-image {
     float: left;
     margin-right: 7.5px;
 }
