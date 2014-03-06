@@ -696,6 +696,10 @@
     <Compile Include="Migrations\201403061916415_FixAdDetailImage.Designer.cs">
       <DependentUpon>201403061916415_FixAdDetailImage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201403062033262_SetFamilyDefaultRole.cs" />
+    <Compile Include="Migrations\201403062033262_SetFamilyDefaultRole.Designer.cs">
+      <DependentUpon>201403062033262_SetFamilyDefaultRole.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1198,6 +1202,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201403061916415_FixAdDetailImage.resx">
       <DependentUpon>201403061916415_FixAdDetailImage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403062033262_SetFamilyDefaultRole.resx">
+      <DependentUpon>201403062033262_SetFamilyDefaultRole.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
