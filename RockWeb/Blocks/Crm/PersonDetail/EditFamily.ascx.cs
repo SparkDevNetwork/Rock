@@ -379,6 +379,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             tbNewPersonLastName.Required = true;
             hfActiveTab.Value = "Existing";
 
+            ppPerson.SetValue( null );
+
+            tbNewPersonFirstName.Text = string.Empty;
+            tbNewPersonLastName.Text = string.Empty;
+            ddlNewPersonGender.SelectedIndex = 0;
+            dpNewPersonBirthDate.SelectedDate = null;
+            rblNewPersonRole.SelectedIndex = 0;
+
             modalAddPerson.Show();
         }
 
@@ -440,6 +448,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 FamilyMembers.Add( familyMember );
             }
 
+            ppPerson.Required = false;
             tbNewPersonFirstName.Required = false;
             tbNewPersonLastName.Required = false;
 

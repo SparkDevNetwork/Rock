@@ -35,7 +35,7 @@
             <div class="panel-heading clearfix">
                 <h3 class="panel-title pull-left">Family Members</h3>
                 <div class="pull-right">
-                    <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddPerson_Click"><i class="fa fa-user"></i> Add Person</asp:LinkButton>
+                    <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddPerson_Click" CausesValidation="false"><i class="fa fa-user"></i> Add Person</asp:LinkButton>
                 </div>
             </div>
             <div class="panel-body">
@@ -62,7 +62,7 @@
             <div class="panel-heading clearfix">
                 <h4 class="panel-title pull-left">Addresses</h4>
                 <div class="pull-right">
-                    <asp:LinkButton ID="lbMoved" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbMoved_Click"><i class="fa fa-truck fa-flip-horizontal"></i> Family Moved</asp:LinkButton>
+                    <asp:LinkButton ID="lbMoved" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbMoved_Click" CausesValidation="false"><i class="fa fa-truck fa-flip-horizontal"></i> Family Moved</asp:LinkButton>
                 </div>
             </div>
 
@@ -129,7 +129,7 @@
                         </asp:TemplateField>
                         <asp:TemplateField ItemStyle-HorizontalAlign="Center" HeaderStyle-CssClass="span1" ItemStyle-Wrap="false">
                             <ItemTemplate>
-                                <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CommandName="Edit" CssClass="btn btn-default btn-sm"><i class="fa fa-pencil"></i></asp:LinkButton>
+                                <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CommandName="Edit" CssClass="btn btn-default btn-sm" CausesValidation="false"><i class="fa fa-pencil"></i></asp:LinkButton>
                             </ItemTemplate>
                             <EditItemTemplate>
                                 <asp:LinkButton ID="lbSave" runat="server" Text="Save" CommandName="Update" CssClass="btn btn-sm btn-success"><i class="fa fa-check"></i></asp:LinkButton>
@@ -219,6 +219,12 @@
                         
                         $find('<%=modalAddPerson.ClientID%>').add_shown(function () {
                             enableRequiredField('<%=ppPerson.ClientID%>_rfv', true)
+                            enableRequiredField('<%=tbNewPersonFirstName.ClientID%>_rfv', false);
+                            enableRequiredField('<%=tbNewPersonLastName.ClientID%>_rfv', false);
+                        });
+
+                        $find('<%=modalAddPerson.ClientID%>').add_hiding(function () {
+                            enableRequiredField('<%=ppPerson.ClientID%>_rfv', false)
                             enableRequiredField('<%=tbNewPersonFirstName.ClientID%>_rfv', false);
                             enableRequiredField('<%=tbNewPersonLastName.ClientID%>_rfv', false);
                         });
