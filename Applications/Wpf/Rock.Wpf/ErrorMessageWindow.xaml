@@ -2,7 +2,6 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Oops..."
-        Icon="./resources/favicon.ico"
         Height="272"
         Width="448"
         ResizeMode="NoResize"

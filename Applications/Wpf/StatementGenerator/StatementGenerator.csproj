@@ -36,7 +36,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>resources\favicon.ico</ApplicationIcon>
+    <ApplicationIcon>resources\statement-printer.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ceTe.DynamicPDF.40, Version=7.0.3.40, Culture=neutral, PublicKeyToken=09b5ce0d5c0a9d8b, processorArchitecture=MSIL">
@@ -196,11 +196,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="resources\favicon.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="images\header-texture.png" />
     <Resource Include="images\light-texture.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="resources\statement-printer.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

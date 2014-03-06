@@ -50,7 +50,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>resources\favicon.ico</ApplicationIcon>
+    <ApplicationIcon>resources\check-scanner.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
@@ -189,7 +189,6 @@
     <Resource Include="images\header-texture.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="resources\favicon.ico" />
     <Resource Include="images\light-texture.png" />
   </ItemGroup>
   <ItemGroup>
@@ -232,6 +231,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="images\check-image.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="resources\check-scanner.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
