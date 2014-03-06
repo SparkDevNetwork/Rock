@@ -24,7 +24,7 @@
                                     <ItemTemplate>
                                         <li class="member">
                                             <a href='<%# FormatPersonLink(Eval("PersonId").ToString()) %>'>
-                                                <asp:Image ID="imgPerson" runat="server" />
+                                                <div class="groupmembers-image-container"><asp:Image ID="imgPerson" runat="server" /></div>
                                                 <div>
                                                     <h4><%# Eval("Person.NickName") %></h4>
                                                     <small class="age"><%# Eval("Person.Age")  %></small>
