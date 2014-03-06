@@ -912,12 +912,25 @@ namespace Rock.Model
         /// </summary>
         /// <param name="photoId">The photo identifier.</param>
         /// <param name="gender">The gender.</param>
+        /// <param name="maxWidth">The maximum width.</param>
+        /// <param name="maxHeight">The maximum height.</param>
         /// <returns></returns>
-        public static string GetPhotoUrl(int? photoId, Gender gender)
+        public static string GetPhotoUrl(int? photoId, Gender gender, int? maxWidth = null, int? maxHeight = null)
         {
             if ( photoId.HasValue )
             {
-                return VirtualPathUtility.ToAbsolute( String.Format( "~/GetImage.ashx?id={0}", photoId ) );
+                string widthHeightParams = string.Empty;
+                if ( maxWidth.HasValue )
+                {
+                    widthHeightParams += string.Format( "&maxwidth={0}", maxWidth.Value );
+                }
+                
+                if ( maxHeight.HasValue )
+                {
+                    widthHeightParams += string.Format( "&maxheight={0}", maxHeight.Value );
+                }
+                
+                return VirtualPathUtility.ToAbsolute( String.Format( "~/GetImage.ashx?id={0}" + widthHeightParams, photoId ) );
             }
             else
             {

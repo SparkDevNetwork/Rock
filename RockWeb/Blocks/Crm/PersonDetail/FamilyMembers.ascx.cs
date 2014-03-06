@@ -136,10 +136,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     Person fm = groupMember.Person;
 
+                    // very similar code in EditFamily.ascx.cs
                     System.Web.UI.WebControls.Image imgPerson = e.Item.FindControl( "imgPerson" ) as System.Web.UI.WebControls.Image;
                     if ( imgPerson != null )
                     {
-                        imgPerson.ImageUrl = fm.PhotoUrl;
+                        imgPerson.ImageUrl = Person.GetPhotoUrl(fm.PhotoId, fm.Gender, 65, 65);
                     }
                     
                     if (fm.PhotoUrl.Contains("no-photo"))
