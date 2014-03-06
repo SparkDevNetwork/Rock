@@ -295,3 +295,14 @@ span.cke_button__rockmergefield_label {
 .image-editor-photo .options a:first-child {
 	margin-left: 0;
 }
+
+
+/* DT - Small person image container for family members on perosn profile and on Edit Family block */
+
+div.groupmembers-image-container {
+    display: inline-block;
+    width: 70px;
+    height: 70px;
+    float: left;
+    margin-right: 7.5px;
+}
