@@ -317,6 +317,7 @@
     <Compile Include="Web\Cache\RestControllerCache.cs" />
     <Compile Include="Web\Cache\RestActionCache.cs" />
     <Compile Include="Web\FileUploadException.cs" />
+    <Compile Include="Web\RequestValidator.cs" />
     <Compile Include="Web\SystemSettings.cs" />
     <Compile Include="Web\Cache\GroupTypeCache.cs" />
     <Compile Include="Web\Cache\LayoutCache.cs" />
