@@ -302,16 +302,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 var familyMember = e.Item.DataItem as FamilyMember;
                 if ( familyMember != null )
                 {
-                    System.Web.UI.WebControls.Image imgPerson = e.Item.FindControl( "imgPerson" ) as System.Web.UI.WebControls.Image;
-                    if ( imgPerson != null )
-                    {
-                        // very similar code in FamilyMembers.ascx.cs
-                        imgPerson.ImageUrl = Person.GetPhotoUrl( familyMember.PhotoId, familyMember.Gender, 65, 65 );
 
-                        if ( imgPerson.ImageUrl.Contains( "no-photo" ) )
-                        {
-                            imgPerson.CssClass = "no-photo";
-                        }
+                    // very similar code in EditFamily.ascx.cs
+                    HtmlControl divPersonImage = e.Item.FindControl( "divPersonImage" ) as HtmlControl;
+                    if ( divPersonImage != null )
+                    {
+                        divPersonImage.Style.Add( "background-image", @String.Format( @"url({0})", Person.GetPhotoUrl( familyMember.PhotoId, familyMember.Gender ) + "&width=65" ) );
+                        divPersonImage.Style.Add( "background-size", "cover" );
+                        divPersonImage.Style.Add( "background-position", "50%" );
                     }
 
                     var rblRole = e.Item.FindControl( "rblRole" ) as RadioButtonList;

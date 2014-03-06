@@ -44,13 +44,13 @@
                         <ItemTemplate>
                             <li class="member">
                                 <a href='<%# basePersonUrl + Eval("Id") %>'>
-                                    <div class="person-image"><asp:Image ID="imgPerson" runat="server" ImageUrl="~/Assets/Images/person-no-photo-male.svg" /></div>
+                                    <div class="person-image" id="divPersonImage" runat="server"></div>
                                     <h4><%# Eval("FirstName") %> <%# Eval("LastName") %></h4>
                                 </a>
                                 <asp:RadioButtonList ID="rblRole" runat="server" DataValueField="Id" DataTextField="Name" />
                                 
-                                <asp:LinkButton ID="lbNewFamily" runat="server" CssClass="btn btn-action btn-xs" CommandName="Move"><i class="fa fa-external-link"></i> Move to New Family</asp:LinkButton>
-                                <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-xs" CommandName="Remove"><i class="fa fa-times"></i> Remove from Family</asp:LinkButton>
+                                <asp:LinkButton ID="lbNewFamily" runat="server" CssClass="btn btn-action btn-move btn-xs" CommandName="Move"><i class="fa fa-external-link"></i> Move to New Family</asp:LinkButton>
+                                <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-remove btn-xs" CommandName="Remove"><i class="fa fa-times"></i> Remove from Family</asp:LinkButton>
                             </li>
                         </ItemTemplate>
                     </asp:ListView>
