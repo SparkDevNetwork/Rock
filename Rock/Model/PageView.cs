@@ -40,7 +40,7 @@ namespace Rock.Model
         /// Gets or sets the page id of the page viewed.
         /// </summary>
         /// <value>
-        /// A <see cref="System.int"/> the id of the page viewed.
+        /// A <see cref="System.Int32"/> the id of the page viewed.
         /// </value>
         /// 
         [DataMember]
@@ -51,7 +51,7 @@ namespace Rock.Model
         /// Gets or sets the site id of the page viewed.
         /// </summary>
         /// <value>
-        /// A <see cref="System.int"/> the id of the site viewed.
+        /// A <see cref="System.Int32"/> the id of the site viewed.
         /// </value>
         [DataMember]
         public int? SiteId { get; set; }
@@ -60,7 +60,7 @@ namespace Rock.Model
         /// Gets or sets the person alias id of the person who viewed the page.
         /// </summary>
         /// <value>
-        /// A <see cref="System.int"/> the id of the person alias who viewed the page.
+        /// A <see cref="System.Int32"/> the id of the person alias who viewed the page.
         /// </value>
         [DataMember]
         public int? PersonAliasId { get; set; }
@@ -80,7 +80,7 @@ namespace Rock.Model
         /// Gets or sets the user-agent of the browser.
         /// </summary>
         /// <value>
-        /// A <see cref="System.string"/> of the user-agent of the browser.
+        /// A <see cref="System.String"/> of the user-agent of the browser.
         /// </value>
         [DataMember]
         [MaxLength( 500 )]
@@ -90,7 +90,7 @@ namespace Rock.Model
         /// Gets or sets the type of client.
         /// </summary>
         /// <value>
-        /// A <see cref="System.string"/> client type.
+        /// A <see cref="System.String"/> client type.
         /// </value>
         [DataMember]
         [MaxLength( 25 )]
@@ -100,7 +100,7 @@ namespace Rock.Model
         /// Gets or sets the query string of the request.
         /// </summary>
         /// <value>
-        /// A <see cref="System.string"/> of the query string of the request.
+        /// A <see cref="System.String"/> of the query string of the request.
         /// </value>
         [DataMember]
         [MaxLength( 500 )]
@@ -110,7 +110,7 @@ namespace Rock.Model
         /// Gets or sets the session id of the request.
         /// </summary>
         /// <value>
-        /// A <see cref="System.string"/> of the session id of the request.
+        /// A <see cref="System.String"/> of the session id of the request.
         /// </value>
         [DataMember]
         public Guid? SessionId { get; set; }
@@ -119,7 +119,7 @@ namespace Rock.Model
         /// Gets or sets the IP address of the request.
         /// </summary>
         /// <value>
-        /// A <see cref="System.string"/> of the IP address of the request.
+        /// A <see cref="System.String"/> of the IP address of the request.
         /// </value>
         [DataMember]
         [MaxLength( 45 )]

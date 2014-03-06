@@ -156,6 +156,8 @@ namespace Rock.Address.Geocode
         }
     }
 
+#pragma warning disable
+
     [DataContract]
     public class Address
     {
@@ -726,4 +728,7 @@ namespace Rock.Address.Geocode
         [DataMember( Name = "zoomLevel", EmitDefaultValue = false )]
         public int ZoomLevel { get; set; }
     }
+
+#pragma warning restore
+
 }

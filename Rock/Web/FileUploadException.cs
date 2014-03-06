@@ -28,6 +28,11 @@ namespace Rock.Web
     /// </summary>
     public class FileUploadException : WebFaultException<string>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileUploadException"/> class.
+        /// </summary>
+        /// <param name="detail">The detail.</param>
+        /// <param name="statusCode">The status code.</param>
         public FileUploadException( string detail, System.Net.HttpStatusCode statusCode ) : base( detail, statusCode ) 
         {
         }
