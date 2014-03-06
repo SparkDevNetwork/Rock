@@ -81,6 +81,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [MergeField]
         public string Caption { get; set; }
 
         /// <summary>
@@ -99,6 +100,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the text/body of the note.
         /// </value>
         [DataMember]
+        [MergeField]
         public string Text { get; set; }
     
         #endregion
