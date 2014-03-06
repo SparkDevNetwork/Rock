@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Finance
     /// Edit an existing scheduled transaction.
     /// </summary>
     [DisplayName( "Giving Profile Detail" )]
-    [Category( "Financial" )]
+    [Category( "Finance" )]
     [Description( "Edit an existing scheduled transaction." )]
 
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", false, "", "", 0, "CCGateway" )]

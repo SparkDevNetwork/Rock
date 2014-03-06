@@ -37,26 +37,23 @@ namespace Rock.Model
         /// <returns>
         /// The <see cref="Rock.Model.FinancialTransaction" /> that matches the transaction code, this value will be null if a match is not found.
         /// </returns>
-        public IQueryable<FinancialScheduledTransaction> Get( int personId, int? givingGroupId, bool includeInactive )
+        public IQueryable<FinancialScheduledTransaction> Get( int? personId, int? givingGroupId, bool includeInactive )
         {
+            var qry = Repository.AsQueryable( "ScheduledTransactionDetails" )
+                .Where( t => t.IsActive || includeInactive );
+
             if ( givingGroupId.HasValue )
             {
-                return Repository.AsQueryable( "ScheduledTransactionDetails" )
-                    .Where( t => 
-                        t.AuthorizedPerson.GivingGroupId == givingGroupId.Value &&
-                        (t.IsActive || includeInactive) )
-                    .OrderByDescending(t => t.IsActive)
-                    .ThenByDescending(t => t.StartDate);
+                qry = qry.Where( t => t.AuthorizedPerson.GivingGroupId == givingGroupId.Value);
             }
-            else
+            else if (personId.HasValue)
             {
-                return Repository.AsQueryable( "ScheduledTransactionDetails" )
-                    .Where( t =>
-                        t.AuthorizedPersonId == personId &&
-                        ( t.IsActive || includeInactive ) )
-                    .OrderByDescending( t => t.IsActive )
-                    .ThenByDescending( t => t.StartDate );
+                qry = qry.Where( t => t.AuthorizedPersonId == personId );
             }
+
+            return qry
+                .OrderByDescending( t => t.IsActive )
+                .ThenByDescending( t => t.StartDate );
         }
 
         /// <summary>
