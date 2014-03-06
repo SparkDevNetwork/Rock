@@ -217,8 +217,8 @@ namespace Rock.Communication.Transport
                     sendTo.Add( recipient.Key );
                     foreach ( string to in sendTo )
                     {
-                        string subject = template.Subject.ResolveMergeFields( mergeObjects );
-                        string body = template.Body.ResolveMergeFields( mergeObjects );
+                        string subject = template.Subject;
+                        string body = template.Body;
                         if (!string.IsNullOrWhiteSpace(themeRoot))
                         {
                             subject = subject.Replace( "~~/", themeRoot );
@@ -233,8 +233,8 @@ namespace Rock.Communication.Transport
 
                         message.To.Clear();
                         message.To.Add( to );
-                        message.Subject = subject;
-                        message.Body = body;
+                        message.Subject = subject.ResolveMergeFields( mergeObjects );
+                        message.Body = body.ResolveMergeFields( mergeObjects );
                         smtpClient.Send( message );
                     }
                 }
