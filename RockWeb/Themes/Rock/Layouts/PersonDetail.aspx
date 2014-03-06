@@ -1,5 +1,4 @@
-﻿<%@ Page ValidateRequest="false" Language="C#" MasterPageFile="Site.Master" 
-    AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
+﻿<%@ Page Language="C#" MasterPageFile="Site.Master" AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 
 <%@ MasterType TypeName="Rock.Web.UI.RockMasterPage" %>
 
