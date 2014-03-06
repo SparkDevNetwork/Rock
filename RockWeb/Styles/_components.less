@@ -1301,13 +1301,13 @@ ul.groupmembers {
         margin-bottom: @spacing-md-px;
         min-width: 150px;
 
-
-        img {
+        .person-image {
             border: 3px solid @accent-bold-color;
-
-            &.no-photo {
-                height: 60px;
-            }
+            float: left;
+            margin-right: 7.5px;
+            display: inline-block;
+            width: 70px;
+            height: 70px; 
         }
 
         h4 {
@@ -1315,6 +1315,7 @@ ul.groupmembers {
             font-weight: @font-weight-semibold;
             text-overflow: ellipsis;
             overflow: hidden;
+            margin: 0;
         }
 
         small {
