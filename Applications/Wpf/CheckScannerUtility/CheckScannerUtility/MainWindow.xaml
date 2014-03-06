@@ -4,7 +4,7 @@
                   Name="mainWindow"
                   Title="Check Scanner"
                   Source="LoginPage.xaml"
-                  Icon="./resources/favicon.ico"
+                  Icon="./resources/check-scanner.ico"
                   MinHeight="350"
                   MinWidth="550"
                   Height="600"

@@ -79,6 +79,7 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -87,9 +88,6 @@
     <AppDesigner Include="Properties\" />
     <Resource Include="resources\fontawesome-webfont.ttf" />
     <Resource Include="resources\OpenSans-Regular.ttf" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="resources\favicon.ico" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Rock\Rock.csproj">
