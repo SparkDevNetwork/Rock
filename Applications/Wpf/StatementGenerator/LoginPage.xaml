@@ -130,10 +130,7 @@
                     <PasswordBox Name="txtPassword"
                                  Style="{StaticResource textboxStyle}"
                                  KeyDown="HideLoginWarning" />
-                    <Label Name="lblLoginWarning"
-                           Style="{StaticResource labelStyleAlert}"
-                           Content="Invalid Login"
-                           MaxHeight="55" />
+
                 </StackPanel>
                 <Border Grid.Row="2"
                         Grid.Column="0"
@@ -145,7 +142,13 @@
                             HorizontalAlignment="Left"
                             Style="{StaticResource buttonStylePrimary}">Login</Button>
 
+
                 </Border>
+                <Label Name="lblLoginWarning" Grid.Row="1" Grid.Column="1" VerticalAlignment="Bottom"
+                           Style="{StaticResource labelStyleAlert}"
+                           Content="Invalid Login"
+                           MaxHeight="150" />
+
             </Grid>
         </Border>
 

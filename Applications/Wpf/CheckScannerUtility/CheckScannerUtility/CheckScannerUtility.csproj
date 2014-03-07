@@ -184,10 +184,11 @@
     </EmbeddedResource>
     <AppDesigner Include="Properties\" />
     <Resource Include="resources\fontawesome-webfont.ttf" />
-    <Resource Include="resources\OpenSans-Regular.ttf" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <Resource Include="resources\OpenSans-Light-webfont.ttf" />
+    <Resource Include="resources\OpenSans-Regular-webfont.ttf" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="images\header-texture.png" />
