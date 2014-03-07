@@ -261,14 +261,12 @@
         <Setter Property="Label.FontWeight"
                 Value="Normal"></Setter>
         <Setter Property="Label.Foreground"
-                Value="#515151"></Setter>
+                Value="White"></Setter>
     </Style>
 
     <Style x:Key="labelStyleIconPrimary"
            BasedOn="{StaticResource labelStyleIcon}"
            TargetType="{x:Type Label}">
-        <Setter Property="Label.Foreground"
-                Value="White"></Setter>
         <Setter Property="Label.Margin"
                 Value="4,6,0,4"></Setter>
     </Style>
@@ -276,8 +274,6 @@
     <Style x:Key="labelStyleIconPrimaryLeft"
            BasedOn="{StaticResource labelStyleIcon}"
            TargetType="{x:Type Label}">
-        <Setter Property="Label.Foreground"
-                Value="White"></Setter>
         <Setter Property="Label.Margin"
                 Value="0,6,0,4"></Setter>
     </Style>
