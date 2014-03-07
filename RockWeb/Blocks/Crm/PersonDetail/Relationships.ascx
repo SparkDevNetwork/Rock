@@ -26,9 +26,9 @@
                                     Role='<%# ShowRole ? Eval("GroupRole.Name") : "" %>'
                                     PhotoId='<%# Eval("Person.PhotoId") %>' />
                                 <div class="actions pull-right">
-                                    <asp:LinkButton ID="lbEdit" runat="server" CssClass="edit" Text="Edit Relationship"
+                                    <asp:LinkButton ID="lbEdit" runat="server" CssClass="edit" Text="Edit Relationship" Visible='<%# IsKnownRelationships %>'
                                         CommandName="EditRole" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-pencil"></i></asp:LinkButton>
-                                    <asp:LinkButton ID="lbRemove" runat="server" CssClass="edit remove-relationship" Text="Remove Relationship"
+                                    <asp:LinkButton ID="lbRemove" runat="server" CssClass="edit remove-relationship" Text="Remove Relationship" Visible='<%# IsKnownRelationships %>'
                                         CommandName="RemoveRole" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-times"></i></asp:LinkButton>
                                 </div>
                             </li>
@@ -37,7 +37,7 @@
                 </ul>
             </div>
 
-            <asp:HiddenField ID="hfActiveDialog" runat="server" />
+            <asp:HiddenField ID="hfRoleId" runat="server" />
     
             <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Relationship" Content-Height="380" ValidationGroup="NewRelationship">
                 <Content>

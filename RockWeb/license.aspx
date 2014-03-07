@@ -7,6 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>Rock - License</title>
 
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Rock/Styles/bootstrap.css") %>"/>
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Rock/Styles/theme.css") %>" />
 
     <script src="<%= ResolveUrl("~/Scripts/jquery-1.10.2.min.js") %>"></script>

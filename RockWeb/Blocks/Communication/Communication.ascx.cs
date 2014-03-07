@@ -383,7 +383,17 @@ namespace RockWeb.Blocks.Communication
                             communication.Status = CommunicationStatus.Approved;
                             communication.ReviewedDateTime = RockDateTime.Now;
                             communication.ReviewerPersonId = CurrentPersonId;
-                            message = "Communication has been queued for sending.";
+
+                            if ( communication.FutureSendDateTime.HasValue &&
+                                communication.FutureSendDateTime > RockDateTime.Now)
+                            {
+                                message = string.Format( "Communication will be sent {0}.",
+                                    communication.FutureSendDateTime.Value.ToRelativeDateString( 0 ) );
+                            }
+                            else
+                            {
+                                message = "Communication has been queued for sending.";
+                            }
 
                             // TODO: Send notice to sender that communication was approved
                         }
@@ -402,7 +412,8 @@ namespace RockWeb.Blocks.Communication
 
                         service.Save( communication, CurrentPersonAlias );
 
-                        if ( communication.Status == CommunicationStatus.Approved )
+                        if ( communication.Status == CommunicationStatus.Approved &&
+                            (!communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value <= RockDateTime.Now))
                         {
                             bool sendNow = false;
                             if ( bool.TryParse( GetAttributeValue( "SendWhenApproved" ), out sendNow ) && sendNow )

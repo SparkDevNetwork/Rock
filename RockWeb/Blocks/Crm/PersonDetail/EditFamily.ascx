@@ -35,7 +35,7 @@
             <div class="panel-heading clearfix">
                 <h3 class="panel-title pull-left">Family Members</h3>
                 <div class="pull-right">
-                    <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddPerson_Click"><i class="fa fa-user"></i> Add Person</asp:LinkButton>
+                    <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddPerson_Click" CausesValidation="false"><i class="fa fa-user"></i> Add Person</asp:LinkButton>
                 </div>
             </div>
             <div class="panel-body">
@@ -44,13 +44,13 @@
                         <ItemTemplate>
                             <li class="member">
                                 <a href='<%# basePersonUrl + Eval("Id") %>'>
-                                    <div class="person-image"><asp:Image ID="imgPerson" runat="server" ImageUrl="~/Assets/Images/person-no-photo-male.svg" /></div>
+                                    <div class="person-image" id="divPersonImage" runat="server"></div>
                                     <h4><%# Eval("FirstName") %> <%# Eval("LastName") %></h4>
                                 </a>
                                 <asp:RadioButtonList ID="rblRole" runat="server" DataValueField="Id" DataTextField="Name" />
                                 
-                                <asp:LinkButton ID="lbNewFamily" runat="server" CssClass="btn btn-action btn-xs" CommandName="Move"><i class="fa fa-external-link"></i> Move to New Family</asp:LinkButton>
-                                <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-xs" CommandName="Remove"><i class="fa fa-times"></i> Remove from Family</asp:LinkButton>
+                                <asp:LinkButton ID="lbNewFamily" runat="server" CssClass="btn btn-action btn-move btn-xs" CommandName="Move"><i class="fa fa-external-link"></i> Move to New Family</asp:LinkButton>
+                                <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-remove btn-xs" CommandName="Remove"><i class="fa fa-times"></i> Remove from Family</asp:LinkButton>
                             </li>
                         </ItemTemplate>
                     </asp:ListView>
@@ -62,7 +62,7 @@
             <div class="panel-heading clearfix">
                 <h4 class="panel-title pull-left">Addresses</h4>
                 <div class="pull-right">
-                    <asp:LinkButton ID="lbMoved" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbMoved_Click"><i class="fa fa-truck fa-flip-horizontal"></i> Family Moved</asp:LinkButton>
+                    <asp:LinkButton ID="lbMoved" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbMoved_Click" CausesValidation="false"><i class="fa fa-truck fa-flip-horizontal"></i> Family Moved</asp:LinkButton>
                 </div>
             </div>
 
@@ -129,7 +129,7 @@
                         </asp:TemplateField>
                         <asp:TemplateField ItemStyle-HorizontalAlign="Center" HeaderStyle-CssClass="span1" ItemStyle-Wrap="false">
                             <ItemTemplate>
-                                <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CommandName="Edit" CssClass="btn btn-default btn-sm"><i class="fa fa-pencil"></i></asp:LinkButton>
+                                <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CommandName="Edit" CssClass="btn btn-default btn-sm" CausesValidation="false"><i class="fa fa-pencil"></i></asp:LinkButton>
                             </ItemTemplate>
                             <EditItemTemplate>
                                 <asp:LinkButton ID="lbSave" runat="server" Text="Save" CommandName="Update" CssClass="btn btn-sm btn-success"><i class="fa fa-check"></i></asp:LinkButton>
@@ -156,6 +156,8 @@
 
         <Rock:ConfirmPageUnload ID="confirmExit" runat="server" ConfirmationMessage="Changes have been made to this family that have not yet been saved." Enabled="false" />
 
+        <asp:HiddenField ID="hfActiveDialog" runat="server" />
+
         <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Person" Content-Height="380" ValidationGroup="AddPerson" >
             <Content>
 
@@ -172,7 +174,7 @@
 
                     <div id="divExistingPerson" runat="server" class="tab-pane active">
                         <fieldset>
-                            <Rock:AutoCompleteDropDown ID="acPerson" runat="server" Label="Person" Required="true" ValidationGroup="AddPerson" />
+                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="true" ValidationGroup="AddPerson" />
                             <Rock:RockCheckBox ID="cbRemoveOtherFamilies" runat="server" Checked="true" Text="Remove person from other families" ValidationGroup="AddPerson"/>
                         </fieldset>
                     </div>
@@ -216,7 +218,13 @@
                     Sys.Application.add_load(function () {
                         
                         $find('<%=modalAddPerson.ClientID%>').add_shown(function () {
-                            enableRequiredField('<%=acPerson.ClientID%>_rfv', true)
+                            enableRequiredField('<%=ppPerson.ClientID%>_rfv', true)
+                            enableRequiredField('<%=tbNewPersonFirstName.ClientID%>_rfv', false);
+                            enableRequiredField('<%=tbNewPersonLastName.ClientID%>_rfv', false);
+                        });
+
+                        $find('<%=modalAddPerson.ClientID%>').add_hiding(function () {
+                            enableRequiredField('<%=ppPerson.ClientID%>_rfv', false)
                             enableRequiredField('<%=tbNewPersonFirstName.ClientID%>_rfv', false);
                             enableRequiredField('<%=tbNewPersonLastName.ClientID%>_rfv', false);
                         });
@@ -225,12 +233,12 @@
                             var tabHref = $(e.target).attr("href");
                             if (tabHref == '#<%=divExistingPerson.ClientID%>') {
                                 $('#<%=hfActiveTab.ClientID%>').val('Existing');
-                                enableRequiredField('<%=acPerson.ClientID%>_rfv', true)
+                                enableRequiredField('<%=ppPerson.ClientID%>_rfv', true)
                                 enableRequiredField('<%=tbNewPersonFirstName.ClientID%>_rfv', false);
                                 enableRequiredField('<%=tbNewPersonLastName.ClientID%>_rfv', false);
                             } else {
                                 $('#<%=hfActiveTab.ClientID%>').val('New');
-                                enableRequiredField('<%=acPerson.ClientID%>_rfv', false)
+                                enableRequiredField('<%=ppPerson.ClientID%>_rfv', false)
                                 enableRequiredField('<%=tbNewPersonFirstName.ClientID%>_rfv', true);
                                 enableRequiredField('<%=tbNewPersonLastName.ClientID%>_rfv', true);
                             }

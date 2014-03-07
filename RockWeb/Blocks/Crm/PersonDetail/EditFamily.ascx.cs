@@ -151,21 +151,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             ddlNewPersonGender.BindToEnum( typeof( Gender ) );
 
-            acPerson.Url = "api/People/Search/%QUERY/false";
-            acPerson.NameProperty = "Name";
-            acPerson.IdProperty = "Id";
-            acPerson.Template = @"
-<div class='picker-select-item'>
-    <label>{{Name}}</label>
-    <div class='picker-select-item-details clearfix'>
-        {{ImageHtmlTag}}
-        <div class='contents'>
-            {% if Age >= 0 %}<em>({{ Age }} yrs old)</em>{% endif %}
-        </div>
-    </div>
-</div>
-";
-
             // Save and Cancel should not confirm exit
             btnSave.OnClientClick = string.Format( "javascript:$('#{0}').val('');return true;", confirmExit.ClientID );
             btnCancel.OnClientClick = string.Format( "javascript:$('#{0}').val('');return true;", confirmExit.ClientID );
@@ -203,6 +188,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         }
                     }
                 }
+
+                if ( !string.IsNullOrWhiteSpace( hfActiveTab.Value ) )
+                {
+                    modalAddPerson.Show();
+                }
+
             }
             else
             {
@@ -248,11 +239,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         FamilyAddresses.Add( new FamilyAddress( groupLocation ) );
                     }
                     BindLocations();
-                }
-
-                if ( !string.IsNullOrWhiteSpace( hfActiveTab.Value ) )
-                {
-                    modalAddPerson.Show();
                 }
             }
         }
@@ -316,16 +302,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 var familyMember = e.Item.DataItem as FamilyMember;
                 if ( familyMember != null )
                 {
-                    System.Web.UI.WebControls.Image imgPerson = e.Item.FindControl( "imgPerson" ) as System.Web.UI.WebControls.Image;
-                    if ( imgPerson != null )
-                    {
-                        // very similar code in FamilyMembers.ascx.cs
-                        imgPerson.ImageUrl = Person.GetPhotoUrl( familyMember.PhotoId, familyMember.Gender, 65, 65 );
 
-                        if ( imgPerson.ImageUrl.Contains( "no-photo" ) )
-                        {
-                            imgPerson.CssClass = "no-photo";
-                        }
+                    // very similar code in EditFamily.ascx.cs
+                    HtmlControl divPersonImage = e.Item.FindControl( "divPersonImage" ) as HtmlControl;
+                    if ( divPersonImage != null )
+                    {
+                        divPersonImage.Style.Add( "background-image", @String.Format( @"url({0})", Person.GetPhotoUrl( familyMember.PhotoId, familyMember.Gender ) + "&width=65" ) );
+                        divPersonImage.Style.Add( "background-size", "cover" );
+                        divPersonImage.Style.Add( "background-position", "50%" );
                     }
 
                     var rblRole = e.Item.FindControl( "rblRole" ) as RadioButtonList;
@@ -395,8 +379,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             tbNewPersonLastName.Required = true;
             hfActiveTab.Value = "Existing";
 
-            acPerson.Value = string.Empty;
-            acPerson.Text = string.Empty;
+            ppPerson.SetValue( null );
+
+            tbNewPersonFirstName.Text = string.Empty;
+            tbNewPersonLastName.Text = string.Empty;
+            ddlNewPersonGender.SelectedIndex = 0;
+            dpNewPersonBirthDate.SelectedDate = null;
+            rblNewPersonRole.SelectedIndex = 0;
 
             modalAddPerson.Show();
         }
@@ -410,12 +399,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             if ( hfActiveTab.Value == "Existing" )
             {
-                int personId = int.MinValue;
-                if (int.TryParse(acPerson.Value, out personId))
+                if ( ppPerson.PersonId.HasValue && !FamilyMembers.Any( m => m.Id == ppPerson.PersonId.Value ) )
                 {
                     using ( new UnitOfWorkScope() )
                     {
-                        var person = new PersonService().Get( personId );
+                        var person = new PersonService().Get( ppPerson.PersonId.Value );
                         if ( person != null )
                         {
                             var familyMember = new FamilyMember();
@@ -460,12 +448,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 FamilyMembers.Add( familyMember );
             }
 
+            ppPerson.Required = false;
             tbNewPersonFirstName.Required = false;
             tbNewPersonLastName.Required = false;
 
             confirmExit.Enabled = true;
 
             hfActiveTab.Value = string.Empty;
+
+            modalAddPerson.Hide();
 
             BindMembers();
         }

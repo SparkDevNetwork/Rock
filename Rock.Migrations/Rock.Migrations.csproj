@@ -692,6 +692,26 @@
     <Compile Include="Migrations\201403052222057_MigrationRollUp.Designer.cs">
       <DependentUpon>201403052222057_MigrationRollUp.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201403061916415_FixAdDetailImage.cs" />
+    <Compile Include="Migrations\201403061916415_FixAdDetailImage.Designer.cs">
+      <DependentUpon>201403061916415_FixAdDetailImage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403062033262_SetFamilyDefaultRole.cs" />
+    <Compile Include="Migrations\201403062033262_SetFamilyDefaultRole.Designer.cs">
+      <DependentUpon>201403062033262_SetFamilyDefaultRole.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403062157173_SchedContributions.cs" />
+    <Compile Include="Migrations\201403062157173_SchedContributions.Designer.cs">
+      <DependentUpon>201403062157173_SchedContributions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403071759009_RockJobServiceExternalFile.cs" />
+    <Compile Include="Migrations\201403071759009_RockJobServiceExternalFile.Designer.cs">
+      <DependentUpon>201403071759009_RockJobServiceExternalFile.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403072334593_ChangePasswordHtml.cs" />
+    <Compile Include="Migrations\201403072334593_ChangePasswordHtml.Designer.cs">
+      <DependentUpon>201403072334593_ChangePasswordHtml.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1191,6 +1211,21 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201403052222057_MigrationRollUp.resx">
       <DependentUpon>201403052222057_MigrationRollUp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403061916415_FixAdDetailImage.resx">
+      <DependentUpon>201403061916415_FixAdDetailImage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403062033262_SetFamilyDefaultRole.resx">
+      <DependentUpon>201403062033262_SetFamilyDefaultRole.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403062157173_SchedContributions.resx">
+      <DependentUpon>201403062157173_SchedContributions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403071759009_RockJobServiceExternalFile.resx">
+      <DependentUpon>201403071759009_RockJobServiceExternalFile.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403072334593_ChangePasswordHtml.resx">
+      <DependentUpon>201403072334593_ChangePasswordHtml.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

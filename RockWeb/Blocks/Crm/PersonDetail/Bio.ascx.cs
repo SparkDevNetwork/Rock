@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
 
                 // Setup Image
-                var imgTag = new LiteralControl( Rock.Model.Person.GetPhotoImageTag( Person.PhotoId, Person.Gender, 188, 188 ) );
+                var imgTag = new LiteralControl( Rock.Model.Person.GetPhotoImageTag( Person.PhotoId, Person.Gender, 200, 200 ) );
                 if ( Person.PhotoId.HasValue )
                 {
                     var imgLink = new HyperLink();

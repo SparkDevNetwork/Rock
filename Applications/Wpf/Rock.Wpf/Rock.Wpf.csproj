@@ -86,8 +86,9 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <Resource Include="resources\OpenSans-Light-webfont.ttf" />
+    <Resource Include="resources\OpenSans-Regular-webfont.ttf" />
     <Resource Include="resources\fontawesome-webfont.ttf" />
-    <Resource Include="resources\OpenSans-Regular.ttf" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Rock\Rock.csproj">

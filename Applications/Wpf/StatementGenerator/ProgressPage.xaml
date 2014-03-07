@@ -10,46 +10,68 @@
       Title="ProgressPage"
       Loaded="Page_Loaded">
 
-    <Grid Height="Auto">
+    <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition />
-            <ColumnDefinition />
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="8*"/>
+            <ColumnDefinition Width="1*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition Height="48" />
+            <RowDefinition Height="44"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="44" />
         </Grid.RowDefinitions>
-        <StackPanel Grid.Column="1"
+
+        <Grid Grid.Column="1" Grid.Row="1" Style="{StaticResource gridPanel}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="70"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="50"/>
+            </Grid.RowDefinitions>
+
+            <Grid Height="Auto" Grid.Row="1" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition Height="48" />
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Column="1"
                     VerticalAlignment="Center">
-            
-            <Label x:Name="lblReportProgress"
+
+                    <Label x:Name="lblReportProgress"
                    Visibility="Visible"
                    Style="{StaticResource labelStyleAlert}"
                    Content="Progress" />
-            <ProgressBar x:Name="pgReportProgress"
+                    <ProgressBar x:Name="pgReportProgress"
                          Maximum="100"
                          Value="67" Height="4"/>
 
-            <Button x:Name="btnSaveAs"
+                    <Button x:Name="btnSaveAs"
                         HorizontalAlignment="Center"
                         Margin="4"
                         Style="{StaticResource buttonStylePrimary}"
                         Content="Save As.."
                         Click="btnSaveAs_Click"/>
-        </StackPanel>
-        <Button x:Name="btnBack"
-                Grid.Row="1"
+                </StackPanel>
+                
+            </Grid>
+            <Button x:Name="btnBack"
+                Grid.Row="2"
                 HorizontalAlignment="Left"
                 Style="{StaticResource buttonStylePrimary}"
                 Margin="8,8,8,8"
                 Click="btnBack_Click">
-            <StackPanel Orientation="Horizontal">
-                <Label Style="{StaticResource labelStyleIconPrimaryLeft}"
+                <StackPanel Orientation="Horizontal">
+                    <Label Style="{StaticResource labelStyleIconPrimaryLeft}"
                        Content="&#xf0d9;" />
-                <Label Style="{StaticResource labelStyleButtonTextPrimary}"
+                    <Label Style="{StaticResource labelStyleButtonTextPrimary}"
                        Content="Back" />
-            </StackPanel>
-        </Button>
+                </StackPanel>
+            </Button>
+        </Grid>
     </Grid>
 </Page>

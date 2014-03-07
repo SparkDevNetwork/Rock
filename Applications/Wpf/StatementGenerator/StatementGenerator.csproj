@@ -126,6 +126,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="images\statement-generator.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="SelectAccountsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -171,11 +175,12 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <Resource Include="resources\OpenSans-Light-webfont.ttf" />
+    <Resource Include="resources\OpenSans-Regular-webfont.ttf" />
     <None Include="rock-standard.dplx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <Resource Include="resources\fontawesome-webfont.ttf" />
-    <Resource Include="resources\OpenSans-Regular.ttf" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -29,6 +29,10 @@ namespace Rock.Transactions
     {
         private List<string> names = new List<string>();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SaveMetaphoneTransaction"/> class.
+        /// </summary>
+        /// <param name="person">The person.</param>
         public SaveMetaphoneTransaction(Person person)
         {
             AddName( person.FirstName );

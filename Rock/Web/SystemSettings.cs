@@ -72,7 +72,6 @@ namespace Rock.Web
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
         /// <param name="currentPersonAlias">The current person alias.</param>
-        /// <param name="saveValue">if set to <c>true</c> [save value].</param>
         public static void SetValue( string key, string value, PersonAlias currentPersonAlias )
         {
             var attributeService = new AttributeService();

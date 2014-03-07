@@ -193,12 +193,19 @@ namespace Rock.Apps.StatementGenerator
                     XmlNode root = doc.DocumentElement;
                     foreach ( var node in root.ChildNodes.OfType<XmlNode>() )
                     {
-                        personResults.Add( new
+                       personResults.Add( new
                         {
                             Id = node["Id"].InnerText.AsInteger() ?? 0,
                             FullName = node["Name"].InnerText,
                             Age = node["Age"].InnerText == "-1" ? "" : node["Age"].InnerText,
-                            Gender = node["Gender"].InnerText
+                            Gender = node["Gender"].InnerText,
+                            ToolTip = string.Format( 
+                                string.IsNullOrWhiteSpace(node["SpouseName"].InnerText) ? "-" : node["SpouseName"].InnerText, 
+                                node["Email"].InnerText, 
+                                node["Address"].InnerText ),
+                            SpouseName = node["SpouseName"].InnerText,
+                            Email = node["Email"].InnerText,
+                            Address = node["Address"].InnerText
                         } );
                     }
                 }

@@ -1,28 +1,28 @@
-﻿/**
- * DoubleMetaphone.cs
- * 
- * An implemenatation of Lawrence Phillips' Double Metaphone phonetic matching
- * algorithm, published in C/C++ Users Journal, June, 2000.
- * 
- * This implementation was written by Adam J. Nelson (anelson@nullpointer.net).
- * It is based on the C++ template implementation, also by Adam Nelson.
- * For the latest version of this implementation, implementations
- * in other languages, and links to articles I've written on the use of my various
- * Double Metaphone implementations, see:
- * http;//www.nullpointer.net/anelson/
- * 
- * Note that since this impl implements IComparable, it can be used to key associative containers,
- * thereby easily implementing phonetic matching within a simple container.  Examples of this
- * should have been included in the archive from which you obtained this file.
- * 
- * Current Version: 1.0.0
- * Revision History:
- * 	1.0.0 - ajn - First release
- * 
- * This implemenatation, and optimizations, Copyright (C) 2003, Adam J. Nelson
- * The Double Metaphone algorithm was written by Lawrence Phillips, and is 
- * Copyright (c) 1998, 1999 by Lawrence Philips.
- */
+﻿// **
+// * DoubleMetaphone.cs
+// * 
+// * An implemenatation of Lawrence Phillips' Double Metaphone phonetic matching
+// * algorithm, published in C/C++ Users Journal, June, 2000.
+// * 
+// * This implementation was written by Adam J. Nelson (anelson@nullpointer.net).
+// * It is based on the C++ template implementation, also by Adam Nelson.
+// * For the latest version of this implementation, implementations
+// * in other languages, and links to articles I've written on the use of my various
+// * Double Metaphone implementations, see:
+// * http;//www.nullpointer.net/anelson/
+// * 
+// * Note that since this impl implements IComparable, it can be used to key associative containers,
+// * thereby easily implementing phonetic matching within a simple container.  Examples of this
+// * should have been included in the archive from which you obtained this file.
+// * 
+// * Current Version: 1.0.0
+// * Revision History:
+// * 	1.0.0 - ajn - First release
+// * 
+// * This implemenatation, and optimizations, Copyright (C) 2003, Adam J. Nelson
+// * The Double Metaphone algorithm was written by Lawrence Phillips, and is 
+// * Copyright (c) 1998, 1999 by Lawrence Philips.
+// **
 using System;
 using System.Text;
 
@@ -35,6 +35,9 @@ namespace Rock.Utility
     /// 										</summary>
     public class DoubleMetaphone
     {
+        /// <summary>
+        /// The metaphone key length
+        /// </summary>
         public const int METAPHONE_KEY_LENGTH = 4;//The length of the metaphone keys produced.  4 is sweet spot
 
         ///StringBuilders used to construct the keys

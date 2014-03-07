@@ -195,22 +195,22 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var adults = _groupMembers.Where( m => m.GroupRoleId != _childRoleId).ToList();
             if (adults.Any())
             {
-                if ( adults.Any( a => a.Person.FirstName == "") )
-                {
+                //if ( adults.Any( a => a.Person.FirstName == "") )
+                //{
                     lAdultCaption.Text = "The adults in this family are ";
-                }
-                else
-                {
-                    var firstNames = adults.Select( a => "<span class='adult-name'>" + a.Person.FirstName + "</span>" ).ToList();
-                    if ( firstNames.Count() > 1 )
-                    {
-                        lAdultCaption.Text = firstNames.AsDelimited( " and " ) + " are ";
-                    }
-                    else
-                    {
-                        lAdultCaption.Text = firstNames.FirstOrDefault() + " is ";
-                    }
-                }
+                //}
+                //else
+                //{
+                //    var firstNames = adults.Select( a => "<span class='adult-name'>" + a.Person.FirstName + "</span>" ).ToList();
+                //    if ( firstNames.Count() > 1 )
+                //    {
+                //        lAdultCaption.Text = firstNames.AsDelimited( " and " ) + " are ";
+                //    }
+                //    else
+                //    {
+                //        lAdultCaption.Text = firstNames.FirstOrDefault() + " is ";
+                //    }
+                //}
 
                 lAdultCaption.Visible = true;
                 ddlMaritalStatus.Visible = true;
