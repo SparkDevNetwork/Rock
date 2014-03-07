@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Core
             if ( RockPage.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 gEntityTypes.DataKeyNames = new string[] { "id" };
-                gEntityTypes.Actions.ShowAdd = true;
+                gEntityTypes.Actions.ShowAdd = false;
                 gEntityTypes.Actions.AddClick += Actions_AddClick;
                 gEntityTypes.RowSelected += gEntityTypes_EditRow;
                 gEntityTypes.GridRebind += gEntityTypes_GridRebind;
@@ -169,6 +169,15 @@ namespace RockWeb.Blocks.Core
             EntityTypeService entityTypeService = new EntityTypeService();
             EntityType entityType = entityTypeService.Get( int.Parse( hfEntityTypeId.Value ) );
 
+            if (entityType == null)
+            {
+                entityType = new EntityType();
+                entityType.IsEntity = true;
+                entityType.IsSecured = true;
+                entityTypeService.Add( entityType, CurrentPersonAlias );
+            }
+
+            entityType.Name = tbName.Text;
             entityType.FriendlyName = tbFriendlyName.Text;
             entityType.IsCommon = cbCommon.Checked;
 
@@ -225,6 +234,7 @@ namespace RockWeb.Blocks.Core
                 mdEdit.Title = ActionTitle.Edit( EntityType.FriendlyTypeName );
                 hfEntityTypeId.Value = entityType.Id.ToString();
                 tbName.Text = entityType.Name;
+                tbName.Enabled = false; // !entityType.IsEntity;
                 tbFriendlyName.Text = entityType.FriendlyName;
                 cbCommon.Checked = entityType.IsCommon;
             }
@@ -233,11 +243,10 @@ namespace RockWeb.Blocks.Core
                 mdEdit.Title = ActionTitle.Add( EntityType.FriendlyTypeName );
                 hfEntityTypeId.Value = 0.ToString();
                 tbName.Text = string.Empty;
+                tbName.Enabled = true;
                 tbFriendlyName.Text = string.Empty;
                 cbCommon.Checked = false;
             }
-
-            tbName.Enabled = !entityType.IsEntity;
 
             ShowDialog( "Edit" );
         }
