@@ -708,6 +708,10 @@
     <Compile Include="Migrations\201403071759009_RockJobServiceExternalFile.Designer.cs">
       <DependentUpon>201403071759009_RockJobServiceExternalFile.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201403072334593_ChangePasswordHtml.cs" />
+    <Compile Include="Migrations\201403072334593_ChangePasswordHtml.Designer.cs">
+      <DependentUpon>201403072334593_ChangePasswordHtml.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1219,6 +1223,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201403071759009_RockJobServiceExternalFile.resx">
       <DependentUpon>201403071759009_RockJobServiceExternalFile.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403072334593_ChangePasswordHtml.resx">
+      <DependentUpon>201403072334593_ChangePasswordHtml.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
