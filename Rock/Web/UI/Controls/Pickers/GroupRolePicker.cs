@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
@@ -240,6 +241,32 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the exclude group roles.
+        /// </summary>
+        /// <value>
+        /// The exclude group roles.
+        /// </value>
+        public List<int> ExcludeGroupRoles
+        {
+            get
+            {
+                var excludeGroupRoles = ViewState["ExcludeGroupRoles"] as List<int>;
+                if (excludeGroupRoles == null)
+                {
+                    excludeGroupRoles = new List<int>();
+                    ViewState["ExcludeGroupRoles"] = excludeGroupRoles;
+                }
+                return excludeGroupRoles;
+            }
+
+            set
+            {
+                ViewState["ExcludeGroupRoles"] = value;
+                LoadGroupRoles( GroupTypeId );
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -347,8 +374,16 @@ namespace Rock.Web.UI.Controls
                     _ddlGroupRole.Items.Add( new ListItem( string.Empty, Rock.Constants.None.IdValue ) );
                 }
 
+                List<int> excludeGroupRoles = ExcludeGroupRoles;
+
                 var groupRoleService = new Rock.Model.GroupTypeRoleService();
-                var groupRoles = groupRoleService.Queryable().Where( r => r.GroupTypeId == groupTypeId.Value ).OrderBy( a => a.Name ).ToList();
+                var groupRoles = groupRoleService.Queryable()
+                    .Where( r => 
+                        r.GroupTypeId == groupTypeId.Value &&
+                        !excludeGroupRoles.Contains(r.Id))
+                    .OrderBy( a => a.Name )
+                    .ToList();
+
                 foreach ( var r in groupRoles )
                 {
                     var roleItem = new ListItem( r.Name, r.Id.ToString().ToUpper() );
