@@ -66,7 +66,12 @@ namespace RockJobSchedulerService
         /// </summary>
         public void StartJobScheduler()
         {
-            this.EventLog.WriteEntry( "JobScheduler:" + System.IO.Directory.GetCurrentDirectory() );
+            if ( !System.IO.File.Exists( "web.connectionstrings.config" ) )
+            {
+                // Write an eventlog about web.connectionstring.config not found
+                this.EventLog.WriteEntry( "Unable to find web.connectionstrings.config", EventLogEntryType.Error );
+            }
+            
             ISchedulerFactory sf;
 
             // create scheduler

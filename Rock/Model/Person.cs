@@ -743,21 +743,33 @@ namespace Rock.Model
         {
             get
             {
-                if ( BirthDay == null || BirthMonth == null )
+                if ( BirthDay.HasValue && BirthMonth.HasValue )
                 {
-                    return int.MaxValue;
-                }
-                else
-                {
-                    var today = RockDateTime.Today;
-                    var birthdate = Convert.ToDateTime( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + today.Year.ToString() );
-                    if ( birthdate.CompareTo( today ) < 0 )
+                    if ( BirthDay.Value >= 1 && BirthDay.Value <= 31 && BirthMonth.Value >= 1 && BirthMonth.Value <= 12 )
                     {
-                        birthdate = birthdate.AddYears( 1 );
-                    }
+                        var today = RockDateTime.Today;
 
-                    return Convert.ToInt32( birthdate.Subtract( today ).TotalDays );
+                        int day = BirthDay.Value;
+                        int month = BirthMonth.Value;
+                        int year = today.Year;
+                        if ( month < today.Month || ( month == today.Month && day < today.Day ) )
+                        {
+                            year++;
+                        }
+
+                        DateTime bday = DateTime.MinValue;
+                        while ( !DateTime.TryParse( BirthMonth.Value.ToString() + "/" + day.ToString() + "/" + year.ToString(), out bday ) && day > 28 )
+                        {
+                            day--;
+                        }
+
+                        if ( bday != DateTime.MinValue )
+                        {
+                            return Convert.ToInt32( bday.Subtract( today ).TotalDays );
+                        }
+                    }
                 }
+                return int.MaxValue;
             }
         }
 

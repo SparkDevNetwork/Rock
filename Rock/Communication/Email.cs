@@ -33,6 +33,8 @@ namespace Rock.Communication
         /// </summary>
         /// <param name="emailTemplateGuid">The email template unique identifier.</param>
         /// <param name="recipients">The recipients.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
         public static void Send( Guid emailTemplateGuid, Dictionary<string, Dictionary<string, object>> recipients, string appRoot = "", string themeRoot = "" )
         {
             if ( emailTemplateGuid != Guid.Empty && recipients != null && recipients.Any() )

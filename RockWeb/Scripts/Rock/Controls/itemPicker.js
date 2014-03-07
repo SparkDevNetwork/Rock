@@ -119,7 +119,7 @@
             },
             updateScrollbar: function () {
                 var $container = $('#' + this.options.controlId).find('.scroll-container'),
-                    $dialog = $('#modal-scroll-container'),
+                    $dialog = $('div.rock-modal > div.modal-body > div.scroll-container'),
                     dialogTop,
                     pickerTop,
                     amount;

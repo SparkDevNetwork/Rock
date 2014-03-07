@@ -8,7 +8,7 @@
       d:DesignWidth="800"
       Title="Check Scanner - Login"
       Loaded="Page_Loaded"
-      Background="#FF373737">
+      Style="{StaticResource pageBackgroundLogin}">
 
     <Grid Margin="0,0,0,0">
         <Grid.Background>
@@ -99,6 +99,7 @@
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
+                    <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <Border Grid.Row="0"
                         Grid.Column="0"
@@ -108,13 +109,19 @@
                         Login
                     </Label>
                 </Border>
+                <Frame 
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Source="images/check-scanner.xaml"
+                    Opacity="0.2"
+                    />
                 <StackPanel Grid.Row="1"
                             Grid.Column="0"
                             VerticalAlignment="Center">
                     <Label Name="lblRockUrl"
                            Style="{StaticResource labelStyle}">Rock URL</Label>
                     <TextBox Name="txtRockUrl"
-                             Style="{StaticResource textboxStyleUrl}" />
+                             Style="{StaticResource textboxStyleUrl}" Width="210" />
                     <Label Style="{StaticResource labelStyle}">Username</Label>
                     <TextBox Name="txtUsername"
                              Style="{StaticResource textboxStyle}"
@@ -123,12 +130,13 @@
                     <PasswordBox Name="txtPassword"
                                  Style="{StaticResource textboxStyle}"
                                  KeyDown="HideLoginWarning" />
-                    <Label Name="lblLoginWarning"
+                </StackPanel>
+
+                <Label Name="lblLoginWarning" Grid.Row="1" Grid.Column="1" VerticalAlignment="Bottom"
                            Style="{StaticResource labelStyleAlert}"
                            Content="Invalid Login"
-                           MaxHeight="55">
-                    </Label>
-                </StackPanel>
+                           MaxHeight="150" />
+
                 <Border Grid.Row="2"
                         Grid.Column="0"
                         BorderThickness="0,1,0,0"
@@ -136,7 +144,7 @@
 
                     <Button Name="btnLogin"
                             Click="btnLogin_Click"
-                            HorizontalAlignment="Right"
+                            HorizontalAlignment="Left"
                             Style="{StaticResource buttonStylePrimary}">Login</Button>
                 </Border>
             </Grid>

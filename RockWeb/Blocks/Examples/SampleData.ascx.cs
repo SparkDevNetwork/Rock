@@ -403,7 +403,6 @@ namespace RockWeb.Blocks.Examples
                         //throw new NotSupportedException( string.Format( "unknown relationship type {0}", elemRelationship.Attribute( "has" ).Value ) );
                         // just skip unknown relationship types
                         continue;
-                        break;
                 }
                 
                 // find the person's KnownRelationship "owner" group
@@ -558,7 +557,6 @@ namespace RockWeb.Blocks.Examples
                         break;
                     default:
                         throw new NotSupportedException( string.Format( "unknown group type {0}", elemGroup.Attribute( "type" ).Value.Trim() ) );
-                        break;
                 }
 
                 if ( elemGroup.Attribute( "description" ) != null )

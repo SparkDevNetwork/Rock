@@ -138,6 +138,10 @@ namespace Rock.Web.Cache
 
         #region Static Methods
 
+        /// <summary>
+        /// All the field types
+        /// </summary>
+        /// <returns></returns>
         public static List<FieldTypeCache> All()
         {
             string cacheKey = "Rock:FieldType:All";

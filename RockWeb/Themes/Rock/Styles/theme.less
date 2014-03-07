@@ -157,9 +157,12 @@ a:hover i.fs
     }
 }
 
-/*.panel .list-group { // override the default > to allow quick lists to not have margin at bottom
-    margin-bottom: 0;
-}*/
+// augment the grid striping when on a panel
+.panel-default {
+    .table-striped > tbody > tr:nth-child(odd) > td {
+        background-color: #dde3e8;
+    }
+}
 
 
 // 3. Page Header

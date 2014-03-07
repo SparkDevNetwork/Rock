@@ -165,13 +165,13 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
+                int attributeId = 0;
+                if ( hfIdValues.Value != string.Empty && int.TryParse( hfIdValues.Value, out attributeId ) )
+                {
+                    ShowEditValue( attributeId, false );
+                }
                 if (hfActiveDialog.Value.ToUpper() == "ATTRIBUTEVALUE")
                 {
-                    int attributeId = 0;
-                    if ( hfIdValues.Value != string.Empty && int.TryParse( hfIdValues.Value, out attributeId ) )
-                    {
-                        ShowEditValue( attributeId, false );
-                    }
                 }
 
                 ShowDialog();
@@ -670,13 +670,16 @@ namespace RockWeb.Blocks.Core
                 mdAttributeValue.Title = attribute.Name + " Value";
 
                 var attributeValue = new AttributeValueService().GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
-                attribute.AddControl( fsEditControl.Controls, attributeValue != null ? attributeValue.Value : null, string.Empty, setValues, true );
+                string value = attributeValue != null && !string.IsNullOrWhiteSpace( attributeValue.Value ) ? attributeValue.Value : attribute.DefaultValue;
+                attribute.AddControl( fsEditControl.Controls, value, string.Empty, setValues, true );
 
                 SetValidationGroup( fsEditControl.Controls, mdAttributeValue.ValidationGroup );
 
-                hfIdValues.Value = attribute.Id.ToString();
-
-                ShowDialog( "AttributeValue", true );
+                if ( setValues )
+                {
+                    hfIdValues.Value = attribute.Id.ToString();
+                    ShowDialog( "AttributeValue", true );
+                }
             }
         }
 

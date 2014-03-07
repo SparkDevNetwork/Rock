@@ -137,17 +137,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     Person fm = groupMember.Person;
 
                     // very similar code in EditFamily.ascx.cs
-                    System.Web.UI.WebControls.Image imgPerson = e.Item.FindControl( "imgPerson" ) as System.Web.UI.WebControls.Image;
-                    if ( imgPerson != null )
+                    HtmlControl divPersonImage = e.Item.FindControl( "divPersonImage" ) as HtmlControl;
+                    if ( divPersonImage != null )
                     {
-                        imgPerson.ImageUrl = Person.GetPhotoUrl(fm.PhotoId, fm.Gender, 65, 65);
+                        divPersonImage.Style.Add( "background-image", @String.Format( @"url({0})", Person.GetPhotoUrl( fm.PhotoId, fm.Gender ) + "&width=65" ) );
+                        divPersonImage.Style.Add("background-size",  "cover");
+                        divPersonImage.Style.Add("background-position", "50%");
                     }
-                    
-                    if (fm.PhotoUrl.Contains("no-photo"))
-                    {
-                        imgPerson.CssClass = "no-photo";
-                    }
-
                 }
             }
         }

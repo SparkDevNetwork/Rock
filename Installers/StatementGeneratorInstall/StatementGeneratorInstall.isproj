@@ -29,7 +29,7 @@
 	</ItemGroup>
 	<Import Project="$(MSBuildExtensionsPath32)\InstallShield\2013Limited\InstallShield.targets"/>
 	<ItemGroup>
-		<ProjectReference Include="..\..\..\Applications\Wpf\StatementGenerator\StatementGenerator.csproj">
+		<ProjectReference Include="..\..\Applications\Wpf\StatementGenerator\StatementGenerator.csproj">
 			<Name>StatementGenerator</Name>
 			<Project>{896F254D-0CEC-46D0-AD76-E95D43CC7B8D}</Project>
 		</ProjectReference>

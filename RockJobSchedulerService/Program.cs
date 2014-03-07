@@ -36,9 +36,10 @@ namespace RockJobSchedulerService
                 new JobScheduler() 
             };
 
-            //// NOTE: To run and debug this service in Visual Studio, uncomment out these next two lines
-            //JobScheduler debug = new JobScheduler();
-            //debug.StartJobScheduler();
+            //// NOTE: To run and debug this service in Visual Studio uncomment out the debug code below
+            //// Make sure you have a web.connectionstring.config in your debug/bin directory!
+            // JobScheduler debug = new JobScheduler();
+            // debug.StartJobScheduler();
 
             ServiceBase.Run( ServicesToRun );
         }

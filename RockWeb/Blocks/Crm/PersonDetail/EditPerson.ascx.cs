@@ -203,7 +203,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             cbSms != null &&
                             cbUnlisted != null )
                         {
-                            if ( !string.IsNullOrWhiteSpace( tbPhone.Text ) )
+                            if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( tbPhone.Text ) ) )
                             {
                                 int phoneNumberTypeId;
                                 if ( int.TryParse( hfPhoneType.Value, out phoneNumberTypeId ) )
@@ -266,35 +266,34 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     History.EvaluateChange( changes, "Record Status Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), DefinedValueCache.GetName( newRecordStatusReasonId ) );
                     person.RecordStatusReasonValueId = newRecordStatusReasonId;
 
-                    if ( !person.IsValid )
+                    if ( person.IsValid )
                     {
-                        return;
-                    }
-
-                    if ( personService.Save( person, CurrentPersonAlias ) )
-                    {
-                        if ( changes.Any() )
+                        if ( personService.Save( person, CurrentPersonAlias ) )
                         {
-                            new HistoryService().SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                Person.Id, changes, CurrentPersonAlias );
-                        }
-
-                        if ( orphanedPhotoId.HasValue )
-                        {
-                            BinaryFileService binaryFileService = new BinaryFileService( personService.RockContext );
-                            var binaryFile = binaryFileService.Get( orphanedPhotoId.Value );
-                            if ( binaryFile != null )
+                            if ( changes.Any() )
                             {
-                                // marked the old images as IsTemporary so they will get cleaned up later
-                                binaryFile.IsTemporary = true;
-                                binaryFileService.Save( binaryFile, CurrentPersonAlias );
+                                new HistoryService().SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                                    Person.Id, changes, CurrentPersonAlias );
                             }
+
+                            if ( orphanedPhotoId.HasValue )
+                            {
+                                BinaryFileService binaryFileService = new BinaryFileService( personService.RockContext );
+                                var binaryFile = binaryFileService.Get( orphanedPhotoId.Value );
+                                if ( binaryFile != null )
+                                {
+                                    // marked the old images as IsTemporary so they will get cleaned up later
+                                    binaryFile.IsTemporary = true;
+                                    binaryFileService.Save( binaryFile, CurrentPersonAlias );
+                                }
+                            }
+
+                            Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
                         }
                     }
                 } );
             }
 
-            Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
         }
 
         /// <summary>

@@ -130,6 +130,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="images\check-scanner.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="images\rock-logo.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -180,10 +184,11 @@
     </EmbeddedResource>
     <AppDesigner Include="Properties\" />
     <Resource Include="resources\fontawesome-webfont.ttf" />
-    <Resource Include="resources\OpenSans-Regular.ttf" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <Resource Include="resources\OpenSans-Light-webfont.ttf" />
+    <Resource Include="resources\OpenSans-Regular-webfont.ttf" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="images\header-texture.png" />

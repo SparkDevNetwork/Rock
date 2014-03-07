@@ -52,10 +52,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 IsKnownRelationships = ownerRoleGuid.Equals(new Guid(Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER));
             }
 
+            lbAdd.Visible = IsKnownRelationships;
+
             rGroupMembers.ItemCommand += rGroupMembers_ItemCommand;
 
             modalAddPerson.SaveClick += modalAddPerson_SaveClick;
-            modalAddPerson.OnCancelScript = string.Format( "$('#{0}').val('');", hfActiveDialog.ClientID );
+            modalAddPerson.OnCancelScript = string.Format( "$('#{0}').val('');", hfRoleId.ClientID );
 
             string script = @"
     $('a.remove-relationship').click(function(){
@@ -87,7 +89,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         protected void lbAdd_Click( object sender, EventArgs e )
         {
-            ShowModal( null, null );
+            ShowModal( null, null, null );
         }
 
         void rGroupMembers_ItemCommand( object source, System.Web.UI.WebControls.RepeaterCommandEventArgs e )
@@ -101,7 +103,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     if ( e.CommandName == "EditRole" )
                     {
-                        ShowModal(groupMember.Person, groupMember.GroupRoleId);
+                        ShowModal(groupMember.Person, groupMember.GroupRoleId, groupMemberId);
                     }
 
                     else if ( e.CommandName == "RemoveRole" )
@@ -134,6 +136,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     using ( new UnitOfWorkScope() )
                     {
                         var memberService = new GroupMemberService();
+
                         var group = memberService.Queryable()
                             .Where( m =>
                                 m.PersonId == Person.Id &&
@@ -144,21 +147,30 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                         if ( group != null )
                         {
-                            var groupMember = memberService.Queryable()
-                                .Where( m =>
-                                    m.GroupId == group.Id &&
-                                    m.PersonId == ppPerson.PersonId.Value &&
-                                    m.GroupRoleId == roleId.Value )
+                            GroupMember groupMember = null;
+                            int? groupMemberId = hfRoleId.Value.AsInteger( false );
+                            if ( groupMemberId.HasValue )
+                            {
+                                groupMember = memberService.Queryable()
+                                .Where( m => m.Id == groupMemberId.Value )
                                 .FirstOrDefault();
+                            }
 
                             if ( groupMember == null )
                             {
                                 groupMember = new GroupMember();
                                 groupMember.GroupId = group.Id;
-                                groupMember.PersonId = ppPerson.PersonId.Value;
-                                groupMember.GroupRoleId = roleId.Value;
                                 memberService.Add( groupMember, CurrentPersonAlias );
                             }
+
+                            GroupMember formerInverseGroupMember = null;
+                            if ( IsKnownRelationships )
+                            {
+                                formerInverseGroupMember = memberService.GetInverseRelationship( groupMember, false, CurrentPersonAlias );
+                            }
+
+                            groupMember.PersonId = ppPerson.PersonId.Value;
+                            groupMember.GroupRoleId = roleId.Value;
 
                             memberService.Save( groupMember, CurrentPersonAlias );
                             if ( IsKnownRelationships )
@@ -168,6 +180,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 if ( inverseGroupMember != null )
                                 {
                                     memberService.Save( inverseGroupMember, CurrentPersonAlias );
+                                    if (formerInverseGroupMember != null && formerInverseGroupMember.Id != inverseGroupMember.Id)
+                                    {
+                                        memberService.Delete( formerInverseGroupMember, CurrentPersonAlias );
+                                        memberService.Save( formerInverseGroupMember, CurrentPersonAlias );
+                                    }
                                 }
                             }
                         }
@@ -255,11 +272,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
         }
 
-        private void ShowModal( Person person, int? roleId )
+        private void ShowModal( Person person, int? roleId, int? groupMemberId  )
         {
             Guid roleGuid = Guid.Empty;
             if ( Guid.TryParse( GetAttributeValue( "GroupType/RoleFilter" ), out roleGuid ) )
             {
+                var role = new GroupTypeRoleService().Get( ownerRoleGuid );
+                grpRole.ExcludeGroupRoles.Add( role.Id );
+
                 grpRole.GroupTypeId = new GroupTypeRoleService().Queryable()
                     .Where( r => r.Guid == roleGuid )
                     .Select( r => r.GroupTypeId )
@@ -269,37 +289,28 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             grpRole.GroupRoleId = roleId;
             ppPerson.SetValue( person );
 
-            ShowDialog( "AddPerson", true );
+            ShowDialog( groupMemberId ?? 0, true );
         }
 
-        private void ShowDialog( string dialog, bool setValues = false )
+        private void ShowDialog( int roleId, bool setValues = false )
         {
-            hfActiveDialog.Value = dialog.ToUpper().Trim();
+            hfRoleId.Value = roleId.ToString();
             ShowDialog( setValues );
         }
 
 
         private void ShowDialog( bool setValues = false )
         {
-            switch ( hfActiveDialog.Value )
+            if ( !string.IsNullOrWhiteSpace( hfRoleId.Value ) )
             {
-                case "ADDPERSON":
-                    modalAddPerson.Show();
-                    break;
+                modalAddPerson.Show();
             }
         }
 
         private void HideDialog()
         {
-            switch ( hfActiveDialog.Value )
-            {
-
-                case "ADDPERSON":
-                    modalAddPerson.Hide();
-                    break;
-            }
-
-            hfActiveDialog.Value = string.Empty;
+            modalAddPerson.Hide();
+            hfRoleId.Value = string.Empty;
         }
     }
 }

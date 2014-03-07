@@ -171,6 +171,8 @@ namespace Rock.Communication.Transport
         /// </summary>
         /// <param name="template">The template.</param>
         /// <param name="recipients">The recipients.</param>
+        /// <param name="appRoot"></param>
+        /// <param name="themeRoot"></param>
         public override void Send( SystemEmail template, Dictionary<string, Dictionary<string, object>> recipients, string appRoot, string themeRoot )
         {
             string from = template.From;

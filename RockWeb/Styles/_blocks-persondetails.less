@@ -46,6 +46,7 @@
         position: absolute;
         right: 12px;
         margin-top: 35px;
+        z-index: 999;
     }
 
     .photo {
@@ -55,6 +56,11 @@
         display: table;
         max-width: 200px;
         margin: 0 auto;
+
+        img {
+            width: 100%;
+            height: auto;
+        }
     }
 
     .taglist {
@@ -271,20 +277,12 @@
     .actions { // edit family button
         position: absolute; 
         right: 12px; 
-        z-order: 99;
+        z-index: 999;
     }
 
     header {
         font-size: 16px;
         margin-bottom: @spacing-sm-px;
-    }
-
-    ul {
-        li.member {
-            h4 {
-                margin: 0;
-            }
-        }
     }
     
 
@@ -347,7 +345,11 @@
         .radio { // put adult/child radios side by side
             width: 65px;
             float: left;
-            margin-top: 0;
+            margin: 0;
+        }
+
+        h4 {
+            height: 38px;
         }
     }
     
