@@ -7,7 +7,7 @@
         
         <Rock:Grid ShowHeader="false" ID="gBinaryFile" CssClass="table-padded" runat="server" AllowSorting="true" DisplayType="Light" OnRowDataBound="gBinaryFile_RowDataBound" >
             <Columns>
-                <Rock:AttributeField DataField="Icon" HeaderText="" />
+                <Rock:AttributeField DataField="Icon" HeaderText="" ItemStyle-CssClass="grid-icon" />
                 <asp:TemplateField SortExpression="Name" HeaderText="">
                     <ItemTemplate>
                        <h4><asp:Literal ID="lAppName" runat="server"></asp:Literal></h4>
