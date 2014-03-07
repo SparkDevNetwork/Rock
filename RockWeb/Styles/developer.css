@@ -32,31 +32,9 @@
 }
 
 
-/* commented out on 2/10/2014 JME to see if this wasn't a BS2 left over
-//        JO - Border radius correction for Rock Bootstrap theme. This is needed
-//        because the `.add-on` span or `.btn` may not be the last child as specified
-//        by Bootstrap's default CSS rule (the parent div might also contain tooltips, 
-//        validation elements, etc).
-.input-append > input[type="text"] + .add-on,
-.input-append > input[type="text"] + .btn {
-  -webkit-border-radius: 0 4px 4px 0;
-  -moz-border-radius: 0 4px 4px 0;
-  border-radius: 0 4px 4px 0;
-}
-*/
 
 
-/* used on AddTransaction and GivingProfileDetail blocks */
-/*
 
-.check-image 
-{
-	margin-top: 10px;
-    width: 95%;	
-    max-width: inherit;
-}
-
-}*/
 
 
 /*CSF - right align the "Clear Exceptions" link on the Exceptions List Page*/
@@ -115,56 +93,6 @@ table.server-variables
     cursor: -moz-zoom-in;    
 }
 
-/* don't think this is being used JME 2/10/2014
-@media (max-width: 767px) {
-	// center the person image 
-    .persondetails-header .photo
-    {
-        margin: 0 auto;
-    }
-
-    // make widgets extend to the edges 
-    .persondetails .widget
-    {
-        margin-right: -20px;
-        margin-left: -20px;
-        border-radius: 0;
-    }
-
-    //make person notes full width 
-    .persontimeline .widget-content
-    {
-        padding-left: 0;
-        padding-right: 0;
-    }
-
-    // remove border radius on widget header 
-    .persondetails .widget header
-    {
-        border-radius: 0;
-    }
-
-    // remove border radius on person notes 
-    .persontimeline article
-    {
-        border-radius: 0;
-    }
-
-}
-*/
-
-
-
-/* Family Edit - DT -- doesn't appear to be used anymore when searching the code
-#person-search-results.scroll-container {
-    width: 420px;
-    height: 200px; 
-}
-#person-search-results .viewport {
-    width: 400px;
-    height: auto;
-    min-height: 200px;
-}*/
 
 
 /* text between input elements in dataview filters - DT */
