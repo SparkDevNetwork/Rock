@@ -13,7 +13,7 @@
         <ResourceDictionary Source="StyleResources.xaml" />
     </Window.Resources>
     <StackPanel Margin="8">
-        <Label Style="{StaticResource labelStyleLegend}">Ah Man... An Error Occurred...</Label>
+        <Label Style="{StaticResource labelStyleLegend}">That Wasn't Supposed To Happen...</Label>
         <Label Style="{StaticResource labelStyle}">An error has occurred while processing your request.</Label>
         <Label Style="{StaticResource labelStyleGridTitle}">Exception:</Label>
         <TextBox Name="txtErrorMessage"

@@ -6,82 +6,104 @@
       mc:Ignorable="d"
       d:DesignHeight="600"
       d:DesignWidth="800"
-      Background="#efefef"
+      Style="{StaticResource pageBackground}"
       Title="Select Accounts">
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition />
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="8*"/>
+            <ColumnDefinition Width="1*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="48" />
+            <RowDefinition Height="44"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="44" />
         </Grid.RowDefinitions>
-        
-        <StackPanel VerticalAlignment="Center"
-                    HorizontalAlignment="Center">
-            
-            <Label Content="Select Accounts"
+
+        <Grid Grid.Column="1" Grid.Row="1" Style="{StaticResource gridPanel}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="70"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="50"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Style="{StaticResource panelBanner}" >
+                <Label Content="STEP 2:" Style="{StaticResource labelStyleBannerTitle}" />
+                <Label Content="Account Selection" Style="{StaticResource labelStyleBannerText}"/>
+            </StackPanel>
+
+            <StackPanel VerticalAlignment="Center"
+                    HorizontalAlignment="Center" Grid.Column="1" Grid.Row="1">
+
+                <Label Content="Select Accounts"
                    Style="{StaticResource labelStyleLegend}" />
-            <ScrollViewer Height="200"
+                <ScrollViewer Height="200"
                           HorizontalScrollBarVisibility="Hidden"
                           VerticalScrollBarVisibility="Visible">
-                <ListBox Name="lstAccounts"
+                    <ListBox Name="lstAccounts"
                          Margin="16,8,0,0"
                          Width="320">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <CheckBox Content="{Binding Name}" IsChecked="{Binding IsChecked}" />
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </ScrollViewer>
-            <StackPanel Orientation="Horizontal"
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox Content="{Binding Name}" IsChecked="{Binding IsChecked}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </ScrollViewer>
+                <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Center">
-                <Button Content="Select all"
+                    <Button Content="Select all"
                         Name="btnSelectAll"
                         Style="{StaticResource buttonStyleMini}"
                         Margin="4"
                         Click="btnSelectAll_Click" />
-                <Button Content="Select none"
+                    <Button Content="Select none"
                         Name="btnSelectNone"
                         Style="{StaticResource buttonStyleMini}"
                         Margin="4"
                         Click="btnSelectNone_Click"/>
-            </StackPanel>
-            <Label Name="lblWarning"
+                </StackPanel>
+                <Label Name="lblWarning"
                    Style="{StaticResource labelStyleAlert}"
                    Content="Please select at least one account."
                    Visibility="Hidden">
-            </Label>
-        </StackPanel>
+                </Label>
+            </StackPanel>
 
-        <Button x:Name="btnBack"
-                Grid.Row="1"
+            <Button x:Name="btnBack"
+                Grid.Row="2"
                 HorizontalAlignment="Left"
-                Style="{StaticResource buttonStylePrimary}"
+                Style="{StaticResource buttonStyle}"
                 Margin="8,8,8,8"
                 Click="btnBack_Click">
-            <StackPanel Orientation="Horizontal">
-                <Label Style="{StaticResource labelStyleIconPrimaryLeft}"
+                <StackPanel Orientation="Horizontal">
+                    <Label Style="{StaticResource labelStyleIconPrimaryLeft}"
                        Content="&#xf0d9;" />
-                <Label Style="{StaticResource labelStyleButtonTextPrimary}"
+                    <Label Style="{StaticResource labelStyleButtonText}"
                        Content="Back" />
-            </StackPanel>
-        </Button>
-        <Button x:Name="btnNext"
-                Grid.Row="1"
+                </StackPanel>
+            </Button>
+            <Button x:Name="btnNext"
+                Grid.Row="2"
                 HorizontalAlignment="Right"
                 Style="{StaticResource buttonStylePrimary}"
                 Margin="8,8,8,8"
                 Click="btnNext_Click">
-            <StackPanel Orientation="Horizontal">
-                <Label Style="{StaticResource labelStyleButtonTextPrimary}"
+                <StackPanel Orientation="Horizontal">
+                    <Label Style="{StaticResource labelStyleButtonTextPrimary}"
                        Content="Next" />
-                <Label Style="{StaticResource labelStyleIconPrimary}"
+                    <Label Style="{StaticResource labelStyleIconPrimary}"
                        Content="&#xf0da;" />
-            </StackPanel>
-        </Button>
+                </StackPanel>
+            </Button>
+        </Grid>
 
+        <Frame
+            Grid.Row="3"
+            Grid.Column="2"
+            Source="images/statement-generator.xaml"
+            Style="{StaticResource logoStyleBottomRight}"
+            />
     </Grid>
 </Page>
