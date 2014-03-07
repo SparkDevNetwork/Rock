@@ -704,6 +704,10 @@
     <Compile Include="Migrations\201403062157173_SchedContributions.Designer.cs">
       <DependentUpon>201403062157173_SchedContributions.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201403071759009_RockJobServiceExternalFile.cs" />
+    <Compile Include="Migrations\201403071759009_RockJobServiceExternalFile.Designer.cs">
+      <DependentUpon>201403071759009_RockJobServiceExternalFile.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1212,6 +1216,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201403062157173_SchedContributions.resx">
       <DependentUpon>201403062157173_SchedContributions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403071759009_RockJobServiceExternalFile.resx">
+      <DependentUpon>201403071759009_RockJobServiceExternalFile.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
