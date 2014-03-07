@@ -66,7 +66,6 @@ namespace RockJobSchedulerService
         /// </summary>
         public void StartJobScheduler()
         {
-            this.EventLog.WriteEntry( "JobScheduler:" + System.IO.Directory.GetCurrentDirectory() );
             ISchedulerFactory sf;
 
             // create scheduler
