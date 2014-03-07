@@ -98,6 +98,7 @@
                             <li><a href="#smartresize">SmartResize</a> (Creative Commons Public Domain Dedication) - <a href="http://www.paulirish.com/2009/throttled-smartresize-jquery-event-handler/">Project Site</a></li>
                             <li><a href="#mobiledetect">Mobile Detect</a> (Unlicense) - <a href="http://detectmobilebrowsers.com/">Project Site</a></li>
                             <li><a href="#doublemetaphone">Double Metaphone</a> (Custom) - <a href="http://www.codeproject.com/Articles/4625/Implement-Phonetic-Sounds-like-Name-Searches-wit-4">Project Site</a></li>
+                            <li><a href="#jcrop">JCrop</a> (MIT) - <a href="http://deepliquid.com/content/Jcrop.html">Project Site</a></li>
                         </ul>
 
 
@@ -2433,7 +2434,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
-</pre
+</pre>
 
 <a name="doublemetaphone"></a>
                         <h3>Double Metaphone</h3>
@@ -2459,6 +2460,20 @@ Revision History:
 This implemenatation, and optimizations, Copyright (C) 2003, Adam J. Nelson
 The Double Metaphone algorithm was written by Lawrence Phillips, and is 
 Copyright (c) 1998, 1999 by Lawrence Philips.
+</pre>
+
+<a name="jcrop"></a>
+                        <h3>Jcrop</h3>
+                        <pre>
+The MIT License 
+
+Copyright ©2008 Kelly Hallman and Deep Liquid Group 
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: 
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. 
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
 </pre>
                     </div>
                 </div>
