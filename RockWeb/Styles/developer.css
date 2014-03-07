@@ -290,3 +290,12 @@ span.data-view-filter-label {
 	margin-left: 0;
 }
 
+/* DT - Person Picker */
+li.picker-select-item div.person-image {
+    border:3px solid #8498ab;
+    float:left;
+    margin-right: 7.5px;
+    display: inline-block;
+    width: 70px;
+    height: 70px;
+}
