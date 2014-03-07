@@ -98,6 +98,7 @@
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
+                    <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <Border Grid.Row="0"
                         Grid.Column="0"
@@ -107,13 +108,20 @@
                         Login
                     </Label>
                 </Border>
+                <Frame 
+                   Grid.Row="1"
+                   Grid.Column="1"
+                   Source="images/statement-generator.xaml"
+                   Margin="0,0,0,20"
+                   Opacity="0.2"
+                    />
                 <StackPanel Grid.Row="1"
                             Grid.Column="0"
                             VerticalAlignment="Center">
                     <Label Name="lblRockUrl"
                            Style="{StaticResource labelStyle}">Rock URL</Label>
                     <TextBox Name="txtRockUrl"
-                             Style="{StaticResource textboxStyleUrl}" />
+                             Style="{StaticResource textboxStyleUrl}" Width="210" />
                     <Label Style="{StaticResource labelStyle}">Username</Label>
                     <TextBox Name="txtUsername"
                              Style="{StaticResource textboxStyle}"
@@ -134,7 +142,7 @@
 
                     <Button Name="btnLogin"
                             Click="btnLogin_Click"
-                            HorizontalAlignment="Right"
+                            HorizontalAlignment="Left"
                             Style="{StaticResource buttonStylePrimary}">Login</Button>
 
                 </Border>

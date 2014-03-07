@@ -72,6 +72,88 @@
                 Value="#515151"></Setter>
     </Style>
 
+    
+    <!-- *** Banner ***  -->
+    
+    <!-- Panel Style: panelBanner -->
+    <Style x:Key="panelBanner"
+           TargetType="{x:Type StackPanel}" >
+        <Setter 
+            Property="Background"
+            Value="#8498ab"
+            />
+        <Setter 
+            Property="Margin"
+            Value="10"
+            />
+        <Setter
+            Property="Orientation"
+            Value="Horizontal"
+            />
+    </Style>
+    
+    <!-- Label style: Banner Title -->
+    <Style x:Key="labelStyleBannerTitle"
+           TargetType="{x:Type Label}">
+        <Setter Property="Label.FontWeight"
+                Value="Bold"></Setter>
+        <Setter Property="Label.FontSize"
+                Value="28"></Setter>
+        <Setter Property="Label.Foreground"
+                Value="#ecf0f3"></Setter>
+        <Setter Property="HorizontalAlignment"
+                Value="Left" />
+        <Setter Property="Margin"
+                Value="4,0,0,0"
+                />
+    </Style>
+
+    <!-- Label style: Banner Text -->
+    <Style x:Key="labelStyleBannerText"
+           TargetType="{x:Type Label}">
+        <Setter Property="Label.FontWeight"
+                Value="Normal"></Setter>
+        <Setter Property="Label.FontSize"
+                Value="28"></Setter>
+        <Setter Property="Label.Foreground"
+                Value="#ecf0f3"></Setter>
+        <Setter Property="HorizontalAlignment"
+                Value="Left" />
+    </Style>
+    
+    
+
+    <!-- Grid style: PanelGrid -->
+    <Style x:Key="gridPanel"
+           TargetType="{x:Type Grid}">
+        <Setter 
+            Property="Background"
+            Value="#e7ecf0" 
+            />
+    </Style>
+    
+    <!--  Logo style: bottom right -->
+    <Style x:Key="logoStyleBottomRight"
+           TargetType="{x:Type Frame}">
+        <Setter
+            Property="Opacity"
+            Value="0.2" />
+        <Setter
+            Property="HorizontalAlignment"
+            Value="Right" />
+        <Setter
+            Property="Margin"
+            Value="8,8,8,8" />
+        <Setter Property="LayoutTransform">
+            <Setter.Value>
+                <ScaleTransform ScaleX="0.2" ScaleY="0.2" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    
+    
+
     <!-- Label style: Alert-->
     <Style x:Key="labelStyleAlert"
            TargetType="{x:Type Label}">
@@ -210,7 +292,7 @@
         <Setter Property="Label.FontWeight"
                 Value="Normal"></Setter>
         <Setter Property="Label.Foreground"
-                Value="#515151"></Setter>
+                Value="#fff"></Setter>
     </Style>
 
     <Style x:Key="labelStyleButtonTextPrimary"
@@ -218,6 +300,24 @@
            TargetType="{x:Type Label}">
         <Setter Property="Label.Foreground"
                 Value="White"></Setter>
+    </Style>
+
+    <!-- Textblock Style: Title Paragraph  -->
+    <Style x:Key="textBlockStyleTitleParagraph"
+           TargetType="{x:Type TextBlock}">
+        <Setter Property="Label.Margin"
+                Value="0,0,0,0">
+            </Setter>
+            <Setter Property="Label.VerticalAlignment"
+                Value="Center"></Setter>
+            <Setter Property="Label.HorizontalAlignment"
+                Value="Left"></Setter>
+            <Setter Property="Label.FontWeight"
+                Value="Normal"></Setter>
+            <Setter Property="Label.FontSize"
+                Value="14"></Setter>
+            <Setter Property="Label.Foreground"
+                Value="#515151"></Setter>
     </Style>
 
     <!-- Textblock Style: Grid Data  -->
@@ -350,24 +450,17 @@
         <Setter Property="Height"
                 Value="28" />
         <Setter Property="Foreground"
-                Value="#333333" />
+                Value="#fff" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Button}">
                     <Border Name="buttonBorder"
                             CornerRadius="4,4,4,4"
                             BorderThickness="1"
-                            BorderBrush="#26000000"
-                            Padding="8,2,8,2">
-                        <Border.Background>
-                            <LinearGradientBrush StartPoint="0.5,0"
-                                                 EndPoint="0.5,1">
-                                <GradientStop Color="#FFFFFF"
-                                              Offset="0.0"></GradientStop>
-                                <GradientStop Color="#e6e6e6"
-                                              Offset="0.5"></GradientStop>
-                            </LinearGradientBrush>
-                        </Border.Background>
+                            BorderBrush="#859bb0"
+                            Padding="8,2,8,2"
+                            Background="#a4b4c4"
+                            >
                         <ContentPresenter Content="{TemplateBinding Content}"
                                           HorizontalAlignment="Center"
                                           VerticalAlignment="Center" />
@@ -409,16 +502,17 @@
         <Setter Property="Height"
                 Value="28" />
         <Setter Property="Foreground"
-                Value="White" />
+                Value="#fff" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Button}">
                     <Border Name="buttonBorder"
                             CornerRadius="4,4,4,4"
                             BorderThickness="0"
-                            BorderBrush="#515151"
+                            BorderBrush="#758ba1"
                             Padding="8,2,8,2"
-                            Background="#515151">
+                            Background ="#8498ab"
+                            >
                         <ContentPresenter Content="{TemplateBinding Content}"
                                           HorizontalAlignment="Center"
                                           VerticalAlignment="Center">
@@ -434,7 +528,7 @@
                                  Value="True">
                             <Setter TargetName="buttonBorder"
                                     Property="Background"
-                                    Value="#383838">
+                                    Value="#a498ab">
                             </Setter>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -513,6 +607,22 @@
     <Style x:Key="comboBoxStyle"
            TargetType="ComboBox"
            BasedOn="{StaticResource ResourceKey=inputStyleBase}">
+    </Style>
+
+    <!-- Page Styles -->
+    <Style x:Key="pageBackground"
+           TargetType="{x:Type Page}" >
+        <Setter 
+               Property="Background"
+               Value="#f4f4f4"
+               />
+    </Style>
+    <Style x:Key="pageBackgroundLogin"
+           TargetType="{x:Type Page}" >
+        <Setter 
+               Property="Background"
+               Value="#FF373737"
+               />
     </Style>
 
 </ResourceDictionary>

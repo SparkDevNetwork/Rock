@@ -6,45 +6,60 @@
       mc:Ignorable="d"
       d:DesignHeight="600"
       d:DesignWidth="800"
-      Background="#efefef"
+      Style="{StaticResource pageBackground}"
       Title="Select Persons"
       Loaded="Page_Loaded">
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition />
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="8*"/>
+            <ColumnDefinition Width="1*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="48" />
+            <RowDefinition Height="44"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="44" />
         </Grid.RowDefinitions>
-        <StackPanel VerticalAlignment="Center"
-                    HorizontalAlignment="Center">
-            <Label Style="{StaticResource labelStyleLegend}"
+
+        <Grid Grid.Column="1" Grid.Row="1" Style="{StaticResource gridPanel}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="70"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="50"/>
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0" Style="{StaticResource panelBanner}" >
+                <Label Content="STEP 1:" Style="{StaticResource labelStyleBannerTitle}" />
+                <Label Content="Who Needs a Statement" Style="{StaticResource labelStyleBannerText}"/>
+            </StackPanel>
+
+            <StackPanel VerticalAlignment="Top"
+                    HorizontalAlignment="Center" Grid.Row="1" Grid.Column="1">
+                <Label Style="{StaticResource labelStyleLegend}"
                    Content="Generate for" />
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="20" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                
-                <RadioButton Grid.Column="0"
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="20" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <RadioButton Grid.Column="0"
                              Name="radAllPersons"
                              Content="All individuals with transactions"
                              IsChecked="True"
                              Checked="radPersons_Checked"
                              GroupName="radSelect" />
-                <StackPanel Grid.Column="2">
-                    
-                    <RadioButton Name="radSingle"
+                    <StackPanel Grid.Column="2">
+
+                        <RadioButton Name="radSingle"
                                  Content="Single individual"
                                  Checked="radPersons_Checked"
                                  GroupName="radSelect" />
-                    <TextBox Style="{StaticResource textboxStyle}"
+                        <TextBox Style="{StaticResource textboxStyle}"
                              Name="txtPersonSearch"
                              TextChanged="txtPersonSearch_TextChanged" />
-                    <DataGrid x:Name="grdPersons"
+                        <DataGrid x:Name="grdPersons"
                               AutoGenerateColumns="False"
                               ItemsSource="{Binding}"
                               GridLinesVisibility="Horizontal"
@@ -58,80 +73,92 @@
                               SelectionMode="Single"
                               ColumnWidth="SizeToHeader"
                               Style="{StaticResource gridStyle}"
-                              Height="310"
+                              MaxHeight="250"
+                              Height="Auto"
                               Width="300"
                               Margin="0,10,0,0"
                               ScrollViewer.VerticalScrollBarVisibility="Visible"
                               ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                              SelectionChanged="grdPersons_SelectionChanged">
-                        <DataGrid.ItemContainerStyle>
-                            <Style TargetType="{x:Type DataGridRow}">
-                                <EventSetter Event="Control.MouseDoubleClick"
+                              SelectionChanged="grdPersons_SelectionChanged"
+                               >
+                            <DataGrid.ItemContainerStyle>
+                                <Style TargetType="{x:Type DataGridRow}">
+                                    <EventSetter Event="Control.MouseDoubleClick"
                                              Handler="grdItems_RowDoubleClick" />
-                            </Style>
-                        </DataGrid.ItemContainerStyle>
-
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Binding="{Binding FullName}"
+                                </Style>
+                            </DataGrid.ItemContainerStyle>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Binding="{Binding FullName}"
                                                 HeaderStyle="{StaticResource gridHeaderStyle}"
                                                 CellStyle="{StaticResource gridCellStyle}"
                                                 Header="NAME"
                                                 Width="170"
                                                 CanUserResize="False"
-                                                CanUserSort="False">
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Binding="{Binding Age}"
+                                                CanUserSort="False"
+                                                >
+                                </DataGridTextColumn>
+                                <DataGridTextColumn Binding="{Binding Age}"
                                                 HeaderStyle="{StaticResource gridHeaderStyleNumber}"
                                                 CellStyle="{StaticResource gridCellStyleNumber}"
                                                 Header="AGE"
                                                 Width="45"
                                                 CanUserResize="False"
                                                 CanUserSort="False">
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Binding="{Binding Gender}"
+                                </DataGridTextColumn>
+                                <DataGridTextColumn Binding="{Binding Gender}"
                                                 HeaderStyle="{StaticResource gridHeaderStyle}"
                                                 CellStyle="{StaticResource gridCellStyle}"
                                                 Header="GENDER"
                                                 Width="60"
                                                 CanUserResize="False"
                                                 CanUserSort="False">
-                            </DataGridTextColumn>
-
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </StackPanel>
-            </Grid>
-            <Label Name="lblWarning"
+                                </DataGridTextColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Grid>
+                <Label Name="lblWarning"
                    Style="{StaticResource labelStyleAlert}"
                    Content="Please select a person when 'Single individual' is checked."
                    Visibility="Hidden">
-            </Label>
-        </StackPanel>
-        <Button x:Name="btnBack"
-                Grid.Row="1"
+                </Label>
+            </StackPanel>
+
+
+            <Button x:Name="btnBack"
+                Grid.Row="2"
                 HorizontalAlignment="Left"
-                Style="{StaticResource buttonStylePrimary}"
+                Style="{StaticResource buttonStyle}"
                 Margin="8,8,8,8"
                 Click="btnBack_Click">
-            <StackPanel Orientation="Horizontal">
-                <Label Style="{StaticResource labelStyleIconPrimaryLeft}"
+                <StackPanel Orientation="Horizontal">
+                    <Label Style="{StaticResource labelStyleIconPrimaryLeft}"
                        Content="&#xf0d9;" />
-                <Label Style="{StaticResource labelStyleButtonTextPrimary}"
+                    <Label Style="{StaticResource labelStyleButtonTextPrimary}"
                        Content="Back" />
-            </StackPanel>
-        </Button>
-        <Button x:Name="btnNext"
-                Grid.Row="1"
+                </StackPanel>
+            </Button>
+            <Button x:Name="btnNext"
+                Grid.Row="2"
                 HorizontalAlignment="Right"
                 Style="{StaticResource buttonStylePrimary}"
                 Margin="8,8,8,8"
                 Click="btnNext_Click">
-            <StackPanel Orientation="Horizontal">
-                <Label Style="{StaticResource labelStyleButtonTextPrimary}"
+                <StackPanel Orientation="Horizontal">
+                    <Label Style="{StaticResource labelStyleButtonTextPrimary}"
                        Content="Next" />
-                <Label Style="{StaticResource labelStyleIconPrimary}"
+                    <Label Style="{StaticResource labelStyleIconPrimary}"
                        Content="&#xf0da;" />
-            </StackPanel>
-        </Button>
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <Frame
+            Grid.Row="3"
+            Grid.Column="2"
+            Source="images/statement-generator.xaml"
+            Style="{StaticResource logoStyleBottomRight}"
+            />
+
     </Grid>
 </Page>
