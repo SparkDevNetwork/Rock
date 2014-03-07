@@ -200,7 +200,6 @@ namespace Rock.Apps.StatementGenerator
                             Age = node["Age"].InnerText == "-1" ? "" : node["Age"].InnerText,
                             Gender = node["Gender"].InnerText,
                             ToolTip = string.Format( 
-                                tooltipFormat, 
                                 string.IsNullOrWhiteSpace(node["SpouseName"].InnerText) ? "-" : node["SpouseName"].InnerText, 
                                 node["Email"].InnerText, 
                                 node["Address"].InnerText ),

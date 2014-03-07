@@ -5,7 +5,7 @@
         Height="272"
         Width="448"
         ResizeMode="NoResize"
-        FontFamily="./resources/#Open Sans"
+        FontFamily="./resources/#Open Sans Regular"
         FontSize="14"
         Background="#efefef"
         WindowStartupLocation="CenterScreen">

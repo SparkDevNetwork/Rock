@@ -111,6 +111,8 @@
     <!-- Label style: Banner Text -->
     <Style x:Key="labelStyleBannerText"
            TargetType="{x:Type Label}">
+        <Setter Property="FontFamily"
+                Value="./resources/#Open Sans Light"></Setter>
         <Setter Property="Label.FontWeight"
                 Value="Normal"></Setter>
         <Setter Property="Label.FontSize"
@@ -142,11 +144,11 @@
             Property="HorizontalAlignment"
             Value="Right" />
         <Setter
-            Property="Margin"
-            Value="8,8,8,8" />
+            Property="Padding"
+            Value="16" />
         <Setter Property="LayoutTransform">
             <Setter.Value>
-                <ScaleTransform ScaleX="0.2" ScaleY="0.2" />
+                <ScaleTransform ScaleX="0.15" ScaleY="0.15" />
             </Setter.Value>
         </Setter>
     </Style>
