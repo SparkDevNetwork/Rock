@@ -607,11 +607,7 @@ $(document).ready(function() {
 
                         using ( new Rock.Data.UnitOfWorkScope() )
                         {
-                            var qry = dataView.GetQuery( out errorMessages );
-                            if ( grid.SortProperty != null )
-                            {
-                                qry = qry.Sort( grid.SortProperty );
-                            }
+                            var qry = dataView.GetQuery( grid.SortProperty, out errorMessages );
 
                             if ( fetchRowCount.HasValue)
                             {
