@@ -169,54 +169,7 @@ span.data-view-filter-label {
 
 }
 
-.image-editor-photo img{
-    width: 150px;
-    height: 150px;
-}
 
-.image-editor-fileinput {
-    visibility:hidden;
-}
-
-.image-editor-photo .options {
-	position: absolute;
-	top: 130px;
-	left: 100px;
-	background-color: #717171;
-	padding: 6px 12px;
-	border-radius: 4px 0 0 4px;
-	opacity: 0;
-	transition: opacity .25s ease-in-out;
-	-moz-transition: opacity .25s ease-in-out;
-	-webkit-transition: opacity .25s ease-in-out; 
-}
-
-.image-editor-crop-container {
-    height:480px;
-    width:480px; 
-}
-
-.image-editor-photo .js-upload-progress {
-    position:absolute;
-}
-						
-.image-editor-photo:hover .options {
-	opacity: 1;
-}
-						
-.image-editor-photo .options a {
-	color: #fff;
-	text-decoration: none;
-	margin-left: 12px;
-}
-						
-.image-editor-photo .options a:hover {
-	color: #c4c4c4;
-}
-						
-.image-editor-photo .options a:first-child {
-	margin-left: 0;
-}
 
 /* DT - Person Picker */
 li.picker-select-item div.person-image {

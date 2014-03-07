@@ -23,6 +23,7 @@
     20. Group List - styles a group of people in a ul -> li format
     21. Rock List - styles for the Rock list component
     22. TypeAhead - styles for type ahead support
+    23. Image Cropper - styles for image crop component
 */
 
 // 1. Pickers
@@ -1443,4 +1444,68 @@ ul.rocklist {
 
 .tt-suggestion p {
   margin: 0;
+}
+
+// 23. Image Cropper
+// -------------------------
+.image-editor-photo {
+    width: 150px;
+    position: relative;
+
+    img {
+        width: 150px;
+        height: 150px;
+        border: 3px solid @accent-bold-color;
+    }
+
+    .options {
+	    position: absolute;
+	    top: 110px;
+	    right: 0;
+	    background-color: @accent-bold-color;
+        color: @accent-bold-text-color;
+	    padding: 6px 12px;
+	    border-radius: @border-radius-base 0 0 @border-radius-base;
+	    opacity: 0;
+	    transition: opacity .25s ease-in-out;
+	    -moz-transition: opacity .25s ease-in-out;
+	    -webkit-transition: opacity .25s ease-in-out; 
+
+        a {
+	        color: #fff;
+	        text-decoration: none;
+	        margin-left: 12px;
+            cursor: pointer;
+
+            &:hover {
+	            color: darken(@accent-bold-text-color, 5%);
+            }
+        }
+    }
+
+    .js-upload-progress {
+        position:absolute;
+        top: 55px;
+        left: 55px;
+        color: @accent-bold-text-color;
+        opacity: 0.5;
+    }
+}
+
+.image-editor-fileinput {
+    visibility:hidden;
+}
+
+.image-editor-crop-container {
+    height:480px;
+    width:480px; 
+}
+
+						
+.image-editor-photo:hover .options {
+	opacity: 1;
+}
+							
+.image-editor-photo .options a:first-child {
+	margin-left: 0;
 }
