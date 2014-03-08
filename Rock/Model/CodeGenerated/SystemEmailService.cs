@@ -107,6 +107,7 @@ namespace Rock.Model
             target.Category = source.Category;
             target.Title = source.Title;
             target.From = source.From;
+            target.FromName = source.FromName;
             target.To = source.To;
             target.Cc = source.Cc;
             target.Bcc = source.Bcc;

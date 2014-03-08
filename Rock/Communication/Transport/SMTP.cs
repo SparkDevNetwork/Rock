@@ -175,17 +175,31 @@ namespace Rock.Communication.Transport
         /// <param name="themeRoot"></param>
         public override void Send( SystemEmail template, Dictionary<string, Dictionary<string, object>> recipients, string appRoot, string themeRoot )
         {
+            var globalAttributes = GlobalAttributesCache.Read();
+
             string from = template.From;
             if (string.IsNullOrWhiteSpace(from))
             {
-                var globalAttributes = GlobalAttributesCache.Read();
                 from = globalAttributes.GetValue( "OrganizationEmail" );
+            }
+
+            string fromName = template.FromName;
+            if ( string.IsNullOrWhiteSpace( fromName ) )
+            {
+                from = globalAttributes.GetValue( "OrganizationName" );
             }
 
             if ( !string.IsNullOrWhiteSpace( from ) )
             {
                 MailMessage message = new MailMessage();
-                message.From = new MailAddress( from );
+                if (string.IsNullOrWhiteSpace(fromName))
+                {
+                    message.From = new MailAddress( from );
+                }
+                else
+                {
+                    message.From = new MailAddress( from, fromName );
+                }
 
                 if ( !string.IsNullOrWhiteSpace( template.Cc ) )
                 {

@@ -14,7 +14,8 @@
         <div class="row">
             <div class="col-md-6">
                 <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.EmailTemplate, Rock" PropertyName="Title" />
-                <Rock:DataTextBox ID="tbFrom" runat="server" SourceTypeName="Rock.Model.EmailTemplate, Rock" PropertyName="From" />
+                <Rock:DataTextBox ID="tbFromName" runat="server" SourceTypeName="Rock.Model.EmailTemplate, Rock" PropertyName="FromName" Label="From Name" />
+                <Rock:DataTextBox ID="tbFrom" runat="server" SourceTypeName="Rock.Model.EmailTemplate, Rock" PropertyName="From" Label="From Address" />
                 <Rock:DataTextBox ID="tbTo" runat="server" SourceTypeName="Rock.Model.EmailTemplate, Rock" PropertyName="To" />
             </div>
             <div class="col-md-6">

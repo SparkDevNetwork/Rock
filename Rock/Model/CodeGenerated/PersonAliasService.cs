@@ -425,7 +425,6 @@ namespace Rock.Model
             target.PersonId = source.PersonId;
             target.AliasPersonId = source.AliasPersonId;
             target.AliasPersonGuid = source.AliasPersonGuid;
-            target.Person = source.Person;
             target.Id = source.Id;
             target.Guid = source.Guid;
 
