@@ -1,21 +1,5 @@
 The files in this directory are used to install the Rock ChMS.
 
-
-FILE OVERVIEW
-<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-Start.aspx - 		The file that the user places on their webserver to 
-			initiate the install.
-
-Rock Website - 		Files and directories that are hosted on the Rock website
-			to faciliate the install process. These files should be
-			placed under the /installer/ folder of the web server.
-
-rock-chms-latest.zip - 	The zip file that contains all of the files needed to run
-			the Rock ChMS. This files should be placed on the Rock web
-			server in the /downloads/ directory. Instructions on assembling
-			this file can be found below.
-
-
 CREATING INSTALLER ZIP FILE
 <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
@@ -25,11 +9,12 @@ CREATING INSTALLER ZIP FILE
 3. Edit web.config.  Delete the line:   <add key="AutoMigrateDatabase" value="False"/>
 4. Edit web.config. set RunJobsInIISContext = true
 5. Turn off debug <compilation debug="false"…
-6. Delete mockup images under 'Assets'
-7. Delete files under Logs
-8. Create new empty NuGet Package called Rock.x.y.z.nupkg (where x.y.z is version being built) in the App_Data/Packages folder.
-9. Create new empty NuGet Package called RockUpdate-x-y-z.x.y.z.nupkg (RockUpdate-x-y-z) in the App_Data/Packages folder.
-10. Zip up the RockWeb directory leaving out the following files:
+6. Update NuGet Package called Rock.x.y.z.nupkg (where x.y.z is version being built) in the App_Data/Packages folder.
+7. Update NuGet Package called RockUpdate-x-y-z.x.y.z.nupkg (RockUpdate-x-y-z) in the App_Data/Packages folder.
+8. Zip up the RockWeb directory leaving out the following files:
 	* web.ConnectionStrings.config  !IMPORTANT!
 	* .gitignore
-	* .DS_Store (might just be on my Mac)
+	* Settings.StyleCop
+9. Rename zip file 'rock-install-latest.zip'
+10. Move copy of zip to ./RockInstaller/Install Versions/vX.Y.Z/ so that it will be in source control
+11. Overwrite with snapshot zip file to Azure Blog storage
