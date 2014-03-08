@@ -54,13 +54,11 @@ namespace RockWeb.Blocks.Administration
 
             lCacheOverview.Text = GetCacheInfo();
             lRoutes.Text = GetRoutesInfo();
-        }
 
-        //protected void OnLoad( object sender, EventArgs e )
-        //{
-        //    ScriptManager scriptManager = ScriptManager.GetCurrent( Page );
-        //    scriptManager.RegisterPostBackControl( btnDumpDiagnostics );
-        //}
+            // register btnDumpDiagnostics as a PostBackControl since it is returning a File download
+            ScriptManager scriptManager = ScriptManager.GetCurrent( Page );
+            scriptManager.RegisterPostBackControl( btnDumpDiagnostics );
+        }
         
         #endregion
 
