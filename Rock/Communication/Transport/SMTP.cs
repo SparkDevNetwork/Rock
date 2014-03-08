@@ -186,7 +186,7 @@ namespace Rock.Communication.Transport
             string fromName = template.FromName;
             if ( string.IsNullOrWhiteSpace( fromName ) )
             {
-                from = globalAttributes.GetValue( "OrganizationName" );
+                fromName = globalAttributes.GetValue( "OrganizationName" );
             }
 
             if ( !string.IsNullOrWhiteSpace( from ) )
