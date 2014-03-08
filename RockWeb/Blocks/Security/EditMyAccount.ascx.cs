@@ -233,12 +233,14 @@ namespace RockWeb.Blocks.Security
                                     binaryFileService.Save( binaryFile, CurrentPersonAlias );
                                 }
                             }
+
+                            NavigateToParentPage();
+
                         }
                     }
                 } );
             }
 
-            NavigateToParentPage();
         }
 
         /// <summary>
