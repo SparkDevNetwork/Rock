@@ -1,8 +1,5 @@
 The files in this directory are used to install the Rock ChMS.
 
-
-
-
 CREATING INSTALLER ZIP FILE
 <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
