@@ -18,6 +18,12 @@
 
 <script language="CS" runat="server">
   
+    void Page_Load( object sender, EventArgs e )
+    {
+        // set timeout to 15 mins
+        Server.ScriptTimeout = 900;
+
+    }
     
     void AdminNext_Click(Object sender, EventArgs e)
     {
@@ -197,7 +203,7 @@
 	</head>
 	<body>
 		<form runat="server">
-		<asp:ScriptManager ID="ScriptManager1" runat="server" EnablePartialRendering="true" />
+		<asp:ScriptManager ID="ScriptManager1" runat="server" EnablePartialRendering="true" AsyncPostBackTimeout="900" />
 
         <asp:UpdateProgress id="updateProgress" runat="server">
 		     <ProgressTemplate>
