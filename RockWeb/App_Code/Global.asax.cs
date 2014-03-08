@@ -402,24 +402,30 @@ namespace RockWeb
                         // email notifications if 500 error
                         if ( status == "500" )
                         {
-                            // setup merge codes for email
-                            var mergeObjects = new Dictionary<string, object>();
-                            mergeObjects.Add( "ExceptionDetails", "An error occurred on the " + siteName + " site on page: <br>" + context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" ) );
-
-                            // get email addresses to send to
-                            string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
-
-                            if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
+                            try
                             {
-                                string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-                                var recipients = new Dictionary<string, Dictionary<string, object>>();
+                                // setup merge codes for email
+                                var mergeObjects = new Dictionary<string, object>();
+                                mergeObjects.Add( "ExceptionDetails", "An error occurred on the " + siteName + " site on page: <br>" + context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" ) );
 
-                                foreach ( string emailAddress in emailAddresses )
+                                // get email addresses to send to
+                                string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
+
+                                if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
                                 {
-                                    recipients.Add( emailAddress, mergeObjects );
-                                }
+                                    string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+                                    var recipients = new Dictionary<string, Dictionary<string, object>>();
 
-                                Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients );
+                                    foreach ( string emailAddress in emailAddresses )
+                                    {
+                                        recipients.Add( emailAddress, mergeObjects );
+                                    }
+
+                                    Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients );
+                                }
+                            }
+                            catch 
+                            { 
                             }
                         }
 
