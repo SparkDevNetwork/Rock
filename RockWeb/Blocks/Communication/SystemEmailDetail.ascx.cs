@@ -123,6 +123,7 @@ namespace RockWeb.Blocks.Communication
 
             emailTemplate.Category = tbCategory.Text;
             emailTemplate.Title = tbTitle.Text;
+            emailTemplate.FromName = tbFromName.Text;
             emailTemplate.From = tbFrom.Text;
             emailTemplate.To = tbTo.Text;
             emailTemplate.Cc = tbCc.Text;
@@ -152,8 +153,12 @@ namespace RockWeb.Blocks.Communication
         protected void ShowEdit( int emailTemplateId )
         {
             var globalAttributes = GlobalAttributesCache.Read();
+            
+            string globalFromName = globalAttributes.GetValue( "OrganizationName" );
+            tbFromName.Help = string.Format( "If a From Name value is not entered the 'Organization Name' Global Attribute value of '{0}' will be used when this template is sent.", globalFromName );
+
             string globalFrom = globalAttributes.GetValue( "OrganizationEmail" );
-            tbFrom.Help = string.Format( "If a From value is not entered the 'Organization Email' Global Attribute value of '{0}' will be used when this template is sent.", globalFrom );
+            tbFrom.Help = string.Format( "If a From Address value is not entered the 'Organization Email' Global Attribute value of '{0}' will be used when this template is sent.", globalFrom );
 
             SystemEmailService emailTemplateService = new SystemEmailService();
             SystemEmail emailTemplate = emailTemplateService.Get( emailTemplateId );
@@ -165,6 +170,7 @@ namespace RockWeb.Blocks.Communication
 
                 tbCategory.Text = emailTemplate.Category;
                 tbTitle.Text = emailTemplate.Title;
+                tbFromName.Text = emailTemplate.FromName;
                 tbFrom.Text = emailTemplate.From;
                 tbTo.Text = emailTemplate.To;
                 tbCc.Text = emailTemplate.Cc;
@@ -179,6 +185,7 @@ namespace RockWeb.Blocks.Communication
 
                 tbCategory.Text = string.Empty;
                 tbTitle.Text = string.Empty;
+                tbFromName.Text = string.Empty;
                 tbFrom.Text = string.Empty;
                 tbTo.Text = string.Empty;
                 tbCc.Text = string.Empty;

@@ -75,7 +75,17 @@ namespace Rock.Model
         [MaxLength( 200 )]
         [DataMember]
         public string From { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets from name.
+        /// </summary>
+        /// <value>
+        /// From name.
+        /// </value>
+        [MaxLength( 200 )]
+        [DataMember]
+        public string FromName { get; set; }
+
         /// <summary>
         /// Gets or sets the To email addresses that emails using this template should be delivered to.  If there is not a predetermined distribution list, this property can 
         /// remain empty.

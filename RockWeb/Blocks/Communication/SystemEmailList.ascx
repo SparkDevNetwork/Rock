@@ -12,7 +12,8 @@
             <Columns>
                 <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category" />
                 <asp:BoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
-                <asp:BoundField DataField="From" HeaderText="From" SortExpression="From" />
+                <asp:BoundField DataField="FromName" HeaderText="From Name" SortExpression="FromName" />
+                <asp:BoundField DataField="From" HeaderText="From Address" SortExpression="From" />
                 <asp:BoundField DataField="Subject" HeaderText="Subject" SortExpression="Subject" />
                 <Rock:DeleteField OnClick="gEmailTemplates_Delete" />
             </Columns>
