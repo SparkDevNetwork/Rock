@@ -43,8 +43,9 @@
             </div>
         </asp:Panel>
 
-        <Rock:ModalDialog ID="mdLocationPicker" runat="server" SaveButtonText="Save" OnSaveClick="btnAddLocation_Click" Title="Select Check-in Location" ValidationGroup="Location" >
+        <Rock:ModalDialog ID="mdLocationPicker" runat="server" SaveButtonText="Save" OnSaveClick="btnAddLocation_Click" Title="Select Check-in Location" ValidationGroup="Location">
             <Content ID="mdLocationPickerContent">
+                <asp:HiddenField ID="hfLocationPickerVisible" runat="server" />
                 <asp:HiddenField ID="hfAddLocationGroupGuid" runat="server" />
                 <Rock:LocationPicker ID="locationPicker" runat="server" PickerMode="NamedLocation" AllowModeSelection="false" Label="Check-in Location" ValidationGroup="Location" />
             </Content>
