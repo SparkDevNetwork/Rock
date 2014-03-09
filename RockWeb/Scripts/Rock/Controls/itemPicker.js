@@ -81,7 +81,7 @@
                         }
                     },
                     function () {
-                        $control.find('.rock-picker-select-none').fadeOut(500);
+                        $control.find('.picker-select-none').fadeOut(500);
                     });
 
                 $control.find('.picker-cancel').click(function () {
