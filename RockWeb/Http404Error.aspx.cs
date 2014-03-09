@@ -35,6 +35,15 @@ public partial class Http404Error : System.Web.UI.Page
             ExceptionLogService.LogException( new Exception( string.Format( "404 Error: {0}", Request.Url.AbsoluteUri ) ), Context );
         }
 
+        // If this is an API call, set status code and exit
+        if (Request.Url.Query.Contains(Request.Url.Authority + ResolveUrl("~/api/")))
+        {
+            Response.StatusCode = 404;
+            Response.Flush();
+            Response.End();
+            return;
+        }
+
         // try to get site's 404 page
         SiteCache site = SiteCache.GetSiteByDomain(Request.Url.Host);
         if ( site != null && site.PageNotFoundPageId.HasValue )
@@ -43,6 +52,7 @@ public partial class Http404Error : System.Web.UI.Page
         }
         else
         {
+            Response.StatusCode = 404;
             logoImg.Src = ResolveUrl( "~/Assets/Images/rock-logo.svg" );
         }
     }
