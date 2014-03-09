@@ -5,8 +5,6 @@
         <asp:Panel ID="pnlDetails" runat="server" Visible="false">
             <asp:HiddenField ID="hfDataViewId" runat="server" />
 
-            
-
             <div id="pnlEditDetails" runat="server">
 
                 <div class="banner">
@@ -83,13 +81,37 @@
 
             </div>
 
-            <Rock:ModalDialog ID="modalPreview" runat="server" Title="Preview (top 15 rows )" ValidationGroup="Preview" >
+            <Rock:ModalDialog ID="modalPreview" runat="server" Title="Preview (top 15 rows )" ValidationGroup="Preview">
                 <Content>
-                    <Rock:Grid ID="gPreview" runat="server" AllowSorting="true" EmptyDataText="No Results" ShowActionRow="false" DisplayType="Light" />
+                    <div class="modal-body">
+                        <div id="preview-modal-scroll-container" class="scroll-container scroll-container-vertical">
+                            <div class="scrollbar">
+                                <div class="track">
+                                    <div class="thumb">
+                                        <div class="end"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="viewport">
+                                <div class="overview">
+                                    <Rock:Grid ID="gPreview" runat="server" AllowSorting="true" EmptyDataText="No Results" ShowActionRow="false" DisplayType="Light" />
+                                </div>
+                            </div>
+                        </div>
                 </Content>
             </Rock:ModalDialog>
 
         </asp:Panel>
+        <script type="text/javascript">
+            Sys.Application.add_load(function () {
+                $('#preview-modal-scroll-container').mouseenter(function () {
+                    $('#preview-modal-scroll-container').tinyscrollbar({ size: 150, sizethumb: 20 });
 
+                    $('.scroll-container').on('mouseenter', function () {
+                        $('.scroll-container').tinyscrollbar_update('relative');
+                    });
+                });
+            });
+        </script>
     </ContentTemplate>
 </asp:UpdatePanel>
