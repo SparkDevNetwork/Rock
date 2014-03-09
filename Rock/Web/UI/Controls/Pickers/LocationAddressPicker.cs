@@ -174,7 +174,7 @@ namespace Rock.Web.UI.Controls
         public RequiredFieldValidator RequiredFieldValidator { get; set; }
 
         #endregion
-        
+
         #region Controls
 
         private HiddenField _hfLocationId;
@@ -194,6 +194,7 @@ namespace Rock.Web.UI.Controls
         private Panel _pnlPickerActions;
         private LinkButton _btnSelect;
         private LinkButton _btnCancel;
+        private HtmlAnchor _btnSelectNone;
 
         #endregion
 
@@ -226,7 +227,8 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The location.
         /// </value>
-        public Location Location {
+        public Location Location
+        {
             get
             {
                 EnsureChildControls();
@@ -238,6 +240,8 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 if ( value != null )
                 {
+                    _btnSelectNone.Attributes["class"] = "picker-select-none rollover-item";
+                    _btnSelectNone.Style[HtmlTextWriterStyle.Display] = string.Empty;
                     _hfLocationId.Value = value.Id.ToString();
                     _tbAddress1.Text = value.Street1;
                     _tbAddress2.Text = value.Street2;
@@ -247,6 +251,8 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
+                    _btnSelectNone.Attributes["class"] = "picker-select-none";
+                    _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
                     _hfLocationId.Value = string.Empty;
                     _tbAddress1.Text = string.Empty;
                     _tbAddress2.Text = string.Empty;
@@ -316,6 +322,7 @@ namespace Rock.Web.UI.Controls
             }
 
             ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( _btnSelect );
+            ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( _btnSelectNone );
         }
 
         /// <summary>
@@ -340,7 +347,7 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
             Controls.Clear();
 
-            this.CssClass = "picker picker-select";
+            this.CssClass = "picker picker-select rollover-container";
 
             _hfLocationId = new HiddenField { ID = "hfLocationId" };
             this.Controls.Add( _hfLocationId );
@@ -349,6 +356,16 @@ namespace Rock.Web.UI.Controls
             _btnPickerLabel.Attributes["class"] = "picker-label";
             _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-user'></i>{0}<b class='fa fa-caret-down pull-right'></b>", this.AddressSummaryText );
             this.Controls.Add( _btnPickerLabel );
+
+            _btnSelectNone = new HtmlAnchor();
+            _btnSelectNone.ClientIDMode = ClientIDMode.Static;
+            _btnSelectNone.Attributes["class"] = "picker-select-none";
+            _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
+            _btnSelectNone.InnerHtml = "<i class='fa fa-times'></i>";
+            _btnSelectNone.CausesValidation = false;
+            _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
+            _btnSelectNone.ServerClick += _btnSelectNone_ServerClick;
+            this.Controls.Add( _btnSelectNone );
 
             // PickerMenu (DropDown menu)
             _pnlPickerMenu = new Panel { ID = "pnlPickerMenu" };
@@ -447,6 +464,17 @@ namespace Rock.Web.UI.Controls
             var location = locationService.Get( _tbAddress1.Text, _tbAddress2.Text, _tbCity.Text, _ddlState.SelectedItem.Text, _tbZip.Text );
             Location = location;
             _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-user'></i>{0}<b class='fa fa-caret-down pull-right'></b>", this.AddressSummaryText );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the _btnSelectNone control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void _btnSelectNone_ServerClick( object sender, EventArgs e )
+        {
+            Location = null;
+            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-user'></i>{0}<b class='fa fa-caret-down pull-right'></b>", string.Empty );
         }
 
         /// <summary>
