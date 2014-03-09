@@ -45,7 +45,6 @@ namespace Rock.PersonProfile.Badge
     [BooleanField("Annimate Bars", "Determine whether bars should annimate when displayed.", true)]
     public class FamilyAttendance : BadgeComponent
     {
-
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
@@ -53,12 +52,8 @@ namespace Rock.PersonProfile.Badge
         /// <param name="writer">The writer.</param>
         public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
-            int minBarHeight = 2;
-
-            if (GetAttributeValue(badge, "MinimumBarHeight") != null)
-            {
-                Int32.Parse(GetAttributeValue(badge, "MinimumBarHeight"));
-            }
+            int minBarHeight = GetAttributeValue(badge, "MinimumBarHeight").AsInteger(false) ?? 2;
+            int monthsToDisplay = GetAttributeValue(badge, "MonthsToDisplay").AsInteger(false) ?? 24;
             
             string annimateClass = string.Empty;
 
@@ -102,7 +97,7 @@ namespace Rock.PersonProfile.Badge
                     }});
                 </script>
                 
-            ", Person.Id.ToString(), GetAttributeValue(badge, "MonthsToDisplay"), minBarHeight ));
+            ", Person.Id.ToString(), monthsToDisplay , minBarHeight ));
 
         }
 
