@@ -435,6 +435,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 var familyMember = new FamilyMember();
                 familyMember.FirstName = tbNewPersonFirstName.Text;
+                familyMember.NickName = tbNewPersonFirstName.Text;
                 familyMember.LastName = tbNewPersonLastName.Text;
                 familyMember.Gender = ddlNewPersonGender.SelectedValueAsEnum<Gender>();
                 familyMember.BirthDate = dpNewPersonBirthDate.SelectedDate;
@@ -729,7 +730,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                                     var person = new Person();
                                     person.FirstName = familyMember.FirstName;
-                                    person.NickName = familyMember.FirstName;
+                                    person.NickName = familyMember.NickName;
                                     History.EvaluateChange( demographicChanges, "First Name", string.Empty, person.FirstName );
 
                                     person.LastName = familyMember.LastName;
@@ -1120,6 +1121,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         public bool Removed { get; set; } // Was an existing person removed from the family (to their own family)
         public bool RemoveFromOtherFamilies { get; set; } // When adding an existing person, should they be removed from other families
         public string FirstName { get; set; }
+        public string NickName { get; set; }
         public string LastName { get; set; }
         public Gender Gender { get; set; }
         public DateTime? BirthDate { get; set; }
@@ -1171,6 +1173,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 Id = person.Id;
                 FirstName = person.FirstName;
+                NickName = person.NickName;
                 LastName = person.LastName;
                 Gender = person.Gender;
                 BirthDate = person.BirthDate;
