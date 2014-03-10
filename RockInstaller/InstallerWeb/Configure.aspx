@@ -188,7 +188,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Rock ChMS Installer...</title>
+		<title>Rock RMS Installer...</title>
 
 		<link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css'>
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
@@ -226,7 +226,7 @@
 		<asp:UpdatePanel ID="GettingStartedUpdatePanel" runat="server" UpdateMode="Conditional">
 			<ContentTemplate>
 				<div id="content">
-					<h1>Rock ChMS</h1>
+					<h1>Rock RMS</h1>
 					
 					<div id="content-box" class="group">
 						
@@ -432,7 +432,7 @@
 						<asp:Panel id="pEmailSettings" Visible="false" runat="server">
 							<h1>Email Server Settings</h1>
 						
-							<p>Email is an essential part of the Rock ChMS.  Please provide a few details about your email environment.  You can change 
+							<p>Email is an essential part of the Rock RMS.  Please provide a few details about your email environment.  You can change 
 							these values at an time inside the app. 
 							</p>
 
@@ -510,7 +510,7 @@
 							<h1>Congratulations!!!</h1>
 						
 							<p>
-								You have finished the install and initial configuration of the Rock ChMS! All that's left to do is login and get started.
+								You have finished the install and initial configuration of the Rock RMS! All that's left to do is login and get started.
 							</p>
 							
 							<p></p>
