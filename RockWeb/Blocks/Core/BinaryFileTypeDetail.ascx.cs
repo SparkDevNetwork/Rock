@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Core
 
             if ( binaryFileType.StorageEntityType != null )
             {
-                cpStorageType.SelectedValue = binaryFileType.StorageEntityType.Guid.ToString();
+                cpStorageType.SelectedValue = binaryFileType.StorageEntityType.Guid.ToString().ToUpper();
             }
 
             AttributeService attributeService = new AttributeService();
