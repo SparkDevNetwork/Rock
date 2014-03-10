@@ -28,13 +28,37 @@ namespace RockWeb.Blocks.Cms
     {
         protected override void OnInit( EventArgs e )
         {
+            base.OnInit( e );
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
+        }
+
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            if (!Page.IsPostBack)
+            {
+                RefreshContent();
+            }
+        }
+
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            RefreshContent();
+        }
+        
+        private void RefreshContent()
+        {
             string url = GetAttributeValue( "Url" );
 
-            if ( !string.IsNullOrEmpty(url) )
+            if ( !string.IsNullOrEmpty( url ) )
             {
                 if ( IsUserAuthorized( "Administrate" ) )
                 {
-                    lRedirect.Text = string.Format( "If you did not have Administrate permissions on this block, you would have been redirected to here: <a href='{0}'>{0}</a>.", Page.ResolveUrl(url) );
+                    lRedirect.Text = string.Format( "If you did not have Administrate permissions on this block, you would have been redirected to here: <a href='{0}'>{0}</a>.", Page.ResolveUrl( url ) );
                 }
                 else
                 {
@@ -47,8 +71,7 @@ namespace RockWeb.Blocks.Cms
             {
                 lRedirect.Text = "Missing Url value for redirect!";
             }
-
-            base.OnInit( e );
         }
+
     }
 }
