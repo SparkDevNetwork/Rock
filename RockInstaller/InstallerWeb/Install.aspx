@@ -150,7 +150,7 @@
     		// setup environment screen based on results
 		    if (environmentClean) {
 		    	lTestEnvTitle.Text = "Pass!";
-		    	lTestEnvResults.Text = "Your environment passed all tests and looks like a good home for the Rock ChMS.  What are we waiting for? Let's get started!!!";
+		    	lTestEnvResults.Text = "Your environment passed all tests and looks like a good home for the Rock RMS.  What are we waiting for? Let's get started!!!";
 		    	lTestEnvDetails.Text = "<ul>" + outputMessages + "</ul>";
 		    	lTestEnvDetails.Text += "<div class='alert alert-info'><strong>Heads Up:</strong> The next step could take a few minutes to run. Don't worry it's normal.</div>";
 		    	btnEnvNext.Visible = true;
@@ -236,7 +236,7 @@
 
 
                 lDownloadTitle.Text = "Download Successful";
-                lDownloadDetails.Text = "<p>The Rock ChMS has been downloaded and installed on your web server.  The next step is to setup and configure the database.</p><div class='alert alert-info'><strong>Letting You Know:</strong> We'll be loading a new page as the database is created. This could take a couple of minutes also. Good things come to those who wait.</div>";
+                lDownloadDetails.Text = "<p>The Rock RMS has been downloaded and installed on your web server.  The next step is to setup and configure the database.</p><div class='alert alert-info'><strong>Letting You Know:</strong> We'll be loading a new page as the database is created. This could take a couple of minutes also. Good things come to those who wait.</div>";
             }
             else
             {
@@ -288,7 +288,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Rock ChMS Installer...</title>
+		<title>Rock RMS Installer...</title>
 		<link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css'>
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
         <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
@@ -323,7 +323,7 @@
 		<asp:UpdatePanel ID="GettingStartedUpdatePanel" runat="server" UpdateMode="Conditional">
 			<ContentTemplate>
 				<div id="content">
-					<h1>Rock ChMS</h1>
+					<h1>Rock RMS</h1>
 					
 					<div id="content-box">
 						<asp:Panel id="pWelcome" Visible="true" runat="server">

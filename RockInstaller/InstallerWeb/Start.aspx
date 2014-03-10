@@ -7,7 +7,7 @@
 
 <script language="CS" runat="server">
 	
-	// you want the Rock ChMS, well here we go! (better hold on...)
+	// you want the Rock RMS, well here we go! (better hold on...)
 	
 	//
 	// The purpose of this page is to download the base files for the install (Ionic.Zip.ddl and Install.aspx) and 
@@ -131,7 +131,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Rock ChMS Installer...</title>
+		<title>Rock RMS Installer...</title>
 		<link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css'>
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
         <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
@@ -145,7 +145,7 @@
 		<form runat="server">
 		
 				<div id="content">
-					<h1>Rock ChMS</h1>
+					<h1>Rock RMS</h1>
 					
 					<div id="content-box" class="group">
 						<h1><asp:Literal ID="lTitle" Text="Server Check" runat="server" /></h1>
@@ -158,7 +158,7 @@
                             <div class="alert alert-warning">
                                 <p><strong>Configuration Alert</strong></p>
 
-                                It appears that this website is not configured to run ASP.Net.  The Rock ChMS
+                                It appears that this website is not configured to run ASP.Net.  The Rock RMS
                                 requires that you run on a Windows Hosting Platform running IIS/ASP.Net.
                             </div>
 
@@ -290,7 +290,7 @@
         // sigh... Microsoft... :)
         if (!(Type.GetType("System.Reflection.ReflectionContext", false) != null))
         {
-            errorDetails = "The server does not have the correct .Net runtime.  You have .Net version " + System.Environment.Version.Major.ToString() + "." + System.Environment.Version.ToString() + " the Rock ChMS version requires " + dotNetVersionRequired + ".";
+            errorDetails = "The server does not have the correct .Net runtime.  You have .Net version " + System.Environment.Version.Major.ToString() + "." + System.Environment.Version.ToString() + " the Rock RMS version requires " + dotNetVersionRequired + ".";
         }
         else
         {
