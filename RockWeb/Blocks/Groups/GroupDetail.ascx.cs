@@ -289,7 +289,7 @@ namespace RockWeb.Blocks.Groups
                     if ( isSecurityRoleGroup )
                     {
                         Rock.Security.Role.Flush( group.Id );
-                        foreach ( var auth in authService.Queryable().Where( a => a.GroupId.Equals( group.Id ) ).ToList() )
+                        foreach ( var auth in authService.Queryable().Where( a => a.GroupId == group.Id ).ToList() )
                         {
                             authService.Delete( auth, CurrentPersonAlias );
                             authService.Save( auth, CurrentPersonAlias );
