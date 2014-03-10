@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Security
             {
                 case "Authentication Provider":
                     {
-                        var entityType = EntityTypeCache.Read( compProvider.SelectedValue.AsGuid() );
+                        var entityType = EntityTypeCache.Read( compProviderFilter.SelectedValue.AsGuid() );
                         if ( entityType != null )
                         {
                             e.Value = entityType.FriendlyName;
@@ -338,7 +338,7 @@ namespace RockWeb.Blocks.Security
         private void BindFilter()
         {
             tbUserNameFilter.Text = gfSettings.GetUserPreference( "Username" );
-            compProvider.SetValue( gfSettings.GetUserPreference( "Authentication Provider" ) );
+            compProviderFilter.SetValue( gfSettings.GetUserPreference( "Authentication Provider" ) );
             drpCreated.DelimitedValues = gfSettings.GetUserPreference( "Created" );
             drpLastLogin.DelimitedValues = gfSettings.GetUserPreference( "Last Login" );
             ddlIsConfirmedFilter.SetValue( gfSettings.GetUserPreference( "Is Confirmed" ) );
@@ -451,7 +451,7 @@ namespace RockWeb.Blocks.Security
             cbIsLockedOut.Checked = userLogin.IsLockedOut ?? false;
             if ( userLogin.EntityType != null )
             {
-                compProvider.SetValue( userLogin.EntityType.Guid.ToString() );
+                compProvider.SetValue( userLogin.EntityType.Guid.ToString().ToUpper() );
             }
 
             hfIdValue.Value = userLogin.Id.ToString();

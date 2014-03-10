@@ -482,7 +482,7 @@ namespace RockWeb.Blocks.Finance
                     var gatewayEntity = Rock.Web.Cache.EntityTypeCache.Read( transaction.GatewayEntityTypeId.Value );
                     if ( gatewayEntity != null )
                     {
-                        ddlPaymentGateway.SetValue( gatewayEntity.Guid.ToString() );
+                        ddlPaymentGateway.SetValue( gatewayEntity.Guid.ToString().ToUpper() );
                     }
                 }
 
