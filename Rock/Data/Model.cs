@@ -85,7 +85,6 @@ namespace Rock.Data
         /// <value>
         /// The created by person alias.
         /// </value>
-        [DataMember]
         public virtual PersonAlias CreatedByPersonAlias { get; set; }
 
         /// <summary>
@@ -94,7 +93,6 @@ namespace Rock.Data
         /// <value>
         /// The modified by person alias.
         /// </value>
-        [DataMember]
         public virtual PersonAlias ModifiedByPersonAlias { get; set; }
 
         /// <summary>
