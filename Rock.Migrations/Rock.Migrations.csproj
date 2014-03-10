@@ -716,6 +716,10 @@
     <Compile Include="Migrations\201403081504059_AddFromName.Designer.cs">
       <DependentUpon>201403081504059_AddFromName.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201403101815320_MakeStatesNonSystem.cs" />
+    <Compile Include="Migrations\201403101815320_MakeStatesNonSystem.Designer.cs">
+      <DependentUpon>201403101815320_MakeStatesNonSystem.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1233,6 +1237,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201403081504059_AddFromName.resx">
       <DependentUpon>201403081504059_AddFromName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403101815320_MakeStatesNonSystem.resx">
+      <DependentUpon>201403101815320_MakeStatesNonSystem.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
