@@ -262,12 +262,13 @@ namespace Rock.Model
         /// Gets the full name of the by.
         /// </summary>
         /// <param name="fullName">The full name.</param>
+        /// <param name="allowFirstNameOnly">if set to true, a single value in fullName will also search for matching first names.</param>
         /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
         /// <returns></returns>
-        public IQueryable<Person> GetByFullName( string fullName, bool includeDeceased = false )
+        public IQueryable<Person> GetByFullName( string fullName, bool allowFirstNameOnly, bool includeDeceased = false )
         {
             bool reversed = false;
-            return GetByFullName( fullName, includeDeceased, out reversed );
+            return GetByFullName( fullName, includeDeceased, allowFirstNameOnly, out reversed );
         }
 
         /// <summary>
@@ -276,16 +277,18 @@ namespace Rock.Model
         /// <param name="fullName">A <see cref="System.String" /> representing the full name to search by.</param>
         /// <param name="includeDeceased">A <see cref="System.Boolean" /> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be
         /// included, otherwise <c>false</c>.</param>
+        /// <param name="allowFirstNameOnly">if set to true, a single value in fullName will also search for matching first names.</param>
         /// <param name="reversed">if set to <c>true</c> [reversed].</param>
         /// <returns>
         /// A queryable collection of <see cref="Rock.Model.Person" /> entities that match the search criteria.
         /// </returns>
-        public IQueryable<Person> GetByFullName( string fullName, bool includeDeceased, out bool reversed )
+        public IQueryable<Person> GetByFullName( string fullName, bool includeDeceased, bool allowFirstNameOnly, out bool reversed )
         {
             var names = fullName.SplitDelimitedValues();
 
             string firstName = string.Empty;
             string lastName = string.Empty;
+            string singleName = string.Empty;
 
             if ( fullName.Contains( ',' ) )
             {
@@ -293,7 +296,7 @@ namespace Rock.Model
                 lastName = names.Length >= 1 ? names[0].Trim() : string.Empty;
                 firstName = names.Length >= 2 ? names[1].Trim() : string.Empty;
             }
-            else if ( fullName.Contains( ' ' ) )
+            else if ( fullName.Trim().Contains( ' ' ) )
             {
                 reversed = false;
                 firstName = names.Length >= 1 ? names[0].Trim() : string.Empty;
@@ -302,20 +305,34 @@ namespace Rock.Model
             else
             {
                 reversed = true;
-                lastName = fullName.Trim();
+                singleName = fullName.Trim();
             }
 
-            var qry = Queryable( includeDeceased );
-            if ( !string.IsNullOrWhiteSpace( lastName ) )
+            if ( !string.IsNullOrWhiteSpace( singleName ) )
             {
-                qry = qry.Where( p => p.LastName.StartsWith( lastName ) );
+                if ( allowFirstNameOnly )
+                {
+                    return Queryable( includeDeceased )
+                        .Where( p =>
+                            p.LastName.StartsWith( singleName ) ||
+                            p.FirstName.StartsWith( singleName ) ||
+                            p.NickName.StartsWith( singleName ) );
+                }
+                else
+                {
+                    return Queryable( includeDeceased )
+                        .Where( p =>
+                            p.LastName.StartsWith( singleName ) );
+                }
             }
-            if ( !string.IsNullOrWhiteSpace( firstName ) )
+            else
             {
-                qry = qry.Where( p => p.FirstName.StartsWith( firstName ) || p.NickName.StartsWith( firstName ) );
+                return Queryable( includeDeceased )
+                    .Where( p =>
+                        p.LastName.StartsWith( lastName ) &&
+                        ( p.FirstName.StartsWith( firstName ) ||
+                        p.NickName.StartsWith( firstName ) ) );
             }
-
-            return qry;
         }
 
         /// <summary>
@@ -323,11 +340,12 @@ namespace Rock.Model
         /// </summary>
         /// <param name="fullName">The full name.</param>
         /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="allowFirstNameOnly">if set to true, a single value in fullName will also search for matching first names.</param>
         /// <param name="reversed">if set to <c>true</c> [reversed].</param>
         /// <returns></returns>
-        public IOrderedQueryable<Person> GetByFullNameOrdered(string fullName, bool includeDeceased, out bool reversed)
+        public IOrderedQueryable<Person> GetByFullNameOrdered(string fullName, bool includeDeceased, bool allowFirstNameOnly, out bool reversed)
         {
-            var qry = new PersonService().GetByFullName( fullName, includeDeceased, out reversed );
+            var qry = new PersonService().GetByFullName( fullName, includeDeceased, allowFirstNameOnly, out reversed );
             if ( reversed )
             {
                 return qry.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName );

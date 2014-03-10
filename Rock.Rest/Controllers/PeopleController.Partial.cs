@@ -108,7 +108,7 @@ namespace Rock.Rest.Controllers
         {
             int count = 20;
             bool reversed;
-            IOrderedQueryable<Person> sortedPersonQry = new PersonService().GetByFullNameOrdered( name, false, out reversed );
+            IOrderedQueryable<Person> sortedPersonQry = new PersonService().GetByFullNameOrdered( name, false, false, out reversed );
 
             var topQry = sortedPersonQry.Take( count );
             List<Person> sortedPersonList = topQry.ToList();
