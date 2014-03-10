@@ -551,7 +551,9 @@ namespace RockWeb.Blocks.Crm
             if ( MergeData != null && MergeData.People != null && MergeData.People.Any() )
             {
                 // If the people have different email addresses and any logins, display security alert box
-                nbSecurityNotice.Visible = ( MergeData.People.Select( p => p.Email ).Distinct().Count() > 1 && MergeData.People.Where( p => p.HasLogins ).Any() ) ;
+                nbSecurityNotice.Visible = 
+                    ( MergeData.People.Select( p => p.Email ).Where( e => e != null && e != "").Distinct().Count() > 1 && 
+                    MergeData.People.Where( p => p.HasLogins ).Any() ) ;
 
                 foreach ( var col in gValues.Columns.OfType<PersonMergeField>() )
                 {
