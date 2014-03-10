@@ -45,7 +45,7 @@
                             <li class="member">
                                 <a href='<%# basePersonUrl + Eval("Id") %>'>
                                     <div class="person-image" id="divPersonImage" runat="server"></div>
-                                    <h4><%# Eval("FirstName") %> <%# Eval("LastName") %></h4>
+                                    <h4><%# Eval("NickName") %> <%# Eval("LastName") %></h4>
                                 </a>
                                 <asp:RadioButtonList ID="rblRole" runat="server" DataValueField="Id" DataTextField="Name" />
                                 
