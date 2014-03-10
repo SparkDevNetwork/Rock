@@ -262,7 +262,7 @@
         
         if (!canWrite) {
         	checksFailed = true;
-            errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i> The username " + userName + " does not have write access to the server's file system. <a class='btn btn-info btn-xs' href='TODO'>Let's Fix It Together</a> </li>";
+            errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i> The username " + userName + " does not have write access to the server's file system. <a class='btn btn-info btn-xs' href='http://www.rockrms.com/Rock/LetsFixThis#WebServerPermissions'>Let's Fix It Together</a> </li>";
         }
 
         // check asp.net version
@@ -271,7 +271,7 @@
         if (!CheckDotNetVersion(out checkResults))
         {
             checksFailed = true;
-            errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/dotnet-version.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+            errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i>" + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#IncorrectDotNETVersion' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
         }
         
         
