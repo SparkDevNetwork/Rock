@@ -16,6 +16,13 @@
             initialize: function () {
                 var self = this;
 
+                var key = localStorage.getItem("com.rockrms.search");
+                if (key && key != '') {
+                    var $search = self.$el.parents('.smartsearch');
+                    $search.find('input:hidden').val(key);
+                    $search.find('a.dropdown-toggle > span').html($search.find('li[data-key="' + key + '"] > a').html());
+                }
+
                 this.$el.typeahead({
                     name: this.name,
                     limit: 15,
@@ -66,8 +73,11 @@
                     var $this = $(this),
                         text = $this.html();
 
+                    var key = $this.parent().attr('data-key');
+                    localStorage.setItem("com.rockrms.search", key);
+
                     $this.parents('.dropdown-menu').siblings('.navbar-link').find('span').html(text);
-                    self.$el.parents('.smartsearch').find('input:hidden').val($this.parent().attr('data-key'));
+                    self.$el.parents('.smartsearch').find('input:hidden').val(key)
                 });
             }
         };
