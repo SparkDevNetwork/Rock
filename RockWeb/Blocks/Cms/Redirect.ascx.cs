@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Cms
             {
                 if ( IsUserAuthorized( "Administrate" ) )
                 {
-                    lRedirect.Text = string.Format( "If you did not have Administrate permissions on this block, you would have been redirected to here: <a href='{0}'>{0}</a>.", Page.ResolveUrl( url ) );
+                    nbAlert.Text = string.Format( "If you did not have Administrate permissions on this block, you would have been redirected to here: <a href='{0}'>{0}</a>.", Page.ResolveUrl( url ) );
                 }
                 else
                 {
@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Cms
             }
             else
             {
-                lRedirect.Text = "Missing Url value for redirect!";
+                nbAlert.Text = "Missing Url value for redirect!";
             }
         }
 
