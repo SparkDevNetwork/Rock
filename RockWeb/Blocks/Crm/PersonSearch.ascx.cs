@@ -93,7 +93,12 @@ namespace RockWeb.Blocks.Crm
                     {
                         case ( "name" ):
                             {
-                                people = personService.GetByFullName( term, true );
+                                bool allowFirstNameOnly = false;
+                                if (!bool.TryParse( PageParameter("allowFirstNameOnly"), out allowFirstNameOnly))
+                                {
+                                    allowFirstNameOnly = false;
+                                }
+                                people = personService.GetByFullName( term, allowFirstNameOnly, true );
                                 break;
                             }
                         case ( "phone" ):

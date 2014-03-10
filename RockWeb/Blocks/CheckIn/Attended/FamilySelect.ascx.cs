@@ -619,7 +619,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             if ( !string.IsNullOrEmpty( tbFirstNameSearch.Text ) && !string.IsNullOrEmpty( tbLastNameSearch.Text ) )
             {
-                people = personService.GetByFullName( tbFirstNameSearch.Text + " " + tbLastNameSearch.Text );
+                people = personService.GetByFullName( tbFirstNameSearch.Text + " " + tbLastNameSearch.Text, false );
             }
             else if ( !string.IsNullOrEmpty( tbLastNameSearch.Text ) )
             {

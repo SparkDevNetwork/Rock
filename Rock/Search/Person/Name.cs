@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Model;
 
 namespace Rock.Search.Person
@@ -29,6 +30,7 @@ namespace Rock.Search.Person
     [Description("Person Name Search")]
     [Export(typeof(SearchComponent))]
     [ExportMetadata("ComponentName", "Person Name")]
+    [BooleanField("Allow Search by Only First Name", "By default, when searching with only one name (without a space or comma), only people with a matching Last Names will be included.  Select this option to also include people with a matching First Name", false, "", 4, "FirstNameSearch")]
     public class Name : SearchComponent
     {
 
@@ -48,6 +50,21 @@ namespace Rock.Search.Person
             }
         }
 
+        public override string ResultUrl
+        {
+            get
+            {
+                bool allowFirstNameSearch = false;
+                if ( bool.TryParse( GetAttributeValue( "FirstNameSearch" ), out allowFirstNameSearch ) && allowFirstNameSearch )
+                {
+                    string url = base.ResultUrl;
+                    return url + ( url.Contains( "?" ) ? "&" : "?" ) + "allowFirstNameOnly=true";
+                }
+
+                return base.ResultUrl;
+            }
+        }
+
         /// <summary>
         /// Returns a list of matching people
         /// </summary>
@@ -55,8 +72,14 @@ namespace Rock.Search.Person
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
+            bool allowFirstNameSearch = false;
+            if ( !bool.TryParse( GetAttributeValue( "FirstNameSearch" ), out allowFirstNameSearch ) )
+            {
+                allowFirstNameSearch = false;
+            }
+
             bool reversed = false;
-            var qry = new PersonService().GetByFullNameOrdered( searchterm, true, out reversed );
+            var qry = new PersonService().GetByFullNameOrdered( searchterm, true, allowFirstNameSearch, out reversed );
             return qry
                 .Select( p => ( reversed ?
                     p.LastName + ", " + p.NickName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Name : "" ) :
