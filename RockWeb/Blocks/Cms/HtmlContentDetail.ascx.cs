@@ -277,9 +277,17 @@ namespace RockWeb.Blocks.Cms
             htmlContent.ExpireDateTime = drpDateRange.UpperValue;
             bool currentUserCanApprove = IsUserAuthorized( "Approve" );
 
-            if ( !requireApproval || currentUserCanApprove )
+            if ( !requireApproval )
             {
-                htmlContent.IsApproved = ( !requireApproval || hfApprovalStatus.Value.AsBoolean() ) || currentUserCanApprove;
+                // if this block doesn't require Approval, mark it as approved
+                htmlContent.IsApproved = true;
+                htmlContent.ApprovedByPersonId = this.CurrentPersonId;
+                htmlContent.ApprovedDateTime = RockDateTime.Now;
+            }
+            else
+            {
+                // if this block requires Approval, mark it as approved if the ApprovalStatus is still approved, or if the current user can approve
+                htmlContent.IsApproved = ( hfApprovalStatus.Value.AsBoolean() ) || currentUserCanApprove;
                 if ( htmlContent.IsApproved )
                 {
                     int? personId = hfApprovalStatusPersonId.Value.AsInteger( false );
@@ -401,7 +409,7 @@ namespace RockWeb.Blocks.Cms
         private void BindGrid()
         {
             var htmlContentService = new HtmlContentService();
-            var content = htmlContentService.GetContent( this.BlockId, EntityValue() );
+            var content = htmlContentService.GetContent( this.BlockId, EntityValue() ).OrderByDescending(a => a.Version).ThenByDescending( a => a.ModifiedDateTime );
 
             var versions = content.Select( v =>
                 new
