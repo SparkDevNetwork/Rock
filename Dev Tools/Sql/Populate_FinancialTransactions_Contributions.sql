@@ -41,7 +41,6 @@ while @transactionCounter < @maxTransactionCount
                    ([AuthorizedPersonId]
                    ,[BatchId]
                    ,[TransactionDateTime]
-                   ,[Amount]
                    ,[TransactionCode]
                    ,[Summary]
                    ,[TransactionTypeValueId]
@@ -54,7 +53,6 @@ while @transactionCounter < @maxTransactionCount
                    (@authorizedPersonId
                    ,null
                    ,@transactionDateTime
-                   ,@transactionAmount
                    ,null
                    ,@transactionNote
                    ,@transactionTypeValueId
