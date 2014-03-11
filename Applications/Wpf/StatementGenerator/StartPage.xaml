@@ -12,15 +12,15 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*" />
-            <ColumnDefinition Width="8*"/>
-            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Style="{StaticResource gridPanelBorderColumn}" />
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Style="{StaticResource gridPanelBorderColumn}"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="20"/>
             <RowDefinition Height="24"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="44" />
+            <RowDefinition Height="44"/>
         </Grid.RowDefinitions>
         <Menu x:Name="mainMenu"
               Grid.Column="0">
