@@ -62,7 +62,7 @@ namespace Quartz.Plugin.Management
                                                 {
                                                     scheduler.Shutdown(CleanShutdown);
                                                 }
-                                                catch (SchedulerException e)
+                                                catch (SchedulerException)
                                                 {
                                                    
                                                 }

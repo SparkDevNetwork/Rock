@@ -1,0 +1,20 @@
+<h1>{{title}}</h1>
+{{description}}
+<div class="rss-articles">
+	{% for article in item -%}
+		<div class="rss-article">
+			<h2>{{article.title}}</h2>
+
+			<div class="rss-article-byline">
+					{{article.pubDate}}
+			</div> 
+			<br />
+			<div class="rss-article-summary">
+        {{article.content_encoded}}
+      </div>
+			<p>
+				<a href="{{article.detailPageUrl}}" class="btn btn-default">View Article <i class="fa fa-angle-double-right"></i></a>
+			</p>
+		</div>
+	{% endfor -%}
+</div>

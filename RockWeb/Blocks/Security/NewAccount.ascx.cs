@@ -1,43 +1,71 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
-using System.Web;
 using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock;
+using Rock.Attribute;
 using Rock.Communication;
-using Rock.CRM;
+using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Security
 {
-    [Rock.Attribute.Property( 0, "Check for Duplicates", "Duplicates", "", 
-        "Should people with the same email and last name be presented as a possible pre-existing record for user to choose from.",
-        false, "true", "Rock", "Rock.FieldTypes.Boolean" )]
-    [Rock.Attribute.Property( 1, "Confirm Route", "The URL Route for Confirming an account", true)]
-    [Rock.Attribute.Property( 2, "Found Duplicate", "FoundDuplicateCaption", "Captions", "", false,
-        "There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?" )]
-    [Rock.Attribute.Property( 3, "Existing Account", "ExistingAccountCaption", "Captions", "", false,
-        "{0}, you already have an existing account.  Would you like us to email you the username?" )]
-    [Rock.Attribute.Property( 4, "Sent Login", "SentLoginCaption", "Captions", "", false,
-        "Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password." )]
-    [Rock.Attribute.Property( 5, "Confirm", "ConfirmCaption", "Captions", "", false,
-        "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue." )]
-    [Rock.Attribute.Property( 6, "Success", "SuccessCaption", "Captions", "", false,
-        "{0}, Your account has been created" )]
-    public partial class NewAccount : Rock.Web.UI.Block
+    /// <summary>
+    /// Block for user to create a new login account.
+    /// </summary>
+    [DisplayName( "New Account" )]
+    [Category( "Security" )]
+    [Description( "Block allows users to create a new login account." )]
+
+    [BooleanField( "Check for Duplicates", "Should people with the same email and last name be presented as a possible pre-existing record for user to choose from.", true, "", 0, "Duplicates" )]
+    [TextField( "Found Duplicate Caption", "", false,"There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?", "Captions", 1 )]
+    [TextField( "Existing Account Caption", "", false, "{0}, you already have an existing account.  Would you like us to email you the username?", "Captions", 2 )]
+    [TextField( "Sent Login Caption", "", false, "Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password.", "Captions", 3 )]
+    [TextField( "Confirm Caption", "", false, "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.", "Captions", 4 )]
+    [TextField( "Success Caption", "", false, "{0}, Your account has been created", "Captions", 5 )]
+    [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", true, "", "Pages", 6 )]
+    [LinkedPage( "Login Page", "Page to navigate to when user elects to login (if blank will use 'Login' page route)", true, "", "Pages", 7 )]
+    [EmailTemplateField( "Forgot Username", "Forgot Username Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_FORGOT_USERNAME, "Email Templates", 8, "ForgotUsernameTemplate" )]
+    [EmailTemplateField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 9, "ConfirmAccountTemplate" )]
+    [EmailTemplateField( "Account Created", "Account Created Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_ACCOUNT_CREATED, "Email Templates", 10, "AccountCreatedTemplate" )]
+    public partial class NewAccount : Rock.Web.UI.RockBlock
     {
+
+        #region Fields
+
         PlaceHolder[] PagePanels = new PlaceHolder[6];
+
+        #endregion
 
         #region Properties
 
+        /// <summary>
+        /// Gets or sets the password.
+        /// </summary>
+        /// <value>
+        /// The password.
+        /// </value>
         protected string Password
         {
             get
@@ -51,6 +79,12 @@ namespace RockWeb.Blocks.Security
             }
         }
 
+        /// <summary>
+        /// Gets or sets the password confirm.
+        /// </summary>
+        /// <value>
+        /// The password confirm.
+        /// </value>
         protected string PasswordConfirm
         {
             get
@@ -66,17 +100,25 @@ namespace RockWeb.Blocks.Security
 
         #endregion
 
-        #region Overridden Page Methods
+        #region Base Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            
-            lFoundDuplicateCaption.Text = AttributeValue( "FoundDuplicateCaption" );
-            lSentLoginCaption.Text = AttributeValue( "SentLoginCaption" );
-            lConfirmCaption.Text = AttributeValue( "ConfirmCaption" );
+
+            lFoundDuplicateCaption.Text = GetAttributeValue( "FoundDuplicateCaption" );
+            lSentLoginCaption.Text = GetAttributeValue( "SentLoginCaption" );
+            lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" );
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( System.EventArgs e )
         {
             base.OnLoad( e );
@@ -93,22 +135,14 @@ namespace RockWeb.Blocks.Security
 
             if ( !Page.IsPostBack )
             {
-
-                //tbPassword.TextBox.TextMode = TextBoxMode.Password;
-                //tbPasswordConfirm.TextBox.TextMode = TextBoxMode.Password;
-                LoadBirthDays();
-
-                int year = DateTime.Now.Year;
-                for ( int i = 0; i <= 110; i++ )
-                {
-                    string yearStr = ( year - i ).ToString();
-                    ddlBirthYear.Items.Add( new ListItem( yearStr, yearStr ) );
-                }
-
                 DisplayUserInfo( Direction.Forward );
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnPreRender( EventArgs e )
         {
             base.OnPreRender( e );
@@ -125,11 +159,11 @@ namespace RockWeb.Blocks.Security
 
         #region User Info Panel
 
-        protected void ddlBirthMonth_IndexChanged( object sender, EventArgs e )
-        {
-            LoadBirthDays();
-        }
-
+        /// <summary>
+        /// Handles the Click event of the btnUserInfoNext control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnUserInfoNext_Click( object sender, EventArgs e )
         {
             Password = tbPassword.Text;
@@ -137,12 +171,20 @@ namespace RockWeb.Blocks.Security
 
             if ( Page.IsValid )
             {
-                Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.GetByUserName( tbUserName.Text );
-                if ( user == null )
-                    DisplayDuplicates( Direction.Forward );
+                if ( UserLoginService.IsPasswordValid( Password ) )
+                {
+                    var userLoginService = new Rock.Model.UserLoginService();
+                    var userLogin = userLoginService.GetByUserName( tbUserName.Text );
+
+                    if ( userLogin == null )
+                        DisplayDuplicates( Direction.Forward );
+                    else
+                        ShowErrorMessage( "Username already exists" );
+                }
                 else
-                    ShowErrorMessage( "Username already exists" );
+                {
+                    ShowErrorMessage( UserLoginService.FriendlyPasswordRules() );
+                }
             }
         }
 
@@ -150,19 +192,29 @@ namespace RockWeb.Blocks.Security
 
         #region Duplicates Panel
 
+        /// <summary>
+        /// Handles the Click event of the btnDuplicatesPrev control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDuplicatesPrev_Click( object sender, EventArgs e )
         {
             DisplayUserInfo( Direction.Back );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnDuplicatesNext control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDuplicatesNext_Click( object sender, EventArgs e )
         {
             int personId = Int32.Parse( Request.Form["DuplicatePerson"] );
             if ( personId > 0 )
             {
-                Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                var users = userService.GetByPersonId(personId).ToList();
-                if (users.Count > 0)
+                var userLoginService = new Rock.Model.UserLoginService();
+                var userLogins = userLoginService.GetByPersonId(personId).ToList();
+                if (userLogins.Count > 0)
                     DisplaySendLogin( personId, Direction.Forward );
                 else
                     DisplayConfirmation( personId );
@@ -177,26 +229,70 @@ namespace RockWeb.Blocks.Security
 
         #region Send Login Panel
 
+        /// <summary>
+        /// Handles the Click event of the btnSendPrev control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSendPrev_Click( object sender, EventArgs e )
         {
             DisplayDuplicates( Direction.Back );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSendYes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSendYes_Click( object sender, EventArgs e )
         {
             DisplaySentLogin( Direction.Forward );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSendLogin control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSendLogin_Click( object sender, EventArgs e )
         {
-            Response.Redirect( "~/Login", true );
+            string loginUrl = LinkedPageUrl( "LoginPage" );
+            if ( string.IsNullOrWhiteSpace( loginUrl ) )
+            {
+                loginUrl = ResolveRockUrl( "~/Login" );
+            }
+
+            string returnUrl = Request.QueryString["returnurl"];
+            if ( !string.IsNullOrWhiteSpace( returnUrl ) && !loginUrl.Contains("returnurl"))
+            {
+                string delimiter = "?";
+                if (loginUrl.Contains('?'))
+                {
+                    delimiter = "&";
+                }
+
+                loginUrl += delimiter + "returnurl=" + returnUrl;
+            }
+
+            Response.Redirect( loginUrl, false );
+            Context.ApplicationInstance.CompleteRequest();
+        }
+
+        protected void btnContinue_Click( object sender, EventArgs e )
+        {
+            string returnUrl = Request.QueryString["returnurl"];
+            if ( !string.IsNullOrWhiteSpace( returnUrl ) )
+            {
+                Response.Redirect( Server.UrlDecode( returnUrl ), false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
         }
 
         #endregion
 
         #endregion
 
-        #region Private Methods
+        #region Methods
 
         private void ShowErrorMessage( string message )
         {
@@ -213,7 +309,7 @@ namespace RockWeb.Blocks.Security
         {
             bool displayed = false;
 
-            if ( Convert.ToBoolean( AttributeValue( "Duplicates" ) ) )
+            if ( Convert.ToBoolean( GetAttributeValue( "Duplicates" ) ) )
             {
                 PersonService personService = new PersonService();
                 var matches = personService.
@@ -253,7 +349,7 @@ namespace RockWeb.Blocks.Security
         {
             hfSendPersonId.Value = personId.ToString();
 
-            lExistingAccountCaption.Text = AttributeValue( "ExistingAccountCaption" );
+            lExistingAccountCaption.Text = GetAttributeValue( "ExistingAccountCaption" );
             if ( lExistingAccountCaption.Text.Contains( "{0}" ) )
             {
                 PersonService personService = new PersonService();
@@ -270,35 +366,46 @@ namespace RockWeb.Blocks.Security
             using ( new Rock.Data.UnitOfWorkScope() )
             {
                 PersonService personService = new PersonService();
-                Rock.CMS.UserService userService = new Rock.CMS.UserService();
-
                 Person person = personService.Get( Int32.Parse( hfSendPersonId.Value ) );
                 if ( person != null )
                 {
-                    var mergeObjects = new List<object>();
+                    string url = LinkedPageUrl( "ConfirmationPage" );
+                    if (string.IsNullOrWhiteSpace(url))
+                    {
+                        url = ResolveRockUrl( "~/ConfirmAccount" );
+                    }
+                    var mergeObjects = new Dictionary<string, object>();
+                    mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart(new char[]{'/'}) );
 
-                    var values = new Dictionary<string, string>();
-                    values.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
-                    mergeObjects.Add( values );
+                    var personDictionaries = new List<IDictionary<string, object>>();
 
-                    Dictionary<object, List<object>> personObjects = new Dictionary<object, List<object>>();
-                    var userObjects = new List<object>();
+                    var users = new List<IDictionary<string, object>>();
+                    var userLoginService = new UserLoginService();
+                    foreach ( UserLogin user in userLoginService.GetByPersonId( person.Id ) )
+                    {
+                        if ( user.EntityType != null )
+                        {
+                            var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
+                            if ( component.ServiceType == AuthenticationServiceType.Internal )
+                            {
+                                users.Add( user.ToDictionary() );
+                            }
+                        }
+                    }
 
-                    mergeObjects.Add( person );
+                    if ( users.Count > 0 )
+                    {
+                        IDictionary<string, object> personDictionary = person.ToDictionary();
+                        personDictionary.Add( "Users", users.ToArray() );
+                        personDictionaries.Add( personDictionary );
+                    }
 
-                    foreach ( var user in userService.GetByPersonId( person.Id ) )
-                        if (user.AuthenticationType != Rock.CMS.AuthenticationType.Facebook)
-                            userObjects.Add( user );
+                    mergeObjects.Add( "Persons", personDictionaries.ToArray() );
 
-                    personObjects.Add( person, userObjects );
-                    mergeObjects.Add(personObjects);
+                    var recipients = new Dictionary<string, Dictionary<string, object>>();
+                    recipients.Add( person.Email, mergeObjects );
 
-                    var recipients = new Dictionary<string, List<object>>();
-                    recipients.Add(person.Email, mergeObjects);
-
-                    Email email = new Email( Rock.SystemGuid.EmailTemplate.SECURITY_FORGOT_USERNAME );
-                    SetSMTPParameters( email );
-                    email.Send( recipients );
+                    Email.Send( GetAttributeValue( "ForgotUsernameTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
                 }
                 else
                     ShowErrorMessage( "Invalid Person" );
@@ -314,22 +421,25 @@ namespace RockWeb.Blocks.Security
 
             if (person != null)
             {
-                Rock.CMS.User user = CreateUser( person, false );
+                Rock.Model.UserLogin user = CreateUser( person, false );
 
-                var mergeObjects = new List<object>();
-                mergeObjects.Add( person );
-                mergeObjects.Add( user );
+                string url = LinkedPageUrl( "ConfirmationPage" );
+                if ( string.IsNullOrWhiteSpace( url ) )
+                {
+                    url = ResolveRockUrl( "~/ConfirmAccount" );
+                }
+                var mergeObjects = new Dictionary<string, object>();
+                mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) ); 
+                
+                var personDictionary = person.ToDictionary();
+                mergeObjects.Add( "Person", personDictionary );
 
-                var values = new Dictionary<string, string>();
-                values.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
-                mergeObjects.Add( values );
+                mergeObjects.Add( "User", user.ToDictionary() );
 
-                var recipients = new Dictionary<string, List<object>>();
+                var recipients = new Dictionary<string, Dictionary<string, object>>();
                 recipients.Add( person.Email, mergeObjects );
 
-                Email email = new Email( Rock.SystemGuid.EmailTemplate.SECURITY_CONFIRM_ACCOUNT );
-                SetSMTPParameters( email );
-                email.Send( recipients );
+                Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
 
                 ShowPanel( 4 );
             }
@@ -337,11 +447,10 @@ namespace RockWeb.Blocks.Security
                 ShowErrorMessage("Invalid Person");
         }
 
-        private void DisplaySuccess( Rock.CMS.User user )
+        private void DisplaySuccess( Rock.Model.UserLogin user )
         {
             FormsAuthentication.SignOut();
-            FormsAuthentication.SetAuthCookie( tbUserName.Text, false );
-            Session["UserIsAuthenticated"] = true;
+            Rock.Security.Authorization.SetAuthCookie( tbUserName.Text, false, false );
 
             if ( user != null && user.PersonId.HasValue )
             {
@@ -350,22 +459,35 @@ namespace RockWeb.Blocks.Security
 
                 if ( person != null )
                 {
-                    var mergeObjects = new List<object>();
-                    mergeObjects.Add( person );
-                    mergeObjects.Add( user );
+                    try 
+                    {
+                        string url = LinkedPageUrl( "ConfirmationPage" );
+                        if ( string.IsNullOrWhiteSpace( url ) )
+                        {
+                            url = ResolveRockUrl( "~/ConfirmAccount" );
+                        }
+                        var mergeObjects = new Dictionary<string, object>();
+                        mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
 
-                    var values = new Dictionary<string, string>();
-                    values.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
-                    mergeObjects.Add( values );
+                        var personDictionary = person.ToDictionary();
+                        mergeObjects.Add( "Person", personDictionary );
 
-                    var recipients = new Dictionary<string, List<object>>();
-                    recipients.Add( person.Email, mergeObjects );
+                        mergeObjects.Add( "User", user.ToDictionary() );
 
-                    Email email = new Email( Rock.SystemGuid.EmailTemplate.SECURITY_ACCOUNT_CREATED );
-                    SetSMTPParameters( email );
-                    email.Send( recipients );
+                        var recipients = new Dictionary<string, Dictionary<string, object>>();
+                        recipients.Add( person.Email, mergeObjects );
 
-                    lSuccessCaption.Text = AttributeValue( "SuccessCaption" );
+                        Email.Send( GetAttributeValue( "AccountCreatedTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
+                    }
+                    catch(SystemException ex)
+                    {
+                        ExceptionLogService.LogException(ex, Context, RockPage.PageId, RockPage.Site.Id, CurrentPersonAlias);
+                    }
+
+                    string returnUrl = Request.QueryString["returnurl"];
+                    btnContinue.Visible = !string.IsNullOrWhiteSpace( returnUrl );
+
+                    lSuccessCaption.Text = GetAttributeValue( "SuccessCaption" );
                     if ( lSuccessCaption.Text.Contains( "{0}" ) )
                         lSuccessCaption.Text = string.Format( lSuccessCaption.Text, person.FirstName );
 
@@ -378,27 +500,6 @@ namespace RockWeb.Blocks.Security
                 ShowErrorMessage( "Invalid User" );
         }
 
-        private void LoadBirthDays()
-        {
-            int currentMonth = 0;
-            if ( ddlBirthMonth.SelectedIndex >= 0 )
-                currentMonth = Int32.Parse( ddlBirthMonth.SelectedValue);
-
-            int currentDay = 0;
-            if ( ddlBirthDay.SelectedIndex >= 0 )
-                currentDay = Int32.Parse( ddlBirthDay.SelectedValue );
-
-            int[] days = new int[13] { 31, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-
-            ddlBirthDay.Items.Clear();
-            ddlBirthDay.Items.Add( new ListItem( "Day", "0" ) );
-            for ( int i = 1; i <= days[currentMonth]; i++ )
-                ddlBirthDay.Items.Add( new ListItem( i.ToString(), i.ToString() ) );
-
-            if ( currentDay <= days[currentMonth] )
-                ddlBirthDay.SelectedValue = currentDay.ToString();
-        }
-
         private void ShowPanel( int panel )
         {
             for ( int i = 0; i < PagePanels.Length; i++ )
@@ -407,10 +508,10 @@ namespace RockWeb.Blocks.Security
 
         private Person CreatePerson()
         {
-            Rock.CRM.PersonService personService = new PersonService();
+            Rock.Model.PersonService personService = new PersonService();
 
             Person person = new Person();
-            person.GivenName = tbFirstName.Text;
+            person.FirstName = tbFirstName.Text;
             person.LastName = tbLastName.Text;
             person.Email = tbEmail.Text;
             switch(ddlGender.SelectedValue)
@@ -426,50 +527,38 @@ namespace RockWeb.Blocks.Security
                     break;
             }
 
-            if (ddlBirthMonth.SelectedValue != "0")
-                person.BirthMonth = Int32.Parse(ddlBirthMonth.SelectedValue);
+            var birthday = bdaypBirthDay.SelectedDate;
+            if ( birthday.HasValue )
+            {
+                person.BirthMonth = birthday.Value.Month;
+                person.BirthDay = birthday.Value.Day;
+                if ( birthday.Value.Year != DateTime.MinValue.Year )
+                {
+                    person.BirthYear = birthday.Value.Year;
+                }
+            }
 
-            if (ddlBirthDay.SelectedValue != "0")
-                person.BirthDay = Int32.Parse(ddlBirthDay.SelectedValue);
-
-            if (ddlBirthYear.SelectedValue != "0")
-                person.BirthYear = Int32.Parse(ddlBirthYear.SelectedValue);
-
-            personService.Add(person, CurrentPersonId);
-            personService.Save(person, CurrentPersonId);
-
+            new GroupService().SaveNewFamily( person, null, false, null );
             return person;
         }
 
-        private Rock.CMS.User CreateUser( Person person, bool confirmed )
+        private Rock.Model.UserLogin CreateUser( Person person, bool confirmed )
         {
-            Rock.CMS.UserService userService = new Rock.CMS.UserService();
-            return userService.Create( person, Rock.CMS.AuthenticationType.Database, tbUserName.Text, Password, confirmed, CurrentPersonId );
-        }
-
-        private void SetSMTPParameters( Email email )
-        {
-            email.Server = GlobalAttributes.Value( "SMTPServer" );
-
-            int port = 0;
-            if (!Int32.TryParse(GlobalAttributes.Value( "SMTPPort" ), out port))
-                port = 0;
-            email.Port = port;
-
-            bool useSSL = false;
-            if ( !bool.TryParse( GlobalAttributes.Value( "SMTPUseSSL" ), out useSSL ) )
-                useSSL = false;
-            email.UseSSL = useSSL;
-
-            email.UserName = GlobalAttributes.Value( "SMTPUserName" );
-            email.Password = GlobalAttributes.Value( "SMTPPassword" );
+            var userLoginService = new Rock.Model.UserLoginService();
+            return userLoginService.Create( person, Rock.Model.AuthenticationServiceType.Internal, 
+                EntityTypeCache.Read(Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid()).Id, 
+                tbUserName.Text, Password, confirmed );
         }
 
         #endregion
     }
 
+    #region Enumerations
+
     enum Direction {
         Forward,
         Back
     }
+
+    #endregion
 }

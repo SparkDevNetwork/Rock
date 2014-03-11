@@ -222,7 +222,7 @@ namespace Quartz.Plugin.Xml
                     }
                 }
             }
-            catch (SchedulerException se)
+            catch (SchedulerException)
             {
                 
             }
@@ -307,7 +307,7 @@ namespace Quartz.Plugin.Xml
                     jobFile.FileName, // systemId 
                     scheduler);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 
             }
@@ -435,7 +435,7 @@ namespace Quartz.Plugin.Xml
                             f.Dispose();
                         }
                     }
-                    catch (IOException ioe)
+                    catch (IOException)
                     {
                         
                     }

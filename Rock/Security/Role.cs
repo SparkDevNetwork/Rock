@@ -1,9 +1,19 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +25,7 @@ namespace Rock.Security
     /// Information about a Role that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
+    [Serializable]
     public class Role
     {
         /// <summary>
@@ -42,13 +53,18 @@ namespace Rock.Security
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public bool UserInRole( string user )
+        public bool IsUserInRole( string user )
         {
             return Users.Contains( user );
         }
 
         #region Static Methods
 
+        /// <summary>
+        /// Caches the key.
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
         private static string CacheKey( int id )
         {
             return string.Format( "Rock:Role:{0}", id );
@@ -58,7 +74,7 @@ namespace Rock.Security
         /// Returns Role object from cache.  If role does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="roleGuid"></param>
+        /// <param name="id">The id.</param>
         /// <returns></returns>
         public static Role Read( int id )
         {
@@ -71,8 +87,8 @@ namespace Rock.Security
                 return role;
             else
             {
-                Rock.Groups.GroupService groupService = new Rock.Groups.GroupService();
-                Rock.Groups.Group groupModel = groupService.Get( id );
+                Rock.Model.GroupService groupService = new Rock.Model.GroupService();
+                Rock.Model.Group groupModel = groupService.Get( id );
 
                 if ( groupModel != null && groupModel.IsSecurityRole == true )
                 {
@@ -81,8 +97,10 @@ namespace Rock.Security
                     role.Name = groupModel.Name;
                     role.Users = new List<string>();
 
-                    foreach ( Rock.Groups.Member member in groupModel.Members )
+                    foreach ( Rock.Model.GroupMember member in groupModel.Members )
+                    {
                         role.Users.Add( member.Person.Guid.ToString() );
+                    }
 
                     cache.Set( cacheKey, role, new CacheItemPolicy() );
 
@@ -102,9 +120,12 @@ namespace Rock.Security
         {
             List<Role> roles = new List<Role>();
 
-            Rock.Groups.GroupService groupService = new Rock.Groups.GroupService();
-            foreach(int id in groupService.
-                Queryable().Where( g => g.IsSecurityRole == true).Select( g => g.Id).ToList())
+            Rock.Model.GroupService groupService = new Rock.Model.GroupService();
+            foreach ( int id in groupService.Queryable()
+                .Where( g => g.IsSecurityRole == true )
+                .OrderBy( g => g.Name )
+                .Select( g => g.Id )
+                .ToList() )
             {
                 roles.Add( Role.Read( id ) );
             }
@@ -115,7 +136,7 @@ namespace Rock.Security
         /// <summary>
         /// Removes role from cache
         /// </summary>
-        /// <param name="guid"></param>
+        /// <param name="id">The id.</param>
         public static void Flush( int id )
         {
             ObjectCache cache = MemoryCache.Default;

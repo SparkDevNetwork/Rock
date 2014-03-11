@@ -1,118 +1,160 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Data.Services;
-using System.Data.Services.Common;
 using System.Runtime.Serialization;
+
+using Rock.Attribute;
+using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Data
 {
     /// <summary>
-    /// Base class that all models need to inherit from
+    /// Represents an entity that can be secured and have attributes. 
     /// </summary>
-    [DataServiceKey("Id")]
-    [IgnoreProperties(new[] { "ParentAuthority", "SupportedActions", "AuthEntity" })]
+    [IgnoreProperties( new[] { "ParentAuthority", "SupportedActions", "AuthEntity", "AttributeValues" } )]
+    [IgnoreModelErrors( new[] { "ParentAuthority" } )]
     [DataContract]
-    public abstract class Model<T> : IModel
+    public abstract class Model<T> : Entity<T>, IModel, ISecured, IHasAttributes
+        where T : Model<T>, ISecured, new()
     {
-        // Note: The DataServiceKey attribute is part of the magic behind WCF Data Services. This allows
-        // the service to interface with EF and fetch data.
+        #region Entity Properties
 
         /// <summary>
-        /// The Id
-        /// </summary>
-        [Key]
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the GUID.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The GUID.
+        /// The created date time.
         /// </value>
         [DataMember]
-        public Guid Guid { 
-            get { return _guid; }
-            set { _guid = value; }
-        }
-        private Guid _guid = Guid.NewGuid();
+        public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets a publicly viewable unique key for the model.
-        /// </summary>
-        [NotMapped]
-        public string EncryptedKey
-        {
-            get
-            {
-                string identifier = this.Id.ToString() + ">" + this.Guid.ToString();
-                return Rock.Security.Encryption.EncryptString( identifier );
-            }
-        }
-
-        [NotMapped]
-        public string ContextKey
-        {
-            get
-            {
-                string identifier = 
-                    typeof(T).FullName + "|" +
-                    this.Id.ToString() + ">" + 
-                    this.Guid.ToString();
-                return System.Web.HttpUtility.UrlEncode(Rock.Security.Encryption.EncryptString( identifier ));
-            }
-        }
-
-        /// <summary>
-        /// Gets the validation results.
-        /// </summary>
-        [NotMapped]
-        public List<ValidationResult> ValidationResults
-        {
-            get { return _validationResults; }
-        }
-        private List<ValidationResult> _validationResults;
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is valid.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// The modified date time.
         /// </value>
-        [NotMapped]
-        public bool IsValid
+        [DataMember]
+        public DateTime? ModifiedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the created by person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The created by person alias identifier.
+        /// </value>
+        [DataMember]
+        public int? CreatedByPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the modified by person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The modified by person alias identifier.
+        /// </value>
+        [DataMember]
+        public int? ModifiedByPersonAliasId { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the created by person alias.
+        /// </summary>
+        /// <value>
+        /// The created by person alias.
+        /// </value>
+        public virtual PersonAlias CreatedByPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the modified by person alias.
+        /// </summary>
+        /// <value>
+        /// The modified by person alias.
+        /// </value>
+        public virtual PersonAlias ModifiedByPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets the created by person identifier.
+        /// </summary>
+        /// <value>
+        /// The created by person identifier.
+        /// </value>
+        public virtual int? CreatedByPersonId
         {
             get
             {
-                var valContext = new ValidationContext( this, serviceProvider: null, items: null );
-                _validationResults = new List<ValidationResult>();
-                return Validator.TryValidateObject( this, valContext, _validationResults );
+                if (CreatedByPersonAlias != null)
+                {
+                    return CreatedByPersonAlias.PersonId;
+                }
+                return null;
             }
         }
+
+        /// <summary>
+        /// Gets the modified by person identifier.
+        /// </summary>
+        /// <value>
+        /// The modified by person identifier.
+        /// </value>
+        public virtual int? ModifiedByPersonId
+        {
+            get
+            {
+                if ( ModifiedByPersonAlias != null )
+                {
+                    return ModifiedByPersonAlias.PersonId;
+                }
+                return null;
+            }
+        }
+
+        #endregion
 
         #region ISecured implementation
 
         /// <summary>
-        /// The auth entity. Classes that implement the <see cref="Rock.Security.ISecured"/> interface should return
-        /// a value that is unique across all <see cref="Rock.Security.ISecured"/> classes.  Typically this is the
-        /// qualified name of the class.
-        /// </summary>
-        [NotMapped]
-        public virtual string AuthEntity { get { return string.Empty; } }
-
-        /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to
-        /// this object, Rock will check access to the parent authority specified by this property.
+        /// this object, Rock will check the default authorization on the current type, and 
+        /// then the authorization on the Rock.Security.GlobalDefault entity
         /// </summary>
         [NotMapped]
-        public virtual Security.ISecured ParentAuthority { get { return null; } }
+        public virtual Security.ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.Id == 0 )
+                {
+                    return new GlobalDefault();
+                }
+                else
+                {
+                    return new T();
+                }
+            }
+        }
 
         /// <summary>
         /// A list of actions that this class supports.
@@ -120,30 +162,23 @@ namespace Rock.Data
         [NotMapped]
         public virtual List<string> SupportedActions
         {
-            get { return new List<string>() { "View", "Edit"  }; }
+            get { return _supportedActions; }
         }
+        private List<string> _supportedActions = new List<string>() { "View", "Edit", "Administrate" };
+
 
         /// <summary>
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
         /// </summary>
         /// <param name="action">The action.</param>
-        /// <param name="user">The user.</param>
-        /// <returns></returns>
-        public virtual bool Authorized( string action, Rock.CMS.User user )
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public virtual bool IsAuthorized( string action, Rock.Model.Person person )
         {
-            return Security.Authorization.Authorized( this, action, user );
+            return Security.Authorization.Authorized( this, action, person );
         }
-
-        /// <summary>
-        /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="username">The user name.</param>
-        /// <returns></returns>
-        //public virtual bool Authorized( string action, string username )
-        //{
-        //    return Security.Authorization.Authorized( this, action, username );
-        //}
 
         /// <summary>
         /// If a user or role is not specifically allowed or denied to perform the selected action,
@@ -151,245 +186,184 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <returns></returns>
-        public virtual bool DefaultAuthorization (string action)
+        public virtual bool IsAllowedByDefault( string action )
         {
             return action == "View";
         }
 
-        #endregion
-
-        #region Events
-
         /// <summary>
-        /// Occurs when model is being added.
+        /// Determines whether the specified action is private (Only the current user has access).
         /// </summary>
-        public static event EventHandler<ModelUpdatingEventArgs> Adding;
-
-        /// <summary>
-        /// Raises the <see cref="E:Adding"/> event.
-        /// </summary>
-        /// <param name="e">The <see cref="ModelUpdatingEventArgs"/> instance containing the event data.</param>
-        protected virtual void OnAdding( ModelUpdatingEventArgs e )
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
+        /// </returns>
+        public virtual bool IsPrivate( string action, Person person )
         {
-            if ( Adding != null )
-                Adding( this, e );
+            return Security.Authorization.IsPrivate( this, action, person );
         }
 
         /// <summary>
-        /// Raises the adding event.
+        /// Makes the action on the current entity private (Only the current user will have access).
         /// </summary>
-        /// <param name="cancel">if set to <c>true</c> [cancel].</param>
-        /// <param name="personId">The person id.</param>
-        public virtual void RaiseAddingEvent( out bool cancel, int? personId )
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="personAlias">The current person alias.</param>
+        public virtual void MakePrivate( string action, Person person, PersonAlias personAlias )
         {
-            ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this, personId );
-            OnAdding( e );
-            cancel = e.Cancel;
+            Security.Authorization.MakePrivate( this, action, person, personAlias );
         }
 
         /// <summary>
-        /// Occurs when model was added.
+        /// If the action on the current entity is private, removes the auth rules that made it private.
         /// </summary>
-        public static event EventHandler<ModelUpdatedEventArgs> Added;
-
-        /// <summary>
-        /// Raises the <see cref="E:Added"/> event.
-        /// </summary>
-        /// <param name="e">The <see cref="ModelUpdatedEventArgs"/> instance containing the event data.</param>
-        protected virtual void OnAdded( ModelUpdatedEventArgs e )
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="personAlias">The current person alias.</param>
+        public virtual void MakeUnPrivate( string action, Person person, PersonAlias personAlias )
         {
-            if ( Added != null )
-                Added( this, e );
+            Security.Authorization.MakeUnPrivate( this, action, person, personAlias );
         }
 
         /// <summary>
-        /// Raises the added event.
+        /// Adds an 'Allow' rule for the current person as the first rule for the selected action
         /// </summary>
-        /// <param name="personId">The person id.</param>
-        public virtual void RaiseAddedEvent( int? personId )
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="personAlias">The person alias.</param>
+        public virtual void AllowPerson( string action, Person person, PersonAlias personAlias )
         {
-            OnAdded( new ModelUpdatedEventArgs( this, personId ) );
+            Security.Authorization.AllowPerson( this, action, person, personAlias );
         }
 
         /// <summary>
-        /// Occurs when model is being deleted.
+        /// To the liquid.
         /// </summary>
-        public static event EventHandler<ModelUpdatingEventArgs> Deleting;
-
-        /// <summary>
-        /// Raises the <see cref="E:Deleting"/> event.
-        /// </summary>
-        /// <param name="e">The <see cref="ModelUpdatingEventArgs"/> instance containing the event data.</param>
-        protected virtual void OnDeleting( ModelUpdatingEventArgs e )
+        /// <returns></returns>
+        public override object ToLiquid()
         {
-            if ( Deleting != null )
-                Deleting( this, e );
-        }
+            Dictionary<string, object> dictionary = base.ToLiquid() as Dictionary<string, object>;
 
-        /// <summary>
-        /// Raises the deleting event.
-        /// </summary>
-        /// <param name="cancel">if set to <c>true</c> [cancel].</param>
-        /// <param name="personId">The person id.</param>
-        public virtual void RaiseDeletingEvent( out bool cancel, int? personId )
-        {
-            ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this, personId );
-            OnDeleting( e );
-            cancel = e.Cancel;
-        }
-
-        /// <summary>
-        /// Occurs when model was deleted.
-        /// </summary>
-        public static event EventHandler<ModelUpdatedEventArgs> Deleted;
-
-        /// <summary>
-        /// Raises the <see cref="E:Deleted"/> event.
-        /// </summary>
-        /// <param name="e">The <see cref="ModelUpdatedEventArgs"/> instance containing the event data.</param>
-        protected virtual void OnDeleted( ModelUpdatedEventArgs e )
-        {
-            if ( Deleted != null )
-                Deleted( this, e );
-        }
-
-        /// <summary>
-        /// Raises the deleted event.
-        /// </summary>
-        /// <param name="personId">The person id.</param>
-        public virtual void RaiseDeletedEvent(int? personId)
-        {
-            OnDeleted( new ModelUpdatedEventArgs( this, personId ) );
-        }
-
-        /// <summary>
-        /// Occurs when model is being updated.
-        /// </summary>
-        public static event EventHandler<ModelUpdatingEventArgs> Updating;
-
-        /// <summary>
-        /// Raises the <see cref="E:Updating"/> event.
-        /// </summary>
-        /// <param name="e">The <see cref="ModelUpdatingEventArgs"/> instance containing the event data.</param>
-        protected virtual void OnUpdating( ModelUpdatingEventArgs e )
-        {
-            if ( Updating != null )
-                Updating( this, e );
-        }
-
-        /// <summary>
-        /// Raises the updating event.
-        /// </summary>
-        /// <param name="cancel">if set to <c>true</c> [cancel].</param>
-        /// <param name="personId">The person id.</param>
-        public virtual void RaiseUpdatingEvent( out bool cancel, int? personId )
-        {
-            ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this, personId );
-            OnUpdating( e );
-            cancel = e.Cancel;
-        }
-
-        /// <summary>
-        /// Occurs when model was updated
-        /// </summary>
-        public static event EventHandler<ModelUpdatedEventArgs> Updated;
-
-        /// <summary>
-        /// Raises the <see cref="E:Updated"/> event.
-        /// </summary>
-        /// <param name="e">The <see cref="ModelUpdatedEventArgs"/> instance containing the event data.</param>
-        protected virtual void OnUpdated( ModelUpdatedEventArgs e )
-        {
-            if ( Updated != null )
-                Updated( this, e );
-        }
-
-        /// <summary>
-        /// Raises the updated event.
-        /// </summary>
-        /// <param name="personId">The person id.</param>
-        public virtual void RaiseUpdatedEvent( int? personId )
-        {
-            OnUpdated( new ModelUpdatedEventArgs( this, personId ) );
-        }
-
-        #endregion
-
-
-    }
-
-    /// <summary>
-    /// Event argument used when model was added, updated, or deleted
-    /// </summary>
-    public class ModelUpdatedEventArgs : EventArgs
-    {
-        /// <summary>
-        /// The affected model
-        /// </summary>
-        public readonly IModel Model;
-
-        /// <summary>
-        /// The id of the person making the update
-        /// </summary>
-        public readonly int? PersonId;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ModelUpdatedEventArgs"/> class.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="personId">The person id.</param>
-        public ModelUpdatedEventArgs( IModel model, int? personId )
-        {
-            Model = model;
-            PersonId = personId;
-        }
-    }
-
-    /// <summary>
-    /// Event argument used when model is being added, updated, or deleted
-    /// </summary>
-    public class ModelUpdatingEventArgs : ModelUpdatedEventArgs
-    {
-        private bool cancel = false;
-        /// <summary>
-        /// Gets or sets a value indicating whether event should be cancelled.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if event should be canceled; otherwise, <c>false</c>.
-        /// </value>
-        public bool Cancel 
-        { 
-            get { return cancel; }
-            set 
-            { 
-                if (value == true)
-                    cancel = true;
+            this.LoadAttributes();
+            foreach ( var attribute in this.Attributes )
+            {
+                if (attribute.Value.IsAuthorized("View", null))
+                {
+                    string value = GetAttributeValue( attribute.Key );
+                    dictionary.Add( attribute.Key, attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, false ) );
+                    dictionary.Add( attribute.Key + "_unformatted", value );
+                }
             }
 
+            return dictionary;
         }
+
+        #endregion
+
+        #region IHasAttributes implementation
+
+        // Note: For complex/non-entity types, we'll need to decorate some classes with the IgnoreProperties attribute
+        // to tell WCF Data Services not to worry about the associated properties.
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="ModelUpdatingEventArgs"/> class.
+        /// List of attributes associated with the object.  This property will not include the attribute values.
+        /// The <see cref="AttributeValues"/> property should be used to get attribute values.  Dictionary key
+        /// is the attribute key, and value is the cached attribute
         /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="personId">The person id.</param>
-        public ModelUpdatingEventArgs( IModel model, int? personId )
-            : base( model, personId )
+        /// <value>
+        /// The attributes.
+        /// </value>
+        [NotMapped]
+        [DataMember]
+        public virtual Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes { get; set; }
+
+        /// <summary>
+        /// Dictionary of all attributes and their value.  Key is the attribute key, and value is the values
+        /// associated with the attribute and object instance
+        /// </summary>
+        /// <value>
+        /// The attribute values.
+        /// </value>
+        [NotMapped]
+        [DataMember]
+        public virtual Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues { get; set; }
+
+        /// <summary>
+        /// Gets the attribute value defaults.
+        /// </summary>
+        /// <value>
+        /// The attribute defaults.
+        /// </value>
+        public virtual Dictionary<string, string> AttributeValueDefaults
         {
+            get { return null; }
         }
+
+        /// <summary>
+        /// Gets the first value of an attribute key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public string GetAttributeValue( string key )
+        {
+            if ( this.AttributeValues != null &&
+                this.AttributeValues.ContainsKey( key ) &&
+                this.AttributeValues[key].Count > 0 )
+            {
+                return this.AttributeValues[key][0].Value;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the first value of an attribute key - splitting that delimited value into a list of strings.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns>A list of strings or an empty list if none exists.</returns>
+        public List<string> GetAttributeValues( string key )
+        {
+            if ( this.AttributeValues != null &&
+                this.AttributeValues.ContainsKey( key ) &&
+                this.AttributeValues[key].Count > 0 )
+            {
+                return this.AttributeValues[key][0].Value.SplitDelimitedValues().ToList();
+            }
+
+            return new List<string>();
+        }
+
+        /// <summary>
+        /// Sets the first value of an attribute key in memory.  Note, this will not persist value to database
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public void SetAttributeValue( string key, string value )
+        {
+            if ( this.AttributeValues != null &&
+                this.AttributeValues.ContainsKey( key ) )
+            {
+                if ( this.AttributeValues[key].Count == 0 )
+                {
+                    this.AttributeValues[key].Add( new AttributeValue() );
+                }
+                this.AttributeValues[key][0].Value = value;
+            }
+        }
+
+        #endregion
     }
 
-    /// <summary>
-    /// Object used for current model (context) implementation 
-    /// </summary>
-    internal class KeyModel
-    {
-        public string Key { get; set; }
-        public IModel Model { get; set; }
-
-        public KeyModel (string key)
-        {
-            Key = key;
-        }
-    }
-
+    //public partial class RockModelConfiguration<T> : EntityTypeConfiguration<T>
+    //    where T : Model<T>, new()
+    //{
+    //    /// <summary>
+    //    /// Initializes a new instance of the <see cref="AuthConfiguration"/> class.
+    //    /// </summary>
+    //    public RockModelConfiguration()
+    //    {
+    //        this.HasOptional( m => m.CreatedByPersonAlias ).WithMany().HasForeignKey( m => m.CreatedByPersonAliasId).WillCascadeOnDelete( false );
+    //        this.HasOptional( m => m.ModifiedByPersonAlias ).WithMany().HasForeignKey( m => m.ModifiedByPersonAliasId ).WillCascadeOnDelete( false );
+    //    }
+    //}
 }

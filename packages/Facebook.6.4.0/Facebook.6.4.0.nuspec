@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Facebook</id>
+    <version>6.4.0</version>
+    <title />
+    <authors>Outercurve Foundation</authors>
+    <owners>Outercurve Foundation</owners>
+    <licenseUrl>https://raw.github.com/facebook-csharp-sdk/facebook-csharp-sdk/master/LICENSE.txt</licenseUrl>
+    <projectUrl>https://github.com/facebook-csharp-sdk/facebook-csharp-sdk</projectUrl>
+    <iconUrl>http://csharpsdk.org/assets/img/logo75x75.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>The Facebook SDK for .NET helps developers build web, desktop, phone and Windows Store applications that integrate with Facebook.</description>
+    <language>en-US</language>
+    <tags>Facebook fb</tags>
+    <references>
+      <reference file="Facebook.dll" />
+    </references>
+  </metadata>
+</package>

@@ -1,0 +1,1 @@
+StatementGenerator uses a licensed version of DynamicPDF, which is not included in this repository. DynamicPDF offers a trial version that you can download from http://www.dynamicpdf.com/Products/Downloads.csp ( Choose DynamicPDF ReportWriter). Happy coding!

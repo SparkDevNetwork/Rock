@@ -1,0 +1,1253 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{957B1DBE-B921-4FAE-8E5E-B7AD7F01B161}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Rock.Migrations</RootNamespace>
+    <AssemblyName>Rock.Migrations</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="DotLiquid">
+      <HintPath>..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\EntityFramework.6.0.2\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\EntityFramework.6.0.2\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Migrations\201311251734059_CreateDatabase.cs" />
+    <Compile Include="Migrations\201311251734059_CreateDatabase.Designer.cs">
+      <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201311272223099_GroupLocationPersonId.cs" />
+    <Compile Include="Migrations\201311272223099_GroupLocationPersonId.Designer.cs">
+      <DependentUpon>201311272223099_GroupLocationPersonId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312022011416_RemoveClassVideoBlock.cs" />
+    <Compile Include="Migrations\201312022011416_RemoveClassVideoBlock.Designer.cs">
+      <DependentUpon>201312022011416_RemoveClassVideoBlock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312031820461_ExternalSiteSecurityTweak.cs" />
+    <Compile Include="Migrations\201312031820461_ExternalSiteSecurityTweak.Designer.cs">
+      <DependentUpon>201312031820461_ExternalSiteSecurityTweak.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312032145250_AddHtmlContentApprovalBlock.cs" />
+    <Compile Include="Migrations\201312032145250_AddHtmlContentApprovalBlock.Designer.cs">
+      <DependentUpon>201312032145250_AddHtmlContentApprovalBlock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312041724297_DefaultPageNotRequired.cs" />
+    <Compile Include="Migrations\201312041724297_DefaultPageNotRequired.Designer.cs">
+      <DependentUpon>201312041724297_DefaultPageNotRequired.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312042251282_UpdateEmailTemplates.cs" />
+    <Compile Include="Migrations\201312042251282_UpdateEmailTemplates.Designer.cs">
+      <DependentUpon>201312042251282_UpdateEmailTemplates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312052359158_UpdateSiteMapToPageMap.cs" />
+    <Compile Include="Migrations\201312052359158_UpdateSiteMapToPageMap.Designer.cs">
+      <DependentUpon>201312052359158_UpdateSiteMapToPageMap.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312060704559_SiteUpdateRemoveIcons.cs" />
+    <Compile Include="Migrations\201312060704559_SiteUpdateRemoveIcons.Designer.cs">
+      <DependentUpon>201312060704559_SiteUpdateRemoveIcons.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312062229010_FixPathToErrorPageOnStarkSite.cs" />
+    <Compile Include="Migrations\201312062229010_FixPathToErrorPageOnStarkSite.Designer.cs">
+      <DependentUpon>201312062229010_FixPathToErrorPageOnStarkSite.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312091725419_BinaryFileRootPathAttribute.cs" />
+    <Compile Include="Migrations\201312091725419_BinaryFileRootPathAttribute.Designer.cs">
+      <DependentUpon>201312091725419_BinaryFileRootPathAttribute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312091737178_UpdateRenameStoredProcs.cs" />
+    <Compile Include="Migrations\201312091737178_UpdateRenameStoredProcs.Designer.cs">
+      <DependentUpon>201312091737178_UpdateRenameStoredProcs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312091918239_UpdateItemsToIsSystem.cs" />
+    <Compile Include="Migrations\201312091918239_UpdateItemsToIsSystem.Designer.cs">
+      <DependentUpon>201312091918239_UpdateItemsToIsSystem.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312092011514_HtmlContentLastModified.cs" />
+    <Compile Include="Migrations\201312092011514_HtmlContentLastModified.Designer.cs">
+      <DependentUpon>201312092011514_HtmlContentLastModified.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312092306168_MarketingAdLayoutChanges.cs" />
+    <Compile Include="Migrations\201312092306168_MarketingAdLayoutChanges.Designer.cs">
+      <DependentUpon>201312092306168_MarketingAdLayoutChanges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312092315267_HtmlContentDetail.cs" />
+    <Compile Include="Migrations\201312092315267_HtmlContentDetail.Designer.cs">
+      <DependentUpon>201312092315267_HtmlContentDetail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312100236061_AddPrayerSessionBlock.cs" />
+    <Compile Include="Migrations\201312100236061_AddPrayerSessionBlock.Designer.cs">
+      <DependentUpon>201312100236061_AddPrayerSessionBlock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312101739202_FixMyAccountRoute.cs" />
+    <Compile Include="Migrations\201312101739202_FixMyAccountRoute.Designer.cs">
+      <DependentUpon>201312101739202_FixMyAccountRoute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312102004063_AccountNumberSecureNonUnique.cs" />
+    <Compile Include="Migrations\201312102004063_AccountNumberSecureNonUnique.Designer.cs">
+      <DependentUpon>201312102004063_AccountNumberSecureNonUnique.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312102031566_NoteContextFix.cs" />
+    <Compile Include="Migrations\201312102031566_NoteContextFix.Designer.cs">
+      <DependentUpon>201312102031566_NoteContextFix.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312102315538_CommunicationBlockNameChange.cs" />
+    <Compile Include="Migrations\201312102315538_CommunicationBlockNameChange.Designer.cs">
+      <DependentUpon>201312102315538_CommunicationBlockNameChange.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312111655133_RESTControllerListDetail.cs" />
+    <Compile Include="Migrations\201312111655133_RESTControllerListDetail.Designer.cs">
+      <DependentUpon>201312111655133_RESTControllerListDetail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312111944001_EmailTemplateRemoveFromAddresses.cs" />
+    <Compile Include="Migrations\201312111944001_EmailTemplateRemoveFromAddresses.Designer.cs">
+      <DependentUpon>201312111944001_EmailTemplateRemoveFromAddresses.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312120016249_HideSecurityGroups.cs" />
+    <Compile Include="Migrations\201312120016249_HideSecurityGroups.Designer.cs">
+      <DependentUpon>201312120016249_HideSecurityGroups.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312121845402_LoginExperienceUpdates.cs" />
+    <Compile Include="Migrations\201312121845402_LoginExperienceUpdates.Designer.cs">
+      <DependentUpon>201312121845402_LoginExperienceUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312121858278_ConnectionStatus.cs" />
+    <Compile Include="Migrations\201312121858278_ConnectionStatus.Designer.cs">
+      <DependentUpon>201312121858278_ConnectionStatus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312121905532_ReportColumnHeaderText.cs" />
+    <Compile Include="Migrations\201312121905532_ReportColumnHeaderText.Designer.cs">
+      <DependentUpon>201312121905532_ReportColumnHeaderText.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312160425464_AddPersonToNote.cs" />
+    <Compile Include="Migrations\201312160425464_AddPersonToNote.Designer.cs">
+      <DependentUpon>201312160425464_AddPersonToNote.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312160454085_BlockTypeCategory.cs" />
+    <Compile Include="Migrations\201312160454085_BlockTypeCategory.Designer.cs">
+      <DependentUpon>201312160454085_BlockTypeCategory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312161446138_AddAudit.cs" />
+    <Compile Include="Migrations\201312161446138_AddAudit.Designer.cs">
+      <DependentUpon>201312161446138_AddAudit.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312162055116_PageLayoutUpdates.cs" />
+    <Compile Include="Migrations\201312162055116_PageLayoutUpdates.Designer.cs">
+      <DependentUpon>201312162055116_PageLayoutUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312162149358_PersonSearchAddAttribute.cs" />
+    <Compile Include="Migrations\201312162149358_PersonSearchAddAttribute.Designer.cs">
+      <DependentUpon>201312162149358_PersonSearchAddAttribute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312162306186_FixPrayerRequestDetailsPageContext.cs" />
+    <Compile Include="Migrations\201312162306186_FixPrayerRequestDetailsPageContext.Designer.cs">
+      <DependentUpon>201312162306186_FixPrayerRequestDetailsPageContext.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312182025446_AddTitleToTransactions.cs" />
+    <Compile Include="Migrations\201312182025446_AddTitleToTransactions.Designer.cs">
+      <DependentUpon>201312182025446_AddTitleToTransactions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312191507040_WorkflowTrigger_AddIsActive.cs" />
+    <Compile Include="Migrations\201312191507040_WorkflowTrigger_AddIsActive.Designer.cs">
+      <DependentUpon>201312191507040_WorkflowTrigger_AddIsActive.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312192125458_ChangeRootAdminPageName.cs" />
+    <Compile Include="Migrations\201312192125458_ChangeRootAdminPageName.Designer.cs">
+      <DependentUpon>201312192125458_ChangeRootAdminPageName.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312192308115_MoveHtmlContentApprovalBlock.cs" />
+    <Compile Include="Migrations\201312192308115_MoveHtmlContentApprovalBlock.Designer.cs">
+      <DependentUpon>201312192308115_MoveHtmlContentApprovalBlock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312192349366_RenamePublicAdBlocks.cs" />
+    <Compile Include="Migrations\201312192349366_RenamePublicAdBlocks.Designer.cs">
+      <DependentUpon>201312192349366_RenamePublicAdBlocks.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312202331444_RockRename.cs" />
+    <Compile Include="Migrations\201312202331444_RockRename.Designer.cs">
+      <DependentUpon>201312202331444_RockRename.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312221305134_GoogleAnalytics.cs" />
+    <Compile Include="Migrations\201312221305134_GoogleAnalytics.Designer.cs">
+      <DependentUpon>201312221305134_GoogleAnalytics.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312221451050_RemoveIconFileFields.cs" />
+    <Compile Include="Migrations\201312221451050_RemoveIconFileFields.Designer.cs">
+      <DependentUpon>201312221451050_RemoveIconFileFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201312221636197_RefactorPersonName.cs" />
+    <Compile Include="Migrations\201312221636197_RefactorPersonName.Designer.cs">
+      <DependentUpon>201312221636197_RefactorPersonName.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401032214266_AddGroupChildGroupTypes.cs" />
+    <Compile Include="Migrations\201401032214266_AddGroupChildGroupTypes.Designer.cs">
+      <DependentUpon>201401032214266_AddGroupChildGroupTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401061559036_CategoryOrderDescription.cs" />
+    <Compile Include="Migrations\201401061559036_CategoryOrderDescription.Designer.cs">
+      <DependentUpon>201401061559036_CategoryOrderDescription.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401062203180_RenameAdultChildParentRoles.cs" />
+    <Compile Include="Migrations\201401062203180_RenameAdultChildParentRoles.Designer.cs">
+      <DependentUpon>201401062203180_RenameAdultChildParentRoles.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401062206577_AddGroupRoleFormerSpouse.cs" />
+    <Compile Include="Migrations\201401062206577_AddGroupRoleFormerSpouse.Designer.cs">
+      <DependentUpon>201401062206577_AddGroupRoleFormerSpouse.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401071224347_SavedAccountUpdates.cs" />
+    <Compile Include="Migrations\201401071224347_SavedAccountUpdates.Designer.cs">
+      <DependentUpon>201401071224347_SavedAccountUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401071612341_PrayerCategories.cs" />
+    <Compile Include="Migrations\201401071612341_PrayerCategories.Designer.cs">
+      <DependentUpon>201401071612341_PrayerCategories.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401071718059_PersonMarketingBinaryFileTypes.cs" />
+    <Compile Include="Migrations\201401071718059_PersonMarketingBinaryFileTypes.Designer.cs">
+      <DependentUpon>201401071718059_PersonMarketingBinaryFileTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401071836000_AddAdListPage.cs" />
+    <Compile Include="Migrations\201401071836000_AddAdListPage.Designer.cs">
+      <DependentUpon>201401071836000_AddAdListPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401072234209_UserLoginEntityType.cs" />
+    <Compile Include="Migrations\201401072234209_UserLoginEntityType.Designer.cs">
+      <DependentUpon>201401072234209_UserLoginEntityType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401081952447_UserAccounts.cs" />
+    <Compile Include="Migrations\201401081952447_UserAccounts.Designer.cs">
+      <DependentUpon>201401081952447_UserAccounts.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401091942376_TagsByLetterPage.cs" />
+    <Compile Include="Migrations\201401091942376_TagsByLetterPage.Designer.cs">
+      <DependentUpon>201401091942376_TagsByLetterPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401091947539_ChangeNameOfAttendeePage.cs" />
+    <Compile Include="Migrations\201401091947539_ChangeNameOfAttendeePage.Designer.cs">
+      <DependentUpon>201401091947539_ChangeNameOfAttendeePage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401092004083_AdListPageOrderUpdate.cs" />
+    <Compile Include="Migrations\201401092004083_AdListPageOrderUpdate.Designer.cs">
+      <DependentUpon>201401092004083_AdListPageOrderUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401092358192_AuditDetail.cs" />
+    <Compile Include="Migrations\201401092358192_AuditDetail.Designer.cs">
+      <DependentUpon>201401092358192_AuditDetail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401100511284_RemoveAuditDetail.cs" />
+    <Compile Include="Migrations\201401100511284_RemoveAuditDetail.Designer.cs">
+      <DependentUpon>201401100511284_RemoveAuditDetail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401131442369_BlockPrePostHtml.cs" />
+    <Compile Include="Migrations\201401131442369_BlockPrePostHtml.Designer.cs">
+      <DependentUpon>201401131442369_BlockPrePostHtml.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401131724184_Add404FieldsToSite.cs" />
+    <Compile Include="Migrations\201401131724184_Add404FieldsToSite.Designer.cs">
+      <DependentUpon>201401131724184_Add404FieldsToSite.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401131810554_ConnectionStatusCleanup.cs" />
+    <Compile Include="Migrations\201401131810554_ConnectionStatusCleanup.Designer.cs">
+      <DependentUpon>201401131810554_ConnectionStatusCleanup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401132311057_Add404PagesForSites.cs" />
+    <Compile Include="Migrations\201401132311057_Add404PagesForSites.Designer.cs">
+      <DependentUpon>201401132311057_Add404PagesForSites.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401140409207_PersonDetailPages.cs" />
+    <Compile Include="Migrations\201401140409207_PersonDetailPages.Designer.cs">
+      <DependentUpon>201401140409207_PersonDetailPages.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401141807363_SiteDetailChanges.cs" />
+    <Compile Include="Migrations\201401141807363_SiteDetailChanges.Designer.cs">
+      <DependentUpon>201401141807363_SiteDetailChanges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401151404211_RenameGroupLocationIndex.cs" />
+    <Compile Include="Migrations\201401151404211_RenameGroupLocationIndex.Designer.cs">
+      <DependentUpon>201401151404211_RenameGroupLocationIndex.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401151949171_RenameFormerSpousePreviousSpouse.cs" />
+    <Compile Include="Migrations\201401151949171_RenameFormerSpousePreviousSpouse.Designer.cs">
+      <DependentUpon>201401151949171_RenameFormerSpousePreviousSpouse.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401151959527_AddPastoralStaffRole.cs" />
+    <Compile Include="Migrations\201401151959527_AddPastoralStaffRole.Designer.cs">
+      <DependentUpon>201401151959527_AddPastoralStaffRole.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401152023157_ChangeLayoutOfSecurityRoleDetailsPage.cs" />
+    <Compile Include="Migrations\201401152023157_ChangeLayoutOfSecurityRoleDetailsPage.Designer.cs">
+      <DependentUpon>201401152023157_ChangeLayoutOfSecurityRoleDetailsPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401152246390_FixHeaderMarkupOnHomepage.cs" />
+    <Compile Include="Migrations\201401152246390_FixHeaderMarkupOnHomepage.Designer.cs">
+      <DependentUpon>201401152246390_FixHeaderMarkupOnHomepage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401162252159_HtmlEditorMergeFieldPlugin.cs" />
+    <Compile Include="Migrations\201401162252159_HtmlEditorMergeFieldPlugin.Designer.cs">
+      <DependentUpon>201401162252159_HtmlEditorMergeFieldPlugin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401162357214_AddHistory.cs" />
+    <Compile Include="Migrations\201401162357214_AddHistory.Designer.cs">
+      <DependentUpon>201401162357214_AddHistory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401171522163_UpdateBlockTypeDescriptions.cs" />
+    <Compile Include="Migrations\201401171522163_UpdateBlockTypeDescriptions.Designer.cs">
+      <DependentUpon>201401171522163_UpdateBlockTypeDescriptions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401171902377_PrayerRequestDateChanges.cs" />
+    <Compile Include="Migrations\201401171902377_PrayerRequestDateChanges.Designer.cs">
+      <DependentUpon>201401171902377_PrayerRequestDateChanges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401172226353_PageTitleFields.cs" />
+    <Compile Include="Migrations\201401172226353_PageTitleFields.Designer.cs">
+      <DependentUpon>201401172226353_PageTitleFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401172244135_DeleteEventGroupType.cs" />
+    <Compile Include="Migrations\201401172244135_DeleteEventGroupType.Designer.cs">
+      <DependentUpon>201401172244135_DeleteEventGroupType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401202137085_AddPageLiquidAttribute.cs" />
+    <Compile Include="Migrations\201401202137085_AddPageLiquidAttribute.Designer.cs">
+      <DependentUpon>201401202137085_AddPageLiquidAttribute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401211151533_NoteAttributes.cs" />
+    <Compile Include="Migrations\201401211151533_NoteAttributes.Designer.cs">
+      <DependentUpon>201401211151533_NoteAttributes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401212018517_HistoryPageBreadcrumb.cs" />
+    <Compile Include="Migrations\201401212018517_HistoryPageBreadcrumb.Designer.cs">
+      <DependentUpon>201401212018517_HistoryPageBreadcrumb.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401220441223_MiscUIChanges.cs" />
+    <Compile Include="Migrations\201401220441223_MiscUIChanges.Designer.cs">
+      <DependentUpon>201401220441223_MiscUIChanges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401221752081_PersonAlias.cs" />
+    <Compile Include="Migrations\201401221752081_PersonAlias.Designer.cs">
+      <DependentUpon>201401221752081_PersonAlias.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401222126036_AddCreatedModifiedFields.cs" />
+    <Compile Include="Migrations\201401222126036_AddCreatedModifiedFields.Designer.cs">
+      <DependentUpon>201401222126036_AddCreatedModifiedFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401231551591_ExceptionCreatedInfo.cs" />
+    <Compile Include="Migrations\201401231551591_ExceptionCreatedInfo.Designer.cs">
+      <DependentUpon>201401231551591_ExceptionCreatedInfo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401231618180_NoteCreatedInfo.cs" />
+    <Compile Include="Migrations\201401231618180_NoteCreatedInfo.Designer.cs">
+      <DependentUpon>201401231618180_NoteCreatedInfo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401231638103_FinancialBatchCreatedInfo.cs" />
+    <Compile Include="Migrations\201401231638103_FinancialBatchCreatedInfo.Designer.cs">
+      <DependentUpon>201401231638103_FinancialBatchCreatedInfo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401232057334_AuditPersonAlias.cs" />
+    <Compile Include="Migrations\201401232057334_AuditPersonAlias.Designer.cs">
+      <DependentUpon>201401232057334_AuditPersonAlias.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401232243283_CkEditorPluginLayout.cs" />
+    <Compile Include="Migrations\201401232243283_CkEditorPluginLayout.Designer.cs">
+      <DependentUpon>201401232243283_CkEditorPluginLayout.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401240107095_AddPersonViewed.cs" />
+    <Compile Include="Migrations\201401240107095_AddPersonViewed.Designer.cs">
+      <DependentUpon>201401240107095_AddPersonViewed.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401241331091_PersonMerge.cs" />
+    <Compile Include="Migrations\201401241331091_PersonMerge.Designer.cs">
+      <DependentUpon>201401241331091_PersonMerge.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401250002455_TagDescription.cs" />
+    <Compile Include="Migrations\201401250002455_TagDescription.Designer.cs">
+      <DependentUpon>201401250002455_TagDescription.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401271236495_DeleteSampleReportPage.cs" />
+    <Compile Include="Migrations\201401271236495_DeleteSampleReportPage.Designer.cs">
+      <DependentUpon>201401271236495_DeleteSampleReportPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401271247579_RemoveFullAddress.cs" />
+    <Compile Include="Migrations\201401271247579_RemoveFullAddress.Designer.cs">
+      <DependentUpon>201401271247579_RemoveFullAddress.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401271902480_HideMetricsPage.cs" />
+    <Compile Include="Migrations\201401271902480_HideMetricsPage.Designer.cs">
+      <DependentUpon>201401271902480_HideMetricsPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401272157461_RemoveFieldTypes.cs" />
+    <Compile Include="Migrations\201401272157461_RemoveFieldTypes.Designer.cs">
+      <DependentUpon>201401272157461_RemoveFieldTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401282147345_StatementPersonFullNameFix.cs" />
+    <Compile Include="Migrations\201401282147345_StatementPersonFullNameFix.Designer.cs">
+      <DependentUpon>201401282147345_StatementPersonFullNameFix.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401290012560_PersonBirthdateDbComputed.cs" />
+    <Compile Include="Migrations\201401290012560_PersonBirthdateDbComputed.Designer.cs">
+      <DependentUpon>201401290012560_PersonBirthdateDbComputed.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401291637496_HTMLContentNotRequired.cs" />
+    <Compile Include="Migrations\201401291637496_HTMLContentNotRequired.Designer.cs">
+      <DependentUpon>201401291637496_HTMLContentNotRequired.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401291720147_AttendanceHistory.cs" />
+    <Compile Include="Migrations\201401291720147_AttendanceHistory.Designer.cs">
+      <DependentUpon>201401291720147_AttendanceHistory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401302003574_AddBlocksToRightSideBar.cs" />
+    <Compile Include="Migrations\201401302003574_AddBlocksToRightSideBar.Designer.cs">
+      <DependentUpon>201401302003574_AddBlocksToRightSideBar.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401312207050_RockInstanceId.cs" />
+    <Compile Include="Migrations\201401312207050_RockInstanceId.Designer.cs">
+      <DependentUpon>201401312207050_RockInstanceId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201401312232533_BinaryFileLastModifiedDateTime.cs" />
+    <Compile Include="Migrations\201401312232533_BinaryFileLastModifiedDateTime.Designer.cs">
+      <DependentUpon>201401312232533_BinaryFileLastModifiedDateTime.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402021358481_FixBatchDetailTransactionList.cs" />
+    <Compile Include="Migrations\201402021358481_FixBatchDetailTransactionList.Designer.cs">
+      <DependentUpon>201402021358481_FixBatchDetailTransactionList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402031658561_BinaryFileStoredProcUpdate.cs" />
+    <Compile Include="Migrations\201402031658561_BinaryFileStoredProcUpdate.Designer.cs">
+      <DependentUpon>201402031658561_BinaryFileStoredProcUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402031741471_MiscConfigChanges.cs" />
+    <Compile Include="Migrations\201402031741471_MiscConfigChanges.Designer.cs">
+      <DependentUpon>201402031741471_MiscConfigChanges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402032112129_CreateRestEntities.cs" />
+    <Compile Include="Migrations\201402032112129_CreateRestEntities.Designer.cs">
+      <DependentUpon>201402032112129_CreateRestEntities.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402050535388_CreateFunctionsAndSpForAttendanceBadge.cs" />
+    <Compile Include="Migrations\201402050535388_CreateFunctionsAndSpForAttendanceBadge.Designer.cs">
+      <DependentUpon>201402050535388_CreateFunctionsAndSpForAttendanceBadge.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402051857216_AuthorizedPersonIdNotRequired.cs" />
+    <Compile Include="Migrations\201402051857216_AuthorizedPersonIdNotRequired.Designer.cs">
+      <DependentUpon>201402051857216_AuthorizedPersonIdNotRequired.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402061548097_ImprovePerformanceAttendanceBadgeSP.cs" />
+    <Compile Include="Migrations\201402061548097_ImprovePerformanceAttendanceBadgeSP.Designer.cs">
+      <DependentUpon>201402061548097_ImprovePerformanceAttendanceBadgeSP.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402062142578_LayoutDetailBlockChanges.cs" />
+    <Compile Include="Migrations\201402062142578_LayoutDetailBlockChanges.Designer.cs">
+      <DependentUpon>201402062142578_LayoutDetailBlockChanges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402070040267_RefactorPersonBadge.cs" />
+    <Compile Include="Migrations\201402070040267_RefactorPersonBadge.Designer.cs">
+      <DependentUpon>201402070040267_RefactorPersonBadge.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402072059288_DataSelectPageBlock.cs" />
+    <Compile Include="Migrations\201402072059288_DataSelectPageBlock.Designer.cs">
+      <DependentUpon>201402072059288_DataSelectPageBlock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402072145089_AdminPageUpdates.cs" />
+    <Compile Include="Migrations\201402072145089_AdminPageUpdates.Designer.cs">
+      <DependentUpon>201402072145089_AdminPageUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402072154281_MoveBadges.cs" />
+    <Compile Include="Migrations\201402072154281_MoveBadges.Designer.cs">
+      <DependentUpon>201402072154281_MoveBadges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402082033457_MovePersonBadgeBlocks.cs" />
+    <Compile Include="Migrations\201402082033457_MovePersonBadgeBlocks.Designer.cs">
+      <DependentUpon>201402082033457_MovePersonBadgeBlocks.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402090136495_FixLocationSpelling.cs" />
+    <Compile Include="Migrations\201402090136495_FixLocationSpelling.Designer.cs">
+      <DependentUpon>201402090136495_FixLocationSpelling.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402090638461_RemoveLegacyBadges.cs" />
+    <Compile Include="Migrations\201402090638461_RemoveLegacyBadges.Designer.cs">
+      <DependentUpon>201402090638461_RemoveLegacyBadges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402090717132_MoveDataSelectPage.cs" />
+    <Compile Include="Migrations\201402090717132_MoveDataSelectPage.Designer.cs">
+      <DependentUpon>201402090717132_MoveDataSelectPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402091749178_AddMergeProc.cs" />
+    <Compile Include="Migrations\201402091749178_AddMergeProc.Designer.cs">
+      <DependentUpon>201402091749178_AddMergeProc.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402100011204_NewBadgeSetup.cs" />
+    <Compile Include="Migrations\201402100011204_NewBadgeSetup.Designer.cs">
+      <DependentUpon>201402100011204_NewBadgeSetup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402101503040_FixTagPageTitles.cs" />
+    <Compile Include="Migrations\201402101503040_FixTagPageTitles.Designer.cs">
+      <DependentUpon>201402101503040_FixTagPageTitles.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402121927497_RemoveIsNamedLoc.cs" />
+    <Compile Include="Migrations\201402121927497_RemoveIsNamedLoc.Designer.cs">
+      <DependentUpon>201402121927497_RemoveIsNamedLoc.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402131942075_SecurityConfirmedLocked.cs" />
+    <Compile Include="Migrations\201402131942075_SecurityConfirmedLocked.Designer.cs">
+      <DependentUpon>201402131942075_SecurityConfirmedLocked.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402161608415_AddMembershipDate.cs" />
+    <Compile Include="Migrations\201402161608415_AddMembershipDate.Designer.cs">
+      <DependentUpon>201402161608415_AddMembershipDate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402171545526_UniquePasswordHash.cs" />
+    <Compile Include="Migrations\201402171545526_UniquePasswordHash.Designer.cs">
+      <DependentUpon>201402171545526_UniquePasswordHash.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402171705412_MembershipAttributeOrder.cs" />
+    <Compile Include="Migrations\201402171705412_MembershipAttributeOrder.Designer.cs">
+      <DependentUpon>201402171705412_MembershipAttributeOrder.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402171809249_RenameLocationPage.cs" />
+    <Compile Include="Migrations\201402171809249_RenameLocationPage.Designer.cs">
+      <DependentUpon>201402171809249_RenameLocationPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402181246471_MyAccount.cs" />
+    <Compile Include="Migrations\201402181246471_MyAccount.Designer.cs">
+      <DependentUpon>201402181246471_MyAccount.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402181550456_AddVirtualAmount.cs" />
+    <Compile Include="Migrations\201402181550456_AddVirtualAmount.Designer.cs">
+      <DependentUpon>201402181550456_AddVirtualAmount.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402182106099_UpdateLoginAttributes.cs" />
+    <Compile Include="Migrations\201402182106099_UpdateLoginAttributes.Designer.cs">
+      <DependentUpon>201402182106099_UpdateLoginAttributes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402200353474_SecureRest.cs" />
+    <Compile Include="Migrations\201402200353474_SecureRest.Designer.cs">
+      <DependentUpon>201402200353474_SecureRest.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402200737171_AddSampleDataBlock.cs" />
+    <Compile Include="Migrations\201402200737171_AddSampleDataBlock.Designer.cs">
+      <DependentUpon>201402200737171_AddSampleDataBlock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402201549284_SystemEmail.cs" />
+    <Compile Include="Migrations\201402201549284_SystemEmail.Designer.cs">
+      <DependentUpon>201402201549284_SystemEmail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402201810324_AddSampleDataPage.cs" />
+    <Compile Include="Migrations\201402201810324_AddSampleDataPage.Designer.cs">
+      <DependentUpon>201402201810324_AddSampleDataPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402202122526_FixDataViewConfig.cs" />
+    <Compile Include="Migrations\201402202122526_FixDataViewConfig.Designer.cs">
+      <DependentUpon>201402202122526_FixDataViewConfig.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402210410566_SecureRest2.cs" />
+    <Compile Include="Migrations\201402210410566_SecureRest2.Designer.cs">
+      <DependentUpon>201402210410566_SecureRest2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402211810096_ModifyAttCodeIndex.cs" />
+    <Compile Include="Migrations\201402211810096_ModifyAttCodeIndex.Designer.cs">
+      <DependentUpon>201402211810096_ModifyAttCodeIndex.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402212314543_RssFeedBlockTypes.cs" />
+    <Compile Include="Migrations\201402212314543_RssFeedBlockTypes.Designer.cs">
+      <DependentUpon>201402212314543_RssFeedBlockTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402220548227_RenameSampleDataPage.cs" />
+    <Compile Include="Migrations\201402220548227_RenameSampleDataPage.Designer.cs">
+      <DependentUpon>201402220548227_RenameSampleDataPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402220640212_AddPageTrackingGlobalAttrib.cs" />
+    <Compile Include="Migrations\201402220640212_AddPageTrackingGlobalAttrib.Designer.cs">
+      <DependentUpon>201402220640212_AddPageTrackingGlobalAttrib.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402222052199_AddPageViewTable.cs" />
+    <Compile Include="Migrations\201402222052199_AddPageViewTable.Designer.cs">
+      <DependentUpon>201402222052199_AddPageViewTable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402231840161_Following.cs" />
+    <Compile Include="Migrations\201402231840161_Following.Designer.cs">
+      <DependentUpon>201402231840161_Following.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402241446432_RecreateRefundReason.cs" />
+    <Compile Include="Migrations\201402241446432_RecreateRefundReason.Designer.cs">
+      <DependentUpon>201402241446432_RecreateRefundReason.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402241628190_IntranetPagesEditable.cs" />
+    <Compile Include="Migrations\201402241628190_IntranetPagesEditable.Designer.cs">
+      <DependentUpon>201402241628190_IntranetPagesEditable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402241644413_ContentFileWhiteListBlackList.cs" />
+    <Compile Include="Migrations\201402241644413_ContentFileWhiteListBlackList.Designer.cs">
+      <DependentUpon>201402241644413_ContentFileWhiteListBlackList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402242333082_UpdatePageContent.cs" />
+    <Compile Include="Migrations\201402242333082_UpdatePageContent.Designer.cs">
+      <DependentUpon>201402242333082_UpdatePageContent.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402251615420_AddSGGroupTypes.cs" />
+    <Compile Include="Migrations\201402251615420_AddSGGroupTypes.Designer.cs">
+      <DependentUpon>201402251615420_AddSGGroupTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402251711271_InstanceIdAsSetting.cs" />
+    <Compile Include="Migrations\201402251711271_InstanceIdAsSetting.Designer.cs">
+      <DependentUpon>201402251711271_InstanceIdAsSetting.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402251752122_GroupTreeRootGroup.cs" />
+    <Compile Include="Migrations\201402251752122_GroupTreeRootGroup.Designer.cs">
+      <DependentUpon>201402251752122_GroupTreeRootGroup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402252310095_Metaphone.cs" />
+    <Compile Include="Migrations\201402252310095_Metaphone.Designer.cs">
+      <DependentUpon>201402252310095_Metaphone.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402260633011_PageViewTableUpdates.cs" />
+    <Compile Include="Migrations\201402260633011_PageViewTableUpdates.Designer.cs">
+      <DependentUpon>201402260633011_PageViewTableUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402262048025_NonCash.cs" />
+    <Compile Include="Migrations\201402262048025_NonCash.Designer.cs">
+      <DependentUpon>201402262048025_NonCash.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402271740119_AddMissingBlockTypeCategories.cs" />
+    <Compile Include="Migrations\201402271740119_AddMissingBlockTypeCategories.Designer.cs">
+      <DependentUpon>201402271740119_AddMissingBlockTypeCategories.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402271850193_AddSPForNullingPageViewPageIds.cs" />
+    <Compile Include="Migrations\201402271850193_AddSPForNullingPageViewPageIds.Designer.cs">
+      <DependentUpon>201402271850193_AddSPForNullingPageViewPageIds.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402272333477_CommunicationTemplate.cs" />
+    <Compile Include="Migrations\201402272333477_CommunicationTemplate.Designer.cs">
+      <DependentUpon>201402272333477_CommunicationTemplate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402280022509_StoredProcConsistency.cs" />
+    <Compile Include="Migrations\201402280022509_StoredProcConsistency.Designer.cs">
+      <DependentUpon>201402280022509_StoredProcConsistency.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402280709471_UpdateAdminChecklist.cs" />
+    <Compile Include="Migrations\201402280709471_UpdateAdminChecklist.Designer.cs">
+      <DependentUpon>201402280709471_UpdateAdminChecklist.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201402281803220_SecureRest3.cs" />
+    <Compile Include="Migrations\201402281803220_SecureRest3.Designer.cs">
+      <DependentUpon>201402281803220_SecureRest3.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403011329500_CommunicationsMenu.cs" />
+    <Compile Include="Migrations\201403011329500_CommunicationsMenu.Designer.cs">
+      <DependentUpon>201403011329500_CommunicationsMenu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403011451393_HTMLCacheDuration.cs" />
+    <Compile Include="Migrations\201403011451393_HTMLCacheDuration.Designer.cs">
+      <DependentUpon>201403011451393_HTMLCacheDuration.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403012008557_AddJobForProcessingWorkflows.cs" />
+    <Compile Include="Migrations\201403012008557_AddJobForProcessingWorkflows.Designer.cs">
+      <DependentUpon>201403012008557_AddJobForProcessingWorkflows.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403051630556_DefaultMaritalStatus.cs" />
+    <Compile Include="Migrations\201403051630556_DefaultMaritalStatus.Designer.cs">
+      <DependentUpon>201403051630556_DefaultMaritalStatus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403052222057_MigrationRollUp.cs" />
+    <Compile Include="Migrations\201403052222057_MigrationRollUp.Designer.cs">
+      <DependentUpon>201403052222057_MigrationRollUp.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403061916415_FixAdDetailImage.cs" />
+    <Compile Include="Migrations\201403061916415_FixAdDetailImage.Designer.cs">
+      <DependentUpon>201403061916415_FixAdDetailImage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403062033262_SetFamilyDefaultRole.cs" />
+    <Compile Include="Migrations\201403062033262_SetFamilyDefaultRole.Designer.cs">
+      <DependentUpon>201403062033262_SetFamilyDefaultRole.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403062157173_SchedContributions.cs" />
+    <Compile Include="Migrations\201403062157173_SchedContributions.Designer.cs">
+      <DependentUpon>201403062157173_SchedContributions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403071759009_RockJobServiceExternalFile.cs" />
+    <Compile Include="Migrations\201403071759009_RockJobServiceExternalFile.Designer.cs">
+      <DependentUpon>201403071759009_RockJobServiceExternalFile.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403072334593_ChangePasswordHtml.cs" />
+    <Compile Include="Migrations\201403072334593_ChangePasswordHtml.Designer.cs">
+      <DependentUpon>201403072334593_ChangePasswordHtml.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403081504059_AddFromName.cs" />
+    <Compile Include="Migrations\201403081504059_AddFromName.Designer.cs">
+      <DependentUpon>201403081504059_AddFromName.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403101815320_MakeStatesNonSystem.cs" />
+    <Compile Include="Migrations\201403101815320_MakeStatesNonSystem.Designer.cs">
+      <DependentUpon>201403101815320_MakeStatesNonSystem.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
+    <Compile Include="Migrations\RockMigration.cs" />
+    <Compile Include="Migrations\RockMigration3.cs" />
+    <Compile Include="Migrations\RockMigration2.cs" />
+    <Compile Include="Migrations\RockMigration1.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Rock\Rock.csproj">
+      <Project>{8f8c2a79-24f4-4157-8b99-45f75fa85799}</Project>
+      <Name>Rock</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201311251734059_CreateDatabase.resx">
+      <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201311272223099_GroupLocationPersonId.resx">
+      <DependentUpon>201311272223099_GroupLocationPersonId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312022011416_RemoveClassVideoBlock.resx">
+      <DependentUpon>201312022011416_RemoveClassVideoBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312031820461_ExternalSiteSecurityTweak.resx">
+      <DependentUpon>201312031820461_ExternalSiteSecurityTweak.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312032145250_AddHtmlContentApprovalBlock.resx">
+      <DependentUpon>201312032145250_AddHtmlContentApprovalBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312041724297_DefaultPageNotRequired.resx">
+      <DependentUpon>201312041724297_DefaultPageNotRequired.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312042251282_UpdateEmailTemplates.resx">
+      <DependentUpon>201312042251282_UpdateEmailTemplates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312052359158_UpdateSiteMapToPageMap.resx">
+      <DependentUpon>201312052359158_UpdateSiteMapToPageMap.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312060704559_SiteUpdateRemoveIcons.resx">
+      <DependentUpon>201312060704559_SiteUpdateRemoveIcons.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312062229010_FixPathToErrorPageOnStarkSite.resx">
+      <DependentUpon>201312062229010_FixPathToErrorPageOnStarkSite.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312091725419_BinaryFileRootPathAttribute.resx">
+      <DependentUpon>201312091725419_BinaryFileRootPathAttribute.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312091737178_UpdateRenameStoredProcs.resx">
+      <DependentUpon>201312091737178_UpdateRenameStoredProcs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312091918239_UpdateItemsToIsSystem.resx">
+      <DependentUpon>201312091918239_UpdateItemsToIsSystem.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312092011514_HtmlContentLastModified.resx">
+      <DependentUpon>201312092011514_HtmlContentLastModified.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312092306168_MarketingAdLayoutChanges.resx">
+      <DependentUpon>201312092306168_MarketingAdLayoutChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312092315267_HtmlContentDetail.resx">
+      <DependentUpon>201312092315267_HtmlContentDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312100236061_AddPrayerSessionBlock.resx">
+      <DependentUpon>201312100236061_AddPrayerSessionBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312101739202_FixMyAccountRoute.resx">
+      <DependentUpon>201312101739202_FixMyAccountRoute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312102004063_AccountNumberSecureNonUnique.resx">
+      <DependentUpon>201312102004063_AccountNumberSecureNonUnique.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312102031566_NoteContextFix.resx">
+      <DependentUpon>201312102031566_NoteContextFix.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312102315538_CommunicationBlockNameChange.resx">
+      <DependentUpon>201312102315538_CommunicationBlockNameChange.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312111655133_RESTControllerListDetail.resx">
+      <DependentUpon>201312111655133_RESTControllerListDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312111944001_EmailTemplateRemoveFromAddresses.resx">
+      <DependentUpon>201312111944001_EmailTemplateRemoveFromAddresses.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312120016249_HideSecurityGroups.resx">
+      <DependentUpon>201312120016249_HideSecurityGroups.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312121845402_LoginExperienceUpdates.resx">
+      <DependentUpon>201312121845402_LoginExperienceUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312121858278_ConnectionStatus.resx">
+      <DependentUpon>201312121858278_ConnectionStatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312121905532_ReportColumnHeaderText.resx">
+      <DependentUpon>201312121905532_ReportColumnHeaderText.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312160425464_AddPersonToNote.resx">
+      <DependentUpon>201312160425464_AddPersonToNote.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312160454085_BlockTypeCategory.resx">
+      <DependentUpon>201312160454085_BlockTypeCategory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312161446138_AddAudit.resx">
+      <DependentUpon>201312161446138_AddAudit.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312162055116_PageLayoutUpdates.resx">
+      <DependentUpon>201312162055116_PageLayoutUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312162149358_PersonSearchAddAttribute.resx">
+      <DependentUpon>201312162149358_PersonSearchAddAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312162306186_FixPrayerRequestDetailsPageContext.resx">
+      <DependentUpon>201312162306186_FixPrayerRequestDetailsPageContext.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312182025446_AddTitleToTransactions.resx">
+      <DependentUpon>201312182025446_AddTitleToTransactions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312191507040_WorkflowTrigger_AddIsActive.resx">
+      <DependentUpon>201312191507040_WorkflowTrigger_AddIsActive.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312192125458_ChangeRootAdminPageName.resx">
+      <DependentUpon>201312192125458_ChangeRootAdminPageName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312192308115_MoveHtmlContentApprovalBlock.resx">
+      <DependentUpon>201312192308115_MoveHtmlContentApprovalBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312192349366_RenamePublicAdBlocks.resx">
+      <DependentUpon>201312192349366_RenamePublicAdBlocks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312202331444_RockRename.resx">
+      <DependentUpon>201312202331444_RockRename.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312221305134_GoogleAnalytics.resx">
+      <DependentUpon>201312221305134_GoogleAnalytics.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312221451050_RemoveIconFileFields.resx">
+      <DependentUpon>201312221451050_RemoveIconFileFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201312221636197_RefactorPersonName.resx">
+      <DependentUpon>201312221636197_RefactorPersonName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401032214266_AddGroupChildGroupTypes.resx">
+      <DependentUpon>201401032214266_AddGroupChildGroupTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401061559036_CategoryOrderDescription.resx">
+      <DependentUpon>201401061559036_CategoryOrderDescription.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401062203180_RenameAdultChildParentRoles.resx">
+      <DependentUpon>201401062203180_RenameAdultChildParentRoles.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401062206577_AddGroupRoleFormerSpouse.resx">
+      <DependentUpon>201401062206577_AddGroupRoleFormerSpouse.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401071224347_SavedAccountUpdates.resx">
+      <DependentUpon>201401071224347_SavedAccountUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401071612341_PrayerCategories.resx">
+      <DependentUpon>201401071612341_PrayerCategories.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401071718059_PersonMarketingBinaryFileTypes.resx">
+      <DependentUpon>201401071718059_PersonMarketingBinaryFileTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401071836000_AddAdListPage.resx">
+      <DependentUpon>201401071836000_AddAdListPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401072234209_UserLoginEntityType.resx">
+      <DependentUpon>201401072234209_UserLoginEntityType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401081952447_UserAccounts.resx">
+      <DependentUpon>201401081952447_UserAccounts.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401091942376_TagsByLetterPage.resx">
+      <DependentUpon>201401091942376_TagsByLetterPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401091947539_ChangeNameOfAttendeePage.resx">
+      <DependentUpon>201401091947539_ChangeNameOfAttendeePage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401092004083_AdListPageOrderUpdate.resx">
+      <DependentUpon>201401092004083_AdListPageOrderUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401092358192_AuditDetail.resx">
+      <DependentUpon>201401092358192_AuditDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401100511284_RemoveAuditDetail.resx">
+      <DependentUpon>201401100511284_RemoveAuditDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401131442369_BlockPrePostHtml.resx">
+      <DependentUpon>201401131442369_BlockPrePostHtml.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401131724184_Add404FieldsToSite.resx">
+      <DependentUpon>201401131724184_Add404FieldsToSite.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401131810554_ConnectionStatusCleanup.resx">
+      <DependentUpon>201401131810554_ConnectionStatusCleanup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401132311057_Add404PagesForSites.resx">
+      <DependentUpon>201401132311057_Add404PagesForSites.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401140409207_PersonDetailPages.resx">
+      <DependentUpon>201401140409207_PersonDetailPages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401141807363_SiteDetailChanges.resx">
+      <DependentUpon>201401141807363_SiteDetailChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401151404211_RenameGroupLocationIndex.resx">
+      <DependentUpon>201401151404211_RenameGroupLocationIndex.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401151949171_RenameFormerSpousePreviousSpouse.resx">
+      <DependentUpon>201401151949171_RenameFormerSpousePreviousSpouse.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401151959527_AddPastoralStaffRole.resx">
+      <DependentUpon>201401151959527_AddPastoralStaffRole.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401152023157_ChangeLayoutOfSecurityRoleDetailsPage.resx">
+      <DependentUpon>201401152023157_ChangeLayoutOfSecurityRoleDetailsPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401152246390_FixHeaderMarkupOnHomepage.resx">
+      <DependentUpon>201401152246390_FixHeaderMarkupOnHomepage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401162252159_HtmlEditorMergeFieldPlugin.resx">
+      <DependentUpon>201401162252159_HtmlEditorMergeFieldPlugin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401162357214_AddHistory.resx">
+      <DependentUpon>201401162357214_AddHistory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401171522163_UpdateBlockTypeDescriptions.resx">
+      <DependentUpon>201401171522163_UpdateBlockTypeDescriptions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401171902377_PrayerRequestDateChanges.resx">
+      <DependentUpon>201401171902377_PrayerRequestDateChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401172226353_PageTitleFields.resx">
+      <DependentUpon>201401172226353_PageTitleFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401172244135_DeleteEventGroupType.resx">
+      <DependentUpon>201401172244135_DeleteEventGroupType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401202137085_AddPageLiquidAttribute.resx">
+      <DependentUpon>201401202137085_AddPageLiquidAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401211151533_NoteAttributes.resx">
+      <DependentUpon>201401211151533_NoteAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401212018517_HistoryPageBreadcrumb.resx">
+      <DependentUpon>201401212018517_HistoryPageBreadcrumb.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401220441223_MiscUIChanges.resx">
+      <DependentUpon>201401220441223_MiscUIChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401221752081_PersonAlias.resx">
+      <DependentUpon>201401221752081_PersonAlias.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401222126036_AddCreatedModifiedFields.resx">
+      <DependentUpon>201401222126036_AddCreatedModifiedFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401231551591_ExceptionCreatedInfo.resx">
+      <DependentUpon>201401231551591_ExceptionCreatedInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401231618180_NoteCreatedInfo.resx">
+      <DependentUpon>201401231618180_NoteCreatedInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401231638103_FinancialBatchCreatedInfo.resx">
+      <DependentUpon>201401231638103_FinancialBatchCreatedInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401232057334_AuditPersonAlias.resx">
+      <DependentUpon>201401232057334_AuditPersonAlias.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401232243283_CkEditorPluginLayout.resx">
+      <DependentUpon>201401232243283_CkEditorPluginLayout.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401240107095_AddPersonViewed.resx">
+      <DependentUpon>201401240107095_AddPersonViewed.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401241331091_PersonMerge.resx">
+      <DependentUpon>201401241331091_PersonMerge.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401250002455_TagDescription.resx">
+      <DependentUpon>201401250002455_TagDescription.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401271236495_DeleteSampleReportPage.resx">
+      <DependentUpon>201401271236495_DeleteSampleReportPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401271247579_RemoveFullAddress.resx">
+      <DependentUpon>201401271247579_RemoveFullAddress.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401271902480_HideMetricsPage.resx">
+      <DependentUpon>201401271902480_HideMetricsPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401272157461_RemoveFieldTypes.resx">
+      <DependentUpon>201401272157461_RemoveFieldTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401282147345_StatementPersonFullNameFix.resx">
+      <DependentUpon>201401282147345_StatementPersonFullNameFix.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401290012560_PersonBirthdateDbComputed.resx">
+      <DependentUpon>201401290012560_PersonBirthdateDbComputed.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401291637496_HTMLContentNotRequired.resx">
+      <DependentUpon>201401291637496_HTMLContentNotRequired.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401291720147_AttendanceHistory.resx">
+      <DependentUpon>201401291720147_AttendanceHistory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401302003574_AddBlocksToRightSideBar.resx">
+      <DependentUpon>201401302003574_AddBlocksToRightSideBar.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401312207050_RockInstanceId.resx">
+      <DependentUpon>201401312207050_RockInstanceId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201401312232533_BinaryFileLastModifiedDateTime.resx">
+      <DependentUpon>201401312232533_BinaryFileLastModifiedDateTime.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402021358481_FixBatchDetailTransactionList.resx">
+      <DependentUpon>201402021358481_FixBatchDetailTransactionList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402031658561_BinaryFileStoredProcUpdate.resx">
+      <DependentUpon>201402031658561_BinaryFileStoredProcUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402031741471_MiscConfigChanges.resx">
+      <DependentUpon>201402031741471_MiscConfigChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402032112129_CreateRestEntities.resx">
+      <DependentUpon>201402032112129_CreateRestEntities.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402050535388_CreateFunctionsAndSpForAttendanceBadge.resx">
+      <DependentUpon>201402050535388_CreateFunctionsAndSpForAttendanceBadge.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402051857216_AuthorizedPersonIdNotRequired.resx">
+      <DependentUpon>201402051857216_AuthorizedPersonIdNotRequired.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402061548097_ImprovePerformanceAttendanceBadgeSP.resx">
+      <DependentUpon>201402061548097_ImprovePerformanceAttendanceBadgeSP.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402062142578_LayoutDetailBlockChanges.resx">
+      <DependentUpon>201402062142578_LayoutDetailBlockChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402070040267_RefactorPersonBadge.resx">
+      <DependentUpon>201402070040267_RefactorPersonBadge.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402072059288_DataSelectPageBlock.resx">
+      <DependentUpon>201402072059288_DataSelectPageBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402072145089_AdminPageUpdates.resx">
+      <DependentUpon>201402072145089_AdminPageUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402072154281_MoveBadges.resx">
+      <DependentUpon>201402072154281_MoveBadges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402082033457_MovePersonBadgeBlocks.resx">
+      <DependentUpon>201402082033457_MovePersonBadgeBlocks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402090136495_FixLocationSpelling.resx">
+      <DependentUpon>201402090136495_FixLocationSpelling.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402090638461_RemoveLegacyBadges.resx">
+      <DependentUpon>201402090638461_RemoveLegacyBadges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402090717132_MoveDataSelectPage.resx">
+      <DependentUpon>201402090717132_MoveDataSelectPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402091749178_AddMergeProc.resx">
+      <DependentUpon>201402091749178_AddMergeProc.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402100011204_NewBadgeSetup.resx">
+      <DependentUpon>201402100011204_NewBadgeSetup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402101503040_FixTagPageTitles.resx">
+      <DependentUpon>201402101503040_FixTagPageTitles.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402121927497_RemoveIsNamedLoc.resx">
+      <DependentUpon>201402121927497_RemoveIsNamedLoc.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402131942075_SecurityConfirmedLocked.resx">
+      <DependentUpon>201402131942075_SecurityConfirmedLocked.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402161608415_AddMembershipDate.resx">
+      <DependentUpon>201402161608415_AddMembershipDate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402171545526_UniquePasswordHash.resx">
+      <DependentUpon>201402171545526_UniquePasswordHash.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402171705412_MembershipAttributeOrder.resx">
+      <DependentUpon>201402171705412_MembershipAttributeOrder.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402171809249_RenameLocationPage.resx">
+      <DependentUpon>201402171809249_RenameLocationPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402181246471_MyAccount.resx">
+      <DependentUpon>201402181246471_MyAccount.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402181550456_AddVirtualAmount.resx">
+      <DependentUpon>201402181550456_AddVirtualAmount.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402182106099_UpdateLoginAttributes.resx">
+      <DependentUpon>201402182106099_UpdateLoginAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402200353474_SecureRest.resx">
+      <DependentUpon>201402200353474_SecureRest.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402200737171_AddSampleDataBlock.resx">
+      <DependentUpon>201402200737171_AddSampleDataBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402201549284_SystemEmail.resx">
+      <DependentUpon>201402201549284_SystemEmail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402201810324_AddSampleDataPage.resx">
+      <DependentUpon>201402201810324_AddSampleDataPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402202122526_FixDataViewConfig.resx">
+      <DependentUpon>201402202122526_FixDataViewConfig.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402210410566_SecureRest2.resx">
+      <DependentUpon>201402210410566_SecureRest2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402211810096_ModifyAttCodeIndex.resx">
+      <DependentUpon>201402211810096_ModifyAttCodeIndex.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402212314543_RssFeedBlockTypes.resx">
+      <DependentUpon>201402212314543_RssFeedBlockTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402220548227_RenameSampleDataPage.resx">
+      <DependentUpon>201402220548227_RenameSampleDataPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402220640212_AddPageTrackingGlobalAttrib.resx">
+      <DependentUpon>201402220640212_AddPageTrackingGlobalAttrib.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402222052199_AddPageViewTable.resx">
+      <DependentUpon>201402222052199_AddPageViewTable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402231840161_Following.resx">
+      <DependentUpon>201402231840161_Following.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402241446432_RecreateRefundReason.resx">
+      <DependentUpon>201402241446432_RecreateRefundReason.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402241628190_IntranetPagesEditable.resx">
+      <DependentUpon>201402241628190_IntranetPagesEditable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402241644413_ContentFileWhiteListBlackList.resx">
+      <DependentUpon>201402241644413_ContentFileWhiteListBlackList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402242333082_UpdatePageContent.resx">
+      <DependentUpon>201402242333082_UpdatePageContent.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402251615420_AddSGGroupTypes.resx">
+      <DependentUpon>201402251615420_AddSGGroupTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402251711271_InstanceIdAsSetting.resx">
+      <DependentUpon>201402251711271_InstanceIdAsSetting.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402251752122_GroupTreeRootGroup.resx">
+      <DependentUpon>201402251752122_GroupTreeRootGroup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402252310095_Metaphone.resx">
+      <DependentUpon>201402252310095_Metaphone.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402260633011_PageViewTableUpdates.resx">
+      <DependentUpon>201402260633011_PageViewTableUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402262048025_NonCash.resx">
+      <DependentUpon>201402262048025_NonCash.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402271740119_AddMissingBlockTypeCategories.resx">
+      <DependentUpon>201402271740119_AddMissingBlockTypeCategories.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402271850193_AddSPForNullingPageViewPageIds.resx">
+      <DependentUpon>201402271850193_AddSPForNullingPageViewPageIds.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402272333477_CommunicationTemplate.resx">
+      <DependentUpon>201402272333477_CommunicationTemplate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402280022509_StoredProcConsistency.resx">
+      <DependentUpon>201402280022509_StoredProcConsistency.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402280709471_UpdateAdminChecklist.resx">
+      <DependentUpon>201402280709471_UpdateAdminChecklist.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201402281803220_SecureRest3.resx">
+      <DependentUpon>201402281803220_SecureRest3.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403011329500_CommunicationsMenu.resx">
+      <DependentUpon>201403011329500_CommunicationsMenu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403011451393_HTMLCacheDuration.resx">
+      <DependentUpon>201403011451393_HTMLCacheDuration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403012008557_AddJobForProcessingWorkflows.resx">
+      <DependentUpon>201403012008557_AddJobForProcessingWorkflows.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403051630556_DefaultMaritalStatus.resx">
+      <DependentUpon>201403051630556_DefaultMaritalStatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403052222057_MigrationRollUp.resx">
+      <DependentUpon>201403052222057_MigrationRollUp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403061916415_FixAdDetailImage.resx">
+      <DependentUpon>201403061916415_FixAdDetailImage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403062033262_SetFamilyDefaultRole.resx">
+      <DependentUpon>201403062033262_SetFamilyDefaultRole.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403062157173_SchedContributions.resx">
+      <DependentUpon>201403062157173_SchedContributions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403071759009_RockJobServiceExternalFile.resx">
+      <DependentUpon>201403071759009_RockJobServiceExternalFile.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403072334593_ChangePasswordHtml.resx">
+      <DependentUpon>201403072334593_ChangePasswordHtml.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403081504059_AddFromName.resx">
+      <DependentUpon>201403081504059_AddFromName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403101815320_MakeStatesNonSystem.resx">
+      <DependentUpon>201403101815320_MakeStatesNonSystem.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

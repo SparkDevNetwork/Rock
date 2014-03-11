@@ -1,9 +1,19 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.ComponentModel;
 using System.Web.UI;
@@ -18,79 +28,66 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:NotificationBox runat=server></{0}:NotificationBox>" )]
     public class NotificationBox : Literal
     {
-        private string _Title;
         /// <summary>
         /// Gets or sets the title (title is inline with the message text but is bold).
         /// </summary>
         /// <value>
         /// The title.
         /// </value>
-        public string Title
-        {
-            get { return _Title; }
-            set { _Title = value; }
-        }
+        public string Title { get; set; }
 
-        private string _Heading;
         /// <summary>
         /// Gets or sets the heading (heading is on it's own line at the top)
         /// </summary>
         /// <value>
         /// The heading.
         /// </value>
-        public string Heading
-        {
-            get { return _Heading; }
-            set { _Heading = value; }
-        }
+        public string Heading { get; set; }
 
-        private bool _Padded;
-        /// <summary>
-        /// Gets or sets extra padding around the inner text
-        /// </summary>
-        /// <value>
-        /// Enable extra padding.
-        /// </value>
-        public bool Padded
-        {
-            get { return _Padded; }
-            set { _Padded = value; }
-        }
-
-        private NotificationBoxType _NotificationBoxType;
         /// <summary>
         /// Gets or sets the type of the notification box.
         /// </summary>
         /// <value>
         /// The type of the notification box.
         /// </value>
-        public NotificationBoxType NotificationBoxType
-        {
-            get { return _NotificationBoxType; }
-            set { _NotificationBoxType = value; }
-        }
+        public NotificationBoxType NotificationBoxType { get; set; }
 
         /// <summary>
-        /// Sends server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter"/> object, which writes the content to be rendered on the client.
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> object that receives the server control content.</param>
-        protected override void Render( HtmlTextWriter writer )
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
         {
-            string paddingCss = "";
-            if ( _Padded )
-                paddingCss = " alert-block";
+            if ( this.Visible )
+            {
+                string alertType = NotificationBoxType.ToString().ToLower();
 
-            writer.Write( "<div class=\"alert alert-" + _NotificationBoxType.ToString().ToLower() + paddingCss + "\">" + Environment.NewLine );
+                bool showMessage = !string.IsNullOrWhiteSpace( Heading ) || !string.IsNullOrWhiteSpace( Title ) || !string.IsNullOrWhiteSpace( this.Text );
 
-            if ( _Heading != null && _Heading != string.Empty )
-                writer.Write( "         <h4 class=\"alert-heading\">" + _Heading + "</h4>" );
+                if ( showMessage )
+                {
+                    writer.AddAttribute( "class", "alert alert-" + alertType );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            if ( _Title != null && _Title != string.Empty )
-                writer.Write( "         <strong>" + _Title + "</strong> " );
+                    if ( !string.IsNullOrWhiteSpace( Heading ) )
+                    {
+                        writer.RenderBeginTag( HtmlTextWriterTag.H4 );
+                        writer.Write( Heading );
+                        writer.RenderEndTag();
+                    }
 
-            writer.Write( this.Text );
+                    if ( !string.IsNullOrWhiteSpace( Title ) )
+                    {
+                        writer.RenderBeginTag( HtmlTextWriterTag.Strong );
+                        writer.Write( Title + " ");
+                        writer.RenderEndTag();
+                    }
 
-            writer.Write( "</div>" + Environment.NewLine );
+                    base.RenderControl( writer );
+
+                    writer.RenderEndTag();
+                }
+            }
         }
     }
 
@@ -113,13 +110,11 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Display an error box
         /// </summary>
-        Error,
+        Danger,
 
         /// <summary>
         /// Display a success box
         /// </summary>
         Success
     };
-
-
 }
