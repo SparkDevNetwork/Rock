@@ -119,7 +119,7 @@
             }
 					
 			// proceed with the install by downloading the installer files
-			Response.Redirect("Install.aspx");
+            lRedirect.Visible = true;
 		}
 		
 	}
@@ -140,6 +140,8 @@
         <link href="<%=rockLogoIco %>" rel="shortcut icon">
 		<link href="<%=rockLogoIco %>" type="image/ico" rel="icon">
 
+        <script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
+
 	</head>
 	<body>
 		<form runat="server">
@@ -148,7 +150,7 @@
 					<h1>Rock RMS</h1>
 					
 					<div id="content-box" class="group">
-						<h1><asp:Literal ID="lTitle" Text="Server Check" runat="server" /></h1>
+						<h1><asp:Literal ID="lTitle" Text="" runat="server" /></h1>
 						
 						<asp:Label ID="lOutput" runat="server" />
 
@@ -161,6 +163,26 @@
                                 It appears that this website is not configured to run ASP.Net.  The Rock RMS
                                 requires that you run on a Windows Hosting Platform running IIS/ASP.Net.
                             </div>
+
+                        </asp:Literal>
+
+                        <asp:Literal runat="server" ID="lRedirect" Visible="false">    
+                            <div id="divNoJavascript" class="alert alert-danger">
+                                <p>
+                                    <strong>JavaScript Required</strong> To enable a robust installation experience we require JavaScript to be enabled.
+                                </p>
+                                <p><em>If you are running this locally on a server, consider completing the install on a client machine or temporarily 
+                                    enabling JavaScript.
+                                   </em>
+                                </p>
+                            </div>
+
+                            <script>
+                                $( document ).ready(function() {
+                                    $('#divNoJavascript').hide();
+                                    window.location = "Install.aspx";
+                                });
+                            </script>
 
                         </asp:Literal>
 
@@ -244,21 +266,19 @@
 
         // check for write permissions
         string filename = Server.MapPath(".") + @"\write-permission.test";
-        
+
         try
         {
-            File.Create(filename).Dispose();
-        }
-        catch (Exception ex)
-        {
+            File.Create( filename ).Dispose();
 
-        }
 
-        if (File.Exists(filename))
-        {
-            canWrite = true;
-            File.Delete(filename);
-        }
+            if ( File.Exists( filename ) )
+            {
+                canWrite = true;
+                File.Delete( filename );
+            }
+            
+        } catch(Exception ex){}
         
         if (!canWrite) {
         	checksFailed = true;
