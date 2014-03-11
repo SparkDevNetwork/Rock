@@ -728,6 +728,10 @@
     <Compile Include="Migrations\201403110633568_AdminCheckListUpdates.Designer.cs">
       <DependentUpon>201403110633568_AdminCheckListUpdates.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201403112107249_RemoveSMTPAttributes.cs" />
+    <Compile Include="Migrations\201403112107249_RemoveSMTPAttributes.Designer.cs">
+      <DependentUpon>201403112107249_RemoveSMTPAttributes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1254,6 +1258,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201403110633568_AdminCheckListUpdates.resx">
       <DependentUpon>201403110633568_AdminCheckListUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403112107249_RemoveSMTPAttributes.resx">
+      <DependentUpon>201403112107249_RemoveSMTPAttributes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
