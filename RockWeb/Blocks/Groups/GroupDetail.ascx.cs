@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Groups
     [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false, "", "", 0 )]
     [BooleanField( "Show Edit", "", true, "", 1 )]
     [BooleanField( "Limit to Security Role Groups", "", false, "", 2 )]
+    [BooleanField( "Limit to Group Types that are shown in navigation", "", false, "", 3, "LimitToShowInNavigationGroupTypes" )]
     [CodeEditorField( "Map HTML", "The HTML to use for displaying group location maps. Liquid syntax is used to render data from the following data structure: points[type, latitude, longitude], polygons[type, polygon_wkt, google_encoded_polygon]", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, false, @"
     {% for point in points %}
         <div class='group-location-map'>
@@ -54,7 +55,7 @@ namespace RockWeb.Blocks.Groups
             <img src='http://maps.googleapis.com/maps/api/staticmap?sensor=false&size=350x200&format=png&style=feature:all|saturation:0|hue:0xe7ecf0&style=feature:road|saturation:-70&style=feature:transit|visibility:off&style=feature:poi|visibility:off&style=feature:water|visibility:simplified|saturation:-60&visual_refresh=true&path=fillcolor:0x779cb155|color:0xFFFFFF00|enc:{{ polygon.google_encoded_polygon }}'/>
         </div>
     {% endfor %}
-", "", 3 )]
+", "", 4 )]
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
         #region Constants
@@ -534,6 +535,12 @@ namespace RockWeb.Blocks.Groups
                 groupTypeQry = groupTypeQry.Where( a => allowedChildGroupTypeIds.Contains( a.Id ) );
             }
 
+            // limit to GroupTypes where ShowInNavigation=True depending on block setting
+            if (GetAttributeValue("LimitToShowInNavigationGroupTypes").AsBoolean())
+            {
+                groupTypeQry = groupTypeQry.Where( a => a.ShowInNavigation );
+            }
+
             List<GroupType> groupTypes = groupTypeQry.OrderBy( a => a.Name ).ToList();
             if ( groupTypes.Count() > 1 )
             {
@@ -542,17 +549,27 @@ namespace RockWeb.Blocks.Groups
             }
 
             // If the currently selected GroupType isn't an option anymore, set selected GroupType to null
+            int? selectedGroupTypeId = ddlGroupType.SelectedValueAsInt();
             if ( ddlGroupType.SelectedValue != null )
             {
-                int? selectedGroupTypeId = ddlGroupType.SelectedValueAsInt();
+                
                 if ( !groupTypes.Any( a => a.Id.Equals( selectedGroupTypeId ?? 0 ) ) )
                 {
-                    ddlGroupType.SelectedValue = null;
+                    selectedGroupTypeId = null;
                 }
             }
 
             ddlGroupType.DataSource = groupTypes;
             ddlGroupType.DataBind();
+
+            if ( selectedGroupTypeId.HasValue )
+            {
+                ddlGroupType.SelectedValue = selectedGroupTypeId.ToString();
+            }
+            else
+            {
+                ddlGroupType.SelectedValue = null;
+            }
         }
 
         /// <summary>
