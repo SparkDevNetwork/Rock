@@ -29,6 +29,17 @@
                     <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" />
                     <Rock:RockDropDownList ID="ddlSuffix" CssClass="input-width-md" runat="server" Label="Suffix"/>
                     <Rock:BirthdayPicker ID="bpBirthDay" runat="server" Label="Birthday" />
+
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <Rock:RockDropDownList ID="ddlGrade" runat="server" CssClass="input-width-md" Label="Grade"/>
+                        </div>
+                        <div class="col-sm-3">
+                            <Rock:YearPicker ID="ypGraduation" runat="server" Label="Graduation Year" Help="High School Graduation Year." />
+                        </div>
+                        <div class="col-sm-"6">
+                        </div>
+                    </div>
                     <Rock:DatePicker ID="dpAnniversaryDate" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="AnniversaryDate" />
 
                     <Rock:RockRadioButtonList ID="rblGender" runat="server" RepeatDirection="Horizontal" Label="Gender">
