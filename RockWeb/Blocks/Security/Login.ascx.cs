@@ -188,7 +188,7 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
                 helpUrl = ResolveRockUrl("~/ForgotUserName");
             }
                 
-            DisplayError( String.Format("Sorry, we couldn't find an account matching that username/password. Can we help you <a href='{0}'>recover your accout information</a>?", helpUrl) );
+            DisplayError( String.Format("Sorry, we couldn't find an account matching that username/password. Can we help you <a href='{0}'>recover your account information</a>?", helpUrl) );
         }
 
         /// <summary>
