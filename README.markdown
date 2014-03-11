@@ -9,7 +9,7 @@ Our main developer starting point site is [the wiki](https://github.com/SparkDev
 
 ## Learn More
 
-Jump over or our [product website](http://www.rockrms.com/) to find out more. Keep up to date by:
+Jump over to our [product website](http://www.rockrms.com/) to find out more. Keep up to date by:
 
 * [Following us on Twitter](http://www.twitter.com/therockrms)
 * [Liking us on Facebook](http://www.facebook.com/therockrms)

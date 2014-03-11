@@ -150,7 +150,7 @@ namespace Rock.PersonProfile
         /// <param name="badge">The badge.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        protected string GetAttributeValue( PersonBadge badge, string key )
+        protected string GetAttributeValue( PersonBadgeCache badge, string key )
         {
             return badge.GetAttributeValue( key );
         }
@@ -160,7 +160,7 @@ namespace Rock.PersonProfile
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
-        public abstract void Render( PersonBadge badge, HtmlTextWriter writer );
+        public abstract void Render( PersonBadgeCache badge, HtmlTextWriter writer );
 
     }
 }

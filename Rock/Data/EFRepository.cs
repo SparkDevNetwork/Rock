@@ -399,8 +399,8 @@ namespace Rock.Data
                 foreach ( var eve in e.EntityValidationErrors )
                 {
                     outputLines.Add( string.Format(
-                        "{0}: Entity of type \"{1}\" in state \"{2}\" has the following validation errors:",
-                        RockDateTime.Now, eve.Entry.Entity.GetType().Name, eve.Entry.State ) );
+                        "Entity of type \"{0}\" in state \"{1}\" has the following validation errors:",
+                        eve.Entry.Entity.GetType().Name, eve.Entry.State ) );
                     foreach ( var ve in eve.ValidationErrors )
                     {
                         outputLines.Add( string.Format(

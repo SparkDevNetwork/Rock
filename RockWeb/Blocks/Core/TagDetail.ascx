@@ -32,19 +32,21 @@
                     
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:PersonPicker ID="ppOwner" runat="server" Label="Owner" />
-                            <Rock:RockTextBox ID="tbEntityTypeQualifierColumn" runat="server" Label="Entity Type Qualifier Column" />
-                            <Rock:RockTextBox ID="tbEntityTypeQualifierValue" runat="server" Label="Entity Type Qualifier Value" />
-                        </div>
-                        <div class="col-md-6">
-                            <Rock:RockDropDownList id="ddlEntityType" runat="server" Label="Entity Type" />
                             <Rock:RockRadioButtonList ID="rblScope" runat="server" Label="Scope" RepeatDirection="Horizontal"
                                 AutoPostBack="true" OnSelectedIndexChanged="rblScope_SelectedIndexChanged">
                                 <asp:ListItem Value="Organization" Text="Organizational" Selected="True" />
                                 <asp:ListItem Value="Personal" Text="Personal" />
                             </Rock:RockRadioButtonList>
+                            <Rock:PersonPicker ID="ppOwner" runat="server" Label="Owner" />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:RockDropDownList id="ddlEntityType" runat="server" Label="Entity Type" />
+                            <Rock:RockTextBox ID="tbEntityTypeQualifierColumn" runat="server" Label="Entity Type Qualifier Column" />
+                            <Rock:RockTextBox ID="tbEntityTypeQualifierValue" runat="server" Label="Entity Type Qualifier Value" />
                        </div>
                     </div>
+
+                    <Rock:NotificationBox ID="nbEditError" runat="server" NotificationBoxType="Danger" Visible="false"></Rock:NotificationBox>
 
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
@@ -56,9 +58,10 @@
 
             <fieldset id="fieldsetViewDetails" runat="server">
 
-                <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                <p class="description">
+                    <asp:Literal ID="lDescription" runat="server"></asp:Literal></p>
 
-                <asp:Literal ID="lblMainDetails" runat="server" />
+                <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                 <div class="actions">
                     <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />

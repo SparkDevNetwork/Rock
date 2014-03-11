@@ -57,10 +57,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 // Set the browser page title to include person's name
                 RockPage.BrowserTitle = Person.FullName;
 
-                lName.Text = Person.FullName.FormatAsHtmlTitle();
+                if (Person.NickName == Person.FirstName) {
+                    lName.Text = Person.FullName.FormatAsHtmlTitle();
+                }
+                else {
+                    lName.Text = String.Format( "{0} ({1}) {2}", Person.NickName, Person.FirstName, Person.LastName ).FormatAsHtmlTitle();
+                }
 
                 // Setup Image
-                var imgTag = new LiteralControl( Rock.Model.Person.GetPhotoImageTag( Person.PhotoId, Person.Gender, 188, 188 ) );
+                var imgTag = new LiteralControl( Rock.Model.Person.GetPhotoImageTag( Person.PhotoId, Person.Gender, 200, 200 ) );
                 if ( Person.PhotoId.HasValue )
                 {
                     var imgLink = new HyperLink();
@@ -103,16 +108,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     string badgeList = GetAttributeValue( "Badges" );
                     if (!string.IsNullOrWhiteSpace(badgeList))
                     {
-                        var personBadgeService = new PersonBadgeService();
                         foreach ( string badgeGuid in badgeList.SplitDelimitedValues() ) 
                         {
                             Guid guid = badgeGuid.AsGuid();
                             if (guid != Guid.Empty)
                             {
-                                var personBadge = personBadgeService.Get( guid );
+                                var personBadge = PersonBadgeCache.Read( guid );
                                 if (personBadge != null)
                                 {
-                                    personBadge.LoadAttributes();
                                     blStatus.PersonBadges.Add( personBadge );
                                 }
                             }

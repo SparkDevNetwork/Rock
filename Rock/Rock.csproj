@@ -78,6 +78,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\HtmlAgilityPack.1.4.6\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
+    <Reference Include="ImageResizer">
+      <HintPath>..\packages\ImageResizer.3.4.2\lib\ImageResizer.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.SqlServer.Types, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <Private>True</Private>
@@ -97,6 +100,10 @@
     <Reference Include="NuGet.Core, Version=2.2.31210.9045, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NuGet.Core.2.2.0\lib\net40-Client\NuGet.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Quartz, Version=2.0.0.100, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\libs\Quartz\Quartz.dll</HintPath>
     </Reference>
     <Reference Include="RestSharp">
       <HintPath>..\packages\RestSharp.104.3.3\lib\net4\RestSharp.dll</HintPath>
@@ -146,6 +153,7 @@
     <Compile Include="Address\GeocodeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Address\Geocode\Bing.cs" />
     <Compile Include="Attribute\AccountsFieldAttribute.cs" />
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\PersonBadgesAttribute.cs" />
@@ -186,6 +194,7 @@
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
     <Compile Include="Communication\Transport\Twilio.cs" />
+    <Compile Include="Data\IgnoreCanDelete.cs" />
     <Compile Include="Data\IModel.cs" />
     <Compile Include="Data\IService.cs" />
     <Compile Include="Data\LinqRuntimeTypeBuilder.cs" />
@@ -208,6 +217,9 @@
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Jobs\RunSQL.cs" />
+    <Compile Include="Model\CodeGenerated\CommunicationTemplateService.cs" />
+    <Compile Include="Model\CommunicationTemplate.cs" />
+    <Compile Include="Model\Metaphone.cs" />
     <Compile Include="Model\CodeGenerated\FollowingService.cs" />
     <Compile Include="Model\Following.cs" />
     <Compile Include="Model\AuditDetail.cs" />
@@ -267,6 +279,8 @@
     <Compile Include="Reporting\EntityHelper.cs" />
     <Compile Include="Reporting\SelectExpressionExtractor.cs" />
     <Compile Include="Reporting\FilterExpressionExtractor.cs" />
+    <Compile Include="Transactions\SaveMetaphoneTransaction.cs" />
+    <Compile Include="Utility\DoubleMetaphone.cs" />
     <Compile Include="Utility\RockDateTime.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
@@ -298,7 +312,12 @@
     <Compile Include="SystemGuid\Category.cs" />
     <Compile Include="SystemGuid\EntityType.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
+    <Compile Include="Web\Cache\PersonBadgeCache.cs" />
     <Compile Include="Web\Cache\CategoryCache.cs" />
+    <Compile Include="Web\Cache\RestControllerCache.cs" />
+    <Compile Include="Web\Cache\RestActionCache.cs" />
+    <Compile Include="Web\FileUploadException.cs" />
+    <Compile Include="Web\RequestValidator.cs" />
     <Compile Include="Web\SystemSettings.cs" />
     <Compile Include="Web\Cache\GroupTypeCache.cs" />
     <Compile Include="Web\Cache\LayoutCache.cs" />
@@ -507,6 +526,7 @@
     <Compile Include="Web\UI\Controls\Grid\RockBoundField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LinkButtonField.cs" />
     <Compile Include="Web\UI\Controls\IHasValidationGroup.cs" />
+    <Compile Include="Web\UI\Controls\ImageEditor.cs" />
     <Compile Include="Web\UI\Controls\NoteContainer.cs" />
     <Compile Include="Web\UI\Controls\Pickers\EntityTypePicker.cs" />
     <Compile Include="Web\UI\Controls\PanelWidget.cs" />
@@ -660,8 +680,7 @@
     <Compile Include="Model\LocationService.Partial.cs" />
     <Compile Include="Model\Campus.cs" />
     <Compile Include="Model\CodeGenerated\CampusService.cs" />
-    <Compile Include="Model\CodeGenerated\EmailTemplateService.cs" />
-    <Compile Include="Model\EmailTemplateService.Partial.cs" />
+    <Compile Include="Model\CodeGenerated\SystemEmailService.cs" />
     <Compile Include="Model\CodeGenerated\PersonService.cs" />
     <Compile Include="Model\PersonService.Partial.cs" />
     <Compile Include="Model\PersonAliasService.Partial.cs" />
@@ -686,11 +705,9 @@
     <Compile Include="Extension\Container.cs" />
     <Compile Include="Extension\ComponentDescription.cs" />
     <Compile Include="Address\Standardize\MelissaData.cs" />
-    <Compile Include="Address\Standardize\StrikeIron.cs" />
     <Compile Include="Address\StandardizeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Address\Geocode\StrikeIron.cs" />
     <Compile Include="Address\StandardizeComponent.cs" />
     <Compile Include="Address\GeocodeComponent.cs" />
     <Compile Include="Address\Geocode\ServiceObjects.cs" />
@@ -713,7 +730,7 @@
     <Compile Include="Model\FieldType.cs" />
     <Compile Include="Model\ServiceLog.cs" />
     <Compile Include="Model\Location.cs" />
-    <Compile Include="Model\EmailTemplate.cs" />
+    <Compile Include="Model\SystemEmail.cs" />
     <Compile Include="Model\Person.cs" />
     <Compile Include="Model\PhoneNumber.cs" />
     <Compile Include="Extension\IContainer.cs" />
@@ -915,21 +932,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
-    <Compile Include="Service References\StrikeIron.USAddressVerification\Reference.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Compile>
-    <Compile Include="Service References\TeleAtlas.Authentication\Reference.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Compile>
-    <Compile Include="Service References\TeleAtlas.Geocoding\Reference.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Compile>
     <Compile Include="Data\IFeed.cs" />
     <Compile Include="Jobs\JobLoadFailedException.cs" />
     <Compile Include="Web\UI\PersonBlock.cs">
@@ -972,49 +974,10 @@
     <None Include="Service References\ServiceObjects.GeoCoder\Rock.ServiceObjects.GeoCoder.ZipCodeInfo.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
-    <None Include="Service References\StrikeIron.USAddressVerification\Rock.StrikeIron.USAddressVerification.SIWsOutputOfMethodStatusRecord.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\StrikeIron.USAddressVerification\Rock.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfMethodStatusRecord.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\StrikeIron.USAddressVerification\Rock.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfServiceInfoRecord.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\StrikeIron.USAddressVerification\Rock.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfUSAddressWithStatus.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\StrikeIron.USAddressVerification\Rock.StrikeIron.USAddressVerification.SIWsOutputOfUSAddress.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\StrikeIron.USAddressVerification\Rock.StrikeIron.USAddressVerification.SubscriptionInfo.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\StrikeIron.USAddressVerification\USAddressVerification5.wsdl" />
-    <None Include="Service References\TeleAtlas.Authentication\Authentication.wsdl" />
-    <None Include="Service References\TeleAtlas.Geocoding\Geocoding.wsdl" />
-    <None Include="Service References\TeleAtlas.Geocoding\Rock.TeleAtlas.Geocoding.Geocode.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TeleAtlas.Geocoding\Rock.TeleAtlas.Geocoding.MatchType.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TeleAtlas.Geocoding\Rock.TeleAtlas.Geocoding.NameValue.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TeleAtlas.Geocoding\Rock.TeleAtlas.Geocoding.OutputField.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
     <None Include="Service References\ServiceObjects.GeoCoder\GeoCoder.disco" />
     <None Include="Service References\ServiceObjects.GeoCoder\configuration91.svcinfo" />
     <None Include="Service References\ServiceObjects.GeoCoder\configuration.svcinfo" />
     <None Include="Service References\ServiceObjects.GeoCoder\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
-    <None Include="Service References\StrikeIron.USAddressVerification\configuration91.svcinfo" />
-    <None Include="Service References\StrikeIron.USAddressVerification\configuration.svcinfo" />
-    <None Include="Service References\StrikeIron.USAddressVerification\Reference.svcmap">
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
@@ -1025,18 +988,6 @@
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
-    <None Include="Service References\TeleAtlas.Authentication\configuration91.svcinfo" />
-    <None Include="Service References\TeleAtlas.Authentication\configuration.svcinfo" />
-    <None Include="Service References\TeleAtlas.Authentication\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
-    <None Include="Service References\TeleAtlas.Geocoding\configuration91.svcinfo" />
-    <None Include="Service References\TeleAtlas.Geocoding\configuration.svcinfo" />
-    <None Include="Service References\TeleAtlas.Geocoding\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
@@ -1044,15 +995,6 @@
   <ItemGroup>
     <WCFMetadataStorage Include="Service References\MelissaData.AddressCheck\" />
     <WCFMetadataStorage Include="Service References\ServiceObjects.GeoCoder\" />
-    <WCFMetadataStorage Include="Service References\StrikeIron.USAddressVerification\" />
-    <WCFMetadataStorage Include="Service References\TeleAtlas.Authentication\" />
-    <WCFMetadataStorage Include="Service References\TeleAtlas.Geocoding\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Quartz\Quartz.csproj">
-      <Project>{AEF8823B-E45B-4B35-A4D0-C08C1196D017}</Project>
-      <Name>Quartz</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />

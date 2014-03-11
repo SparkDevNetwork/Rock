@@ -584,7 +584,7 @@ namespace Rock.Web.UI.Controls
             if ( this.Enabled )
             {
                 writer.AddAttribute( "id", this.ID.ToString() );
-                writer.AddAttribute( "class", "picker picker-select" );
+                writer.AddAttribute( "class", "picker picker-select rollover-container" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 if ( !HidePickerLabel )

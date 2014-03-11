@@ -46,38 +46,39 @@ namespace Rock.Rest.Filters
 
             using (new UnitOfWorkScope())
             {
-                ISecured item = new RestActionService().Queryable( "Controller" )
-                    .Where( a =>
-                        a.Method == actionMethod &&
-                        a.Path == actionPath &&
-                        a.Controller.ClassName == controllerClassName )
-                    .FirstOrDefault();
-                if ( item == null )
+                ISecured item = Rock.Web.Cache.RestActionCache.Read(actionMethod + actionPath);
+                if (item == null)
                 {
-                    item = new RestControllerService().Queryable()
-                        .Where( c => c.ClassName == controllerClassName )
-                        .FirstOrDefault();
-                    if ( item == null )
+                    item = Rock.Web.Cache.RestControllerCache.Read( controllerClassName );
+                    if (item == null)
                     {
                         item = new RestController();
                     }
                 }
-
+                
                 Person person = null;
 
-                var principal = actionContext.Request.GetUserPrincipal();
-                if ( principal != null && principal.Identity != null )
+                if (actionContext.Request.Properties.Keys.Contains("Person"))
                 {
-                    var userLoginService = new Rock.Model.UserLoginService();
-                    var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
-                    if (userLogin != null)
+                    person = actionContext.Request.Properties["Person"] as Person;
+                }
+                else
+                {
+                    var principal = actionContext.Request.GetUserPrincipal();
+                    if ( principal != null && principal.Identity != null )
                     {
-                        person = userLogin.Person;
+                        var userLoginService = new Rock.Model.UserLoginService();
+                        var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
+                        if (userLogin != null)
+                        {
+                            person = userLogin.Person;
+                            actionContext.Request.Properties.Add( "Person", person );
+                        }
                     }
                 }
 
                 string action = actionMethod.Equals("GET", StringComparison.OrdinalIgnoreCase) ? "View" : "Edit";
-                if (!item.IsAuthorized(action, person))
+                if ( !item.IsAuthorized( action, person ) )
                 {
                     actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
                 }

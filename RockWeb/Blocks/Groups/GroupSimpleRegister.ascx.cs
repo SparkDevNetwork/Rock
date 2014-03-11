@@ -144,7 +144,7 @@ namespace RockWeb.Blocks.Groups
 
                                             var recipients = new Dictionary<string, Dictionary<string, object>>();
                                             recipients.Add( person.Email, mergeObjects );
-                                            Email.Send( confirmationEmailTemplateGuid, recipients );
+                                            Email.Send( confirmationEmailTemplateGuid, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
                                         }
 
                                         ShowSuccess( GetAttributeValue( "SuccessMessage" ) );

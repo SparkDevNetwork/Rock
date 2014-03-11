@@ -104,7 +104,7 @@ namespace RockWeb.Blocks.Administraton
             // get data for graphs
             ExceptionLogService exceptionLogService = new ExceptionLogService();
             var exceptionList = exceptionLogService.Queryable()
-            .Where(x => x.HasInnerException == false)
+            .Where(x => x.HasInnerException == false && x.CreatedDateTime != null)
             .GroupBy( x => DbFunctions.TruncateTime(x.CreatedDateTime.Value ))
             .Select( eg => new
             {

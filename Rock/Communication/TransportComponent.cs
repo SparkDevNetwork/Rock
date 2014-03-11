@@ -41,7 +41,9 @@ namespace Rock.Communication
         /// </summary>
         /// <param name="template">The template.</param>
         /// <param name="recipients">The recipients.</param>
-        public abstract void Send( EmailTemplate template, Dictionary<string, Dictionary<string, object>> recipients );
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        public abstract void Send( SystemEmail template, Dictionary<string, Dictionary<string, object>> recipients, string appRoot, string themeRoot );
 
         /// <summary>
         /// Merges the values.

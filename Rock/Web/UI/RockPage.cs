@@ -701,7 +701,7 @@ namespace Rock.Web.UI
 
                             HtmlGenericContainer blockWrapper = new HtmlGenericContainer( "div" );
                             blockWrapper.ID = string.Format( "bid_{0}", block.Id );
-                            blockWrapper.Attributes.Add( "zoneloc", block.BlockLocation.ToString() );
+                            blockWrapper.Attributes.Add( "data-zone-location", block.BlockLocation.ToString() );
                             blockWrapper.ClientIDMode = ClientIDMode.Static;
                             FindZone( block.Zone ).Controls.Add( blockWrapper );
 
@@ -997,12 +997,12 @@ namespace Rock.Web.UI
                 transaction.SiteId = _pageCache.Layout.Site.Id;
                 if ( CurrentPersonAlias != null )
                 {
-                    transaction.PersonId = CurrentPersonAlias.Id;
+                    transaction.PersonAliasId = CurrentPersonAlias.Id;
                 }
                 transaction.IPAddress = Request.UserHostAddress;
                 transaction.UserAgent = Request.UserAgent;
-                transaction.QueryString = Request.QueryString.ToString();
-                transaction.SessionId = Session.SessionID;
+                transaction.Url = Request.Url.ToString();
+                transaction.SessionId = Session["RockSessionId"].ToString();
 
                 RockQueue.TransactionQueue.Enqueue( transaction );
             }
@@ -1212,12 +1212,15 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Returns a resolved Rock URL.  Similar to <see cref="System.Web.UI.Control">System.Web.UI.Control's</see> <c>ResolveUrl</c> method except that you can prefix 
+        /// Returns a resolved Rock URL.  Similar to <see cref="System.Web.UI.Control">System.Web.UI.Control's</see> <c>ResolveUrl</c> method except that you can prefix
         /// a url with '~~' to indicate a virtual path to Rock's current theme root folder.
         /// </summary>
-        /// <param name="url">A <see cref="System.String"/> representing the URL to resolve.</param>
-        /// <returns>A <see cref="System.String"/> with the resolved URL.</returns>
-        public string ResolveRockUrl( string url )
+        /// <param name="url">A <see cref="System.String" /> representing the URL to resolve.</param>
+        /// <param name="includeRoot">if set to <c>true</c> [include root].</param>
+        /// <returns>
+        /// A <see cref="System.String" /> with the resolved URL.
+        /// </returns>
+        public string ResolveRockUrl( string url, bool includeRoot = false )
         {
             string themeUrl = url;
             if ( url.StartsWith( "~~" ) )
@@ -1225,7 +1228,16 @@ namespace Rock.Web.UI
                 themeUrl = "~/Themes/" + _pageCache.Layout.Site.Theme + ( url.Length > 2 ? url.Substring( 2 ) : string.Empty );
             }
 
-            return ResolveUrl( themeUrl );
+            string virtualPath = ResolveUrl( themeUrl );
+
+            if (includeRoot)
+            {
+                return string.Format( "{0}://{1}{2}", Context.Request.Url.Scheme, Context.Request.Url.Authority, virtualPath );
+            }
+            else
+            {
+                return virtualPath;
+            }
         }
 
         /// <summary>
@@ -1241,61 +1253,80 @@ namespace Rock.Web.UI
 
                 if ( keyModel.Entity == null )
                 {
-                    Type modelType = entity.GetEntityType();
-
-                    if ( modelType == null )
+                    if ( entity.Name.Equals( "Rock.Model.Person", StringComparison.OrdinalIgnoreCase ) )
                     {
-                        // if the Type isn't found in the Rock.dll (it might be from a Plugin), lookup which assessmbly it is in and look in there
-                        string[] assemblyNameParts = entity.AssemblyName.Split( new char[] { ',' } );
-                        if ( assemblyNameParts.Length > 1 )
-                        {
-                            modelType = Type.GetType( string.Format( "{0}, {1}", entity.Name, assemblyNameParts[1] ) );
-                        }
-                    }
-
-                    if ( modelType != null )
-                    {
-                        // In the case of core Rock.dll Types, we'll just use Rock.Data.Service<> and Rock.Data.RockContext<>
-                        // otherwise find the first (and hopefully only) Service<> and dbContext we can find in the Assembly.  
-                        Type serviceType = typeof( Rock.Data.Service<> );
-                        Type contextType = typeof( Rock.Data.RockContext );
-                        if ( modelType.Assembly != serviceType.Assembly )
-                        {
-                            var serviceTypeLookup = Reflection.SearchAssembly( modelType.Assembly, serviceType );
-                            if ( serviceTypeLookup.Any() )
-                            {
-                                serviceType = serviceTypeLookup.First().Value;
-                            }
-
-                            var contextTypeLookup = Reflection.SearchAssembly( modelType.Assembly, typeof( System.Data.Entity.DbContext ) );
-
-                            if ( contextTypeLookup.Any() )
-                            {
-                                contextType = contextTypeLookup.First().Value;
-                            }
-                        }
-
-                        System.Data.Entity.DbContext dbContext = Activator.CreateInstance( contextType ) as System.Data.Entity.DbContext;
-
-                        Type service = serviceType.MakeGenericType( new Type[] { modelType } );
-                        var serviceInstance = Activator.CreateInstance( service, dbContext );
-
                         if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
                         {
-                            MethodInfo getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
-                            keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Id } ) as Rock.Data.IEntity;
+                            keyModel.Entity = new PersonService()
+                                .Queryable( "MaritalStatusValue,ConnectionStatusValue,RecordStatusValue,RecordStatusReasonValue,RecordTypevalue,SuffixValue,TitleValue,GivingGroup,Photo" )
+                                .Where( p => p.Id == keyModel.Id ).FirstOrDefault();
                         }
                         else
                         {
-                            MethodInfo getMethod = service.GetMethod( "GetByPublicKey" );
-                            keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Key } ) as Rock.Data.IEntity;
-                        }
-
-                        if ( keyModel.Entity is Rock.Attribute.IHasAttributes )
-                        {
-                            Rock.Attribute.Helper.LoadAttributes( keyModel.Entity as Rock.Attribute.IHasAttributes );
+                            keyModel.Entity = new PersonService().GetByPublicKey( keyModel.Key );
                         }
                     }
+                    else
+                    {
+
+                        Type modelType = entity.GetEntityType();
+
+                        if ( modelType == null )
+                        {
+                            // if the Type isn't found in the Rock.dll (it might be from a Plugin), lookup which assessmbly it is in and look in there
+                            string[] assemblyNameParts = entity.AssemblyName.Split( new char[] { ',' } );
+                            if ( assemblyNameParts.Length > 1 )
+                            {
+                                modelType = Type.GetType( string.Format( "{0}, {1}", entity.Name, assemblyNameParts[1] ) );
+                            }
+                        }
+
+                        if ( modelType != null )
+                        {
+                            // In the case of core Rock.dll Types, we'll just use Rock.Data.Service<> and Rock.Data.RockContext<>
+                            // otherwise find the first (and hopefully only) Service<> and dbContext we can find in the Assembly.  
+                            Type serviceType = typeof( Rock.Data.Service<> );
+                            Type contextType = typeof( Rock.Data.RockContext );
+                            if ( modelType.Assembly != serviceType.Assembly )
+                            {
+                                var serviceTypeLookup = Reflection.SearchAssembly( modelType.Assembly, serviceType );
+                                if ( serviceTypeLookup.Any() )
+                                {
+                                    serviceType = serviceTypeLookup.First().Value;
+                                }
+
+                                var contextTypeLookup = Reflection.SearchAssembly( modelType.Assembly, typeof( System.Data.Entity.DbContext ) );
+
+                                if ( contextTypeLookup.Any() )
+                                {
+                                    contextType = contextTypeLookup.First().Value;
+                                }
+                            }
+
+                            System.Data.Entity.DbContext dbContext = Activator.CreateInstance( contextType ) as System.Data.Entity.DbContext;
+
+                            Type service = serviceType.MakeGenericType( new Type[] { modelType } );
+                            var serviceInstance = Activator.CreateInstance( service, dbContext );
+
+                            if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
+                            {
+                                MethodInfo getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
+                                keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Id } ) as Rock.Data.IEntity;
+                            }
+                            else
+                            {
+                                MethodInfo getMethod = service.GetMethod( "GetByPublicKey" );
+                                keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Key } ) as Rock.Data.IEntity;
+                            }
+                        }
+
+                    }
+
+                    if ( keyModel.Entity != null && keyModel.Entity is Rock.Attribute.IHasAttributes )
+                    {
+                        Rock.Attribute.Helper.LoadAttributes( keyModel.Entity as Rock.Attribute.IHasAttributes );
+                    }
+
                 }
 
                 return keyModel.Entity;

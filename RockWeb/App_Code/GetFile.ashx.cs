@@ -38,8 +38,8 @@ namespace RockWeb
         {
             try
             {
-                // Check to see if this is a BinaryFileType/BinaryFile or just a plain content file
-                bool isBinaryFile = context.Request.QueryString["isBinaryFile"].AsBoolean();
+                // Check to see if this is a BinaryFileType/BinaryFile or just a plain content file (if isBinaryFile not specified, assume it is a BinaryFile)
+                bool isBinaryFile = ( context.Request.QueryString["isBinaryFile"] ?? "T" ).AsBoolean();
                 context.Items.Add( "isBinaryFile", isBinaryFile );
 
                 if ( isBinaryFile )

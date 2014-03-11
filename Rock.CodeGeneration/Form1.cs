@@ -299,6 +299,16 @@ namespace Rock.CodeGeneration
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        private class TableColumnInfo
+        {
+            public string Table { get; set; }
+            public string Column { get; set; }
+            public bool Ignore { get; set; }
+        }
+
+        /// <summary>
         /// Gets the can delete code.
         /// </summary>
         /// <param name="rootFolder">The root folder.</param>
@@ -351,16 +361,31 @@ order by [parentTable], [columnName]
 
             var reader = sqlCommand.ExecuteReader();
 
-            List<KeyValuePair<string, string>> parentTableColumnNameList = new List<KeyValuePair<string, string>>();
+            List<TableColumnInfo> parentTableColumnNameList = new List<TableColumnInfo>();
             while ( reader.Read() )
             {
                 string parentTable = reader["parentTable"] as string;
                 string columnName = reader["columnName"] as string;
-                parentTableColumnNameList.Add( new KeyValuePair<string, string>( parentTable, columnName ) );
+                bool ignoreCanDelete = false;
+
+                Type parentEntityType = Type.GetType( string.Format( "Rock.Model.{0}, {1}", parentTable, type.Assembly.FullName ));
+                if (parentEntityType != null)
+                {
+                    PropertyInfo columnProp = parentEntityType.GetProperty( columnName );
+                    if (columnProp != null)
+                    {
+                        if (columnProp.GetCustomAttribute<Rock.Data.IgnoreCanDelete>() != null)
+                        {
+                            ignoreCanDelete = true;
+                        }
+                    }
+                }
+
+                parentTableColumnNameList.Add( new TableColumnInfo { Table = parentTable, Column = columnName, Ignore = ignoreCanDelete } );
             }
 
             // detect associative table where more than one key is referencing the same table.  EF will automatically take care of it on the DELETE
-            List<string> parentTablesToIgnore = parentTableColumnNameList.GroupBy( a => a.Key ).Where( g => g.Count() > 1 ).Select( s => s.Key ).ToList();
+            List<string> parentTablesToIgnore = parentTableColumnNameList.GroupBy( a => a.Table ).Where( g => g.Count() > 1 ).Select( s => s.Key ).ToList();
 
             // GroupLocation isn't an Entity/Model :(
             parentTablesToIgnore.Add( "GroupLocation" );
@@ -384,22 +409,22 @@ order by [parentTable], [columnName]
             foreach ( var item in parentTableColumnNameList )
             {
                 // Ignore custom tables
-                if ( item.Key.StartsWith( "_" ) )
+                if ( item.Table.StartsWith( "_" ) )
                 {
                     continue;
                 }
 
-                if ( parentTablesToIgnore.Contains( item.Key ) )
+                if ( parentTablesToIgnore.Contains( item.Table ) || item.Ignore)
                 {
                     canDeleteMiddle += string.Format(
 @"            
             // ignoring {0},{1} 
-", item.Key, item.Value);
+", item.Table, item.Column);
                     continue;
                 }
 
-                string parentTable = item.Key;
-                string columnName = item.Value;
+                string parentTable = item.Table;
+                string columnName = item.Column;
 
                 canDeleteMiddle += string.Format(
 @" 

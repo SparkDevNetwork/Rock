@@ -66,6 +66,11 @@ namespace RockWeb.Blocks.CheckIn
                 confirmExit.Enabled = true;
             }
 
+            if (hfLocationPickerVisible.Value.AsBoolean())
+            {
+                mdLocationPicker.Show();
+            }
+
             // handle sort events
             string postbackArgs = Request.Params["__EVENTARGUMENT"];
             if ( !string.IsNullOrWhiteSpace( postbackArgs ) )
@@ -591,6 +596,7 @@ namespace RockWeb.Blocks.CheckIn
             checkinGroupEditor.ForceContentVisible = true;
             ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).ForceContentVisible = true;
 
+            hfLocationPickerVisible.Value = true.ToString();
             mdLocationPicker.Show();
         }
 
@@ -633,6 +639,7 @@ namespace RockWeb.Blocks.CheckIn
             checkinGroupEditor.ForceContentVisible = true;
             ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).ForceContentVisible = true;
 
+            hfLocationPickerVisible.Value = false.ToString();
             mdLocationPicker.Hide();
         }
 
@@ -652,6 +659,7 @@ namespace RockWeb.Blocks.CheckIn
                 GroupTypeService groupTypeService = new GroupTypeService();
                 GroupService groupService = new GroupService();
                 AttributeService attributeService = new AttributeService();
+                GroupLocationService groupLocationService = new GroupLocationService();
 
                 int parentGroupTypeId = hfParentGroupTypeId.ValueAsInt();
 
@@ -678,7 +686,7 @@ namespace RockWeb.Blocks.CheckIn
                 PopulateDeleteLists( groupTypesToDelete, groupsToDelete, parentGroupTypeDB, parentGroupTypeUI );
                 PopulateAddUpdateLists( groupTypesToAddUpdate, groupsToAddUpdate, parentGroupTypeUI );
 
-                int binaryFileFieldTypeID = new FieldTypeService().Get( new Guid( Rock.SystemGuid.FieldType.BINARY_FILE ) ).Id;
+                int binaryFileFieldTypeID = FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() ).Id;
                 int binaryFileTypeId = new BinaryFileTypeService().Get( new Guid( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL ) ).Id;
 
                 RockTransactionScope.WrapTransaction( () =>
@@ -792,7 +800,8 @@ namespace RockWeb.Blocks.CheckIn
                         {
                             if ( !groupUI.GroupLocations.Select( a => a.LocationId ).Contains( groupLocationDB.LocationId ) )
                             {
-                                groupDB.GroupLocations.Remove( groupLocationDB );
+                                groupLocationService.Delete(groupLocationDB, CurrentPersonAlias);
+                                groupLocationService.Save(groupLocationDB, CurrentPersonAlias);
                             }
                         }
 

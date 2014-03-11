@@ -364,9 +364,9 @@
         renderError: function (msg) {
             this.clearError();
             this.discardLoading(this.$el);
-            var $warning = $('<div class="alert alert-warning alert-dismissable js-rocktree-alert"/>');
+            var $warning = $('<div class="alert alert-danger alert-dismissable js-rocktree-alert"/>');
             $warning.append('<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>')
-                .append('<strong><i class="fa fa-exclamation-triangle"></i> Uh oh! </strong>')
+                .append('<strong><i class="fa fa-exclamation-triangle"></i> Error </strong>')
                 .append(msg);
             $warning.insertBefore(this.$el);
         },

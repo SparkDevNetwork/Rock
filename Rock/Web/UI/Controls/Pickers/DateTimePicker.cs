@@ -273,7 +273,8 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _datePicker.SelectedDate + _timePicker.SelectedTime;
+                return ( _datePicker.SelectedDate ?? RockDateTime.Today ) +
+                    ( _timePicker.SelectedTime ?? new TimeSpan( 0 ) );
             }
 
             set

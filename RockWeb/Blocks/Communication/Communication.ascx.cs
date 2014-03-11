@@ -145,15 +145,9 @@ namespace RockWeb.Blocks.Communication
             set { ViewState["AdditionalMergeFields"] = value; }
         }
 
-        private string PageTitle
-        {
-            get { return ViewState["PageTitle"] as string ?? "a New Communication"; }
-            set { ViewState["PageTitle"] = value; }
-        }
-
         #endregion
 
-        #region Control Methods
+        #region Base Control Methods
 
         protected override void OnInit( EventArgs e )
         {
@@ -180,6 +174,7 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
+                LoadTemplates();
                 ShowAllRecipients = false;
 
                 string itemId = PageParameter( "CommunicationId" );
@@ -193,13 +188,59 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
-            BreadCrumbs.Add( new BreadCrumb( PageTitle, true ) );
+        }
+
+        /// <summary>
+        /// Returns breadcrumbs specific to the block that should be added to navigation
+        /// based on the current page reference.  This function is called during the page's
+        /// oninit to load any initial breadcrumbs.
+        /// </summary>
+        /// <param name="pageReference">The <see cref="Rock.Web.PageReference" />.</param>
+        /// <returns>
+        /// A <see cref="System.Collections.Generic.List{BreadCrumb}" /> of block related <see cref="Rock.Web.UI.BreadCrumb">BreadCrumbs</see>.
+        /// </returns>
+        public override List<Rock.Web.UI.BreadCrumb> GetBreadCrumbs( Rock.Web.PageReference pageReference )
+        {
+            var breadCrumbs = new List<BreadCrumb>();
+
+            string pageTitle = "New Communication";
+
+            int? commId = PageParameter( "CommunicationId" ).AsInteger( false );
+            if ( commId.HasValue )
+            {
+                var communication = new CommunicationService().Get( commId.Value );
+                if ( communication != null )
+                {
+                    pageTitle = string.Format( "Communication #{0}", communication.Id );
+                }
+            }
+
+            breadCrumbs.Add( new BreadCrumb( pageTitle, pageReference ) );
+            RockPage.Title = pageTitle;
+
+            return breadCrumbs;
         }
 
         #endregion
 
         #region Events
 
+        protected void ddlTemplate_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            int? templateID = ddlTemplate.SelectedValue.AsInteger( false );
+            if (templateID.HasValue)
+            {
+                var template = new CommunicationTemplateService().Get( templateID.Value );
+                if (template != null)
+                {
+                    ChannelEntityTypeId = template.ChannelEntityTypeId;
+                    ChannelData = template.ChannelData;
+                    ChannelData.Add( "Subject", template.Subject );
+                    LoadChannelControl( true );
+                }
+            }
+        }
+        
         /// <summary>
         /// Handles the Click event of the lbChannel control.
         /// </summary>
@@ -342,7 +383,17 @@ namespace RockWeb.Blocks.Communication
                             communication.Status = CommunicationStatus.Approved;
                             communication.ReviewedDateTime = RockDateTime.Now;
                             communication.ReviewerPersonId = CurrentPersonId;
-                            message = "Communication has been queued for sending.";
+
+                            if ( communication.FutureSendDateTime.HasValue &&
+                                communication.FutureSendDateTime > RockDateTime.Now)
+                            {
+                                message = string.Format( "Communication will be sent {0}.",
+                                    communication.FutureSendDateTime.Value.ToRelativeDateString( 0 ) );
+                            }
+                            else
+                            {
+                                message = "Communication has been queued for sending.";
+                            }
 
                             // TODO: Send notice to sender that communication was approved
                         }
@@ -361,7 +412,8 @@ namespace RockWeb.Blocks.Communication
 
                         service.Save( communication, CurrentPersonAlias );
 
-                        if ( communication.Status == CommunicationStatus.Approved )
+                        if ( communication.Status == CommunicationStatus.Approved &&
+                            (!communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value <= RockDateTime.Now))
                         {
                             bool sendNow = false;
                             if ( bool.TryParse( GetAttributeValue( "SendWhenApproved" ), out sendNow ) && sendNow )
@@ -452,25 +504,22 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            if ( Page.IsValid )
+            using ( new UnitOfWorkScope() )
             {
-                using ( new UnitOfWorkScope() )
+                var service = new CommunicationService();
+                var communication = UpdateCommunication( service );
+
+                if ( communication != null )
                 {
-                    var service = new CommunicationService();
-                    var communication = UpdateCommunication( service );
-
-                    if ( communication != null )
+                    var prevStatus = communication.Status;
+                    if ( communication.Status == CommunicationStatus.Transient )
                     {
-                        var prevStatus = communication.Status;
-                        if ( communication.Status == CommunicationStatus.Transient )
-                        {
-                            communication.Status = CommunicationStatus.Draft;
-                        }
-
-                        service.Save( communication, CurrentPersonAlias );
-
-                        ShowResult( "The communication has been saved", communication );
+                        communication.Status = CommunicationStatus.Draft;
                     }
+
+                    service.Save( communication, CurrentPersonAlias );
+
+                    ShowResult( "The communication has been saved", communication );
                 }
             }
         }
@@ -583,7 +632,6 @@ namespace RockWeb.Blocks.Communication
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 communication = new CommunicationService().Get( itemKeyValue );
-                RockPage.PageTitle = string.Format( "Communication #{0}", communication.Id );
                 this.AdditionalMergeFields = communication.AdditionalMergeFields.ToList();
 
                 lTitle.Text = ("Subject: " + communication.Subject).FormatAsHtmlTitle();
@@ -635,6 +683,25 @@ namespace RockWeb.Blocks.Communication
             dtpFutureSend.SelectedDateTime = communication.FutureSendDateTime;
 
             ShowActions( communication );
+        }
+
+        private void LoadTemplates()
+        {
+            bool visible = false;
+
+            ddlTemplate.Items.Clear();
+            ddlTemplate.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            foreach(var template in new CommunicationTemplateService().Queryable()
+                .Where( t =>
+                    t.OwnerPersonAlias == null ||
+                    t.OwnerPersonAlias.PersonId == (CurrentPersonId ?? 0))
+                .OrderBy( t => t.Name ))
+            {
+                visible = true;
+                ddlTemplate.Items.Add( new ListItem( template.Name, template.Id.ToString() ) );
+            }
+
+            ddlTemplate.Visible = visible;
         }
 
         /// <summary>
@@ -1018,5 +1085,5 @@ namespace RockWeb.Blocks.Communication
 
         #endregion
 
-    }
+}
 }

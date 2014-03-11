@@ -247,7 +247,12 @@ namespace Rock.Model
                         familyDemographicChanges.Add( person.Guid, demographicChanges );
 
                         var memberChanges = new List<string>();
-                        string roleName = familyGroupType.Roles[familyMember.GroupRoleId] ?? string.Empty;
+                        
+                        string roleName = familyGroupType.Roles
+                            .Where( r => r.Id == familyMember.GroupRoleId )
+                            .Select( r => r.Name )
+                            .FirstOrDefault();
+
                         History.EvaluateChange( memberChanges, "Role", string.Empty, roleName );
                         familyMemberChanges.Add( person.Guid, memberChanges );
                     }

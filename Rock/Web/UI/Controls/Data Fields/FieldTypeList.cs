@@ -33,14 +33,8 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
 
-            Rock.Model.FieldTypeService fieldTypeService = new Model.FieldTypeService();
-            var items = fieldTypeService.
-                Queryable().
-                Select( f => new { f.Id, f.Name } ).
-                OrderBy( f => f.Name );
-
             this.Items.Clear();
-            foreach ( var item in items )
+            foreach ( var item in Rock.Web.Cache.FieldTypeCache.All() )
                 this.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
         }
     }

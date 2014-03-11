@@ -233,12 +233,14 @@ namespace RockWeb.Blocks.Security
                                     binaryFileService.Save( binaryFile, CurrentPersonAlias );
                                 }
                             }
+
+                            NavigateToParentPage();
+
                         }
                     }
                 } );
             }
 
-            NavigateToParentPage();
         }
 
         /// <summary>
@@ -260,6 +262,7 @@ namespace RockWeb.Blocks.Security
             if ( person != null )
             {
                 imgPhoto.BinaryFileId = person.PhotoId;
+                imgPhoto.NoPictureUrl = Person.GetPhotoUrl( null, person.Gender );
                 ddlTitle.SelectedValue = person.TitleValueId.HasValue ? person.TitleValueId.Value.ToString() : string.Empty;
                 tbFirstName.Text = person.FirstName;
                 tbLastName.Text = person.LastName;

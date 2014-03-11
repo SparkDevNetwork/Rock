@@ -1,4 +1,5 @@
 ﻿/// <reference path="bootstrap.min.js" />
+/// <reference path="jcrop.min.js" />
 /// <reference path="jquery-1.10.2.min.js" />
 /// <reference path="jquery.tinyscrollbar.js" />
 /// <reference path="jquery.fileupload.js" />

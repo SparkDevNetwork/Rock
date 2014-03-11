@@ -15,6 +15,7 @@
                 <asp:BoundField DataField="MemberCount" HeaderText="Members" SortExpression="MemberCount" />
                 <Rock:DateTimeField DataField="DateAdded" HeaderText="Added" SortExpression="DateAdded" FormatAsElapsedTime="true" />
                 <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
+                <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
                 <Rock:DeleteField OnClick="gGroups_Delete" />
             </Columns>
         </Rock:Grid>

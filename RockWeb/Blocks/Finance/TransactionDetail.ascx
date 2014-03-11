@@ -1,9 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TransactionDetail.ascx.cs" Inherits="RockWeb.Blocks.Finance.TransactionDetail" %>
-<script>
-    $(function () {
-        $(".photo a").fluidbox();
-    });
-</script>
+
 <asp:UpdatePanel ID="upFinancialBatch" runat="server">
     <ContentTemplate>
 
@@ -91,25 +87,29 @@
                     <!-- this will be for displaying the images -->
                     <asp:DataList ID="dlImages" runat="server" RepeatDirection="Horizontal" RepeatColumns="2" OnItemDataBound="dlImages_ItemDataBound" >
                         <ItemTemplate >
-                            <div class="photo">
-                                <asp:PlaceHolder ID="phImage" runat="server" />
-                            </div>
+                            <div class="photo-display">
+                                <div class="photo">
+                                    <asp:PlaceHolder ID="phImage" runat="server" />
+                                    <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-danger btn-sm image-delete-button" OnClick="lbDelete_Click"><i class="fa fa-times"></i></asp:LinkButton>
+                                </div>
+                           </div>
                         </ItemTemplate>
                     </asp:DataList>
                 </div>
                 <br />
-                <div class="row">
-                    <!-- this will be for the image uploader -->
-                    <div class="col-md-3">
-                        <Rock:ImageUploader ID="imgupTransactionImages" runat="server" Label="Upload an Image" />
+                <asp:Panel ID="pnlImageUpload" runat="server">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <Rock:ImageUploader ID="imgupTransactionImages" runat="server" Label="Upload an Image" />
+                        </div>
+                        <div class="col-md-3">
+                            <Rock:RockDropDownList ID="ddlTransactionImageType" runat="server" Label="Transaction Image Type" />
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        <Rock:RockDropDownList ID="ddlTransactionImageType" runat="server" Label="Transaction Image Type" />
+                    <div class="row col-md-3">
+                        <asp:LinkButton ID="lbSaveImage" runat="server" Text="Save Image" CssClass="btn btn-primary btn-sm" OnClick="lbSaveImage_Click" />
                     </div>
-                </div>
-                <div class="row col-md-3">
-                    <asp:LinkButton ID="lbSaveImage" runat="server" Text="Save Image" CssClass="btn btn-primary btn-sm" OnClick="lbSaveImage_Click" />
-                </div>
+                </asp:Panel>
             </asp:Panel>
 
             <Rock:ModalDialog ID="mdDetails" runat="server" Title="Transaction Details" ValidationGroup="TransactionDetails">

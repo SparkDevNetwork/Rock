@@ -2,6 +2,7 @@
     var iframeUrl = Rock.settings.get('baseUrl') + "ckeditorplugins/rockfilebrowser";
     iframeUrl += "?rootFolder=" + encodeURIComponent(editor.config.rockFileBrowserOptions.documentFolderRoot);
     iframeUrl += "&browserMode=doc";
+    iframeUrl += "&fileTypeBlackList=" + encodeURIComponent(editor.config.rockFileBrowserOptions.fileTypeBlackList);
     return {
         title: 'Select File',
         minWidth: 1000,

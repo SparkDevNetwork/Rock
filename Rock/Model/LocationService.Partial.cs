@@ -178,8 +178,9 @@ namespace Rock.Model
             string inputLocation = location.ToString();
 
             // Try each of the standardization services that were found through MEF
-            foreach ( KeyValuePair<int, Lazy<Rock.Address.StandardizeComponent, Rock.Extension.IComponentData>> service in Rock.Address.StandardizeContainer.Instance.Components )
-                if ( !service.Value.Value.AttributeValues.ContainsKey( "Active" ) || bool.Parse( service.Value.Value.AttributeValues["Active"][0].Value ) )
+            foreach ( var service in Rock.Address.StandardizeContainer.Instance.Components )
+            {
+                if ( service.Value.Value.IsActive )
                 {
                     string result;
                     bool success = service.Value.Value.Standardize( location, out result );
@@ -203,9 +204,10 @@ namespace Rock.Model
                         location.StandardizedDateTime = RockDateTime.Now;
                         break;
                     }
-                }
 
-            location.StandardizeAttemptedDateTime = RockDateTime.Now;
+                    location.StandardizeAttemptedDateTime = RockDateTime.Now;
+                }
+            }
         }
 
         /// <summary>
@@ -215,39 +217,43 @@ namespace Rock.Model
         /// <param name="personAlias">An <see cref="Rock.Model.PersonAlias"/> that represents the <see cref="Rock.Model.Person"/> requesting the geolocation.</param>
         public void Geocode( Location location, PersonAlias personAlias )
         {
-            Model.ServiceLogService logService = new Model.ServiceLogService();
-            string inputLocation = location.ToString();
+            if ( !( location.IsGeoPointLocked ?? false ) )
+            {
+                Model.ServiceLogService logService = new Model.ServiceLogService();
+                string inputLocation = location.ToString();
 
-            // Try each of the geocoding services that were found through MEF
-
-            foreach ( KeyValuePair<int, Lazy<Rock.Address.GeocodeComponent, Rock.Extension.IComponentData>> service in Rock.Address.GeocodeContainer.Instance.Components )
-                if ( !service.Value.Value.AttributeValues.ContainsKey( "Active" ) || bool.Parse( service.Value.Value.AttributeValues["Active"][0].Value ) )
+                // Try each of the geocoding services that were found through MEF
+                foreach ( var service in Rock.Address.GeocodeContainer.Instance.Components )
                 {
-                    string result;
-                    bool success = service.Value.Value.Geocode( location, out result );
-
-                    // Log the results of the service
-                    Model.ServiceLog log = new Model.ServiceLog();
-                    log.LogDateTime = RockDateTime.Now;
-                    log.Type = "Location Geocode";
-                    log.Name = service.Value.Metadata.ComponentName;
-                    log.Input = inputLocation;
-                    log.Result = result;
-                    log.Success = success;
-                    logService.Add( log, personAlias );
-                    logService.Save( log, personAlias );
-
-                    // If successful, set the results and stop processing
-                    if ( success )
+                    if ( service.Value.Value.IsActive )
                     {
-                        location.GeocodeAttemptedServiceType = service.Value.Metadata.ComponentName;
-                        location.GeocodeAttemptedResult = result;
-                        location.GeocodedDateTime = RockDateTime.Now;
-                        break;
+                        string result;
+                        bool success = service.Value.Value.Geocode( location, out result );
+
+                        // Log the results of the service
+                        Model.ServiceLog log = new Model.ServiceLog();
+                        log.LogDateTime = RockDateTime.Now;
+                        log.Type = "Location Geocode";
+                        log.Name = service.Value.Metadata.ComponentName;
+                        log.Input = inputLocation;
+                        log.Result = result;
+                        log.Success = success;
+                        logService.Add( log, personAlias );
+                        logService.Save( log, personAlias );
+
+                        // If successful, set the results and stop processing
+                        if ( success )
+                        {
+                            location.GeocodeAttemptedServiceType = service.Value.Metadata.ComponentName;
+                            location.GeocodeAttemptedResult = result;
+                            location.GeocodedDateTime = RockDateTime.Now;
+                            break;
+                        }
+
+                        location.GeocodeAttemptedDateTime = RockDateTime.Now;
                     }
                 }
-
-            location.GeocodeAttemptedDateTime = RockDateTime.Now;
+            }
         }
 
         /// <summary>

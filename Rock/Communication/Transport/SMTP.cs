@@ -171,19 +171,35 @@ namespace Rock.Communication.Transport
         /// </summary>
         /// <param name="template">The template.</param>
         /// <param name="recipients">The recipients.</param>
-        public override void Send( EmailTemplate template, Dictionary<string, Dictionary<string, object>> recipients )
+        /// <param name="appRoot"></param>
+        /// <param name="themeRoot"></param>
+        public override void Send( SystemEmail template, Dictionary<string, Dictionary<string, object>> recipients, string appRoot, string themeRoot )
         {
+            var globalAttributes = GlobalAttributesCache.Read();
+
             string from = template.From;
             if (string.IsNullOrWhiteSpace(from))
             {
-                var globalAttributes = GlobalAttributesCache.Read();
                 from = globalAttributes.GetValue( "OrganizationEmail" );
+            }
+
+            string fromName = template.FromName;
+            if ( string.IsNullOrWhiteSpace( fromName ) )
+            {
+                fromName = globalAttributes.GetValue( "OrganizationName" );
             }
 
             if ( !string.IsNullOrWhiteSpace( from ) )
             {
                 MailMessage message = new MailMessage();
-                message.From = new MailAddress( from );
+                if (string.IsNullOrWhiteSpace(fromName))
+                {
+                    message.From = new MailAddress( from );
+                }
+                else
+                {
+                    message.From = new MailAddress( from, fromName );
+                }
 
                 if ( !string.IsNullOrWhiteSpace( template.Cc ) )
                 {
@@ -217,10 +233,24 @@ namespace Rock.Communication.Transport
                     sendTo.Add( recipient.Key );
                     foreach ( string to in sendTo )
                     {
+                        string subject = template.Subject;
+                        string body = template.Body;
+                        if (!string.IsNullOrWhiteSpace(themeRoot))
+                        {
+                            subject = subject.Replace( "~~/", themeRoot );
+                            body = body.Replace( "~~/", themeRoot );
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(appRoot))
+                        {
+                            subject = subject.Replace( "~/", appRoot );
+                            body = body.Replace( "~/", appRoot );
+                        }
+
                         message.To.Clear();
                         message.To.Add( to );
-                        message.Subject = template.Subject.ResolveMergeFields( mergeObjects );
-                        message.Body = template.Body.ResolveMergeFields( mergeObjects );
+                        message.Subject = subject.ResolveMergeFields( mergeObjects );
+                        message.Body = body.ResolveMergeFields( mergeObjects );
                         smtpClient.Send( message );
                     }
                 }

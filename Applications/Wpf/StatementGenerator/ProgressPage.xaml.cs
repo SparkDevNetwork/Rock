@@ -86,7 +86,8 @@ namespace Rock.Apps.StatementGenerator
             else
             {
                 _pdfOutput = null;
-                lblReportProgress.Content = "No contributions found";
+                lblReportProgress.Content = @"Warning:
+No contributions found with the criteria provided.";
             }
         }
 

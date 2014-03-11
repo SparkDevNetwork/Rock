@@ -201,6 +201,7 @@ namespace Rock.Field.Types
                     }
                 }
             }
+
             return picker;
         }
 

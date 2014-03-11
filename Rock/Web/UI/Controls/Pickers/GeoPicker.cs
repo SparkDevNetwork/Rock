@@ -514,7 +514,7 @@ namespace Rock.Web.UI.Controls
             if ( this.Enabled )
             {
                 writer.AddAttribute( "id", this.ClientID.ToString() );
-                writer.AddAttribute( "class", "picker picker-geography" );
+                writer.AddAttribute("class", "picker picker-geography rollover-container");
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 writer.Write( string.Format( @"

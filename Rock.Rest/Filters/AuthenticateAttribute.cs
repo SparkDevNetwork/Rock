@@ -35,13 +35,13 @@ namespace Rock.Rest.Filters
             var principal = System.Threading.Thread.CurrentPrincipal;
             if ( principal != null && principal.Identity != null && !String.IsNullOrWhiteSpace(principal.Identity.Name))
             {
-                var userLoginService = new UserLoginService();
-                var user = userLoginService.GetByUserName(principal.Identity.Name);
-                if ( user != null )
-                {
+                //var userLoginService = new UserLoginService();
+                //var user = userLoginService.GetByUserName(principal.Identity.Name);
+                //if ( user != null )
+                //{
                     actionContext.Request.SetUserPrincipal( principal );
                     return;
-                }
+                //}
             }
 
             // If not, see if there's a valid token

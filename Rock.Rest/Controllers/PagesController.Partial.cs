@@ -50,9 +50,10 @@ namespace Rock.Rest.Controllers
         /// Gets the children.
         /// </summary>
         /// <param name="id">The id.</param>
+        /// <param name="hidePageIds">List of pages that should not be included in results</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        public IQueryable<TreeViewItem> GetChildren( int id )
+        public IQueryable<TreeViewItem> GetChildren( int id, string hidePageIds = null)
         {
             IQueryable<Page> qry;
             if ( id == 0 )
@@ -64,7 +65,9 @@ namespace Rock.Rest.Controllers
                 qry = Get().Where( a => a.ParentPageId == id );
             }
 
-            List<Page> pageList = qry.OrderBy( a => a.Order ).ThenBy( a => a.InternalName ).ToList();
+            List<int> hidePageIdList = ( hidePageIds ?? string.Empty ).Split( ',' ).Select( s => s.AsInteger() ?? 0).ToList();
+
+            List<Page> pageList = qry.Where( a => !hidePageIdList.Contains(a.Id) ).OrderBy( a => a.Order ).ThenBy( a => a.InternalName ).ToList();
             List<TreeViewItem> pageItemList = new List<TreeViewItem>();
             foreach ( var page in pageList )
             {

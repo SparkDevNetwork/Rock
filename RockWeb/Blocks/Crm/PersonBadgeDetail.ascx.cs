@@ -74,7 +74,7 @@ namespace RockWeb.Blocks.Crm
                         if ( personBadge.EntityTypeId.HasValue )
                         {
                             var badgeType = EntityTypeCache.Read( personBadge.EntityTypeId.Value );
-                            compBadgeType.SelectedValue = badgeType.Guid.ToString();
+                            compBadgeType.SelectedValue = badgeType.Guid.ToString().ToUpper();
                         }
 
                         BuildEditControls( personBadge, true );
@@ -168,6 +168,8 @@ namespace RockWeb.Blocks.Crm
                 PersonBadgeService.Save( PersonBadge, CurrentPersonAlias );
                 PersonBadge.SaveAttributeValues( CurrentPersonAlias );
             } );
+
+            PersonBadgeCache.Flush( PersonBadge.Id );
 
             NavigateToParentPage();
         }

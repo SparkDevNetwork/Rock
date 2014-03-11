@@ -102,12 +102,11 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var editControl = new RockCheckBoxList { ID = id }; 
-
-            editControl.RepeatDirection = RepeatDirection.Horizontal;
-
             if ( configurationValues != null && configurationValues.ContainsKey( "values" ) )
             {
+                var editControl = new RockCheckBoxList { ID = id };
+                editControl.RepeatDirection = RepeatDirection.Horizontal;
+
                 string listSource = configurationValues["values"].Value;
 
                 if ( listSource.ToUpper().Contains( "SELECT" ) && listSource.ToUpper().Contains( "FROM" ) )
@@ -137,8 +136,14 @@ namespace Rock.Field.Types
                         }
                     }
                 }
+
+                if ( editControl.Items.Count > 0 )
+                {
+                    return editControl;
+                }
             }
-            return editControl;
+
+            return null;
         }
 
         /// <summary>

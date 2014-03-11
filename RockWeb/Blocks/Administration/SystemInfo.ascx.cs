@@ -54,13 +54,11 @@ namespace RockWeb.Blocks.Administration
 
             lCacheOverview.Text = GetCacheInfo();
             lRoutes.Text = GetRoutesInfo();
-        }
 
-        //protected void OnLoad( object sender, EventArgs e )
-        //{
-        //    ScriptManager scriptManager = ScriptManager.GetCurrent( Page );
-        //    scriptManager.RegisterPostBackControl( btnDumpDiagnostics );
-        //}
+            // register btnDumpDiagnostics as a PostBackControl since it is returning a File download
+            ScriptManager scriptManager = ScriptManager.GetCurrent( Page );
+            scriptManager.RegisterPostBackControl( btnDumpDiagnostics );
+        }
         
         #endregion
 
@@ -101,6 +99,26 @@ namespace RockWeb.Blocks.Administration
             foreach ( var definedValue in new Rock.Model.DefinedValueService().Queryable().ToList() )
             {
                 Rock.Web.Cache.DefinedValueCache.Flush( definedValue.Id );
+            }
+
+            foreach ( var group in new Rock.Model.GroupTypeService().Queryable().ToList() )
+            {
+                Rock.Web.Cache.GroupTypeCache.Flush( group.Id );
+            }
+
+            foreach ( var campus in new Rock.Model.CampusService().Queryable().ToList() )
+            {
+                Rock.Web.Cache.CampusCache.Flush( campus.Id );
+            }
+
+            foreach ( var category in new Rock.Model.CategoryService().Queryable().ToList() )
+            {
+                Rock.Web.Cache.CategoryCache.Flush( category.Id );
+            }
+
+            foreach ( var layout in new Rock.Model.LayoutService().Queryable().ToList() )
+            {
+                Rock.Web.Cache.LayoutCache.Flush( layout.Id );
             }
 
             nbMessage.Visible = true;
