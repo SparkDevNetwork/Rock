@@ -49,23 +49,23 @@
                                 var $target = $('#zone-' + zoneName.toLowerCase());
 
                                 // Update the move anchor with the new zone name
-                                $moveLink.attr('zone', zoneName);
+                                $moveLink.attr('data-zone', zoneName);
 
                                 // If the block instance's parent is the page, move it to the new zone as the last
                                 // block in that zone.  If the parent is the layout, insert it as the last layout
                                 // block (prior to any page block's
                                 if ($('#block-move-Location_0').prop('checked')) {
                                     $target.append($source);
-                                    $moveLink.attr('zoneloc', 'Page');
-                                    $source.attr('zoneLoc', 'Page');
+                                    $moveLink.attr('data-zone-location', 'Page');
+                                    $source.attr('data-zone-location', 'Page');
                                 }
                                 else {
-                                    if ($('#' + $target.attr('id') + '>[zoneLoc="Layout"]').length > 0)
-                                        $source.insertAfter($('#' + $target.attr('id') + '>[zoneLoc="Layout"]:last'));
+                                    if ($('#' + $target.attr('id') + '>[data-zone-location="Layout"]').length > 0)
+                                        $source.insertAfter($('#' + $target.attr('id') + '>[data-zone-location="Layout"]:last'));
                                     else
                                         $target.append($source);
-                                    $moveLink.attr('zoneloc', 'Layout');
-                                    $source.attr('zoneLoc', 'Layout');
+                                    $moveLink.attr('data-zone-location', 'Layout');
+                                    $source.attr('data-zone-location', 'Layout');
                                 }
 
                             },
@@ -133,10 +133,10 @@
                     $moveLink = $(this);
 
                     // Set the dialog's zone selection select box value to the block's current zone 
-                    $('#block-move-zone').val($(this).attr('zone'));
+                    $('#block-move-zone').val($(this).attr('data-zone'));
 
                     // Set the dialog's parent option to the current zone's parent (either the page or the layout)
-                    var pageBlock = $(this).attr('zoneloc') == 'Page';
+                    var pageBlock = $(this).attr('data-zone-location') == 'Page';
                     $('#block-move-Location_0').prop('checked', pageBlock);
                     $('#block-move-Location_1').prop('checked', !pageBlock);
 

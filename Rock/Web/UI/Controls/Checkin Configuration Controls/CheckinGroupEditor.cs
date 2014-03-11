@@ -433,8 +433,8 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.WriteLine( "<a class='btn btn-xs checkin-group-reorder'><i class='fa fa-bars'></i></a>" );
-            writer.WriteLine( "<a class='btn btn-xs'><i class='checkin-group-state fa fa-chevron-down'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-link btn-xs checkin-group-reorder'><i class='fa fa-bars'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-link btn-xs'><i class='checkin-group-state fa fa-chevron-down'></i></a>" );
 
             if ( IsDeleteEnabled )
             {

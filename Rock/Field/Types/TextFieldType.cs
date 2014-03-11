@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Web.UI;
 
 namespace Rock.Field.Types
 {
@@ -24,5 +26,20 @@ namespace Rock.Field.Types
     [Serializable]
     public class TextFieldType : FieldType
     {
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            if ( condensed )
+                return System.Web.HttpUtility.HtmlEncode( value ).Truncate( 100 );
+
+            return System.Web.HttpUtility.HtmlEncode( value );
+        }
     }
 }

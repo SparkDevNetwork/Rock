@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30110.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RockJobSchedulerService", "RockJobSchedulerService.csproj", "{40A78663-3080-4A9D-9E11-38A188555C87}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{40A78663-3080-4A9D-9E11-38A188555C87}.Debug|x86.ActiveCfg = Debug|x86
+		{40A78663-3080-4A9D-9E11-38A188555C87}.Debug|x86.Build.0 = Debug|x86
+		{40A78663-3080-4A9D-9E11-38A188555C87}.Release|x86.ActiveCfg = Release|x86
+		{40A78663-3080-4A9D-9E11-38A188555C87}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

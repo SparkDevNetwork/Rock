@@ -4,6 +4,7 @@
 @import "../../../Styles/_rock-core.less";
 @import "../../../Styles/_rock-variables.less";
 @import "_variables.less";
+@import "_print.less";
 
 
 /*
@@ -65,7 +66,8 @@ header {
 
 .ad-list {
     .ad {
-        margin-bottom: @spacing-lg-px;
+        margin: 0 auto @spacing-lg-px;
+        max-width: 390px;
     }
     .ad-title { margin: @spacing-sm-px 0; }
     img {

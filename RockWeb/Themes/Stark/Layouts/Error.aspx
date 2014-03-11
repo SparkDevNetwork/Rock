@@ -31,7 +31,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="error-wrap">
-                            <h1>That Wasn't Suppose To Happen...</h1>
+                            <h1>That Wasn't Supposed To Happen...</h1>
                             <p><strong>An Error Occurred...</strong>  The website administrators have 
                             been notified of this problem.</p>
 

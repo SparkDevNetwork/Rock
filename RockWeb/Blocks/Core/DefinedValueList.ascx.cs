@@ -36,7 +36,13 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Block for viewing values for a defined type." )]
     public partial class DefinedValueList : RockBlock, ISecondaryBlock
-    {        
+    {
+        #region Private Variables
+
+        private DefinedType _definedType = null;
+
+        #endregion
+
         #region Control Methods
 
         /// <summary>
@@ -47,18 +53,33 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
-            gDefinedValues.DataKeyNames = new string[] { "id" };
-            gDefinedValues.Actions.ShowAdd = true;
-            gDefinedValues.Actions.AddClick += gDefinedValues_Add;
-            gDefinedValues.GridRebind += gDefinedValues_GridRebind;
-            gDefinedValues.GridReorder += gDefinedValues_GridReorder;
+            int definedTypeId = PageParameter( "definedTypeId" ).AsInteger() ?? 0;
+            if ( definedTypeId != 0 )
+            {
+                _definedType = new DefinedTypeService().Get( definedTypeId );
 
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
-            gDefinedValues.Actions.ShowAdd = canAddEditDelete;
-            gDefinedValues.IsDeleteEnabled = canAddEditDelete;
+                if ( _definedType != null )
+                {
+                    gDefinedValues.DataKeyNames = new string[] { "id" };
+                    gDefinedValues.Actions.ShowAdd = true;
+                    gDefinedValues.Actions.AddClick += gDefinedValues_Add;
+                    gDefinedValues.GridRebind += gDefinedValues_GridRebind;
+                    gDefinedValues.GridReorder += gDefinedValues_GridReorder;
 
-            modalValue.SaveClick += btnSaveValue_Click;
-            modalValue.OnCancelScript = string.Format( "$('#{0}').val('');", hfDefinedValueId.ClientID );
+                    bool canAddEditDelete = IsUserAuthorized( "Edit" );
+                    gDefinedValues.Actions.ShowAdd = canAddEditDelete;
+                    gDefinedValues.IsDeleteEnabled = canAddEditDelete;
+
+                    AddAttributeColumns();
+
+                    var deleteField = new DeleteField();
+                    gDefinedValues.Columns.Add( deleteField );
+                    deleteField.Click += gDefinedValues_Delete;
+
+                    modalValue.SaveClick += btnSaveValue_Click;
+                    modalValue.OnCancelScript = string.Format( "$('#{0}').val('');", hfDefinedValueId.ClientID );
+                }
+            }
         }
 
         /// <summary>
@@ -71,10 +92,9 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "definedTypeId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                if (_definedType != null)
                 {
-                    ShowDetail( "definedTypeId", (int)itemId.AsInteger( false ) );
+                    ShowDetail();
                 }
                 else
                 {
@@ -213,26 +233,11 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         /// <param name="itemKey">The item key.</param>
         /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        public void ShowDetail()
         {
-            if ( !itemKey.Equals( "definedTypeId" ) )
-            {
-                return;
-            }
-
             pnlList.Visible = true;
-            DefinedType definedType = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
-            {
-                definedType = new DefinedTypeService().Get( itemKeyValue );
-            }
-            else
-            {
-                definedType = new DefinedType { Id = 0 };
-            }
-
-            hfDefinedTypeId.SetValue( definedType.Id );
+            hfDefinedTypeId.SetValue( _definedType.Id );
             BindDefinedValuesGrid();
         }
 
@@ -268,47 +273,55 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Binds the defined values grid.
         /// </summary>
-        protected void BindDefinedValuesGrid()
+        protected void AddAttributeColumns()
         {
-            AttributeService attributeService = new AttributeService();
-
-            int definedTypeId = hfDefinedTypeId.ValueAsInt();
-            
-            // add attributes with IsGridColumn to grid
-            string qualifierValue = hfDefinedTypeId.Value;
-            var qryDefinedTypeAttributes = attributeService.GetByEntityTypeId( new DefinedValue().TypeId ).AsQueryable()
-                .Where( a => a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
-
-            qryDefinedTypeAttributes = qryDefinedTypeAttributes.Where( a => a.IsGridColumn );
-
-            List<Attribute> gridItems = qryDefinedTypeAttributes.ToList();
-
-            foreach ( var item in gDefinedValues.Columns.OfType<AttributeField>().ToList() )
+            // Remove attribute columns
+            foreach ( var column in gDefinedValues.Columns.OfType<AttributeField>().ToList() )
             {
-                gDefinedValues.Columns.Remove( item );
+                gDefinedValues.Columns.Remove( column );
             }
 
-            foreach ( var item in gridItems.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+            if ( _definedType != null )
             {
-                string dataFieldExpression = item.Key;
-                bool columnExists = gDefinedValues.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
-                if ( !columnExists )
+                // Add attribute columns
+                int entityTypeId = new DefinedValue().TypeId;
+                string qualifier = _definedType.Id.ToString();
+                foreach ( var attribute in new AttributeService().Queryable()
+                    .Where( a =>
+                        a.EntityTypeId == entityTypeId &&
+                        a.IsGridColumn &&
+                        a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( qualifier ) )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name ) )
                 {
-                    AttributeField boundField = new AttributeField();
-                    boundField.DataField = dataFieldExpression;
-                    boundField.HeaderText = item.Name;
-                    boundField.SortExpression = string.Empty;
-                    int insertPos = gDefinedValues.Columns.IndexOf( gDefinedValues.Columns.OfType<DeleteField>().First());
-                    gDefinedValues.Columns.Insert(insertPos, boundField );
+                    string dataFieldExpression = attribute.Key;
+                    bool columnExists = gDefinedValues.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
+                    if ( !columnExists )
+                    {
+                        AttributeField boundField = new AttributeField();
+                        boundField.DataField = dataFieldExpression;
+                        boundField.HeaderText = attribute.Name;
+                        boundField.SortExpression = string.Empty;
+                        gDefinedValues.Columns.Add( boundField );
+                    }
                 }
             }
+        }
 
-            var queryable = new DefinedValueService().Queryable().Where( a => a.DefinedTypeId == definedTypeId ).OrderBy( a => a.Order );
-            var result = queryable.ToList();
+        /// <summary>
+        /// Binds the defined values grid.
+        /// </summary>
+        protected void BindDefinedValuesGrid()
+        {
+            if ( _definedType != null )
+            {
+                var queryable = new DefinedValueService().Queryable().Where( a => a.DefinedTypeId == _definedType.Id ).OrderBy( a => a.Order );
+                var result = queryable.ToList();
 
-            gDefinedValues.DataSource = result;
-            gDefinedValues.DataBind();
+                gDefinedValues.DataSource = result;
+                gDefinedValues.DataBind();
+            }
         }
 
         /// <summary>

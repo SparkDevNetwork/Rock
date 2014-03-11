@@ -59,7 +59,15 @@ namespace RockWeb.Blocks.Groups
                 groupId = PageParameter( "groupId" ).AsInteger() ?? 0;
                 if ( groupId != 0 )
                 {
-                    _group = new GroupService().Get( groupId );
+                    string key = string.Format("Group:{0}", groupId);
+                    _group = RockPage.GetSharedItem( key ) as Group;
+                    if ( _group == null )
+                    {
+                        _group = new GroupService().Queryable( "GroupType" )
+                            .Where( g => g.Id == groupId )
+                            .FirstOrDefault();
+                        RockPage.SaveSharedItem( key, _group );
+                    }
 
                     if ( _group != null )
                     {

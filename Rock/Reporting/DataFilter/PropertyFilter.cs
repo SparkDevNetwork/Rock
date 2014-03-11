@@ -732,8 +732,6 @@ namespace Rock.Reporting.DataFilter
         {
             Expression trueValue = Expression.Constant( true );
             MemberExpression propertyExpression = Expression.Property( parameterExpression, entityField.Name );
-            Expression constantExpression = null;
-            ComparisonType comparisonType = ComparisonType.EqualTo;
 
             switch ( entityField.FilterFieldType )
             {
@@ -742,16 +740,17 @@ namespace Rock.Reporting.DataFilter
 
                     if ( values.Count == 2 )
                     {
-                        comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                        ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>(ComparisonType.EqualTo);
+                        DateTime dateValue = values[1].AsDateTime() ?? DateTime.MinValue;
+                        ConstantExpression constantExpression = Expression.Constant(dateValue);
 
                         if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
                         {
                             if ( entityField.PropertyType == typeof( DateTime? ) )
                             {
+                                // special case for Nullable Type
                                 MemberExpression hasValue = Expression.Property( propertyExpression, "HasValue" );
                                 MemberExpression valueExpression = Expression.Property( propertyExpression, "Value" );
-                                DateTime dateValue = values[1].AsDateTime() ?? DateTime.MinValue;
-                                constantExpression = Expression.Constant( dateValue );
                                 Expression comparisonExpression = ComparisonExpression( comparisonType, valueExpression, constantExpression );
                                 return Expression.AndAlso( hasValue, comparisonExpression );
                             }
@@ -767,16 +766,17 @@ namespace Rock.Reporting.DataFilter
 
                     if ( values.Count == 2 )
                     {
-                        comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                        ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>(ComparisonType.EqualTo);
+                        int intValue = values[1].AsInteger(false) ?? int.MinValue;
+                        ConstantExpression constantExpression = Expression.Constant(intValue);
 
                         if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
                         {
                             if ( entityField.PropertyType == typeof( int? ) )
                             {
+                                // special case for Nullable Type
                                 MemberExpression hasValue = Expression.Property( propertyExpression, "HasValue" );
                                 MemberExpression valueExpression = Expression.Property( propertyExpression, "Value" );
-                                int intValue = values[1].AsInteger( false ) ?? int.MinValue;
-                                constantExpression = Expression.Constant( intValue );
                                 Expression comparisonExpression = ComparisonExpression( comparisonType, valueExpression, constantExpression );
                                 return Expression.AndAlso( hasValue, comparisonExpression );
                             }
@@ -797,7 +797,7 @@ namespace Rock.Reporting.DataFilter
                         {
                             if ( entityField.PropertyType.IsEnum )
                             {
-                                constantExpression = Expression.Constant( Enum.Parse( entityField.PropertyType, selectedValues[0].Replace( " ", string.Empty ) ) );
+                                ConstantExpression constantExpression = Expression.Constant(Enum.Parse(entityField.PropertyType, selectedValues[0].Replace(" ", string.Empty)));
                                 Expression comparison = Expression.Equal( propertyExpression, constantExpression );
 
                                 foreach ( string selectedValue in selectedValues.Skip( 1 ) )
@@ -811,10 +811,11 @@ namespace Rock.Reporting.DataFilter
                             else if ( entityField.DefinedTypeId.HasValue )
                             {
                                 List<int> selectedIds = selectedValues.Select( v => int.Parse( v ) ).ToList();
-                                constantExpression = Expression.Constant( selectedIds, typeof( List<int> ) );
+                                ConstantExpression constantExpression = Expression.Constant(selectedIds, typeof(List<int>));
 
                                 if ( entityField.PropertyType == typeof( int? ) )
                                 {
+                                    // special case for Nullable Type
                                     MemberExpression hasValue = Expression.Property( propertyExpression, "HasValue" );
                                     MemberExpression valueExpression = Expression.Property( propertyExpression, "Value" );
                                     MethodCallExpression containsExpression = Expression.Call( constantExpression, "Contains", new Type[] { }, valueExpression );
@@ -837,10 +838,12 @@ namespace Rock.Reporting.DataFilter
                     {
                         if ( entityField.PropertyType == typeof( bool ) || entityField.PropertyType == typeof( bool? ) )
                         {
-                            constantExpression = Expression.Constant( bool.Parse( values[0] ) );
+                            ConstantExpression constantExpression = Expression.Constant(bool.Parse(values[0]));
+                            ComparisonType comparisonType = ComparisonType.EqualTo;
 
                             if ( entityField.PropertyType == typeof( bool? ) )
                             {
+                                // special case for Nullable Type
                                 MemberExpression hasValue = Expression.Property( propertyExpression, "HasValue" );
                                 MemberExpression valueExpression = Expression.Property( propertyExpression, "Value" );
                                 Expression compareExpression = ComparisonExpression( comparisonType, valueExpression, constantExpression );
@@ -860,8 +863,8 @@ namespace Rock.Reporting.DataFilter
 
                     if ( values.Count == 2 )
                     {
-                        comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                        constantExpression = Expression.Constant( values[1] );
+                        ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>(ComparisonType.EqualTo);
+                        ConstantExpression constantExpression = Expression.Constant(values[1]);
 
                         return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
                     }

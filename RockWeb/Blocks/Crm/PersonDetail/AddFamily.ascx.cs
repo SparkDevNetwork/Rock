@@ -40,14 +40,25 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         "The type of location that address should use", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 0 )]
     [BooleanField( "Nick Name", "Show Nick Name column", "Hide Nick Name column", "Should the Nick Name field be displayed?", false, "", 1 )]
     [BooleanField( "Gender", "Require a gender for each person", "Don't require", "Should Gender be required for each person added?", false, "", 2 )]
-    [BooleanField( "Grade", "Require a grade for each child", "Don't require", "Should Grade be required for each child added?", false, "", 3 )]
-    [AttributeCategoryField( "Attribute Categories", "The Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 4 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Adult Marital Status", "The default marital status for adults in the family.", false, false, "", "", 3)]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Child Marital Status", "The marital status to use for children in the family.", false, false,
+        Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE, "", 4 )]
+    [BooleanField( "Grade", "Require a grade for each child", "Don't require", "Should Grade be required for each child added?", false, "", 5 )]
+    [AttributeCategoryField( "Attribute Categories", "The Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 6 )]
     public partial class AddFamily : Rock.Web.UI.RockBlock
     {
+
+        #region Fields
+
         private bool _requireGender = false;
         private bool _requireGrade = false;
         private int _childRoleId = 0;
+        private List<NewFamilyAttributes> attributeControls = new List<NewFamilyAttributes>();
+        private List<GroupMember> _groupMembers = null;
 
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets or sets the index of the current category.
@@ -61,8 +72,24 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             set { ViewState["CurrentCategoryIndex"] = value; }
         }
 
-        private List<NewFamilyAttributes> attributeControls = new List<NewFamilyAttributes>();
+        #endregion
 
+        #region Base Control Methods
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            var familyMembers = new List<GroupMember>();
+            List<string> jsonStrings = ViewState["FamilyMembers"] as List<string>;
+            jsonStrings.ForEach( j => familyMembers.Add( GroupMember.FromJson( j ) ) );
+            CreateControls( familyMembers, false );
+        }
+        
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -71,14 +98,24 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
+            ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ) );
+            var AdultMaritalStatus = DefinedValueCache.Read( GetAttributeValue( "AdultMaritalStatus" ).AsGuid() );
+            if (AdultMaritalStatus != null)
+            {
+                ddlMaritalStatus.SetValue( AdultMaritalStatus.Id );
+            }
+
             var campusi = new CampusService().Queryable().OrderBy( a => a.Name ).ToList();
             cpCampus.Campuses = campusi;
             cpCampus.Visible = campusi.Any();
 
-            var childRole = new GroupTypeRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) );
-            if ( childRole != null )
+            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+            if (familyGroupType != null)
             {
-                _childRoleId = childRole.Id;
+                _childRoleId = familyGroupType.Roles
+                    .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) )
+                    .Select( r => r.Id)
+                    .FirstOrDefault();
             }
 
             bool.TryParse( GetAttributeValue( "Gender" ), out _requireGender );
@@ -124,20 +161,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         /// <summary>
-        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
-        /// </summary>
-        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
-        protected override void LoadViewState( object savedState )
-        {
-            base.LoadViewState( savedState );
-
-            var familyMembers = new List<GroupMember>();
-            List<string> jsonStrings = ViewState["FamilyMembers"] as List<string>;
-            jsonStrings.ForEach( j => familyMembers.Add( GroupMember.FromJson( j ) ) );
-            CreateControls( familyMembers, false );
-        }
-
-        /// <summary>
         /// Saves any user control view-state changes that have occurred since the last page postback.
         /// </summary>
         /// <returns>
@@ -145,12 +168,65 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </returns>
         protected override object SaveViewState()
         {
+            if ( _groupMembers == null )
+            {
+                _groupMembers = GetControlData();
+            }
+
             var groupMembers = new List<string>();
-            GetControlData().ForEach( m => groupMembers.Add( m.ToJson() ) );
+            _groupMembers.ForEach( m => groupMembers.Add( m.ToJson() ) );
 
             ViewState["FamilyMembers"] = groupMembers;
+
             return base.SaveViewState();
         }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnPreRender( EventArgs e )
+        {
+            if (_groupMembers == null)
+            {
+                _groupMembers = GetControlData();
+            }
+
+            var adults = _groupMembers.Where( m => m.GroupRoleId != _childRoleId).ToList();
+            if (adults.Any())
+            {
+                //if ( adults.Any( a => a.Person.FirstName == "") )
+                //{
+                    lAdultCaption.Text = "The adults in this family are ";
+                //}
+                //else
+                //{
+                //    var firstNames = adults.Select( a => "<span class='adult-name'>" + a.Person.FirstName + "</span>" ).ToList();
+                //    if ( firstNames.Count() > 1 )
+                //    {
+                //        lAdultCaption.Text = firstNames.AsDelimited( " and " ) + " are ";
+                //    }
+                //    else
+                //    {
+                //        lAdultCaption.Text = firstNames.FirstOrDefault() + " is ";
+                //    }
+                //}
+
+                lAdultCaption.Visible = true;
+                ddlMaritalStatus.Visible = true;
+            }
+            else
+            {
+                lAdultCaption.Visible = false;
+                ddlMaritalStatus.Visible = false;
+            }
+
+            base.OnPreRender( e );
+        }
+
+        #endregion
+
+        #region Events
 
         /// <summary>
         /// Handles the AddFamilyMemberClick event of the nfmMembers control.
@@ -194,6 +270,55 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             nfmMembers.Controls.Remove( row );
         }
+
+        protected void btnPrevious_Click( object sender, EventArgs e )
+        {
+            if ( CurrentCategoryIndex > 0 )
+            {
+                CurrentCategoryIndex--;
+                ShowAttributeCategory( CurrentCategoryIndex );
+            }
+        }
+
+        protected void btnNext_Click( object sender, EventArgs e )
+        {
+            if ( Page.IsValid )
+            {
+                if ( CurrentCategoryIndex < attributeControls.Count )
+                {
+                    CurrentCategoryIndex++;
+                    ShowAttributeCategory( CurrentCategoryIndex );
+                }
+                else
+                {
+                    var familyMembers = GetControlData();
+                    if ( familyMembers.Any() )
+                    {
+                        RockTransactionScope.WrapTransaction( () =>
+                        {
+                            using ( new UnitOfWorkScope() )
+                            {
+                                var groupService = new GroupService();
+                                var familyGroup = groupService.SaveNewFamily( familyMembers, cpCampus.SelectedValueAsInt(), true, CurrentPersonAlias );
+                                if ( familyGroup != null )
+                                {
+                                    groupService.AddNewFamilyAddress( familyGroup, GetAttributeValue( "LocationType" ),
+                                        tbStreet1.Text, tbStreet2.Text, tbCity.Text, ddlState.SelectedValue, tbZip.Text, CurrentPersonAlias );
+                                }
+                            }
+                        } );
+
+                        Response.Redirect( string.Format( "~/Person/{0}", familyMembers[0].Person.Id ), false );
+                    }
+
+                }
+            }
+
+        }
+
+        #endregion
+
+        #region Methods
 
         private void CreateControls( List<GroupMember> familyMembers, bool setSelection )
         {
@@ -279,6 +404,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             var familyMembers = new List<GroupMember>();
 
+            int? childMaritalStatusId = null;
+            var childMaritalStatus = DefinedValueCache.Read( GetAttributeValue("ChildMaritalStatus").AsGuid() );
+            if ( childMaritalStatus != null )
+            {
+                childMaritalStatusId = childMaritalStatus.Id;
+            }
+
+            int? adultMaritalStatusId = ddlMaritalStatus.SelectedValueAsInt();
+
             foreach ( NewFamilyMembersRow row in nfmMembers.FamilyMemberRows )
             {
                 var groupMember = new GroupMember();
@@ -289,6 +423,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 if ( row.RoleId.HasValue )
                 {
                     groupMember.GroupRoleId = row.RoleId.Value;
+
+                    if (groupMember.GroupRoleId == _childRoleId)
+                    {
+                        groupMember.Person.MaritalStatusValueId = childMaritalStatusId;
+                    }
+                    else
+                    {
+                        groupMember.Person.MaritalStatusValueId = adultMaritalStatusId;
+                    }
                 }
 
                 groupMember.Person.TitleValueId = row.TitleValueId;
@@ -368,51 +511,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
         }
 
-        protected void btnPrevious_Click( object sender, EventArgs e )
-        {
-            if ( CurrentCategoryIndex > 0 )
-            {
-                CurrentCategoryIndex--;
-                ShowAttributeCategory( CurrentCategoryIndex );
-            }
-        }
-
-        protected void btnNext_Click( object sender, EventArgs e )
-        {
-            if ( Page.IsValid )
-            {
-                if ( CurrentCategoryIndex < attributeControls.Count )
-                {
-                    CurrentCategoryIndex++;
-                    ShowAttributeCategory( CurrentCategoryIndex );
-                }
-                else
-                {
-                    var familyMembers = GetControlData();
-                    if ( familyMembers.Any() )
-                    {
-                        RockTransactionScope.WrapTransaction( () =>
-                        {
-                            using ( new UnitOfWorkScope() )
-                            {
-                                var groupService = new GroupService();
-                                var familyGroup = groupService.SaveNewFamily( familyMembers, cpCampus.SelectedValueAsInt(), true, CurrentPersonAlias );
-                                if (familyGroup != null)
-                                {
-                                    groupService.AddNewFamilyAddress(familyGroup, GetAttributeValue( "LocationType" ),
-                                        tbStreet1.Text, tbStreet2.Text, tbCity.Text, ddlState.SelectedValue, tbZip.Text, CurrentPersonAlias );
-                                }
-                            }
-                        } );
-
-                        Response.Redirect( string.Format( "~/Person/{0}", familyMembers[0].Person.Id ), false );
-                    }
-
-                }
-            }
-
-        }
-
         private void ShowAttributeCategory( int index )
         {
             pnlFamilyData.Visible = ( index == 0 );
@@ -426,5 +524,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             btnPrevious.Visible = index > 0;
             btnNext.Text = index < attributeControls.Count ? "Next" : "Finish";
         }
+
+        #endregion
     }
 }

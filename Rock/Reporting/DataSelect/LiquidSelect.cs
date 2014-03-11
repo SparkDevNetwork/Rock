@@ -155,6 +155,10 @@ namespace Rock.Reporting.DataSelect
         public override System.Web.UI.Control[] CreateChildControls( System.Web.UI.Control parentControl )
         {
             CodeEditor codeEditor = new CodeEditor();
+            codeEditor.HelpBlock.Text = @"
+Use Liquid syntax to get the values of any of the fields in this report. For example, to create a link to the Person record, type <code>&lt;a href=&quot;/Person/{{ Id }}&quot;&gt;{{ NickName }} {{ LastName }}&lt;/a&gt</code><br />  
+Note: The fieldname will be the Column Label without spaces or special characters.";
+
             codeEditor.EditorMode = CodeEditorMode.Liquid;
             codeEditor.ID = parentControl.ID + "_0";
             codeEditor.Label = "Template";

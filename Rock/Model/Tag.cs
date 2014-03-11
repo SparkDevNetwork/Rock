@@ -84,6 +84,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [MergeField]
         public string Name { get; set; }
 
         /// <summary>
@@ -93,6 +94,7 @@ namespace Rock.Model
         /// The description.
         /// </value>
         [DataMember]
+        [MergeField]
         public string Description { get; set; }
 
         /// <summary>
@@ -104,6 +106,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [MergeField]
         public int Order { get; set; }
 
         /// <summary>

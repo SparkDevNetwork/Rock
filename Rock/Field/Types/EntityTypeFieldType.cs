@@ -156,6 +156,7 @@ namespace Rock.Field.Types
                     entityTypePicker.IncludeGlobalOption = false;
                 }
             }
+
             entityTypePicker.EntityTypes = new EntityTypeService().GetEntities().ToList();
             return entityTypePicker;
         }

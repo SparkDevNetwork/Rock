@@ -108,7 +108,7 @@ namespace Rock.Rest.Controllers
         {
             int count = 20;
             bool reversed;
-            IOrderedQueryable<Person> sortedPersonQry = new PersonService().GetByFullNameOrdered( name, false, out reversed );
+            IOrderedQueryable<Person> sortedPersonQry = new PersonService().GetByFullNameOrdered( name, false, false, out reversed );
 
             var topQry = sortedPersonQry.Take( count );
             List<Person> sortedPersonList = topQry.ToList();
@@ -153,9 +153,9 @@ namespace Rock.Rest.Controllers
 
                 if ( includeHtml )
                 {
-                    string imageHtml = null;
-
-                    imageHtml = Person.GetPhotoImageTag( person.PhotoId, person.Gender, 65, 65 );
+                    string imageHtml = string.Format(
+                        "<div class='person-image' style='background-image:url({0}&width=65);background-size:cover;background-position:50%'></div>",
+                        Person.GetPhotoUrl( person.PhotoId, person.Gender ) );
 
                     string personInfo = string.Empty;
 

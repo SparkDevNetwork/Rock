@@ -7,6 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>Rock - License</title>
 
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Rock/Styles/bootstrap.css") %>"/>
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Rock/Styles/theme.css") %>" />
 
     <script src="<%= ResolveUrl("~/Scripts/jquery-1.10.2.min.js") %>"></script>
@@ -95,6 +96,9 @@
                             <li><a href="#spinkit">SpinKit</a> (MIT) - <a href="https://github.com/tobiasahlin/SpinKit">Project Site</a></li>
                             <li><a href="#webicon">Web Icon Set (File Type Icons)</a> (Custom) - <a href="http://www.webiconset.com/file-type-icons/">Project Site</a></li>
                             <li><a href="#smartresize">SmartResize</a> (Creative Commons Public Domain Dedication) - <a href="http://www.paulirish.com/2009/throttled-smartresize-jquery-event-handler/">Project Site</a></li>
+                            <li><a href="#mobiledetect">Mobile Detect</a> (Unlicense) - <a href="http://detectmobilebrowsers.com/">Project Site</a></li>
+                            <li><a href="#doublemetaphone">Double Metaphone</a> (Custom) - <a href="http://www.codeproject.com/Articles/4625/Implement-Phonetic-Sounds-like-Name-Searches-wit-4">Project Site</a></li>
+                            <li><a href="#jcrop">JCrop</a> (MIT) - <a href="http://deepliquid.com/content/Jcrop.html">Project Site</a></li>
                         </ul>
 
 
@@ -2401,7 +2405,76 @@ The person who associated a work with this deed has dedicated the work to the pu
 
 You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission. See Other Information below.</pre>
 
+<a name="mobiledetect"></a>
+                        <h3>Mobile Detect</h3>
+                        <pre>
+Unlicense
 
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org/>
+</pre>
+
+<a name="doublemetaphone"></a>
+                        <h3>Double Metaphone</h3>
+                        <pre>
+An implemenatation of Lawrence Phillips' Double Metaphone phonetic matching
+algorithm, published in C/C++ Users Journal, June, 2000.
+
+This implementation was written by Adam J. Nelson (anelson@nullpointer.net).
+It is based on the C++ template implementation, also by Adam Nelson.
+For the latest version of this implementation, implementations
+in other languages, and links to articles I've written on the use of my various
+Double Metaphone implementations, see:
+http;//www.nullpointer.net/anelson/
+
+Note that since this impl implements IComparable, it can be used to key associative containers,
+thereby easily implementing phonetic matching within a simple container.  Examples of this
+should have been included in the archive from which you obtained this file.
+
+Current Version: 1.0.0
+Revision History:
+	1.0.0 - ajn - First release
+
+This implemenatation, and optimizations, Copyright (C) 2003, Adam J. Nelson
+The Double Metaphone algorithm was written by Lawrence Phillips, and is 
+Copyright (c) 1998, 1999 by Lawrence Philips.
+</pre>
+
+<a name="jcrop"></a>
+                        <h3>Jcrop</h3>
+                        <pre>
+The MIT License 
+
+Copyright ©2008 Kelly Hallman and Deep Liquid Group 
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: 
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. 
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+</pre>
                     </div>
                 </div>
             </div>

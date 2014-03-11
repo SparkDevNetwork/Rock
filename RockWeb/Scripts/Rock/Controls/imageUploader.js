@@ -7,6 +7,11 @@
         var _configure = function (options) {
             options.isBinaryFile = options.isBinaryFile || 'T';
 
+            // default setImageUrlOnUpload to true if not specified
+            if (options.setImageUrlOnUpload == null) {
+                options.setImageUrlOnUpload = true;
+            }
+
             var wsUrl = Rock.settings.get('baseUrl')
                         + 'ImageUploader.ashx?'
                         + 'isBinaryFile=' + options.isBinaryFile;
@@ -47,13 +52,19 @@
                     var getImageUrl = Rock.settings.get('baseUrl')
                         + 'GetImage.ashx?'
                         + 'isBinaryFile=' + (options.isBinaryFile || 'T')
-                        // note rootFolder is encrypted to prevent direct access to filesystem via the URL
-                        + '&rootFolder=' + (encodeURIComponent(options.rootFolder) || '')
                         + '&id=' + data.response().result.Id
                         + '&fileName=' + data.response().result.FileName
-                        + '&width=50';
+                        + '&width=150';
 
-                    $el.attr('src', getImageUrl);
+                    if (options.rootFolder) {
+                        // note rootFolder is encrypted to prevent direct access to filesystem via the URL
+                        getImageUrl += '&rootFolder=' + encodeURIComponent(options.rootFolder);
+                    }
+
+                    if (options.setImageUrlOnUpload) {
+                        $el.attr('src', getImageUrl);
+                    }
+                    
                     $('#' + options.aRemove).show();
                     if (options.postbackScript) {
                         eval(options.postbackScript);
@@ -62,6 +73,21 @@
                     if (options.doneFunction) {
                         options.doneFunction(e, data);
                     }
+                },
+                fail: function (e, data) {
+                    var $el = $('#' + options.controlId).closest('.imageupload-group');
+                    $el.siblings('.js-rockupload-alert').remove();
+                    var $warning = $('<div class="alert alert-warning alert-dismissable js-rockupload-alert"/>');
+
+                    var msg = "unable to upload";
+                    if (data.response().jqXHR && data.response().jqXHR.status == 406) {
+                        msg = "file type not allowed";
+                    }
+
+                    $warning.append('<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>')
+                        .append('<strong><i class="fa fa-exclamation-triangle"></i> Warning </strong>')
+                        .append(msg);
+                    $warning.insertBefore($el);
                 }
             });
 
@@ -69,7 +95,8 @@
                 $(this).hide();
                 var $el = $('#' + options.imgThumbnail);
                 $('#' + options.hfFileId).val('0');
-                $el.attr('src', Rock.settings.get('baseUrl') + 'Assets/Images/no-picture.svg');
+                var noPictureUrl = options.noPictureUrl || Rock.settings.get('baseUrl') + 'Assets/Images/no-picture.svg';
+                $el.attr('src', noPictureUrl);
                 //$('.imageupload-thumbnail img').css('width', "49px"); // hack for chrome 9/30/2013
                 return false;
             });

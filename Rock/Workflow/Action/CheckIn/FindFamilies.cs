@@ -59,7 +59,7 @@ namespace Rock.Workflow.Action.CheckIn
                     }
                     else if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME ) ) )
                     {
-                        people = personService.GetByFullName( checkInState.CheckIn.SearchValue );
+                        people = personService.GetByFullName( checkInState.CheckIn.SearchValue, false );
                     }
                     else
                     {

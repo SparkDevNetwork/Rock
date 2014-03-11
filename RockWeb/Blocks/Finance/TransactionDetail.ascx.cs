@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Finance
         #region Fields
 
         private string contextTypeName = string.Empty;
+        private bool readOnly = false;
 
         #endregion Fields
 
@@ -60,6 +61,20 @@ namespace RockWeb.Blocks.Finance
             mdDetails.SaveClick += mdDetails_SaveClick;
             mdDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
 
+            if ( !IsUserAuthorized( "Edit" ) )
+            {
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialBatch.FriendlyTypeName );
+            }
+
+            ScriptManager.RegisterStartupScript( pnlDetails, pnlDetails.GetType(), "images-fluidbox", "$('.photo a.transaction-image').fluidbox();", true );
+
+            string deleteButtonScriptFormat = @"
+                $('.image-delete-button').on( 'click', function (event) {{
+                return Rock.dialogs.confirmDelete(event, '{0}');
+            }});";
+            string deleteButtonScript = string.Format( deleteButtonScriptFormat, "image" );
+            ScriptManager.RegisterStartupScript( pnlTransactionImages, pnlTransactionImages.GetType(), "image-delete-confirm-script", deleteButtonScript, true );
         }
 
         /// <summary>
@@ -121,10 +136,6 @@ namespace RockWeb.Blocks.Finance
                 {
                     financialTransaction.AuthorizedPersonId = null;
                 }
-
-                //decimal amount = 0M;
-                //decimal.TryParse( tbAmount.Text.Replace( "$", string.Empty ), out amount );
-                //financialTransaction.Amount = amount;
 
                 if ( ddlCurrencyType.SelectedItem.ToString() == "Credit Card" )
                 {
@@ -223,13 +234,17 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gTransactionDetails_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            var transactionDetailsId = (int)e.RowKeyValue;
-            hfIdValue.Value = transactionDetailsId.ToString();
-            var ftd = new FinancialTransactionDetailService().Get( transactionDetailsId );
-            ddlTransactionAccount.SelectedValue = ftd.AccountId.ToString();
-            tbTransactionAmount.Text = ftd.Amount.ToString();
-            tbTransactionSummary.Text = ftd.Summary;
-            mdDetails.Show();
+            if ( !readOnly )
+            {
+                LoadRelatedImages( new FinancialTransactionService().Get( hfIdTransValue.ValueAsInt() ).Id );
+                var transactionDetailsId = (int)e.RowKeyValue;
+                hfIdValue.Value = transactionDetailsId.ToString();
+                var ftd = new FinancialTransactionDetailService().Get( transactionDetailsId );
+                ddlTransactionAccount.SelectedValue = ftd.AccountId.ToString();
+                tbTransactionAmount.Text = ftd.Amount.ToString();
+                tbTransactionSummary.Text = ftd.Summary;
+                mdDetails.Show();
+            }
         }
 
         /// <summary>
@@ -249,12 +264,13 @@ namespace RockWeb.Blocks.Finance
                     maGridWarning.Show( errorMessage, Rock.Web.UI.Controls.ModalAlertType.Information );
                     return;
                 }
+
                 ftdService.Delete( ftd, CurrentPersonAlias );
                 ftdService.Save( ftd, CurrentPersonAlias );
             }
-            var transactionId = PageParameter( "transactionId" );
+
             FinancialTransaction transaction = new FinancialTransaction();
-            transaction = new FinancialTransactionService().Get( int.Parse( transactionId ) );
+            transaction = new FinancialTransactionService().Get( hfIdTransValue.ValueAsInt() );
             BindTransactionDetailGrid( transaction );
         }
 
@@ -263,13 +279,13 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void gTransactionDetails_Add( object sender, EventArgs e )
+        private void gTransactionDetails_Add( object sender, EventArgs e )
         {
             var transactionDetailsId = 0;
             hfIdValue.Value = transactionDetailsId.ToString();
             ddlTransactionAccount.SelectedIndex = 0;
-            tbTransactionAmount.Text = "";
-            tbTransactionSummary.Text = "";
+            tbTransactionAmount.Text = string.Empty;
+            tbTransactionSummary.Text = string.Empty;
             mdDetails.Show();
         }
 
@@ -278,11 +294,10 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void gTransactionDetails_GridRebind( object sender, EventArgs e )
+        private void gTransactionDetails_GridRebind( object sender, EventArgs e )
         {
-            var transactionId = PageParameter( "transactionId" );
             FinancialTransaction transaction = new FinancialTransaction();
-            transaction = new FinancialTransactionService().Get( int.Parse( transactionId ) );
+            transaction = new FinancialTransactionService().Get( hfIdTransValue.ValueAsInt() );
             BindTransactionDetailGrid( transaction );
         }
 
@@ -291,9 +306,8 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void mdDetails_SaveClick( object sender, EventArgs e )
+        private void mdDetails_SaveClick( object sender, EventArgs e )
         {
-            var transactionId = PageParameter( "transactionId" );
             if ( !string.IsNullOrWhiteSpace( tbTransactionAmount.Text ) )
             {
                 var ftdService = new FinancialTransactionDetailService();
@@ -308,7 +322,7 @@ namespace RockWeb.Blocks.Finance
                     ftd = new FinancialTransactionDetail { Id = 0 };
                 }
 
-                ftd.TransactionId = int.Parse( transactionId );
+                ftd.TransactionId = hfIdTransValue.ValueAsInt();
                 ftd.AccountId = int.Parse( ddlTransactionAccount.SelectedValue );
                 ftd.Amount = decimal.Parse( tbTransactionAmount.Text );
                 ftd.Summary = tbTransactionSummary.Text;
@@ -318,14 +332,16 @@ namespace RockWeb.Blocks.Finance
                     {
                         ftdService.Add( ftd );
                     }
+
                     ftdService.Save( ftd, CurrentPersonAlias );
                 } );
             }
 
             mdDetails.Hide();
             FinancialTransaction transaction = new FinancialTransaction();
-            transaction = new FinancialTransactionService().Get( int.Parse( transactionId ) );
+            transaction = new FinancialTransactionService().Get( hfIdTransValue.ValueAsInt() );
             BindTransactionDetailGrid( transaction );
+            LoadRelatedImages( transaction.Id );
         }
 
         /// <summary>
@@ -343,9 +359,38 @@ namespace RockWeb.Blocks.Finance
                 var imageTag = new LiteralControl( "<img src='" + imageUrl + "' style='max-width:100%;max-height:100%;' />" );
                 var imageLink = new HyperLink();
                 imageLink.Attributes.Add( "href", imageUrl );
+                imageLink.AddCssClass( "transaction-image" );
                 ph.Controls.Add( imageLink );
                 imageLink.Controls.Add( imageTag );
+
+                LinkButton lbDelete = e.Item.FindControl( "lbDelete" ) as LinkButton;
+                lbDelete.Attributes.Add( "imageId", imageId.ToString() );
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbDelete_Click( object sender, EventArgs e )
+        {
+            LinkButton lbDelete = sender as LinkButton;
+            var imageId = int.Parse( lbDelete.Attributes["imageId"] );
+
+            // Delete the reference to the binary file (image) from the FinancialTransactionImage table
+            var imageService = new FinancialTransactionImageService();
+            var financialTransactionImage = imageService.Queryable().Where( image => image.BinaryFileId == imageId ).FirstOrDefault();
+            imageService.Delete( financialTransactionImage, CurrentPersonAlias );
+            imageService.Save( financialTransactionImage, CurrentPersonAlias );
+
+            // Delete the actual binary file (image)
+            var binaryFileService = new BinaryFileService();
+            var binaryFile = binaryFileService.Get( imageId );
+            binaryFileService.Delete( binaryFile, CurrentPersonAlias );
+            binaryFileService.Save( binaryFile, CurrentPersonAlias );
+
+            LoadRelatedImages( hfIdTransValue.ValueAsInt() );
         }
 
         /// <summary>
@@ -357,12 +402,13 @@ namespace RockWeb.Blocks.Finance
         {
             var service = new FinancialTransactionImageService();
             var financialTransactionImage = new FinancialTransactionImage();
-            var transactionId = int.Parse( PageParameter( "transactionId" ) );
+            var transactionId = hfIdTransValue.ValueAsInt();
             financialTransactionImage.BinaryFileId = (int)imgupTransactionImages.BinaryFileId;
             financialTransactionImage.TransactionId = transactionId;
             financialTransactionImage.TransactionImageTypeValueId = ddlTransactionImageType.SelectedValueAsInt();
             service.Add( financialTransactionImage );
             service.Save( financialTransactionImage );
+            imgupTransactionImages.BinaryFileId = 0;
             LoadRelatedImages( transactionId );
         }
 
@@ -436,7 +482,7 @@ namespace RockWeb.Blocks.Finance
                     var gatewayEntity = Rock.Web.Cache.EntityTypeCache.Read( transaction.GatewayEntityTypeId.Value );
                     if ( gatewayEntity != null )
                     {
-                        ddlPaymentGateway.SetValue( gatewayEntity.Guid.ToString() );
+                        ddlPaymentGateway.SetValue( gatewayEntity.Guid.ToString().ToUpper() );
                     }
                 }
 
@@ -457,6 +503,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             SetEditMode( true );
+            LoadRelatedImages( transaction.Id );
 
             if ( ddlCurrencyType != null && ddlCurrencyType.SelectedItem != null && ddlCurrencyType.SelectedItem.ToString() != "Credit Card" )
             {
@@ -520,13 +567,6 @@ namespace RockWeb.Blocks.Finance
             hfIdTransValue.Value = transaction.Id.ToString();
             hfBatchId.Value = PageParameter( "financialBatchId" );
 
-            bool readOnly = false;
-            if ( !IsUserAuthorized( "Edit" ) )
-            {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialBatch.FriendlyTypeName );
-            }
-
             if ( !readOnly )
             {
                 lbEdit.Visible = true;
@@ -539,11 +579,18 @@ namespace RockWeb.Blocks.Finance
                     BindDropdowns();
                     ShowEdit( transaction );
                 }
+
+                gTransactionDetails.Actions.ShowAdd = true;
+                gTransactionDetails.IsDeleteEnabled = true;
+                pnlImageUpload.Visible = true;
             }
             else
             {
                 lbEdit.Visible = false;
                 ShowSummary( transaction );
+                gTransactionDetails.Actions.ShowAdd = false;
+                gTransactionDetails.IsDeleteEnabled = false;
+                pnlImageUpload.Visible = false;
             }
 
             lbSave.Visible = !readOnly;
@@ -576,7 +623,6 @@ namespace RockWeb.Blocks.Finance
                 var financialTransactionDetails = new FinancialTransactionDetailService().Queryable().Where( trans => trans.TransactionId == transaction.Id ).ToList();
                 gTransactionDetails.DataSource = financialTransactionDetails;
                 gTransactionDetails.DataBind();
-                gTransactionDetails.Actions.ShowAdd = true;
                 pnlTransactionDetails.Visible = true;
             }
             else
@@ -589,14 +635,14 @@ namespace RockWeb.Blocks.Finance
         /// Loads the related images.
         /// </summary>
         /// <param name="transactionId">The transaction identifier.</param>
-        private void LoadRelatedImages( int transactionId)
+        private void LoadRelatedImages( int transactionId )
         {
             // Let's get a list of related images from the FinancialTransactionImage table
             var relatedImageList = new FinancialTransactionImageService().Queryable().Where( image => image.TransactionId == transactionId ).ToList();
 
             // Now let's get the binary files from the BinaryFile table
             var binaryFileList = new List<BinaryFile>();
-            foreach( var relatedImage in relatedImageList )
+            foreach ( var relatedImage in relatedImageList )
             {
                 var binaryFileId = relatedImage.BinaryFileId;
                 var binaryFile = new BinaryFileService().Get( binaryFileId );
@@ -608,5 +654,5 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion Internal Methods
-}
+    }
 }

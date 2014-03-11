@@ -22,6 +22,7 @@ using System.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Groups
@@ -35,7 +36,7 @@ namespace RockWeb.Blocks.Groups
 
     [TextField( "Treeview Title", "Group Tree View", false )]
     [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false )]
-    [GroupField( "Group", "Select the root group to show in this block.", false )]
+    [GroupField( "Root Group", "Select the root group to use as a starting point for the tree view.", false )]
     [BooleanField( "Limit to Security Role Groups" )]
     [LinkedPage("Detail Page")]
     public partial class GroupTreeView : RockBlock
@@ -61,45 +62,7 @@ namespace RockWeb.Blocks.Groups
             
             hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
             hfLimitToSecurityRoleGroups.Value = GetAttributeValue( "LimittoSecurityRoleGroups" );
-            hfRootGroupId.Value = GetAttributeValue( "Group" );
-
-            // limit GroupType selection to what Block Attributes allow
-            List<Guid> groupTypeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( Guid.Parse ).ToList();
-
-            string groupTypeIds = "0";
-            if ( groupTypeGuids.Any() )
-            {
-                groupTypeIds = new GroupTypeService().Queryable().Where( a => groupTypeGuids.Contains( a.Guid ) ).Select( a => a.Id ).ToList().AsDelimited( "," );
-                groupTypeIds = string.IsNullOrWhiteSpace( groupTypeIds ) ? "0" : groupTypeIds;
-            }
-            hfGroupTypes.Value = groupTypeIds;
-
-            if ( string.IsNullOrWhiteSpace( _groupId ) )
-            {
-                // If no group was selected, try to find the first group and redirect
-                // back to current page with that group selected
-                var group = FindFirstGroup();
-                {
-                    if ( group != null )
-                    {
-                        _groupId = group.Id.ToString();
-                        string redirectUrl = string.Empty;
-
-                        // redirect so that the group treeview has the first node selected right away and group detail shows the group
-                        if ( hfPageRouteTemplate.Value.IndexOf("{groupId}", StringComparison.OrdinalIgnoreCase) >= 0 )
-                        {
-                            redirectUrl = "~/" + hfPageRouteTemplate.Value.ReplaceCaseInsensitive( "{groupId}", _groupId.ToString() );
-                        }
-                        else
-                        {
-                            redirectUrl = this.Request.Url + "?groupId=" + _groupId.ToString();
-                        }
-
-                        this.Response.Redirect( redirectUrl, false );
-                        Context.ApplicationInstance.CompleteRequest();
-                    }
-                }
-            }
+            hfRootGroupId.Value = GetAttributeValue( "RootGroup" );
         }
 
         /// <summary>
@@ -110,11 +73,51 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnLoad( e );
 
+            if (!Page.IsPostBack)
+            {
+                if ( string.IsNullOrWhiteSpace( _groupId ) )
+                {
+                    // If no group was selected, try to find the first group and redirect
+                    // back to current page with that group selected
+                    var group = FindFirstGroup();
+                    {
+                        if ( group != null )
+                        {
+                            _groupId = group.Id.ToString();
+                            string redirectUrl = string.Empty;
+
+                            // redirect so that the group treeview has the first node selected right away and group detail shows the group
+                            if ( hfPageRouteTemplate.Value.IndexOf( "{groupId}", StringComparison.OrdinalIgnoreCase ) >= 0 )
+                            {
+                                redirectUrl = "~/" + hfPageRouteTemplate.Value.ReplaceCaseInsensitive( "{groupId}", _groupId.ToString() );
+                            }
+                            else
+                            {
+                                redirectUrl = this.Request.Url + "?groupId=" + _groupId.ToString();
+                            }
+
+                            this.Response.Redirect( redirectUrl, false );
+                            Context.ApplicationInstance.CompleteRequest();
+                        }
+                    }
+                }
+            }
+
             if ( !string.IsNullOrWhiteSpace( _groupId ) )
             {
                 hfInitialGroupId.Value = _groupId;
                 hfSelectedGroupId.Value = _groupId;
-                Group group = ( new GroupService() ).Get( int.Parse( _groupId ) );
+
+                string key = string.Format( "Group:{0}", _groupId );
+                Group group = RockPage.GetSharedItem( key ) as Group;
+                if ( group == null )
+                {
+                    int id = _groupId.AsInteger() ?? 0;
+                    group = new GroupService().Queryable( "GroupType" )
+                        .Where( g => g.Id == id )
+                        .FirstOrDefault();
+                    RockPage.SaveSharedItem( key, group );
+                }
 
                 if ( group != null )
                 {
@@ -128,10 +131,20 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 // get the parents of the selected item so we can tell the treeview to expand those
+                int? rootGroupId = GetAttributeValue( "RootGroup" ).AsInteger();
                 List<string> parentIdList = new List<string>();
                 while ( group != null )
                 {
-                    group = group.ParentGroup;
+                    if ( group.Id == rootGroupId )
+                    {
+                        // stop if we are at the root group
+                        group = null;
+                    }
+                    else
+                    {
+                        group = group.ParentGroup;
+                    }
+
                     if ( group != null )
                     {
                         parentIdList.Insert( 0, group.Id.ToString() );
@@ -195,8 +208,27 @@ namespace RockWeb.Blocks.Groups
 
         private Group FindFirstGroup()
         {
+            // limit GroupType selection to what Block Attributes allow
+            List<Guid> groupTypeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( Guid.Parse ).ToList();
+            string groupTypeIds = "0";
+            if ( groupTypeGuids.Any() )
+            {
+                var groupTypeIdList = new List<int>();
+                foreach ( Guid guid in groupTypeGuids )
+                {
+                    var groupType = GroupTypeCache.Read( guid );
+                    if ( groupType != null )
+                    {
+                        groupTypeIdList.Add( groupType.Id );
+                    }
+                }
+
+                groupTypeIds = groupTypeIdList.AsDelimited( "," );
+                groupTypeIds = string.IsNullOrWhiteSpace( groupTypeIds ) ? "0" : groupTypeIds;
+            }
+
             var groupService = new GroupService();
-            var qry = groupService.GetNavigationChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), hfGroupTypes.Value );
+            var qry = groupService.GetNavigationChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), groupTypeIds );
 
             foreach ( var group in qry )
             {

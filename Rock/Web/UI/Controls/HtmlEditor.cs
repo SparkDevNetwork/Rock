@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -312,31 +313,6 @@ namespace Rock.Web.UI.Controls
                 ViewState["UserSpecificRoot"] = value;
             }
         }
-        /// <summary>
-        /// Gets or sets the image file filter.
-        /// </summary>
-        /// <value>
-        /// The image file filter.
-        /// </value>
-        public string ImageFileFilter
-        {
-            get
-            {
-                string result = ViewState["ImageFileFilter"] as string;
-                if ( string.IsNullOrWhiteSpace( result ) )
-                {
-                    // default to common ones that are supported by most browsers
-                    result = "*.png;*.jpg;*.gif;*.svg;*.bmp";
-                }
-
-                return result;
-            }
-
-            set
-            {
-                ViewState["ImageFileFilter"] = value;
-            }
-        }
 
         /// <summary>
         /// Gets or sets the merge fields to make available.  This should include either a list of
@@ -462,16 +438,16 @@ CKEDITOR.replace('{0}', {{
     allowedContent: true,
     toolbar: toolbar_RockCustomConfig{1},
     removeButtons: '',
-    height: '{2}',
     baseFloatZIndex: 200000,  // set zindex to be 200000 so it will be on top of our modals (100000)
     extraPlugins: '{5}',
     resize_maxWidth: '{3}',
     rockFileBrowserOptions: {{ 
     documentFolderRoot: '{6}', 
     imageFolderRoot: '{7}',
-    imageFileFilter: '{8}'
+    imageFileTypeWhiteList: '{8}',
+    fileTypeBlackList: '{9}'
     }},
-    rockMergeFieldOptions: {{ mergeFields: '{9}' }},
+    rockMergeFieldOptions: {{ mergeFields: '{10}' }},
     on : {{
         change: function (e) {{
             // update the underlying TextElement on every little change (when in WYSIWIG mode) to ensure that Posting and Validation works consistently (doing it OnSubmit or OnBlur misses some cases)
@@ -483,6 +459,13 @@ CKEDITOR.replace('{0}', {{
             $('#cke_{0}').on( 'change', '.cke_source', function(e, data) {{
                 CKEDITOR.instances.{0}.updateElement();
             }});
+
+            // set the height
+            if ('{2}' != '') {{
+              var topHeight = $('#' + e.editor.id + '_top').height();
+              var contentHeight = '{2}'.replace('px','') - topHeight - 40;
+              $('#' + e.editor.id + '_contents').css('height', contentHeight);
+            }}
         }}
     }}
 }}
@@ -506,11 +489,17 @@ CKEDITOR.replace('{0}', {{
 
             enabledPlugins.Add( "rockfilebrowser" );
 
+            var globalAttributesCache = GlobalAttributesCache.Read();
+
+            string imageFileTypeWhiteList = globalAttributesCache.GetValue( "ContentImageFiletypeWhitelist" );
+            string fileTypeBlackList = globalAttributesCache.GetValue( "ContentFiletypeBlacklist" );
+
             string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(),
                 this.Height, this.ResizeMaxWidth ?? 0, customOnChangeScript, enabledPlugins.AsDelimited( "," ),
                 Rock.Security.Encryption.EncryptString( this.DocumentFolderRoot ), // encrypt the folders so the folder can only be configured on the server
                 Rock.Security.Encryption.EncryptString( this.ImageFolderRoot ),
-                this.ImageFileFilter,
+                imageFileTypeWhiteList,
+                fileTypeBlackList,
                 this.MergeFields.AsDelimited( "," ) );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckeditorInitScript, true );

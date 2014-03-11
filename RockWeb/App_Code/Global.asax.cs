@@ -72,6 +72,16 @@ namespace RockWeb
         #region Asp.Net Events
 
         /// <summary>
+        /// Handles the Pre Send Request event of the Application control.
+        /// </summary>
+        protected void Application_PreSendRequestHeaders()
+        {
+            Response.Headers.Remove( "Server" );
+            Response.Headers.Remove( "X-AspNet-Version" );
+            Response.AddHeader( "X-Frame-Options", "SAMEORIGIN" );
+        }
+
+        /// <summary>
         /// Handles the Start event of the Application control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -204,6 +214,9 @@ namespace RockWeb
             new FieldTypeService().RegisterFieldTypes( Server.MapPath( "~" ) );
 
             BundleConfig.RegisterBundles( BundleTable.Bundles );
+
+            // mark any user login stored as 'IsOnline' in the database as offline
+            MarkOnlineUsersOffline();
         }
 
         /// <summary>
@@ -242,17 +255,20 @@ namespace RockWeb
             {
                 Global.QueueInUse = true;
 
-                try
+                while ( RockQueue.TransactionQueue.Count != 0 )
                 {
-                    while ( RockQueue.TransactionQueue.Count != 0 )
+                    ITransaction transaction = RockQueue.TransactionQueue.Dequeue() as ITransaction;
+                    if ( transaction != null )
                     {
-                        ITransaction transaction = (ITransaction)RockQueue.TransactionQueue.Dequeue();
-                        transaction.Execute();
+                        try
+                        {
+                            transaction.Execute();
+                        }
+                        catch ( Exception ex )
+                        {
+                            LogError( new Exception( string.Format( "Exception in Global.DrainTransactionQueue(): {0}", transaction.GetType().Name ), ex ), null );
+                        }
                     }
-                }
-                catch ( Exception ex )
-                {
-                    LogError( new Exception( string.Format( "Exception in Global.DrainTransactionQueue(): {0}", ex.Message ) ), null );
                 }
 
                 Global.QueueInUse = false;
@@ -267,6 +283,9 @@ namespace RockWeb
         protected void Session_Start( object sender, EventArgs e )
         {
             new Rock.Model.UserLoginService().UpdateLastLogin( UserLogin.GetCurrentUserName() );
+
+            // add new session id
+            Session["RockSessionId"] = Guid.NewGuid();
         }
 
         /// <summary>
@@ -383,24 +402,30 @@ namespace RockWeb
                         // email notifications if 500 error
                         if ( status == "500" )
                         {
-                            // setup merge codes for email
-                            var mergeObjects = new Dictionary<string, object>();
-                            mergeObjects.Add( "ExceptionDetails", "An error occurred on the " + siteName + " site on page: <br>" + context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" ) );
-
-                            // get email addresses to send to
-                            string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
-
-                            if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
+                            try
                             {
-                                string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-                                var recipients = new Dictionary<string, Dictionary<string, object>>();
+                                // setup merge codes for email
+                                var mergeObjects = new Dictionary<string, object>();
+                                mergeObjects.Add( "ExceptionDetails", "An error occurred on the " + siteName + " site on page: <br>" + context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" ) );
 
-                                foreach ( string emailAddress in emailAddresses )
+                                // get email addresses to send to
+                                string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
+
+                                if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
                                 {
-                                    recipients.Add( emailAddress, mergeObjects );
-                                }
+                                    string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+                                    var recipients = new Dictionary<string, Dictionary<string, object>>();
 
-                                Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients );
+                                    foreach ( string emailAddress in emailAddresses )
+                                    {
+                                        recipients.Add( emailAddress, mergeObjects );
+                                    }
+
+                                    Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients );
+                                }
+                            }
+                            catch 
+                            { 
                             }
                         }
 
@@ -487,6 +512,17 @@ namespace RockWeb
         protected void Session_End( object sender, EventArgs e )
         {
 
+            // mark user offline
+            if ( this.Session["RockUserId"] != null ) { 
+
+                UserLoginService userLoginService = new UserLoginService();
+
+                var user = userLoginService.Get( Int32.Parse( this.Session["RockUserId"].ToString() ) );
+                user.IsOnLine = false;
+
+                userLoginService.Save( user, null );
+
+            }
         }
 
         /// <summary>
@@ -526,6 +562,9 @@ namespace RockWeb
 
             // process the transaction queue
             DrainTransactionQueue();
+
+            // mark any user login stored as 'IsOnline' in the database as offline
+            MarkOnlineUsersOffline();
         }
 
         #endregion
@@ -539,8 +578,27 @@ namespace RockWeb
         {
             OnCacheRemove = new CacheItemRemovedCallback( CacheItemRemoved );
             HttpRuntime.Cache.Insert( "IISCallBack", 60, null,
-                RockDateTime.Now.AddSeconds( 60 ), Cache.NoSlidingExpiration,
+                DateTime.Now.AddSeconds( 60 ), Cache.NoSlidingExpiration,
                 CacheItemPriority.NotRemovable, OnCacheRemove );
+        }
+
+        /// <summary>
+        /// Adds the call back.
+        /// </summary>
+        private void MarkOnlineUsersOffline()
+        {
+            UserLoginService userLoginService = new UserLoginService();
+
+            var usersOnline = userLoginService.Queryable().Where( u => u.IsOnLine == true ).ToList();
+
+            foreach ( var user in usersOnline )
+            {
+                userLoginService.Attach( user );
+                user.IsOnLine = false;
+                userLoginService.Save( user, null );
+            }
+
+   
         }
 
         /// <summary>
@@ -690,30 +748,23 @@ namespace RockWeb
                 }
 
                 // Cache all the Field Types
-                var fieldTypeService = new Rock.Model.FieldTypeService();
-                foreach ( var fieldType in fieldTypeService.Queryable().ToList() )
-                {
-                    fieldType.LoadAttributes();
-                    Rock.Web.Cache.FieldTypeCache.Read( fieldType );
-                }
+                var all = Rock.Web.Cache.FieldTypeCache.All();
 
                 // DT: When running with production CCV Data, this is taking a considerable amount of time 
 
                 // Cache all tha Defined Types
-                //var definedTypeService = new Rock.Model.DefinedTypeService();
-                //foreach ( var definedType in definedTypeService.Queryable().ToList() )
-                //{
-                //    definedType.LoadAttributes();
-                //    Rock.Web.Cache.DefinedTypeCache.Read( definedType );
-                //}
+                var definedTypeService = new Rock.Model.DefinedTypeService();
+                foreach ( var definedType in definedTypeService.Queryable().ToList() )
+                {
+                    Rock.Web.Cache.DefinedTypeCache.Read( definedType );
+                }
 
                 // Cache all the Defined Values
-                //var definedValueService = new Rock.Model.DefinedValueService();
-                //foreach ( var definedValue in definedValueService.Queryable().ToList() )
-                //{
-                //    definedValue.LoadAttributes();
-                //    Rock.Web.Cache.DefinedValueCache.Read( definedValue );
-                //}
+                var definedValueService = new Rock.Model.DefinedValueService();
+                foreach ( var definedValue in definedValueService.Queryable().ToList() )
+                {
+                    Rock.Web.Cache.DefinedValueCache.Read( definedValue );
+                }
             }
         }
 

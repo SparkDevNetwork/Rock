@@ -701,7 +701,8 @@ namespace Rock.Web.UI.Controls
             RowSelectedColumns = new Dictionary<int, string>();
             for ( int i = 0; i < this.Columns.Count; i++ )
             {
-                if ( !( this.Columns[i] is INotRowSelectedField ) )
+                var column = this.Columns[i];
+                if ( !( column is INotRowSelectedField ) && !(column is HyperLinkField ) )
                 {
                     RowSelectedColumns.Add( i, this.Columns[i].ItemStyle.CssClass );
                 }
@@ -899,9 +900,12 @@ namespace Rock.Web.UI.Controls
 
             if ( e.CommandName == "RowSelected" )
             {
-                int rowIndex = Int32.Parse( e.CommandArgument.ToString() );
-                RowEventArgs a = new RowEventArgs( this.Rows[rowIndex] );
-                OnRowSelected( a );
+                int rowIndex = int.MinValue;
+                if (int.TryParse( e.CommandArgument.ToString(), out rowIndex) )
+                {
+                    RowEventArgs a = new RowEventArgs( this.Rows[rowIndex] );
+                    OnRowSelected( a );
+                }
             }
         }
 
@@ -973,8 +977,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Actions_CommunicateClick( object sender, EventArgs e )
         {
-            OnGridRebind( e );
-
             if ( !string.IsNullOrWhiteSpace( PersonIdField ) )
             {
                 var peopleSelected = SelectedKeys.ToList();
@@ -990,6 +992,8 @@ namespace Rock.Web.UI.Controls
                     {
                         communication.SenderPersonId = rockPage.CurrentPerson.Id;
                     }
+
+                    OnGridRebind( e );
 
                     if ( this.DataSource is DataTable || this.DataSource is DataView )
                     {
@@ -1014,7 +1018,7 @@ namespace Rock.Web.UI.Controls
                             {
                                 if ( data.Columns[i].ColumnName == this.PersonIdField )
                                 {
-                                    personId = (int)row[i];
+                                    personId = row[i] as int?;
                                 }
 
                                 if ( CommunicateMergeFields.Contains( data.Columns[i].ColumnName ) )
@@ -1042,9 +1046,13 @@ namespace Rock.Web.UI.Controls
                         Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
 
                         PropertyInfo idProp = oType.GetProperty( this.PersonIdField );
-                        if ( idProp != null )
+                        foreach ( var item in data )
                         {
-                            foreach ( var item in data )
+                            if ( idProp == null )
+                            {
+                                idProp = item.GetType().GetProperty( this.PersonIdField );
+                            }
+                            if ( idProp != null )
                             {
                                 int personId = (int)idProp.GetValue( item, null );
                                 if ( !peopleSelected.Any() || peopleSelected.Contains( personId ) )
@@ -1063,6 +1071,17 @@ namespace Rock.Web.UI.Controls
 
                                     communication.Recipients.Add( recipient );
                                 }
+                            }
+                        }
+                        
+                        if (idProp == null)
+                        {
+                            // Couldn't determine data source, at least add recipients for any selected people
+                            foreach ( int personId in peopleSelected )
+                            {
+                                var recipient = new Rock.Model.CommunicationRecipient();
+                                recipient.PersonId = personId;
+                                communication.Recipients.Add( recipient );
                             }
                         }
                     }
@@ -1337,10 +1356,18 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="modelType">Type of the model.</param>
         /// <returns></returns>
-        public List<BoundField> GetPreviewColumns( Type modelType )
+        public List<DataControlField> GetPreviewColumns( Type modelType )
         {
-            var displayColumns = new List<BoundField>();
-            var allColumns = new List<BoundField>();
+            var displayColumns = new List<DataControlField>();
+            var allColumns = new List<DataControlField>();
+
+            // If displaying people, add select field (for merging & communication)
+            if ( !string.IsNullOrWhiteSpace(PersonIdField) )
+            {
+                var selectField = new SelectField();
+                displayColumns.Add( selectField );
+                allColumns.Add( selectField );
+            }
 
             foreach ( var property in modelType.GetProperties() )
             {
@@ -1367,7 +1394,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            var columns = new List<BoundField>();
+            var columns = new List<DataControlField>();
 
             // Always add hidden id column
             var idCol = new BoundField();
@@ -1419,9 +1446,13 @@ namespace Rock.Web.UI.Controls
                 Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
 
                 PropertyInfo idProp = oType.GetProperty( this.PersonIdField );
-                if ( idProp != null )
+                foreach ( var item in data )
                 {
-                    foreach ( var item in data )
+                    if ( idProp == null )
+                    {
+                        idProp = item.GetType().GetProperty( this.PersonIdField );
+                    }
+                    if ( idProp != null )
                     {
                         int personId = (int)idProp.GetValue( item, null );
                         personIds.Add( personId );

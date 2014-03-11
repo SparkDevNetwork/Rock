@@ -27,13 +27,21 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Groups
 {
+    /// <summary>
+    /// "Handles displaying group search results and redirects to the group detail page (via route ~/Group/) when only one match was found.
+    /// </summary>
     [DisplayName( "Group Search" )]
     [Category( "Groups" )]
     [Description( "Handles displaying group search results and redirects to the group detail page (via route ~/Group/) when only one match was found." )]
+
     public partial class GroupSearch : Rock.Web.UI.RockBlock
     {
-        #region Control Methods
+        #region Base Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -42,32 +50,36 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
 
-        #region Internal Methods
+        #region Events
+
+        #endregion
+
+        #region Methods
 
         private void BindGrid()
         {
             string type = PageParameter( "SearchType" );
             string term = PageParameter( "SearchTerm" );
 
+            var groupService = new GroupService();
             var groups = new List<Group>();
 
             if ( !String.IsNullOrWhiteSpace( type ) && !String.IsNullOrWhiteSpace( term ) )
             {
-                using ( var uow = new Rock.Data.UnitOfWorkScope() )
+                switch ( type.ToLower() )
                 {
-                    var groupService = new GroupService();
-
-                    switch ( type.ToLower() )
-                    {
-                        case ( "name" ):
-
-                            groups = groupService.Queryable().
-                                Where( g => ( g.Name ).Contains( term ) ).
-                                OrderBy( g => g.Name ).
-                                ToList();
+                    case ( "name" ):
+                        {
+                            groups = groupService.Queryable()
+                                .Where( g =>
+                                    g.GroupType.ShowInNavigation &&
+                                    ( g.Name ).Contains( term ) )
+                                .OrderBy( g => g.Order )
+                                .ThenBy( g => g.Name )
+                                .ToList();
 
                             break;
-                    }
+                        }
                 }
             }
 
@@ -78,9 +90,35 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                gGroups.DataSource = groups;
+                gGroups.DataSource = groups
+                    .Select( g => new
+                    {
+                        g.Id,
+                        GroupType = g.GroupType.Name,
+                        Structure = ParentStructure( g ),
+                        MemberCount = g.Members.Count()
+                    } )
+                    .ToList();
                 gGroups.DataBind();
             }
+        }
+
+        private string ParentStructure(Group group)
+        {
+            if (group == null)
+            {
+                return string.Empty;
+            }
+
+            string prefix = ParentStructure(group.ParentGroup);
+            if (!string.IsNullOrWhiteSpace(prefix))
+            {
+                prefix += " <i class='fa fa-angle-right'></i> ";
+            }
+
+            string pageUrl = RockPage.ResolveUrl("~/Group/");
+
+            return string.Format( "{0}<a href='{1}{2}'>{3}</a>", prefix, pageUrl, group.Id, group.Name );
         }
 
         #endregion

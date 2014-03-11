@@ -8,7 +8,7 @@
       d:DesignWidth="960"
       Title="ScanningPage"
       Loaded="Page_Loaded"
-      Background="#efefef">
+      Style="{StaticResource pageBackground}">
 
     <!-- Scan Progress Grid -->
     <Grid Name="grdScanProgress">

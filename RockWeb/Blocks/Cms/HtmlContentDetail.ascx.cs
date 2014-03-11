@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Cms
     [TextField("Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 1 )]
     [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 2 )]
     [BooleanField( "User Specific Folders", "Should the root folders be specific to current user?", false, "", 3 )]
-    [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 0, "", 4 )]
+    [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 3600, "", 4 )]
     [TextField( "Context Parameter", "Query string parameter to use for 'personalizing' content based on unique values.", false, "", "", 5 )]
     [TextField( "Context Name", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "", "", 6 )]
     [BooleanField( "Require Approval", "Require that content be approved?", false, "", 7 )]
@@ -120,6 +120,8 @@ namespace RockWeb.Blocks.Cms
 
             pnlEdit.Visible = true;
             pnlVersionGrid.Visible = false;
+            pnlEditModel.Visible = true;
+            upnlHtmlContent.Update();
             mdEdit.Show();
 
             bool useCodeEditor = GetAttributeValue( "UseCodeEditor" ).AsBoolean();
@@ -180,6 +182,23 @@ namespace RockWeb.Blocks.Cms
             string entityValue = EntityValue();
             HtmlContent htmlContent = new HtmlContentService().GetActiveContent( this.BlockId, entityValue );
 
+            // set Height of editors
+            if ( supportsVersioning && requireApproval )
+            {
+                ceHtml.EditorHeight = "280";
+                htmlEditor.Height = 280;
+            }
+            else if (supportsVersioning)
+            {
+                ceHtml.EditorHeight = "350";
+                htmlEditor.Height = 350;
+            }
+            else
+            {
+                ceHtml.EditorHeight = "380";
+                htmlEditor.Height = 380;
+            }
+
             ShowEditDetail( htmlContent );
         }
 
@@ -210,12 +229,27 @@ namespace RockWeb.Blocks.Cms
             int version = hfVersion.ValueAsInt();
             HtmlContent htmlContent = htmlContentService.GetByBlockIdAndEntityValueAndVersion( this.BlockId, entityValue, version );
 
-            // if the existing content changed, and the overwrite option was not checked, create a new version
+            // get the content depending on which mode we are in (codeeditor or ckeditor)
             string newContent = ceHtml.Visible ? ceHtml.Text : htmlEditor.Text;
 
-            if ( htmlContent != null && supportVersioning && htmlContent.Content != newContent && !cbOverwriteVersion.Checked )
+            //// create a new record only in the following situations:
+            ////   - this is the first time this htmlcontent block got content (new block and edited for the first time)
+            ////   - the content was changed, versioning is enabled, and OverwriteVersion is not checked
+            
+            // if the existing content changed, and the overwrite option was not checked, create a new version
+            if (htmlContent != null)
             {
-                htmlContent = null;
+                // Editing existing content. Check if content has changed
+                if (htmlContent.Content != newContent)
+                {
+                    // The content has changed (different than database). Check if versioning is enabled
+                    if (supportVersioning && !cbOverwriteVersion.Checked)
+                    {
+                        //// versioning is enabled, and they didn't choose to overwrite
+                        //// set to null so that we'll create a new record
+                        htmlContent = null;
+                    }
+                }
             }
 
             // if a record doesn't exist then create one
@@ -241,14 +275,32 @@ namespace RockWeb.Blocks.Cms
 
             htmlContent.StartDateTime = drpDateRange.LowerValue;
             htmlContent.ExpireDateTime = drpDateRange.UpperValue;
+            bool currentUserCanApprove = IsUserAuthorized( "Approve" );
 
-            if ( !requireApproval || IsUserAuthorized( "Approve" ) )
+            if ( !requireApproval )
             {
-                htmlContent.IsApproved = !requireApproval || hfApprovalStatus.Value.AsBoolean();
+                // if this block doesn't require Approval, mark it as approved
+                htmlContent.IsApproved = true;
+                htmlContent.ApprovedByPersonId = this.CurrentPersonId;
+                htmlContent.ApprovedDateTime = RockDateTime.Now;
+            }
+            else
+            {
+                // if this block requires Approval, mark it as approved if the ApprovalStatus is still approved, or if the current user can approve
+                htmlContent.IsApproved = ( hfApprovalStatus.Value.AsBoolean() ) || currentUserCanApprove;
                 if ( htmlContent.IsApproved )
                 {
-                    int personId = hfApprovalStatusPersonId.ValueAsInt();
-                    if ( personId > 0 )
+                    int? personId = hfApprovalStatusPersonId.Value.AsInteger( false );
+                    if (!personId.HasValue)
+                    {
+                        // if it wasn't approved, but the current user can approve, make the current user the approver
+                        if ( currentUserCanApprove )
+                        {
+                            personId = this.CurrentPersonId;
+                        }
+                    }
+
+                    if ( personId.HasValue )
                     {
                         htmlContent.ApprovedByPersonId = personId;
                         htmlContent.ApprovedDateTime = RockDateTime.Now;
@@ -263,8 +315,6 @@ namespace RockWeb.Blocks.Cms
                 // flush cache content 
                 this.FlushCacheItem( entityValue );
 
-                // force the updatepanel for the view to update since we have two update panels and we only want the View to update when it is edited and Saved
-                upnlHtmlContent.Update();
                 ShowView();
             }
             else
@@ -359,7 +409,7 @@ namespace RockWeb.Blocks.Cms
         private void BindGrid()
         {
             var htmlContentService = new HtmlContentService();
-            var content = htmlContentService.GetContent( this.BlockId, EntityValue() );
+            var content = htmlContentService.GetContent( this.BlockId, EntityValue() ).OrderByDescending(a => a.Version).ThenByDescending( a => a.ModifiedDateTime );
 
             var versions = content.Select( v =>
                 new
@@ -459,6 +509,8 @@ namespace RockWeb.Blocks.Cms
         protected void ShowView()
         {
             mdEdit.Hide();
+            pnlEditModel.Visible = false;
+            upnlHtmlContent.Update();
 
             // prevent htmlEditor from using viewstate when not needed
             pnlEdit.EnableViewState = false;

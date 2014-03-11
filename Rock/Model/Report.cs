@@ -189,6 +189,7 @@ namespace Rock.Model
 
                     // Create the dynamic type
                     var dynamicFields = new Dictionary<string, Type>();
+                    dynamicFields.Add( "Id", typeof( int ) );
                     foreach (var f in entityFields)
                     {
                         dynamicFields.Add( string.Format( "Entity_{0}_{1}", f.Value.Name, f.Key ), f.Value.PropertyType );
@@ -219,6 +220,8 @@ namespace Rock.Model
 
                     // Bind the dynamic fields to their expressions
                     var bindings = new List<MemberBinding>();
+                    bindings.Add( Expression.Bind( dynamicType.GetField( "id" ), idExpression ) );
+
                     foreach (var f in entityFields)
                     {
                         bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "entity_{0}_{1}", f.Value.Name, f.Key ) ), Expression.Property( paramExpression, f.Value.Name ) ) );

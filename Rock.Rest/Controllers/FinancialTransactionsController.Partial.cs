@@ -133,7 +133,7 @@ namespace Rock.Rest.Controllers
             }
 
             parameters.Add( "orderByZipCode", options.OrderByZipCode );
-            var result = service.GetDataSet( "spContributionStatementQuery", System.Data.CommandType.StoredProcedure, parameters );
+            var result = service.GetDataSet( "spFinance_ContributionStatementQuery", System.Data.CommandType.StoredProcedure, parameters );
 
             if ( result.Tables.Count > 0 )
             {

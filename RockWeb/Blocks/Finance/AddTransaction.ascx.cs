@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Finance
     /// Add a new one-time or scheduled transaction
     /// </summary>
     [DisplayName( "Add Transaction" )]
-    [Category( "Financial" )]
+    [Category( "Finance" )]
     [Description( "Creates a new financial transaction or scheduled transaction." )]
 
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", false, "", "", 0, "CCGateway" )]
@@ -701,7 +701,7 @@ achieve our mission.  We are so grateful for your commitment.
                             var recipients = new Dictionary<string, Dictionary<string, object>>();
                             recipients.Add( authorizedPerson.Email, mergeObjects );
 
-                            Rock.Communication.Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients );
+                            Rock.Communication.Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl("~/"), ResolveRockUrl("~~/") );
                         }
 
                         var paymentInfo = GetPaymentInfo();

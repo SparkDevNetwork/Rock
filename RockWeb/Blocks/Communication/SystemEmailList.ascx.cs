@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Communication
             else
             {
                 gEmailTemplates.Visible = false;
-                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( EmailTemplate.FriendlyTypeName );
+                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( SystemEmail.FriendlyTypeName );
                 nbMessage.Visible = true;
             }
 
@@ -130,8 +130,8 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gEmailTemplates_Delete( object sender, RowEventArgs e )
         {
-            EmailTemplateService emailTemplateService = new EmailTemplateService();
-            EmailTemplate emailTemplate = emailTemplateService.Get( (int)gEmailTemplates.DataKeys[e.RowIndex]["id"] );
+            SystemEmailService emailTemplateService = new SystemEmailService();
+            SystemEmail emailTemplate = emailTemplateService.Get( (int)gEmailTemplates.DataKeys[e.RowIndex]["id"] );
             if ( emailTemplate != null )
             {
                 emailTemplateService.Delete( emailTemplate, CurrentPersonAlias );
@@ -163,7 +163,7 @@ namespace RockWeb.Blocks.Communication
             ddlCategoryFilter.Items.Clear();
             ddlCategoryFilter.Items.Add( new ListItem(All.Text, All.Id.ToString()) );
 
-            EmailTemplateService emailTemplateService = new EmailTemplateService();
+            SystemEmailService emailTemplateService = new SystemEmailService();
             var items = emailTemplateService.Queryable().
                 Where( a => a.Category.Trim() != "" && a.Category != null ).
                 OrderBy( a => a.Category ).
@@ -183,7 +183,7 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void BindGrid()
         {
-            EmailTemplateService emailTemplateService = new EmailTemplateService();
+            SystemEmailService emailTemplateService = new SystemEmailService();
             SortProperty sortProperty = gEmailTemplates.SortProperty;
 
             var emailTemplates = emailTemplateService.Queryable();

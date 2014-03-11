@@ -172,10 +172,10 @@ namespace RockWeb.Blocks.Examples
 
                 ddlDataExample.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
 
-                RockCheckBoxList.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
                 RockCheckBoxList1.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
-                RockRadioButtonList.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
+                RockCheckBoxList2.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
                 RockRadioButtonList1.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
+                RockRadioButtonList2.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
 
                 BindGrid();
             }

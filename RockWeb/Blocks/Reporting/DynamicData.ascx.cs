@@ -326,6 +326,12 @@ namespace RockWeb.Blocks.Reporting
             }
 
             gReport.Columns.Clear();
+
+            if (!string.IsNullOrWhiteSpace(gReport.PersonIdField))
+            {
+                gReport.Columns.Add( new SelectField() );
+            }
+
             foreach(DataColumn dtColumn in dataTable.Columns)
             {
                 if ( columnList.Count > 0 && 

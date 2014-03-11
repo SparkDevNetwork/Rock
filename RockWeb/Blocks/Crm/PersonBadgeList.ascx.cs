@@ -123,6 +123,8 @@ namespace RockWeb.Blocks.Crm
                         return;
                     }
 
+                    PersonBadgeCache.Flush( PersonBadge.Id );
+
                     PersonBadgeService.Delete( PersonBadge, CurrentPersonAlias );
                     PersonBadgeService.Save( PersonBadge, CurrentPersonAlias );
                 }
@@ -177,7 +179,7 @@ namespace RockWeb.Blocks.Crm
         public bool IsActive { get; set; }
         public int Order { get; set; }
 
-        public PersonBadgeInfo(PersonBadge badge)
+        public PersonBadgeInfo(PersonBadgeCache badge)
         {
             Id = badge.Id;
             Name = badge.Name;

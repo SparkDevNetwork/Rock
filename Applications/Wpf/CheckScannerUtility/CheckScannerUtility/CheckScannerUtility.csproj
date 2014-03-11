@@ -50,7 +50,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>resources\favicon.ico</ApplicationIcon>
+    <ApplicationIcon>resources\check-scanner.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
@@ -130,6 +130,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="images\check-scanner.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="images\rock-logo.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -180,16 +184,16 @@
     </EmbeddedResource>
     <AppDesigner Include="Properties\" />
     <Resource Include="resources\fontawesome-webfont.ttf" />
-    <Resource Include="resources\OpenSans-Regular.ttf" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <Resource Include="resources\OpenSans-Light-webfont.ttf" />
+    <Resource Include="resources\OpenSans-Regular-webfont.ttf" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="images\header-texture.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="resources\favicon.ico" />
     <Resource Include="images\light-texture.png" />
   </ItemGroup>
   <ItemGroup>
@@ -232,6 +236,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="images\check-image.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="resources\check-scanner.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

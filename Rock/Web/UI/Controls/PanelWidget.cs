@@ -315,7 +315,7 @@ $('.js-stop-immediate-propagation').click(function (event) {
                 if ( ShowReorderIcon )
                 {
                     // Reorder Icon
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs panel-widget-reorder js-stop-immediate-propagation" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-link btn-xs panel-widget-reorder js-stop-immediate-propagation" );
                     writer.RenderBeginTag( HtmlTextWriterTag.A );
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-bars" );
                     writer.RenderBeginTag( HtmlTextWriterTag.I );
@@ -324,7 +324,7 @@ $('.js-stop-immediate-propagation').click(function (event) {
                 }
 
                 // Chevron up/down Button
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs view-state" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-link btn-xs view-state" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );

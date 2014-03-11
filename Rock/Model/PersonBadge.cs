@@ -87,24 +87,6 @@ namespace Rock.Model
         [DataMember]
         public virtual EntityType EntityType { get; set; }
 
-        /// <summary>
-        /// Gets the <see cref="Rock.Workflow.ActionComponent"/>
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Workflow.ActionComponent"/>
-        /// </value>
-        public virtual BadgeComponent BadgeComponent
-        {
-            get
-            {
-                if ( EntityType != null )
-                {
-                    return BadgeContainer.GetComponent( EntityType.Name );
-                }
-                return null;
-            }
-        }
-
         #endregion
 
         #region Methods

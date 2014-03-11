@@ -14,11 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.ServiceProcess;
-using System.Text;
 
 namespace RockJobSchedulerService
 {
@@ -29,11 +26,21 @@ namespace RockJobSchedulerService
         /// </summary>
         static void Main()
         {
+            string serviceFolder = Path.GetDirectoryName( System.Reflection.Assembly.GetExecutingAssembly().Location );
+
+            // set the current directory to the same as the current exe so that we can find the web.connectionstrings.config
+            Directory.SetCurrentDirectory( serviceFolder );
             ServiceBase[] ServicesToRun;
             ServicesToRun = new ServiceBase[] 
             { 
                 new JobScheduler() 
             };
+
+            //// NOTE: To run and debug this service in Visual Studio uncomment out the debug code below
+            //// Make sure you have a web.connectionstring.config in your debug/bin directory!
+            // JobScheduler debug = new JobScheduler();
+            // debug.StartJobScheduler();
+
             ServiceBase.Run( ServicesToRun );
         }
     }

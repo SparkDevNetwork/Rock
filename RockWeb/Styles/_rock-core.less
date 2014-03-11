@@ -13,6 +13,7 @@
 // 1. Imports
 //--------------------------------
 @import "./FontAwesome/variables.less";
+@import "./JCrop/jcrop.less";
 
 @import "_components.less";
 @import "_page-admin.less";
@@ -57,7 +58,7 @@
 
 small
 {
-    font-family: 'OpenSansLight', 'Helvetica Neue',Helvetica,Arial,sans-serif;
+    font-family: 'OpenSans', 'Helvetica Neue',Helvetica,Arial,sans-serif;
     margin-top: 2px;
 }
 
@@ -189,6 +190,12 @@ small
 
     .panel-body {
         background-color: @body-bg;
+
+        .form-group {
+            .form-control-static {
+                padding-top: 0;
+            }
+        }
     }
 }
 
@@ -250,6 +257,11 @@ small
     margin-top: -10px;
 }
 
+// form extensions
+
+.form-no-margin {
+    margin: 0;
+}
 
 // 4. ASP.Net Overrides
 //--------------------------------

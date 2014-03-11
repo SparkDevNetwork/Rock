@@ -146,9 +146,14 @@ namespace Rock.SystemGuid
         public const string GROUP_LOCATION_TYPE_WORK = "E071472A-F805-4FC4-917A-D5E3C095C35C";
 
         /// <summary>
-        /// Work Record Type
+        /// Previous Location Type
         /// </summary>
         public const string GROUP_LOCATION_TYPE_PREVIOUS = "853D98F1-6E08-4321-861B-520B4106CFE0";
+
+        /// <summary>
+        /// Meeting Location Type
+        /// </summary>
+        public const string GROUP_LOCATION_TYPE_MEETING_LOCATION = "96D540F5-071D-4BBD-9906-28F0A64D39C4";
 
         #endregion
 
@@ -223,9 +228,13 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Marital Status of Married
-        /// Note:  Single is also a DefinedValue for Marital Status but it is not IsSystem, so we won't include it as a const
         /// </summary>
         public const string PERSON_MARITAL_STATUS_MARRIED = "5FE5A540-7D9F-433E-B47E-4229D1472248";
+
+        /// <summary>
+        /// Marital Status of Single
+        /// </summary>
+        public const string PERSON_MARITAL_STATUS_SINGLE = "F19FC180-FE8F-4B72-A59C-8013E3B0EB0D";
 
         #endregion
 

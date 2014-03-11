@@ -413,6 +413,8 @@
         */
         GeoPicker.prototype.initializeEventHandlers = function () {
             var controlId = this.controlId,
+                $control = $('#' + this.controlId),
+                $hiddenField = $('#hfGeoPath_' + this.controlId),
                 restUrl = this.restUrl;
             var self = this;
 
@@ -450,17 +452,26 @@
                 self.plotPath(self.map);
             });
 
+            // have the X appear on hover if something is selected
+            if ($hiddenField.val() && $hiddenField.val() !== '0') {
+                $control.find('.picker-select-none').addClass('rollover-item');
+                $control.find('.picker-select-none').show();
+            }
+
             /**
             * Handle the Select button click by stuffing the RockGoogleGeoPicker's path value into the hidden field. 
             */
             $('#btnSelect_' + controlId).click(function () {
                 var geoInput = $('#' + controlId).find('input:checked'),
                     selectedValue = self.path,
-                    selectedGeographyLabel = $('#selectedGeographyLabel_' + controlId),
-                    $hiddenField = $('#hfGeoPath_' + self.controlId);
+                    selectedGeographyLabel = $('#selectedGeographyLabel_' + controlId);
 
                 //console.log('storing coordinates into hf (' + '#hfGeoPath_' + self.controlId + ') self.path:' + self.path);
                 $hiddenField.val(self.path);
+
+                // have the X appear on hover. something is selected
+                $control.find('.picker-select-none').addClass('rollover-item');
+                $control.find('.picker-select-none').show();
 
                 selectedGeographyLabel.val(selectedValue);
                 self.toAddress( self.firstPoint(), selectedGeographyLabel);
@@ -469,6 +480,28 @@
                 self.initMinMaxLatLng();
 
                 $(this).closest('.picker-menu').slideUp();
+            });
+
+
+            /**
+            * Clear the selection when X is clicked
+            */
+            $control.find('.picker-select-none').click(function (e) {
+                e.stopImmediatePropagation();
+                var selectedGeographyLabel = $('#selectedGeographyLabel_' + controlId);
+                $hiddenField.val("");
+
+                // don't have the X appear on hover. nothing is selected
+                $control.find('.picker-select-none').removeClass('rollover-item');
+                $control.find('.picker-select-none').hide();
+
+                selectedGeographyLabel.val("");
+                self.toAddress(null, selectedGeographyLabel);
+
+                //clear out any old map positioning
+                self.initMinMaxLatLng();
+
+                return false;
             });
         };
 

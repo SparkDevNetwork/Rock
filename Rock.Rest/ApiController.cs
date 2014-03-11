@@ -160,6 +160,11 @@ namespace Rock.Rest
         /// <returns></returns>
         protected virtual Rock.Model.Person GetPerson()
         {
+            if (Request.Properties.Keys.Contains("Person"))
+            {
+                return Request.Properties["Person"] as Person;
+            }
+
             var principal = ControllerContext.Request.GetUserPrincipal();
             if ( principal != null && principal.Identity != null )
             {
@@ -168,6 +173,8 @@ namespace Rock.Rest
 
                 if ( userLogin != null )
                 {
+                    var person = userLogin.Person;
+                    Request.Properties.Add( "Person", person );
                     return userLogin.Person;
                 }
             }
@@ -201,9 +208,15 @@ namespace Rock.Rest
 
         protected void CheckCanEdit( ISecured securedModel, Person person )
         {
-            if ( !securedModel.IsAuthorized( "Edit", person ) )
+            if ( securedModel != null )
             {
-                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                // Need to reload using service with a proxy enabled so that if model has custom
+                // parent authorities, those properties can be lazy-loaded and checked for authorization
+                ISecured reloadedModel = (ISecured)new Service<T>().Get( securedModel.Id );
+                if ( reloadedModel != null && !reloadedModel.IsAuthorized( "Edit", person ) )
+                {
+                    throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                }
             }
         }
     }

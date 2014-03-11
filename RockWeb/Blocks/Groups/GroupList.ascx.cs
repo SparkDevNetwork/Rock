@@ -41,7 +41,9 @@ namespace RockWeb.Blocks.Groups
     [GroupTypesField( "Exclude Group Types", "The group types to exclude from the list (only valid if including all groups).", false, "", "", 3 )]
     [BooleanField( "Display Group Type Column", "Should the Group Type column be displayed?", true, "", 4 )]
     [BooleanField( "Display Description Column", "Should the Description column be displayed?", true, "", 5)]
-    [BooleanField( "Display Filter", "Should filter be displayed to allow filtering by group type?", false, "", 6)]
+    [BooleanField( "Display Active Status Column", "Should the Active Status column be displayed?", false, "", 6 )]
+    [BooleanField( "Display System Column", "Should the System column be displayed?", true, "", 6 )]
+    [BooleanField( "Display Filter", "Should filter be displayed to allow filtering by group type?", false, "", 7)]
     [ContextAware]
     public partial class GroupList : RockBlock
     {
@@ -244,6 +246,9 @@ namespace RockWeb.Blocks.Groups
                 }
                 bool onlySecurityGroups =  GetAttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse();
                 bool showDescriptionColumn = GetAttributeValue( "DisplayDescriptionColumn" ).FromTrueFalse();
+                bool showActiveStatusColumn = GetAttributeValue( "DisplayActiveStatusColumn" ).FromTrueFalse();
+                bool showSystemColumn = GetAttributeValue( "DisplaySystemColumn" ).FromTrueFalse();
+
                 if ( !showDescriptionColumn )
                 {
                     gGroups.TooltipField = "Description";
@@ -251,6 +256,10 @@ namespace RockWeb.Blocks.Groups
                 Dictionary<string, BoundField> boundFields = gGroups.Columns.OfType<BoundField>().ToDictionary( a => a.DataField );
                 boundFields["GroupTypeName"].Visible = GetAttributeValue( "DisplayGroupTypeColumn" ).FromTrueFalse();
                 boundFields["Description"].Visible = showDescriptionColumn;
+
+                Dictionary<string, BoolField> boolFields = gGroups.Columns.OfType<BoolField>().ToDictionary( a => a.DataField );
+                boolFields["IsActive"].Visible = showActiveStatusColumn;
+                boolFields["IsSystem"].Visible = showSystemColumn;
 
                 // Person context will exist if used on a person detail page
                 var personContext = ContextEntity<Person>();
@@ -280,6 +289,7 @@ namespace RockWeb.Blocks.Groups
                                 IsSystem = m.Group.IsSystem,
                                 GroupRole = m.GroupRole.Name,
                                 DateAdded = m.CreatedDateTime,
+                                IsActive = m.Group.IsActive,
                                 MemberCount = 0
                             })
                         .Sort(sortProperty)
@@ -308,6 +318,7 @@ namespace RockWeb.Blocks.Groups
                                 GroupTypeOrder = g.GroupType.Order,
                                 Description = g.Description,
                                 IsSystem = g.IsSystem,
+                                IsActive = g.IsActive,
                                 GroupRole = "",
                                 DateAdded = DateTime.MinValue,
                                 MemberCount = g.Members.Count()

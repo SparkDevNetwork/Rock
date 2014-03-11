@@ -540,8 +540,8 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
             _lbAddCheckinGroup.RenderControl( writer );
             writer.WriteLine();
 
-            writer.WriteLine( "<a class='btn btn-xs checkin-grouptype-reorder'><i class='fa fa-bar'></i></a>" );
-            writer.WriteLine( "<a class='btn btn-xs'><i class='checkin-grouptype-state fa fa-chevron-down'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-link btn-xs checkin-grouptype-reorder'><i class='fa fa-bar'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-link btn-xs'><i class='checkin-grouptype-state fa fa-chevron-down'></i></a>" );
 
             if ( IsDeleteEnabled )
             {

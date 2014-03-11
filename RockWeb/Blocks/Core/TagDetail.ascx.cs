@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Web.UI;
 
 using Rock;
@@ -85,6 +86,10 @@ namespace RockWeb.Blocks.Core
                 {
                     pnlDetails.Visible = false;
                 }
+            }
+            else
+            {
+                nbEditError.Visible = false;
             }
         }
 
@@ -158,40 +163,60 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Tag tag;
+            var tagService = new Rock.Model.TagService();
+            Tag tag = null;
 
-            using ( new Rock.Data.UnitOfWorkScope() )
+            int tagId = int.Parse( hfId.Value );
+
+            if ( tagId != 0 )
             {
-                var tagService = new Rock.Model.TagService();
-
-                int tagId = int.Parse( hfId.Value );
-
-                if ( tagId == 0 )
-                {
-                    tag = new Tag();
-                    tag.IsSystem = false;
-                    tagService.Add( tag, CurrentPersonAlias );
-                }
-                else
-                {
-                    tag = tagService.Get( tagId );
-                }
-
-                tag.Name = tbName.Text;
-                tag.Description = tbDescription.Text;
-                tag.OwnerId = ppOwner.PersonId;
-                tag.EntityTypeId = ddlEntityType.SelectedValueAsId().Value;
-                tag.EntityTypeQualifierColumn = tbEntityTypeQualifierColumn.Text;
-                tag.EntityTypeQualifierValue = tbEntityTypeQualifierValue.Text;
-
-                tagService.Save( tag, CurrentPersonAlias );
-
+                tag = tagService.Get( tagId );
             }
 
-            var qryParams = new Dictionary<string, string>();
-            qryParams["tagId"] = tag.Id.ToString();
+            if ( tag == null )
+            {
+                tag = new Tag();
+                tag.IsSystem = false;
+                tagService.Add( tag, CurrentPersonAlias );
+            }
 
-            NavigateToPage( RockPage.Guid, qryParams );
+            string name = tbName.Text;
+            int? ownerId = ppOwner.PersonId;
+            int entityTypeId = ddlEntityType.SelectedValueAsId().Value;
+            string qualifierCol = tbEntityTypeQualifierColumn.Text;
+            string qualifierVal = tbEntityTypeQualifierValue.Text;
+
+            // Verify tag with same name does not already exist
+            if (tagService.Queryable()
+                    .Where( t =>
+                        t.Id != tagId &&
+                        t.Name == name &&
+                        t.OwnerId.Equals( ownerId ) &&
+                        t.EntityTypeId == entityTypeId &&
+                        t.EntityTypeQualifierColumn == qualifierCol &&
+                        t.EntityTypeQualifierValue == qualifierVal )
+                    .Any())
+            {
+                nbEditError.Heading = "Tag Already Exists";
+                nbEditError.Text = string.Format("A '{0}' tag already exists for the selected scope, owner, and entity type.", name);
+                nbEditError.Visible = true;
+            }
+            else
+            {
+                tag.Name = name;
+                tag.Description = tbDescription.Text;
+                tag.OwnerId = ownerId;
+                tag.EntityTypeId = entityTypeId;
+                tag.EntityTypeQualifierColumn = qualifierCol;
+                tag.EntityTypeQualifierValue = qualifierVal;
+                tagService.Save( tag, CurrentPersonAlias );
+
+                var qryParams = new Dictionary<string, string>();
+                qryParams["tagId"] = tag.Id.ToString();
+
+                NavigateToPage( RockPage.Guid, qryParams );
+            }
+
         }
 
         /// <summary>
@@ -376,6 +401,7 @@ namespace RockWeb.Blocks.Core
         {
             SetEditMode( false );
             lReadOnlyTitle.Text = tag.Name.FormatAsHtmlTitle();
+            lDescription.Text = tag.Description;
             hlEntityType.Text = tag.EntityType.FriendlyName;
         }
 

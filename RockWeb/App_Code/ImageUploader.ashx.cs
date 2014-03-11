@@ -15,15 +15,15 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Web;
-
 using Goheer.EXIF;
-
-using Rock.Model;
+using Rock.Web.Cache;
 
 namespace RockWeb
 {
@@ -42,7 +42,7 @@ namespace RockWeb
         {
             if ( uploadedFile.ContentType == "image/svg+xml" )
             {
-                return base.GetFileBytes(context, uploadedFile);
+                return base.GetFileBytes( context, uploadedFile );
             }
             else
             {
@@ -72,6 +72,29 @@ namespace RockWeb
                     byte[] result = stream.ToArray();
                     return result;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Validates the type of the file.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="uploadedFile">The uploaded file.</param>
+        /// <exception cref="WebFaultException{System.String}">Filetype now allowed</exception>
+        public override void ValidateFileType( HttpContext context, HttpPostedFile uploadedFile )
+        {
+            base.ValidateFileType( context, uploadedFile );
+
+            var globalAttributesCache = GlobalAttributesCache.Read();
+            IEnumerable<string> contentImageFileTypeWhiteList = ( globalAttributesCache.GetValue( "ContentImageFiletypeWhitelist" ) ?? string.Empty ).Split( new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries );
+
+            // clean up list
+            contentImageFileTypeWhiteList = contentImageFileTypeWhiteList.Select( a => a.ToLower().TrimStart( new char[] { '.', ' ' } ) );
+
+            string fileExtension = Path.GetExtension( uploadedFile.FileName ).ToLower().TrimStart( new char[] { '.' } );
+            if ( !contentImageFileTypeWhiteList.Contains( fileExtension ) )
+            {
+                throw new Rock.Web.FileUploadException( "Image filetype not allowed", System.Net.HttpStatusCode.NotAcceptable );
             }
         }
 

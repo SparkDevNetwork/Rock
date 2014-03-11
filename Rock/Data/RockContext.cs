@@ -21,7 +21,9 @@ using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
 using System.Reflection;
 using System.Web;
+
 using Rock.Model;
+using Rock.Utility;
 
 namespace Rock.Data
 {
@@ -161,6 +163,14 @@ namespace Rock.Data
         public DbSet<CommunicationRecipient> CommunicationRecipients { get; set; }
 
         /// <summary>
+        /// Gets or sets the communication templates.
+        /// </summary>
+        /// <value>
+        /// The communication templates.
+        /// </value>
+        public DbSet<Rock.Model.CommunicationTemplate> CommunicationTemplates { get; set; }
+
+        /// <summary>
         /// Gets or sets the data views.
         /// </summary>
         /// <value>
@@ -206,7 +216,7 @@ namespace Rock.Data
         /// <value>
         /// the Email Templates.
         /// </value>
-        public DbSet<EmailTemplate> EmailTemplates { get; set; }
+        public DbSet<SystemEmail> EmailTemplates { get; set; }
 
         /// <summary>
         /// Gets or sets the entity types.
@@ -431,6 +441,14 @@ namespace Rock.Data
         /// The marketing campaign campuses.
         /// </value>
         public DbSet<MarketingCampaignCampus> MarketingCampaignCampuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the metaphones.
+        /// </summary>
+        /// <value>
+        /// The metaphones.
+        /// </value>
+        public DbSet<Metaphone> Metaphones { get; set; }
 
         /// <summary>
         /// Gets or sets the Defined Types.
@@ -724,48 +742,8 @@ namespace Rock.Data
         /// </returns>
         public override int SaveChanges()
         {
-            // Try to get the current person alias
-            int? personAliasId = null;
-            if ( HttpContext.Current != null && HttpContext.Current.Items.Contains("CurrentPerson"))
-            {
-                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
-                if ( currentPerson != null && currentPerson.PrimaryAlias != null )
-                {
-                    personAliasId = currentPerson.PrimaryAlias.Id;
-                }
-            }
-
-            var changeSet = this.ChangeTracker.Entries().Where( e => e.Entity is IModel );
-            if (changeSet != null)
-            {
-                foreach(var entry in changeSet
-                    .Where( c => c.State == EntityState.Added)
-                    .Select( a => a.Entity as IModel))
-                {
-                    if ( !entry.CreatedDateTime.HasValue )
-                    {
-                        entry.CreatedDateTime = RockDateTime.Now;
-                    }
-                    if ( !entry.CreatedByPersonAliasId.HasValue )
-                    {
-                        entry.CreatedByPersonAliasId = personAliasId;
-                    }
-
-                    entry.ModifiedDateTime = RockDateTime.Now;
-                    entry.ModifiedByPersonAliasId = personAliasId;
-                }
-
-                foreach ( var entry in changeSet
-                    .Where( c => c.State == EntityState.Modified )
-                    .Select( a => a.Entity as IModel ) )
-                {
-                    entry.ModifiedDateTime = RockDateTime.Now;
-                    entry.ModifiedByPersonAliasId = personAliasId;
-                }
-            }
-
+            ContextHelper.AddAuditData( this.ChangeTracker, HttpContext.Current );
             return base.SaveChanges();
-
         }
 
         /// <summary>
@@ -820,12 +798,13 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new CategoryConfiguration() );
             modelBuilder.Configurations.Add( new CommunicationConfiguration() );
             modelBuilder.Configurations.Add( new CommunicationRecipientConfiguration() );
+            modelBuilder.Configurations.Add( new CommunicationTemplateConfiguration() );
             modelBuilder.Configurations.Add( new DataViewConfiguration() );
             modelBuilder.Configurations.Add( new DataViewFilterConfiguration() );
             modelBuilder.Configurations.Add( new DefinedTypeConfiguration() );
             modelBuilder.Configurations.Add( new DefinedValueConfiguration() );
             modelBuilder.Configurations.Add( new DeviceConfiguration() );
-            modelBuilder.Configurations.Add( new EmailTemplateConfiguration() );
+            modelBuilder.Configurations.Add( new SystemEmailConfiguration() );
             modelBuilder.Configurations.Add( new EntityTypeConfiguration() );
             modelBuilder.Configurations.Add( new ExceptionLogConfiguration() );
             modelBuilder.Configurations.Add( new FieldTypeConfiguration() );
@@ -854,6 +833,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new MarketingCampaignAdTypeConfiguration() );
             modelBuilder.Configurations.Add( new MarketingCampaignAudienceConfiguration() );
             modelBuilder.Configurations.Add( new MarketingCampaignCampusConfiguration() );
+            modelBuilder.Configurations.Add( new MetaphoneConfiguration() );
             modelBuilder.Configurations.Add( new MetricConfiguration() );
             modelBuilder.Configurations.Add( new MetricValueConfiguration() );
             modelBuilder.Configurations.Add( new NoteConfiguration() );
@@ -887,6 +867,65 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new WorkflowLogConfiguration() );
             modelBuilder.Configurations.Add( new WorkflowTriggerConfiguration() );
             modelBuilder.Configurations.Add( new WorkflowTypeConfiguration() );
+        }
+
+        /// <summary>
+        /// Updates the Created/Modified data for any model being created or modified
+        /// </summary>
+        /// <param name="changeTracker">The current DbChangeTracker object.</param>
+        /// <param name="context">The current HttpContext.</param>
+        public static void AddAuditData(System.Data.Entity.Infrastructure.DbChangeTracker changeTracker, HttpContext context)
+        {
+            // Try to get the current person alias
+            int? personAliasId = null;
+            if ( context != null && context.Items.Contains( "CurrentPerson" ) )
+            {
+                var currentPerson = context.Items["CurrentPerson"] as Person;
+                if ( currentPerson != null && currentPerson.PrimaryAlias != null )
+                {
+                    personAliasId = currentPerson.PrimaryAlias.Id;
+                }
+            }
+
+            var changeSet = changeTracker.Entries().Where( e => e.Entity is IModel );
+            if ( changeSet != null )
+            {
+                foreach ( var entry in changeSet
+                    .Where( c => c.State == EntityState.Added )
+                    .Select( a => a.Entity as IModel ) )
+                {
+                    if ( !entry.CreatedDateTime.HasValue )
+                    {
+                        entry.CreatedDateTime = RockDateTime.Now;
+                    }
+                    if ( !entry.CreatedByPersonAliasId.HasValue )
+                    {
+                        entry.CreatedByPersonAliasId = personAliasId;
+                    }
+
+                    entry.ModifiedDateTime = RockDateTime.Now;
+                    entry.ModifiedByPersonAliasId = personAliasId;
+                }
+
+                foreach ( var entry in changeSet
+                    .Where( c => c.State == EntityState.Modified )
+                    .Select( a => a.Entity as IModel ) )
+                {
+                    entry.ModifiedDateTime = RockDateTime.Now;
+                    entry.ModifiedByPersonAliasId = personAliasId;
+                }
+
+                foreach ( var person in changeSet
+                    .Where( c =>
+                        ( c.State == EntityState.Added || c.State == EntityState.Modified ) &&
+                        ( c.Entity is Person ) )
+                    .Select( c => c.Entity as Person ) )
+                {
+                    var transaction = new Rock.Transactions.SaveMetaphoneTransaction( person );
+                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                }
+            }
+
         }
     }
 }

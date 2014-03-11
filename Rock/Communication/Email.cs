@@ -33,7 +33,9 @@ namespace Rock.Communication
         /// </summary>
         /// <param name="emailTemplateGuid">The email template unique identifier.</param>
         /// <param name="recipients">The recipients.</param>
-        public static void Send( Guid emailTemplateGuid, Dictionary<string, Dictionary<string, object>> recipients )
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        public static void Send( Guid emailTemplateGuid, Dictionary<string, Dictionary<string, object>> recipients, string appRoot = "", string themeRoot = "" )
         {
             if ( emailTemplateGuid != Guid.Empty && recipients != null && recipients.Any() )
             {
@@ -46,10 +48,10 @@ namespace Rock.Communication
                         var transport = channel.Transport;
                         if ( transport != null )
                         {
-                            var template = new EmailTemplateService().GetByGuid( emailTemplateGuid );
+                            var template = new SystemEmailService().Get( emailTemplateGuid );
                             if ( template != null )
                             {
-                                transport.Send( template, recipients );
+                                transport.Send( template, recipients, appRoot, themeRoot );
                             }
                         }
                     }

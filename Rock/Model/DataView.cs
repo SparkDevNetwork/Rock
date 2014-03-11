@@ -178,7 +178,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public IQueryable<IEntity> GetQuery( out List<string> errorMessages )
+        public IQueryable<IEntity> GetQuery( SortProperty sortProperty, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -202,10 +202,10 @@ namespace Rock.Model
                             ParameterExpression paramExpression = serviceInstance.ParameterExpression;
                             Expression whereExpression = GetExpression( serviceInstance, paramExpression, out errorMessages );
 
-                            MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
+                            MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
                             if ( getMethod != null )
                             {
-                                var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression } );
+                                var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, sortProperty } );
                                 var qry = getResult as IQueryable<IEntity>;
 
                                 return qry;
