@@ -1,10 +1,21 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
+using System.Collections.Generic;
 
 namespace Rock.Extension
 {
@@ -30,6 +41,14 @@ namespace Rock.Extension
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the type.
+        /// </summary>
+        /// <value>
+        /// The type.
+        /// </value>
+        public Type Type { get; set; }
+
+        /// <summary>
         /// Gets or sets the description.
         /// </summary>
         /// <value>
@@ -38,39 +57,47 @@ namespace Rock.Extension
         public string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public int Order { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="ComponentDescription"/> is active.
         /// </summary>
         /// <value>
         ///   <c>true</c> if active; otherwise, <c>false</c>.
         /// </value>
-        public bool Active { get; set; }
+        public bool IsActive { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ComponentDescription"/> class.
+        /// Initializes a new instance of the <see cref="ComponentDescription" /> class.
         /// </summary>
         /// <param name="id">The id.</param>
         /// <param name="service">The service.</param>
-        public ComponentDescription( int id, Rock.Attribute.IHasAttributes service )
+        public ComponentDescription( int id, KeyValuePair<string, Component> service )
         {
             Id = id;
 
-            Type type = service.GetType();
+            Type type = service.Value.GetType();
 
-            Name = type.Name;
+            Name = service.Key;
+            Order = service.Value.Order;
+            IsActive = service.Value.IsActive;
+            Type = type;
 
             // Look for a DescriptionAttribute on the class and if found, use its value for the description
             // property of this class
             var descAttributes = type.GetCustomAttributes( typeof( System.ComponentModel.DescriptionAttribute ), false );
             if ( descAttributes != null )
+            {
                 foreach ( System.ComponentModel.DescriptionAttribute descAttribute in descAttributes )
+                {
                     Description = descAttribute.Description;
-
-            // If the class has an PropertyAttribute with 'Active' as the key get it's value for the property
-            // otherwise default to true
-            if ( service.AttributeValues.ContainsKey( "Active" ) )
-                Active = bool.Parse( service.AttributeValues["Active"].Value[0].Value );
-            else
-                Active = true;
+                }
+            }
         }
     }
 }

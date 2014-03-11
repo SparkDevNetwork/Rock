@@ -628,7 +628,7 @@ namespace Quartz.Impl.AdoJobStore
             {
                 DBConnectionManager.Instance.Shutdown(DataSource);
             }
-            catch (Exception sqle)
+            catch (Exception)
             {
                 
             }
@@ -653,7 +653,7 @@ namespace Quartz.Impl.AdoJobStore
                 {
                     LockHandler.ReleaseLock(cth, lockName);
                 }
-                catch (LockException le)
+                catch (LockException)
                 {
                    
                 }
@@ -2575,13 +2575,13 @@ namespace Quartz.Impl.AdoJobStore
                     return null;
                 }
             }
-            catch (JobPersistenceException jpe)
+            catch (JobPersistenceException)
             {
                 try
                 {
                     Delegate.UpdateTriggerState(conn, trigger.Key, StateError);
                 }
-                catch (Exception sqle)
+                catch (Exception)
                 {
                 }
                 throw;
@@ -3231,7 +3231,7 @@ namespace Quartz.Impl.AdoJobStore
                 {
                     cth.Connection.Close();
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                 }
             }
@@ -3253,7 +3253,7 @@ namespace Quartz.Impl.AdoJobStore
                 {
                     cth.Transaction.Rollback();
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
 
                 }
@@ -3469,7 +3469,7 @@ namespace Quartz.Impl.AdoJobStore
 
                     numFails = 0;
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     if (numFails%4 == 0)
                     {
@@ -3554,7 +3554,7 @@ namespace Quartz.Impl.AdoJobStore
                     numFails = 0;
                     return res;
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     if (numFails%4 == 0)
                     {

@@ -1,9 +1,0 @@
-﻿<#@ template language="C#" HostSpecific="True"  inherits="DynamicTransform" #>
-<#@ Output Extension="vb.t4" #>
-<#= "<" #>#@ Template Language="C#" HostSpecific="True" Inherits="DynamicTransform" #<#= ">" #>
-<#= "<" #>#@ Output Extension="vb" #<#= ">" #>
-Namespace <#= "<" #>#= Model.Namespace #<#= ">" #>
-    Public Class ExampleOutput
-        ' Example model value from scaffolder script: <#= "<" #>#= Model.ExampleValue #<#= ">" #>
-    End Class
-End Namespace

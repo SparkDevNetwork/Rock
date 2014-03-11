@@ -1,9 +1,19 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -17,19 +27,12 @@ namespace Rock.Web.UI.Controls
     public class BoolField : BoundField
     {
         /// <summary>
-        /// Initializes the <see cref="T:System.Web.UI.WebControls.BoundField"/> object.
+        /// Initializes a new instance of the <see cref="BoolField" /> class.
         /// </summary>
-        /// <param name="enableSorting">true if sorting is supported; otherwise, false.</param>
-        /// <param name="control">The data control that owns the <see cref="T:System.Web.UI.WebControls.BoundField"/>.</param>
-        /// <returns>
-        /// false in all cases.
-        /// </returns>
-        public override bool Initialize( bool enableSorting, Control control )
+        public BoolField()
+            : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            this.ItemStyle.CssClass = "grid-icon-cell bool";
-
-            return base.Initialize( enableSorting, control );
         }
 
         /// <summary>
@@ -42,18 +45,14 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override string FormatDataValue( object dataValue, bool encode )
         {
-            bool boolValue = false;
-
             string value = base.FormatDataValue( dataValue, encode );
-            if ( !bool.TryParse( value, out boolValue ) )
-            {
-                int intValue = 0;
-                if ( Int32.TryParse( value, out intValue ) )
-                    boolValue = intValue != 0;
-            }
 
-            return string.Format( "<span class=\"{0}\">{1}</span>", 
-                boolValue.ToString().ToLower(), ( boolValue ? "X" : "" ) );
+            bool boolValue = value.AsBoolean();
+
+            if ( boolValue )
+                return "<i class=\"fa fa-check\"></i>";
+            else
+                return "";
         }
     }
 }

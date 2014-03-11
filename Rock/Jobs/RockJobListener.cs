@@ -1,15 +1,25 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.Text;
 
 using Quartz;
 
-using Rock.Util;
+using Rock.Model;
 
 namespace Rock.Jobs
 {
@@ -80,8 +90,8 @@ namespace Rock.Jobs
             int jobId = Convert.ToInt16(context.JobDetail.Description);
 
             // load job
-            JobService jobService = new JobService();
-            Job job = jobService.Get(jobId);
+            ServiceJobService jobService = new ServiceJobService();
+            ServiceJob job = jobService.Get(jobId);
             
             // format the message
             message.Append( String.Format( "The job {0} ran for {1} seconds on {2}.  Below is the results:<p>" , job.Name, context.JobRunTime.TotalSeconds, context.FireTimeUtc.Value.DateTime.ToLocalTime()) );
@@ -91,10 +101,10 @@ namespace Rock.Jobs
                 sendMessage = true;
 
             // set last run date
-            job.LastRunDate = context.FireTimeUtc.Value.DateTime.ToLocalTime();
+            job.LastRunDateTime = RockDateTime.Now; // context.FireTimeUtc.Value.DateTime.ToLocalTime();
 
             // set run time
-            job.LastRunDuration = Convert.ToInt32(context.JobRunTime.TotalSeconds);
+            job.LastRunDurationSeconds = Convert.ToInt32(context.JobRunTime.TotalSeconds);
 
             // set the scheduler name
             job.LastRunSchedulerName = context.Scheduler.SchedulerName;
@@ -102,7 +112,7 @@ namespace Rock.Jobs
             // determine if an error occured
             if ( jobException == null )
             {
-                job.LastSuccessfulRun = job.LastRunDate;
+                job.LastSuccessfulRunDateTime = job.LastRunDateTime;
                 job.LastStatus = "Success";
                 job.LastStatusMessage = "";
                 

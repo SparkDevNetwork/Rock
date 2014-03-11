@@ -270,7 +270,7 @@ namespace Quartz.Job
                     }
 
 			    }
-				catch (IOException ioe)
+				catch (IOException)
 				{
 
 				}

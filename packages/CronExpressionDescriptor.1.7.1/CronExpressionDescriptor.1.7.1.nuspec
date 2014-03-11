@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>CronExpressionDescriptor</id>
+    <version>1.7.1</version>
+    <title>Cron Expression Descriptor</title>
+    <authors>Brady Holt,  Renato Lima,  Ivan Santos</authors>
+    <owners>Brady Holt,  Renato Lima,  Ivan Santos</owners>
+    <licenseUrl>https://raw.github.com/bradyholt/cron-expression-descriptor/master/LICENSE</licenseUrl>
+    <projectUrl>http://bradyholt.github.io/cron-expression-descriptor/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A library that converts cron expressions into human readable strings.</description>
+    <releaseNotes>v1.7.1 - Change to ship all localized dll files with the package.</releaseNotes>
+    <copyright>Copyright 2013</copyright>
+    <tags>cron</tags>
+  </metadata>
+</package>

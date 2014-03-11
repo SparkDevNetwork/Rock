@@ -1,11 +1,16 @@
-/Quartz.dll
-/Quartz.pdb
-/Quartz.xml
-/Rock.Custom.CCV.Framework.dll
-/Rock.Custom.CCV.Framework.pdb
-/EntityFramework.xml
-/Rock.DataTransferObjects.dll
-/Rock.DataTransferObjects.pdb
-/Rock.XML
+#NOTE: The RockWeb\bin repository should only include files that don't get updated and copied into the RockWeb\Bin folder as a result of building the application
+#  except for these files:
+#    Microsoft.Data.Edm.dll
+#    Microsoft.Data.OData.dll
+#    System.Spatial.dll
+
+#specific files
+/Rock.Migrations.dll
+/Rock.Migrations.pdb
+/Rock.Rest.dll
+/Rock.Rest.pdb
+/Rock.Version.dll
+/Rock.Version.pdb
 /Rock.dll
 /Rock.pdb
+

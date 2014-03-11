@@ -541,7 +541,7 @@ namespace Quartz.Xml
                     reader.Close();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 
             }

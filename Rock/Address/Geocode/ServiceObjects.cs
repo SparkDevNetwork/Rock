@@ -1,13 +1,27 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+//using System.Data.Spatial;
 
+using Rock;
+using Rock.Attribute;
 using Rock.ServiceObjects.GeoCoder;
+using Rock.Web.UI;
 
 namespace Rock.Address.Geocode
 {
@@ -17,39 +31,40 @@ namespace Rock.Address.Geocode
     [Description("Service Objects Geocoding service")]
     [Export( typeof( GeocodeComponent ) )]
     [ExportMetadata( "ComponentName", "ServiceObjects" )]
-    [Rock.Attribute.Property( 2, "License Key", "Security", "The Service Objects License Key", true, "" )]
+    [TextField( "License Key", "The Service Objects License Key" )]
     public class ServiceObjects : GeocodeComponent
     {
         /// <summary>
         /// Geocodes the specified address.
         /// </summary>
-        /// <param name="address">The address.</param>
+        /// <param name="location">The location.</param>
         /// <param name="result">The ServiceObjects result.</param>
         /// <returns>
         /// True/False value of whether the address was standardized succesfully
         /// </returns>
-        public override bool Geocode( Rock.CRM.Address address, out string result )
+        public override bool Geocode( Rock.Model.Location location, out string result )
         {
-            if ( address != null )
+            if ( location != null )
             {
-                string licenseKey = AttributeValue("LicenseKey");
+                string licenseKey = GetAttributeValue("LicenseKey");
 
                 var client = new DOTSGeoCoderSoapClient();
-                Location_V3 location = client.GetBestMatch_V3(
+                Location_V3 location_match = client.GetBestMatch_V3(
                     string.Format("{0} {1}",
-                        address.Street1,
-                        address.Street2),
-                    address.City,
-                    address.State,
-                    address.Zip,
+                        location.Street1,
+                        location.Street2),
+                    location.City,
+                    location.State,
+                    location.Zip,
                     licenseKey );
 
-                result = location.Level;
+                result = location_match.Level;
 
-                if ( location.Level == "S" || location.Level == "P" )
+                if ( location_match.Level == "S" || location_match.Level == "P" )
                 {
-                    address.Latitude = double.Parse( location.Latitude );
-                    address.Longitude = double.Parse( location.Longitude );
+                    double latitude = double.Parse( location_match.Latitude );
+                    double longitude = double.Parse( location_match.Longitude );
+                    location.SetLocationPointFromLatLong(latitude, longitude);
 
                     return true;
                 }

@@ -1,1 +1,0 @@
-dotless.compiler ../../../RockWeb/Themes/Default/CSS/*.less --watch

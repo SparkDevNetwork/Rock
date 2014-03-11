@@ -1,68 +1,151 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
-
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
+using System.Web.Routing;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Data;
+using Rock.Model;
+using Rock.Services.NuGet;
+using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class PageProperties : Rock.Web.UI.Block
+    /// <summary>
+    /// 
+    /// </summary>
+    [DisplayName( "Page Properties" )]
+    [Category( "Administration" )]
+    [Description( "Displays the page properties." )]
+    public partial class PageProperties : RockBlock
     {
+
         #region Fields
 
-        private Rock.Web.Cache.Page _page = null;
-        private string _zoneName = string.Empty;
-        private List<string> tabs = new List<string> { "Basic Settings", "Menu Display", "Advanced Settings", "Page Routes" } ;
-        
-        protected string CurrentProperty
+        private int? _pageId = null;
+        private readonly List<string> _tabs = new List<string> { "Basic Settings", "Display Settings", "Advanced Settings", "Import/Export"} ;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the current tab.
+        /// </summary>
+        /// <value>
+        /// The current tab.
+        /// </value>
+        protected string CurrentTab
         {
             get
             {
-                object currentProperty = ViewState["CurrentProperty"];
+                object currentProperty = ViewState["CurrentTab"];
                 return currentProperty != null ? currentProperty.ToString() : "Basic Settings";
             }
+
             set
             {
-                ViewState["CurrentProperty"] = value;
+                ViewState["CurrentTab"] = value;
             }
         }
 
         #endregion
 
-        #region Overridden Methods
+        #region Base Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            Rock.Web.UI.DialogMasterPage masterPage = this.Page.Master as Rock.Web.UI.DialogMasterPage;
-            if ( masterPage != null )
-                masterPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
-
             try
             {
-                int pageId = Convert.ToInt32( PageParameter( "Page" ) );
-                _page = Rock.Web.Cache.Page.Read( pageId );
-
-                if ( _page.Authorized( "Configure", CurrentUser ) )
+                int pageId = int.MinValue;
+                if ( int.TryParse( PageParameter( "Page" ), out pageId ) )
                 {
-                    var attributeControls = Rock.Attribute.Helper.GetEditControls( _page, !Page.IsPostBack );
-                    foreach ( HtmlGenericControl fs in attributeControls )
-                        phAttributes.Controls.Add( fs );
+                    // hide the current page in the page picker to prevent setting this page's parent page to itself (or one of it's child pages)
+                    ppParentPage.HiddenPageIds = new int[] { pageId };
+                    
+                    var pageCache = Rock.Web.Cache.PageCache.Read( pageId );
 
+                    DialogPage dialogPage = this.Page as DialogPage;
+                    if ( dialogPage != null )
+                    {
+                        dialogPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
+                        dialogPage.SubTitle = string.Format( "Id: {0}", pageCache.Id );
+                    }
+
+                    if ( pageCache.IsAuthorized( "Administrate", CurrentPerson ) )
+                    {
+                        ddlMenuWhen.BindToEnum( typeof( DisplayInNavWhen ) );
+
+                        var blockContexts = new Dictionary<string, string>();
+                        foreach ( var block in pageCache.Blocks )
+                        {
+                            var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
+                            if ( blockControl != null )
+                            {
+                                blockControl.SetBlock( block );
+                                foreach ( var context in blockControl.ContextTypesRequired )
+                                {
+                                    if ( !blockContexts.ContainsKey( context.Name ) )
+                                    {
+                                        blockContexts.Add( context.Name, context.FriendlyName );
+                                    }
+                                }
+                            }
+                        }
+
+                        phContextPanel.Visible = blockContexts.Count > 0;
+
+                        foreach ( var context in blockContexts )
+                        {
+                            var tbContext = new RockTextBox();
+                            tbContext.ID = string.Format( "context_{0}", context.Key.Replace( '.', '_' ) );
+                            tbContext.Required = true;
+                            tbContext.Label = context.Value + " Parameter Name";
+                            tbContext.Help = "The page parameter name that contains the id of this context entity.";
+                            if ( pageCache.PageContexts.ContainsKey( context.Key ) )
+                            {
+                                tbContext.Text = pageCache.PageContexts[context.Key];
+                            }
+
+                            phContext.Controls.Add( tbContext );
+                        }
+
+                        _pageId = pageCache.Id;
+                    }
+                    else
+                    {
+                        DisplayError( "You are not authorized to edit this page" );
+                    }
                 }
                 else
                 {
-                    DisplayError( "You are not authorized to edit this page" );
+                    DisplayError( "Invalid Page Id value" );
                 }
             }
             catch ( SystemException ex )
@@ -73,149 +156,356 @@ namespace RockWeb.Blocks.Administration
             base.OnInit( e );
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            if (!Page.IsPostBack && _page.Authorized( "Configure", CurrentUser ) )
+            if ( !Page.IsPostBack && _pageId.HasValue )
             {
-                Rock.CMS.PageService pageService = new Rock.CMS.PageService();
-                Rock.CMS.Page page = pageService.Get( _page.Id );
-                
-                rptProperties.DataSource = tabs;
+                LoadSites();
+
+                PageService pageService = new PageService();
+                Rock.Model.Page page = pageService.Queryable( "Layout,PageRoutes" )
+                    .Where( p => p.Id == _pageId.Value )
+                    .FirstOrDefault();
+
+                if ( page.Layout != null )
+                {
+                    ddlSite.SelectedValue = page.Layout.SiteId.ToString();
+                    LoadLayouts( SiteCache.Read( page.Layout.SiteId ) );
+                    ddlLayout.SelectedValue = page.Layout.Id.ToString();
+                }
+
+                rptProperties.DataSource = _tabs;
                 rptProperties.DataBind();
 
-                LoadDropdowns();
+                tbPageName.Text = page.InternalName;
+                tbPageTitle.Text = page.PageTitle;
+                tbBrowserTitle.Text = page.BrowserTitle;
+                ppParentPage.SetValue( pageService.Get( page.ParentPageId ?? 0 ) );
+                tbIconCssClass.Text = page.IconCssClass;
 
-                tbPageName.Text = _page.Name;
-                tbPageTitle.Text = _page.Title;
-                ddlParentPage.SelectedValue = _page.ParentPage != null ? _page.ParentPage.Id.ToString() : "0";
-                ddlLayout.Text = _page.Layout;
-                ddlMenuWhen.SelectedValue = ( ( Int32 )_page.DisplayInNavWhen ).ToString();
-                cbMenuDescription.Checked = _page.MenuDisplayDescription;
-                cbMenuIcon.Checked = _page.MenuDisplayIcon;
-                cbMenuChildPages.Checked = _page.MenuDisplayChildPages;
-                cbRequiresEncryption.Checked = _page.RequiresEncryption;
-                cbEnableViewState.Checked = _page.EnableViewstate;
-                cbIncludeAdminFooter.Checked = _page.IncludeAdminFooter;
-                tbCacheDuration.Text = _page.OutputCacheDuration.ToString();
-                tbDescription.Text = _page.Description;
-                tbPageRoute.Text = string.Join(",", page.PageRoutes.Select( route => route.Route ).ToArray());
-              
+                cbPageTitle.Checked = page.PageDisplayTitle;
+                cbPageBreadCrumb.Checked = page.PageDisplayBreadCrumb;
+                cbPageIcon.Checked = page.PageDisplayIcon;
+                cbPageDescription.Checked = page.PageDisplayDescription;
+
+                ddlMenuWhen.SelectedValue = ( (int)page.DisplayInNavWhen ).ToString();
+                cbMenuDescription.Checked = page.MenuDisplayDescription;
+                cbMenuIcon.Checked = page.MenuDisplayIcon;
+                cbMenuChildPages.Checked = page.MenuDisplayChildPages;
+
+                cbBreadCrumbIcon.Checked = page.BreadCrumbDisplayIcon;
+                cbBreadCrumbName.Checked = page.BreadCrumbDisplayName;
+
+                cbRequiresEncryption.Checked = page.RequiresEncryption;
+                cbEnableViewState.Checked = page.EnableViewState;
+                cbIncludeAdminFooter.Checked = page.IncludeAdminFooter;
+                tbCacheDuration.Text = page.OutputCacheDuration.ToString();
+                tbDescription.Text = page.Description;
+                ceHeaderContent.Text = page.HeaderContent;
+                tbPageRoute.Text = string.Join( ",", page.PageRoutes.Select( route => route.Route ).ToArray() );
+
+                // Add enctype attribute to page's <form> tag to allow file upload control to function
+                Page.Form.Attributes.Add( "enctype", "multipart/form-data" );
             }
 
             base.OnLoad( e );
 
-            if ( Page.IsPostBack )
-                Rock.Attribute.Helper.SetErrorIndicators( phAttributes, _page );
         }
 
         #endregion
 
         #region Events
 
+        /// <summary>
+        /// Handles the Click event of the lbProperty control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbProperty_Click( object sender, EventArgs e )
         {
             LinkButton lb = sender as LinkButton;
             if ( lb != null )
             {
-                CurrentProperty = lb.Text;
+                CurrentTab = lb.Text;
 
-                rptProperties.DataSource = tabs;
+                rptProperties.DataSource = _tabs;
                 rptProperties.DataBind();
-             }
+            }
 
             ShowSelectedPane();
         }
 
-        void masterPage_OnSave( object sender, EventArgs e )
+        protected void ddlSite_SelectedIndexChanged( object sender, EventArgs e )
         {
-            if ( Page.IsValid )
+            LoadLayouts( SiteCache.Read( ddlSite.SelectedValueAsInt().Value ) );
+        }
+        
+        /// <summary>
+        /// Handles the OnSave event of the masterPage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void masterPage_OnSave( object sender, EventArgs e )
+        {
+            Page.Validate( BlockValidationGroup );
+            if ( Page.IsValid && _pageId.HasValue)
             {
-                using ( new Rock.Data.UnitOfWorkScope() )
+                using ( new UnitOfWorkScope() )
                 {
-                    Rock.CMS.PageService pageService = new Rock.CMS.PageService();
-                    Rock.CMS.Page page = pageService.Get( _page.Id );
-                    Rock.CMS.PageRouteService routeService = new Rock.CMS.PageRouteService();
-                    Rock.CMS.PageRoute pr;
+                    var pageService = new PageService();
+                    var routeService = new PageRouteService();
+                    var contextService = new PageContextService();
 
-                    int parentPage = Int32.Parse( ddlParentPage.SelectedValue );
-                    if ( page.ParentPageId != parentPage )
+                    var page = pageService.Get( _pageId.Value );
+
+                    int parentPageId = ppParentPage.SelectedValueAsInt() ?? 0;
+                    if ( page.ParentPageId != parentPageId )
                     {
                         if ( page.ParentPageId.HasValue )
-                            Rock.Web.Cache.Page.Flush( page.ParentPageId.Value );
+                        {
+                            PageCache.Flush( page.ParentPageId.Value );
+                        }
 
-                        if ( parentPage != 0 )
-                            Rock.Web.Cache.Page.Flush( parentPage );
-
-                        foreach ( var route in page.PageRoutes )
-                            routeService.Delete( route, CurrentPersonId );
-                        page.PageRoutes.Clear();
+                        if ( parentPageId != 0 )
+                        {
+                            PageCache.Flush( parentPageId );
+                        }
                     }
 
-                    page.Name = tbPageName.Text;
-                    page.Title = tbPageTitle.Text;
-                    if ( parentPage != 0 )
-                        page.ParentPageId = parentPage;
+                    page.InternalName = tbPageName.Text;
+                    page.PageTitle = tbPageTitle.Text;
+                    page.BrowserTitle = tbBrowserTitle.Text;
+                    if ( parentPageId != 0 )
+                    {
+                        page.ParentPageId = parentPageId;
+                    }
                     else
+                    {
                         page.ParentPageId = null;
-                    page.Layout = ddlLayout.Text;
-                    page.DisplayInNavWhen = (Rock.CMS.DisplayInNavWhen)Enum.Parse( typeof( Rock.CMS.DisplayInNavWhen ), ddlMenuWhen.SelectedValue );
+                    }
+
+                    page.LayoutId = ddlLayout.SelectedValueAsInt().Value;
+
+                    int? orphanedIconFileId = null;
+
+                    page.IconCssClass = tbIconCssClass.Text;
+
+                    page.PageDisplayTitle = cbPageTitle.Checked;
+                    page.PageDisplayBreadCrumb = cbPageBreadCrumb.Checked;
+                    page.PageDisplayIcon = cbPageIcon.Checked;
+                    page.PageDisplayDescription = cbPageDescription.Checked;
+
+                    page.DisplayInNavWhen = (DisplayInNavWhen)Enum.Parse( typeof( DisplayInNavWhen ), ddlMenuWhen.SelectedValue );
                     page.MenuDisplayDescription = cbMenuDescription.Checked;
                     page.MenuDisplayIcon = cbMenuIcon.Checked;
                     page.MenuDisplayChildPages = cbMenuChildPages.Checked;
+
+                    page.BreadCrumbDisplayName = cbBreadCrumbName.Checked;
+                    page.BreadCrumbDisplayIcon = cbBreadCrumbIcon.Checked;
+
                     page.RequiresEncryption = cbRequiresEncryption.Checked;
                     page.EnableViewState = cbEnableViewState.Checked;
                     page.IncludeAdminFooter = cbIncludeAdminFooter.Checked;
-                    page.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );
+                    page.OutputCacheDuration = int.Parse( tbCacheDuration.Text );
                     page.Description = tbDescription.Text;
-                    
-                    foreach ( string route in tbPageRoute.Text.SplitDelimitedValues() )
+                    page.HeaderContent = ceHeaderContent.Text;
+
+                    // new or updated route
+                    foreach ( var pageRoute in page.PageRoutes.ToList() )
                     {
-                        pr = new Rock.CMS.PageRoute();
-                        pr.Route = route;
-                        pr.Guid = Guid.NewGuid();
-                        page.PageRoutes.Add( pr );
+                        var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( a => a.RouteId() == pageRoute.Id );
+                        if ( existingRoute != null )
+                        {
+                            RouteTable.Routes.Remove( existingRoute );
+                        }
+
+                        routeService.Delete( pageRoute, CurrentPersonAlias );
                     }
 
-                    pageService.Save( page, CurrentPersonId );
+                    page.PageRoutes.Clear();
 
-                    Rock.Attribute.Helper.GetEditValues( phAttributes, _page );
-                    _page.SaveAttributeValues( CurrentPersonId );
+                    foreach ( string route in tbPageRoute.Text.SplitDelimitedValues() )
+                    {
+                        var pageRoute = new PageRoute();
+                        pageRoute.Route = route.TrimStart( new char[] { '/' } );
+                        pageRoute.Guid = Guid.NewGuid();
+                        page.PageRoutes.Add( pageRoute );
+                    }
 
-                    Rock.Web.Cache.Page.Flush( _page.Id );
+                    foreach ( var pageContext in page.PageContexts.ToList() )
+                    {
+                        contextService.Delete( pageContext, CurrentPersonAlias );
+                    }
+
+                    page.PageContexts.Clear();
+                    foreach ( var control in phContext.Controls )
+                    {
+                        if ( control is RockTextBox )
+                        {
+                            var tbContext = control as RockTextBox;
+                            if ( !string.IsNullOrWhiteSpace( tbContext.Text ) )
+                            {
+                                var pageContext = new PageContext();
+                                pageContext.Entity = tbContext.ID.Substring(8).Replace('_', '.');
+                                pageContext.IdParameter = tbContext.Text;
+                                page.PageContexts.Add( pageContext );
+                            }
+                        }
+                    }
+
+                    if ( page.IsValid )
+                    {
+                        pageService.Save( page, CurrentPersonAlias );
+
+                        foreach ( var pageRoute in new PageRouteService().GetByPageId( page.Id ) )
+                        {
+                            RouteTable.Routes.AddPageRoute( pageRoute );
+                        }
+
+                        if ( orphanedIconFileId.HasValue)
+                        {
+                            BinaryFileService binaryFileService = new BinaryFileService();
+                            var binaryFile = binaryFileService.Get( orphanedIconFileId.Value );
+                            if ( binaryFile != null )
+                            {
+                                // marked the old images as IsTemporary so they will get cleaned up later
+                                binaryFile.IsTemporary = true;
+                                binaryFileService.Save( binaryFile, CurrentPersonAlias );
+                            }
+                        }
+
+                        Rock.Web.Cache.PageCache.Flush( page.Id );
+
+                        string script = "if (typeof window.parent.Rock.controls.modal.close === 'function') window.parent.Rock.controls.modal.close('PAGE_UPDATED');";
+                        ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
+                    }
+                }
+            }
+        }
+
+        protected void lbExport_Click( object sender, EventArgs e )
+        {
+            if ( _pageId.HasValue )
+            {
+                var pageService = new PageService();
+                var page = pageService.Get( _pageId.Value );
+                var packageService = new PackageService();
+                var pageName = page.InternalName.Replace( " ", "_" ) + ( ( cbExportChildren.Checked ) ? "_wChildPages" : "" );
+                using ( var stream = packageService.ExportPage( page, cbExportChildren.Checked ) )
+                {
+                    EnableViewState = false;
+                    Response.Clear();
+                    Response.ContentType = "application/octet-stream";
+                    Response.AddHeader( "content-disposition", "attachment; filename=" + pageName + ".nupkg" );
+                    Response.Charset = "";
+                    Response.BinaryWrite( stream.ToArray() );
+                    Response.Flush();
+                    Response.End();
+                }
+            }
+        }
+
+        protected void lbImport_Click( object sender, EventArgs e )
+        {
+            var page = PageCache.Read( _pageId ?? 0 );
+            if ( page != null )
+            {
+                var extension = fuImport.FileName.Substring( fuImport.FileName.LastIndexOf( '.' ) );
+
+                if ( fuImport.PostedFile == null && extension != ".nupkg" )
+                {
+                    var errors = new List<string> { "Please attach an export file when trying to import a package." };
+                    rptImportErrors.DataSource = errors;
+                    rptImportErrors.DataBind();
+                    rptImportErrors.Visible = true;
+                    pnlImportSuccess.Visible = false;
+                    return;
                 }
 
-                string script = "window.parent.closeModal()";
-                ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
+                var packageService = new PackageService();
+                bool importResult;
+
+                using ( new UnitOfWorkScope() )
+                {
+                    importResult = packageService.ImportPage( fuImport.FileBytes, fuImport.FileName, CurrentPersonAlias, page.Id, page.Layout.SiteId );
+                }
+
+                if ( !importResult )
+                {
+                    rptImportErrors.DataSource = packageService.ErrorMessages;
+                    rptImportErrors.DataBind();
+                    rptImportErrors.Visible = true;
+                    pnlImportSuccess.Visible = false;
+                }
+                else
+                {
+                    pnlImportSuccess.Visible = true;
+                    rptImportWarnings.Visible = false;
+                    rptImportErrors.Visible = false;
+
+                    if ( packageService.WarningMessages.Count > 0 )
+                    {
+                        rptImportErrors.DataSource = packageService.WarningMessages;
+                        rptImportErrors.DataBind();
+                        rptImportWarnings.Visible = true;
+                    }
+                }
             }
+        }
+
+        protected void cvPageRoute_ServerValidate( object source, ServerValidateEventArgs args )
+        {
+            var errorMessages = new List<string>();
+
+            foreach ( string route in tbPageRoute.Text.SplitDelimitedValues() )
+            {
+                var pageRoute = new PageRoute();
+                pageRoute.Route = route.TrimStart( new char[] { '/' } );
+                pageRoute.Guid = Guid.NewGuid();
+                if ( !pageRoute.IsValid )
+                {
+                    errorMessages.Add( string.Format( "The '{0}' route is invalid: {1}", route,
+                    pageRoute.ValidationResults.Select( r => r.ErrorMessage ).ToList().AsDelimited( "; " ) ) );
+                }
+            }
+
+            cvPageRoute.ErrorMessage = errorMessages.AsDelimited( "<br/>" );
+
+            args.IsValid = !errorMessages.Any();
         }
 
         #endregion
 
-        #region Internal Methods
+        #region Methods
 
-        private void LoadDropdowns()
+        private void LoadSites()
         {
-            ddlParentPage.Items.Clear();
-            ddlParentPage.Items.Add( new ListItem( "Root", "0" ) );
-            foreach ( var page in new Rock.CMS.PageService().GetByParentPageId( null ) )
-                AddPage( page, 1 );
+            ddlSite.Items.Clear();
+            foreach(Site site in new SiteService().Queryable().OrderBy(s => s.Name))
+            {
+                ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
+            }
+        }
 
+        private void LoadLayouts(SiteCache Site)
+        {
             ddlLayout.Items.Clear();
-            DirectoryInfo di = new DirectoryInfo( Path.Combine( this.Page.Request.MapPath( this.ThemePath ), "Layouts" ) );
-            foreach ( FileInfo fi in di.GetFiles( "*.aspx" ) )
-                ddlLayout.Items.Add( new ListItem( fi.Name.Remove( fi.Name.IndexOf( ".aspx" ) ) ) );
-
-            ddlMenuWhen.BindToEnum( typeof( Rock.CMS.DisplayInNavWhen ) );
+            var layoutService = new LayoutService();
+            layoutService.RegisterLayouts( Request.MapPath( "~" ), Site, CurrentPersonAlias );
+            foreach ( var layout in layoutService.GetBySiteId( Site.Id ) )
+            {
+                ddlLayout.Items.Add( new ListItem( layout.Name, layout.Id.ToString() ) );
+            }
         }
 
-        private void AddPage( Rock.CMS.Page page, int level )
-        {
-            string pageName = new string( '-', level ) + page.Name;
-            ddlParentPage.Items.Add( new ListItem( pageName, page.Id.ToString() ) );
-            foreach ( var childPage in page.Pages )
-                AddPage( childPage, level + 1 );
-        }
-
+        /// <summary>
+        /// Displays the error.
+        /// </summary>
+        /// <param name="message">The message.</param>
         private void DisplayError( string message )
         {
             pnlError.Controls.Clear();
@@ -225,52 +515,57 @@ namespace RockWeb.Blocks.Administration
             phContent.Visible = false;
         }
 
+        /// <summary>
+        /// Gets the tab class.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns></returns>
         protected string GetTabClass( object property )
         {
-            if ( property.ToString() == CurrentProperty )
+            if ( property.ToString() == CurrentTab )
+            {
                 return "active";
-            else
-                return "";
+            }
+            
+            return string.Empty;
         }
 
+        /// <summary>
+        /// Shows the selected pane.
+        /// </summary>
         private void ShowSelectedPane()
         {
-            if (CurrentProperty.Equals( "Basic Settings" )) {
+            if ( CurrentTab.Equals( "Basic Settings" ) )
+            {
                 pnlBasicProperty.Visible = true;
-                pnlMenuDisplay.Visible = false;
+                pnlDisplaySettings.Visible = false;
                 pnlAdvancedSettings.Visible = false;
-                pnlRoutes.Visible = false;
-                pnlBasicProperty.DataBind();
+                pnlImportExport.Visible = false;
             }
-            else if ( CurrentProperty.Equals( "Menu Display" ) )
+            else if ( CurrentTab.Equals( "Display Settings" ) )
             {
                 pnlBasicProperty.Visible = false;
-                pnlMenuDisplay.Visible = true;
+                pnlDisplaySettings.Visible = true;
                 pnlAdvancedSettings.Visible = false;
-                pnlRoutes.Visible = false;
-                pnlMenuDisplay.DataBind();
+                pnlImportExport.Visible = false;
             }
-            else if ( CurrentProperty.Equals( "Advanced Settings" ) )
+            else if ( CurrentTab.Equals( "Advanced Settings" ) )
             {
                 pnlBasicProperty.Visible = false;
-                pnlMenuDisplay.Visible = false;
+                pnlDisplaySettings.Visible = false;
                 pnlAdvancedSettings.Visible = true;
-                pnlRoutes.Visible = false;
-                pnlAdvancedSettings.DataBind();
+                pnlImportExport.Visible = false;
             }
-            else
+            else if ( CurrentTab.Equals( "Import/Export" ) )
             {
                 pnlBasicProperty.Visible = false;
-                pnlMenuDisplay.Visible = false;
+                pnlDisplaySettings.Visible = false;
                 pnlAdvancedSettings.Visible = false;
-                pnlRoutes.Visible = true;
-                pnlRoutes.DataBind();   
+                pnlImportExport.Visible = true;
             }
-
-            upPanel.DataBind();
         }
 
-    }
+        #endregion
 
-    #endregion
+    }
 }
