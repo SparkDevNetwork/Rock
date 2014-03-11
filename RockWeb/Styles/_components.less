@@ -908,15 +908,40 @@ div.tagsinput
         td span.month {
             margin-left: 2px;
             padding: 2px;
+            cursor: pointer;
+
+            &.active {
+                font-weight: @font-weight-bold;
+            }
 
             &:hover {
                 background-color: @accent-color;
                 color: @accent-text-color;
             }
+
+            &:first-child {
+                margin-left: 0;
+            }
         }
 
-        td span.month:first-child {
-            margin-left: 0;
+        td span.year {
+            margin-left: 4px;
+            padding: 2px;
+            cursor: pointer;
+
+            &.active {
+                font-weight: @font-weight-bold;
+            }
+
+            &:hover {
+                background-color: @accent-color;
+                color: @accent-text-color;
+                border-radius: 2px;
+            }
+
+            &:first-child {
+                margin-left: 0;
+            }
         }
     }
 }
