@@ -184,7 +184,6 @@ namespace Rock.Web.UI.Controls
 
         #region UI Controls
 
-        private Image _imgPhoto;
         private HiddenField _hfBinaryFileId;
         private HiddenField _hfBinaryFileTypeGuid;
         private FileUpload _fileUpload;
@@ -376,10 +375,6 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void CreateChildControls()
         {
-            _imgPhoto = new Image();
-            _imgPhoto.ID = this.ID + "_imgPhoto";
-            Controls.Add( _imgPhoto );
-
             _hfBinaryFileId = new HiddenField();
             _hfBinaryFileId.ID = this.ID + "_hfBinaryFileId";
             Controls.Add( _hfBinaryFileId );
@@ -636,18 +631,19 @@ namespace Rock.Web.UI.Controls
                     <i class='fa fa-refresh fa-3x fa-spin'></i>                    
                 </div>" );
 
+            string backgroundImageFormat = "<div class='person-image' id='{0}' style='background-image:url({1}&width=150);background-size:cover;background-position:50%' {2}></div>";
+            string imageDivHtml = "";
+
             if ( BinaryFileId != null )
             {
-                _imgPhoto.ImageUrl = "~/GetImage.ashx?id=" + BinaryFileId.ToString() + "&width=150";
-                _aRemove.Style[HtmlTextWriterStyle.Display] = "inline";
+                imageDivHtml = string.Format( backgroundImageFormat, this.ClientID + "_divPhoto", this.ResolveUrl( "~/GetImage.ashx?id=" + BinaryFileId.ToString() ), null );
             }
             else
             {
-                _imgPhoto.ImageUrl = this.NoPictureUrl;
-                _aRemove.Style[HtmlTextWriterStyle.Display] = "none";
+                imageDivHtml = string.Format( backgroundImageFormat, this.ClientID + "_divPhoto", this.NoPictureUrl, "display='none'" );
             }
 
-            _imgPhoto.RenderControl( writer );
+            writer.Write( imageDivHtml );
             writer.WriteLine();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "options" );
@@ -749,7 +745,7 @@ $('#{5}').click(function () {{
                 this.BinaryFileId,
                 this.BinaryFileTypeGuid,
                 _hfBinaryFileId.ClientID,
-                _imgPhoto.ClientID,
+                this.ClientID + "_divPhoto",
                 _aRemove.ClientID,
                 _imgCropSource.ClientID,
                 _hfCropCoords.ClientID,
