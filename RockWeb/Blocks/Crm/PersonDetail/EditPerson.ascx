@@ -37,7 +37,7 @@
                         <div class="col-sm-3">
                             <Rock:YearPicker ID="ypGraduation" runat="server" Label="Graduation Year" Help="High School Graduation Year." />
                         </div>
-                        <div class="col-sm-"6">
+                        <div class="col-sm-6">
                         </div>
                     </div>
                     <Rock:DatePicker ID="dpAnniversaryDate" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="AnniversaryDate" StartView="decade" />

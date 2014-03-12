@@ -32,7 +32,7 @@ namespace Rock.Transactions
         /// <value>
         /// The viewer person id.
         /// </value>
-        public int ViewerPersonId { get; set; }
+        public int ViewerPersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the target person id.
@@ -40,7 +40,7 @@ namespace Rock.Transactions
         /// <value>
         /// The target person id.
         /// </value>
-        public int TargetPersonId { get; set; }
+        public int TargetPersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the IP address that requested the page.
@@ -72,13 +72,13 @@ namespace Rock.Transactions
         public void Execute()
         {
             // store the view to the database if the viewer is NOT the target (don't track looking at your own record)
-            if ( ViewerPersonId != TargetPersonId )
+            if ( ViewerPersonAliasId != TargetPersonAliasId )
             {
                 using ( new Rock.Data.UnitOfWorkScope() )
                 {
                     var pvRecord = new PersonViewed();
-                    pvRecord.TargetPersonId = TargetPersonId;
-                    pvRecord.ViewerPersonId = ViewerPersonId;
+                    pvRecord.TargetPersonAliasId = TargetPersonAliasId;
+                    pvRecord.ViewerPersonAliasId = ViewerPersonAliasId;
                     pvRecord.ViewDateTime = DateTimeViewed;
                     pvRecord.IpAddress = IPAddress;
                     pvRecord.Source = Source;
