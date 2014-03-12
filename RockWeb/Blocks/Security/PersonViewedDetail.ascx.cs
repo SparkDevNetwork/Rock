@@ -87,13 +87,17 @@ namespace RockWeb.Blocks.Security
             bool viewedBy = Convert.ToBoolean(PageParameter( "viewedBy" ));
             var personViewedService = new PersonViewedService();
             var personViewedList = personViewedService.Queryable()
-                .Where( p => p.ViewerPersonId == viewerId && p.TargetPersonId == targetId )
+                .Where( p => 
+                    p.ViewerPersonAlias != null && 
+                    p.ViewerPersonAlias.PersonId == viewerId && 
+                    p.TargetPersonAlias != null &&
+                    p.TargetPersonAlias.PersonId == targetId )
                 .Select( p => new
                 {
-                    Id = p.TargetPersonId,
+                    Id = p.TargetPersonAlias.PersonId,
                     Source = p.Source,
-                    TargetPerson = p.TargetPerson,
-                    ViewerPerson = p.ViewerPerson,
+                    TargetPerson = p.TargetPersonAlias.Person,
+                    ViewerPerson = p.ViewerPersonAlias.Person,
                     ViewDateTime = p.ViewDateTime,
                     IpAddress = p.IpAddress
                 } ).ToList();

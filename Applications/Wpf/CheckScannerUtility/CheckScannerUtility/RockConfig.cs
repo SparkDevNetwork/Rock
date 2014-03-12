@@ -15,25 +15,35 @@
 // </copyright>
 //
 using System;
-using System.IO;
-using System.Runtime.Serialization;
+using System.Configuration;
 using System.Security.Cryptography;
 using System.Text;
-using System.Xml.Serialization;
 
 namespace Rock.Apps.CheckScannerUtility
 {
     /// <summary>
     /// 
     /// </summary>
-    [Serializable]
-    [DataContract]
-    public class RockConfig
+    internal sealed partial class RockConfig : ApplicationSettingsBase
     {
         /// <summary>
-        /// The file name
+        /// The default instance
         /// </summary>
-        private static string fileName = "rockConfig.xml";
+        private static RockConfig defaultInstance = ( (RockConfig)( ApplicationSettingsBase.Synchronized( new RockConfig() ) ) );
+
+        /// <summary>
+        /// Gets the default.
+        /// </summary>
+        /// <value>
+        /// The default.
+        /// </value>
+        public static RockConfig Default
+        {
+            get
+            {
+                return defaultInstance;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the rock base URL.
@@ -41,9 +51,20 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// The rock base URL.
         /// </value>
-        [XmlElement]
-        [DataMember]
-        public string RockBaseUrl { get; set; }
+        [DefaultSettingValueAttribute( "" )]
+        [UserScopedSetting]
+        public string RockBaseUrl
+        {
+            get
+            {
+                return this["RockBaseUrl"] as string;
+            }
+
+            set
+            {
+                this["RockBaseUrl"] = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the username.
@@ -51,9 +72,20 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// The username.
         /// </value>
-        [XmlElement]
-        [DataMember]
-        public string Username { get; set; }
+        [DefaultSettingValueAttribute( "" )]
+        [UserScopedSetting]
+        public string Username
+        {
+            get
+            {
+                return this["Username"] as string;
+            }
+
+            set
+            {
+                this["Username"] = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the password.
@@ -61,9 +93,40 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// The password.
         /// </value>
-        [XmlElement]
-        [DataMember]
-        private byte[] PasswordEncrypted { get; set; }
+        [DefaultSettingValueAttribute( "" )]
+        [UserScopedSetting]
+        public string PasswordEncryptedBase64
+        {
+            get
+            {
+                return this["PasswordEncryptedBase64"] as string;
+
+            }
+
+            set
+            {
+                this["PasswordEncryptedBase64"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the password encrypted.
+        /// </summary>
+        /// <value>
+        /// The password encrypted.
+        /// </value>
+        private byte[] PasswordEncrypted
+        {
+            get
+            {
+                return Convert.FromBase64String( PasswordEncryptedBase64 );
+            }
+
+            set
+            {
+                PasswordEncryptedBase64 = Convert.ToBase64String( value );
+            }
+        }
 
         /// <summary>
         /// Gets or sets the password.
@@ -85,9 +148,9 @@ namespace Rock.Apps.CheckScannerUtility
                     return string.Empty;
                 }
             }
+
             set
             {
-
                 try
                 {
                     byte[] clearTextPasswordBytes = Encoding.Unicode.GetBytes( value );
@@ -98,7 +161,6 @@ namespace Rock.Apps.CheckScannerUtility
                     PasswordEncrypted = new byte[] { 0 };
                 }
             }
-
         }
 
         /// <summary>
@@ -107,9 +169,21 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// The type of the image color.
         /// </value>
-        [XmlElement]
-        [DataMember]
-        public ImageColorType ImageColorType { get; set; }
+        [DefaultSettingValueAttribute( "1" ) ]
+        [UserScopedSetting]
+        public ImageColorType ImageColorType
+        {
+            get
+            {
+                return (ImageColorType)this["ImageColorType"];
+
+            }
+
+            set
+            {
+                this["ImageColorType"] = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the MICR image COM port.
@@ -117,9 +191,21 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// The MICR image COM port.
         /// </value>
-        [XmlElement]
-        [DataMember]
-        public short MICRImageComPort { get; set; }
+        [DefaultSettingValueAttribute( "1" )]
+        [UserScopedSetting]
+        public short MICRImageComPort
+        {
+            get
+            {
+                return (short)this["MICRImageComPort"];
+
+            }
+
+            set
+            {
+                this["MICRImageComPort"] = value;
+            }
+        }
 
         /// <summary>
         /// 
@@ -130,30 +216,27 @@ namespace Rock.Apps.CheckScannerUtility
             MICRImageRS232 = 1
         }
 
-        [XmlElement]
-        [DataMember]
-        public InterfaceType ScannerInterfaceType { get; set; }
-
         /// <summary>
-        /// Saves this instance.
-        /// </summary>
-        public void Save()
-        {
-            DataContractSerializer s = new DataContractSerializer( this.GetType() );
-            FileStream fs = new FileStream( fileName, FileMode.Create );
-            s.WriteObject( fs, this );
-            fs.Close();
-
-            _rockConfig = null;
-        }
-
-        /// <summary>
-        /// Gets or sets the _rock config.
+        /// Gets or sets the type of the scanner interface.
         /// </summary>
         /// <value>
-        /// The _rock config.
+        /// The type of the scanner interface.
         /// </value>
-        private static RockConfig _rockConfig { get; set; }
+        [DefaultSettingValueAttribute( "0" )]
+        [UserScopedSetting]
+        public InterfaceType ScannerInterfaceType
+        {
+            get
+            {
+                return (InterfaceType)this["ScannerInterfaceType"];
+
+            }
+
+            set
+            {
+                this["ScannerInterfaceType"] = value;
+            }
+        }
 
         /// <summary>
         /// Loads this instance.
@@ -161,34 +244,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <returns></returns>
         public static RockConfig Load()
         {
-            try
-            {
-                if ( _rockConfig != null )
-                {
-                    return _rockConfig;
-                }
-
-                if ( File.Exists( fileName ) )
-                {
-                    FileStream fs = new FileStream( fileName, FileMode.OpenOrCreate );
-                    try
-                    {
-                        DataContractSerializer s = new DataContractSerializer( typeof( RockConfig ) );
-                        _rockConfig = s.ReadObject( fs ) as RockConfig;
-                        return _rockConfig;
-                    }
-                    finally
-                    {
-                        fs.Close();
-                    }
-                }
-
-                return new RockConfig();
-            }
-            catch
-            {
-                return new RockConfig();
-            }
+            return RockConfig.Default;
         }
     }
 }

@@ -2098,6 +2098,11 @@
 	<table name="ISDependency">
 		<col key="yes" def="S50">ISDependency</col>
 		<col def="I2">Exclude</col>
+		<row><td>AJAXCONTROLTOOLKIT.DLL</td><td>1</td></row>
+		<row><td>AJAXMIN.DLL</td><td>1</td></row>
+		<row><td>MICROSOFT.WINDOWSAZURE.STORAGE</td><td>1</td></row>
+		<row><td>RESTSHARP</td><td>1</td></row>
+		<row><td>TWILIO.API.DLL</td><td>1</td></row>
 	</table>
 
 	<table name="ISDisk1File">

@@ -19,6 +19,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+using System.Text;
 
 using Rock.Data;
 
@@ -40,7 +41,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who was the viewer.
         /// </value>
         [DataMember]
-        public int? ViewerPersonId { get; set; }
+        public int? ViewerPersonAliasId { get; set; }
         
         /// <summary>
         /// Gets or sets the Id of the Target/Viewed <see cref="Rock.Model.Person"/>.
@@ -49,7 +50,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the Id of the Target/Viewed <see cref="Rock.Model.Person"/> 
         /// </value>
         [DataMember]
-        public int? TargetPersonId { get; set; }
+        public int? TargetPersonAliasId { get; set; }
         
         /// <summary>
         /// Gets or sets the Date and Time that the that the person was viewed.
@@ -86,8 +87,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.Person"/> entity representing the viewer.
         /// </value>
-        [DataMember]
-        public virtual Person ViewerPerson { get; set; }
+        public virtual PersonAlias ViewerPersonAlias { get; set; }
         
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Person"/> entity of the individual who was viewed.
@@ -95,8 +95,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.Person"/> entity representing the person who was viewed.
         /// </value>
-        [DataMember]
-        public virtual Person TargetPerson { get; set; }
+        public virtual PersonAlias TargetPersonAlias { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -106,9 +105,9 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            if (ViewerPerson != null && TargetPerson != null)
-                return string.Format( "{0} Viewed {1}", ViewerPerson.ToStringSafe(), TargetPerson.ToStringSafe() );
-            return string.Empty;
+            return string.Format( "{0} viewed ",
+                ( ( ViewerPersonAlias != null && ViewerPersonAlias.Person != null ) ? ViewerPersonAlias.Person.ToStringSafe() : ViewerPersonAliasId.ToString() ),
+                ( ( TargetPersonAlias != null && TargetPersonAlias.Person != null ) ? TargetPersonAlias.Person.ToStringSafe() : TargetPersonAliasId.ToString() ) );
         }
     }
 
@@ -122,8 +121,8 @@ namespace Rock.Model
         /// </summary>
         public PersonViewedConfiguration()
         {
-            this.HasOptional( p => p.ViewerPerson ).WithMany().HasForeignKey( p => p.ViewerPersonId ).WillCascadeOnDelete(false);
-            this.HasOptional( p => p.TargetPerson ).WithMany().HasForeignKey( p => p.TargetPersonId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.ViewerPersonAlias ).WithMany().HasForeignKey( p => p.ViewerPersonAliasId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.TargetPersonAlias ).WithMany().HasForeignKey( p => p.TargetPersonAliasId ).WillCascadeOnDelete(false);
         }
     }
 }

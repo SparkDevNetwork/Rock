@@ -163,13 +163,6 @@ span.data-view-filter-label {
     display: none;
 }
 
-/* MP - ImageEditor (JCrop image control)*/
-
-.image-editor-group {
-
-}
-
-
 
 /* DT - Person Picker */
 li.picker-select-item div.person-image {
@@ -179,4 +172,12 @@ li.picker-select-item div.person-image {
     display: inline-block;
     width: 70px;
     height: 70px;
+}
+
+/* MP - ImageEditor using div background image instead of img*/
+.image-editor-photo .person-image
+{
+    width: 150px;
+    height: 150px;
+    border:3px solid #8498ab;
 }

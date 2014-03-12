@@ -137,6 +137,7 @@ namespace Rock.Rest.Controllers
                 personSearchResult.Age = person.Age.HasValue ? person.Age.Value : -1;
                 personSearchResult.ConnectionStatus = person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Name : string.Empty;
                 personSearchResult.Gender = person.Gender.ConvertToString();
+                personSearchResult.Email = person.Email;
 
                 if ( person.RecordStatusValue != null )
                 {
@@ -151,76 +152,78 @@ namespace Rock.Rest.Controllers
 
                 personSearchResult.Id = person.Id;
 
-                if ( includeHtml )
+                string imageHtml = string.Format(
+                    "<div class='person-image' style='background-image:url({0}&width=65);background-size:cover;background-position:50%'></div>",
+                    Person.GetPhotoUrl( person.PhotoId, person.Gender ) );
+
+                string personInfo = string.Empty;
+
+                var groupMemberQry = groupMemberService.Queryable().Where( a => a.PersonId.Equals( person.Id ) );
+                List<GroupMember> personGroupMember = groupMemberQry.ToList();
+
+                Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+                Guid adultGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
+
+                GroupMember familyGroupMember = personGroupMember.Where( a => a.Group.GroupType.Guid.Equals( familyGuid ) ).FirstOrDefault();
+                if ( familyGroupMember != null )
                 {
-                    string imageHtml = string.Format(
-                        "<div class='person-image' style='background-image:url({0}&width=65);background-size:cover;background-position:50%'></div>",
-                        Person.GetPhotoUrl( person.PhotoId, person.Gender ) );
-
-                    string personInfo = string.Empty;
-
-                    var groupMemberQry = groupMemberService.Queryable().Where( a => a.PersonId.Equals( person.Id ) );
-                    List<GroupMember> personGroupMember = groupMemberQry.ToList();
-
-                    Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
-                    Guid adultGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
-
-                    GroupMember familyGroupMember = personGroupMember.Where( a => a.Group.GroupType.Guid.Equals( familyGuid ) ).FirstOrDefault();
-                    if ( familyGroupMember != null )
+                    personInfo += familyGroupMember.GroupRole.Name;
+                    if ( person.Age != null )
                     {
-                        personInfo += familyGroupMember.GroupRole.Name;
-                        if ( person.Age != null )
-                        {
-                            personInfo += " <em>(" + person.Age.ToString() + " yrs old)</em>";
-                        }
+                        personInfo += " <em>(" + person.Age.ToString() + " yrs old)</em>";
+                    }
 
-                        // Figure out spouse (Implied by "the other GROUPROLE_FAMILY_MEMBER_ADULT that is of the opposite gender")
-                        if ( familyGroupMember.GroupRole.Guid.Equals( adultGuid ) )
+                    // Figure out spouse (Implied by "the other GROUPROLE_FAMILY_MEMBER_ADULT that is of the opposite gender")
+                    if ( familyGroupMember.GroupRole.Guid.Equals( adultGuid ) )
+                    {
+                        person.GetSpouse();
+                        GroupMember spouseMember = familyGroupMember.Group.Members.Where( a => !a.PersonId.Equals( person.Id ) && a.GroupRole.Guid.Equals( adultGuid ) ).FirstOrDefault();
+                        if ( spouseMember != null )
                         {
-                            person.GetSpouse();
-                            GroupMember spouseMember = familyGroupMember.Group.Members.Where( a => !a.PersonId.Equals( person.Id ) && a.GroupRole.Guid.Equals( adultGuid ) ).FirstOrDefault();
-                            if ( spouseMember != null )
+                            if ( !familyGroupMember.Person.Gender.Equals( spouseMember.Person.Gender ) )
                             {
-                                if ( !familyGroupMember.Person.Gender.Equals( spouseMember.Person.Gender ) )
-                                {
-                                    personInfo += "<p><strong>Spouse:</strong> " + spouseMember.Person.FullName + "</p>";
-                                }
+                                personInfo += "<p><strong>Spouse:</strong> " + spouseMember.Person.FullName + "</p>";
+                                personSearchResult.SpouseName = spouseMember.Person.FullName;
                             }
                         }
                     }
-                    else
+                }
+                else
+                {
+                    if ( person.Age != null )
                     {
-                        if ( person.Age != null )
-                        {
-                            personInfo += person.Age.ToString() + " yrs old";
-                        }
+                        personInfo += person.Age.ToString() + " yrs old";
                     }
+                }
 
-                    if ( familyGroupMember != null )
+                if ( familyGroupMember != null )
+                {
+                    var groupLocation = familyGroupMember.Group.GroupLocations.FirstOrDefault();
+                    if ( groupLocation != null )
                     {
-                        var groupLocation = familyGroupMember.Group.GroupLocations.FirstOrDefault();
-                        if ( groupLocation != null )
+                        var location = groupLocation.Location;
+                        if ( location != null )
                         {
-                            var location = groupLocation.Location;
-                            if ( location != null )
+                            string streetInfo;
+                            if ( !string.IsNullOrWhiteSpace( location.Street1 ) )
                             {
-                                string streetInfo;
-                                if ( !string.IsNullOrWhiteSpace( location.Street1 ) )
-                                {
-                                    streetInfo = location.Street1 + " " + location.Street2;
-                                }
-                                else
-                                {
-                                    streetInfo = location.Street2;
-                                }
-
-                                string addressHtml = string.Format( "<h5>Address</h5>{0} <br />{1}, {2}, {3}", streetInfo, location.City, location.State, location.Zip );
-                                personInfo += addressHtml;
+                                streetInfo = location.Street1 + " " + location.Street2;
                             }
+                            else
+                            {
+                                streetInfo = location.Street2;
+                            }
+
+                            string addressHtml = string.Format( "<h5>Address</h5>{0} <br />{1}, {2}, {3}", streetInfo, location.City, location.State, location.Zip );
+                            personSearchResult.Address = location.ToString();
+                            personInfo += addressHtml;
                         }
                     }
 
-                    personSearchResult.PickerItemDetailsHtml = string.Format( itemDetailFormat, imageHtml, personInfo );
+                    if ( includeHtml )
+                    {
+                        personSearchResult.PickerItemDetailsHtml = string.Format( itemDetailFormat, imageHtml, personInfo );
+                    }
                 }
 
                 searchResult.Add( personSearchResult );
@@ -373,6 +376,30 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <value>The member status.</value>
         public string RecordStatus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the email.
+        /// </summary>
+        /// <value>
+        /// The email.
+        /// </value>
+        public string Email { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the spouse.
+        /// </summary>
+        /// <value>
+        /// The name of the spouse.
+        /// </value>
+        public string SpouseName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the address.
+        /// </summary>
+        /// <value>
+        /// The address.
+        /// </value>
+        public string Address { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is active.

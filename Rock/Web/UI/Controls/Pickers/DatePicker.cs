@@ -41,8 +41,55 @@ namespace Rock.Web.UI.Controls
                 this.PropertyName = "SelectedDate";
             }
 
-            var script = string.Format( @"Rock.controls.datePicker.initialize({{ id: '{0}' }});", this.ClientID );
+            
+        }
+
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
+        {
+            RegisterJavascript();
+            base.RenderControl( writer );
+        }
+
+        /// <summary>
+        /// Registers the javascript.
+        /// </summary>
+        private void RegisterJavascript()
+        {
+            var script = string.Format( @"Rock.controls.datePicker.initialize({{ id: '{0}', startView: {1} }});", this.ClientID, this.StartView.ConvertToInt() );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "date_picker-" + this.ClientID, script, true );
+        }
+
+        /// <summary>
+        /// Gets or sets the start view.
+        /// </summary>
+        /// <value>
+        /// The start view.
+        /// </value>
+        public StartViewOption StartView
+        {
+            get
+            {
+                return ViewState["StartView"] as StartViewOption? ?? StartViewOption.month;
+            }
+
+            set
+            {
+                ViewState["StartView"] = value;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum StartViewOption
+        {
+            month = 0,
+            year = 1,
+            decade = 2
         }
 
         /// <summary>

@@ -172,13 +172,10 @@ namespace Rock.Web.UI.Controls
         #endregion
 
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// Registers the java script.
         /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
+        private void RegisterJavaScript()
         {
-            base.OnInit( e );
-
             // a little javascript to make the daterange picker behave similar to the bootstrap-datepicker demo site's date range picker
             var scriptFormat = @"
 $('#{0}').datepicker().on('changeDate', function (ev) {{
@@ -204,8 +201,6 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
 }});
 
 ";
-
-            EnsureChildControls();
             var script = string.Format( scriptFormat, _tbLowerValue.ClientID, _tbUpperValue.ClientID );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "daterange_picker-" + this.ClientID, script, true );
         }
@@ -250,6 +245,8 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            RegisterJavaScript();
+
             writer.AddAttribute( "class", "form-control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 

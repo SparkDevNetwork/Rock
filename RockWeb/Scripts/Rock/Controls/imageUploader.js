@@ -62,9 +62,14 @@
                     }
 
                     if (options.setImageUrlOnUpload) {
-                        $el.attr('src', getImageUrl);
+                        if ($el.is('img')) {
+                            $el.attr('src', getImageUrl);
+                        }
+                        else {
+                            $el.attr('style', 'background-image:url(' + getImageUrl + ' &width=150);background-size:cover;background-position:50%');
+                        }
                     }
-                    
+
                     $('#' + options.aRemove).show();
                     if (options.postbackScript) {
                         eval(options.postbackScript);
@@ -96,8 +101,12 @@
                 var $el = $('#' + options.imgThumbnail);
                 $('#' + options.hfFileId).val('0');
                 var noPictureUrl = options.noPictureUrl || Rock.settings.get('baseUrl') + 'Assets/Images/no-picture.svg';
-                $el.attr('src', noPictureUrl);
-                //$('.imageupload-thumbnail img').css('width', "49px"); // hack for chrome 9/30/2013
+                if ($el.is('img')) {
+                    $el.attr('src', noPictureUrl);
+                }
+                else {
+                    $el.attr('style', 'background-image:url(' + noPictureUrl + ');background-size:cover;background-position:50%');
+                }
                 return false;
             });
         },
