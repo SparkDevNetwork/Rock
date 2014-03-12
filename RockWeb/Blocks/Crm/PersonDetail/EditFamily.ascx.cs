@@ -478,16 +478,25 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( homeLocType != null && prevLocType != null )
             {
+                bool setLocation = false;
+
                 foreach ( var familyAddress in FamilyAddresses )
                 {
                     if ( familyAddress.LocationTypeId == homeLocType.Id )
                     {
+                        if (familyAddress.IsLocation)
+                        {
+                            familyAddress.IsLocation = false;
+                            setLocation = true;
+                        }
+                        familyAddress.IsMailing = false;
                         familyAddress.LocationTypeId = prevLocType.Id;
                         familyAddress.LocationTypeName = prevLocType.Name;
                     }
                 }
 
-                FamilyAddresses.Add( new FamilyAddress { LocationTypeId = homeLocType.Id, LocationTypeName = homeLocType.Name, LocationIsDirty = true, State = DefaultState } );
+                FamilyAddresses.Add( new FamilyAddress { 
+                    LocationTypeId = homeLocType.Id, LocationTypeName = homeLocType.Name, LocationIsDirty = true, State = DefaultState, IsMailing = true, IsLocation = setLocation } );
 
                 gLocations.EditIndex = FamilyAddresses.Count - 1;
 
