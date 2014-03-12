@@ -104,7 +104,7 @@
 				        <Rock:Zone Name="Footer" runat="server" />
 			        </div>
                     <div class="col-md-4">
-				        <p><i class="fa fa-star"></i> Rock Beta - <a href="https://github.com/SparkDevNetwork/Rock/issues?state=open" target="_blank">Submit Issues</a> <i class="fa fa-star"></i></p>
+				        <p><i class="fa fa-star"></i> Rock Beta - <a href="https://github.com/SparkDevNetwork/Rock/issues?state=open" target="_blank">Submit Issues</a> / <a href="http://www.rockrms.com/Rock/Ask/Using" target="_blank">Ask Questions</a> <i class="fa fa-star"></i></p>
 			        </div>
 		        </div>
 		    </div>
