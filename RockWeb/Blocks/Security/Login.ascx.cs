@@ -137,9 +137,7 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
                 if ( userLogin != null && userLogin.EntityType != null)
                 {
                     var component = AuthenticationContainer.GetComponent(userLogin.EntityType.Name);
-                    if (component.IsActive && 
-                        component.ServiceType == AuthenticationServiceType.Internal &&
-                        !component.RequiresRemoteAuthentication)
+                    if (component.IsActive && !component.RequiresRemoteAuthentication)
                     {
                         if ( component.Authenticate( userLogin, tbPassword.Text ) )
                         {

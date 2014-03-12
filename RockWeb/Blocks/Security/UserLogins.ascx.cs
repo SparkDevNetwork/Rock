@@ -105,6 +105,7 @@ namespace RockWeb.Blocks.Security
                 if ( _canEdit && !string.IsNullOrWhiteSpace( hfIdValue.Value ) )
                 {
                     nbErrorMessage.Visible = false;
+                    SetPasswordState();
                     mdDetails.Show();
                 }
             } 
