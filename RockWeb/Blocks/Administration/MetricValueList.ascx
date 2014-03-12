@@ -10,6 +10,7 @@
                 <legend>
                     <asp:Literal ID="lMetric" runat="server">Metric Values</asp:Literal>
                 </legend>
+                <Rock:ModalAlert ID="mdGridWarning" runat="server" />
                 <Rock:Grid ID="gMetricValues" runat="server" AllowSorting="true" EmptyDataText="No Metric Values Found" OnRowSelected="gMetricValues_Edit">
                     <Columns>
                         <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />

@@ -10,6 +10,7 @@
             <Rock:GridFilter ID="gfFilter" runat="server">
                 <Rock:RockDropDownList ID="ddlCategoryFilter" runat="server" Label="Category" />
             </Rock:GridFilter>
+            <Rock:ModalAlert ID="mdGridWarning" runat="server" />
             <Rock:Grid ID="gMetrics" runat="server" AllowSorting="true" EmptyDataText="No Metrics Found" RowItemText="Metric" OnRowSelected="gMetrics_Edit">
                 <Columns>
                     <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />

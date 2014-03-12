@@ -21,9 +21,9 @@ using System.Globalization;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -123,14 +123,23 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gMetricValues_Delete( object sender, RowEventArgs e )
         {
-            var metricValueService = new MetricValueService();
-
-            MetricValue metricValue = metricValueService.Get( (int)e.RowKeyValue );
-            if ( metricValue != null )
+            RockTransactionScope.WrapTransaction( () =>
             {
-                metricValueService.Delete( metricValue, CurrentPersonAlias );
-                metricValueService.Save( metricValue, CurrentPersonAlias );
-            }
+                MetricValueService service = new MetricValueService();
+                MetricValue item = service.Get( (int)e.RowKeyValue );
+                if ( item != null )
+                {
+                    string errorMessage;
+                    if ( !service.CanDelete( item, out errorMessage ) )
+                    {
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
+
+                    service.Delete( item, CurrentPersonAlias );
+                    service.Save( item, CurrentPersonAlias );
+                }
+            } );
 
             BindGrid();
         }
