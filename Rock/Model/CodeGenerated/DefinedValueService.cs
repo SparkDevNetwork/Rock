@@ -119,8 +119,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialTransactionRefund.FriendlyTypeName );
                 return false;
             }  
-            
-            // ignoring GroupLocation,GroupLocationTypeValueId 
+ 
+            if ( new Service<GroupLocation>().Queryable().Any( a => a.GroupLocationTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, GroupLocation.FriendlyTypeName );
+                return false;
+            }  
  
             if ( new Service<GroupType>().Queryable().Any( a => a.GroupTypePurposeValueId == item.Id ) )
             {

@@ -139,18 +139,28 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDefinedValues_Delete( object sender, RowEventArgs e )
         {
-            var valueService = new DefinedValueService();
-
-            DefinedValue value = valueService.Get( (int)e.RowKeyValue );
-
-            DefinedTypeCache.Flush( value.DefinedTypeId );
-            DefinedValueCache.Flush( value.Id );
-
-            if ( value != null )
+            RockTransactionScope.WrapTransaction( () =>
             {
-                valueService.Delete( value, CurrentPersonAlias );
-                valueService.Save( value, CurrentPersonAlias );
-            }
+                var definedValueService = new DefinedValueService();
+
+                DefinedValue value = definedValueService.Get( (int)e.RowKeyValue );
+
+                if ( value != null )
+                {
+                    string errorMessage;
+                    if ( !definedValueService.CanDelete( value, out errorMessage ) )
+                    {
+                        mdGridWarningValues.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
+
+                    definedValueService.Delete( value, CurrentPersonAlias );
+                    definedValueService.Save( value, CurrentPersonAlias );
+
+                    DefinedTypeCache.Flush( value.DefinedTypeId );
+                    DefinedValueCache.Flush( value.Id );
+                }
+            } );
 
             BindDefinedValuesGrid();
         }
