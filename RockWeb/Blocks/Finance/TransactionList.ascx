@@ -19,6 +19,7 @@
             <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" />
         </Rock:GridFilter>
 
+        <Rock:ModalAlert ID="mdGridWarning" runat="server" />
         <Rock:Grid ID="gTransactions" runat="server" EmptyDataText="No Transactions Found" OnRowSelected="gTransactions_Edit" AllowSorting="true" ToolTip="Description">
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />

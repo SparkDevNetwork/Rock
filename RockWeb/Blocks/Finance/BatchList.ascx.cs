@@ -26,6 +26,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Web.Cache;
 using System.Collections.Generic;
+using Rock.Data;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -133,14 +134,23 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gBatchList_Delete( object sender, RowEventArgs e )
         {
-            var financialBatchService = new Rock.Model.FinancialBatchService();
-
-            Rock.Model.FinancialBatch financialBatch = financialBatchService.Get( (int)gBatchList.DataKeys[e.RowIndex]["id"] );
-            if ( financialBatch != null )
+            RockTransactionScope.WrapTransaction( () =>
             {
-                financialBatchService.Delete( financialBatch, CurrentPersonAlias );
-                financialBatchService.Save( financialBatch, CurrentPersonAlias );
-            }
+                FinancialBatchService financialBatchService = new FinancialBatchService();
+                FinancialBatch financialBatch = financialBatchService.Get( e.RowKeyId );
+                if ( financialBatch != null )
+                {
+                    string errorMessage;
+                    if ( !financialBatchService.CanDelete( financialBatch, out errorMessage ) )
+                    {
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
+
+                    financialBatchService.Delete( financialBatch, CurrentPersonAlias );
+                    financialBatchService.Save( financialBatch, CurrentPersonAlias );
+                }
+            } );
 
             BindGrid();
         }

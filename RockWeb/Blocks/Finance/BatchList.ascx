@@ -14,6 +14,7 @@
                 <Rock:CampusPicker ID="campCampus" runat="server" />
             </Rock:GridFilter>
 
+            <Rock:ModalAlert ID="mdGridWarning" runat="server" />
             <Rock:Grid ID="gBatchList" runat="server" OnRowDataBound="gBatchList_RowDataBound" ShowConfirmDeleteDialog="true" OnRowSelected="gBatchList_Edit">
                 <Columns>
                     <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
