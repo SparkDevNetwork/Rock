@@ -41,9 +41,25 @@ namespace Rock.Web.UI.Controls
                 this.SourceTypeName = "Rock.Web.UI.Controls.TimePicker, Rock";
                 this.PropertyName = "SelectedTime";
             }
+        }
 
+        /// <summary>
+        /// Registers the javascript.
+        /// </summary>
+        private void RegisterJavascript()
+        {
             var script = string.Format( @"Rock.controls.timePicker.initialize({{ id: '{0}' }});", this.ClientID );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "time_picker-" + this.ClientID, script, true );
+        }
+
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
+        {
+            RegisterJavascript();
+            base.RenderControl( writer );
         }
 
         /// <summary>
