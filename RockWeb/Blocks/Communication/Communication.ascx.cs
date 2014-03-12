@@ -1005,7 +1005,15 @@ namespace RockWeb.Blocks.Communication
                 communication.ChannelData.Remove( "Subject" );
             }
 
-            communication.FutureSendDateTime = dtpFutureSend.SelectedDateTime;
+            DateTime? futureSendDate = dtpFutureSend.SelectedDateTime;
+            if ( futureSendDate.HasValue && futureSendDate.Value.CompareTo( RockDateTime.Now ) > 0 )
+            {
+                communication.FutureSendDateTime = futureSendDate;
+            }
+            else
+            {
+                communication.FutureSendDateTime = null;
+            }
 
             return communication;
         }
