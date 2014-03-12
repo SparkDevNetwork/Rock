@@ -1258,7 +1258,7 @@ namespace Rock.Web.UI
                         if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
                         {
                             keyModel.Entity = new PersonService()
-                                .Queryable( "MaritalStatusValue,ConnectionStatusValue,RecordStatusValue,RecordStatusReasonValue,RecordTypevalue,SuffixValue,TitleValue,GivingGroup,Photo" )
+                                .Queryable( "MaritalStatusValue,ConnectionStatusValue,RecordStatusValue,RecordStatusReasonValue,RecordTypevalue,SuffixValue,TitleValue,GivingGroup,Photo,Aliases" )
                                 .Where( p => p.Id == keyModel.Id ).FirstOrDefault();
                         }
                         else
