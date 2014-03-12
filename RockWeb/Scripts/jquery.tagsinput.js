@@ -18,7 +18,7 @@
         + Added ability to disable delete
         + Added autocomplete appendTo option
         + Added autocomplete messages option
-        + added placeholder markup to inputs to that 'add tag' remains after clicking and exiting the field
+        + added placeholder markup to inputs so that 'add tag' remains after clicking and exiting the field
 */
 
 (function($) {
