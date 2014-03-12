@@ -125,8 +125,15 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbCancelFinancialBatch_Click( object sender, EventArgs e )
         {
-            var savedFinancialBatch = new FinancialBatchService().Get( hfBatchId.ValueAsInt() );
-            ShowSummary( savedFinancialBatch );
+            if ( hfBatchId.ValueAsInt() != 0 )
+            {
+                var savedFinancialBatch = new FinancialBatchService().Get( hfBatchId.ValueAsInt() );
+                ShowSummary( savedFinancialBatch );
+            }
+            else
+            {
+                NavigateToParentPage();
+            }
         }
 
         /// <summary>

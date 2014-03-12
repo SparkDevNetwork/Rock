@@ -176,6 +176,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets the query.
         /// </summary>
+        /// <param name="sortProperty">The sort property.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         public IQueryable<IEntity> GetQuery( SortProperty sortProperty, out List<string> errorMessages )

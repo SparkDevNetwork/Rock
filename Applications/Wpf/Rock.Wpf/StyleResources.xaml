@@ -133,7 +133,24 @@
             Value="#e7ecf0" 
             />
     </Style>
-    
+
+    <Style x:Key="gridPanelBorderColumn"
+           TargetType="{x:Type ColumnDefinition}">
+        <Setter 
+            Property="Width"
+            Value="44" 
+            />
+    </Style>
+
+    <Style x:Key="gridPanelBorderRow"
+           TargetType="{x:Type RowDefinition}">
+        <Setter 
+            Property="Height"
+            Value="44" 
+            />
+    </Style>
+
+
     <!--  Logo style: bottom right -->
     <Style x:Key="logoStyleBottomRight"
            TargetType="{x:Type Frame}">

@@ -11,14 +11,14 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*" />
-            <ColumnDefinition Width="8*"/>
-            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Style="{StaticResource gridPanelBorderColumn}" />
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Style="{StaticResource gridPanelBorderColumn}"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="44"/>
+            <RowDefinition Style="{StaticResource gridPanelBorderRow}"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="44" />
+            <RowDefinition Style="{StaticResource gridPanelBorderRow}"/>
         </Grid.RowDefinitions>
 
         <Grid Grid.Column="1" Grid.Row="1" Style="{StaticResource gridPanel}">

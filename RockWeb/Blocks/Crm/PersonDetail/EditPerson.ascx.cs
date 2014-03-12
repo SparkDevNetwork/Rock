@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -35,6 +36,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Description( "Allows you to edit a person." )]
     public partial class EditPerson : Rock.Web.UI.PersonBlock
     {
+        DateTime _gradeTransitionDate = new DateTime( RockDateTime.Today.Year, 6, 1 );
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -60,6 +63,55 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     ddlGivingGroup.Items.Add( new ListItem( family.Name, family.Id.ToString() ) );
                 }
             }
+
+            DateTime? gradeTransitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime();
+            if (gradeTransitionDate.HasValue)
+            {
+                _gradeTransitionDate = gradeTransitionDate.Value;
+            }
+
+            ddlGrade.Items.Clear();
+            ddlGrade.Items.Add( new ListItem( "", "" ) );
+            ddlGrade.Items.Add( new ListItem( "K", "0" ) );
+            ddlGrade.Items.Add( new ListItem( "1st", "1" ) );
+            ddlGrade.Items.Add( new ListItem( "2nd", "2" ) );
+            ddlGrade.Items.Add( new ListItem( "3rd", "3" ) );
+            ddlGrade.Items.Add( new ListItem( "4th", "4" ) );
+            ddlGrade.Items.Add( new ListItem( "5th", "5" ) );
+            ddlGrade.Items.Add( new ListItem( "6th", "6" ) );
+            ddlGrade.Items.Add( new ListItem( "7th", "7" ) );
+            ddlGrade.Items.Add( new ListItem( "8th", "8" ) );
+            ddlGrade.Items.Add( new ListItem( "9th", "9" ) );
+            ddlGrade.Items.Add( new ListItem( "10th", "10" ) );
+            ddlGrade.Items.Add( new ListItem( "11th", "11" ) );
+            ddlGrade.Items.Add( new ListItem( "12th", "12" ) );
+
+            int gradeFactorReactor = ( RockDateTime.Now < _gradeTransitionDate ) ? 12 : 13;
+
+            string script = string.Format( @"
+    $('#{0}').change(function(){{
+        if ($(this).val() != '') {{
+            $('#{1}').val( {2} + ( {3} - parseInt( $(this).val() ) ) );
+    
+        }}
+    }});
+
+    $('#{1}').change(function(){{
+        if ($(this).val() == '') {{
+            $('#{0}').val('');
+        }} else {{
+            var grade = {3} - ( parseInt( $(this).val() ) - {4} );
+            if (grade >= 0 && grade <= 12) {{
+                $('#{0}').val(grade.toString());
+            }} else {{
+                $('#{0}').val('');
+            }}
+        }}
+    }});
+
+", ddlGrade.ClientID, ypGraduation.ClientID, _gradeTransitionDate.Year, gradeFactorReactor, RockDateTime.Now.Year );
+            ScriptManager.RegisterStartupScript( ddlGrade, ddlGrade.GetType(), "grade-selection-" + BlockId.ToString(), script, true );
+
         }
 
         /// <summary>
@@ -173,6 +225,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     History.EvaluateChange( changes, "Birth Month", birthMonth, person.BirthMonth );
                     History.EvaluateChange( changes, "Birth Day", birthDay, person.BirthDay );
                     History.EvaluateChange( changes, "Birth Year", birthYear, person.BirthYear );
+
+                    DateTime? graduationDate = null;
+                    if (ypGraduation.SelectedYear.HasValue)
+                    {
+                        graduationDate = new DateTime( ypGraduation.SelectedYear.Value, _gradeTransitionDate.Month, _gradeTransitionDate.Day );
+                    }
+                    History.EvaluateChange( changes, "Anniversary Date", person.GraduationDate, graduationDate );
+                    person.GraduationDate = graduationDate;
 
                     History.EvaluateChange( changes, "Anniversary Date", person.AnniversaryDate, dpAnniversaryDate.SelectedDate );
                     person.AnniversaryDate = dpAnniversaryDate.SelectedDate;
@@ -324,6 +384,24 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             tbLastName.Text = Person.LastName;
             ddlSuffix.SelectedValue = Person.SuffixValueId.HasValue ? Person.SuffixValueId.Value.ToString() : string.Empty;
             bpBirthDay.SelectedDate = Person.BirthDate;
+
+            string selectedGrade = "";
+            if ( Person.GraduationDate.HasValue )
+            {
+                int gradeMaxFactorReactor = ( RockDateTime.Now < _gradeTransitionDate ) ? 12 : 13;
+                int grade = gradeMaxFactorReactor - ( Person.GraduationDate.Value.Year - RockDateTime.Now.Year );
+                if (grade >= 0 && grade <= 12)
+                {
+                    selectedGrade = grade.ToString();
+                }
+                ypGraduation.SelectedYear = Person.GraduationDate.Value.Year;
+            }
+            else
+            {
+                ypGraduation.SelectedYear = null;
+            }
+            ddlGrade.SelectedValue = selectedGrade;
+
             dpAnniversaryDate.SelectedDate = Person.AnniversaryDate;
             rblGender.SelectedValue = Person.Gender.ConvertToString();
             rblMaritalStatus.SelectedValue = Person.MaritalStatusValueId.HasValue ? Person.MaritalStatusValueId.Value.ToString() : string.Empty;

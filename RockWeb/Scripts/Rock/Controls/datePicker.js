@@ -13,7 +13,8 @@
                 // uses https://github.com/ianserlin/bootstrap-datepicker/tree/3.x
                 $('#' + options.id).datepicker({
                     autoclose: true,
-                    todayBtn: true
+                    todayBtn: true,
+                    startView: options.startView || 'month'
                 });
 
             }

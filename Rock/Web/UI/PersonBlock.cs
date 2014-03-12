@@ -67,13 +67,13 @@ namespace Rock.Web.UI
             if ( !Page.IsPostBack && 
                 Context.Items["PersonViewed"] == null &&
                 Person != null && 
-                CurrentPerson != null && 
-                Person.Id != CurrentPerson.Id )
+                CurrentPersonAlias != null && 
+                Person.PrimaryAlias.Id != CurrentPersonAlias.Id )
             {
                 var transaction = new PersonViewTransaction();
                 transaction.DateTimeViewed = RockDateTime.Now;
-                transaction.TargetPersonId = Person.Id;
-                transaction.ViewerPersonId = CurrentPerson.Id;
+                transaction.TargetPersonAliasId = Person.PrimaryAlias.Id;
+                transaction.ViewerPersonAliasId = CurrentPersonAlias.Id;
                 transaction.Source = RockPage.PageTitle;
                 transaction.IPAddress = Request.UserHostAddress;
                 RockQueue.TransactionQueue.Enqueue( transaction );

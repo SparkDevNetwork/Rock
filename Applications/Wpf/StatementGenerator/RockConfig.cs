@@ -15,26 +15,37 @@
 // </copyright>
 //
 using System;
+using System.Configuration;
 using System.IO;
-using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Text;
-using System.Xml.Serialization;
 
 namespace Rock.Apps.StatementGenerator
 {
     /// <summary>
     /// 
     /// </summary>
-    [Serializable]
-    [DataContract]
-    public class RockConfig
+    internal sealed partial class RockConfig : ApplicationSettingsBase
     {
         /// <summary>
-        /// The file name
+        /// The default instance
         /// </summary>
-        private static string fileName = "rockConfig.xml";
+        private static RockConfig defaultInstance = ( (RockConfig)( ApplicationSettingsBase.Synchronized( new RockConfig() ) ) );
 
+        /// <summary>
+        /// Gets the default.
+        /// </summary>
+        /// <value>
+        /// The default.
+        /// </value>
+        public static RockConfig Default
+        {
+            get
+            {
+                return defaultInstance;
+            }
+        }        
+        
         /// <summary>
         /// The default logo file
         /// </summary>
@@ -46,9 +57,20 @@ namespace Rock.Apps.StatementGenerator
         /// <value>
         /// The rock base URL.
         /// </value>
-        [XmlElement]
-        [DataMember]
-        public string RockBaseUrl { get; set; }
+        [DefaultSettingValueAttribute("")]
+        [UserScopedSetting]
+        public string RockBaseUrl 
+        {
+            get
+            {
+                return this["RockBaseUrl"] as string;
+            }
+
+            set
+            {
+                this["RockBaseUrl"] = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the username.
@@ -56,9 +78,20 @@ namespace Rock.Apps.StatementGenerator
         /// <value>
         /// The username.
         /// </value>
-        [XmlElement]
-        [DataMember]
-        public string Username { get; set; }
+        [DefaultSettingValueAttribute( "" )]
+        [UserScopedSetting]
+        public string Username
+        {
+            get
+            {
+                return this["Username"] as string;
+            }
+
+            set
+            {
+                this["Username"] = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the password.
@@ -66,9 +99,34 @@ namespace Rock.Apps.StatementGenerator
         /// <value>
         /// The password.
         /// </value>
-        [XmlElement]
-        [DataMember]
-        private byte[] PasswordEncrypted { get; set; }
+        [DefaultSettingValueAttribute( "" )]
+        [UserScopedSetting]
+        public string PasswordEncryptedBase64
+        {
+            get
+            {
+                return this["PasswordEncryptedBase64"] as string;
+                
+            }
+
+            set
+            {
+                this["PasswordEncryptedBase64"] = value;
+            }
+        }
+
+        private byte[] PasswordEncrypted
+        {
+            get
+            {
+                return Convert.FromBase64String( PasswordEncryptedBase64 );
+            }
+
+            set
+            {
+                PasswordEncryptedBase64 = Convert.ToBase64String( value );
+            }
+        }
 
         /// <summary>
         /// Gets or sets the password.
@@ -111,9 +169,20 @@ namespace Rock.Apps.StatementGenerator
         /// <value>
         /// The layout file.
         /// </value>
-        [XmlElement]
-        [DataMember]
-        public string LayoutFile { get; set; }
+        [DefaultSettingValueAttribute( "" )]
+        [UserScopedSetting]
+        public string LayoutFile
+        {
+            get
+            {
+                return this["LayoutFile"] as string;
+            }
+
+            set
+            {
+                this["LayoutFile"] = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the logo file.
@@ -121,12 +190,11 @@ namespace Rock.Apps.StatementGenerator
         /// <value>
         /// The logo file.
         /// </value>
-        [XmlElement]
-        [DataMember]
-        public string LogoFile {
+        public string LogoFile
+        {
             get
             {
-                string result = (_logoFile ?? string.Empty).Trim();
+                string result = ( _logoFile ?? string.Empty ).Trim();
                 if ( !string.IsNullOrWhiteSpace( result ) )
                 {
                     if ( File.Exists( result ) )
@@ -143,63 +211,10 @@ namespace Rock.Apps.StatementGenerator
             }
         }
         private string _logoFile;
-        
 
-        /// <summary>
-        /// Saves this instance.
-        /// </summary>
-        public void Save()
-        {
-            DataContractSerializer s = new DataContractSerializer( this.GetType() );
-            FileStream fs = new FileStream( fileName, FileMode.Create );
-            s.WriteObject( fs, this );
-            fs.Close();
-
-            _rockConfig = null;
-        }
-
-        /// <summary>
-        /// Gets or sets the _rock config.
-        /// </summary>
-        /// <value>
-        /// The _rock config.
-        /// </value>
-        private static RockConfig _rockConfig { get; set; }
-
-        /// <summary>
-        /// Loads this instance.
-        /// </summary>
-        /// <returns></returns>
         public static RockConfig Load()
         {
-            try
-            {
-                if ( _rockConfig != null )
-                {
-                    return _rockConfig;
-                }
-
-                if ( File.Exists( fileName ) )
-                {
-                    FileStream fs = new FileStream( fileName, FileMode.OpenOrCreate );
-                    try
-                    {
-                        DataContractSerializer s = new DataContractSerializer( typeof( RockConfig ) );
-                        _rockConfig = s.ReadObject( fs ) as RockConfig;
-                        return _rockConfig;
-                    }
-                    finally
-                    {
-                        fs.Close();
-                    }
-                }
-
-                return new RockConfig();
-            }
-            catch
-            {
-                return new RockConfig();
-            }
+            return RockConfig.Default;
         }
     }
 }
