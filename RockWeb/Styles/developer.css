@@ -165,7 +165,7 @@ span.data-view-filter-label {
 
 
 /* MP - ImageEditor using div background image instead of img*/
-.image-editor-photo .person-image
+.image-editor-photo .image-container
 {
     width: 150px;
     height: 150px;
