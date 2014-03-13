@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,28 +14,30 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-
-namespace Rock.SystemGuid
+namespace Rock.Migrations
 {
+    using System;
+    using System.Data.Entity.Migrations;
+    
     /// <summary>
-    /// System Pages.  NOTE: Some of these are referenced in Migrations to avoid string-typos.
+    ///
     /// </summary>
-    public static class Page
+    public partial class CkEditorBrowserPageSecurity : Rock.Migrations.RockMigration
     {
         /// <summary>
-        /// Gets the Plugin Settings guid
+        /// Operations to be performed during the upgrade process.
         /// </summary>
-        public const string PLUGIN_SETTINGS= "1AFDA740-8119-45B8-AF4D-58856D469BE5";
-
+        public override void Up()
+        {
+            AddSecurityAuthForPage( Rock.SystemGuid.Page.CKEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME, "View", null, Model.SpecialRole.AllAuthenticatedUsers, "08138684-F4DC-4848-A8D5-342EED87FD85" );
+        }
+        
         /// <summary>
-        /// Gets the Plugin Manager guid
+        /// Operations to be performed during the downgrade process.
         /// </summary>
-        public const string PLUGIN_MANAGER= "B13FCF9A-FAE5-4E53-AF7C-32DF9CA5AAE3";
-
-        /// <summary>
-        /// The ckeditor rockfilebrowser plugin frame
-        /// </summary>
-        public const string CKEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME = "4A4995CA-24F6-4D33-B861-A24274F53AA6";
+        public override void Down()
+        {
+            DeleteSecurityAuth( "08138684-F4DC-4848-A8D5-342EED87FD85" );
+        }
     }
 }

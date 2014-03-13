@@ -269,7 +269,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 var result = ViewState["DocumentFolderRoot"] as string;
-                if (string.IsNullOrWhiteSpace(result))
+                if ( string.IsNullOrWhiteSpace( result ) )
                 {
                     result = "~/Content";
                 }
@@ -501,7 +501,19 @@ CKEDITOR.replace('{0}', {{
                 enabledPlugins.Add( "rockmergefield" );
             }
 
-            enabledPlugins.Add( "rockfilebrowser" );
+            // only show the File/Image plugin if they have Auth to the file browser page
+            var fileBrowserPage = new Rock.Model.PageService().Get( Rock.SystemGuid.Page.CKEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME.AsGuid() );
+            if ( fileBrowserPage != null )
+            {
+                var currentPerson = this.RockBlock().CurrentPerson;
+                if ( currentPerson != null )
+                {
+                    if ( fileBrowserPage.IsAuthorized( "View", currentPerson ) )
+                    {
+                        enabledPlugins.Add( "rockfilebrowser" );
+                    }
+                }
+            }
 
             var globalAttributesCache = GlobalAttributesCache.Read();
 
@@ -510,10 +522,14 @@ CKEDITOR.replace('{0}', {{
 
             string documentFolderRoot = this.DocumentFolderRoot;
             string imageFolderRoot = this.ImageFolderRoot;
-            if (this.UserSpecificRoot)
+            if ( this.UserSpecificRoot )
             {
-                documentFolderRoot = System.Web.VirtualPathUtility.Combine( documentFolderRoot.EnsureTrailingBackslash(), this.RockBlock().CurrentUser.UserName.ToString() );
-                imageFolderRoot = System.Web.VirtualPathUtility.Combine( imageFolderRoot.EnsureTrailingBackslash(), this.RockBlock().CurrentUser.UserName.ToString() );
+                var currentUser = this.RockBlock().CurrentUser;
+                if ( currentUser != null )
+                {
+                    documentFolderRoot = System.Web.VirtualPathUtility.Combine( documentFolderRoot.EnsureTrailingBackslash(), currentUser.UserName.ToString() );
+                    imageFolderRoot = System.Web.VirtualPathUtility.Combine( imageFolderRoot.EnsureTrailingBackslash(), currentUser.UserName.ToString() );
+                }
             }
 
             string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(),

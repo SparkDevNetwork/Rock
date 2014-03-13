@@ -744,6 +744,10 @@
     <Compile Include="Migrations\201403131239078_FixPersonMerge.Designer.cs">
       <DependentUpon>201403131239078_FixPersonMerge.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201403131633146_CkEditorBrowserPageSecurity.cs" />
+    <Compile Include="Migrations\201403131633146_CkEditorBrowserPageSecurity.Designer.cs">
+      <DependentUpon>201403131633146_CkEditorBrowserPageSecurity.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1282,6 +1286,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201403131239078_FixPersonMerge.resx">
       <DependentUpon>201403131239078_FixPersonMerge.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403131633146_CkEditorBrowserPageSecurity.resx">
+      <DependentUpon>201403131633146_CkEditorBrowserPageSecurity.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
