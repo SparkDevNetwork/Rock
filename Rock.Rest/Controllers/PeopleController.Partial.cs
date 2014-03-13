@@ -16,14 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Web.Http;
-
-using Rock.Rest.Filters;
-using Rock.Search.Person;
 using Rock.Model;
+using Rock.Rest.Filters;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -143,14 +141,15 @@ namespace Rock.Rest.Controllers
                 personSearchResult.Name = reversed ? person.FullNameReversed : person.FullName;
                 personSearchResult.ImageHtmlTag = Person.GetPhotoImageTag( person.PhotoId, person.Gender, 50, 50 );
                 personSearchResult.Age = person.Age.HasValue ? person.Age.Value : -1;
-                personSearchResult.ConnectionStatus = person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Name : string.Empty;
+                personSearchResult.ConnectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Read( person.ConnectionStatusValueId.Value ).Name : string.Empty;
                 personSearchResult.Gender = person.Gender.ConvertToString();
                 personSearchResult.Email = person.Email;
 
-                if ( person.RecordStatusValue != null )
+                if ( person.RecordStatusValueId.HasValue )
                 {
-                    personSearchResult.RecordStatus = person.RecordStatusValue.Name;
-                    personSearchResult.IsActive = person.RecordStatusValue.Guid.Equals( activeRecord );
+                    var recordStatus = DefinedValueCache.Read( person.RecordStatusValueId.Value );
+                    personSearchResult.RecordStatus = recordStatus.Name;
+                    personSearchResult.IsActive = recordStatus.Guid.Equals( activeRecord );
                 }
                 else
                 {
@@ -166,13 +165,18 @@ namespace Rock.Rest.Controllers
 
                 string personInfo = string.Empty;
 
-                var groupMemberQry = groupMemberService.Queryable().Where( a => a.PersonId.Equals( person.Id ) );
-                List<GroupMember> personGroupMember = groupMemberQry.ToList();
-
-                Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
                 Guid adultGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
 
-                GroupMember familyGroupMember = personGroupMember.Where( a => a.Group.GroupType.Guid.Equals( familyGuid ) ).FirstOrDefault();
+                Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+                var familyGroupMember = groupMemberService.Queryable()
+                    .Where( a => a.PersonId == person.Id )
+                    .Where( a => a.Group.GroupType.Guid.Equals( familyGuid ) )
+                    .Select( s => new
+                    {
+                        s.GroupRole,
+                        GroupLocation = s.Group.GroupLocations.Select( a => a.Location ).FirstOrDefault()
+                    } ).FirstOrDefault();
+
                 if ( familyGroupMember != null )
                 {
                     personInfo += familyGroupMember.GroupRole.Name;
@@ -181,18 +185,13 @@ namespace Rock.Rest.Controllers
                         personInfo += " <em>(" + person.Age.ToString() + " yrs old)</em>";
                     }
 
-                    // Figure out spouse (Implied by "the other GROUPROLE_FAMILY_MEMBER_ADULT that is of the opposite gender")
                     if ( familyGroupMember.GroupRole.Guid.Equals( adultGuid ) )
                     {
-                        person.GetSpouse();
-                        GroupMember spouseMember = familyGroupMember.Group.Members.Where( a => !a.PersonId.Equals( person.Id ) && a.GroupRole.Guid.Equals( adultGuid ) ).FirstOrDefault();
-                        if ( spouseMember != null )
+                        var spouse = person.GetSpouse();
+                        if ( spouse != null )
                         {
-                            if ( !familyGroupMember.Person.Gender.Equals( spouseMember.Person.Gender ) )
-                            {
-                                personInfo += "<p><strong>Spouse:</strong> " + spouseMember.Person.FullName + "</p>";
-                                personSearchResult.SpouseName = spouseMember.Person.FullName;
-                            }
+                            personInfo += "<p><strong>Spouse:</strong> " + spouse.FullName + "</p>";
+                            personSearchResult.SpouseName = spouse.FullName;
                         }
                     }
                 }
@@ -206,26 +205,23 @@ namespace Rock.Rest.Controllers
 
                 if ( familyGroupMember != null )
                 {
-                    var groupLocation = familyGroupMember.Group.GroupLocations.FirstOrDefault();
-                    if ( groupLocation != null )
-                    {
-                        var location = groupLocation.Location;
-                        if ( location != null )
-                        {
-                            string streetInfo;
-                            if ( !string.IsNullOrWhiteSpace( location.Street1 ) )
-                            {
-                                streetInfo = location.Street1 + " " + location.Street2;
-                            }
-                            else
-                            {
-                                streetInfo = location.Street2;
-                            }
+                    var location = familyGroupMember.GroupLocation;
 
-                            string addressHtml = string.Format( "<h5>Address</h5>{0} <br />{1}, {2}, {3}", streetInfo, location.City, location.State, location.Zip );
-                            personSearchResult.Address = location.ToString();
-                            personInfo += addressHtml;
+                    if ( location != null )
+                    {
+                        string streetInfo;
+                        if ( !string.IsNullOrWhiteSpace( location.Street1 ) )
+                        {
+                            streetInfo = location.Street1 + " " + location.Street2;
                         }
+                        else
+                        {
+                            streetInfo = location.Street2;
+                        }
+
+                        string addressHtml = string.Format( "<h5>Address</h5>{0} <br />{1}, {2}, {3}", streetInfo, location.City, location.State, location.Zip );
+                        personSearchResult.Address = location.ToString();
+                        personInfo += addressHtml;
                     }
 
                     if ( includeHtml )
