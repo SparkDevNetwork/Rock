@@ -615,19 +615,21 @@ div.tagsinput
   -ms-user-select: none;
   user-select: none;
   min-width: 100px;
+
+    &.switch-mini {
+        min-width: 70px;
+    }
+
+    &.switch-small {
+        min-width: 80px;
+    }
+
+    &.switch-large {
+      min-width: 120px;
+    }
 }
 
-.switch.switch-mini {
-  min-width: 70px;
-}
 
-.switch.switch-small {
-  min-width: 80px;
-}
-
-.switch.switch-large {
-  min-width: 120px;
-}
 
 .switch.deactivate {
   filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=50);
