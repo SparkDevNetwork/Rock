@@ -83,18 +83,23 @@ namespace RockWeb.Blocks.Crm
             gValues.ShowActionRow = false;
             gValues.RowDataBound += gValues_RowDataBound;
 
-            string script = @"
-    $(""input[name$='PrimaryPerson']"").change( function (event) {
-        var rbId = $(this).attr('id');
-        var colId = rbId.substring(rbId.lastIndexOf('_')+1);
-        $(this).closest('table').find(""input[id$='cbSelect_"" + colId + ""']"").each(function(index) {
-            var textNode = this.nextSibling;
-            if ( !$(this).is(':last-child') || (textNode && textNode.nodeType == 3)) {
-                $(this).prop('checked', true);
-            }
-        });
-    });
-";
+            string script = string.Format( @"
+    $('div.merge-header-summary').click( function (event) {{
+        var $i = $(this).children('i');
+        if ($i.hasClass('fa-square-o')) {{
+            $i.removeClass('fa-square-o').addClass('fa-check-square-o');
+            $('div.merge-header-summary > i').not($i).removeClass('fa-check-square-o').addClass('fa-square-o');
+            var colId = $(this).attr('data-col');
+            $('#{0}').val(colId);
+            $(this).closest('table').find(""input[id$='cbSelect_"" + colId + ""']"").each(function(index) {{
+                var textNode = this.nextSibling;
+                if ( !$(this).is(':last-child') || (textNode && textNode.nodeType == 3)) {{
+                    $(this).prop('checked', true);
+                }}
+            }});
+        }}
+    }});
+", hfSelectedColumn.ClientID );
             ScriptManager.RegisterStartupScript( gValues, gValues.GetType(), "primary-person-click", script, true );
 
         }
@@ -129,20 +134,15 @@ namespace RockWeb.Blocks.Crm
             }
             else
             {
+                var primaryColIndex = hfSelectedColumn.Value.AsInteger( false );
+                
                 // Save the primary header radio button's selection
                 foreach ( var col in gValues.Columns.OfType<PersonMergeField>() )
                 {
                     col.OnDelete += personCol_OnDelete;
-
-                    var colIndex = gValues.Columns.IndexOf( col ).ToString();
-                    var rb = gValues.HeaderRow.FindControl( "rbSelectPrimary_" + colIndex ) as RadioButton;
-                    if ( rb != null )
+                    if (primaryColIndex.HasValue && primaryColIndex.Value == col.ColumnIndex)
                     {
-                        string value = Page.Request.Form[rb.UniqueID.Replace( rb.ID, rb.GroupName )];
-                        if ( value == rb.ClientID )
-                        {
-                            MergeData.PrimaryPersonId = col.PersonId;
-                        }
+                        MergeData.PrimaryPersonId = col.PersonId;
                     }
                 }
             }
@@ -568,6 +568,10 @@ namespace RockWeb.Blocks.Crm
                 foreach ( var col in gValues.Columns.OfType<PersonMergeField>() )
                 {
                     col.IsPrimaryPerson = col.PersonId == MergeData.PrimaryPersonId;
+                    if (col.IsPrimaryPerson)
+                    {
+                        hfSelectedColumn.Value = col.ColumnIndex.ToString();
+                    }
                 }
 
                 DataTable dt = MergeData.GetDataTable( headingKeys );

@@ -381,6 +381,7 @@ namespace Rock.Web.UI.Controls
             _ddlConnectionStatus.CssClass = "form-control";
             BindListToDefinedType( _ddlConnectionStatus, Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS );
 
+            _dpBirthdate.StartView = DatePicker.StartViewOption.decade;
             _dpBirthdate.Required = false;
 
             _ddlGrade.CssClass = "form-control";

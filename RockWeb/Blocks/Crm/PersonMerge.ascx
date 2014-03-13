@@ -8,6 +8,7 @@
         <Rock:NotificationBox ID="nbPeople" runat="server" NotificationBoxType="Warning" Visible="false"
             Text="You need to select at least two people to merge." />
 
+        <asp:HiddenField ID="hfSelectedColumn" runat="server" />
         <Rock:Grid ID="gValues" runat="server" AllowSorting="false" EmptyDataText="No Results" />
             
         <Rock:NotificationBox ID="nbSecurityNotice" runat="server" NotificationBoxType="danger" Visible="false" Title="Multiple Email Addresses Exist" Heading="Security Alert" 
