@@ -408,29 +408,39 @@ namespace RockWeb.Blocks.Crm
                                 }
                             }
 
-                            foreach ( var family in personService.GetFamilies( p.Id ) )
+                            // Delete the merged person's other family member records and the family if they were the only one in the family
+                            Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+                            foreach ( var familyMember in familyMemberService.Queryable().Where( m => m.PersonId == p.Id && m.Group.GroupType.Guid == familyGuid ) )
                             {
-                                var fm = family.Members.Where( m => m.PersonId == p.Id ).FirstOrDefault();
-                                if ( fm != null )
+                                familyMemberService.Delete( familyMember, CurrentPersonAlias );
+                                familyMemberService.Save( familyMember, CurrentPersonAlias );
+
+                                // Get the family
+                                var family = familyService.Queryable( "Members" ).Where( f => f.Id == familyMember.GroupId ).FirstOrDefault();
+                                if ( !family.Members.Any() )
                                 {
-                                    family.Members.Remove( fm );
-                                    familyMemberService.Delete( fm, CurrentPersonAlias );
+                                    // If there are not any other family members, delete the family record.
 
-                                    if ( !family.Members.Any() )
+                                    var oldFamilyChanges = new List<string>();
+                                    History.EvaluateChange( oldFamilyChanges, "Family", family.Name, string.Empty );
+                                    historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                                        primaryPersonId.Value, oldFamilyChanges, family.Name, typeof( Group ), family.Id, CurrentPersonAlias );
+
+                                    // If theres any people that have this group as a giving group, set it to null (the person being merged should be the only one)
+                                    foreach(Person gp in personService.Queryable().Where( g => g.GivingGroupId == family.Id  ))
                                     {
-                                        familyService.Delete( family, CurrentPersonAlias );
-
-                                        var oldFamilyChanges = new List<string>();
-                                        History.EvaluateChange( oldFamilyChanges, "Family", family.Name, string.Empty );
-                                        historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                                            primaryPersonId.Value, oldFamilyChanges, family.Name, typeof( Group ), family.Id, CurrentPersonAlias );
+                                        gp.GivingGroupId = null;
+                                        personService.Save( gp, CurrentPersonAlias );
                                     }
 
-                                    familyService.Save( family, CurrentPersonAlias );
+                                    // Delete the family
+                                    if ( familyService.Delete( family, CurrentPersonAlias ) )
+                                    {
+                                        familyService.Save( family, CurrentPersonAlias );
+                                    }
                                 }
                             }
                         }
-
                     }
                 }
 
