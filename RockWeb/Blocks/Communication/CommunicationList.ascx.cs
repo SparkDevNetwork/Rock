@@ -114,42 +114,39 @@ namespace RockWeb.Blocks.Communication
             switch ( e.Key )
             {
                 case "Channel":
-
-                    int entityTypeId = 0;
-                    if ( int.TryParse( e.Value, out entityTypeId ) )
                     {
-                        var entity = EntityTypeCache.Read( entityTypeId );
+                        var entity = EntityTypeCache.Read( e.Value.AsGuid() );
                         if ( entity != null )
                         {
                             e.Value = entity.FriendlyName;
                         }
+
+                        break;
                     }
-
-                    break;
-
                 case "Status":
-
-                    if ( !string.IsNullOrWhiteSpace( e.Value ) )
                     {
-                        e.Value = ( (CommunicationStatus)System.Enum.Parse( typeof( CommunicationStatus ), e.Value ) ).ConvertToString();
-                    }
-
-                    break;
-
-                case "Created By":
-
-                    int personId = 0;
-                    if ( int.TryParse( e.Value, out personId ) && personId != 0 )
-                    {
-                        var personService = new PersonService();
-                        var person = personService.Get( personId );
-                        if ( person != null )
+                        if ( !string.IsNullOrWhiteSpace( e.Value ) )
                         {
-                            e.Value = person.FullName;
+                            e.Value = ( (CommunicationStatus)System.Enum.Parse( typeof( CommunicationStatus ), e.Value ) ).ConvertToString();
                         }
-                    }
 
-                    break;
+                        break;
+                    }
+                case "Created By":
+                    {
+                        int personId = 0;
+                        if ( int.TryParse( e.Value, out personId ) && personId != 0 )
+                        {
+                            var personService = new PersonService();
+                            var person = personService.Get( personId );
+                            if ( person != null )
+                            {
+                                e.Value = person.FullName;
+                            }
+                        }
+
+                        break;
+                    }
             }
         }
 
