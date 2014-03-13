@@ -29,10 +29,14 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            //UpdateEntityType( string name, string friendlyName, string assemblyName, bool isEntity, bool isSecured, string guid )
+
+            UpdateEntityType( "Rock.Reporting.DataFilter.Person.InGroupGroupTypeFilter", "In Group Group Type Filter", "Rock.Reporting.DataFilter.Person.InGroupGroupTypeFilter, Rock, Version=1.0.2.0, Culture=neutral, PublicKeyToken=null", false, true, "0E239967-6D33-4205-B19F-08AD8FF6ED0B" );
+            
             Sql( @"
 declare
   @parentId int = (select [DataViewFilterId] from [DataView] where [Guid] = '0da5f82f-cffe-45af-b725-49b3899a1f72'),
-  @entityTypeId int = (select [id] from [EntityType] where [Name] = 'Rock.Reporting.DataFilter.Person.InGroupGroupTypeFilter'),
+  @entityTypeId int = (select [id] from [EntityType] where [Guid] = '0E239967-6D33-4205-B19F-08AD8FF6ED0B'),
   @groupTypeId int = (select [id] from [GroupType] where [Guid] = '790E3215-3B10-442B-AF69-616C0DCB998E' /* GROUPTYPE_FAMILY */),
   @groupRoleId int = (select [id] from [GroupTypeRole] where [Guid] = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42' /* GROUPROLE_FAMILY_MEMBER_ADULT */)
 
