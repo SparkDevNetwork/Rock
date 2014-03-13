@@ -11,19 +11,20 @@
     8. Tags - component that allows you to tag entities
     9. Switch - uses the Bootstrap Switch component
     10. Smart Searh - search at th top of the page for searching people, groups, etc.
-    11. Title - markup for styling header titles
-    12. Notifications - additional styles to the Bootstrap notifications
-    13. Labels - additional label defintions that extend Boostrap labels (eg label-campus)
-    14. Datepicker - styles for the date picker
-    15. Timepicker - styles for the time picker
-    16. File Upload / Image Upload - styles for the file / image uploader
-    17. Actions - used to hold buttons at the bottom of forms.
-    18. Code Editor - Styles for the code editor control
-    19. Update Panel Status - Styles for the wait screen on an update panel
-    20. Group List - styles a group of people in a ul -> li format
-    21. Rock List - styles for the Rock list component
-    22. TypeAhead - styles for type ahead support
-    23. Image Cropper - styles for image crop component
+    11. Fieldset Actions - styling for the button actions on field sets
+    12. Title - markup for styling header titles
+    13. Code Editor - styling for code editor
+    14. Labels - additional label defintions that extend Boostrap labels (eg label-campus)
+    15. Date Picker - styles for the date picker
+    16. Time Picker - styles for the time picker
+    17. File Upload / Image Upload - styles for the file / image uploader
+    18. Update Panel Actions - annimation for update panels
+    19. Group List - Reusable styles for listing group members (family view/edit in CRM Person Profile)
+    20. 
+    21. Security Controls - login status etc
+    22. Rock List - styles for the Rock list component
+    23. TypeAhead - styles for type ahead support
+    24. Image Cropper - styles for image crop component
 */
 
 // 1. Pickers
@@ -830,6 +831,14 @@ div.tagsinput
 	color: @smartsearch-input-selection-text-color;
 }
 
+// 11. Actions
+// -------------------------
+
+fieldset .actions {
+    margin-top: 12px; 
+}
+
+
 // 12. Titles
 // ------------------------
 .title {
@@ -840,13 +849,10 @@ div.tagsinput
     }
 }
 
-
-// 13. Notifications
+// 13. Code Editor
 // -------------------------
-
-.alert-info h4:before {
-    content: "\f05a";
-    font-family: FontAwesome;
+.code-editor {
+   position: relative; 
 }
 
 // 14. Labels
@@ -883,6 +889,7 @@ div.tagsinput
 
 // 15. Datepicker
 // -------------------------
+
 .datepicker {
     padding: 10px;
 
@@ -1097,7 +1104,7 @@ div.tagsinput
     }
 }
 
-// 17. Time Picker
+// 17. Upload Controls
 // -------------------------
 
 .imageupload-group {
@@ -1235,25 +1242,10 @@ div.tagsinput
     }
 }
 
-// 16. Actions
-// -------------------------
 
-fieldset .actions {
-    margin-top: 12px; 
-}
-
-// 17. Code Editor
-// -------------------------
-.code-editor {
-   position: relative; 
-}
 
 // 18. Update Panel Status
 // -------------------------
-
-//.updateprogress-bg {
-//
-//}
 
 .updateprogress-status {
     position: fixed; 
@@ -1363,7 +1355,7 @@ ul.groupmembers {
     }
 }
 
-// 20. Security Controls
+// 21. Security Controls
 // -------------------------
 
 .loginstatus {
@@ -1377,7 +1369,7 @@ ul.groupmembers {
     }
 }
    
-// 21. Rock List
+// 22. Rock List
 // -------------------------
 
 ul.rocklist {
@@ -1430,7 +1422,7 @@ ul.rocklist {
 }
 
 
-// 22. TypeAhead Support
+// 23. TypeAhead Support
 // -------------------------
 
 .twitter-typeahead .tt-query,
@@ -1481,7 +1473,7 @@ ul.rocklist {
   margin: 0;
 }
 
-// 23. Image Cropper
+// 24. Image Cropper
 // -------------------------
 .image-editor-photo {
     width: 150px;
